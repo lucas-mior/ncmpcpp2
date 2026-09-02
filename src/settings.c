@@ -16,7 +16,7 @@ Configuration Config;
 
 static bool settings_quiet;
 
-typedef bool (*SettingsApplyFn)(Configuration *config,
+typedef int32 (*SettingsApplyFn)(Configuration *config,
                                 char *value, int32 value_len,
                                 NcmError *ncm_error);
 
@@ -39,20 +39,19 @@ typedef struct SettingsOption {
         .used = false, \
     }
 
-static void
+static int32
 settings_error(NcmError *ncm_error, char *message, int32 message_len) {
-    ncm_error_set(ncm_error, EINVAL, message, message_len);
-    return;
+    return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                                message, message_len);
 }
 
-static void
+static int32
 settings_invalid_value(NcmError *ncm_error, char *value, int32 value_len) {
     char message[256];
     int32 len;
 
     len = SNPRINTF(message, "invalid value: %.*s", value_len, value);
-    settings_error(ncm_error, message, len);
-    return;
+    return settings_error(ncm_error, message, len);
 }
 
 static int32
@@ -87,7 +86,7 @@ settings_trim_end(char *value, int32 value_len) {
     return result;
 }
 
-static bool
+static int32
 settings_string_set(char **data, int32 *len, int32 *cap, char *value,
                     int32 value_len) {
     char *new_data;
@@ -108,10 +107,10 @@ settings_string_set(char **data, int32 *len, int32 *cap, char *value,
     *data = new_data;
     *len = value_len;
     *cap = new_cap;
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 settings_expand_home(StrBuilder *buffer, char *value, int32 value_len) {
     char *home;
     int32 home_len;
@@ -119,17 +118,17 @@ settings_expand_home(StrBuilder *buffer, char *value, int32 value_len) {
     sb_clear(buffer);
     if ((value_len <= 0) || (value[0] != '~')) {
         SB_APPEND(buffer, value, value_len);
-        return true;
+        return 0;
     }
 
     if ((home = getenv("HOME")) == NULL) {
         SB_APPEND(buffer, value, value_len);
-        return true;
+        return 0;
     }
     home_len = strlen32(home);
     SB_APPEND(buffer, home, home_len);
     if (value_len == 1) {
-        return true;
+        return 0;
     }
     sb_append_byte(buffer, '/');
     if (value[1] == '/') {
@@ -139,199 +138,216 @@ settings_expand_home(StrBuilder *buffer, char *value, int32 value_len) {
     } else {
         SB_APPEND(buffer, value + 1, value_len - 1);
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 settings_string_set_expanded(char **data, int32 *len, int32 *cap, char *value,
                              int32 value_len) {
     StrBuilder buffer = {0};
-    bool result;
+    int32 status;
 
-    if ((result = settings_expand_home(&buffer, value, value_len))) {
-        result = settings_string_set(data, len, cap, buffer.data, buffer.len);
+    status = settings_expand_home(&buffer, value, value_len);
+    if (status == 0) {
+        status = settings_string_set(data, len, cap, buffer.data, buffer.len);
     }
     sb_free(&buffer);
-    return result;
+    return status;
 }
 
-static bool
+static int32
 settings_string_set_directory(char **data, int32 *len, int32 *cap, char *value,
                               int32 value_len) {
     StrBuilder buffer = {0};
-    bool result;
+    int32 status;
 
-    if ((result = settings_expand_home(&buffer, value, value_len))) {
+    status = settings_expand_home(&buffer, value, value_len);
+    if (status == 0) {
         sb_append_byte_if_not(&buffer, '/');
-    }
-    if (result) {
-        result = settings_string_set(data, len, cap, buffer.data, buffer.len);
+        status = settings_string_set(data, len, cap, buffer.data, buffer.len);
     }
     sb_free(&buffer);
-    return result;
+    return status;
 }
 
-static bool
+static int32
 settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
-                        int32 *width, bool keep_existing) {
+                        int32 *width, bool keep_existing,
+                        NcmError *ncm_error) {
     NcmFormatAst ast;
     NcBuffer tmp;
-    NcmError ncm_error;
-    bool result;
+    bool parsed;
+    int32 status;
 
     if (keep_existing && !nc_buffer_is_empty(buffer)) {
-        return true;
+        return 0;
     }
 
-    ncm_error_clear(&ncm_error);
     ast = (NcmFormatAst){0};
     tmp = (NcBuffer){0};
-    result = ncm_format_parse(&ast, value, value_len,
+    parsed = ncm_format_parse(&ast, value, value_len,
                               NCM_FORMAT_FLAG_COLOR | NCM_FORMAT_FLAG_FORMAT,
-                              &ncm_error);
-    if (result) {
-        ncm_format_render_buffer(&ast, NULL, &tmp, NULL,
-                                 NCM_FORMAT_FLAG_COLOR
-                                 | NCM_FORMAT_FLAG_FORMAT);
-        nc_buffer_destroy(buffer);
-        nc_buffer_move(buffer, &tmp);
-        if (width) {
-            *width = utf8_width(nc_buffer_data(buffer), nc_buffer_len(buffer));
+                              ncm_error);
+    if (!parsed) {
+        status = ncm_error_status(ncm_error);
+        if (status == 0) {
+            status = -NCM_ERROR_PARSE;
         }
+        nc_buffer_destroy(&tmp);
+        ncm_format_ast_destroy(&ast);
+        return status;
+    }
+
+    ncm_format_render_buffer(&ast, NULL, &tmp, NULL,
+                             NCM_FORMAT_FLAG_COLOR
+                             | NCM_FORMAT_FLAG_FORMAT);
+    nc_buffer_destroy(buffer);
+    nc_buffer_move(buffer, &tmp);
+    if (width) {
+        *width = utf8_width(nc_buffer_data(buffer), nc_buffer_len(buffer));
     }
     nc_buffer_destroy(&tmp);
     ncm_format_ast_destroy(&ast);
-    return result;
+    return 0;
 }
 
-static bool
+static int32
 settings_parse_bool(char *value, int32 value_len, bool *result,
                     NcmError *ncm_error) {
-    if (ncm_option_parser_yes_no(value, value_len, result) < 0) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+    int32 status;
+
+    status = ncm_option_parser_yes_no(value, value_len, result);
+    if (status < 0) {
+        return settings_invalid_value(ncm_error, value, value_len);
     }
-    return true;
+    return 0;
 }
 
-static bool
-settings_color_name(char *value, int32 value_len, bool background,
-                    int16 *result) {
+static int32
+settings_parse_color_name(char *value, int32 value_len, bool background,
+                          int16 *result) {
     if (STREQUAL(value, value_len, "black")) {
         *result = COLOR_BLACK;
-        return true;
+        return 0;
     }
     if (STREQUAL(value, value_len, "red")) {
         *result = COLOR_RED;
-        return true;
+        return 0;
     }
     if (STREQUAL(value, value_len, "green")) {
         *result = COLOR_GREEN;
-        return true;
+        return 0;
     }
     if (STREQUAL(value, value_len, "yellow")) {
         *result = COLOR_YELLOW;
-        return true;
+        return 0;
     }
     if (STREQUAL(value, value_len, "blue")) {
         *result = COLOR_BLUE;
-        return true;
+        return 0;
     }
     if (STREQUAL(value, value_len, "magenta")) {
         *result = COLOR_MAGENTA;
-        return true;
+        return 0;
     }
     if (STREQUAL(value, value_len, "cyan")) {
         *result = COLOR_CYAN;
-        return true;
+        return 0;
     }
     if (STREQUAL(value, value_len, "white")) {
         *result = COLOR_WHITE;
-        return true;
+        return 0;
     }
     if (background && STREQUAL(value, value_len, "transparent")) {
         *result = NC_COLOR_TRANSPARENT;
-        return true;
+        return 0;
     }
     if (background && STREQUAL(value, value_len, "current")) {
         *result = NC_COLOR_CURRENT;
-        return true;
+        return 0;
     }
 
-    return false;
+    return -NCM_ERROR_PARSE;
 }
 
-static bool
+static int32
 settings_parse_single_color(char *value, int32 value_len, bool background,
                             int16 *result, NcmError *ncm_error) {
     int32 parsed;
+    int32 status;
 
-    if (settings_color_name(value, value_len, background, result)) {
-        return true;
+    status = settings_parse_color_name(value, value_len, background, result);
+    if (status == 0) {
+        return 0;
     }
-    if (ncm_parse_int32(value, value_len, &parsed, ncm_error) < 0) {
-        return false;
+    status = ncm_parse_int32(value, value_len, &parsed, ncm_error);
+    if (status < 0) {
+        return status;
     }
     if (background) {
         if (parsed > 256) {
-            settings_invalid_value(ncm_error, value, value_len);
-            return false;
+            return settings_invalid_value(ncm_error, value, value_len);
         }
     } else if ((parsed < 1) || (parsed > 256)) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
     if (parsed == 0) {
         *result = 0;
     } else {
         *result = (int16)(parsed - 1);
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 settings_parse_color(char *value, int32 value_len, NcColor *color,
                      NcmError *ncm_error) {
     int32 underscore;
+    int32 status;
     int16 foreground;
     int16 background;
 
     if (STREQUAL(value, value_len, "default")) {
         *color = nc_color_default();
-        return true;
+        return 0;
     }
     if (STREQUAL(value, value_len, "end")) {
         *color = nc_color_end();
-        return true;
+        return 0;
     }
 
     underscore = ncm_string_find_char(value, value_len, '_');
     if (underscore < 0) {
-        if (!settings_parse_single_color(value, value_len, false, &foreground,
-                                         ncm_error)) {
-            return false;
+        status = settings_parse_single_color(value, value_len, false,
+                                             &foreground, ncm_error);
+        if (status < 0) {
+            return status;
         }
         *color = nc_color_make(foreground, NC_COLOR_CURRENT, false, false);
-        return true;
+        return 0;
     }
 
-    if (!settings_parse_single_color(value, underscore, false, &foreground,
-                                     ncm_error)) {
-        return false;
+    status = settings_parse_single_color(value, underscore, false, &foreground,
+                                         ncm_error);
+    if (status < 0) {
+        return status;
     }
-    if (!settings_parse_single_color(value + underscore + 1,
-                                     value_len - underscore - 1, true,
-                                     &background, ncm_error)) {
-        return false;
+    status = settings_parse_single_color(value + underscore + 1,
+                                         value_len - underscore - 1, true,
+                                         &background, ncm_error);
+    if (status < 0) {
+        return status;
     }
     *color = nc_color_make(foreground, background, false, false);
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 settings_parse_formatted_color(char *value, int32 value_len,
-                               NcFormattedColor *color, NcmError *ncm_error) {
+                               NcFormattedColor *color,
+                               NcmError *ncm_error) {
     int32 colon;
+    int32 status;
     NcColor base;
     NcFormattedColor tmp;
 
@@ -339,12 +355,12 @@ settings_parse_formatted_color(char *value, int32 value_len,
     if (colon < 0) {
         colon = value_len;
     }
-    if (!settings_parse_color(value, colon, &base, ncm_error)) {
-        return false;
+    status = settings_parse_color(value, colon, &base, ncm_error);
+    if (status < 0) {
+        return status;
     }
     if (nc_color_is_end(base)) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
 
     nc_formatted_color_init_color(&tmp, base);
@@ -367,25 +383,25 @@ settings_parse_formatted_color(char *value, int32 value_len,
             break;
         default:
             nc_formatted_color_destroy(&tmp);
-            settings_invalid_value(ncm_error, value, value_len);
-            return false;
+            return settings_invalid_value(ncm_error, value, value_len);
         }
     }
 
     nc_formatted_color_destroy(color);
     nc_formatted_color_move(color, &tmp);
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 settings_next_list_item(char *value, int32 value_len, int32 *pos, char **item,
-                        int32 *item_len) {
+                        int32 *item_len, bool *found) {
     int32 start;
     int32 end;
     bool quoted;
 
     if (*pos > value_len) {
-        return false;
+        *found = false;
+        return 0;
     }
     start = *pos;
     end = start;
@@ -415,13 +431,15 @@ settings_next_list_item(char *value, int32 value_len, int32 *pos, char **item,
     } else {
         *pos = value_len + 1;
     }
-    return true;
+    *found = true;
+    return 0;
 }
 
-static bool
+static int32
 settings_parse_formatted_color_list(NcmFormattedColorArray *array, char *value,
                                     int32 value_len, NcmError *ncm_error) {
     int32 pos;
+    int32 status;
     bool added;
 
     ncm_formatted_color_array_clear(array);
@@ -430,32 +448,38 @@ settings_parse_formatted_color_list(NcmFormattedColorArray *array, char *value,
     while (pos <= value_len) {
         char *item;
         int32 item_len;
+        bool found;
         NcFormattedColor *dest;
 
-        if (!settings_next_list_item(value, value_len, &pos, &item,
-                                     &item_len)) {
+        status = settings_next_list_item(value, value_len, &pos, &item,
+                                         &item_len, &found);
+        if (status < 0) {
+            return status;
+        }
+        if (!found) {
             break;
         }
         if (item_len <= 0) {
             continue;
         }
-        if ((dest = ncm_formatted_color_array_append(array)) == NULL) {
-            settings_error(ncm_error, STRLIT("failed to append color"));
-            return false;
+        dest = ncm_formatted_color_array_append(array);
+        if (dest == NULL) {
+            return settings_error(ncm_error, STRLIT("failed to append color"));
         }
-        if (!settings_parse_formatted_color(item, item_len, dest, ncm_error)) {
-            return false;
+        status = settings_parse_formatted_color(item, item_len, dest,
+                                                ncm_error);
+        if (status < 0) {
+            return status;
         }
         added = true;
     }
     if (!added) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
                      int32 expected_len, NcmError *ncm_error) {
     int32 start;
@@ -467,19 +491,21 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
     while (start <= value_len) {
         int32 end;
         int32 parsed;
+        int32 status;
         int32 *slot;
 
         end = start;
         while ((end < value_len) && (value[end] != ':')) {
             end += 1;
         }
-        if (ncm_parse_int32(value + start, end - start, &parsed,
-                            ncm_error) < 0) {
-            return false;
+        status = ncm_parse_int32(value + start, end - start, &parsed,
+                                 ncm_error);
+        if (status < 0) {
+            return status;
         }
-        if ((slot = ncm_int32_array_append(array)) == NULL) {
-            settings_error(ncm_error, STRLIT("failed to append ratio"));
-            return false;
+        slot = ncm_int32_array_append(array);
+        if (slot == NULL) {
+            return settings_error(ncm_error, STRLIT("failed to append ratio"));
         }
         *slot = parsed;
         total += parsed;
@@ -489,13 +515,12 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
         start = end + 1;
     }
     if ((array->len != expected_len) || (total == 0)) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 settings_column_append_type(Column *column, char ch) {
     char *new_data;
     int32 new_len;
@@ -515,10 +540,10 @@ settings_column_append_type(Column *column, char ch) {
     column->type = new_data;
     column->type_len = new_len;
     column->type_cap = new_cap;
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 settings_parse_columns(Configuration *config, char *value, int32 value_len,
                        NcmError *ncm_error) {
     int32 pos;
@@ -535,8 +560,10 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
         Column *column;
         int32 next;
         int32 parsed_width;
+        int32 status;
 
-        width = ncm_string_get_enclosed(value, value_len, '(', ')', pos, &next);
+        width = ncm_string_get_enclosed(value, value_len, '(', ')', pos,
+                                        &next);
         if (width.len <= 0) {
             sb_free(&width);
             sb_free(&color);
@@ -544,37 +571,42 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
             break;
         }
         pos = next;
-        color = ncm_string_get_enclosed(value, value_len, '[', ']', pos, &next);
+        color = ncm_string_get_enclosed(value, value_len, '[', ']', pos,
+                                        &next);
         pos = next;
         tag = ncm_string_get_enclosed(value, value_len, '{', '}', pos, &next);
         pos = next;
-        if ((column = column_array_append(&config->columns)) == NULL) {
-            settings_error(ncm_error, STRLIT("failed to append column"));
+        column = column_array_append(&config->columns);
+        if (column == NULL) {
+            status = settings_error(ncm_error,
+                                    STRLIT("failed to append column"));
             sb_free(&width);
             sb_free(&color);
             sb_free(&tag);
-            return false;
+            return status;
         }
         if ((width.len > 0) && (width.data[width.len - 1] == 'f')) {
             column->fixed = true;
             width.len -= 1;
             width.data[width.len] = '\0';
         }
-        if (ncm_parse_int32(width.data, width.len, &parsed_width,
-                            ncm_error) < 0) {
+        status = ncm_parse_int32(width.data, width.len, &parsed_width,
+                                 ncm_error);
+        if (status < 0) {
             sb_free(&width);
             sb_free(&color);
             sb_free(&tag);
-            return false;
+            return status;
         }
         column->width = parsed_width;
         if (color.len > 0) {
-            if (!settings_parse_color(color.data, color.len, &column->color,
-                                      ncm_error)) {
+            status = settings_parse_color(color.data, color.len,
+                                          &column->color, ncm_error);
+            if (status < 0) {
                 sb_free(&width);
                 sb_free(&color);
                 sb_free(&tag);
-                return false;
+                return status;
             }
         }
         if (tag.len > 0) {
@@ -584,9 +616,16 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
             colon = ncm_string_find_char(tag.data, tag.len, ':');
             type_len = tag.len;
             if (colon >= 0) {
-                settings_string_set(&column->name, &column->name_len,
-                                    &column->name_cap, tag.data + colon + 1,
-                                    tag.len - colon - 1);
+                status = settings_string_set(&column->name, &column->name_len,
+                                             &column->name_cap,
+                                             tag.data + colon + 1,
+                                             tag.len - colon - 1);
+                if (status < 0) {
+                    sb_free(&width);
+                    sb_free(&color);
+                    sb_free(&tag);
+                    return status;
+                }
                 type_len = colon;
             }
             for (int32 i = 0; i < type_len; i += 1) {
@@ -603,7 +642,13 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
                     break;
                 default:
                     if (ncm_song_getter_from_char(ch) != NCM_SONG_GETTER_NONE) {
-                        settings_column_append_type(column, ch);
+                        status = settings_column_append_type(column, ch);
+                        if (status < 0) {
+                            sb_free(&width);
+                            sb_free(&color);
+                            sb_free(&tag);
+                            return status;
+                        }
                     }
                     break;
                 }
@@ -617,8 +662,7 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
     }
 
     if (config->columns.len <= 0) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
 
     last_relative = -1;
@@ -641,17 +685,18 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
         if (!ncm_format_ast_append_column_types(
             &config->song_columns_mode_format, column->type,
             column->type_len)) {
-            settings_error(ncm_error, STRLIT("failed to build column format"));
-            return false;
+            return settings_error(ncm_error,
+                                  STRLIT("failed to build column format"));
         }
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 settings_parse_screen_list(Configuration *config, char *value, int32 value_len,
                            NcmError *ncm_error) {
     int32 pos;
+    int32 status;
     bool added;
 
     screen_type_array_clear(&config->screen_sequence);
@@ -660,39 +705,42 @@ settings_parse_screen_list(Configuration *config, char *value, int32 value_len,
     while (pos <= value_len) {
         char *item;
         int32 item_len;
+        bool found;
         enum ScreenType *slot;
         enum ScreenType screen;
 
-        if (!settings_next_list_item(value, value_len, &pos,
-                                     &item, &item_len)) {
+        status = settings_next_list_item(value, value_len, &pos, &item,
+                                         &item_len, &found);
+        if (status < 0) {
+            return status;
+        }
+        if (!found) {
             break;
         }
         if (item_len <= 0) {
             continue;
         }
         if (!screen_type_parse_startup(item, item_len, &screen)) {
-            settings_invalid_value(ncm_error, item, item_len);
-            return false;
+            return settings_invalid_value(ncm_error, item, item_len);
         }
         slot = screen_type_array_append(&config->screen_sequence);
         if (slot == NULL) {
-            settings_error(ncm_error, STRLIT("failed to append screen"));
-            return false;
+            return settings_error(ncm_error, STRLIT("failed to append screen"));
         }
         *slot = screen;
         added = true;
     }
     if (!added) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 settings_parse_lyrics_fetchers(Configuration *config, char *value,
                                int32 value_len, NcmError *ncm_error) {
     int32 pos;
+    int32 status;
     bool added;
 
     ncm_lyrics_fetcher_registry_clear(&config->lyrics_fetchers);
@@ -701,8 +749,14 @@ settings_parse_lyrics_fetchers(Configuration *config, char *value,
     while (pos <= value_len) {
         char *item;
         int32 item_len;
-        if (!settings_next_list_item(value, value_len, &pos, &item,
-                                     &item_len)) {
+        bool found;
+
+        status = settings_next_list_item(value, value_len, &pos, &item,
+                                         &item_len, &found);
+        if (status < 0) {
+            return status;
+        }
+        if (!found) {
             break;
         }
         if (item_len <= 0) {
@@ -710,20 +764,18 @@ settings_parse_lyrics_fetchers(Configuration *config, char *value,
         }
         if (!ncm_lyrics_fetcher_registry_append_name(&config->lyrics_fetchers,
                                                      item, item_len)) {
-            settings_error(ncm_error, STRLIT("unknown lyrics fetcher"));
-            return false;
+            return settings_error(ncm_error, STRLIT("unknown lyrics fetcher"));
         }
         added = true;
     }
     if (!added) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
-    return true;
+    return 0;
 }
 
 #define APPLY_STRING_DIR(FUNC, FIELD) \
-    static bool \
+    static int32 \
     FUNC(Configuration *config, char *value, int32 value_len, \
          NcmError *ncm_error) { \
         (void)ncm_error; \
@@ -734,7 +786,7 @@ settings_parse_lyrics_fetchers(Configuration *config, char *value,
     }
 
 #define APPLY_STRING_PATH(FUNC, FIELD) \
-    static bool \
+    static int32 \
     FUNC(Configuration *config, char *value, int32 value_len, \
          NcmError *ncm_error) { \
         (void)ncm_error; \
@@ -745,7 +797,7 @@ settings_parse_lyrics_fetchers(Configuration *config, char *value,
     }
 
 #define APPLY_STRING(FUNC, FIELD) \
-    static bool \
+    static int32 \
     FUNC(Configuration *config, char *value, int32 value_len, \
          NcmError *ncm_error) { \
         (void)ncm_error; \
@@ -754,7 +806,7 @@ settings_parse_lyrics_fetchers(Configuration *config, char *value,
     }
 
 #define APPLY_BOOL(FUNC, FIELD) \
-    static bool \
+    static int32 \
     FUNC(Configuration *config, char *value, int32 value_len, \
          NcmError *ncm_error) { \
         return settings_parse_bool(value, value_len, &config->FIELD, \
@@ -762,11 +814,11 @@ settings_parse_lyrics_fetchers(Configuration *config, char *value,
     }
 
 #define APPLY_UINT(FUNC, FIELD) \
-    static bool \
+    static int32 \
     FUNC(Configuration *config, char *value, int32 value_len, \
          NcmError *ncm_error) { \
         return ncm_parse_int32(value, value_len, &config->FIELD, \
-                               ncm_error) == 0; \
+                               ncm_error); \
     }
 
 APPLY_STRING_DIR(apply_ncmpcpp_directory, ncmpcpp_directory)
@@ -846,167 +898,196 @@ APPLY_STRING_PATH(apply_external_editor, external_editor)
 APPLY_BOOL(apply_use_console_editor, use_console_editor)
 APPLY_BOOL(apply_colors_enabled, colors_enabled)
 
-static bool
+static int32
 apply_mpd_host(Configuration *config, char *value, int32 value_len,
                NcmError *ncm_error) {
     StrBuilder host = {0};
-    bool result;
+    int32 status;
 
     (void)config;
-    if ((result = settings_expand_home(&host, value, value_len))) {
-        result = ncm_mpd_client_set_hostname(&global_mpd, host.data, host.len,
-                                             ncm_error) == 0;
+    status = settings_expand_home(&host, value, value_len);
+    if (status == 0) {
+        status = ncm_mpd_client_set_hostname(&global_mpd, host.data, host.len,
+                                             ncm_error);
     }
     sb_free(&host);
-    return result;
+    return status;
 }
 
-static bool
+static int32
 apply_mpd_port(Configuration *config, char *value, int32 value_len,
                NcmError *ncm_error) {
     int32 port;
+    int32 status;
 
     (void)config;
-    if (ncm_parse_int32(value, value_len, &port, ncm_error) < 0) {
-        return false;
+    status = ncm_parse_int32(value, value_len, &port, ncm_error);
+    if (status < 0) {
+        return status;
     }
     if (port > 65535) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
     ncm_mpd_client_set_port(&global_mpd, (uint16)port);
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 apply_mpd_password(Configuration *config, char *value, int32 value_len,
                    NcmError *ncm_error) {
     (void)config;
     if (value_len <= 0) {
-        return true;
+        return 0;
     }
     return ncm_mpd_client_set_password(&global_mpd, value, value_len,
-                                       ncm_error) == 0;
+                                       ncm_error);
 }
 
-static bool
+static int32
 apply_mpd_connection_timeout(Configuration *config, char *value,
                              int32 value_len, NcmError *ncm_error) {
-    if (ncm_parse_int32(value, value_len,
-                        &config->mpd_connection_timeout,
-                        ncm_error) < 0) {
-        return false;
+    int32 status;
+
+    status = ncm_parse_int32(value, value_len,
+                             &config->mpd_connection_timeout, ncm_error);
+    if (status < 0) {
+        return status;
     }
     return ncm_mpd_client_set_timeout_ms(
-        &global_mpd, config->mpd_connection_timeout*1000, ncm_error) == 0;
+        &global_mpd, config->mpd_connection_timeout * 1000, ncm_error);
 }
 
-static bool
+static int32
 apply_mpd_crossfade_time(Configuration *config, char *value, int32 value_len,
                          NcmError *ncm_error) {
     return ncm_parse_int32(value, value_len, &config->crossfade_time,
-                           ncm_error) == 0;
+                           ncm_error);
 }
 
-static bool
+static int32
 apply_visualizer_type(Configuration *config, char *value, int32 value_len,
                       NcmError *ncm_error) {
-    if (ncm_visualizer_type_parse(value, value_len,
-                                  &config->visualizer_type) < 0) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+    int32 status;
+
+    status = ncm_visualizer_type_parse(value, value_len,
+                                       &config->visualizer_type);
+    if (status < 0) {
+        return settings_invalid_value(ncm_error, value, value_len);
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 apply_visualizer_look(Configuration *config, char *value, int32 value_len,
                       NcmError *ncm_error) {
     if (utf8_characters(value, value_len) != 2) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
     sb_clear(&config->visualizer_chars);
     SB_APPEND(&config->visualizer_chars, value, value_len);
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 apply_visualizer_fps(Configuration *config, char *value, int32 value_len,
                      NcmError *ncm_error) {
-    if (ncm_parse_int32(value, value_len, &config->visualizer_fps,
-                        ncm_error) < 0) {
-        return false;
+    int32 status;
+
+    status = ncm_parse_int32(value, value_len, &config->visualizer_fps,
+                             ncm_error);
+    if (status < 0) {
+        return status;
     }
     return ncm_bounds_check_i64(config->visualizer_fps,
-                                30, 1000, ncm_error) == 0;
+                                30, 1000, ncm_error);
 }
 
-static bool
+static int32
 apply_visualizer_spectrum_dft_size(Configuration *config,
                                    char *value, int32 value_len,
                                    NcmError *ncm_error) {
-    if (ncm_parse_int32(value, value_len,
-                        &config->visualizer_spectrum_dft_size,
-                        ncm_error) < 0) {
-        return false;
+    int32 status;
+
+    status = ncm_parse_int32(value, value_len,
+                             &config->visualizer_spectrum_dft_size,
+                             ncm_error);
+    if (status < 0) {
+        return status;
     }
     return ncm_bounds_check_i64(config->visualizer_spectrum_dft_size,
-                                1, 5, ncm_error) == 0;
+                                1, 5, ncm_error);
 }
 
-static bool
+static int32
 apply_visualizer_spectrum_gain(Configuration *config, char *value,
                                int32 value_len, NcmError *ncm_error) {
-    if (ncm_parse_double(value, value_len,
-                         &config->visualizer_spectrum_gain,
-                         ncm_error) < 0) {
-        return false;
+    int32 status;
+
+    status = ncm_parse_double(value, value_len,
+                              &config->visualizer_spectrum_gain, ncm_error);
+    if (status < 0) {
+        return status;
     }
     return ncm_bounds_check_f64(config->visualizer_spectrum_gain,
-                                0, 100, ncm_error) == 0;
+                                0, 100, ncm_error);
 }
 
-static bool
+static int32
 apply_visualizer_spectrum_hz_min(Configuration *config, char *value,
                                  int32 value_len, NcmError *ncm_error) {
-    if (ncm_parse_double(value, value_len,
-                         &config->visualizer_spectrum_hz_min,
-                         ncm_error) < 0) {
-        return false;
+    int32 status;
+
+    status = ncm_parse_double(value, value_len,
+                              &config->visualizer_spectrum_hz_min,
+                              ncm_error);
+    if (status < 0) {
+        return status;
     }
     return ncm_lower_bound_check_f64(config->visualizer_spectrum_hz_min,
-                                     1, ncm_error) == 0;
+                                     1, ncm_error);
 }
 
-static bool
+static int32
 apply_visualizer_spectrum_hz_max(Configuration *config, char *value,
                                  int32 value_len, NcmError *ncm_error) {
-    if (ncm_parse_double(value, value_len,
-                         &config->visualizer_spectrum_hz_max,
-                         ncm_error) < 0) {
-        return false;
+    int32 status;
+
+    status = ncm_parse_double(value, value_len,
+                              &config->visualizer_spectrum_hz_max,
+                              ncm_error);
+    if (status < 0) {
+        return status;
     }
     return ncm_lower_bound_check_f64(
         config->visualizer_spectrum_hz_max,
-        config->visualizer_spectrum_hz_min + 1, ncm_error) == 0;
+        config->visualizer_spectrum_hz_min + 1, ncm_error);
 }
 
-static bool
+static int32
 apply_visualizer_color(Configuration *config, char *value, int32 value_len,
                        NcmError *ncm_error) {
     return settings_parse_formatted_color_list(&config->visualizer_colors,
                                                value, value_len, ncm_error);
 }
 
-static bool
+static int32
 settings_parse_format(NcmFormatAst *format, char *value, int32 value_len,
                       uint32 flags, NcmError *ncm_error) {
+    int32 status;
+
     ncm_format_ast_clear(format);
-    return ncm_format_parse(format, value, value_len, flags, ncm_error);
+    if (ncm_format_parse(format, value, value_len, flags, ncm_error)) {
+        return 0;
+    }
+
+    status = ncm_error_status(ncm_error);
+    if (status == 0) {
+        status = -NCM_ERROR_PARSE;
+    }
+    return status;
 }
 
-static bool
+static int32
 apply_system_encoding(Configuration *config, char *value, int32 value_len,
                       NcmError *ncm_error) {
     (void)value;
@@ -1017,22 +1098,22 @@ apply_system_encoding(Configuration *config, char *value, int32 value_len,
                                &config->system_encoding_cap, "", 0);
 }
 
-static bool
+static int32
 apply_playlist_disable_highlight_delay(Configuration *config, char *value,
                                        int32 value_len, NcmError *ncm_error) {
     return ncm_parse_int32(
         value, value_len, &config->playlist_disable_highlight_delay_seconds,
-        ncm_error) == 0;
+        ncm_error);
 }
 
-static bool
+static int32
 apply_song_list_format(Configuration *config, char *value, int32 value_len,
                        NcmError *ncm_error) {
     return settings_parse_format(&config->song_list_format, value, value_len,
                                  NCM_FORMAT_FLAG_ALL, ncm_error);
 }
 
-static bool
+static int32
 apply_song_status_format(Configuration *config, char *value, int32 value_len,
                          NcmError *ncm_error) {
     return settings_parse_format(
@@ -1040,14 +1121,14 @@ apply_song_status_format(Configuration *config, char *value, int32 value_len,
         NCM_FORMAT_FLAG_ALL ^ NCM_FORMAT_FLAG_OUTPUT_SWITCH, ncm_error);
 }
 
-static bool
+static int32
 apply_song_library_format(Configuration *config, char *value, int32 value_len,
                           NcmError *ncm_error) {
     return settings_parse_format(&config->song_library_format, value, value_len,
                                  NCM_FORMAT_FLAG_ALL, ncm_error);
 }
 
-static bool
+static int32
 apply_header_first_line_format(Configuration *config, char *value,
                                int32 value_len, NcmError *ncm_error) {
     return settings_parse_format(
@@ -1055,7 +1136,7 @@ apply_header_first_line_format(Configuration *config, char *value,
         NCM_FORMAT_FLAG_ALL ^ NCM_FORMAT_FLAG_OUTPUT_SWITCH, ncm_error);
 }
 
-static bool
+static int32
 apply_header_second_line_format(Configuration *config, char *value,
                                 int32 value_len, NcmError *ncm_error) {
     return settings_parse_format(
@@ -1063,97 +1144,93 @@ apply_header_second_line_format(Configuration *config, char *value,
         NCM_FORMAT_FLAG_ALL ^ NCM_FORMAT_FLAG_OUTPUT_SWITCH, ncm_error);
 }
 
-static bool
+static int32
 apply_current_item_prefix(Configuration *config, char *value, int32 value_len,
                           NcmError *ncm_error) {
-    (void)ncm_error;
     return settings_copy_nc_buffer(&config->current_item_prefix, value,
                                    value_len,
-                                   &config->current_item_prefix_length, true);
+                                   &config->current_item_prefix_length, true,
+                                   ncm_error);
 }
 
-static bool
+static int32
 apply_current_item_suffix(Configuration *config, char *value, int32 value_len,
                           NcmError *ncm_error) {
-    (void)ncm_error;
     return settings_copy_nc_buffer(&config->current_item_suffix, value,
                                    value_len,
-                                   &config->current_item_suffix_length, true);
+                                   &config->current_item_suffix_length, true,
+                                   ncm_error);
 }
 
-static bool
+static int32
 apply_current_item_inactive_column_prefix(Configuration *config, char *value,
                                           int32 value_len,
                                           NcmError *ncm_error) {
-    (void)ncm_error;
     return settings_copy_nc_buffer(
         &config->current_item_inactive_column_prefix, value, value_len,
-        &config->current_item_inactive_column_prefix_length, true);
+        &config->current_item_inactive_column_prefix_length, true, ncm_error);
 }
 
-static bool
+static int32
 apply_current_item_inactive_column_suffix(Configuration *config, char *value,
                                           int32 value_len,
                                           NcmError *ncm_error) {
-    (void)ncm_error;
     return settings_copy_nc_buffer(
         &config->current_item_inactive_column_suffix, value, value_len,
-        &config->current_item_inactive_column_suffix_length, true);
+        &config->current_item_inactive_column_suffix_length, true, ncm_error);
 }
 
-static bool
+static int32
 apply_now_playing_prefix(Configuration *config, char *value, int32 value_len,
                          NcmError *ncm_error) {
-    (void)ncm_error;
     return settings_copy_nc_buffer(&config->now_playing_prefix, value,
                                    value_len,
-                                   &config->now_playing_prefix_length, false);
+                                   &config->now_playing_prefix_length, false,
+                                   ncm_error);
 }
 
-static bool
+static int32
 apply_now_playing_suffix(Configuration *config, char *value, int32 value_len,
                          NcmError *ncm_error) {
-    (void)ncm_error;
     return settings_copy_nc_buffer(&config->now_playing_suffix, value,
                                    value_len,
-                                   &config->now_playing_suffix_length, false);
+                                   &config->now_playing_suffix_length, false,
+                                   ncm_error);
 }
 
-static bool
+static int32
 apply_browser_playlist_prefix(Configuration *config, char *value,
                               int32 value_len, NcmError *ncm_error) {
-    (void)ncm_error;
     return settings_copy_nc_buffer(&config->browser_playlist_prefix, value,
-                                   value_len, NULL, false);
+                                   value_len, NULL, false, ncm_error);
 }
 
-static bool
+static int32
 apply_selected_item_prefix(Configuration *config, char *value, int32 value_len,
                            NcmError *ncm_error) {
-    (void)ncm_error;
     return settings_copy_nc_buffer(&config->selected_item_prefix, value,
                                    value_len,
-                                   &config->selected_item_prefix_length, false);
+                                   &config->selected_item_prefix_length, false,
+                                   ncm_error);
 }
 
-static bool
+static int32
 apply_selected_item_suffix(Configuration *config, char *value, int32 value_len,
                            NcmError *ncm_error) {
-    (void)ncm_error;
     return settings_copy_nc_buffer(&config->selected_item_suffix,
                                    value, value_len,
-                                   &config->selected_item_suffix_length, false);
+                                   &config->selected_item_suffix_length, false,
+                                   ncm_error);
 }
 
-static bool
+static int32
 apply_modified_item_prefix(Configuration *config, char *value, int32 value_len,
                            NcmError *ncm_error) {
-    (void)ncm_error;
     return settings_copy_nc_buffer(&config->modified_item_prefix,
-                                   value, value_len, NULL, false);
+                                   value, value_len, NULL, false, ncm_error);
 }
 
-static bool
+static int32
 apply_song_window_title_format(Configuration *config,
                                char *value, int32 value_len,
                                NcmError *ncm_error) {
@@ -1162,7 +1239,7 @@ apply_song_window_title_format(Configuration *config,
                                  ncm_error);
 }
 
-static bool
+static int32
 apply_browser_sort_mode(Configuration *config, char *value, int32 value_len,
                         NcmError *ncm_error) {
     if (STREQUAL(value, value_len, "noop")) {
@@ -1170,233 +1247,229 @@ apply_browser_sort_mode(Configuration *config, char *value, int32 value_len,
         value_len = STRLIT_LEN("none");
     }
     if (ncm_sort_mode_parse(value, value_len, &config->browser_sort_mode) < 0) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 apply_browser_sort_format(Configuration *config, char *value, int32 value_len,
                           NcmError *ncm_error) {
     return settings_parse_format(&config->browser_sort_format, value, value_len,
                                  NCM_FORMAT_FLAG_TAG, ncm_error);
 }
 
-static bool
+static int32
 apply_song_columns_list_format(Configuration *config,
                                char *value, int32 value_len,
                                NcmError *ncm_error) {
     return settings_parse_columns(config, value, value_len, ncm_error);
 }
 
-static bool
+static int32
 apply_playlist_display_mode(Configuration *config, char *value, int32 value_len,
                             NcmError *ncm_error) {
     if (ncm_display_mode_parse(value, value_len,
                                &config->playlist_display_mode) < 0) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 apply_browser_display_mode(Configuration *config, char *value, int32 value_len,
                            NcmError *ncm_error) {
     if (ncm_display_mode_parse(value, value_len,
                                &config->browser_display_mode) < 0) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 apply_search_engine_display_mode(Configuration *config,
                                  char *value, int32 value_len,
                                  NcmError *ncm_error) {
     if (ncm_display_mode_parse(value, value_len,
                                &config->search_engine_display_mode) < 0) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 apply_playlist_editor_display_mode(Configuration *config,
                                    char *value, int32 value_len,
                                    NcmError *ncm_error) {
     if (ncm_display_mode_parse(value, value_len,
                                &config->playlist_editor_display_mode) < 0) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 apply_progressbar_look(Configuration *config, char *value, int32 value_len,
                        NcmError *ncm_error) {
     int32 characters = utf8_characters(value, value_len);
 
     if ((characters < 2) || (characters > 3)) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
     sb_clear(&config->progressbar);
     SB_APPEND(&config->progressbar, value, value_len);
     if (characters == 2) {
         sb_append_byte(&config->progressbar, '\0');
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 apply_default_place_to_search_in(Configuration *config,
                                  char *value, int32 value_len,
                                  NcmError *ncm_error) {
     if (STREQUAL(value, value_len, "database")) {
         config->search_in_db = true;
-        return true;
+        return 0;
     }
     if (STREQUAL(value, value_len, "playlist")) {
         config->search_in_db = false;
-        return true;
+        return 0;
     }
-    settings_invalid_value(ncm_error, value, value_len);
-    return false;
+    return settings_invalid_value(ncm_error, value, value_len);
 }
 
-static bool
+static int32
 apply_user_interface(Configuration *config, char *value, int32 value_len,
                      NcmError *ncm_error) {
-    if (ncm_design_parse(value, value_len, &config->design) < 0) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+    int32 status;
+
+    status = ncm_design_parse(value, value_len, &config->design);
+    if (status < 0) {
+        return settings_invalid_value(ncm_error, value, value_len);
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 apply_media_library_primary_tag(Configuration *config,
                                 char *value, int32 value_len,
                                 NcmError *ncm_error) {
     if (STREQUAL(value, value_len, "artist")) {
         config->media_lib_primary_tag = MPD_TAG_ARTIST;
-        return true;
+        return 0;
     }
     if (STREQUAL(value, value_len, "album_artist")) {
         config->media_lib_primary_tag = MPD_TAG_ALBUM_ARTIST;
-        return true;
+        return 0;
     }
     if (STREQUAL(value, value_len, "date")) {
         config->media_lib_primary_tag = MPD_TAG_DATE;
-        return true;
+        return 0;
     }
     if (STREQUAL(value, value_len, "genre")) {
         config->media_lib_primary_tag = MPD_TAG_GENRE;
-        return true;
+        return 0;
     }
     if (STREQUAL(value, value_len, "composer")) {
         config->media_lib_primary_tag = MPD_TAG_COMPOSER;
-        return true;
+        return 0;
     }
     if (STREQUAL(value, value_len, "performer")) {
         config->media_lib_primary_tag = MPD_TAG_PERFORMER;
-        return true;
+        return 0;
     }
-    settings_invalid_value(ncm_error, value, value_len);
-    return false;
+    return settings_invalid_value(ncm_error, value, value_len);
 }
 
-static bool
+static int32
 apply_default_find_mode(Configuration *config, char *value, int32 value_len,
                         NcmError *ncm_error) {
     if (STREQUAL(value, value_len, "wrapped")) {
         config->wrapped_search = true;
-        return true;
+        return 0;
     }
     if (STREQUAL(value, value_len, "normal")) {
         config->wrapped_search = false;
-        return true;
+        return 0;
     }
-    settings_invalid_value(ncm_error, value, value_len);
-    return false;
+    return settings_invalid_value(ncm_error, value, value_len);
 }
 
-static bool
+static int32
 apply_lyrics_fetchers(Configuration *config, char *value, int32 value_len,
                       NcmError *ncm_error) {
     return settings_parse_lyrics_fetchers(config, value, value_len, ncm_error);
 }
 
-static bool
+static int32
 apply_space_add_mode(Configuration *config, char *value, int32 value_len,
                      NcmError *ncm_error) {
-    if (ncm_space_add_mode_parse(value, value_len,
-                                 &config->space_add_mode) < 0) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+    int32 status;
+
+    status = ncm_space_add_mode_parse(value, value_len,
+                                      &config->space_add_mode);
+    if (status < 0) {
+        return settings_invalid_value(ncm_error, value, value_len);
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 apply_screen_switcher_mode(Configuration *config, char *value, int32 value_len,
                            NcmError *ncm_error) {
     if (STREQUAL(value, value_len, "previous")) {
         config->screen_switcher_previous = true;
         screen_type_array_clear(&config->screen_sequence);
-        return true;
+        return 0;
     }
     config->screen_switcher_previous = false;
     return settings_parse_screen_list(config, value, value_len, ncm_error);
 }
 
-static bool
+static int32
 apply_startup_screen(Configuration *config, char *value, int32 value_len,
                      NcmError *ncm_error) {
     if (!screen_type_parse_startup(value, value_len,
                                    &config->startup_screen_type)) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 apply_startup_slave_screen(Configuration *config, char *value, int32 value_len,
                            NcmError *ncm_error) {
     if (value_len <= 0) {
         config->has_startup_slave_screen_type = false;
         config->startup_slave_screen_type = NCM_SCREEN_TYPE_COUNT;
-        return true;
+        return 0;
     }
     if (!screen_type_parse_startup(value, value_len,
                                    &config->startup_slave_screen_type)) {
-        settings_invalid_value(ncm_error, value, value_len);
-        return false;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
     config->has_startup_slave_screen_type = true;
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 apply_locked_screen_width_part(Configuration *config,
                                char *value, int32 value_len,
                                NcmError *ncm_error) {
-    if (ncm_parse_double(value, value_len,
-                         &config->locked_screen_width_part,
-                         ncm_error) < 0) {
-        return false;
+    int32 status;
+
+    status = ncm_parse_double(value, value_len,
+                              &config->locked_screen_width_part,
+                              ncm_error);
+    if (status < 0) {
+        return status;
     }
     config->locked_screen_width_part /= 100.0;
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 apply_media_library_column_width_ratio_two(Configuration *config,
                                            char *value, int32 value_len,
                                            NcmError *ncm_error) {
@@ -1404,7 +1477,7 @@ apply_media_library_column_width_ratio_two(Configuration *config,
                                 value, value_len, 2, ncm_error);
 }
 
-static bool
+static int32
 apply_media_library_column_width_ratio_three(Configuration *config,
                                              char *value, int32 value_len,
                                              NcmError *ncm_error) {
@@ -1412,7 +1485,7 @@ apply_media_library_column_width_ratio_three(Configuration *config,
                                 value, value_len, 3, ncm_error);
 }
 
-static bool
+static int32
 apply_playlist_editor_column_width_ratio(Configuration *config,
                                          char *value, int32 value_len,
                                          NcmError *ncm_error) {
@@ -1420,26 +1493,25 @@ apply_playlist_editor_column_width_ratio(Configuration *config,
                                 value, value_len, 2, ncm_error);
 }
 
-static bool
+static int32
 apply_regular_expressions(Configuration *config, char *value, int32 value_len,
                           NcmError *ncm_error) {
     if (STREQUAL(value, value_len, "none")) {
         config->regex_flags = NCM_REGEX_LITERAL_CASE_INSENSITIVE;
-        return true;
+        return 0;
     }
     if (STREQUAL(value, value_len, "basic")) {
         config->regex_flags = NCM_REGEX_BASIC_CASE_INSENSITIVE;
-        return true;
+        return 0;
     }
     if (STREQUAL(value, value_len, "extended")) {
         config->regex_flags = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
-        return true;
+        return 0;
     }
-    settings_invalid_value(ncm_error, value, value_len);
-    return false;
+    return settings_invalid_value(ncm_error, value, value_len);
 }
 
-static bool
+static int32
 apply_enable_window_title(Configuration *config, char *value, int32 value_len,
                           NcmError *ncm_error) {
     char *term;
@@ -1459,57 +1531,60 @@ apply_enable_window_title(Configuration *config, char *value, int32 value_len,
             error2("Terminal doesn't support window title, skipping "
                    "'enable_window_title'.\n");
         }
-        return true;
+        return 0;
     }
     return settings_parse_bool(value, value_len, &config->set_window_title,
                                ncm_error);
 }
 
-static bool
+static int32
 apply_search_engine_default_search_mode(Configuration *config,
                                         char *value, int32 value_len,
                                         NcmError *ncm_error) {
     int32 mode;
+    int32 status;
 
-    if (ncm_parse_int32(value, value_len, &mode, ncm_error) < 0) {
-        return false;
+    status = ncm_parse_int32(value, value_len, &mode, ncm_error);
+    if (status < 0) {
+        return status;
     }
-    if (ncm_bounds_check_i64(mode, 1, 3, ncm_error) < 0) {
-        return false;
+    status = ncm_bounds_check_i64(mode, 1, 3, ncm_error);
+    if (status < 0) {
+        return status;
     }
     config->search_engine_default_search_mode = mode - 1;
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 apply_empty_tag_color(Configuration *config, char *value, int32 value_len,
                       NcmError *ncm_error) {
     return settings_parse_formatted_color(value, value_len,
                                           &config->empty_tags_color, ncm_error);
 }
 
-static bool
+static int32
 apply_header_window_color(Configuration *config, char *value, int32 value_len,
                           NcmError *ncm_error) {
     return settings_parse_color(value, value_len, &config->header_color,
                                 ncm_error);
 }
 
-static bool
+static int32
 apply_volume_color(Configuration *config, char *value, int32 value_len,
                    NcmError *ncm_error) {
     return settings_parse_formatted_color(value, value_len,
                                           &config->volume_color, ncm_error);
 }
 
-static bool
+static int32
 apply_state_line_color(Configuration *config, char *value, int32 value_len,
                        NcmError *ncm_error) {
     return settings_parse_formatted_color(value, value_len,
                                           &config->state_line_color, ncm_error);
 }
 
-static bool
+static int32
 apply_state_flags_color(Configuration *config, char *value, int32 value_len,
                         NcmError *ncm_error) {
     return settings_parse_formatted_color(value, value_len,
@@ -1517,28 +1592,28 @@ apply_state_flags_color(Configuration *config, char *value, int32 value_len,
                                           ncm_error);
 }
 
-static bool
+static int32
 apply_main_window_color(Configuration *config, char *value, int32 value_len,
                         NcmError *ncm_error) {
     return settings_parse_color(value, value_len, &config->main_color,
                                 ncm_error);
 }
 
-static bool
+static int32
 apply_color1(Configuration *config, char *value, int32 value_len,
              NcmError *ncm_error) {
     return settings_parse_formatted_color(value, value_len, &config->color1,
                                           ncm_error);
 }
 
-static bool
+static int32
 apply_color2(Configuration *config, char *value, int32 value_len,
              NcmError *ncm_error) {
     return settings_parse_formatted_color(value, value_len, &config->color2,
                                           ncm_error);
 }
 
-static bool
+static int32
 apply_progressbar_color(Configuration *config, char *value, int32 value_len,
                         NcmError *ncm_error) {
     return settings_parse_formatted_color(value, value_len,
@@ -1546,7 +1621,7 @@ apply_progressbar_color(Configuration *config, char *value, int32 value_len,
                                           ncm_error);
 }
 
-static bool
+static int32
 apply_progressbar_elapsed_color(Configuration *config,
                                 char *value, int32 value_len,
                                 NcmError *ncm_error) {
@@ -1554,14 +1629,14 @@ apply_progressbar_elapsed_color(Configuration *config,
         value, value_len, &config->progressbar_elapsed_color, ncm_error);
 }
 
-static bool
+static int32
 apply_statusbar_color(Configuration *config, char *value, int32 value_len,
                       NcmError *ncm_error) {
     return settings_parse_color(value, value_len, &config->statusbar_color,
                                 ncm_error);
 }
 
-static bool
+static int32
 apply_statusbar_time_color(Configuration *config, char *value, int32 value_len,
                            NcmError *ncm_error) {
     return settings_parse_formatted_color(value, value_len,
@@ -1569,7 +1644,7 @@ apply_statusbar_time_color(Configuration *config, char *value, int32 value_len,
                                           ncm_error);
 }
 
-static bool
+static int32
 apply_player_state_color(Configuration *config, char *value, int32 value_len,
                          NcmError *ncm_error) {
     return settings_parse_formatted_color(value, value_len,
@@ -1577,7 +1652,7 @@ apply_player_state_color(Configuration *config, char *value, int32 value_len,
                                           ncm_error);
 }
 
-static bool
+static int32
 apply_alternative_ui_separator_color(Configuration *config,
                                      char *value, int32 value_len,
                                      NcmError *ncm_error) {
@@ -1585,28 +1660,32 @@ apply_alternative_ui_separator_color(Configuration *config,
         value, value_len, &config->alternative_ui_separator_color, ncm_error);
 }
 
-static bool
+static int32
 apply_window_border_color(Configuration *config, char *value, int32 value_len,
                           NcmError *ncm_error) {
     NcColor color;
+    int32 status;
 
-    if (!settings_parse_color(value, value_len, &color, ncm_error)) {
-        return false;
+    status = settings_parse_color(value, value_len, &color, ncm_error);
+    if (status < 0) {
+        return status;
     }
     config->window_border = nc_border_make(color);
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 apply_active_window_border(Configuration *config, char *value, int32 value_len,
                            NcmError *ncm_error) {
     NcColor color;
+    int32 status;
 
-    if (!settings_parse_color(value, value_len, &color, ncm_error)) {
-        return false;
+    status = settings_parse_color(value, value_len, &color, ncm_error);
+    if (status < 0) {
+        return status;
     }
     config->active_window_border = nc_border_make(color);
-    return true;
+    return 0;
 }
 
 static SettingsOption *
@@ -1644,8 +1723,8 @@ settings_set_option_error(NcmError *ncm_error, bool default_value,
     len = SNPRINTF(message, "error while %s option \"%.*s\": %.*s", phase,
                    option->name_len, option->name, detail_len, detail);
     if (len < 0) {
-        ncm_error_set(ncm_error, EINVAL,
-                      STRLIT("error while processing option"));
+        ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                             STRLIT("error while processing option"));
         return;
     }
     if (len >= SIZEOF(message)) {
@@ -1654,7 +1733,7 @@ settings_set_option_error(NcmError *ncm_error, bool default_value,
     if (ncm_error_is_set(cause)) {
         ncm_error_set(ncm_error, cause->code, message, len);
     } else {
-        ncm_error_set(ncm_error, EINVAL, message, len);
+        ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE, message, len);
     }
     return;
 }
@@ -1667,13 +1746,14 @@ settings_set_unknown_option_error(NcmError *ncm_error, char *option,
 
     len = SNPRINTF(message, "unknown option: %.*s", option_len, option);
     if (len < 0) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("unknown option"));
+        ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                             STRLIT("unknown option"));
         return;
     }
     if (len >= SIZEOF(message)) {
         len = SIZEOF(message) - 1;
     }
-    ncm_error_set(ncm_error, EINVAL, message, len);
+    ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE, message, len);
     return;
 }
 
@@ -1687,37 +1767,45 @@ settings_set_duplicate_option_error(NcmError *ncm_error,
                    "error while processing option \"%.*s\": "
                    "option already set",
                    option->name_len, option->name);
-    ncm_error_set(ncm_error, EINVAL, message, len);
+    ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE, message, len);
     return;
 }
 
-static bool
+static int32
 settings_report_or_ignore(NcmError *ncm_error, bool ignore_errors) {
+    int32 status;
+
     if (ncm_error_is_set(ncm_error)) {
         error2("%s\n", ncm_error->message);
     }
     if (!ignore_errors) {
-        return false;
+        status = ncm_error_status(ncm_error);
+        if (status == 0) {
+            status = -EINVAL;
+        }
+        return status;
     }
     ncm_error_clear(ncm_error);
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 settings_apply_option(Configuration *config, SettingsOption *option,
                       char *value, int32 value_len, bool default_value,
                       bool ignore_errors, NcmError *ncm_error) {
     NcmError cause;
+    int32 status;
 
     ncm_error_clear(&cause);
-    if (!option->apply(config, value, value_len, &cause)) {
+    status = option->apply(config, value, value_len, &cause);
+    if (status < 0) {
         settings_set_option_error(ncm_error, default_value, option, &cause);
         return settings_report_or_ignore(ncm_error, ignore_errors);
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 settings_read_file(Configuration *config, SettingsOption *options,
                    int32 option_count, char *path, int32 path_len,
                    bool ignore_errors, bool quiet, NcmError *ncm_error) {
@@ -1726,24 +1814,26 @@ settings_read_file(Configuration *config, SettingsOption *options,
     char line[SETTINGS_LINE_CAP];
 
     if (!ncm_fs_exists(path, path_len)) {
-        return true;
+        return 0;
     }
 
     SB_APPEND(&path_buffer, path, path_len);
     if ((file = fopen(path_buffer.data, "r")) == NULL) {
         char message[256];
+        int32 saved_errno;
         int32 len;
 
+        saved_errno = errno;
         len = SNPRINTF(message, "failed to open configuration file '%.*s': %s",
-                       path_len, path, strerror(errno));
+                       path_len, path, strerror(saved_errno));
         if (len < 0) {
-            ncm_error_set(ncm_error, errno,
-                          STRLIT("failed to open configuration file"));
+            ncm_error_set_status(ncm_error, -saved_errno,
+                                 STRLIT("failed to open configuration file"));
         } else {
             if (len >= SIZEOF(message)) {
                 len = SIZEOF(message) - 1;
             }
-            ncm_error_set(ncm_error, errno, message, len);
+            ncm_error_set_status(ncm_error, -saved_errno, message, len);
         }
         sb_free(&path_buffer);
         return settings_report_or_ignore(ncm_error, ignore_errors);
@@ -1769,10 +1859,11 @@ settings_read_file(Configuration *config, SettingsOption *options,
                                               &has_option);
         if (status < 0) {
             settings_invalid_value(ncm_error, line, line_len);
-            if (!settings_report_or_ignore(ncm_error, ignore_errors)) {
+            status = settings_report_or_ignore(ncm_error, ignore_errors);
+            if (status < 0) {
                 fclose(file);
                 sb_free(&path_buffer);
-                return false;
+                return status;
             }
             continue;
         }
@@ -1784,54 +1875,60 @@ settings_read_file(Configuration *config, SettingsOption *options,
         if (option == NULL) {
             settings_set_unknown_option_error(ncm_error, parsed.option,
                                               parsed.option_len);
-            if (!settings_report_or_ignore(ncm_error, ignore_errors)) {
+            status = settings_report_or_ignore(ncm_error, ignore_errors);
+            if (status < 0) {
                 fclose(file);
                 sb_free(&path_buffer);
-                return false;
+                return status;
             }
             continue;
         }
         if (option->used) {
             settings_set_duplicate_option_error(ncm_error, option);
-            if (!settings_report_or_ignore(ncm_error, ignore_errors)) {
+            status = settings_report_or_ignore(ncm_error, ignore_errors);
+            if (status < 0) {
                 fclose(file);
                 sb_free(&path_buffer);
-                return false;
+                return status;
             }
             continue;
         }
         option->used = true;
-        if (!settings_apply_option(config, option, parsed.value,
-                                   parsed.value_len, false, ignore_errors,
-                                   ncm_error)) {
+        status = settings_apply_option(config, option, parsed.value,
+                                       parsed.value_len, false, ignore_errors,
+                                       ncm_error);
+        if (status < 0) {
             fclose(file);
             sb_free(&path_buffer);
-            return false;
+            return status;
         }
     }
     fclose(file);
     sb_free(&path_buffer);
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 settings_init_defaults(Configuration *config, SettingsOption *options,
-                             int32 option_count, bool ignore_errors,
-                             NcmError *ncm_error) {
+                       int32 option_count, bool ignore_errors,
+                       NcmError *ncm_error) {
+    int32 status;
+
     for (int32 i = 0; i < option_count; i += 1) {
         if (options[i].used) {
             continue;
         }
-        if (!settings_apply_option(
+        status = settings_apply_option(
             config, &options[i], options[i].default_value,
-            options[i].default_value_len, true, ignore_errors, ncm_error)) {
-            return false;
+            options[i].default_value_len, true, ignore_errors, ncm_error);
+        if (status < 0) {
+            return status;
         }
     }
-    return true;
+    return 0;
 }
 
-bool
+int32
 configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                    bool ignore_errors, bool quiet, NcmError *ncm_error) {
     SettingsOption options[] = {
@@ -2077,6 +2174,7 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                         apply_active_window_border),
     };
     int32 option_count;
+    int32 status;
 
     configuration_clear(config);
     settings_quiet = quiet;
@@ -2085,10 +2183,11 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
         for (int32 i = 0; i < config_paths->len; i += 1) {
             NcmStringView path = config_paths->items[i];
 
-            if (!settings_read_file(config, options, option_count, path.data,
-                                    path.len, ignore_errors, quiet,
-                                    ncm_error)) {
-                return false;
+            status = settings_read_file(config, options, option_count,
+                                        path.data, path.len, ignore_errors,
+                                        quiet, ncm_error);
+            if (status < 0) {
+                return status;
             }
         }
     }
