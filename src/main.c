@@ -161,18 +161,18 @@ app_apply_startup_screen(void) {
     ncmpcpp_playlist_switch_to();
 
     if (Config.startup_screen_type != ncmpcpp_current_screen_type()) {
-        ASSERT(ncmpcpp_switch_to_screen_type(Config.startup_screen_type));
+        ASSERT_ZERO(ncmpcpp_switch_to_screen_type(Config.startup_screen_type));
     }
 
     if (Config.has_startup_slave_screen_type) {
-        bool screen_locked = ncmpcpp_lock_current_screen();
+        int32 status = ncmpcpp_lock_current_screen();
         enum ScreenType slave_screen_type = Config.startup_slave_screen_type;
 
-        if (screen_locked
+        if ((status == 0)
             && (slave_screen_type != ncmpcpp_current_screen_type())) {
-            ASSERT(ncmpcpp_switch_to_screen_type(slave_screen_type));
+            ASSERT_ZERO(ncmpcpp_switch_to_screen_type(slave_screen_type));
             if (!Config.startup_slave_screen_focus) {
-                ncmpcpp_execute_action(NCM_ACTION_MASTER_SCREEN);
+                (void)ncmpcpp_execute_action(NCM_ACTION_MASTER_SCREEN);
             }
         }
     }
@@ -181,7 +181,7 @@ app_apply_startup_screen(void) {
 
 static void
 app_connect_if_due(NcmTimePoint *connect_attempt) {
-    if (!ncmpcpp_mpd_connected()
+    if (!ncmpcpp_mpd_is_connected()
         && (global_timer_elapsed_ms(*connect_attempt) > 1000)) {
         *connect_attempt = global_timer;
         ncmpcpp_status_clear();
@@ -201,7 +201,7 @@ app_execute_key(NcKey input) {
     }
 
     for (int32 i = 0; i < bindings.len; i += 1) {
-        if (ncmpcpp_execute_binding(bindings.data + i)) {
+        if (ncmpcpp_execute_binding(bindings.data + i) == 0) {
             executed = true;
             break;
         }
@@ -213,7 +213,8 @@ app_execute_key(NcKey input) {
 
 static bool
 app_exit_requested(void) {
-    return ncmpcpp_exit_requested() || ncm_action_runtime_exit_requested(NULL);
+    return ncmpcpp_has_exit_request()
+           || ncm_action_runtime_exit_requested(NULL);
 }
 
 int
@@ -261,7 +262,7 @@ main(int32 argc, char **argv) {
             app_resize_requested = 0;
         }
 
-        ncmpcpp_update_environment(!key_pressed, key_pressed, false);
+        (void)ncmpcpp_update_environment(!key_pressed, key_pressed, false);
 
         input = ncm_read_key(app_footer_window);
         key_pressed = input != NC_KEY_NONE;

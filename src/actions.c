@@ -1534,7 +1534,7 @@ action_runtime_execute_command(void) {
     StrBuilder command_name = {0};
     NcmCommand *command;
     bool prompted;
-    bool result;
+    int32 status;
 
     prompted = action_runtime_prompt_string(
         STRLIT(":"), "", true,
@@ -1563,7 +1563,8 @@ action_runtime_execute_command(void) {
 
     action_runtime_print_format_string(STRLIT("Executing %1%..."),
                                        command_name.data, command_name.len);
-    if ((result = ncmpcpp_execute_binding(&command->binding))) {
+    status = ncmpcpp_execute_binding(&command->binding);
+    if (status == 0) {
         action_runtime_print_format_string(
             STRLIT("Execution of command \"%1%\" successful."),
             command_name.data, command_name.len);
@@ -1574,7 +1575,7 @@ action_runtime_execute_command(void) {
     }
 
     sb_free(&command_name);
-    return result;
+    return status == 0;
 }
 
 static bool
@@ -6043,7 +6044,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
     case NCM_ACTION_DUMMY:
         return true;
     case NCM_ACTION_UPDATE_ENVIRONMENT:
-        return ncmpcpp_update_environment(true, true, true);
+        return ncmpcpp_update_environment(true, true, true) == 0;
     case NCM_ACTION_MOUSE_EVENT:
         return action_runtime_mouse_event();
     case NCM_ACTION_SCROLL_UP:
