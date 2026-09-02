@@ -83,9 +83,9 @@ ncm_mpd_connection_status_from_mpd_error(enum mpd_error code) {
         return -NCM_ERROR_PARSE;
     case MPD_ERROR_SERVER:
         return -NCM_ERROR_MPD;
+    default:
+        return -NCM_ERROR_MPD;
     }
-
-    return -NCM_ERROR_MPD;
 }
 
 static int32
