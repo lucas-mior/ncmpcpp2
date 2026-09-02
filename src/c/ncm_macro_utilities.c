@@ -5,35 +5,35 @@
 
 #include "c/ncm_c.h"
 
-static bool
+static int32
 ncm_macro_system_command(char *command, int32 command_len,
                          bool block, int32 *status, NcmError *ncm_error) {
     StrBuilder buffer = {0};
     Command process = {0};
     int32 rc;
-    bool success;
+    int32 result;
 
     if ((command == NULL) || (command_len < 0)) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("invalid shell command"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("invalid shell command"));
     }
 
     if (block) {
         COMMAND_PUSH(&process, "/bin/sh", "-c");
         command_push_length(&process, command, command_len);
 
-        success = command_run_sync(&process, &rc) == 0;
-        if (success) {
-            if (status) {
+        result = command_run_sync(&process, &rc);
+        if (result == 0) {
+            if (status != NULL) {
                 *status = rc;
             }
-            ncm_error_clear(ncm_error);
+            result = ncm_error_ok(ncm_error);
         } else {
-            ncm_error_set(ncm_error, process.error_status,
-                          STRLIT("command failed"));
+            result = ncm_error_set_status(ncm_error, process.error_status,
+                                          STRLIT("command failed"));
         }
         command_free(&process);
-        return success;
+        return result;
     }
 
     SB_APPEND(&buffer, command, command_len);
@@ -41,22 +41,22 @@ ncm_macro_system_command(char *command, int32 command_len,
 
     COMMAND_PUSH(&process, "/bin/sh", "-c", buffer.data);
 
-    success = command_run_sync(&process, &rc) == 0;
+    result = command_run_sync(&process, &rc);
     sb_free(&buffer);
-    if (success) {
-        if (status) {
+    if (result == 0) {
+        if (status != NULL) {
             *status = rc;
         }
-        ncm_error_clear(ncm_error);
+        result = ncm_error_ok(ncm_error);
     } else {
-        ncm_error_set(ncm_error, process.error_status,
-                      STRLIT("command failed"));
+        result = ncm_error_set_status(ncm_error, process.error_status,
+                                      STRLIT("command failed"));
     }
     command_free(&process);
-    return success;
+    return result;
 }
 
-bool
+int32
 ncm_macro_run_external_command(char *command, int32 command_len,
                                bool block, NcmError *ncm_error) {
     int32 status;
@@ -65,7 +65,7 @@ ncm_macro_run_external_command(char *command, int32 command_len,
                                     block, &status, ncm_error);
 }
 
-bool
+int32
 ncm_macro_run_external_console_command(char *command,
                                        int32 command_len,
                                        NcmError *ncm_error) {

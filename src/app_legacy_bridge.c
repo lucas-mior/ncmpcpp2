@@ -370,7 +370,7 @@ ncmpcpp_execute_binding(NcmBinding *binding) {
     if (!ncm_binding_can_execute_default(binding)) {
         return false;
     }
-    return ncm_binding_execute_default(binding);
+    return ncm_binding_execute_default(binding) == 0;
 }
 
 bool

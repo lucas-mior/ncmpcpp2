@@ -196,7 +196,7 @@ app_execute_key(NcKey input) {
     NcmBindingSlice bindings;
     bool executed = false;
 
-    if (!ncm_bindings_configuration_get(&Bindings, input, &bindings)) {
+    if (ncm_bindings_configuration_get(&Bindings, input, &bindings) <= 0) {
         return;
     }
 
@@ -226,7 +226,7 @@ main(int32 argc, char **argv) {
     app_init_state();
     setlocale(LC_ALL, "");
 
-    if (!configure(argc, argv)) {
+    if (configure(argc, argv) <= 0) {
         app_destroy_state();
         exit(EXIT_SUCCESS);
     }
