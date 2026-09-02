@@ -207,7 +207,7 @@ settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
 static bool
 settings_parse_bool(char *value, int32 value_len, bool *result,
                     NcmError *ncm_error) {
-    if (!ncm_option_parser_yes_no(value, value_len, result)) {
+    if (ncm_option_parser_yes_no(value, value_len, result) < 0) {
         settings_invalid_value(ncm_error, value, value_len);
         return false;
     }
@@ -1756,6 +1756,8 @@ settings_read_file(Configuration *config, SettingsOption *options,
         NcmOptionLine parsed;
         SettingsOption *option;
         int32 line_len = strlen32(line);
+        int32 status;
+        bool has_option;
 
         while (
             (line_len > 0)
@@ -1763,7 +1765,18 @@ settings_read_file(Configuration *config, SettingsOption *options,
             line_len -= 1;
             line[line_len] = '\0';
         }
-        if (!ncm_option_parser_parse_line(line, line_len, &parsed)) {
+        status = ncm_option_parser_parse_line(line, line_len, &parsed,
+                                              &has_option);
+        if (status < 0) {
+            settings_invalid_value(ncm_error, line, line_len);
+            if (!settings_report_or_ignore(ncm_error, ignore_errors)) {
+                fclose(file);
+                sb_free(&path_buffer);
+                return false;
+            }
+            continue;
+        }
+        if (!has_option) {
             continue;
         }
         option = settings_find_option(options, option_count, parsed.option,

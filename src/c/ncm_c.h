@@ -1636,9 +1636,9 @@ typedef struct NcmOptionLine {
     int32 value_len;
 } NcmOptionLine;
 
-bool ncm_option_parser_parse_line(char *line, int32 line_len,
-                                  NcmOptionLine *result);
-bool ncm_option_parser_yes_no(char *value, int32 value_len, bool *result);
+int32 ncm_option_parser_parse_line(char *line, int32 line_len,
+                                   NcmOptionLine *result, bool *parsed);
+int32 ncm_option_parser_yes_no(char *value, int32 value_len, bool *result);
 
 /* c/ncm_path.h */
 bool ncm_path_expand_home(StrBuilder *path, NcmError *ncm_error);
