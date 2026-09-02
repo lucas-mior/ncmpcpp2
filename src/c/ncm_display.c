@@ -165,7 +165,7 @@ void
 ncm_display_directory_row(NcBuffer *buffer, NcmDirectory *directory) {
     NcmStringView path;
 
-    if (!ncm_directory_path_view(directory, &path)) {
+    if (!ncm_directory_has_path_view(directory, &path)) {
         return;
     }
 
@@ -183,7 +183,7 @@ ncm_display_playlist_row(NcBuffer *buffer, NcmPlaylist *playlist,
     if (prefix && (prefix_len > 0)) {
         nc_buffer_append_data(buffer, prefix, prefix_len);
     }
-    if (!ncm_playlist_path_view(playlist, &path)) {
+    if (!ncm_playlist_has_path_view(playlist, &path)) {
         return;
     }
     ncm_display_append_basename(buffer, path.data, path.len);

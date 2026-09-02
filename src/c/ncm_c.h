@@ -211,17 +211,19 @@ int32 ncm_song_priority(NcmSong *song);
 time_t ncm_song_mtime(NcmSong *song);
 bool ncm_song_is_empty(NcmSong *song);
 
-bool ncm_song_tag_view(NcmSong *song, enum mpd_tag_type tag,
-                       int32 idx, NcmStringView *view);
-bool ncm_song_uri_view(NcmSong *song, int32 idx, NcmStringView *view);
-bool ncm_song_name_view(NcmSong *song, int32 idx, NcmStringView *view);
-bool ncm_song_directory_view(NcmSong *song, int32 idx, NcmStringView *view);
+bool ncm_song_has_tag_view(NcmSong *song, enum mpd_tag_type tag,
+                           int32 idx, NcmStringView *view);
+bool ncm_song_has_uri_view(NcmSong *song, int32 idx, NcmStringView *view);
+bool ncm_song_has_name_view(NcmSong *song, int32 idx, NcmStringView *view);
+bool ncm_song_has_directory_view(NcmSong *song, int32 idx,
+                                 NcmStringView *view);
 bool ncm_song_is_from_database(NcmSong *song);
 bool ncm_song_is_stream(NcmSong *song);
 
-bool ncm_song_name_from_uri(char *uri, int32 uri_len, NcmStringView *view);
-bool ncm_song_directory_from_uri(char *uri, int32 uri_len,
-                                 NcmStringView *view);
+int32 ncm_song_resolve_name_from_uri(char *uri, int32 uri_len,
+                                     NcmStringView *view);
+int32 ncm_song_resolve_directory_from_uri(char *uri, int32 uri_len,
+                                          NcmStringView *view);
 bool ncm_song_uri_is_from_database(char *uri, int32 uri_len);
 bool ncm_song_uri_is_stream(char *uri, int32 uri_len);
 int32 ncm_song_numeric_tag_len(char *tag, int32 tag_len);
@@ -291,8 +293,9 @@ int32 ncm_mutable_song_set_tag(NcmMutableSong *song, enum NcmTagsField field,
 int32 ncm_mutable_song_set_tags(NcmMutableSong *song, enum NcmTagsField field,
                                 char *value, int32 value_len,
                                 char *separator, int32 separator_len);
-bool ncm_mutable_song_get_tag(NcmMutableSong *song, enum NcmTagsField field,
-                              int32 idx, NcmStringView *view);
+bool ncm_mutable_song_has_tag_view(NcmMutableSong *song,
+                                   enum NcmTagsField field, int32 idx,
+                                   NcmStringView *view);
 void ncm_mutable_song_get_tag_buffer(NcmMutableSong *song,
                                      enum NcmTagsField field, int32 idx,
                                      StrBuilder *buffer);
@@ -303,9 +306,10 @@ StrBuilder ncm_mutable_song_tags_buffer(NcmMutableSong *song,
 int32 ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
                                                NcmSong *source);
 
-int32 ncm_mutable_song_set_new_name(NcmMutableSong *song, char *new_name,
-                                   int32 new_name_len);
-bool ncm_mutable_song_get_new_name(NcmMutableSong *song, NcmStringView *view);
+int32 ncm_mutable_song_set_new_name(NcmMutableSong *song,
+                                    char *new_name, int32 new_name_len);
+bool ncm_mutable_song_has_new_name_view(NcmMutableSong *song,
+                                        NcmStringView *view);
 
 void ncm_mutable_song_set_duration(NcmMutableSong *song, int32 duration);
 int32 ncm_mutable_song_duration(NcmMutableSong *song);
@@ -330,7 +334,7 @@ void ncm_directory_move(NcmDirectory *dest, NcmDirectory *source);
 int32 ncm_directory_set(NcmDirectory *directory, char *path,
                         int32 path_len, time_t last_modified);
 int32 ncm_directory_copy(NcmDirectory *dest, NcmDirectory *source);
-bool ncm_directory_path_view(NcmDirectory *directory, NcmStringView *view);
+bool ncm_directory_has_path_view(NcmDirectory *directory, NcmStringView *view);
 time_t ncm_directory_last_modified(NcmDirectory *directory);
 int32 ncm_directory_from_mpd_directory(NcmDirectory *dest,
                                        struct mpd_directory *source);
@@ -349,7 +353,7 @@ void ncm_playlist_move(NcmPlaylist *dest, NcmPlaylist *source);
 int32 ncm_playlist_set(NcmPlaylist *playlist, char *path,
                        int32 path_len, time_t last_modified);
 int32 ncm_playlist_copy(NcmPlaylist *dest, NcmPlaylist *source);
-bool ncm_playlist_path_view(NcmPlaylist *playlist, NcmStringView *view);
+bool ncm_playlist_has_path_view(NcmPlaylist *playlist, NcmStringView *view);
 time_t ncm_playlist_last_modified(NcmPlaylist *playlist);
 int32 ncm_playlist_from_mpd_playlist(NcmPlaylist *dest,
                                      struct mpd_playlist *source);

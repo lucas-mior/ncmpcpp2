@@ -481,7 +481,7 @@ tiny_tag_editor_screen_set_filename_stem(
         return false;
     }
 
-    if (!ncm_mutable_song_get_new_name(&screen->edited, &current_name)) {
+    if (!ncm_mutable_song_has_new_name_view(&screen->edited, &current_name)) {
         current_name.data = screen->edited.name;
         current_name.len = screen->edited.name_len;
     }
@@ -569,7 +569,7 @@ tiny_tag_editor_screen_run_row(
     }
 
     if (row == TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW) {
-        if (!ncm_mutable_song_get_new_name(&screen->edited,
+        if (!ncm_mutable_song_has_new_name_view(&screen->edited,
                                            &current_name)) {
             current_name.data = screen->edited.name;
             current_name.len = screen->edited.name_len;
@@ -883,7 +883,7 @@ tiny_editor_replace_filename_row(
     NcMenu *menu;
     bool result;
 
-    if (!ncm_mutable_song_get_new_name(&screen->edited, &name)) {
+    if (!ncm_mutable_song_has_new_name_view(&screen->edited, &name)) {
         name.data = screen->edited.name;
         name.len = screen->edited.name_len;
     }

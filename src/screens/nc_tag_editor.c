@@ -687,13 +687,13 @@ tag_editor_screen_locate_song(TagEditorScreen *screen,
     if ((screen == NULL) || (song == NULL)) {
         return false;
     }
-    if (!ncm_song_uri_view(song, 0, &uri) || (uri.len <= 0)) {
+    if (!ncm_song_has_uri_view(song, 0, &uri) || (uri.len <= 0)) {
         return false;
     }
     if (!ncm_string_contains_char(uri.data, uri.len, '/')) {
         return false;
     }
-    if (!ncm_song_directory_view(song, 0, &directory)
+    if (!ncm_song_has_directory_view(song, 0, &directory)
         || (directory.len <= 0)) {
         return false;
     }
@@ -2360,7 +2360,7 @@ tag_editor_prompt_current_filename(TagEditorScreen *screen) {
         return false;
     }
 
-    if (!ncm_mutable_song_get_new_name(song, &current_name)) {
+    if (!ncm_mutable_song_has_new_name_view(song, &current_name)) {
         current_name.data = song->name;
         current_name.len = song->name_len;
     }
@@ -2410,7 +2410,7 @@ tag_editor_set_song_filename_stem(NcmMutableSong *song, char *stem,
     ASSERT(song != NULL);
     ASSERT(stem != NULL);
     ASSERT(stem_len > 0);
-    if (!ncm_mutable_song_get_new_name(song, &current_name)) {
+    if (!ncm_mutable_song_has_new_name_view(song, &current_name)) {
         current_name.data = song->name;
         current_name.len = song->name_len;
     }
@@ -3121,13 +3121,13 @@ tag_editor_compare_songs(NcmSong *left, NcmSong *right) {
     NcmStringView left_uri;
     NcmStringView right_uri;
 
-    if (!ncm_song_uri_view(left, 0, &left_uri)) {
-        if (!ncm_song_uri_view(right, 0, &right_uri)) {
+    if (!ncm_song_has_uri_view(left, 0, &left_uri)) {
+        if (!ncm_song_has_uri_view(right, 0, &right_uri)) {
             return 0;
         }
         return -1;
     }
-    if (!ncm_song_uri_view(right, 0, &right_uri)) {
+    if (!ncm_song_has_uri_view(right, 0, &right_uri)) {
         return 1;
     }
     return ncm_compare_locale_strings(left_uri.data, left_uri.len,
@@ -3239,7 +3239,7 @@ tag_editor_reload_directories_from_mpd(TagEditorScreen *screen,
             int32 basename_start;
 
             directory = &directories.items[i];
-            if (!ncm_directory_path_view(directory, &path)) {
+            if (!ncm_directory_has_path_view(directory, &path)) {
                 continue;
             }
             basename_start = ncm_string_basename_start(path.data,
@@ -4046,7 +4046,7 @@ tag_editor_number_song_callback(NcmMutableSong *song, void *user) {
                                  buffer, len) < 0) {
         return false;
     }
-    for (int32 i = 1; ncm_mutable_song_get_tag(
+    for (int32 i = 1; ncm_mutable_song_has_tag_view(
         song, NCM_TAGS_FIELD_TRACK, i, &view); i += 1) {
         if (ncm_mutable_song_set_tag(
             song, NCM_TAGS_FIELD_TRACK, i, STRLIT("")) < 0) {
@@ -4070,7 +4070,7 @@ tag_editor_capitalize_song_callback(NcmMutableSong *song, void *user) {
             StrBuilder converted = {0};
             int32 converted_len;
 
-            if (!ncm_mutable_song_get_tag(song, field, i, &view)) {
+            if (!ncm_mutable_song_has_tag_view(song, field, i, &view)) {
                 break;
             }
 
@@ -4106,7 +4106,7 @@ tag_editor_lower_song_callback(NcmMutableSong *song, void *user) {
             NcmStringView view;
             StrBuilder buffer = {0};
 
-            if (!ncm_mutable_song_get_tag(song, field, i, &view)) {
+            if (!ncm_mutable_song_has_tag_view(song, field, i, &view)) {
                 break;
             }
             SB_APPEND(&buffer, view.data, view.len);

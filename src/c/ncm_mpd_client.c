@@ -756,7 +756,7 @@ ncm_mpd_client_add_song_value(NcmMpdClient *client, NcmSong *song,
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing MPD song"));
     }
-    if (!ncm_song_uri_view(song, 0, &uri)) {
+    if (!ncm_song_has_uri_view(song, 0, &uri)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("MPD song has no URI"));
     }
@@ -949,7 +949,7 @@ ncm_mpd_client_add_song_to_playlist(NcmMpdClient *client,
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing MPD song"));
     }
-    if (!ncm_song_uri_view(song, 0, &uri)) {
+    if (!ncm_song_has_uri_view(song, 0, &uri)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("MPD song has no URI"));
     }

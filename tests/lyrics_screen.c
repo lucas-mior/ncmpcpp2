@@ -533,7 +533,7 @@ ncm_song_is_empty(NcmSong *song) {
 }
 
 bool
-ncm_song_tag_view(NcmSong *song, enum mpd_tag_type tag,
+ncm_song_has_tag_view(NcmSong *song, enum mpd_tag_type tag,
                   int32 idx, NcmStringView *view) {
     int32 found;
 
@@ -555,7 +555,7 @@ ncm_song_tag_view(NcmSong *song, enum mpd_tag_type tag,
 }
 
 bool
-ncm_song_uri_view(NcmSong *song, int32 idx, NcmStringView *view) {
+ncm_song_has_uri_view(NcmSong *song, int32 idx, NcmStringView *view) {
     if ((idx != 0) || (song == NULL) || (song->uri_len <= 0)) {
         ncm_string_view_clear(view);
         return false;
@@ -565,7 +565,7 @@ ncm_song_uri_view(NcmSong *song, int32 idx, NcmStringView *view) {
 }
 
 bool
-ncm_song_name_view(NcmSong *song, int32 idx, NcmStringView *view) {
+ncm_song_has_name_view(NcmSong *song, int32 idx, NcmStringView *view) {
     int32 basename_start;
 
     if ((idx != 0) || (song == NULL) || (song->uri_len <= 0)) {

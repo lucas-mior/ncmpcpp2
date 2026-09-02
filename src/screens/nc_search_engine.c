@@ -1813,7 +1813,7 @@ search_song_field_view(NcmSong *song, int32 field,
     ASSERT(song != NULL);
     ASSERT(view != NULL);
     if (field == 5) {
-        return ncm_song_name_view(song, 0, view);
+        return ncm_song_has_name_view(song, 0, view);
     }
 
     switch (field) {
@@ -1847,7 +1847,7 @@ search_song_field_view(NcmSong *song, int32 field,
     default:
         return false;
     }
-    return ncm_song_tag_view(song, tag, 0, view);
+    return ncm_song_has_tag_view(song, tag, 0, view);
 }
 
 static bool

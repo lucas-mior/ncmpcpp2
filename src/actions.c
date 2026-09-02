@@ -2574,18 +2574,18 @@ action_runtime_browser_item_name(NcmMpdItem *item, StrBuilder *name) {
 
     switch (ncm_mpd_item_kind(item)) {
     case NCM_MPD_ITEM_DIRECTORY:
-        if (!ncm_directory_path_view(ncm_mpd_item_directory(item), &view)) {
+        if (!ncm_directory_has_path_view(ncm_mpd_item_directory(item), &view)) {
             return false;
         }
         break;
     case NCM_MPD_ITEM_SONG:
-        if (!ncm_song_name_view(ncm_mpd_item_song(item), 0, &view)
-            && !ncm_song_uri_view(ncm_mpd_item_song(item), 0, &view)) {
+        if (!ncm_song_has_name_view(ncm_mpd_item_song(item), 0, &view)
+            && !ncm_song_has_uri_view(ncm_mpd_item_song(item), 0, &view)) {
             return false;
         }
         break;
     case NCM_MPD_ITEM_PLAYLIST:
-        if (!ncm_playlist_path_view(ncm_mpd_item_playlist(item), &view)) {
+        if (!ncm_playlist_has_path_view(ncm_mpd_item_playlist(item), &view)) {
             return false;
         }
         break;
@@ -4153,7 +4153,7 @@ action_runtime_jump_to_tag_editor(void) {
 
     song = (NcmSong){0};
     if ((success = action_runtime_current_song(&song))) {
-        success = ncm_song_directory_view(&song, 0, &directory)
+        success = ncm_song_has_directory_view(&song, 0, &directory)
                   && (directory.len > 0);
     }
     if (success) {
@@ -4862,7 +4862,7 @@ action_runtime_song_uri_view(NcmSong *song, NcmStringView *uri) {
     ASSERT(uri != NULL);
 
     *uri = (NcmStringView){0};
-    return ncm_song_uri_view(song, 0, uri);
+    return ncm_song_has_uri_view(song, 0, uri);
 }
 
 static bool
@@ -4870,7 +4870,7 @@ action_runtime_song_name_or_uri_view(NcmSong *song, NcmStringView *view) {
     ASSERT(view != NULL);
 
     *view = (NcmStringView){0};
-    if (ncm_song_name_view(song, 0, view)) {
+    if (ncm_song_has_name_view(song, 0, view)) {
         return true;
     }
     return action_runtime_song_uri_view(song, view);
@@ -5155,7 +5155,7 @@ action_runtime_edit_library_album(void) {
         }
         SB_APPEND(&path, Config.mpd_music_dir, Config.mpd_music_dir_len);
         SB_APPEND(&path, uri.data, uri.len);
-        if (ncm_song_directory_view(song, 0, &directory)) {
+        if (ncm_song_has_directory_view(song, 0, &directory)) {
             success = action_runtime_shared_directory_update(
                 &shared_directory, &shared_directory_valid, directory.data,
                 directory.len);
@@ -5431,7 +5431,7 @@ action_runtime_show_artist_info(void) {
             ncm_song_destroy(&song);
             return false;
         }
-        has_artist = ncm_song_tag_view(&song, MPD_TAG_ARTIST, 0, &artist);
+        has_artist = ncm_song_has_tag_view(&song, MPD_TAG_ARTIST, 0, &artist);
     }
 
     if (has_artist && (artist.len > 0)) {

@@ -1179,15 +1179,15 @@ lyrics_title_song_string(NcmSong *song, StrBuilder *title) {
 
     sb_clear(title);
 
-    if (ncm_song_tag_view(song, MPD_TAG_ARTIST, 0, &artist_view)
-        && ncm_song_tag_view(song, MPD_TAG_TITLE, 0, &title_view)) {
+    if (ncm_song_has_tag_view(song, MPD_TAG_ARTIST, 0, &artist_view)
+        && ncm_song_has_tag_view(song, MPD_TAG_TITLE, 0, &title_view)) {
         SB_APPEND(title, artist_view.data, artist_view.len);
         SB_APPEND(title, " - ");
         SB_APPEND(title, title_view.data, title_view.len);
         return;
     }
 
-    if (ncm_song_name_view(song, 0, &name_view)) {
+    if (ncm_song_has_name_view(song, 0, &name_view)) {
         SB_APPEND(title, name_view.data, name_view.len);
     }
     return;
@@ -1208,16 +1208,16 @@ lyrics_song_artist_title(NcmSong *song,
     sb_clear(artist);
     sb_clear(title);
 
-    if (ncm_song_tag_view(song, MPD_TAG_ARTIST, 0, &artist_view)
-        && ncm_song_tag_view(song, MPD_TAG_TITLE, 0, &title_view)) {
+    if (ncm_song_has_tag_view(song, MPD_TAG_ARTIST, 0, &artist_view)
+        && ncm_song_has_tag_view(song, MPD_TAG_TITLE, 0, &title_view)) {
         SB_APPEND(artist, artist_view.data, artist_view.len);
         SB_APPEND(title, title_view.data, title_view.len);
         return true;
     }
 
-    if (ncm_song_name_view(song, 0, &name_view)) {
+    if (ncm_song_has_name_view(song, 0, &name_view)) {
         SB_APPEND(&fallback, name_view.data, name_view.len);
-    } else if (ncm_song_uri_view(song, 0, &name_view)) {
+    } else if (ncm_song_has_uri_view(song, 0, &name_view)) {
         SB_APPEND(&fallback, name_view.data, name_view.len);
     }
 
@@ -1432,7 +1432,7 @@ lyrics_filename_from_song_with_extension(
             SB_APPEND(filename, music_dir, music_dir_len);
             sb_append_byte_if_not(filename, '/');
         }
-        if (ncm_song_uri_view(song, 0, &uri)) {
+        if (ncm_song_has_uri_view(song, 0, &uri)) {
             SB_APPEND(filename, uri.data, uri.len);
         }
         lyrics_remove_extension(filename);

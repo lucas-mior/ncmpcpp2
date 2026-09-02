@@ -1261,7 +1261,7 @@ playlist_build_mutable_song(
     for (uint32 i = 0; i < NCM_TAGS_FIELD_COUNT; i += 1) {
         type = ncm_tags_field_to_tag_type(i);
         for (int32 j = 0; ; j += 1) {
-            if (!ncm_mutable_song_get_tag(edited, i, j, &value)) {
+            if (!ncm_mutable_song_has_tag_view(edited, i, j, &value)) {
                 break;
             }
             if (value.len <= 0) {
@@ -1296,7 +1296,7 @@ playlist_set_mutable_uri(NcmSong *song, NcmMutableSong *edited) {
     StrBuilder uri = {0};
     int32 status;
 
-    if (!ncm_mutable_song_get_new_name(edited, &new_name)) {
+    if (!ncm_mutable_song_has_new_name_view(edited, &new_name)) {
         return ncm_song_set_uri(song, edited->uri, edited->uri_len) == 0;
     }
 
