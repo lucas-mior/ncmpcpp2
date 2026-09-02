@@ -2235,13 +2235,15 @@ append_playlist_content_from_mpd(NcmPlaylist *playlist,
 
 static bool
 append_song_list_content(NcmMpdSongList *list, NcmSongArray *songs) {
+    int32 err;
+
     ASSERT(list != NULL);
 
     if (songs == NULL) {
         return false;
     }
     for (int32 i = 0; i < list->count; i += 1) {
-        if (!ncm_song_array_append_copy(songs, &list->items[i])) {
+        if ((err = ncm_song_array_append_copy(songs, &list->items[i])) < 0) {
             return false;
         }
     }
@@ -2272,7 +2274,7 @@ append_content_item_from_source(PlaylistEditorScreen *screen,
                                  source, pos)) == NULL) {
         return false;
     }
-    return ncm_song_array_append_copy(songs, song);
+    return ncm_song_array_append_copy(songs, song) >= 0;
 }
 
 static bool

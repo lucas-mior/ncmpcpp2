@@ -559,30 +559,31 @@ search_engine_screen_reset(SearchEngineScreen *screen) {
     return;
 }
 
-bool
+int32
 search_engine_screen_add_song_copy(SearchEngineScreen *screen,
                                    NcmSong *song) {
     return search_engine_screen_add_song_copy_with_flags(
         screen, song, NC_MENU_ITEM_SELECTABLE);
 }
 
-bool
+int32
 search_engine_screen_add_song_copy_with_flags(SearchEngineScreen *screen,
                                               NcmSong *song, uint32 flags) {
     NcSearchRow row;
+    int32 err;
 
     if ((screen == NULL) || (song == NULL)) {
-        return false;
+        return -EINVAL;
     }
     row = (NcSearchRow){0};
     row.is_song = true;
-    if (ncm_song_copy(&row.song, song) < 0) {
+    if ((err = ncm_song_copy(&row.song, song)) < 0) {
         nc_search_row_destroy(&row);
-        return false;
+        return err;
     }
     nc_search_row_menu_add_with_flags(&screen->rows, &row, flags);
     nc_search_row_destroy(&row);
-    return true;
+    return 0;
 }
 
 bool
@@ -1575,6 +1576,7 @@ search_collect_database_results(SearchEngineScreen *screen,
                                 NcmMpdClient *client,
                                 NcmSongArray *songs, NcmError *ncm_error) {
     NcmMpdSongList result;
+    int32 err;
     bool ok;
     bool exact_match;
 
@@ -1595,9 +1597,10 @@ search_collect_database_results(SearchEngineScreen *screen,
             client, &result, ncm_error);
     }
     if (ok) {
-        if (!(ok = ncm_mpd_song_list_to_song_array(&result, songs))) {
-            ncm_error_set(ncm_error, EIO,
-                          STRLIT("failed to copy search results"));
+        if ((err = ncm_mpd_song_list_to_song_array(&result, songs)) < 0) {
+            ncm_error_set_status(ncm_error, err,
+                                 STRLIT("failed to copy search results"));
+            ok = false;
         }
     }
     ncm_mpd_song_list_destroy(&result);
@@ -1677,6 +1680,7 @@ search_collect_local_results(SearchEngineScreen *screen, NcmSongArray *source,
                              NcmSongArray *songs, NcmError *ncm_error) {
     NcmRegex regexes[SEARCH_ENGINE_CONSTRAINT_COUNT];
     NcmError regex_error;
+    int32 err;
     bool ok;
     bool exact_match;
 
@@ -1711,9 +1715,10 @@ search_collect_local_results(SearchEngineScreen *screen, NcmSongArray *source,
             screen, &source->items[i], regexes)) {
             continue;
         }
-        if (!ncm_song_array_append_copy(songs, &source->items[i])) {
-            ncm_error_set(ncm_error, EIO,
-                          STRLIT("failed to copy matching song"));
+        if ((err = ncm_song_array_append_copy(
+                 songs, &source->items[i])) < 0) {
+            ncm_error_set_status(ncm_error, err,
+                                 STRLIT("failed to copy matching song"));
             ok = false;
             break;
         }
@@ -1853,7 +1858,7 @@ search_append_result_rows(SearchEngineScreen *screen, NcmSongArray *songs) {
     }
 
     for (int32 i = 0; i < songs->len; i += 1) {
-        if (!search_engine_screen_add_song_copy(screen, &songs->items[i])) {
+        if (search_engine_screen_add_song_copy(screen, &songs->items[i]) < 0) {
             return false;
         }
     }
@@ -1886,7 +1891,7 @@ search_copy_song_at(SearchEngineScreen *screen,
     if ((row == NULL) || !row->is_song) {
         return true;
     }
-    return ncm_song_array_append_copy(songs, &row->song);
+    return ncm_song_array_append_copy(songs, &row->song) >= 0;
 }
 
 #endif /* NCMPCPP_NC_SEARCH_ENGINE_C */

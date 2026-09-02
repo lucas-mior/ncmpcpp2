@@ -1249,6 +1249,7 @@ ncm_mpd_client_get_directory_entries(NcmMpdClient *client, char *path,
                                      NcmMpdItemArray *items,
                                      NcmError *ncm_error) {
     NcmMpdItemList list;
+    int32 err;
     bool ok;
 
     if (items == NULL) {
@@ -1258,7 +1259,11 @@ ncm_mpd_client_get_directory_entries(NcmMpdClient *client, char *path,
 
     list = (NcmMpdItemList){0};
     if ((ok = ncm_mpd_client_get_directory(client, path, &list, ncm_error))) {
-        ok = ncm_mpd_item_list_to_item_array(&list, items);
+        if ((err = ncm_mpd_item_list_to_item_array(&list, items)) < 0) {
+            ncm_error_set_status(ncm_error, err,
+                                 STRLIT("cannot copy MPD items"));
+            ok = false;
+        }
     }
     ncm_mpd_item_list_destroy(&list);
     return ok;
@@ -1269,6 +1274,7 @@ ncm_mpd_client_get_directory_list(NcmMpdClient *client, char *path,
                                   NcmDirectoryArray *directories,
                                   NcmError *ncm_error) {
     NcmMpdItemList items;
+    int32 err;
     bool ok;
 
     if (directories == NULL) {
@@ -1278,7 +1284,12 @@ ncm_mpd_client_get_directory_list(NcmMpdClient *client, char *path,
 
     items = (NcmMpdItemList){0};
     if ((ok = ncm_mpd_client_get_directory(client, path, &items, ncm_error))) {
-        ok = ncm_mpd_item_list_to_directory_array(&items, directories);
+        if ((err = ncm_mpd_item_list_to_directory_array(
+                 &items, directories)) < 0) {
+            ncm_error_set_status(ncm_error, err,
+                                 STRLIT("cannot copy MPD directories"));
+            ok = false;
+        }
     }
     ncm_mpd_item_list_destroy(&items);
     return ok;

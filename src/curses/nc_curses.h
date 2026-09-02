@@ -793,30 +793,30 @@ NC_TYPED_MENU_DECLARE_ITEM_AT(NcEditorBufferMenu,
 #undef NC_TYPED_MENU_DECLARE_COMMON
 
 void nc_menu_string_destroy(NcMenuString *string);
-bool nc_menu_string_copy(NcMenuString *dest, NcMenuString *source);
-bool nc_menu_string_set(NcMenuString *string, char *data, int32 data_len);
+int32 nc_menu_string_copy(NcMenuString *dest, NcMenuString *source);
+int32 nc_menu_string_set(NcMenuString *string, char *data, int32 data_len);
 
 void nc_menu_string_pair_destroy(NcMenuStringPair *pair);
-bool nc_menu_string_pair_copy(NcMenuStringPair *dest,
-                              NcMenuStringPair *source);
+int32 nc_menu_string_pair_copy(
+    NcMenuStringPair *dest, NcMenuStringPair *source);
 
 void nc_search_row_destroy(NcSearchRow *row);
-bool nc_search_row_copy(NcSearchRow *dest, NcSearchRow *source);
+int32 nc_search_row_copy(NcSearchRow *dest, NcSearchRow *source);
 
 void nc_media_library_tag_row_destroy(NcMediaLibraryTagRow *row);
-bool nc_media_library_tag_row_copy(NcMediaLibraryTagRow *dest,
-                                   NcMediaLibraryTagRow *source);
+int32 nc_media_library_tag_row_copy(
+    NcMediaLibraryTagRow *dest, NcMediaLibraryTagRow *source);
 
 void nc_media_library_album_row_destroy(NcMediaLibraryAlbumRow *row);
-bool nc_media_library_album_row_copy(NcMediaLibraryAlbumRow *dest,
-                                     NcMediaLibraryAlbumRow *source);
+int32 nc_media_library_album_row_copy(
+    NcMediaLibraryAlbumRow *dest, NcMediaLibraryAlbumRow *source);
 
 void nc_editor_action_row_destroy(NcEditorActionRow *row);
-bool nc_editor_action_row_copy(NcEditorActionRow *dest,
-                               NcEditorActionRow *source);
+int32 nc_editor_action_row_copy(
+    NcEditorActionRow *dest, NcEditorActionRow *source);
 
 void nc_editor_sort_row_destroy(NcEditorSortRow *row);
-bool nc_editor_sort_row_copy(NcEditorSortRow *dest,
-                             NcEditorSortRow *source);
+int32 nc_editor_sort_row_copy(
+    NcEditorSortRow *dest, NcEditorSortRow *source);
 
 #endif /* NCMPCPP_NC_CURSES_H */

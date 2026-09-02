@@ -91,20 +91,27 @@ column_array_destroy(ColumnArray *array) {
     return;
 }
 
-static bool
+static int32
 column_array_reserve(ColumnArray *array, int32 extra) {
-    int32 needed;
+    int64 needed;
     int32 old_cap;
     int32 new_cap;
 
     ASSERT(array != NULL);
-    if (extra <= 0) {
-        return true;
+    if (extra < 0) {
+        return -EINVAL;
+    }
+    if (extra == 0) {
+        return array->cap;
     }
 
-    needed = array->len + extra;
+    needed = (int64)array->len + extra;
     if (needed <= array->cap) {
-        return true;
+        return array->cap;
+    }
+    if (needed >= MAXOF(array->cap)) {
+        error("Array only supports fewer than 2GB items.\n");
+        fatal(EXIT_FAILURE);
     }
 
     old_cap = array->cap;
@@ -112,14 +119,18 @@ column_array_reserve(ColumnArray *array, int32 extra) {
     if (new_cap <= 0) {
         new_cap = 8;
     }
-    while (new_cap < needed) {
-        new_cap *= 2;
+    if (needed >= MAXOF(new_cap)/2) {
+        new_cap = (int32)needed;
+    } else {
+        while (new_cap < needed) {
+            new_cap *= 2;
+        }
     }
 
     array->items
         = realloc2(array->items, old_cap, new_cap, SIZEOF(*array->items));
     array->cap = new_cap;
-    return true;
+    return array->cap;
 }
 
 Column *
@@ -129,7 +140,7 @@ column_array_append(ColumnArray *array) {
     if (array == NULL) {
         return NULL;
     }
-    if (!column_array_reserve(array, 1)) {
+    if (column_array_reserve(array, 1) < 0) {
         return NULL;
     }
 
@@ -158,20 +169,27 @@ screen_type_array_destroy(ScreenTypeArray *array) {
     return;
 }
 
-static bool
+static int32
 screen_type_array_reserve(ScreenTypeArray *array, int32 extra) {
-    int32 needed;
+    int64 needed;
     int32 old_cap;
     int32 new_cap;
 
     ASSERT(array != NULL);
-    if (extra <= 0) {
-        return true;
+    if (extra < 0) {
+        return -EINVAL;
+    }
+    if (extra == 0) {
+        return array->cap;
     }
 
-    needed = array->len + extra;
+    needed = (int64)array->len + extra;
     if (needed <= array->cap) {
-        return true;
+        return array->cap;
+    }
+    if (needed >= MAXOF(array->cap)) {
+        error("Array only supports fewer than 2GB items.\n");
+        fatal(EXIT_FAILURE);
     }
 
     old_cap = array->cap;
@@ -179,14 +197,18 @@ screen_type_array_reserve(ScreenTypeArray *array, int32 extra) {
     if (new_cap <= 0) {
         new_cap = 8;
     }
-    while (new_cap < needed) {
-        new_cap *= 2;
+    if (needed >= MAXOF(new_cap)/2) {
+        new_cap = (int32)needed;
+    } else {
+        while (new_cap < needed) {
+            new_cap *= 2;
+        }
     }
 
     array->items
         = realloc2(array->items, old_cap, new_cap, SIZEOF(*array->items));
     array->cap = new_cap;
-    return true;
+    return array->cap;
 }
 
 enum ScreenType *
@@ -196,7 +218,7 @@ screen_type_array_append(ScreenTypeArray *array) {
     if (array == NULL) {
         return NULL;
     }
-    if (!screen_type_array_reserve(array, 1)) {
+    if (screen_type_array_reserve(array, 1) < 0) {
         return NULL;
     }
     screen_type = &array->items[array->len];

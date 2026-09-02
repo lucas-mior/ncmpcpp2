@@ -1363,6 +1363,7 @@ media_library_songs_from_list(
     NcmSongArray *songs, NcmMpdSongList *source
 ) {
     NcmSongArray replacement;
+    int32 err;
 
     if ((songs == NULL) || (source == NULL)) {
         return false;
@@ -1372,8 +1373,11 @@ media_library_songs_from_list(
     for (int32 i = 0; i < ncm_mpd_song_list_count(source); i += 1) {
         NcmSong *song;
 
-        if (((song = ncm_mpd_song_list_at(source, i)) == NULL)
-            || !ncm_song_array_append_copy(&replacement, song)) {
+        if ((song = ncm_mpd_song_list_at(source, i)) == NULL) {
+            ncm_song_array_destroy(&replacement);
+            return false;
+        }
+        if ((err = ncm_song_array_append_copy(&replacement, song)) < 0) {
             ncm_song_array_destroy(&replacement);
             return false;
         }
@@ -2089,7 +2093,8 @@ library_replace_tags(MediaLibraryScreen *screen,
     identity_valid = false;
     identity = (NcMediaLibraryTagRow){0};
     if (current) {
-        identity_valid = nc_media_library_tag_row_copy(&identity, current);
+        identity_valid = nc_media_library_tag_row_copy(
+            &identity, current) >= 0;
         library_set_observed_tag(screen, current);
     } else {
         library_set_observed_tag(screen, NULL);
@@ -2133,7 +2138,8 @@ library_replace_albums(MediaLibraryScreen *screen,
     identity_valid = false;
     identity = (NcMediaLibraryAlbumRow){0};
     if (current) {
-        identity_valid = nc_media_library_album_row_copy(&identity, current);
+        identity_valid = nc_media_library_album_row_copy(
+            &identity, current) >= 0;
         library_set_observed_album(screen, current);
     } else {
         library_set_observed_album(screen, NULL);
@@ -2346,7 +2352,7 @@ library_set_observed_tag(MediaLibraryScreen *screen,
     screen->observed_tag_valid = false;
     if (tag) {
         screen->observed_tag_valid = nc_media_library_tag_row_copy(
-            &screen->observed_tag, tag);
+            &screen->observed_tag, tag) >= 0;
     }
     return;
 }
@@ -2359,7 +2365,7 @@ library_set_observed_album(MediaLibraryScreen *screen,
     screen->observed_album_valid = false;
     if (album) {
         screen->observed_album_valid = nc_media_library_album_row_copy(
-            &screen->observed_album, album);
+            &screen->observed_album, album) >= 0;
     }
     return;
 }
@@ -3518,7 +3524,7 @@ library_copy_song_at(MediaLibraryScreen *screen,
         == NULL) {
         return true;
     }
-    return ncm_song_array_append_copy(songs, song);
+    return ncm_song_array_append_copy(songs, song) >= 0;
 }
 
 static NcMenu *
@@ -3616,6 +3622,7 @@ library_append_query_songs(
 ) {
     NcmMpdSongList source;
     NcmSongArray sorted;
+    int32 err;
     bool result;
 
     source = (NcmMpdSongList){0};
@@ -3631,10 +3638,11 @@ library_append_query_songs(
     }
     if (result) {
         for (int32 i = 0; i < sorted.len; i += 1) {
-            result = ncm_song_array_append_copy(songs, &sorted.items[i]);
-            if (!result) {
-                library_set_conversion_error(
-                    ncm_error, STRLIT("failed to copy selected songs"));
+            if ((err = ncm_song_array_append_copy(
+                     songs, &sorted.items[i])) < 0) {
+                ncm_error_set_status(ncm_error, err,
+                                     STRLIT("failed to copy selected songs"));
+                result = false;
                 break;
             }
         }
@@ -4223,6 +4231,7 @@ library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
     NcmMpdClient *client;
     NcmMpdSongList additions;
     int32 play_pos;
+    int32 err;
     bool result;
 
     client = user;
@@ -4232,10 +4241,10 @@ library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
     additions = (NcmMpdSongList){0};
     result = true;
     for (int32 i = 0; i < songs->len; i += 1) {
-        if (!ncm_mpd_song_list_append_copy(&additions,
-                                           &songs->items[i])) {
-            ncm_error_set(ncm_error, ENOMEM,
-                          STRLIT("cannot copy songs for MPD"));
+        if ((err = ncm_mpd_song_list_append_copy(
+                 &additions, &songs->items[i])) < 0) {
+            ncm_error_set_status(ncm_error, err,
+                                 STRLIT("cannot copy songs for MPD"));
             result = false;
             break;
         }

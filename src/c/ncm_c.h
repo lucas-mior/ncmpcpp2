@@ -390,7 +390,7 @@ NcmPlaylist *ncm_mpd_item_playlist(NcmMpdItem *item);
 /* c/ncm_array.h */
 typedef void NcmArrayItemInitCallback(void *item);
 typedef void NcmArrayItemDestroyCallback(void *item);
-typedef bool NcmArrayItemCopyCallback(void *dest, void *source);
+typedef int32 NcmArrayItemCopyCallback(void *dest, void *source);
 typedef void NcmArrayItemMoveCallback(void *dest, void *source);
 
 typedef struct NcmArrayItemCallbacks {
@@ -414,7 +414,7 @@ typedef struct NcmArrayItemCallbacks {
     void PREFIX##_destroy(ARRAY_TYPE *array);
 
 #define NCM_ARRAY_DECLARE_COPY(PREFIX, ARRAY_TYPE) \
-    bool PREFIX##_copy(ARRAY_TYPE *dest, ARRAY_TYPE *source);
+    int32 PREFIX##_copy(ARRAY_TYPE *dest, ARRAY_TYPE *source);
 
 #define NCM_ARRAY_DECLARE_MOVE(PREFIX, ARRAY_TYPE) \
     void PREFIX##_move(ARRAY_TYPE *dest, ARRAY_TYPE *source);
@@ -423,13 +423,13 @@ typedef struct NcmArrayItemCallbacks {
     void PREFIX##_swap(ARRAY_TYPE *left, ARRAY_TYPE *right);
 
 #define NCM_ARRAY_DECLARE_RESERVE(PREFIX, ARRAY_TYPE) \
-    bool PREFIX##_reserve(ARRAY_TYPE *array, int32 extra);
+    int32 PREFIX##_reserve(ARRAY_TYPE *array, int32 extra);
 
 #define NCM_ARRAY_DECLARE_APPEND(PREFIX, ARRAY_TYPE, ITEM_TYPE) \
     ITEM_TYPE *PREFIX##_append(ARRAY_TYPE *array);
 
 #define NCM_ARRAY_DECLARE_APPEND_COPY(PREFIX, ARRAY_TYPE, ITEM_TYPE) \
-    bool PREFIX##_append_copy(ARRAY_TYPE *array, ITEM_TYPE *item);
+    int32 PREFIX##_append_copy(ARRAY_TYPE *array, ITEM_TYPE *item);
 
 #define NCM_ARRAY_DECLARE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE) \
     void PREFIX##_append_move(ARRAY_TYPE *array, ITEM_TYPE *item);
@@ -471,35 +471,37 @@ typedef struct NcmArrayItemCallbacks {
     }
 
 #define NCM_ARRAY_DEFINE_COPY(PREFIX, ARRAY_TYPE)                 \
-    bool                                                          \
+    int32                                                         \
     PREFIX##_copy(ARRAY_TYPE *dest, ARRAY_TYPE *source) {         \
         ARRAY_TYPE replacement;                                   \
+        int32 err;                                                \
                                                                   \
         if (dest == NULL) {                                       \
-            return false;                                         \
+            return -EINVAL;                                       \
         }                                                         \
         if (dest == source) {                                     \
-            return true;                                          \
+            return dest->len;                                     \
         }                                                         \
                                                                   \
-        replacement = (ARRAY_TYPE){0};                           \
+        replacement = (ARRAY_TYPE){0};                            \
         if (source) {                                             \
-            if (!PREFIX##_reserve(&replacement, source->len)) {   \
+            if ((err = PREFIX##_reserve(                          \
+                     &replacement, source->len)) < 0) {           \
                 PREFIX##_destroy(&replacement);                   \
-                return false;                                     \
+                return err;                                       \
             }                                                     \
-            for (int32 i = 0; i < source->len; i += 1) {         \
-                if (!PREFIX##_append_copy(&replacement,           \
-                                          &source->items[i])) {   \
+            for (int32 i = 0; i < source->len; i += 1) {          \
+                if ((err = PREFIX##_append_copy(                  \
+                         &replacement, &source->items[i])) < 0) { \
                     PREFIX##_destroy(&replacement);               \
-                    return false;                                 \
+                    return err;                                   \
                 }                                                 \
             }                                                     \
         }                                                         \
                                                                   \
         PREFIX##_destroy(dest);                                   \
         *dest = replacement;                                      \
-        return true;                                              \
+        return dest->len;                                         \
     }
 
 #define NCM_ARRAY_DEFINE_MOVE(PREFIX, ARRAY_TYPE)          \
@@ -540,22 +542,29 @@ typedef struct NcmArrayItemCallbacks {
     }
 
 #define NCM_ARRAY_DEFINE_RESERVE(PREFIX, ARRAY_TYPE)                  \
-    bool                                                              \
+    int32                                                             \
     PREFIX##_reserve(ARRAY_TYPE *array, int32 extra) {                \
-        int32 needed;                                                 \
+        int64 needed;                                                 \
         int32 old_cap;                                                \
         int32 new_cap;                                                \
                                                                       \
         if (array == NULL) {                                          \
-            return false;                                             \
+            return -EINVAL;                                           \
         }                                                             \
-        if (extra <= 0) {                                             \
-            return true;                                              \
+        if (extra < 0) {                                              \
+            return -EINVAL;                                           \
+        }                                                             \
+        if (extra == 0) {                                             \
+            return array->cap;                                        \
         }                                                             \
                                                                       \
-        needed = array->len + extra;                                  \
+        needed = (int64)array->len + extra;                           \
         if (needed <= array->cap) {                                   \
-            return true;                                              \
+            return array->cap;                                        \
+        }                                                             \
+        if (needed >= MAXOF(array->cap)) {                            \
+            error("Array only supports fewer than 2GB items.\n");    \
+            fatal(EXIT_FAILURE);                                      \
         }                                                             \
                                                                       \
         old_cap = array->cap;                                         \
@@ -563,14 +572,18 @@ typedef struct NcmArrayItemCallbacks {
         if (new_cap <= 0) {                                           \
             new_cap = 8;                                              \
         }                                                             \
-        while (new_cap < needed) {                                    \
-            new_cap *= 2;                                             \
+        if (needed >= (MAXOF(new_cap)/2)) {                           \
+            new_cap = (int32)needed;                                  \
+        } else {                                                      \
+            while (new_cap < needed) {                                \
+                new_cap *= 2;                                         \
+            }                                                         \
         }                                                             \
                                                                       \
         array->items = realloc2(                                      \
-            array->items, old_cap, new_cap, SIZEOF(*array->items));    \
+            array->items, old_cap, new_cap, SIZEOF(*array->items));   \
         array->cap = new_cap;                                         \
-        return true;                                                  \
+        return array->cap;                                            \
     }
 
 #define NCM_ARRAY_DEFINE_APPEND(PREFIX, ARRAY_TYPE, ITEM_TYPE,       \
@@ -580,7 +593,7 @@ typedef struct NcmArrayItemCallbacks {
         ITEM_TYPE *item;                                            \
         NcmArrayItemCallbacks *callbacks;                           \
                                                                     \
-        if (!PREFIX##_reserve(array, 1)) {                          \
+        if (PREFIX##_reserve(array, 1) < 0) {                       \
             return NULL;                                            \
         }                                                           \
         callbacks = CALLBACKS;                                      \
@@ -599,31 +612,40 @@ typedef struct NcmArrayItemCallbacks {
 
 #define NCM_ARRAY_DEFINE_APPEND_COPY(PREFIX, ARRAY_TYPE, ITEM_TYPE,  \
                                      CALLBACKS)                      \
-    bool                                                             \
+    int32                                                            \
     PREFIX##_append_copy(ARRAY_TYPE *array, ITEM_TYPE *item) {       \
         ITEM_TYPE *dest;                                             \
         NcmArrayItemCallbacks *callbacks;                            \
+        int32 err;                                                   \
+        int32 index;                                                 \
                                                                      \
-        if (item == NULL) {                                          \
-            return false;                                            \
+        if ((array == NULL) || (item == NULL)) {                     \
+            return -EINVAL;                                          \
         }                                                            \
-        dest = PREFIX##_append(array);                               \
-        if (dest == NULL) {                                          \
-            return false;                                            \
+        if ((err = PREFIX##_reserve(array, 1)) < 0) {                \
+            return err;                                              \
         }                                                            \
+        index = array->len;                                          \
+        dest = &array->items[index];                                 \
+        array->len += 1;                                             \
         callbacks = CALLBACKS;                                       \
+        if (callbacks && callbacks->init) {                          \
+            callbacks->init(dest);                                   \
+        } else {                                                     \
+            *dest = (ITEM_TYPE){0};                                  \
+        }                                                            \
         if (callbacks && callbacks->copy) {                          \
-            if (!callbacks->copy(dest, item)) {                      \
+            if ((err = callbacks->copy(dest, item)) < 0) {           \
                 array->len -= 1;                                     \
                 if (callbacks->destroy) {                            \
                     callbacks->destroy(dest);                        \
                 }                                                    \
-                return false;                                        \
+                return err;                                          \
             }                                                        \
         } else {                                                     \
             *dest = *item;                                           \
         }                                                            \
-        return true;                                                 \
+        return index;                                                \
     }
 
 #define NCM_ARRAY_DEFINE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE,  \
@@ -990,17 +1012,17 @@ void ncm_mpd_song_list_destroy(NcmMpdSongList *list);
 void ncm_mpd_song_list_clear(NcmMpdSongList *list);
 int32 ncm_mpd_song_list_count(NcmMpdSongList *list);
 NcmSong *ncm_mpd_song_list_at(NcmMpdSongList *list, int32 idx);
-bool ncm_mpd_song_list_append_copy(NcmMpdSongList *list,
-                                   NcmSong *song);
-bool ncm_mpd_song_list_to_song_array(NcmMpdSongList *list,
-                                     NcmSongArray *songs);
+int32 ncm_mpd_song_list_append_copy(
+    NcmMpdSongList *list, NcmSong *song);
+int32 ncm_mpd_song_list_to_song_array(
+    NcmMpdSongList *list, NcmSongArray *songs);
 
 void ncm_mpd_item_list_destroy(NcmMpdItemList *list);
 void ncm_mpd_item_list_clear(NcmMpdItemList *list);
-bool ncm_mpd_item_list_to_item_array(NcmMpdItemList *list,
-                                     NcmMpdItemArray *items);
-bool ncm_mpd_item_list_to_directory_array(NcmMpdItemList *list,
-                                          NcmDirectoryArray *directories);
+int32 ncm_mpd_item_list_to_item_array(
+    NcmMpdItemList *list, NcmMpdItemArray *items);
+int32 ncm_mpd_item_list_to_directory_array(
+    NcmMpdItemList *list, NcmDirectoryArray *directories);
 
 void ncm_mpd_string_list_destroy(NcmMpdStringList *list);
 void ncm_mpd_string_list_clear(NcmMpdStringList *list);

@@ -6,15 +6,15 @@
 #include "c/ncm_c.h"
 
 static void ncm_app_array_song_destroy(void *item);
-static bool ncm_app_array_song_copy(void *dest, void *source);
+static int32 ncm_app_array_song_copy(void *dest, void *source);
 static void ncm_app_array_song_move(void *dest, void *source);
 static void ncm_app_array_directory_destroy(void *item);
-static bool ncm_app_array_directory_copy(void *dest, void *source);
+static int32 ncm_app_array_directory_copy(void *dest, void *source);
 static void ncm_app_array_playlist_destroy(void *item);
-static bool ncm_app_array_playlist_copy(void *dest, void *source);
+static int32 ncm_app_array_playlist_copy(void *dest, void *source);
 static void ncm_app_array_mpd_item_init(void *item);
 static void ncm_app_array_mpd_item_destroy(void *item);
-static bool ncm_app_array_mpd_item_copy(void *dest, void *source);
+static int32 ncm_app_array_mpd_item_copy(void *dest, void *source);
 
 static NcmArrayItemCallbacks ncm_app_array_no_callbacks = {0};
 static NcmArrayItemCallbacks ncm_app_array_song_callbacks = {
@@ -42,9 +42,9 @@ ncm_app_array_song_destroy(void *item) {
     return;
 }
 
-static bool
+static int32
 ncm_app_array_song_copy(void *dest, void *source) {
-    return ncm_song_copy(dest, source) == 0;
+    return ncm_song_copy(dest, source);
 }
 
 static void
@@ -59,9 +59,9 @@ ncm_app_array_directory_destroy(void *item) {
     return;
 }
 
-static bool
+static int32
 ncm_app_array_directory_copy(void *dest, void *source) {
-    return ncm_directory_copy(dest, source) == 0;
+    return ncm_directory_copy(dest, source);
 }
 
 static void
@@ -70,9 +70,9 @@ ncm_app_array_playlist_destroy(void *item) {
     return;
 }
 
-static bool
+static int32
 ncm_app_array_playlist_copy(void *dest, void *source) {
-    return ncm_playlist_copy(dest, source) == 0;
+    return ncm_playlist_copy(dest, source);
 }
 
 static void
@@ -87,9 +87,9 @@ ncm_app_array_mpd_item_destroy(void *item) {
     return;
 }
 
-static bool
+static int32
 ncm_app_array_mpd_item_copy(void *dest, void *source) {
-    return ncm_mpd_item_copy(dest, source) == 0;
+    return ncm_mpd_item_copy(dest, source);
 }
 
 NCM_ARRAY_DEFINE_CLEAR(ncm_string_view_array,

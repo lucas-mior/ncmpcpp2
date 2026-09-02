@@ -3269,6 +3269,7 @@ tag_editor_reload_songs_from_mpd(TagEditorScreen *screen,
     StrBuilder preserved_uri = {0};
     char *path;
     int32 path_len;
+    int32 err;
     bool ok;
 
     if (screen == NULL) {
@@ -3284,7 +3285,11 @@ tag_editor_reload_songs_from_mpd(TagEditorScreen *screen,
     tag_editor_preserve_current_song(screen, &preserved_uri);
 
     if ((ok = ncm_mpd_client_get_songs(client, path, &list, ncm_error))) {
-        ok = ncm_mpd_song_list_to_song_array(&list, &songs);
+        if ((err = ncm_mpd_song_list_to_song_array(&list, &songs)) < 0) {
+            ncm_error_set_status(ncm_error, err,
+                                 STRLIT("failed to copy directory songs"));
+            ok = false;
+        }
     }
     if (ok) {
         tag_editor_sort_songs(&songs);
@@ -3521,7 +3526,8 @@ tag_editor_append_string_row(NcEditorStringMenu *menu, char *data,
         return false;
     }
     string = (NcMenuString){0};
-    if ((ok = nc_menu_string_set(&string, data, data_len))) {
+    ok = nc_menu_string_set(&string, data, data_len) >= 0;
+    if (ok) {
         nc_editor_string_menu_add_with_flags(menu, &string, flags);
     }
     nc_menu_string_destroy(&string);
@@ -4454,7 +4460,8 @@ tag_editor_append_parser_row(NcEditorStringMenu *menu, char *data,
     ASSERT(menu != NULL);
 
     string = (NcMenuString){0};
-    if ((ok = nc_menu_string_set(&string, data, data_len))) {
+    ok = nc_menu_string_set(&string, data, data_len) >= 0;
+    if (ok) {
         nc_editor_string_menu_add_with_flags(menu, &string, flags);
     }
     nc_menu_string_destroy(&string);
