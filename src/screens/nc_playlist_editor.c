@@ -1888,13 +1888,16 @@ playlist_editor_observe_current_playlist(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return;
     }
+
     menu = nc_playlist_entry_menu_base(&screen->playlists);
     screen->last_playlist_highlight = nc_menu_highlight(menu);
+
     if (!playlist_editor_current_playlist_path(screen, &path, &path_len)) {
         sb_clear(&screen->observed_playlist_path);
         screen->observed_playlist_valid = false;
         return;
     }
+
     sb_set(&screen->observed_playlist_path, path, path_len);
     screen->observed_playlist_valid = true;
     return;
