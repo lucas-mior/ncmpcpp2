@@ -21,10 +21,33 @@ typedef struct NcmError {
     int32 code;
 } NcmError;
 
+/*
+ * Project-local error codes are positive. Fallible functions return their
+ * negative value as status, leaving non-negative values for success payloads.
+ */
+enum NcmErrorCode {
+    NCM_ERROR_OK = 0,
+    NCM_ERROR_PROJECT_BASE = 4096,
+    NCM_ERROR_INVALID_STATE = NCM_ERROR_PROJECT_BASE,
+    NCM_ERROR_NOT_FOUND,
+    NCM_ERROR_UNAVAILABLE,
+    NCM_ERROR_CANCELLED,
+    NCM_ERROR_PARSE,
+    NCM_ERROR_MPD,
+    NCM_ERROR_TAGLIB,
+    NCM_ERROR_NETWORK,
+    NCM_ERROR_EXTERNAL_COMMAND,
+};
+
 void ncm_error_clear(NcmError *ncm_error);
 void ncm_error_set(NcmError *ncm_error, int32 code,
                    char *message, int32 message_len);
 bool ncm_error_is_set(NcmError *ncm_error);
+int32 ncm_status_from_error_code(int32 code);
+int32 ncm_error_status(NcmError *ncm_error);
+int32 ncm_error_set_status(NcmError *ncm_error, int32 status,
+                           char *message, int32 message_len);
+int32 ncm_error_ok(NcmError *ncm_error);
 
 /* c/ncm_tags.h */
 #include <mpd/tag.h>

@@ -9,9 +9,6 @@
 #include "screens/nc_screens.h"
 #include "ui_state.h"
 
-#define NCM_BINDINGS_ERROR_PARSE 1
-#define NCM_BINDINGS_ERROR_MEMORY 2
-
 NcmBindingsConfiguration Bindings;
 
 static void ncm_bindings_error(NcmError *ncm_error, char *format, ...)
@@ -28,7 +25,7 @@ ncm_bindings_error(NcmError *ncm_error, char *format, ...) {
     va_end(args);
 
     if (len < 0) {
-        ncm_error_set(ncm_error, NCM_BINDINGS_ERROR_PARSE,
+        ncm_error_set(ncm_error, NCM_ERROR_PARSE,
                       STRLIT("bindings parse error"));
         return;
     }
@@ -36,7 +33,7 @@ ncm_bindings_error(NcmError *ncm_error, char *format, ...) {
         len = SIZEOF(buffer) - 1;
     }
 
-    ncm_error_set(ncm_error, NCM_BINDINGS_ERROR_PARSE, buffer, len);
+    ncm_error_set(ncm_error, NCM_ERROR_PARSE, buffer, len);
     return;
 }
 
