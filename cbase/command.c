@@ -1052,7 +1052,7 @@ command_run(Command *command, enum CommandFlag flags) {
 #if OS_UNIX
     int32 err;
 #endif
-#if DEBUGGING && !TESTING_command
+#if OS_UNIX && DEBUGGING && !TESTING_command
     char *command_text;
     int32 command_text_len;
 #endif
