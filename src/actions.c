@@ -3480,7 +3480,6 @@ action_runtime_reverse_playlist(void) {
             break;
         }
         success = ncm_mpd_client_swap(&global_mpd, ncm_song_position(left),
-        success = ncm_mpd_client_swap(&global_mpd, ncm_song_position(left),
                                       ncm_song_position(right),
                                       &ncm_error) == 0;
         first += 1;
