@@ -911,8 +911,8 @@ apply_mpd_crossfade_time(Configuration *config, char *value, int32 value_len,
 static bool
 apply_visualizer_type(Configuration *config, char *value, int32 value_len,
                       NcmError *ncm_error) {
-    if (!ncm_visualizer_type_parse(value, value_len,
-                                   &config->visualizer_type)) {
+    if (ncm_visualizer_type_parse(value, value_len,
+                                  &config->visualizer_type) < 0) {
         settings_invalid_value(ncm_error, value, value_len);
         return false;
     }
@@ -1169,7 +1169,7 @@ apply_browser_sort_mode(Configuration *config, char *value, int32 value_len,
         value = "none";
         value_len = STRLIT_LEN("none");
     }
-    if (!ncm_sort_mode_parse(value, value_len, &config->browser_sort_mode)) {
+    if (ncm_sort_mode_parse(value, value_len, &config->browser_sort_mode) < 0) {
         settings_invalid_value(ncm_error, value, value_len);
         return false;
     }
@@ -1193,8 +1193,8 @@ apply_song_columns_list_format(Configuration *config,
 static bool
 apply_playlist_display_mode(Configuration *config, char *value, int32 value_len,
                             NcmError *ncm_error) {
-    if (!ncm_display_mode_parse(value, value_len,
-                                &config->playlist_display_mode)) {
+    if (ncm_display_mode_parse(value, value_len,
+                               &config->playlist_display_mode) < 0) {
         settings_invalid_value(ncm_error, value, value_len);
         return false;
     }
@@ -1204,8 +1204,8 @@ apply_playlist_display_mode(Configuration *config, char *value, int32 value_len,
 static bool
 apply_browser_display_mode(Configuration *config, char *value, int32 value_len,
                            NcmError *ncm_error) {
-    if (!ncm_display_mode_parse(value, value_len,
-                                &config->browser_display_mode)) {
+    if (ncm_display_mode_parse(value, value_len,
+                               &config->browser_display_mode) < 0) {
         settings_invalid_value(ncm_error, value, value_len);
         return false;
     }
@@ -1216,8 +1216,8 @@ static bool
 apply_search_engine_display_mode(Configuration *config,
                                  char *value, int32 value_len,
                                  NcmError *ncm_error) {
-    if (!ncm_display_mode_parse(value, value_len,
-                                &config->search_engine_display_mode)) {
+    if (ncm_display_mode_parse(value, value_len,
+                               &config->search_engine_display_mode) < 0) {
         settings_invalid_value(ncm_error, value, value_len);
         return false;
     }
@@ -1228,8 +1228,8 @@ static bool
 apply_playlist_editor_display_mode(Configuration *config,
                                    char *value, int32 value_len,
                                    NcmError *ncm_error) {
-    if (!ncm_display_mode_parse(value, value_len,
-                                &config->playlist_editor_display_mode)) {
+    if (ncm_display_mode_parse(value, value_len,
+                               &config->playlist_editor_display_mode) < 0) {
         settings_invalid_value(ncm_error, value, value_len);
         return false;
     }
@@ -1272,7 +1272,7 @@ apply_default_place_to_search_in(Configuration *config,
 static bool
 apply_user_interface(Configuration *config, char *value, int32 value_len,
                      NcmError *ncm_error) {
-    if (!ncm_design_parse(value, value_len, &config->design)) {
+    if (ncm_design_parse(value, value_len, &config->design) < 0) {
         settings_invalid_value(ncm_error, value, value_len);
         return false;
     }
@@ -1335,7 +1335,8 @@ apply_lyrics_fetchers(Configuration *config, char *value, int32 value_len,
 static bool
 apply_space_add_mode(Configuration *config, char *value, int32 value_len,
                      NcmError *ncm_error) {
-    if (!ncm_space_add_mode_parse(value, value_len, &config->space_add_mode)) {
+    if (ncm_space_add_mode_parse(value, value_len,
+                                 &config->space_add_mode) < 0) {
         settings_invalid_value(ncm_error, value, value_len);
         return false;
     }
