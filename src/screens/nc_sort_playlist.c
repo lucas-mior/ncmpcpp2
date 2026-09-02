@@ -500,12 +500,7 @@ sort_dialog_run_sort(void *user) {
         &dialog->songs, dialog->start_position, getters, getters_len,
         dialog->ignore_leading_the, dialog->client, &ncm_error);
     if (status == 0) {
-        if (!ncm_status_update_full(dialog->client, NULL, &ncm_error)) {
-            status = ncm_error_status(&ncm_error);
-            if (status == 0) {
-                status = -NCM_ERROR_INVALID_STATE;
-            }
-        }
+        status = ncm_status_update_full(dialog->client, NULL, &ncm_error);
     }
 
     if (status == 0) {

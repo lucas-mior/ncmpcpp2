@@ -361,11 +361,9 @@ ncmpcpp_update_environment(bool update_timer, bool refresh_window,
 
     if (mpd_sync) {
         ncm_error_clear(&ncm_error);
-        if (!ncm_status_update_from_noidle(&global_mpd, NULL, &ncm_error)) {
-            status = ncm_error_status(&ncm_error);
-            if (status >= 0) {
-                status = -NCM_ERROR_INVALID_STATE;
-            }
+        status = ncm_status_update_from_noidle(&global_mpd, NULL,
+                                               &ncm_error);
+        if (status < 0) {
             return status;
         }
     }
