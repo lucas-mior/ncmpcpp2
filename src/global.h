@@ -14,7 +14,7 @@ extern NcmMpdClient global_mpd;
 
 void global_state_init(void);
 void global_state_destroy(void);
-bool global_timer_update(NcmError *ncm_error);
+int32 global_timer_update(NcmError *ncm_error);
 int64 global_timer_elapsed_ms(NcmTimePoint start);
 int64 global_timer_elapsed_seconds(NcmTimePoint start);
 void global_volume_state_set(char *string, int32 string_len);

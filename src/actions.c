@@ -752,7 +752,7 @@ action_runtime_toggle_crossfade(void) {
     int32 seconds = Config.crossfade_time;
 
     ncm_error_clear(&ncm_error);
-    if (ncm_status_state_crossfade()) {
+    if (ncm_status_state_crossfade_is_enabled()) {
         seconds = 0;
     }
     if (ncm_mpd_client_set_crossfade(&global_mpd, seconds, &ncm_error) < 0) {
@@ -6192,7 +6192,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
         return action_runtime_jump_to_playing_song();
     case NCM_ACTION_TOGGLE_REPEAT:
         return action_runtime_mpd_toggle(ncm_mpd_client_set_repeat,
-                                         ncm_status_state_repeat());
+                                         ncm_status_state_repeat_is_enabled());
     case NCM_ACTION_SHUFFLE:
         if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_PLAYLIST)) {
             return action_runtime_shuffle_playlist();
@@ -6200,15 +6200,15 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
         return action_runtime_mpd_simple(ncm_mpd_client_shuffle);
     case NCM_ACTION_TOGGLE_RANDOM:
         return action_runtime_mpd_toggle(ncm_mpd_client_set_random,
-                                         ncm_status_state_random());
+                                         ncm_status_state_random_is_enabled());
     case NCM_ACTION_SAVE_TAG_CHANGES:
         return action_runtime_save_tag_changes();
     case NCM_ACTION_TOGGLE_SINGLE:
         return action_runtime_mpd_toggle(ncm_mpd_client_set_single,
-                                         ncm_status_state_single());
+                                         ncm_status_state_single_is_enabled());
     case NCM_ACTION_TOGGLE_CONSUME:
         return action_runtime_mpd_toggle(ncm_mpd_client_set_consume,
-                                         ncm_status_state_consume());
+                                         ncm_status_state_consume_is_enabled());
     case NCM_ACTION_TOGGLE_CROSSFADE:
         return action_runtime_toggle_crossfade();
     case NCM_ACTION_ENTER_DIRECTORY:

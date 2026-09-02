@@ -245,7 +245,7 @@ main(int32 argc, char **argv) {
     ncmpcpp_init_screen(Config.colors_enabled, Config.mouse_support);
     app_create_windows();
 
-    global_timer_update(NULL);
+    (void)global_timer_update(NULL);
     (void)ncm_random_seed_from_time(&global_random, NULL);
     app_apply_startup_screen();
 
@@ -270,7 +270,7 @@ main(int32 argc, char **argv) {
             continue;
         }
 
-        global_timer_update(NULL);
+        (void)global_timer_update(NULL);
         app_execute_key(input);
         ncmpcpp_playlist_enable_highlighting_if_current();
     }

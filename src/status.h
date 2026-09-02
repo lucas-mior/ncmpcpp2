@@ -63,24 +63,28 @@ void ncm_status_set_database_update_observer(void (*callback)(void *user),
                                              void *user);
 void ncm_status_set_playlist_update_observer(void (*callback)(void *user),
                                              void *user);
-bool ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
-                                 NcmStatusHooks *hooks, NcmError *ncm_error);
-bool ncm_status_update(NcmMpdClient *client, int32 event, NcmError *ncm_error);
-bool ncm_status_init_from_mpd_status(NcmMpdStatus *mpd_status,
-                                           NcmStatusHooks *hooks,
-                                           NcmError *ncm_error);
-bool ncm_status_init_connection(NcmMpdClient *client, NcmError *ncm_error);
-bool ncm_status_update_full(NcmMpdClient *client, NcmStatusHooks *hooks,
-                            NcmError *ncm_error);
-bool ncm_status_update_from_noidle(NcmMpdClient *client, NcmStatusHooks *hooks,
-                                   NcmError *ncm_error);
+int32 ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
+                                  NcmStatusHooks *hooks,
+                                  NcmError *ncm_error);
+int32 ncm_status_update(NcmMpdClient *client, int32 event,
+                        NcmError *ncm_error);
+int32 ncm_status_init_from_mpd_status(NcmMpdStatus *mpd_status,
+                                      NcmStatusHooks *hooks,
+                                      NcmError *ncm_error);
+int32 ncm_status_init_connection(NcmMpdClient *client,
+                                 NcmError *ncm_error);
+int32 ncm_status_update_full(NcmMpdClient *client, NcmStatusHooks *hooks,
+                             NcmError *ncm_error);
+int32 ncm_status_update_from_noidle(NcmMpdClient *client,
+                                    NcmStatusHooks *hooks,
+                                    NcmError *ncm_error);
 void ncm_status_clear(void);
 
-bool ncm_status_state_consume(void);
-bool ncm_status_state_crossfade(void);
-bool ncm_status_state_repeat(void);
-bool ncm_status_state_random(void);
-bool ncm_status_state_single(void);
+bool ncm_status_state_consume_is_enabled(void);
+bool ncm_status_state_crossfade_is_enabled(void);
+bool ncm_status_state_repeat_is_enabled(void);
+bool ncm_status_state_random_is_enabled(void);
+bool ncm_status_state_single_is_enabled(void);
 int32 ncm_status_state_current_song_position(void);
 int32 ncm_status_state_playlist_length(void);
 int32 ncm_status_state_elapsed_time(void);
