@@ -1588,13 +1588,14 @@ search_collect_database_results(SearchEngineScreen *screen,
 
     exact_match = screen->search_mode == SEARCH_ENGINE_SEARCH_MODE_EXACT;
     result = (NcmMpdSongList){0};
-    if ((ok = ncm_mpd_client_start_search(client, exact_match, ncm_error))) {
+    if ((ok = ncm_mpd_client_start_search(client, exact_match,
+                                          ncm_error) == 0)) {
         ok = search_add_database_constraints(
             screen, client, ncm_error);
     }
     if (ok) {
         ok = ncm_mpd_client_commit_search_songs(
-            client, &result, ncm_error);
+            client, &result, ncm_error) == 0;
     }
     if (ok) {
         if ((err = ncm_mpd_song_list_to_song_array(&result, songs)) < 0) {
@@ -1614,8 +1615,8 @@ search_add_database_constraints(SearchEngineScreen *screen,
 
     constraint = &screen->constraints[0];
     if ((constraint->len > 0)
-        && !ncm_mpd_client_add_search_any(
-            client, constraint->data, ncm_error)) {
+        && (ncm_mpd_client_add_search_any(
+                client, constraint->data, ncm_error) < 0)) {
         return false;
     }
 
@@ -1627,8 +1628,8 @@ search_add_database_constraints(SearchEngineScreen *screen,
             continue;
         }
         if (i == 5) {
-            if (!ncm_mpd_client_add_search_uri(
-                client, constraint->data, ncm_error)) {
+            if (ncm_mpd_client_add_search_uri(
+                client, constraint->data, ncm_error) < 0) {
                 return false;
             }
             continue;
@@ -1667,8 +1668,8 @@ search_add_database_constraints(SearchEngineScreen *screen,
                           STRLIT("invalid search constraint"));
             return false;
         }
-        if (!ncm_mpd_client_add_search_tag(
-            client, tag, constraint->data, ncm_error)) {
+        if (ncm_mpd_client_add_search_tag(
+            client, tag, constraint->data, ncm_error) < 0) {
             return false;
         }
     }

@@ -281,15 +281,15 @@ ncm_playlist_sort_plan_execute(NcmPlaylistSortPlan *plan,
     }
 
     started = false;
-    if ((success = ncm_mpd_client_start_command_list(client, ncm_error))) {
+    if ((success = ncm_mpd_client_start_command_list(client, ncm_error) == 0)) {
         started = true;
     }
     for (int32 i = 0; success && (i < plan->len); i += 1) {
         success = ncm_mpd_client_swap(client, plan->items[i].from,
-                                      plan->items[i].to, ncm_error);
+                                      plan->items[i].to, ncm_error) == 0;
     }
     if (success) {
-        success = ncm_mpd_client_commit_command_list(client, ncm_error);
+        success = ncm_mpd_client_commit_command_list(client, ncm_error) == 0;
     }
     if (!success && started && client->command_list_active) {
         client->command_list_active = false;

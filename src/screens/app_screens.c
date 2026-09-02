@@ -536,7 +536,7 @@ search_list_database_songs(
     ncm_song_array_clear(songs);
     source = (NcmMpdSongList){0};
     result = ncm_mpd_client_get_directory_recursive(
-        &global_mpd, "/", &source, ncm_error);
+        &global_mpd, "/", &source, ncm_error) == 0;
     if (result) {
         if ((err = ncm_mpd_song_list_to_song_array(&source, songs)) < 0) {
             ncm_error_set_status(ncm_error, err,
@@ -910,8 +910,8 @@ tag_editor_hook_update_directory(
 
     (void)user;
     (void)directory_len;
-    if (!ncm_mpd_client_update_directory(
-        &global_mpd, directory, NULL, &ncm_error)) {
+    if (ncm_mpd_client_update_directory(
+        &global_mpd, directory, NULL, &ncm_error) < 0) {
         ncm_statusbar_print_cstring(
             Config.message_delay_time, ncm_error.message);
     }
@@ -966,8 +966,8 @@ tiny_tag_editor_update_directory(
 
     (void)user;
     (void)directory_len;
-    if (!ncm_mpd_client_update_directory(
-        &global_mpd, directory, NULL, &ncm_error)) {
+    if (ncm_mpd_client_update_directory(
+        &global_mpd, directory, NULL, &ncm_error) < 0) {
         ncm_statusbar_print_cstring(
             Config.message_delay_time, ncm_error.message);
     }
@@ -1556,7 +1556,7 @@ outputs_fetch(void *user, NcOutputsScreen *screen) {
     (void)user;
     ncm_error_clear(&ncm_error);
     outputs = (NcmMpdOutputList){0};
-    if (!ncm_mpd_client_get_outputs(&global_mpd, &outputs, &ncm_error)) {
+    if (ncm_mpd_client_get_outputs(&global_mpd, &outputs, &ncm_error) < 0) {
         NcmStringFormatArg arg;
 
         arg = ncm_string_format_arg_cstring(ncm_error.message);
@@ -1596,9 +1596,9 @@ outputs_toggle(void *user, int32 id, bool enabled,
     (void)user;
     ncm_error_clear(&ncm_error);
     if (enabled) {
-        ok = ncm_mpd_client_disable_output(&global_mpd, id, &ncm_error);
+        ok = ncm_mpd_client_disable_output(&global_mpd, id, &ncm_error) == 0;
     } else {
-        ok = ncm_mpd_client_enable_output(&global_mpd, id, &ncm_error);
+        ok = ncm_mpd_client_enable_output(&global_mpd, id, &ncm_error) == 0;
     }
     if (!ok) {
         NcmStringFormatArg args[2];
@@ -1721,7 +1721,7 @@ server_info_render(void *user, NcBuffer *buffer) {
     owner->timer = global_timer;
 
     ncm_error_clear(&ncm_error);
-    if (!ncm_mpd_client_get_stats(&global_mpd, &stats, &ncm_error)) {
+    if (ncm_mpd_client_get_stats(&global_mpd, &stats, &ncm_error) < 0) {
         return false;
     }
 
@@ -1895,7 +1895,7 @@ song_info_switch_to(void *user, NcSongInfoScreen *screen) {
     owner->song = (NcmSong){0};
     owner->has_song = ncm_mpd_client_get_current_song(&global_mpd,
                                                       &owner->song,
-                                                      &ncm_error);
+                                                      &ncm_error) == 0;
     if (!owner->has_song) {
         NcmStringFormatArg arg;
 

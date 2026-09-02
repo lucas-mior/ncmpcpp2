@@ -481,15 +481,15 @@ playlist_screen_reload_from_mpd(PlaylistScreen *screen,
     songs = (NcmMpdSongList){0};
     if (playlist_should_reload_full(screen, version,
                                     playlist_length, NULL)) {
-        result = ncm_mpd_client_get_queue(client, &songs, ncm_error);
+        result = ncm_mpd_client_get_queue(client, &songs, ncm_error) == 0;
     } else {
         result = ncm_mpd_client_get_queue_changes(client, version, &songs,
-                                                  ncm_error);
+                                                  ncm_error) == 0;
         if (result
             && playlist_should_reload_full(screen, version,
                                            playlist_length,
                                            &songs)) {
-            result = ncm_mpd_client_get_queue(client, &songs, ncm_error);
+            result = ncm_mpd_client_get_queue(client, &songs, ncm_error) == 0;
         }
     }
 
@@ -1170,8 +1170,8 @@ playlist_activate_song(NcMenu *menu, void *item, int32 pos,
     (void)pos;
     (void)user;
     ASSERT(item != NULL);
-    if (!ncm_mpd_client_play_id(&global_mpd, ncm_song_id(item),
-                                &ncm_error)) {
+    if (ncm_mpd_client_play_id(&global_mpd, ncm_song_id(item),
+                               &ncm_error) < 0) {
         ncm_statusbar_print_cstring(1, ncm_error.message);
     }
     return;
@@ -1482,7 +1482,7 @@ playlist_set_one_priority(NcmSong *song, int32 idx, void *user) {
     context = user;
     return ncm_mpd_client_set_priority_song(context->client, song,
                                             context->priority,
-                                            context->ncm_error);
+                                            context->ncm_error) == 0;
 }
 
 #endif /* NCMPCPP_NC_PLAYLIST_C */

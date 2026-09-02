@@ -855,7 +855,7 @@ apply_mpd_host(Configuration *config, char *value, int32 value_len,
     (void)config;
     if ((result = settings_expand_home(&host, value, value_len))) {
         result = ncm_mpd_client_set_hostname(&global_mpd, host.data, host.len,
-                                             ncm_error);
+                                             ncm_error) == 0;
     }
     sb_free(&host);
     return result;
@@ -886,7 +886,7 @@ apply_mpd_password(Configuration *config, char *value, int32 value_len,
         return true;
     }
     return ncm_mpd_client_set_password(&global_mpd, value, value_len,
-                                       ncm_error);
+                                       ncm_error) == 0;
 }
 
 static bool
@@ -898,7 +898,7 @@ apply_mpd_connection_timeout(Configuration *config, char *value,
         return false;
     }
     return ncm_mpd_client_set_timeout_ms(
-        &global_mpd, config->mpd_connection_timeout*1000, ncm_error);
+        &global_mpd, config->mpd_connection_timeout*1000, ncm_error) == 0;
 }
 
 static bool
