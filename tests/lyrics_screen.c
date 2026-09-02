@@ -1103,7 +1103,7 @@ lyrics_screen_test_search_and_sync_properties_are_independent(void) {
                                           path,
                                           strlen32(path),
                                           &error));
-    ASSERT(lyrics_screen_find(&screen, STRLIT("alpha"), &error));
+    ASSERT_EQUAL(lyrics_screen_find(&screen, STRLIT("alpha"), &error), 1);
     ASSERT(lyrics_screen_test_has_property(
         &screen.display, LYRICS_SEARCH_PROPERTY_ID));
 

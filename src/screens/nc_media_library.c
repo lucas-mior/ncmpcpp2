@@ -1607,7 +1607,7 @@ media_library_screen_copy_visible_songs(
     return true;
 }
 
-bool
+int32
 media_library_screen_apply_filter(
     MediaLibraryScreen *screen, char *pattern, int32 pattern_len,
     NcmError *ncm_error
@@ -1615,31 +1615,34 @@ media_library_screen_apply_filter(
     MediaLibraryColumnState *state;
     NcMenuDisplayCallbacks callbacks;
     NcMenu *menu;
+    int32 status;
 
     if (screen == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing media library"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing media library"));
     }
     if (pattern_len <= 0) {
         media_library_screen_clear_filter(screen);
-        return true;
+        return ncm_error_ok(ncm_error);
     }
     if (pattern == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing filter pattern"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing filter pattern"));
     }
 
     if ((state = library_active_column_state(screen)) == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("invalid active column"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("invalid active column"));
     }
-    if (ncm_regex_compile(&state->filter_regex, pattern, pattern_len,
-                          Config.regex_flags, ncm_error) < 0) {
-        return false;
+    if ((status = ncm_regex_compile(&state->filter_regex,
+                                    pattern, pattern_len,
+                                    Config.regex_flags, ncm_error)) < 0) {
+        return status;
     }
-    if (sb_set(&state->filter_constraint, pattern, pattern_len) < 0) {
-        ncm_error_set(ncm_error, ENOMEM, STRLIT("cannot save filter"));
-        return false;
+    if ((status = sb_set(&state->filter_constraint,
+                         pattern, pattern_len)) < 0) {
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("cannot save filter"));
     }
 
     callbacks = library_display_callbacks(
@@ -1649,7 +1652,7 @@ media_library_screen_apply_filter(
     nc_menu_apply_filter(menu);
     state->filter_enabled = true;
     nc_screen_finish_list_change(&screen->screen);
-    return true;
+    return ncm_error_ok(ncm_error);
 }
 
 void
@@ -1678,7 +1681,7 @@ media_library_screen_clear_filter(MediaLibraryScreen *screen) {
     return;
 }
 
-bool
+int32
 media_library_screen_search(MediaLibraryScreen *screen,
                             char *pattern, int32 pattern_len,
                             bool forward, bool wrap,
@@ -1686,42 +1689,46 @@ media_library_screen_search(MediaLibraryScreen *screen,
     MediaLibrarySearchContext context;
     MediaLibraryColumnState *state;
     NcMenu *menu;
-    bool result;
+    bool found;
+    int32 status;
 
     if (screen == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing media library"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing media library"));
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing search pattern"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing search pattern"));
     }
 
     if ((state = library_active_column_state(screen)) == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("invalid active column"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("invalid active column"));
     }
-    if (ncm_regex_compile(&state->search_regex, pattern, pattern_len,
-                          Config.regex_flags, ncm_error) < 0) {
-        return false;
+    if ((status = ncm_regex_compile(&state->search_regex,
+                                    pattern, pattern_len,
+                                    Config.regex_flags, ncm_error)) < 0) {
+        return status;
     }
-    if (sb_set(&state->search_constraint, pattern, pattern_len) < 0) {
-        ncm_error_set(ncm_error, ENOMEM, STRLIT("cannot save search"));
-        return false;
+    if ((status = sb_set(&state->search_constraint,
+                         pattern, pattern_len)) < 0) {
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("cannot save search"));
     }
     state->search_enabled = true;
 
     menu = media_library_screen_active_menu(screen);
     context.screen = screen;
     context.regex = &state->search_regex;
-    result = nc_menu_search_selectable(menu, screen->main_height, forward,
-                                       wrap, skip_current,
-                                       library_search_position,
-                                       &context, NULL) == 0;
-    if (result) {
+    found = nc_menu_search_selectable(menu, screen->main_height, forward,
+                                      wrap, skip_current,
+                                      library_search_position,
+                                      &context, NULL) == 0;
+    if (found) {
         nc_screen_finish_list_change(&screen->screen);
+        return 1;
     }
-    return result;
+    return 0;
 }
 
 static bool

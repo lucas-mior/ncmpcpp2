@@ -817,30 +817,30 @@ lyrics_screen_active_lrc_line(LyricsScreen *screen) {
     return screen->active_lrc_line;
 }
 
-bool
+int32
 lyrics_buffer_find(NcBuffer *buffer,
                    char *pattern, int32 pattern_len, NcmError *ncm_error) {
     LyricsFindState state;
     NcmRegex regex;
     char *data;
     int32 match_count;
+    int32 status;
 
     if (buffer == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing lyrics buffer"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing lyrics buffer"));
     }
 
     nc_buffer_remove_properties(buffer, LYRICS_SEARCH_PROPERTY_ID);
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        ncm_error_clear(ncm_error);
-        return true;
+        return ncm_error_ok(ncm_error);
     }
 
     regex = (NcmRegex){0};
-    if (ncm_regex_compile(&regex, pattern, pattern_len, Config.regex_flags,
-                          ncm_error) < 0) {
+    if ((status = ncm_regex_compile(&regex, pattern, pattern_len,
+                                    Config.regex_flags, ncm_error)) < 0) {
         ncm_regex_destroy(&regex);
-        return false;
+        return status;
     }
 
     state.buffer = buffer;
@@ -848,27 +848,42 @@ lyrics_buffer_find(NcBuffer *buffer,
     match_count = ncm_regex_for_each_match(
         &regex, data, buffer->len, lyrics_find_match_callback, &state);
     ncm_regex_destroy(&regex);
-    return match_count > 0;
+    if (match_count > 0) {
+        return 1;
+    }
+    return 0;
 }
 
-bool
+int32
 lyrics_screen_find(LyricsScreen *screen,
                    char *pattern, int32 pattern_len,
                    NcmError *ncm_error) {
-    bool result;
+    int32 result;
+    int32 status;
 
     if (screen == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing lyrics screen"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing lyrics screen"));
     }
 
     result = lyrics_buffer_find(&screen->display, pattern,
                                 pattern_len, ncm_error);
+    if (result < 0) {
+        nc_scrollpad_flush(&screen->scrollpad, &screen->window,
+                           &screen->display);
+        lyrics_display(screen);
+        return result;
+    }
+
     if ((pattern == NULL) || (pattern_len <= 0)) {
         sb_clear(&screen->search_constraint);
-    } else if (!ncm_error_is_set(ncm_error)) {
-        (void)sb_set(&screen->search_constraint, pattern,
-                     pattern_len);
+    } else if ((status = sb_set(&screen->search_constraint, pattern,
+                                pattern_len)) < 0) {
+        nc_scrollpad_flush(&screen->scrollpad, &screen->window,
+                           &screen->display);
+        lyrics_display(screen);
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("failed to save search"));
     }
     nc_scrollpad_flush(&screen->scrollpad, &screen->window,
                        &screen->display);

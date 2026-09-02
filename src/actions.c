@@ -954,6 +954,7 @@ action_runtime_search_from_prompt_start(ActionRuntimeSearchPrompt *state,
     int32 old_beginning = 0;
     int32 old_highlight = 0;
     int32 count;
+    int32 status;
     bool restore = false;
 
     if (menu && state->has_start_position) {
@@ -966,8 +967,14 @@ action_runtime_search_from_prompt_start(ActionRuntimeSearchPrompt *state,
         }
     }
 
-    *found = current_screen_search(state->direction, text, text_len,
+    status = current_screen_search(state->direction, text, text_len,
                                    Config.wrapped_search, false, ncm_error);
+    if (status < 0) {
+        *found = false;
+        return false;
+    }
+
+    *found = status > 0;
     if (restore && !*found && !ncm_error_is_set(ncm_error)) {
         NcScreen *screen;
 
@@ -977,7 +984,7 @@ action_runtime_search_from_prompt_start(ActionRuntimeSearchPrompt *state,
             nc_screen_refresh_window(screen);
         }
     }
-    return !ncm_error_is_set(ncm_error);
+    return true;
 }
 
 static bool
@@ -1643,10 +1650,11 @@ action_runtime_apply_filter(void) {
     StrBuilder filter = {0};
     StrBuilder previous_filter = {0};
     NcmError ncm_error;
+    int32 status;
     bool old_autocenter_mode;
     bool prompted;
 
-    if (!current_screen_allows_filter()) {
+    if (!current_screen_can_filter()) {
         return false;
     }
 
@@ -1677,7 +1685,12 @@ action_runtime_apply_filter(void) {
     }
 
     ncm_error_clear(&ncm_error);
-    (void)current_screen_apply_filter(filter.data, filter.len, &ncm_error);
+    status = current_screen_apply_filter(filter.data, filter.len, &ncm_error);
+    if (status < 0) {
+        sb_free(&previous_filter);
+        sb_free(&filter);
+        return action_runtime_mpd_error(&ncm_error);
+    }
     if (filter.len == 0) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Filtering disabled");
@@ -1695,6 +1708,7 @@ static bool
 action_runtime_find(void) {
     StrBuilder token = {0};
     NcmError ncm_error;
+    int32 status;
     bool found;
     bool prompted;
 
@@ -1714,12 +1728,13 @@ action_runtime_find(void) {
     ncm_statusbar_print_cstring(Config.message_delay_time,
                                 "Searching...");
     ncm_error_clear(&ncm_error);
-    found = current_screen_search(NCM_SEARCH_DIRECTION_FORWARD, token.data,
-                                  token.len, false, false, &ncm_error);
-    if (ncm_error_is_set(&ncm_error)) {
+    status = current_screen_search(NCM_SEARCH_DIRECTION_FORWARD, token.data,
+                                   token.len, false, false, &ncm_error);
+    if (status < 0) {
         sb_free(&token);
         return action_runtime_mpd_error(&ncm_error);
     }
+    found = status > 0;
 
     if ((token.len == 0) || found) {
         ncm_statusbar_print_cstring(Config.message_delay_time, "Done");
@@ -1744,7 +1759,7 @@ action_runtime_find_item(enum SearchDirection direction) {
     char prompt[64];
     int32 prompt_len;
 
-    if (!current_screen_allows_search()) {
+    if (!current_screen_can_search()) {
         return false;
     }
 
@@ -1825,8 +1840,9 @@ static bool
 action_runtime_repeat_search(enum SearchDirection direction) {
     NcmStringView constraint;
     NcmError ncm_error;
+    int32 status;
 
-    if (!current_screen_allows_search()) {
+    if (!current_screen_can_search()) {
         return false;
     }
 
@@ -1836,9 +1852,9 @@ action_runtime_repeat_search(enum SearchDirection direction) {
     }
 
     ncm_error_clear(&ncm_error);
-    (void)current_screen_search(direction, constraint.data, constraint.len,
-                                Config.wrapped_search, true, &ncm_error);
-    if (ncm_error_is_set(&ncm_error)) {
+    status = current_screen_search(direction, constraint.data, constraint.len,
+                                   Config.wrapped_search, true, &ncm_error);
+    if (status < 0) {
         return action_runtime_mpd_error(&ncm_error);
     }
     return true;
@@ -3714,9 +3730,10 @@ action_runtime_select_found_items(void) {
     NcmError ncm_error;
     int32 original;
     int32 height;
+    int32 status;
     bool found;
 
-    if (!current_screen_allows_search()) {
+    if (!current_screen_can_search()) {
         return false;
     }
     constraint = current_screen_current_search_constraint();
@@ -3733,29 +3750,32 @@ action_runtime_select_found_items(void) {
     height = action_runtime_current_menu_height();
     nc_menu_highlight_position(menu, 0, height);
     ncm_error_clear(&ncm_error);
-    found = current_screen_search(NCM_SEARCH_DIRECTION_FORWARD, constraint.data,
-                                  constraint.len, false, false, &ncm_error);
-    if (ncm_error_is_set(&ncm_error)) {
+    status = current_screen_search(NCM_SEARCH_DIRECTION_FORWARD,
+                                   constraint.data, constraint.len, false,
+                                   false, &ncm_error);
+    if (status < 0) {
         nc_menu_highlight_position(menu, original, height);
         return action_runtime_mpd_error(&ncm_error);
     }
+    found = status > 0;
 
     if (found) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Searching for items...");
         (void)nc_menu_set_current_selected(menu, true);
         while (true) {
-            found = current_screen_search(NCM_SEARCH_DIRECTION_FORWARD,
-                                          constraint.data, constraint.len,
-                                          false, true, &ncm_error);
+            status = current_screen_search(NCM_SEARCH_DIRECTION_FORWARD,
+                                           constraint.data, constraint.len,
+                                           false, true, &ncm_error);
+            if (status < 0) {
+                nc_menu_highlight_position(menu, original, height);
+                return action_runtime_mpd_error(&ncm_error);
+            }
+            found = status > 0;
             if (!found) {
                 break;
             }
             (void)nc_menu_set_current_selected(menu, true);
-        }
-        if (ncm_error_is_set(&ncm_error)) {
-            nc_menu_highlight_position(menu, original, height);
-            return action_runtime_mpd_error(&ncm_error);
         }
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Found items selected");
@@ -5937,7 +5957,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_EXECUTE_COMMAND:
         return true;
     case NCM_ACTION_APPLY_FILTER:
-        return current_screen_allows_filter();
+        return current_screen_can_filter();
     case NCM_ACTION_FIND:
         return app_screen_help_is_current()
                || app_screen_lastfm_is_current()
@@ -5946,7 +5966,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_FIND_ITEM_BACKWARD:
     case NCM_ACTION_NEXT_FOUND_ITEM:
     case NCM_ACTION_PREVIOUS_FOUND_ITEM:
-        return current_screen_allows_search();
+        return current_screen_can_search();
     case NCM_ACTION_TOGGLE_FIND_MODE:
         return true;
     case NCM_ACTION_START_SEARCHING:
@@ -5963,7 +5983,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
     case NCM_ACTION_SELECT_FOUND_ITEMS: {
         NcmStringView constraint;
 
-        if (!current_screen_allows_search()) {
+        if (!current_screen_can_search()) {
             return false;
         }
         constraint = current_screen_current_search_constraint();

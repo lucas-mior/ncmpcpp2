@@ -600,8 +600,8 @@ void nc_help_screen_set_geometry(NcHelpScreen *screen,
                                  int32 main_start_y,
                                  int32 main_height);
 bool nc_help_screen_reload(NcHelpScreen *screen);
-bool nc_help_screen_find(NcHelpScreen *screen, char *pattern,
-                         int32 pattern_len, NcmError *ncm_error);
+int32 nc_help_screen_find(NcHelpScreen *screen, char *pattern,
+                          int32 pattern_len, NcmError *ncm_error);
 void nc_help_screen_clear_search(NcHelpScreen *screen);
 NcScreen *nc_help_screen_base(NcHelpScreen *screen);
 int32 nc_help_screen_start_x(NcHelpScreen *screen);
@@ -670,11 +670,11 @@ int32 lastfm_screen_dispatch_jobs(LastfmScreen *screen);
 void lastfm_screen_update(LastfmScreen *screen);
 char *lastfm_screen_title(LastfmScreen *screen);
 bool lastfm_screen_take_refresh_request(LastfmScreen *screen);
-bool lastfm_buffer_find(NcBuffer *buffer, char *pattern,
-                        int32 pattern_len, NcmError *ncm_error);
-bool lastfm_screen_find(LastfmScreen *screen,
-                        char *pattern, int32 pattern_len,
-                        NcmError *ncm_error);
+int32 lastfm_buffer_find(NcBuffer *buffer, char *pattern,
+                         int32 pattern_len, NcmError *ncm_error);
+int32 lastfm_screen_find(LastfmScreen *screen,
+                         char *pattern, int32 pattern_len,
+                         NcmError *ncm_error);
 
 /* screens/nc_lyrics.h */
 #include "lyrics_fetcher.h"
@@ -797,14 +797,14 @@ StrBuilder *lyrics_screen_filename(LyricsScreen *screen);
 LyricsMode lyrics_screen_mode(LyricsScreen *screen);
 NcmLrcDocument *lyrics_screen_lrc(LyricsScreen *screen);
 int32 lyrics_screen_active_lrc_line(LyricsScreen *screen);
-bool lyrics_buffer_find(NcBuffer *buffer, char *pattern,
-                        int32 pattern_len, NcmError *ncm_error);
+int32 lyrics_buffer_find(NcBuffer *buffer, char *pattern,
+                         int32 pattern_len, NcmError *ncm_error);
 void lyrics_buffer_clear_sync_highlight(NcBuffer *buffer);
 void lyrics_buffer_highlight_sync_line(NcBuffer *buffer,
                                        int32 start, int32 end);
-bool lyrics_screen_find(LyricsScreen *screen,
-                        char *pattern, int32 pattern_len,
-                        NcmError *ncm_error);
+int32 lyrics_screen_find(LyricsScreen *screen,
+                         char *pattern, int32 pattern_len,
+                         NcmError *ncm_error);
 
 /* screens/nc_outputs.h */
 typedef struct NcOutputsScreen NcOutputsScreen;
@@ -1182,7 +1182,8 @@ NCM_ARRAY_DECLARE_RESERVE(media_library_album_array, MediaLibraryAlbumArray)
 NCM_ARRAY_DECLARE_APPEND(media_library_album_array, MediaLibraryAlbumArray,
                          MediaLibraryAlbumItem)
 
-NCM_ARRAY_DECLARE_REMOVE_ORDERED(media_library_album_array, MediaLibraryAlbumArray)
+NCM_ARRAY_DECLARE_REMOVE_ORDERED(media_library_album_array,
+                                 MediaLibraryAlbumArray)
 
 typedef struct MediaLibrarySongQuery {
     char *primary_value;
@@ -1352,14 +1353,14 @@ bool media_library_screen_selected_songs_checked(MediaLibraryScreen *screen,
 bool media_library_screen_copy_visible_songs(MediaLibraryScreen *screen,
                                              NcmSongArray *songs,
                                              NcmError *ncm_error);
-bool media_library_screen_apply_filter(MediaLibraryScreen *screen,
-                                       char *pattern, int32 pattern_len,
-                                       NcmError *ncm_error);
+int32 media_library_screen_apply_filter(MediaLibraryScreen *screen,
+                                        char *pattern, int32 pattern_len,
+                                        NcmError *ncm_error);
 void media_library_screen_clear_filter(MediaLibraryScreen *screen);
-bool media_library_screen_search(MediaLibraryScreen *screen,
-                                 char *pattern, int32 pattern_len,
-                                 bool forward, bool wrap, bool skip_current,
-                                 NcmError *ncm_error);
+int32 media_library_screen_search(MediaLibraryScreen *screen,
+                                  char *pattern, int32 pattern_len,
+                                  bool forward, bool wrap, bool skip_current,
+                                  NcmError *ncm_error);
 void media_library_screen_clear_search(MediaLibraryScreen *screen);
 void media_library_screen_request_tags_update(MediaLibraryScreen *screen);
 void media_library_screen_request_albums_update(MediaLibraryScreen *screen);
@@ -1522,10 +1523,10 @@ int32 playlist_editor_screen_selected_playlist_count(
     PlaylistEditorScreen *screen);
 bool playlist_editor_screen_selected_songs(
     PlaylistEditorScreen *screen, NcmSongArray *songs);
-bool playlist_editor_screen_apply_active_filter(
+int32 playlist_editor_screen_apply_active_filter(
     PlaylistEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, NcmError *ncm_error);
-bool playlist_editor_screen_search_active(
+int32 playlist_editor_screen_search_active(
     PlaylistEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, bool forward, bool wrap, bool skip_current,
     NcmError *ncm_error);
@@ -1638,14 +1639,14 @@ bool playlist_screen_copy_sort_range(PlaylistScreen *screen,
                                      NcmSongArray *songs,
                                      int32 *start_position,
                                      NcmError *ncm_error);
-bool playlist_screen_apply_filter(PlaylistScreen *screen,
-                                  char *pattern, int32 pattern_len,
-                                  NcmError *ncm_error);
+int32 playlist_screen_apply_filter(PlaylistScreen *screen,
+                                   char *pattern, int32 pattern_len,
+                                   NcmError *ncm_error);
 void playlist_screen_clear_filter(PlaylistScreen *screen);
-bool playlist_screen_search(PlaylistScreen *screen,
-                            char *pattern, int32 pattern_len,
-                            bool forward, bool wrap,
-                            bool skip_current, NcmError *ncm_error);
+int32 playlist_screen_search(PlaylistScreen *screen,
+                             char *pattern, int32 pattern_len,
+                             bool forward, bool wrap,
+                             bool skip_current, NcmError *ncm_error);
 bool playlist_screen_set_selected_priority(PlaylistScreen *screen,
                                            NcmMpdClient *client,
                                            int32 priority,
@@ -1814,22 +1815,22 @@ bool search_engine_screen_start_searching(
     NcmError *ncm_error);
 enum DisplayMode search_engine_screen_toggle_display_mode(
     SearchEngineScreen *screen);
-bool search_engine_screen_allows_search(
+bool search_engine_screen_can_search(
     SearchEngineScreen *screen);
 bool search_engine_screen_current_song(
     SearchEngineScreen *screen, NcmSong *song);
 bool search_engine_screen_selected_songs(
     SearchEngineScreen *screen, NcmSongArray *songs);
-bool search_engine_screen_apply_filter(
+int32 search_engine_screen_apply_filter(
     SearchEngineScreen *screen, char *pattern, int32 pattern_len,
     NcmError *ncm_error);
 void search_engine_screen_clear_filter(
     SearchEngineScreen *screen);
-bool search_engine_screen_search(SearchEngineScreen *screen,
-                                 char *pattern, int32 pattern_len,
-                                 bool forward, bool wrap,
-                                 bool skip_current,
-                                 NcmError *ncm_error);
+int32 search_engine_screen_search(SearchEngineScreen *screen,
+                                  char *pattern, int32 pattern_len,
+                                  bool forward, bool wrap,
+                                  bool skip_current,
+                                  NcmError *ncm_error);
 
 /* screens/nc_sel_items_adder.h */
 typedef struct PlaylistScreen PlaylistScreen;
@@ -1895,7 +1896,7 @@ void selected_items_adder_screen_choose_current_playlist(
 bool selected_items_adder_screen_add_to_existing_playlist(
     SelectedItemsAdderScreen *screen, NcmMpdClient *client,
     char *playlist, NcmError *ncm_error);
-bool selected_items_adder_screen_search(
+int32 selected_items_adder_screen_search(
     SelectedItemsAdderScreen *screen, char *pattern,
     int32 pattern_len, uint32 regex_flags, bool forward, bool wrap,
     bool skip_current, NcmError *ncm_error);
@@ -2154,13 +2155,13 @@ bool tag_editor_screen_save_modified(TagEditorScreen *screen,
                                      char *music_dir);
 bool tag_editor_screen_save_action_available(
     TagEditorScreen *screen);
-bool tag_editor_screen_apply_directory_filter(
+int32 tag_editor_screen_apply_directory_filter(
     TagEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, NcmError *ncm_error);
-bool tag_editor_screen_apply_tag_filter(
+int32 tag_editor_screen_apply_tag_filter(
     TagEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, NcmError *ncm_error);
-bool tag_editor_screen_search(
+int32 tag_editor_screen_search(
     TagEditorScreen *screen, char *pattern, int32 pattern_len,
     bool forward, bool wrap, bool skip_current, NcmError *ncm_error);
 bool tag_editor_screen_prepare_parser_rows(
@@ -2425,14 +2426,14 @@ bool browser_screen_locate_song(BrowserScreen *screen,
                                 NcmError *ncm_error);
 bool browser_screen_enter_directory(BrowserScreen *screen);
 bool browser_screen_go_to_parent(BrowserScreen *screen);
-bool browser_screen_apply_filter(BrowserScreen *screen,
-                                 char *pattern, int32 pattern_len,
-                                 NcmError *ncm_error);
+int32 browser_screen_apply_filter(BrowserScreen *screen,
+                                  char *pattern, int32 pattern_len,
+                                  NcmError *ncm_error);
 void browser_screen_clear_filter(BrowserScreen *screen);
-bool browser_screen_search(BrowserScreen *screen,
-                           char *pattern, int32 pattern_len,
-                           bool forward, bool wrap,
-                           bool skip_current, NcmError *ncm_error);
+int32 browser_screen_search(BrowserScreen *screen,
+                            char *pattern, int32 pattern_len,
+                            bool forward, bool wrap,
+                            bool skip_current, NcmError *ncm_error);
 bool browser_screen_render_item(BrowserScreen *screen,
                                 NcBuffer *buffer,
                                 NcmMpdItem *item,
