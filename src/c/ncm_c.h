@@ -1877,11 +1877,11 @@ NcmFormatExpr *ncm_format_expr_list_append(NcmFormatExprList *list);
 void ncm_format_ast_destroy(NcmFormatAst *ast);
 void ncm_format_ast_clear(NcmFormatAst *ast);
 void ncm_format_ast_move(NcmFormatAst *dest, NcmFormatAst *source);
-bool ncm_format_ast_append_column_types(NcmFormatAst *ast,
-                                        char *types, int32 types_len);
+int32 ncm_format_ast_append_column_types(NcmFormatAst *ast,
+                                         char *types, int32 types_len);
 
-bool ncm_format_parse(NcmFormatAst *ast, char *data, int32 data_len,
-                      uint32 flags, NcmError *ncm_error);
+int32 ncm_format_parse(NcmFormatAst *ast, char *data, int32 data_len,
+                       uint32 flags, NcmError *ncm_error);
 
 void ncm_format_render(NcmFormatAst *ast, NcmSong *song,
                        NcmFormatCallbacks *callbacks, void *output,

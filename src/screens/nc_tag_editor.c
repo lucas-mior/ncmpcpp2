@@ -1527,8 +1527,8 @@ tag_editor_generate_filename(NcmMutableSong *song, char *pattern,
     ast = (NcmFormatAst){0};
     format_song = (NcmSong){0};
     ncm_error_clear(&ncm_error);
-    if (!ncm_format_parse(&ast, pattern, pattern_len,
-                          NCM_FORMAT_FLAG_TAG, &ncm_error)) {
+    if (ncm_format_parse(&ast, pattern, pattern_len,
+                         NCM_FORMAT_FLAG_TAG, &ncm_error) < 0) {
         ncm_error_clear(&ncm_error);
         ncm_format_ast_destroy(&ast);
         ncm_song_destroy(&format_song);

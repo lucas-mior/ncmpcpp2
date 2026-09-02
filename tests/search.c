@@ -438,15 +438,15 @@ test_regex_handles_empty_strings(void) {
 static void
 search_column_format_init(NcmFormatAst *format) {
     *format = (NcmFormatAst){0};
-    ASSERT(ncm_format_ast_append_column_types(
+    ASSERT_ZERO(ncm_format_ast_append_column_types(
         format, STRLIT("a")));
-    ASSERT(ncm_format_ast_append_column_types(
+    ASSERT_ZERO(ncm_format_ast_append_column_types(
         format, STRLIT("N")));
-    ASSERT(ncm_format_ast_append_column_types(
+    ASSERT_ZERO(ncm_format_ast_append_column_types(
         format, STRLIT("tf")));
-    ASSERT(ncm_format_ast_append_column_types(
+    ASSERT_ZERO(ncm_format_ast_append_column_types(
         format, STRLIT("b")));
-    ASSERT(ncm_format_ast_append_column_types(
+    ASSERT_ZERO(ncm_format_ast_append_column_types(
         format, STRLIT("l")));
     return;
 }
