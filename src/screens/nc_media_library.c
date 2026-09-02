@@ -3960,7 +3960,7 @@ library_tag_matches(MediaLibraryScreen *screen,
 
     ASSERT(row != NULL);
     media_library_screen_format_tag_row(screen, row, &text);
-    result = ncm_regex_search(regex, text.data, text.len);
+    result = ncm_regex_matches(regex, text.data, text.len);
     sb_free(&text);
     return result;
 }
@@ -3974,7 +3974,7 @@ library_album_matches(MediaLibraryScreen *screen,
 
     ASSERT(row != NULL);
     media_library_screen_format_album_row(screen, row, &text);
-    result = ncm_regex_search(regex, text.data, text.len);
+    result = ncm_regex_matches(regex, text.data, text.len);
     sb_free(&text);
     return result;
 }
@@ -3988,7 +3988,7 @@ library_song_matches(MediaLibraryScreen *screen,
     (void)screen;
     ASSERT(song != NULL);
     text = ncm_format_render_string(&Config.song_library_format, song);
-    result = ncm_regex_search(regex, text.data, text.len);
+    result = ncm_regex_matches(regex, text.data, text.len);
     sb_free(&text);
     return result;
 }

@@ -343,7 +343,7 @@ search_matches(NcMenu *menu, int32 pos, void *user) {
     }
 
     text = *item;
-    return ncm_regex_search(&context->regex, text, strlen32(text));
+    return ncm_regex_matches(&context->regex, text, strlen32(text));
 }
 
 static bool
@@ -360,7 +360,7 @@ search_song_matches(NcMenu *menu, int32 pos, void *user) {
     }
 
     rendered = ncm_format_render_string(context->format, *item);
-    result = ncm_regex_search(&context->regex, rendered.data,
+    result = ncm_regex_matches(&context->regex, rendered.data,
                               rendered.len);
     sb_free(&rendered);
     return result;
@@ -421,7 +421,7 @@ test_regex_handles_empty_strings(void) {
     ASSERT(ncm_regex_compile(
         &regex, STRLIT("ohne"), NCM_REGEX_LITERAL_CASE_INSENSITIVE,
         &error) == 0);
-    ASSERT(!ncm_regex_search(&regex, STRLIT("")));
+    ASSERT(!ncm_regex_matches(&regex, STRLIT("")));
     ncm_regex_destroy(&regex);
 
     regex = (NcmRegex){0};
@@ -429,8 +429,8 @@ test_regex_handles_empty_strings(void) {
     ASSERT(ncm_regex_compile(
         &regex, STRLIT(""), NCM_REGEX_LITERAL_CASE_INSENSITIVE,
         &error) == 0);
-    ASSERT(ncm_regex_search(&regex, STRLIT("")));
-    ASSERT(ncm_regex_search(&regex, STRLIT("ohne")));
+    ASSERT(ncm_regex_matches(&regex, STRLIT("")));
+    ASSERT(ncm_regex_matches(&regex, STRLIT("ohne")));
     ncm_regex_destroy(&regex);
     return;
 }
@@ -848,11 +848,11 @@ test_column_search_uses_every_displayed_column(void) {
     ohne_len = strlen32(ohne.data);
     search_context_init(&context, "ohn");
 
-    ASSERT(ncm_regex_search(&context.regex, choros.data, choros.len));
+    ASSERT(ncm_regex_matches(&context.regex, choros.data, choros.len));
     search_context_destroy(&context);
     search_context_init(&context, "ohne");
-    ASSERT(!ncm_regex_search(&context.regex, choros.data, choros.len));
-    ASSERT(ncm_regex_search(&context.regex, ohne.data, ohne.len));
+    ASSERT(!ncm_regex_matches(&context.regex, choros.data, choros.len));
+    ASSERT(ncm_regex_matches(&context.regex, ohne.data, ohne.len));
     ASSERT(MEMMEM(choros.data, choros_len, "John Neschling") != NULL);
     ASSERT(MEMMEM(choros.data, choros_len, "Choros No 6") != NULL);
     ASSERT(MEMMEM(ohne.data, ohne_len, "Rammstein") != NULL);

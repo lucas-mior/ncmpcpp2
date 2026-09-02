@@ -1182,7 +1182,7 @@ playlist_editor_search_text_matches(NcmRegex *regex, char *data,
         data = "";
         len = 0;
     }
-    return ncm_regex_search(regex, data, len);
+    return ncm_regex_matches(regex, data, len);
 }
 
 static void

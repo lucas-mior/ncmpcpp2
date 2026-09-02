@@ -567,8 +567,8 @@ lyrics_screen_fetch(LyricsScreen *screen,
                       STRLIT("failed to build lyrics filename"));
         return false;
     }
-    lrc_found = ncm_fs_exists(lrc_filename.data, lrc_filename.len);
-    txt_found = ncm_fs_exists(txt_filename.data, txt_filename.len);
+    lrc_found = ncm_fs_path_is_existing(lrc_filename.data, lrc_filename.len);
+    txt_found = ncm_fs_path_is_existing(txt_filename.data, txt_filename.len);
     lyrics_report_sidecar_status(&lrc_filename, lrc_found,
                                  &txt_filename, txt_found);
     if (lrc_found) {
@@ -1509,7 +1509,7 @@ lyrics_preferred_filename_from_song(StrBuilder *filename,
         sb_free(&lrc_filename);
         return false;
     }
-    if (ncm_fs_exists(lrc_filename.data, lrc_filename.len)) {
+    if (ncm_fs_path_is_existing(lrc_filename.data, lrc_filename.len)) {
         sb_copy(filename, &lrc_filename);
         sb_free(&lrc_filename);
         return true;
@@ -2025,7 +2025,7 @@ lyrics_start_next_background(LyricsScreen *screen,
             continue;
         }
 
-        if (ncm_fs_exists(filename.data, filename.len)) {
+        if (ncm_fs_path_is_existing(filename.data, filename.len)) {
             lyrics_queued_song_destroy(queued);
             free2(queued, SIZEOF(*queued));
             queued = NULL;

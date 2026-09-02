@@ -735,8 +735,8 @@ typedef struct NcmSampleBuffer {
 } NcmSampleBuffer;
 
 void ncm_sample_buffer_destroy(NcmSampleBuffer *buffer);
-bool ncm_sample_buffer_put(NcmSampleBuffer *buffer,
-                           int16 *samples, int32 samples_len);
+int32 ncm_sample_buffer_put(NcmSampleBuffer *buffer,
+                            int16 *samples, int32 samples_len);
 int32 ncm_sample_buffer_get(NcmSampleBuffer *buffer,
                             int32 samples_len, int16 *dest, int32 dest_len);
 int32 ncm_sample_buffer_get_clamped(NcmSampleBuffer *buffer,
@@ -855,7 +855,7 @@ void ncm_regex_escape_literal(StrBuilder *buffer,
                               char *pattern, int32 pattern_len);
 int32 ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
                         uint32 flags, NcmError *ncm_error);
-bool ncm_regex_search(NcmRegex *regex, char *string, int32 string_len);
+bool ncm_regex_matches(NcmRegex *regex, char *string, int32 string_len);
 int32 ncm_regex_for_each_match(NcmRegex *regex,
                                char *string, int32 string_len,
                                NcmRegexMatchCallback *callback, void *user);
@@ -1517,7 +1517,7 @@ void ncm_fs_entry_init(NcmFsEntry *entry);
 void ncm_fs_entry_destroy(NcmFsEntry *entry);
 int32 ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat,
                   NcmError *ncm_error);
-bool ncm_fs_exists(char *path, int32 path_len);
+bool ncm_fs_path_is_existing(char *path, int32 path_len);
 int32 ncm_fs_unlink(char *path, int32 path_len, NcmError *ncm_error);
 int32 ncm_fs_rename(char *old_path, int32 old_path_len,
                     char *new_path, int32 new_path_len,
@@ -1641,7 +1641,7 @@ int32 ncm_option_parser_parse_line(char *line, int32 line_len,
 int32 ncm_option_parser_yes_no(char *value, int32 value_len, bool *result);
 
 /* c/ncm_path.h */
-bool ncm_path_expand_home(StrBuilder *path, NcmError *ncm_error);
+int32 ncm_path_expand_home(StrBuilder *path, NcmError *ncm_error);
 int32 ncm_path_basename_start(char *path, int32 path_len);
 int32 ncm_path_parent_directory_len(char *path, int32 path_len);
 int32 ncm_path_extension_start(char *path, int32 path_len);

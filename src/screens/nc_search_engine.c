@@ -1216,7 +1216,7 @@ search_row_matches(SearchEngineScreen *screen,
         || !search_row_label(screen, row, &view)) {
         return false;
     }
-    return ncm_regex_search(regex, view.data, view.len);
+    return ncm_regex_matches(regex, view.data, view.len);
 }
 
 static bool
@@ -1773,7 +1773,7 @@ search_song_field_matches(SearchEngineScreen *screen, NcmSong *song,
     if ((regex == NULL) || !regex->compiled) {
         return true;
     }
-    return ncm_regex_search(regex, value.data, value.len);
+    return ncm_regex_matches(regex, value.data, value.len);
 }
 
 static bool
@@ -1798,7 +1798,7 @@ search_song_any_matches(SearchEngineScreen *screen, NcmSong *song,
                 constraint->len, Config.ignore_leading_the) == 0) {
                 return true;
             }
-        } else if (ncm_regex_search(regex, value.data, value.len)) {
+        } else if (ncm_regex_matches(regex, value.data, value.len)) {
             return true;
         }
     }

@@ -16,18 +16,31 @@ ncm_sample_buffer_destroy(NcmSampleBuffer *buffer) {
     return;
 }
 
-bool
+int32
 ncm_sample_buffer_put(NcmSampleBuffer *buffer,
                       int16 *samples, int32 samples_len) {
     int32 free_samples;
     int32 to_remove;
     int32 kept;
 
+    if (buffer == NULL) {
+        return -EINVAL;
+    }
+    if ((buffer->len < 0) || (buffer->cap < 0)
+        || (buffer->len > buffer->cap)) {
+        return -EINVAL;
+    }
     if (samples_len <= 0) {
-        return true;
+        return 0;
+    }
+    if (samples == NULL) {
+        return -EINVAL;
     }
     if (samples_len > buffer->cap) {
-        return false;
+        return -ENOSPC;
+    }
+    if ((buffer->data == NULL) && (buffer->cap > 0)) {
+        return -EINVAL;
     }
 
     free_samples = buffer->cap - buffer->len;
@@ -44,7 +57,7 @@ ncm_sample_buffer_put(NcmSampleBuffer *buffer,
     memcpy64(buffer->data + buffer->len, samples,
              samples_len*SIZEOF(*buffer->data));
     buffer->len += samples_len;
-    return true;
+    return 0;
 }
 
 int32

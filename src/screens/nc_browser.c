@@ -653,6 +653,7 @@ browser_screen_change_browse_mode(BrowserScreen *screen,
     char *hostname;
     bool local_browser;
     bool result;
+    int32 status;
 
     if ((screen == NULL) || (client == NULL)) {
         ncm_error_set(ncm_error, EINVAL, STRLIT("missing browser state"));
@@ -674,7 +675,8 @@ browser_screen_change_browse_mode(BrowserScreen *screen,
             sb_free(&directory);
             return false;
         }
-        if (!ncm_path_expand_home(&directory, ncm_error)) {
+        if ((status = ncm_path_expand_home(&directory,
+                                            ncm_error)) < 0) {
             sb_free(&directory);
             return false;
         }
@@ -1553,7 +1555,7 @@ browser_item_matches(BrowserScreen *screen, NcmMpdItem *item,
                                        &screen->item_text_buffer)) {
         return false;
     }
-    return ncm_regex_search(regex, screen->item_text_buffer.data,
+    return ncm_regex_matches(regex, screen->item_text_buffer.data,
                             screen->item_text_buffer.len);
 }
 
@@ -1780,12 +1782,15 @@ browser_reload_from_local(BrowserScreen *screen,
 static bool
 browser_prepare_local_reload_directory(BrowserScreen *screen,
                                        NcmError *ncm_error) {
+    int32 status;
+
     ASSERT(screen != NULL);
     if (screen->current_directory.len <= 0) {
         if (sb_set(&screen->current_directory, STRLIT("~")) < 0) {
             return false;
         }
-        if (!ncm_path_expand_home(&screen->current_directory, ncm_error)) {
+        if ((status = ncm_path_expand_home(&screen->current_directory,
+                                            ncm_error)) < 0) {
             return false;
         }
         return true;

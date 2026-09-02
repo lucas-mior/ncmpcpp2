@@ -200,7 +200,7 @@ lastfm_action_failed(char *data, int32 data_len) {
     failed = false;
     if (ncm_regex_compile(&regex, STRLIT("status=\"failed\""),
                           NCM_REGEX_EXTENDED, &ncm_error) == 0) {
-        failed = ncm_regex_search(&regex, data, data_len);
+        failed = ncm_regex_matches(&regex, data, data_len);
     }
     ncm_regex_destroy(&regex);
     return failed;

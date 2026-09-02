@@ -1121,9 +1121,9 @@ void visualizer_screen_reset_audio_state(VisualizerScreen *screen);
 void visualizer_screen_reset_auto_scale_multiplier(VisualizerScreen *screen);
 void visualizer_screen_toggle_type(VisualizerScreen *screen);
 int32 visualizer_screen_requested_samples(VisualizerScreen *screen);
-bool visualizer_screen_push_samples(VisualizerScreen *screen,
-                                    int16 *samples,
-                                    int32 samples_len);
+int32 visualizer_screen_push_samples(VisualizerScreen *screen,
+                                     int16 *samples,
+                                     int32 samples_len);
 int32 visualizer_screen_take_render_samples(
     VisualizerScreen *screen, int16 *dest, int32 dest_len);
 int32 visualizer_screen_split_stereo(VisualizerScreen *screen,

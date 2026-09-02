@@ -1054,7 +1054,7 @@ playlist_song_matches(PlaylistScreen *screen,
     } else {
         buffer = ncm_format_render_string(&Config.song_list_format, song);
     }
-    result = ncm_regex_search(regex, buffer.data, buffer.len);
+    result = ncm_regex_matches(regex, buffer.data, buffer.len);
     sb_free(&buffer);
     return result;
 }

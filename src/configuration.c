@@ -667,8 +667,10 @@ configuration_read_settings(NcmConfigurationOptions *options,
     int32 status;
 
     for (int32 i = 0; i < options->config_paths.len; i += 1) {
-        if (!ncm_path_expand_home(&options->config_paths.items[i], ncm_error)) {
-            return ncm_error_status(ncm_error);
+        status = ncm_path_expand_home(&options->config_paths.items[i],
+                                      ncm_error);
+        if (status < 0) {
+            return status;
         }
     }
     status = configuration_make_string_views(&config_views,
@@ -705,8 +707,8 @@ configuration_read_bindings(NcmConfigurationOptions *options,
         StrBuilder *path;
 
         path = &options->bindings_paths.items[i];
-        if (!ncm_path_expand_home(path, ncm_error)) {
-            return ncm_error_status(ncm_error);
+        if ((status = ncm_path_expand_home(path, ncm_error)) < 0) {
+            return status;
         }
         if ((status = ncm_bindings_configuration_read(&Bindings, path->data,
                                                       path->len,
@@ -722,13 +724,15 @@ static int32
 configuration_create_directories(NcmError *ncm_error) {
     int32 status;
 
-    if (!ncm_fs_exists(Config.ncmpcpp_directory, Config.ncmpcpp_directory_len)
+    if (!ncm_fs_path_is_existing(Config.ncmpcpp_directory,
+                                 Config.ncmpcpp_directory_len)
         && ((status = ncm_fs_mkdir_all(Config.ncmpcpp_directory,
                                        Config.ncmpcpp_directory_len,
                                        ncm_error)) < 0)) {
         return status;
     }
-    if (!ncm_fs_exists(Config.lyrics_directory, Config.lyrics_directory_len)
+    if (!ncm_fs_path_is_existing(Config.lyrics_directory,
+                                 Config.lyrics_directory_len)
         && ((status = ncm_fs_mkdir_all(Config.lyrics_directory,
                                        Config.lyrics_directory_len,
                                        ncm_error)) < 0)) {

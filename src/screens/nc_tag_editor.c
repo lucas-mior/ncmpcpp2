@@ -4292,7 +4292,7 @@ tag_editor_tag_matches_regex(TagEditorScreen *screen,
         sb_free(&buffer);
         return false;
     }
-    found = ncm_regex_search(regex, buffer.data, buffer.len);
+    found = ncm_regex_matches(regex, buffer.data, buffer.len);
     sb_free(&buffer);
     return found;
 }
@@ -4439,7 +4439,7 @@ tag_editor_directory_matches_regex(NcMenuStringPair *pair,
     if (STREQUAL(pair->first, pair->first_len, "..")) {
         return filter;
     }
-    return ncm_regex_search(regex, pair->first, pair->first_len);
+    return ncm_regex_matches(regex, pair->first, pair->first_len);
 }
 
 static bool

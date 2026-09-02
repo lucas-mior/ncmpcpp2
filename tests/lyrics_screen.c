@@ -1279,8 +1279,8 @@ lyrics_screen_test_refetch_writes_txt_without_removing_lrc(void) {
 
     lyrics_screen_refetch_current(&screen, &error);
     ASSERT(lyrics_test_has_pushed_job);
-    ASSERT(ncm_fs_exists(lrc_path, strlen32(lrc_path)));
-    ASSERT(!ncm_fs_exists(txt_path, strlen32(txt_path)));
+    ASSERT(ncm_fs_path_is_existing(lrc_path, strlen32(lrc_path)));
+    ASSERT(!ncm_fs_path_is_existing(txt_path, strlen32(txt_path)));
     ASSERT_EQUAL(screen.filename.data, screen.filename.len,
                  txt_path, strlen32(txt_path));
 
@@ -1290,7 +1290,7 @@ lyrics_screen_test_refetch_writes_txt_without_removing_lrc(void) {
     ASSERT(ncm_lyrics_result_set(&job->result, true,
                                  STRLIT("downloaded plain\n")) == 0);
     lyrics_test_pushed_job.complete(0, &error, job);
-    ASSERT(ncm_fs_exists(lrc_path, strlen32(lrc_path)));
+    ASSERT(ncm_fs_path_is_existing(lrc_path, strlen32(lrc_path)));
     lyrics_screen_test_assert_file_text(txt_path,
                                         STRLIT("downloaded plain\n"));
     ASSERT(lyrics_screen_mode(&screen) == LYRICS_MODE_PLAIN);
