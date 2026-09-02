@@ -260,10 +260,7 @@ ncm_binding_action_run(NcmBindingAction *action, NcmBindingRuntime *runtime) {
         if ((runtime != NULL) && (runtime->run_action != NULL)) {
             return runtime->run_action(action->type, runtime->user);
         }
-        if (ncm_action_run(action->type, NULL)) {
-            return 0;
-        }
-        return -NCM_ERROR_UNAVAILABLE;
+        return ncm_action_run(action->type, NULL);
     case NCM_BINDING_ACTION_PUSH_CHARACTERS:
         if ((runtime == NULL) || (runtime->push_key == NULL)) {
             return -EINVAL;
@@ -341,10 +338,7 @@ ncm_binding_runtime_can_run_action(enum NcmActionType type, void *user) {
 
 int32
 ncm_binding_runtime_run_action(enum NcmActionType type, void *user) {
-    if (ncm_action_runtime_run(user, type)) {
-        return 0;
-    }
-    return -NCM_ERROR_UNAVAILABLE;
+    return ncm_action_runtime_run(user, type);
 }
 
 bool

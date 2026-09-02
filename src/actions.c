@@ -26,7 +26,7 @@
         return ncm_action_runtime_can_run(NULL, NCM_ACTION_##TYPE);        \
     }                                                                      \
                                                                            \
-    static bool                                                            \
+    static int32                                                           \
     ncm_action_run_##SUFFIX(void *user) {                                  \
         (void)user;                                                        \
         return ncm_action_runtime_run(NULL, NCM_ACTION_##TYPE);            \
@@ -244,13 +244,13 @@ ncm_action_def_can_run(NcmActionDef *action, void *user) {
     return action->can_run(user);
 }
 
-bool
+int32
 ncm_action_def_run(NcmActionDef *action, void *user) {
     if ((action == NULL) || (action->run == NULL)) {
-        return false;
+        return -EINVAL;
     }
     if (!ncm_action_def_can_run(action, user)) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
     return action->run(user);
 }
@@ -260,7 +260,7 @@ ncm_action_can_run(enum NcmActionType type, void *user) {
     return ncm_action_def_can_run(ncm_action_get(type), user);
 }
 
-bool
+int32
 ncm_action_run(enum NcmActionType type, void *user) {
     return ncm_action_def_run(ncm_action_get(type), user);
 }
@@ -289,6 +289,15 @@ action_runtime_call_hook(NcmActionRuntimeHook hook, enum NcmActionType type,
         return NCM_ACTION_RUNTIME_DEFER;
     }
     return hook(type, user);
+}
+
+static int32
+action_runtime_status_from_bool(bool success) {
+    if (success) {
+        return 0;
+    }
+
+    return -NCM_ERROR_UNAVAILABLE;
 }
 
 static bool
@@ -396,7 +405,7 @@ action_runtime_switch_to_screen(enum ScreenType type) {
 #endif
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
-        return ncm_action_show_visualizer();
+        return ncm_action_show_visualizer() == 0;
 #endif
     case NCM_SCREEN_TYPE_COUNT:
         break;
@@ -407,26 +416,27 @@ action_runtime_switch_to_screen(enum ScreenType type) {
     return false;
 }
 
-bool
+int32
 ncm_action_show_visualizer(void) {
 #if defined(ENABLE_VISUALIZER)
     app_screen_visualizer_register();
-    return app_screens_switch_to_type(NCM_SCREEN_TYPE_VISUALIZER);
+    return action_runtime_status_from_bool(
+        app_screens_switch_to_type(NCM_SCREEN_TYPE_VISUALIZER));
 #else
-    return false;
+    return -NCM_ERROR_UNAVAILABLE;
 #endif
 }
 
-bool
+int32
 ncm_action_toggle_visualization_type(void) {
 #if defined(ENABLE_VISUALIZER)
     if (!app_screen_visualizer_is_current()) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
     visualizer_screen_toggle_type(app_screen_visualizer());
-    return true;
+    return 0;
 #else
-    return false;
+    return -NCM_ERROR_UNAVAILABLE;
 #endif
 }
 
@@ -490,11 +500,21 @@ action_runtime_switch_to_next_screen(bool reverse) {
 
 static bool
 action_runtime_mpd_error(NcmError *ncm_error) {
-    if (ncm_error && ncm_error_is_set(ncm_error)) {
+    if ((ncm_error != NULL) && ncm_error_is_set(ncm_error)) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     ncm_error->message);
     }
     return false;
+}
+
+static int32
+action_runtime_mpd_error_status(NcmError *ncm_error) {
+    (void)action_runtime_mpd_error(ncm_error);
+    if ((ncm_error != NULL) && ncm_error_is_set(ncm_error)) {
+        return ncm_error_status(ncm_error);
+    }
+
+    return -NCM_ERROR_UNAVAILABLE;
 }
 
 static bool
@@ -589,7 +609,7 @@ action_runtime_mpd_simple(
     return true;
 }
 
-bool
+int32
 ncm_action_add_song_to_playlist_with_mode(NcmSong *song, bool play,
                                           int32 position,
                                           enum SpaceAddMode space_add_mode) {
@@ -601,10 +621,10 @@ ncm_action_add_song_to_playlist_with_mode(NcmSong *song, bool play,
     bool ok;
 
     if (song == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (!ncm_mpd_client_connected(&global_mpd)) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
 
     ncm_error_clear(&ncm_error);
@@ -618,16 +638,16 @@ ncm_action_add_song_to_playlist_with_mode(NcmSong *song, bool play,
             ok = action_runtime_playlist_remove_song(song, &ncm_error);
         }
         if (!ok) {
-            return action_runtime_mpd_error(&ncm_error);
+            return action_runtime_mpd_error_status(&ncm_error);
         }
         (void)ncm_status_update_full(&global_mpd, NULL, &ncm_error);
-        return true;
+        return 0;
     }
 
     id = -1;
     if (ncm_mpd_client_add_song_value(&global_mpd, song, position, &id,
                                        &ncm_error) < 0) {
-        return action_runtime_mpd_error(&ncm_error);
+        return action_runtime_mpd_error_status(&ncm_error);
     }
 
     formatted = ncm_format_render_string(&Config.song_status_format, song);
@@ -640,15 +660,15 @@ ncm_action_add_song_to_playlist_with_mode(NcmSong *song, bool play,
 
     if (play && (id >= 0)) {
         if (ncm_mpd_client_play_id(&global_mpd, id, &ncm_error) < 0) {
-            return action_runtime_mpd_error(&ncm_error);
+            return action_runtime_mpd_error_status(&ncm_error);
         }
     }
 
     (void)ncm_status_update_full(&global_mpd, NULL, &ncm_error);
-    return true;
+    return 0;
 }
 
-bool
+int32
 ncm_action_add_song_to_playlist(NcmSong *song, bool play, int32 position) {
     return ncm_action_add_song_to_playlist_with_mode(song, play, position,
                                                      Config.space_add_mode);
@@ -2456,7 +2476,7 @@ action_runtime_add_selected_songs(bool play) {
 
     for (int32 i = 0; success && (i < songs.len); i += 1) {
         success = ncm_action_add_song_to_playlist(&songs.items[i],
-                                                  play && first, -1);
+                                                  play && first, -1) == 0;
         first = false;
     }
 
@@ -4592,7 +4612,7 @@ action_runtime_save_tag_changes(void) {
     return false;
 }
 
-bool
+int32
 ncm_action_edit_song(NcmSong *song) {
 #if defined(HAVE_TAGLIB_H)
     enum TinyTagEditorOpenResult open_result;
@@ -4600,17 +4620,17 @@ ncm_action_edit_song(NcmSong *song) {
     StrBuilder path = {0};
     int32 path_len;
     int32 path_width;
-    bool success = false;
+    int32 status = -NCM_ERROR_UNAVAILABLE;
 
     if (song == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (Config.mpd_music_dir_len <= 0) {
         ncm_statusbar_print_cstring(
             Config.message_delay_time,
             "Proper mpd_music_dir variable has to be set in "
             "configuration file");
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
 
     open_result = tiny_tag_editor_screen_open_song(
@@ -4619,8 +4639,8 @@ ncm_action_edit_song(NcmSong *song) {
         Config.tags_separator_len, Config.show_duplicate_tags, &path);
     switch (open_result) {
     case TINY_TAG_EDITOR_OPEN_SUCCESS:
-        success = action_runtime_switch_to_screen(
-            NCM_SCREEN_TYPE_TINY_TAG_EDITOR);
+        status = action_runtime_status_from_bool(
+            action_runtime_switch_to_screen(NCM_SCREEN_TYPE_TINY_TAG_EDITOR));
         break;
     case TINY_TAG_EDITOR_OPEN_STREAM:
         ncm_statusbar_print_cstring(Config.message_delay_time,
@@ -4653,10 +4673,10 @@ ncm_action_edit_song(NcmSong *song) {
         break;
     }
     sb_free(&path);
-    return success;
+    return status;
 #else
     (void)song;
-    return false;
+    return -NCM_ERROR_UNAVAILABLE;
 #endif
 }
 
@@ -5217,7 +5237,7 @@ action_runtime_edit_current_song(void) {
     }
     song = (NcmSong){0};
     if ((success = action_runtime_current_song(&song))) {
-        success = ncm_action_edit_song(&song);
+        success = ncm_action_edit_song(&song) == 0;
     }
     ncm_song_destroy(&song);
     return success;
@@ -5493,9 +5513,9 @@ action_runtime_mouse_event(void) {
                && (event->y == 0)
                && (event->x > COLS - global_volume_state_len())) {
         if (event->bstate & BUTTON5_PRESSED) {
-            return ncm_action_runtime_run(NULL, NCM_ACTION_VOLUME_DOWN);
+            return ncm_action_runtime_run(NULL, NCM_ACTION_VOLUME_DOWN) == 0;
         }
-        return ncm_action_runtime_run(NULL, NCM_ACTION_VOLUME_UP);
+        return ncm_action_runtime_run(NULL, NCM_ACTION_VOLUME_UP) == 0;
     } else if (event->bstate
                & (BUTTON1_PRESSED | BUTTON3_PRESSED | BUTTON4_PRESSED
                   | BUTTON5_PRESSED)) {
@@ -6348,13 +6368,13 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
 #endif
     case NCM_ACTION_SHOW_VISUALIZER:
 #if defined(ENABLE_VISUALIZER)
-        return ncm_action_show_visualizer();
+        return ncm_action_show_visualizer() == 0;
 #else
         return false;
 #endif
     case NCM_ACTION_TOGGLE_VISUALIZATION_TYPE:
 #if defined(ENABLE_VISUALIZER)
-        return ncm_action_toggle_visualization_type();
+        return ncm_action_toggle_visualization_type() == 0;
 #else
         return false;
 #endif
@@ -6462,26 +6482,30 @@ ncm_action_runtime_can_run(NcmActionRuntime *runtime, enum NcmActionType type) {
     return action_runtime_builtin_can_run(runtime, type);
 }
 
-bool
+int32
 ncm_action_runtime_run(NcmActionRuntime *runtime, enum NcmActionType type) {
     int32 hook_result;
     bool handled;
 
     runtime = action_runtime_or_global(runtime);
     if (!ncm_action_runtime_can_run(runtime, type)) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
 
     hook_result = action_runtime_call_hook(runtime->run_hook, type,
                                            runtime->user);
     if (action_runtime_hook_allowed(hook_result, &handled)) {
-        return true;
+        return 0;
     }
     if (action_runtime_hook_denied(hook_result, &handled)) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    if (handled) {
+        return hook_result;
     }
 
-    return action_runtime_builtin_run(runtime, type);
+    return action_runtime_status_from_bool(
+        action_runtime_builtin_run(runtime, type));
 }
 
 #endif /* NCMPCPP_ACTIONS_C */

@@ -2095,7 +2095,7 @@ playlist_editor_mouse_add_current_song(PlaylistEditorScreen *screen,
     if ((song = nc_song_menu_current(&screen->content)) == NULL) {
         return false;
     }
-    return ncm_action_add_song_to_playlist(song, play, -1);
+    return ncm_action_add_song_to_playlist(song, play, -1) == 0;
 }
 
 static void

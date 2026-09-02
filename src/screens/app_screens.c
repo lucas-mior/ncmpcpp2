@@ -663,7 +663,7 @@ search_add_song(
 ) {
     (void)user;
     (void)ncm_error;
-    return ncm_action_add_song_to_playlist(song, play, -1);
+    return ncm_action_add_song_to_playlist(song, play, -1) == 0;
 }
 
 static bool
