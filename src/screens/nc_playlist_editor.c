@@ -1842,8 +1842,8 @@ playlist_editor_update_from_mpd(PlaylistEditorScreen *screen,
     bool ok;
 
     ASSERT(screen != NULL);
-    changed = false;
 
+    changed = false;
     ncm_error_clear(&ncm_error);
     if (screen->playlists_update_requested
         || nc_menu_empty(nc_playlist_entry_menu_base(&screen->playlists))) {
