@@ -6131,7 +6131,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
     case NCM_ACTION_DELETE_STORED_PLAYLIST:
         return action_runtime_delete_stored_playlists();
     case NCM_ACTION_RUN_ACTION:
-        return nc_screen_run_current(app_controller_current_screen());
+        return nc_screen_run_current(app_controller_current_screen()) == 0;
     case NCM_ACTION_MOVE_SORT_ORDER_UP:
         return sort_playlist_dialog_move_current_up(
             app_screen_sort_playlist_dialog());
@@ -6148,7 +6148,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
         if (action_runtime_current_screen_is(
             NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER)) {
             return selected_items_adder_screen_run_current(
-                app_screen_selected_items_adder());
+                app_screen_selected_items_adder()) == 0;
         }
         return action_runtime_add_prompt();
     case NCM_ACTION_LOAD:

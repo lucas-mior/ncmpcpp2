@@ -14,7 +14,7 @@ static void nc_screen_callbacks_scroll(NcScreen *screen,
                                        enum NcScroll where);
 static void nc_screen_callbacks_list_change_finished(NcScreen *screen);
 static bool nc_screen_callbacks_can_run_current(NcScreen *screen);
-static bool nc_screen_callbacks_run_current(NcScreen *screen);
+static int32 nc_screen_callbacks_run_current(NcScreen *screen);
 static void nc_screen_callbacks_switch_to(NcScreen *screen);
 static void nc_screen_callbacks_resize(NcScreen *screen);
 static int32 nc_screen_callbacks_window_timeout(NcScreen *screen);
@@ -111,10 +111,10 @@ nc_screen_default_can_run_current(NcScreen *screen) {
     return false;
 }
 
-bool
+int32
 nc_screen_default_run_current(NcScreen *screen) {
     (void)screen;
-    return false;
+    return 0;
 }
 
 void
@@ -217,10 +217,13 @@ nc_screen_can_run_current(NcScreen *screen) {
     return screen->ops->can_run_current(screen);
 }
 
-bool
+int32
 nc_screen_run_current(NcScreen *screen) {
+    if (screen == NULL) {
+        return -EINVAL;
+    }
     if (!nc_screen_can_run_current(screen)) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
     return screen->ops->run_current(screen);
 }
@@ -709,10 +712,10 @@ nc_screen_callbacks_can_run_current(NcScreen *screen) {
     return screen->callbacks.can_run_current(screen);
 }
 
-static bool
+static int32
 nc_screen_callbacks_run_current(NcScreen *screen) {
     if (screen->callbacks.run_current == NULL) {
-        return false;
+        return nc_screen_default_run_current(screen);
     }
     return screen->callbacks.run_current(screen);
 }

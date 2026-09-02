@@ -16,7 +16,7 @@ static void search_update(NcScreen *screen);
 static void search_mouse_button_pressed(NcScreen *screen,
                                         MEVENT event);
 static bool search_can_run_current(NcScreen *screen);
-static bool search_run_current(NcScreen *screen);
+static int32 search_run_current(NcScreen *screen);
 static void search_draw_row(NcMenu *menu, NcWindow *window,
                             void *item, int32 pos, void *user);
 static NcMenuDisplayCallbacks search_display_callbacks(
@@ -837,7 +837,7 @@ search_engine_screen_can_run_current(SearchEngineScreen *screen) {
     return row && !row->is_song;
 }
 
-bool
+int32
 search_engine_screen_run_current(SearchEngineScreen *screen) {
     enum SearchEnginePromptResult prompt_status;
     enum SearchEngineSearchMode mode;
@@ -848,8 +848,11 @@ search_engine_screen_run_current(SearchEngineScreen *screen) {
     uint32 next_mode;
     bool success;
 
+    if (screen == NULL) {
+        return -EINVAL;
+    }
     if (!search_engine_screen_can_run_current(screen)) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
 
     menu = search_engine_screen_menu(screen);
@@ -861,7 +864,10 @@ search_engine_screen_run_current(SearchEngineScreen *screen) {
             success = search_engine_screen_set_constraint(
                 screen, pos, value.data, value.len);
             sb_free(&value);
-            return success;
+            if (!success) {
+                return -NCM_ERROR_UNAVAILABLE;
+            }
+            return 0;
         }
         sb_free(&value);
         if (prompt_status == SEARCH_ENGINE_PROMPT_ABORTED) {
@@ -871,13 +877,16 @@ search_engine_screen_run_current(SearchEngineScreen *screen) {
             search_engine_screen_status_message(
                 screen, STRLIT("Unable to read search constraint"));
         }
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
 
     if (pos == SEARCH_ENGINE_SEARCH_SOURCE_ROW) {
         screen->search_in_database = !screen->search_in_database;
         Config.search_in_db = screen->search_in_database;
-        return search_engine_screen_update_search_source_row(screen);
+        if (!search_engine_screen_update_search_source_row(screen)) {
+            return -NCM_ERROR_UNAVAILABLE;
+        }
+        return 0;
     }
     if (pos == SEARCH_ENGINE_SEARCH_MODE_ROW) {
         next_mode = (uint32)screen->search_mode + 1;
@@ -885,19 +894,25 @@ search_engine_screen_run_current(SearchEngineScreen *screen) {
             next_mode = SEARCH_ENGINE_SEARCH_MODE_LITERAL;
         }
         mode = (enum SearchEngineSearchMode)next_mode;
-        return search_engine_screen_set_search_mode(screen, mode);
+        if (!search_engine_screen_set_search_mode(screen, mode)) {
+            return -NCM_ERROR_UNAVAILABLE;
+        }
+        return 0;
     }
     if (pos == SEARCH_ENGINE_SEARCH_BUTTON_ROW) {
         ncm_error_clear(&ncm_error);
-        return search_engine_screen_start_searching(screen,
-                                                    screen->hooks.client,
-                                                    &ncm_error);
+        if (!search_engine_screen_start_searching(screen,
+                                                  screen->hooks.client,
+                                                  &ncm_error)) {
+            return -NCM_ERROR_UNAVAILABLE;
+        }
+        return 0;
     }
     if (pos == SEARCH_ENGINE_RESET_BUTTON_ROW) {
         search_engine_screen_reset(screen);
-        return true;
+        return 0;
     }
-    return false;
+    return -NCM_ERROR_UNAVAILABLE;
 }
 
 bool
@@ -1190,7 +1205,7 @@ search_can_run_current(NcScreen *screen) {
     return search_engine_screen_can_run_current(search_from_screen(screen));
 }
 
-static bool
+static int32
 search_run_current(NcScreen *screen) {
     return search_engine_screen_run_current(search_from_screen(screen));
 }

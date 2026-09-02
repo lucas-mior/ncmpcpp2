@@ -16,7 +16,7 @@ static void adder_display(SelectedItemsAdderScreen *screen);
 static void adder_draw_row(NcMenu *menu, NcWindow *window, void *item,
                            int32 pos, void *user);
 static bool adder_can_run_current_callback(NcScreen *screen);
-static bool adder_run_current_callback(NcScreen *screen);
+static int32 adder_run_current_callback(NcScreen *screen);
 static void adder_resize_callback(NcScreen *screen);
 static char *adder_title_callback(NcScreen *screen);
 static void adder_update_callback(NcScreen *screen);
@@ -386,22 +386,22 @@ selected_items_adder_screen_populate_position_selector(
     return;
 }
 
-bool
+int32
 selected_items_adder_screen_run_current(
     SelectedItemsAdderScreen *screen
 ) {
     NcEditorActionRow *row;
 
     if (screen == NULL) {
-        return false;
+        return -EINVAL;
     }
     row = nc_menu_current_item(
         selected_items_adder_screen_active_menu(screen));
     if ((row == NULL) || (row->run == NULL)) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
     row->run(row->user);
-    return true;
+    return 0;
 }
 
 bool
@@ -568,7 +568,7 @@ adder_can_run_current_callback(NcScreen *screen) {
     return row && row->run;
 }
 
-static bool
+static int32
 adder_run_current_callback(NcScreen *screen) {
     return selected_items_adder_screen_run_current(
         adder_from_screen(screen));
