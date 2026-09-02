@@ -282,14 +282,14 @@ browser_screen_clear(BrowserScreen *screen) {
     return;
 }
 
-bool
+int32
 browser_screen_add_item_copy(BrowserScreen *screen,
                              NcmMpdItem *item) {
     if ((screen == NULL) || (item == NULL)) {
-        return false;
+        return -EINVAL;
     }
     nc_browser_entry_menu_add(browser_screen_entries(screen), item);
-    return true;
+    return 0;
 }
 
 void
@@ -1690,7 +1690,7 @@ browser_load_mpd_items(BrowserScreen *screen,
         return false;
     }
     for (int32 i = 0; i < items->len; i += 1) {
-        if (!browser_screen_add_item_copy(screen, &items->items[i])) {
+        if (browser_screen_add_item_copy(screen, &items->items[i]) < 0) {
             return false;
         }
     }
@@ -2009,8 +2009,8 @@ browser_collect_item_songs(BrowserScreen *screen,
         return browser_collect_mpd_directory_songs(
             songs, path.data, path.len);
     case NCM_MPD_ITEM_SONG:
-        return ncm_song_array_append_copy(songs,
-                                          ncm_mpd_item_song(item));
+        return ncm_song_array_append_copy(
+            songs, ncm_mpd_item_song(item)) >= 0;
     case NCM_MPD_ITEM_PLAYLIST:
     case NCM_MPD_ITEM_COUNT:
         return true;
@@ -2041,7 +2041,7 @@ browser_collect_mpd_directory_songs(
     result = ncm_mpd_client_get_directory_recursive(
         &global_mpd, directory, &source, &ncm_error);
     for (int32 i = 0; result && (i < source.count); i += 1) {
-        if (!ncm_song_array_append_copy(songs, &source.items[i])) {
+        if (ncm_song_array_append_copy(songs, &source.items[i]) < 0) {
             result = false;
         }
     }
@@ -2116,8 +2116,10 @@ browser_collect_local_entry_songs(
                    screen, path.data, path.len)) {
         song = (NcmSong){0};
         result = browser_make_local_song(&song, path.data, path.len,
-                                         (time_t)stat.mtime)
-                 && ncm_song_array_append_copy(songs, &song);
+                                         (time_t)stat.mtime);
+        if (result) {
+            result = ncm_song_array_append_copy(songs, &song) >= 0;
+        }
         ncm_song_destroy(&song);
     }
 

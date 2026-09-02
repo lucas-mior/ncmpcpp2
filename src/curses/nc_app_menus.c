@@ -47,33 +47,33 @@ nc_menu_string_destroy(NcMenuString *string) {
     return;
 }
 
-bool
+int32
 nc_menu_string_copy(NcMenuString *dest, NcMenuString *source) {
     NcMenuString tmp = {0};
 
     if ((dest == NULL) || (source == NULL)) {
-        return false;
+        return -EINVAL;
     }
 
     nc_menu_owned_string_copy(&tmp.data, &tmp.len, &tmp.cap,
                               source->data, source->len);
     nc_menu_string_destroy(dest);
     *dest = tmp;
-    return true;
+    return 0;
 }
 
-bool
+int32
 nc_menu_string_set(NcMenuString *string, char *data, int32 data_len) {
     NcMenuString tmp = {0};
 
     if (string == NULL) {
-        return false;
+        return -EINVAL;
     }
 
     nc_menu_owned_string_copy(&tmp.data, &tmp.len, &tmp.cap, data, data_len);
     nc_menu_string_destroy(string);
     *string = tmp;
-    return true;
+    return 0;
 }
 
 void
@@ -88,12 +88,12 @@ nc_menu_string_pair_destroy(NcMenuStringPair *pair) {
     return;
 }
 
-bool
+int32
 nc_menu_string_pair_copy(NcMenuStringPair *dest, NcMenuStringPair *source) {
     NcMenuStringPair tmp = {0};
 
     if ((dest == NULL) || (source == NULL)) {
-        return false;
+        return -EINVAL;
     }
     nc_menu_owned_string_copy(&tmp.first, &tmp.first_len, &tmp.first_cap,
                               source->first, source->first_len);
@@ -102,7 +102,7 @@ nc_menu_string_pair_copy(NcMenuStringPair *dest, NcMenuStringPair *source) {
 
     nc_menu_string_pair_destroy(dest);
     *dest = tmp;
-    return true;
+    return 0;
 }
 
 void
@@ -116,23 +116,24 @@ nc_search_row_destroy(NcSearchRow *row) {
     return;
 }
 
-bool
+int32
 nc_search_row_copy(NcSearchRow *dest, NcSearchRow *source) {
     NcSearchRow tmp = {0};
+    int32 err;
 
     if ((dest == NULL) || (source == NULL)) {
-        return false;
+        return -EINVAL;
     }
     tmp.is_song = source->is_song;
-    if (ncm_song_copy(&tmp.song, &source->song) < 0) {
+    if ((err = ncm_song_copy(&tmp.song, &source->song)) < 0) {
         nc_search_row_destroy(&tmp);
-        return false;
+        return err;
     }
     nc_buffer_copy(&tmp.buffer, &source->buffer);
 
     nc_search_row_destroy(dest);
     *dest = tmp;
-    return true;
+    return 0;
 }
 
 void
@@ -145,13 +146,13 @@ nc_media_library_tag_row_destroy(NcMediaLibraryTagRow *row) {
     return;
 }
 
-bool
+int32
 nc_media_library_tag_row_copy(NcMediaLibraryTagRow *dest,
                               NcMediaLibraryTagRow *source) {
     NcMediaLibraryTagRow tmp = {0};
 
     if ((dest == NULL) || (source == NULL)) {
-        return false;
+        return -EINVAL;
     }
     nc_menu_owned_string_copy(&tmp.tag, &tmp.tag_len, &tmp.tag_cap,
                               source->tag, source->tag_len);
@@ -159,7 +160,7 @@ nc_media_library_tag_row_copy(NcMediaLibraryTagRow *dest,
 
     nc_media_library_tag_row_destroy(dest);
     *dest = tmp;
-    return true;
+    return 0;
 }
 
 void
@@ -176,13 +177,13 @@ nc_media_library_album_row_destroy(NcMediaLibraryAlbumRow *row) {
     return;
 }
 
-bool
+int32
 nc_media_library_album_row_copy(NcMediaLibraryAlbumRow *dest,
                                 NcMediaLibraryAlbumRow *source) {
     NcMediaLibraryAlbumRow tmp = {0};
 
     if ((dest == NULL) || (source == NULL)) {
-        return false;
+        return -EINVAL;
     }
     nc_menu_owned_string_copy(&tmp.tag, &tmp.tag_len, &tmp.tag_cap,
                               source->tag, source->tag_len);
@@ -195,7 +196,7 @@ nc_media_library_album_row_copy(NcMediaLibraryAlbumRow *dest,
 
     nc_media_library_album_row_destroy(dest);
     *dest = tmp;
-    return true;
+    return 0;
 }
 
 void
@@ -210,12 +211,12 @@ nc_editor_action_row_destroy(NcEditorActionRow *row) {
     return;
 }
 
-bool
+int32
 nc_editor_action_row_copy(NcEditorActionRow *dest, NcEditorActionRow *source) {
     NcEditorActionRow tmp = {0};
 
     if ((dest == NULL) || (source == NULL)) {
-        return false;
+        return -EINVAL;
     }
     nc_menu_owned_string_copy(&tmp.label, &tmp.label_len, &tmp.label_cap,
                               source->label, source->label_len);
@@ -224,7 +225,7 @@ nc_editor_action_row_copy(NcEditorActionRow *dest, NcEditorActionRow *source) {
 
     nc_editor_action_row_destroy(dest);
     *dest = tmp;
-    return true;
+    return 0;
 }
 
 void
@@ -237,28 +238,29 @@ nc_editor_sort_row_destroy(NcEditorSortRow *row) {
     return;
 }
 
-bool
+int32
 nc_editor_sort_row_copy(NcEditorSortRow *dest, NcEditorSortRow *source) {
     NcEditorSortRow tmp = {0};
+    int32 err;
 
     if ((dest == NULL) || (source == NULL)) {
-        return false;
+        return -EINVAL;
     }
-    if (!nc_editor_action_row_copy(&tmp.action, &source->action)) {
+    if ((err = nc_editor_action_row_copy(&tmp.action, &source->action)) < 0) {
         nc_editor_sort_row_destroy(&tmp);
-        return false;
+        return err;
     }
     tmp.getter = source->getter;
 
     nc_editor_sort_row_destroy(dest);
     *dest = tmp;
-    return true;
+    return 0;
 }
 
 static void
 ncm_song_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    ASSERT(ncm_song_copy(dest, source) == 0);
+    ASSERT(ncm_song_copy(dest, source) >= 0);
     return;
 }
 
@@ -272,7 +274,7 @@ ncm_song_menu_item_destroy(void *item, void *user) {
 static void
 ncm_mutable_song_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    ASSERT(ncm_mutable_song_copy(dest, source) == 0);
+    ASSERT(ncm_mutable_song_copy(dest, source) >= 0);
     return;
 }
 
@@ -293,7 +295,7 @@ ncm_mpd_item_menu_item_init(void *item, void *user) {
 static void
 ncm_mpd_item_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    ASSERT(ncm_mpd_item_copy(dest, source) == 0);
+    ASSERT(ncm_mpd_item_copy(dest, source) >= 0);
     return;
 }
 
@@ -307,7 +309,7 @@ ncm_mpd_item_menu_item_destroy(void *item, void *user) {
 static void
 ncm_playlist_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    ASSERT(ncm_playlist_copy(dest, source) == 0);
+    ASSERT(ncm_playlist_copy(dest, source) >= 0);
     return;
 }
 
@@ -321,7 +323,7 @@ ncm_playlist_menu_item_destroy(void *item, void *user) {
 static void
 nc_search_row_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    nc_search_row_copy(dest, source);
+    ASSERT(nc_search_row_copy(dest, source) >= 0);
     return;
 }
 
@@ -335,7 +337,7 @@ nc_search_row_menu_item_destroy(void *item, void *user) {
 static void
 nc_media_library_tag_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    nc_media_library_tag_row_copy(dest, source);
+    ASSERT(nc_media_library_tag_row_copy(dest, source) >= 0);
     return;
 }
 
@@ -350,7 +352,7 @@ static void
 nc_media_library_album_menu_item_copy(void *dest, void *source,
                                       void *user) {
     (void)user;
-    nc_media_library_album_row_copy(dest, source);
+    ASSERT(nc_media_library_album_row_copy(dest, source) >= 0);
     return;
 }
 
@@ -364,7 +366,7 @@ nc_media_library_album_menu_item_destroy(void *item, void *user) {
 static void
 nc_menu_string_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    nc_menu_string_copy(dest, source);
+    ASSERT(nc_menu_string_copy(dest, source) >= 0);
     return;
 }
 
@@ -378,7 +380,7 @@ nc_menu_string_item_destroy(void *item, void *user) {
 static void
 nc_menu_string_pair_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    nc_menu_string_pair_copy(dest, source);
+    ASSERT(nc_menu_string_pair_copy(dest, source) >= 0);
     return;
 }
 
@@ -392,7 +394,7 @@ nc_menu_string_pair_item_destroy(void *item, void *user) {
 static void
 nc_editor_action_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    nc_editor_action_row_copy(dest, source);
+    ASSERT(nc_editor_action_row_copy(dest, source) >= 0);
     return;
 }
 
@@ -406,7 +408,7 @@ nc_editor_action_menu_item_destroy(void *item, void *user) {
 static void
 nc_editor_sort_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    nc_editor_sort_row_copy(dest, source);
+    ASSERT(nc_editor_sort_row_copy(dest, source) >= 0);
     return;
 }
 

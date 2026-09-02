@@ -1771,9 +1771,9 @@ bool search_engine_screen_add_result_summary(
 void search_engine_screen_set_constraints_locked(
     SearchEngineScreen *screen, bool locked);
 void search_engine_screen_reset(SearchEngineScreen *screen);
-bool search_engine_screen_add_song_copy(
+int32 search_engine_screen_add_song_copy(
     SearchEngineScreen *screen, NcmSong *song);
-bool search_engine_screen_add_song_copy_with_flags(
+int32 search_engine_screen_add_song_copy_with_flags(
     SearchEngineScreen *screen, NcmSong *song, uint32 flags);
 bool search_engine_screen_add_buffer_with_flags(
     SearchEngineScreen *screen, NcBuffer *buffer, uint32 flags);
@@ -2365,8 +2365,8 @@ void browser_screen_set_mouse_config(BrowserScreen *screen,
                                      int32 lines_scrolled,
                                      bool scroll_whole_page);
 void browser_screen_clear(BrowserScreen *screen);
-bool browser_screen_add_item_copy(BrowserScreen *screen,
-                                  NcmMpdItem *item);
+int32 browser_screen_add_item_copy(
+    BrowserScreen *screen, NcmMpdItem *item);
 void browser_screen_add_item_move(BrowserScreen *screen,
                                   NcmMpdItem *item);
 bool browser_screen_reload_from_mpd(BrowserScreen *screen,

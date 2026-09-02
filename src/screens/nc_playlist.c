@@ -780,6 +780,7 @@ playlist_screen_copy_sort_range(
     int32 first;
     int32 last;
     int32 range_start;
+    int32 err;
 
     if (songs == NULL) {
         ncm_error_set(ncm_error, EINVAL, STRLIT("missing song array"));
@@ -804,9 +805,9 @@ playlist_screen_copy_sort_range(
             ncm_song_array_destroy(&replacement);
             return false;
         }
-        if (!ncm_song_array_append_copy(&replacement, song)) {
-            ncm_error_set(ncm_error, ENOMEM,
-                          STRLIT("could not copy playlist range"));
+        if ((err = ncm_song_array_append_copy(&replacement, song)) < 0) {
+            ncm_error_set_status(ncm_error, err,
+                                 STRLIT("could not copy playlist range"));
             ncm_song_array_destroy(&replacement);
             return false;
         }
@@ -1470,7 +1471,7 @@ playlist_append_position(NcMenu *menu, int32 pos,
     if ((song = nc_menu_active_item_at(menu, pos)) == NULL) {
         return false;
     }
-    return ncm_song_array_append_copy(songs, song);
+    return ncm_song_array_append_copy(songs, song) >= 0;
 }
 
 static bool

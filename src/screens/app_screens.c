@@ -527,6 +527,7 @@ search_list_database_songs(
     void *user, NcmSongArray *songs, NcmError *ncm_error
 ) {
     NcmMpdSongList source;
+    int32 err;
     bool result;
 
     (void)user;
@@ -537,9 +538,10 @@ search_list_database_songs(
     result = ncm_mpd_client_get_directory_recursive(
         &global_mpd, "/", &source, ncm_error);
     if (result) {
-        if (!(result = ncm_mpd_song_list_to_song_array(&source, songs))) {
-            ncm_error_set(ncm_error, EIO,
-                          STRLIT("failed to copy database songs"));
+        if ((err = ncm_mpd_song_list_to_song_array(&source, songs)) < 0) {
+            ncm_error_set_status(ncm_error, err,
+                                 STRLIT("failed to copy database songs"));
+            result = false;
         }
     }
     ncm_mpd_song_list_destroy(&source);
@@ -555,9 +557,9 @@ search_snapshot_playlist(
     NcMenu *menu;
     NcmSong *song;
     int32 count;
+    int32 err;
 
     (void)user;
-    (void)ncm_error;
     ASSERT(songs != NULL);
 
     ncm_song_array_clear(songs);
@@ -570,9 +572,9 @@ search_snapshot_playlist(
         if (song == NULL) {
             continue;
         }
-        if (!ncm_song_array_append_copy(songs, song)) {
-            ncm_error_set(ncm_error, EIO,
-                          STRLIT("failed to copy playlist songs"));
+        if ((err = ncm_song_array_append_copy(songs, song)) < 0) {
+            ncm_error_set_status(ncm_error, err,
+                                 STRLIT("failed to copy playlist songs"));
             return false;
         }
     }

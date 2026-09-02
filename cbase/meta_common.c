@@ -596,10 +596,9 @@ c_binary_op_precedence(enum CBinaryOp op) {
     case C_BINARY_OP_MOD:
         return 10;
     case C_BINARY_OP_INVALID:
+    default:
         return 0;
     }
-
-    return 0;
 }
 
 int32

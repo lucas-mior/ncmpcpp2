@@ -208,6 +208,7 @@ selected_items_adder_screen_open(
     NcmSongArray selected_songs;
     NcmError playlist_error;
     NcScreen *current;
+    int32 err;
     bool local_browser;
 
     if (screen == NULL) {
@@ -242,10 +243,10 @@ selected_items_adder_screen_open(
     }
 
     selected_songs = (NcmSongArray){0};
-    if (!ncm_song_array_copy(&selected_songs, songs)) {
+    if ((err = ncm_song_array_copy(&selected_songs, songs)) < 0) {
         ncm_song_array_destroy(&selected_songs);
-        ncm_error_set(ncm_error, EINVAL,
-                      STRLIT("failed to copy selected songs"));
+        ncm_error_set_status(ncm_error, err,
+                             STRLIT("failed to copy selected songs"));
         return false;
     }
 
