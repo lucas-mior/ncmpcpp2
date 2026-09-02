@@ -17,10 +17,10 @@ static NcmLastfmCurlEscapeFn lastfm_test_escape;
 static void *lastfm_test_user;
 
 static void lastfm_string_destroy(char **data, int32 *len, int32 *cap);
-static bool lastfm_fetch_artist_info(NcmLastfmService *service,
-                                     NcmLastfmResult *result);
+static int32 lastfm_fetch_artist_info(NcmLastfmService *service,
+                                      NcmLastfmResult *result);
 
-static bool
+static void
 lastfm_string_set(char **data, int32 *len, int32 *cap, char *source,
                   int32 source_len) {
     char *new_data;
@@ -28,7 +28,7 @@ lastfm_string_set(char **data, int32 *len, int32 *cap, char *source,
 
     lastfm_string_destroy(data, len, cap);
     if ((source == NULL) || (source_len <= 0)) {
-        return true;
+        return;
     }
     new_cap = source_len + 1;
     new_data = malloc2(new_cap);
@@ -37,7 +37,7 @@ lastfm_string_set(char **data, int32 *len, int32 *cap, char *source,
     *data = new_data;
     *len = source_len;
     *cap = new_cap;
-    return true;
+    return;
 }
 
 static void
@@ -69,18 +69,16 @@ ncm_lastfm_result_clear(NcmLastfmResult *result) {
     return;
 }
 
-bool
+int32
 ncm_lastfm_result_set(NcmLastfmResult *result, bool success, char *text,
                       int32 text_len) {
     if (result == NULL) {
-        return false;
+        return -EINVAL;
     }
-    if (!lastfm_string_set(&result->text, &result->text_len, &result->text_cap,
-                           text, text_len)) {
-        return false;
-    }
+    lastfm_string_set(&result->text, &result->text_len, &result->text_cap,
+                      text, text_len);
     result->success = success;
-    return true;
+    return 0;
 }
 
 void
@@ -96,28 +94,24 @@ ncm_lastfm_service_destroy(NcmLastfmService *service) {
     return;
 }
 
-bool
+int32
 ncm_lastfm_artist_info_init(NcmLastfmService *service, char *artist,
                             int32 artist_len, char *lang, int32 lang_len) {
-    if (service == NULL) {
-        return false;
+    if ((service == NULL) || (artist == NULL) || (artist_len <= 0)) {
+        return -EINVAL;
     }
     ncm_lastfm_service_destroy(service);
     *service = (NcmLastfmService){0};
     service->type = NCM_LASTFM_SERVICE_ARTIST_INFO;
-    if (!lastfm_string_set(&service->artist, &service->artist_len,
-                           &service->artist_cap, artist, artist_len)) {
-        return false;
-    }
-    if (!lastfm_string_set(&service->lang, &service->lang_len,
-                           &service->lang_cap, lang, lang_len)) {
-        return false;
-    }
-    return true;
+    lastfm_string_set(&service->artist, &service->artist_len,
+                      &service->artist_cap, artist, artist_len);
+    lastfm_string_set(&service->lang, &service->lang_len,
+                      &service->lang_cap, lang, lang_len);
+    return 0;
 }
 
 bool
-ncm_lastfm_service_equal(NcmLastfmService *left, NcmLastfmService *right) {
+ncm_lastfm_service_is_equal(NcmLastfmService *left, NcmLastfmService *right) {
     if ((left == NULL) || (right == NULL)) {
         return false;
     }
@@ -148,20 +142,20 @@ ncm_lastfm_service_type(NcmLastfmService *service) {
     return service->type;
 }
 
-bool
+int32
 ncm_lastfm_service_fetch(NcmLastfmService *service, NcmLastfmResult *result) {
     if ((service == NULL) || (result == NULL)) {
-        return false;
+        return -EINVAL;
     }
     ncm_lastfm_result_clear(result);
     if (service->type == NCM_LASTFM_SERVICE_ARTIST_INFO) {
         return lastfm_fetch_artist_info(service, result);
     }
-    ncm_lastfm_result_set(result, false, STRLIT(LASTFM_INVALID_RESPONSE));
-    return true;
+    return ncm_lastfm_result_set(result, false,
+                                 STRLIT(LASTFM_INVALID_RESPONSE));
 }
 
-static CURLcode
+static int32
 lastfm_curl_perform(StrBuilder *data, char *url, int32 url_len, char *referer,
                     int32 referer_len, bool follow_redirect,
                     int32 timeout_seconds) {
@@ -174,7 +168,7 @@ lastfm_curl_perform(StrBuilder *data, char *url, int32 url_len, char *referer,
                             follow_redirect, timeout_seconds);
 }
 
-static CURLcode
+static int32
 lastfm_curl_escape(StrBuilder *out, char *string, int32 string_len) {
     if (lastfm_test_escape) {
         return lastfm_test_escape(out, string, string_len, lastfm_test_user);
@@ -182,15 +176,17 @@ lastfm_curl_escape(StrBuilder *out, char *string, int32 string_len) {
     return ncm_curl_escape(out, string, string_len);
 }
 
-static void
+static int32
 lastfm_append_escaped(StrBuilder *buffer, char *string, int32 string_len) {
     StrBuilder escaped = {0};
+    int32 status;
 
-    if (lastfm_curl_escape(&escaped, string, string_len) == CURLE_OK) {
+    status = lastfm_curl_escape(&escaped, string, string_len);
+    if (status == 0) {
         SB_APPEND(buffer, escaped.data, escaped.len);
     }
     sb_free(&escaped);
-    return;
+    return status;
 }
 
 static bool
@@ -366,7 +362,7 @@ lastfm_append_similars(StrBuilder *out, char *data, int32 data_len,
     return;
 }
 
-static bool
+static int32
 lastfm_fetch_artist_info(NcmLastfmService *service, NcmLastfmResult *result) {
     StrBuilder url = {0};
     StrBuilder data = {0};
@@ -374,41 +370,50 @@ lastfm_fetch_artist_info(NcmLastfmService *service, NcmLastfmResult *result) {
     StrBuilder desc = {0};
     StrBuilder original_link = {0};
     StrBuilder output = {0};
-    CURLcode code;
-    bool ok;
+    char *message;
+    int32 status;
 
-    ok = true;
-
+    status = 0;
     SB_APPEND(&url, STRLIT(LASTFM_API_URL));
     SB_APPEND(&url, "artist.getinfo&artist=");
-    lastfm_append_escaped(&url, service->artist, service->artist_len);
+    status = lastfm_append_escaped(&url, service->artist, service->artist_len);
+    if (status < 0) {
+        goto cleanup;
+    }
     if (service->lang_len > 0) {
         SB_APPEND(&url, "&lang=");
-        lastfm_append_escaped(&url, service->lang, service->lang_len);
+        status = lastfm_append_escaped(&url, service->lang, service->lang_len);
+        if (status < 0) {
+            goto cleanup;
+        }
     }
 
-    code = lastfm_curl_perform(&data, url.data, url.len, NULL, 0, false, 10);
-    if (code != CURLE_OK) {
-        char *message = (char *)curl_easy_strerror(code);
-        ncm_lastfm_result_set(result, false, message, strlen32(message));
+    status = lastfm_curl_perform(&data, url.data, url.len, NULL, 0, false, 10);
+    if (status < 0) {
+        message = "Network error";
+        if (status == -ETIMEDOUT) {
+            message = "Request timed out";
+        }
+        (void)ncm_lastfm_result_set(result, false,
+                                    message, strlen32(message));
         goto cleanup;
     }
     if (lastfm_action_failed(data.data, data.len)) {
-        ncm_lastfm_result_set(result, false,
-                              STRLIT(LASTFM_INVALID_RESPONSE));
+        status = ncm_lastfm_result_set(result, false,
+                                       STRLIT(LASTFM_INVALID_RESPONSE));
         goto cleanup;
     }
     if (!lastfm_extract_between(&content, data.data, data.len,
                                 STRLIT("<content>"),
                                 STRLIT("</content>"))) {
-        ncm_lastfm_result_set(result, false,
-                              STRLIT(LASTFM_INVALID_RESPONSE));
+        status = ncm_lastfm_result_set(result, false,
+                                       STRLIT(LASTFM_INVALID_RESPONSE));
         goto cleanup;
     }
     if (content.len <= 0) {
-        ncm_lastfm_result_set(result, false,
-                              STRLIT("No description available for "
-                                          "this artist."));
+        status = ncm_lastfm_result_set(result, false,
+                                       STRLIT("No description available for "
+                                              "this artist."));
         goto cleanup;
     }
 
@@ -432,7 +437,7 @@ lastfm_fetch_artist_info(NcmLastfmService *service, NcmLastfmResult *result) {
         }
         sb_free(&clean_url);
     }
-    ncm_lastfm_result_set(result, true, output.data, output.len);
+    status = ncm_lastfm_result_set(result, true, output.data, output.len);
 
 cleanup:
     sb_free(&output);
@@ -441,7 +446,8 @@ cleanup:
     sb_free(&content);
     sb_free(&data);
     sb_free(&url);
-    return ok;
+    return status;
 }
+
 
 #endif /* NCMPCPP_LASTFM_SERVICE_C */

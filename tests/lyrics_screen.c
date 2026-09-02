@@ -322,14 +322,14 @@ ncm_job_queue_init(NcmJobQueue *queue) {
     return;
 }
 
-bool
+int32
 ncm_job_queue_start(NcmJobQueue *queue, NcmError *error) {
     (void)queue;
     ncm_error_clear(error);
-    return true;
+    return 0;
 }
 
-bool
+int32
 ncm_job_queue_push(NcmJobQueue *queue, NcmJob job,
                    NcmError *error) {
     (void)queue;
@@ -337,7 +337,7 @@ ncm_job_queue_push(NcmJobQueue *queue, NcmJob job,
     lyrics_test_pushed_job = job;
     lyrics_test_has_pushed_job = true;
     ncm_error_clear(error);
-    return true;
+    return 0;
 }
 
 int32
@@ -384,20 +384,20 @@ ncm_lyrics_result_clear(NcmLyricsResult *result) {
     return;
 }
 
-bool
+int32
 ncm_lyrics_result_set(NcmLyricsResult *result, bool success,
                       char *text, int32 text_len) {
     ncm_lyrics_result_clear(result);
     result->success = success;
     if ((text == NULL) || (text_len <= 0)) {
-        return true;
+        return 0;
     }
     result->text = malloc2(text_len + 1);
     result->text_len = text_len;
     result->text_cap = text_len + 1;
     memcpy64(result->text, text, text_len);
     result->text[text_len] = '\0';
-    return true;
+    return 0;
 }
 
 char *
@@ -416,7 +416,7 @@ ncm_lyrics_fetcher_name_len(NcmLyricsFetcherDef *fetcher) {
     return fetcher->name_len;
 }
 
-bool
+int32
 ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher,
                          NcmLyricsResult *result, char *artist,
                          int32 artist_len, char *title, int32 title_len) {
@@ -426,7 +426,7 @@ ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher,
     (void)artist_len;
     (void)title;
     (void)title_len;
-    return false;
+    return 0;
 }
 
 void
@@ -1288,8 +1288,8 @@ lyrics_screen_test_refetch_writes_txt_without_removing_lrc(void) {
     ASSERT_EQUAL(job->filename.data, job->filename.len,
                  txt_path, strlen32(txt_path));
     ASSERT(ncm_lyrics_result_set(&job->result, true,
-                                 STRLIT("downloaded plain\n")));
-    lyrics_test_pushed_job.complete(true, &error, job);
+                                 STRLIT("downloaded plain\n")) == 0);
+    lyrics_test_pushed_job.complete(0, &error, job);
     ASSERT(ncm_fs_exists(lrc_path, strlen32(lrc_path)));
     lyrics_screen_test_assert_file_text(txt_path,
                                         STRLIT("downloaded plain\n"));

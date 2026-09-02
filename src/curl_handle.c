@@ -45,7 +45,24 @@ write_data(char *buffer, size_t size, size_t nmemb, void *data) {
     return bytes;
 }
 
-CURLcode
+static int32
+ncm_curl_status_from_code(CURLcode code) {
+    switch (code) {
+    case CURLE_OK:
+        return 0;
+    case CURLE_OUT_OF_MEMORY:
+        return -ENOMEM;
+    case CURLE_OPERATION_TIMEDOUT:
+        return -ETIMEDOUT;
+    case CURLE_URL_MALFORMAT:
+    case CURLE_BAD_FUNCTION_ARGUMENT:
+        return -EINVAL;
+    default:
+        return -NCM_ERROR_NETWORK;
+    }
+}
+
+int32
 ncm_curl_perform(StrBuilder *data, char *url, int32 url_len, char *referer,
                  int32 referer_len, bool follow_redirect,
                  int32 timeout_seconds) {
@@ -90,23 +107,23 @@ cleanup:
     ncm_curl_response_writer_destroy(&writer);
     sb_free(&referer_string);
     sb_free(&url_string);
-    return result;
+    return ncm_curl_status_from_code(result);
 }
 
-CURLcode
+int32
 ncm_curl_escape(StrBuilder *out, char *string, int32 string_len) {
     char *escaped;
 
     sb_clear(out);
     if ((escaped = curl_easy_escape(NULL, string, string_len)) == NULL) {
-        return CURLE_OUT_OF_MEMORY;
+        return -ENOMEM;
     }
 
     for (int32 i = 0; escaped[i] != '\0'; i += 1) {
         sb_append_byte(out, escaped[i]);
     }
     curl_free(escaped);
-    return CURLE_OK;
+    return 0;
 }
 
 #endif /* NCMPCPP_CURL_HANDLE_C */

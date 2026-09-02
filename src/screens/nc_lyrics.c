@@ -122,8 +122,8 @@ static bool lyrics_job_take_log(LyricsJob *job,
                                 NcBuffer *buffer);
 static void lyrics_screen_update_progress(LyricsScreen *screen);
 static bool lyrics_job_is_current(LyricsJob *job);
-static bool lyrics_job_run(void *user, NcmError *ncm_error);
-static void lyrics_job_complete(bool success, NcmError *ncm_error,
+static int32 lyrics_job_run(void *user, NcmError *ncm_error);
+static void lyrics_job_complete(int32 status, NcmError *ncm_error,
                                 void *user);
 static void lyrics_job_destroy(void *user);
 static bool lyrics_start_next_background(LyricsScreen *screen,
@@ -1037,7 +1037,7 @@ lyrics_screen_start_foreground_fetch(
     }
     nc_lyrics_screen_request_refresh(&screen->screen);
 
-    if (!ncm_job_queue_start(&screen->jobs, ncm_error)) {
+    if (ncm_job_queue_start(&screen->jobs, ncm_error) < 0) {
         return false;
     }
 
@@ -1047,14 +1047,14 @@ lyrics_screen_start_foreground_fetch(
         return false;
     }
     screen->foreground_job = job;
-    if (!ncm_job_queue_push(&screen->jobs,
+    if (ncm_job_queue_push(&screen->jobs,
                             (NcmJob){
                                 .run = lyrics_job_run,
                                 .complete = lyrics_job_complete,
                                 .destroy = lyrics_job_destroy,
                                 .user = job,
                             },
-                            ncm_error)) {
+                            ncm_error) < 0) {
         screen->foreground_job = NULL;
         lyrics_job_destroy(job);
         return false;
@@ -1613,82 +1613,87 @@ lyrics_job_create(LyricsScreen *screen,
     return job;
 }
 
-static bool
+static int32
 lyrics_job_fetch_one(LyricsJob *job, NcmLyricsFetcherDef *fetcher,
                      StrBuilder *artist, StrBuilder *title) {
+    int32 status;
+
     ASSERT(job != NULL);
     ASSERT(fetcher != NULL);
     ASSERT(artist != NULL);
     ASSERT(title != NULL);
 
     lyrics_job_append_fetching(job, fetcher);
-    if (!ncm_lyrics_fetcher_fetch(fetcher,
-                                  &job->result,
-                                  artist->data,
-                                  artist->len,
-                                  title->data,
-                                  title->len)) {
+    status = ncm_lyrics_fetcher_fetch(fetcher,
+                                      &job->result,
+                                      artist->data,
+                                      artist->len,
+                                      title->data,
+                                      title->len);
+    if (status < 0) {
         lyrics_job_append_fetch_error(job, &job->result);
-        return false;
+        return status;
     }
     if (!job->result.success) {
         lyrics_job_append_fetch_error(job, &job->result);
-        return false;
+        return 0;
     }
-    return true;
+    return 1;
 }
 
-static bool
-lyrics_job_fetch(LyricsJob *job,
-                 StrBuilder *artist, StrBuilder *title) {
+static int32
+lyrics_job_fetch(LyricsJob *job, StrBuilder *artist, StrBuilder *title) {
+    int32 status;
+
     if (job->fetcher) {
-        return lyrics_job_fetch_one(job,
-                                    job->fetcher,
-                                    artist,
-                                    title);
+        return lyrics_job_fetch_one(job, job->fetcher, artist, title);
     }
 
     for (int32 i = 0; i < Config.lyrics_fetchers.fetchers.len; i += 1) {
-        if (lyrics_job_fetch_one(
+        status = lyrics_job_fetch_one(
             job, &Config.lyrics_fetchers.fetchers.items[i],
-            artist, title)) {
-            return true;
+            artist, title);
+        if (status > 0) {
+            return status;
         }
     }
-    return false;
+    return 0;
 }
 
-static bool
+static int32
 lyrics_job_run(void *user, NcmError *ncm_error) {
     StrBuilder artist = {0};
     StrBuilder title = {0};
-    bool success;
+    int32 status;
     LyricsJob *job = user;
-
 
     if (!lyrics_fetch_artist_title(&job->song, &artist, &title)) {
         ncm_error_set(ncm_error, EINVAL, STRLIT("missing song metadata"));
         sb_free(&title);
         sb_free(&artist);
-        return false;
+        return -EINVAL;
     }
 
-    success = lyrics_job_fetch(job, &artist, &title);
+    status = lyrics_job_fetch(job, &artist, &title);
     sb_free(&title);
     sb_free(&artist);
-    if (!success || !job->result.success) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("lyrics not found"));
+    if (status < 0) {
+        ncm_error_set_status(ncm_error, status, STRLIT("lyrics fetch failed"));
+        return status;
     }
-
-    return success && job->result.success;
+    if ((status == 0) || !job->result.success) {
+        return ncm_error_set_status(ncm_error, -NCM_ERROR_NOT_FOUND,
+                                    STRLIT("lyrics not found"));
+    }
+    return ncm_error_ok(ncm_error);
 }
 
 static void
-lyrics_job_complete(bool success, NcmError *ncm_error, void *user) {
+lyrics_job_complete(int32 status, NcmError *ncm_error, void *user) {
     LyricsJob *job = user;
     LyricsScreen *screen = job->screen;
 
-    (void)success;
+    (void)status;
     (void)ncm_error;
 
     if (!job->background) {
@@ -2023,7 +2028,7 @@ lyrics_start_next_background(LyricsScreen *screen,
         found_job = true;
     }
 
-    if (!ncm_job_queue_start(&screen->jobs, ncm_error)) {
+    if (ncm_job_queue_start(&screen->jobs, ncm_error) < 0) {
         sb_free(&filename);
         lyrics_queued_song_destroy(queued);
         free2(queued, SIZEOF(*queued));
@@ -2045,14 +2050,14 @@ lyrics_start_next_background(LyricsScreen *screen,
         ncm_error_set(ncm_error, EINVAL, STRLIT("failed to create job"));
         return false;
     }
-    if (!ncm_job_queue_push(&screen->jobs,
+    if (ncm_job_queue_push(&screen->jobs,
                             (NcmJob){
                                 .run = lyrics_job_run,
                                 .complete = lyrics_job_complete,
                                 .destroy = lyrics_job_destroy,
                                 .user = job,
                             },
-                            ncm_error)) {
+                            ncm_error) < 0) {
         lyrics_job_destroy(job);
         sb_free(&filename);
         lyrics_queued_song_destroy(queued);

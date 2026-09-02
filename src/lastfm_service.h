@@ -19,14 +19,14 @@ typedef struct NcmLastfmResult {
     bool success;
 } NcmLastfmResult;
 
-typedef CURLcode (*NcmLastfmCurlPerformFn)(StrBuilder *data, char *url,
-                                           int32 url_len, char *referer,
-                                           int32 referer_len,
-                                           bool follow_redirect,
-                                           int32 timeout_seconds, void *user);
+typedef int32 (*NcmLastfmCurlPerformFn)(StrBuilder *data, char *url,
+                                         int32 url_len, char *referer,
+                                         int32 referer_len,
+                                         bool follow_redirect,
+                                         int32 timeout_seconds, void *user);
 
-typedef CURLcode (*NcmLastfmCurlEscapeFn)(StrBuilder *out, char *string,
-                                          int32 string_len, void *user);
+typedef int32 (*NcmLastfmCurlEscapeFn)(StrBuilder *out, char *string,
+                                         int32 string_len, void *user);
 
 typedef struct NcmLastfmService {
     char *artist;
@@ -42,16 +42,17 @@ typedef struct NcmLastfmService {
 
 void ncm_lastfm_result_destroy(NcmLastfmResult *result);
 void ncm_lastfm_result_clear(NcmLastfmResult *result);
-bool ncm_lastfm_result_set(NcmLastfmResult *result, bool success, char *text,
-                           int32 text_len);
+int32 ncm_lastfm_result_set(NcmLastfmResult *result, bool success,
+                            char *text, int32 text_len);
 
 void ncm_lastfm_service_destroy(NcmLastfmService *service);
-bool ncm_lastfm_artist_info_init(NcmLastfmService *service, char *artist,
-                                 int32 artist_len, char *lang, int32 lang_len);
-bool ncm_lastfm_service_equal(NcmLastfmService *left, NcmLastfmService *right);
+int32 ncm_lastfm_artist_info_init(NcmLastfmService *service, char *artist,
+                                  int32 artist_len, char *lang, int32 lang_len);
+bool ncm_lastfm_service_is_equal(NcmLastfmService *left,
+                                 NcmLastfmService *right);
 char *ncm_lastfm_service_name(NcmLastfmService *service);
 enum NcmLastfmServiceType ncm_lastfm_service_type(NcmLastfmService *service);
-bool ncm_lastfm_service_fetch(NcmLastfmService *service,
-                              NcmLastfmResult *result);
+int32 ncm_lastfm_service_fetch(NcmLastfmService *service,
+                               NcmLastfmResult *result);
 
 #endif /* NCMPCPP_LASTFM_SERVICE_H */

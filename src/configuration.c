@@ -883,8 +883,8 @@ configuration_test_lyrics_fetchers(NcmError *ncm_error) {
 
         fetcher = (NcmLyricsFetcherDef){0};
         result = (NcmLyricsResult){0};
-        if (!ncm_lyrics_fetcher_def_set_name(&fetcher, tests[i].name,
-                                             tests[i].name_len)) {
+        if (ncm_lyrics_fetcher_def_set_name(&fetcher, tests[i].name,
+                                            tests[i].name_len) < 0) {
             ncm_error_set(ncm_error, EINVAL, STRLIT("unknown lyrics fetcher"));
             ok = false;
         }
