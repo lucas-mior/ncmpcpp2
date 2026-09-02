@@ -825,9 +825,6 @@ command_child_exec(
     int stdout_pipe[2],
     int stderr_pipe[2]
 ) {
-    char *command_text;
-    int32 command_text_len;
-
     if (command->cwd) {
         if (chdir(command->cwd) < 0) {
             error("Error changing directory to %s: %s.\n",
@@ -887,14 +884,8 @@ command_child_exec(
     }
 
     command_child_env_apply(command);
-    command_text = command_str(command, &command_text_len);
-    if (DEBUGGING && !TESTING_command) {
-        error2("Running %s \n", command_text);
-    }
-
     execvp(command->argv[0], command->argv);
-    error("Error executing\n%s\n%s.\n", command_text, strerror(errno));
-    free2(command_text, command_text_len + 1);
+    error("Error executing %s: %s.\n", command->argv[0], strerror(errno));
     _exit(127);
 }
 
@@ -1061,8 +1052,18 @@ command_run(Command *command, enum CommandFlag flags) {
 #if OS_UNIX
     int32 err;
 #endif
+#if DEBUGGING && !TESTING_command
+    char *command_text;
+    int32 command_text_len;
+#endif
 
     flags = command_flags_normalized(flags);
+
+#if DEBUGGING && !TESTING_command
+    command_text = command_str(command, &command_text_len);
+    error2("Running %s \n", command_text);
+    free2(command_text, command_text_len + 1);
+#endif
 
 #if OS_UNIX
     if ((err = command_start(command, flags)) < 0) {

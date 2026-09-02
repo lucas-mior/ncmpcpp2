@@ -43,7 +43,10 @@ void ncm_error_clear(NcmError *ncm_error);
 void ncm_error_set(NcmError *ncm_error, int32 code,
                    char *message, int32 message_len);
 bool ncm_error_is_set(NcmError *ncm_error);
+int32 ncm_error_code_from_status(int32 status);
 int32 ncm_status_from_error_code(int32 code);
+int32 ncm_error_set_code(NcmError *ncm_error, int32 code,
+                         char *message, int32 message_len);
 int32 ncm_error_status(NcmError *ncm_error);
 int32 ncm_error_set_status(NcmError *ncm_error, int32 status,
                            char *message, int32 message_len);
