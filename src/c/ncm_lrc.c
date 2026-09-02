@@ -9,22 +9,26 @@
 
 static bool ncm_lrc_char_is_digit(char c);
 static bool ncm_lrc_char_is_space(char c);
-static bool ncm_lrc_parse_uint(char *data, int32 data_len,
-                               int64 *value);
-static bool ncm_lrc_parse_offset_tag(char *tag, int32 tag_len,
-                                     int32 *offset_ms);
-static bool ncm_lrc_parse_timestamp_tag(char *tag, int32 tag_len,
-                                        int32 offset_ms,
-                                        int32 *time_ms);
+static int32 ncm_lrc_parse_uint(char *data, int32 data_len,
+                                int64 *value);
+static bool ncm_lrc_tag_begins_with(char *tag, int32 tag_len,
+                                    char *prefix, int32 prefix_len);
+static int32 ncm_lrc_parse_signed_ms(char *data, int32 data_len,
+                                     int32 *value);
+static int32 ncm_lrc_parse_offset_tag(char *tag, int32 tag_len,
+                                      int32 *offset_ms, bool *matched);
+static int32 ncm_lrc_parse_timestamp_tag(char *tag, int32 tag_len,
+                                         int32 offset_ms,
+                                         int32 *time_ms, bool *matched);
 static int32 ncm_lrc_trim_line_end(char *data, int32 data_len);
 static int32 ncm_lrc_raw_line_len(char *data, int32 data_len,
                                   int32 start);
-static void ncm_lrc_parse_offset_tags(NcmLrcDocument *document,
-                                      char *data, int32 data_len);
-static bool ncm_lrc_parse_line(NcmLrcDocument *document,
-                               char *line, int32 line_len,
-                               int32 *source_order,
-                               int32 blank_lines_before);
+static int32 ncm_lrc_parse_offset_tags(NcmLrcDocument *document,
+                                       char *data, int32 data_len);
+static int32 ncm_lrc_parse_line(NcmLrcDocument *document,
+                                char *line, int32 line_len,
+                                int32 *source_order,
+                                int32 blank_lines_before);
 static NcmLrcEntry *ncm_lrc_document_append_entry(
     NcmLrcDocument *document);
 static void ncm_lrc_document_clear_buffer_positions(
@@ -56,7 +60,7 @@ ncm_lrc_document_destroy(NcmLrcDocument *document) {
     return;
 }
 
-bool
+int32
 ncm_lrc_parse(NcmLrcDocument *document,
               char *data, int32 data_len,
               NcmError *ncm_error) {
@@ -65,19 +69,25 @@ ncm_lrc_parse(NcmLrcDocument *document,
     int32 raw_line_len;
     int32 line_len;
     int32 blank_lines_before;
+    int32 status;
     int32 pos;
 
     if (document == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing LRC document"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing LRC document"));
     }
     if ((data == NULL) || (data_len <= 0)) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing LRC data"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing LRC data"));
     }
 
     parsed = (NcmLrcDocument){0};
-    ncm_lrc_parse_offset_tags(&parsed, data, data_len);
+    status = ncm_lrc_parse_offset_tags(&parsed, data, data_len);
+    if (status < 0) {
+        ncm_lrc_document_destroy(&parsed);
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("malformed LRC offset"));
+    }
 
     source_order = 0;
     blank_lines_before = 0;
@@ -89,13 +99,17 @@ ncm_lrc_parse(NcmLrcDocument *document,
             if (source_order > 0) {
                 blank_lines_before += 1;
             }
-        } else if (ncm_lrc_parse_line(&parsed,
-                                      data + pos,
-                                      line_len,
-                                      &source_order,
-                                      blank_lines_before)) {
-            blank_lines_before = 0;
         } else {
+            status = ncm_lrc_parse_line(&parsed,
+                                        data + pos,
+                                        line_len,
+                                        &source_order,
+                                        blank_lines_before);
+            if (status < 0) {
+                ncm_lrc_document_destroy(&parsed);
+                return ncm_error_set_status(ncm_error, status,
+                                            STRLIT("malformed LRC line"));
+            }
             blank_lines_before = 0;
         }
         pos += raw_line_len;
@@ -106,8 +120,8 @@ ncm_lrc_parse(NcmLrcDocument *document,
 
     if (parsed.entries_len <= 0) {
         ncm_lrc_document_destroy(&parsed);
-        ncm_error_set(ncm_error, EINVAL, STRLIT("no synchronized LRC lines"));
-        return false;
+        return ncm_error_set_code(ncm_error, NCM_ERROR_PARSE,
+                                  STRLIT("no synchronized LRC lines"));
     }
     if (parsed.entries_len > 1) {
         qsort64(parsed.entries,
@@ -119,7 +133,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
     ncm_lrc_document_destroy(document);
     *document = parsed;
     ncm_error_clear(ncm_error);
-    return true;
+    return 0;
 }
 
 NcmStringView
@@ -149,16 +163,16 @@ ncm_lrc_entry_text(NcmLrcDocument *document, NcmLrcEntry *entry) {
     return view;
 }
 
-bool
+int32
 ncm_lrc_document_render_plain(NcmLrcDocument *document,
                               NcmLrcRenderTarget *target) {
     char line_break[] = "\n";
 
     if ((document == NULL) || (target == NULL)) {
-        return false;
+        return -EINVAL;
     }
     if ((target->position == NULL) || (target->append == NULL)) {
-        return false;
+        return -EINVAL;
     }
 
     ncm_lrc_document_clear_buffer_positions(document);
@@ -177,7 +191,7 @@ ncm_lrc_document_render_plain(NcmLrcDocument *document,
         text = ncm_lrc_entry_text(document, entry);
         if ((text.len > 0) && (text.data == NULL)) {
             ncm_lrc_document_clear_buffer_positions(document);
-            return false;
+            return -EINVAL;
         }
 
         entry->buffer_start = target->position(target->user);
@@ -185,7 +199,7 @@ ncm_lrc_document_render_plain(NcmLrcDocument *document,
         entry->buffer_end = target->position(target->user);
     }
 
-    return true;
+    return 0;
 }
 
 int32
@@ -247,12 +261,12 @@ ncm_lrc_char_is_space(char c) {
     return (c == ' ') || (c == '\t');
 }
 
-static bool
+static int32
 ncm_lrc_parse_uint(char *data, int32 data_len, int64 *value) {
     int64 result;
 
     if ((data == NULL) || (data_len <= 0) || (value == NULL)) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
 
     result = 0;
@@ -260,22 +274,22 @@ ncm_lrc_parse_uint(char *data, int32 data_len, int64 *value) {
         int32 digit;
 
         if (!ncm_lrc_char_is_digit(data[i])) {
-            return false;
+            return -NCM_ERROR_PARSE;
         }
         digit = data[i] - '0';
         if (result > (MAXOF(result) - digit)/10) {
-            return false;
+            return -NCM_ERROR_PARSE;
         }
         result = result*10 + digit;
     }
 
     *value = result;
-    return true;
+    return 0;
 }
 
 static bool
-ncm_lrc_tag_begins_with(char *tag, int32 tag_len, char *prefix,
-                        int32 prefix_len) {
+ncm_lrc_tag_begins_with(char *tag, int32 tag_len,
+                        char *prefix, int32 prefix_len) {
     if ((tag == NULL) || (tag_len < prefix_len)) {
         return false;
     }
@@ -293,15 +307,16 @@ ncm_lrc_tag_begins_with(char *tag, int32 tag_len, char *prefix,
     return true;
 }
 
-static bool
+static int32
 ncm_lrc_parse_signed_ms(char *data, int32 data_len, int32 *value) {
     int32 sign;
     int32 start;
     int64 unsigned_value;
     int64 signed_value;
+    int32 status;
 
     if ((data == NULL) || (data_len <= 0) || (value == NULL)) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
 
     sign = 1;
@@ -313,30 +328,38 @@ ncm_lrc_parse_signed_ms(char *data, int32 data_len, int32 *value) {
         start = 1;
     }
     if (start >= data_len) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
-    if (!ncm_lrc_parse_uint(data + start,
-                            data_len - start,
-                            &unsigned_value)) {
-        return false;
+    status = ncm_lrc_parse_uint(data + start,
+                                data_len - start,
+                                &unsigned_value);
+    if (status < 0) {
+        return status;
     }
 
     signed_value = sign*unsigned_value;
     if ((signed_value < MINOF(*value)) || (signed_value > MAXOF(*value))) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
 
     *value = (int32)signed_value;
-    return true;
+    return 0;
 }
 
-static bool
-ncm_lrc_parse_offset_tag(char *tag, int32 tag_len, int32 *offset_ms) {
+static int32
+ncm_lrc_parse_offset_tag(char *tag, int32 tag_len,
+                         int32 *offset_ms, bool *matched) {
     char *value;
     int32 value_len;
+    int32 status;
 
+    if (matched == NULL) {
+        return -NCM_ERROR_PARSE;
+    }
+
+    *matched = false;
     if (!ncm_lrc_tag_begins_with(tag, tag_len, STRLIT("offset:"))) {
-        return false;
+        return 0;
     }
 
     value = tag + STRLIT_LEN("offset:");
@@ -349,12 +372,19 @@ ncm_lrc_parse_offset_tag(char *tag, int32 tag_len, int32 *offset_ms) {
         value_len -= 1;
     }
 
-    return ncm_lrc_parse_signed_ms(value, value_len, offset_ms);
+    status = ncm_lrc_parse_signed_ms(value, value_len, offset_ms);
+    if (status < 0) {
+        return status;
+    }
+
+    *matched = true;
+    return 0;
 }
 
-static bool
+static int32
 ncm_lrc_parse_timestamp_tag(char *tag, int32 tag_len,
-                            int32 offset_ms, int32 *time_ms) {
+                            int32 offset_ms,
+                            int32 *time_ms, bool *matched) {
     int32 colon;
     int32 dot;
     int32 frac_len;
@@ -362,9 +392,21 @@ ncm_lrc_parse_timestamp_tag(char *tag, int32 tag_len,
     int64 seconds;
     int64 milliseconds;
     int64 value;
+    int32 status;
 
-    if ((tag == NULL) || (tag_len < STRLIT_LEN("0:00"))) {
-        return false;
+    if (matched == NULL) {
+        return -NCM_ERROR_PARSE;
+    }
+
+    *matched = false;
+    if ((tag == NULL) || (tag_len <= 0)) {
+        return 0;
+    }
+    if (!ncm_lrc_char_is_digit(tag[0])) {
+        return 0;
+    }
+    if (tag_len < STRLIT_LEN("0:00")) {
+        return -NCM_ERROR_PARSE;
     }
 
     colon = -1;
@@ -372,43 +414,47 @@ ncm_lrc_parse_timestamp_tag(char *tag, int32 tag_len,
     for (int32 i = 0; i < tag_len; i += 1) {
         if (tag[i] == ':') {
             if (colon >= 0) {
-                return false;
+                return -NCM_ERROR_PARSE;
             }
             colon = i;
         } else if (tag[i] == '.') {
             if (dot >= 0) {
-                return false;
+                return -NCM_ERROR_PARSE;
             }
             dot = i;
         }
     }
     if ((colon <= 0) || (colon + 2 >= tag_len)) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
     if ((dot >= 0) && (dot != colon + 3)) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
     if ((dot < 0) && ((colon + 3) != tag_len)) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
-    if (!ncm_lrc_parse_uint(tag, colon, &minutes)) {
-        return false;
+
+    status = ncm_lrc_parse_uint(tag, colon, &minutes);
+    if (status < 0) {
+        return status;
     }
-    if (!ncm_lrc_parse_uint(tag + colon + 1, 2, &seconds)) {
-        return false;
+    status = ncm_lrc_parse_uint(tag + colon + 1, 2, &seconds);
+    if (status < 0) {
+        return status;
     }
     if (seconds >= 60) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
 
     milliseconds = 0;
     if (dot >= 0) {
         frac_len = tag_len - dot - 1;
         if ((frac_len <= 0) || (frac_len > 3)) {
-            return false;
+            return -NCM_ERROR_PARSE;
         }
-        if (!ncm_lrc_parse_uint(tag + dot + 1, frac_len, &milliseconds)) {
-            return false;
+        status = ncm_lrc_parse_uint(tag + dot + 1, frac_len, &milliseconds);
+        if (status < 0) {
+            return status;
         }
         if (frac_len == 1) {
             milliseconds *= 100;
@@ -418,26 +464,27 @@ ncm_lrc_parse_timestamp_tag(char *tag, int32 tag_len,
     }
 
     if (minutes > (MAXOF(value) - seconds)/60) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
     value = minutes*60 + seconds;
     if (value > (MAXOF(value) - milliseconds)/1000) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
     value = value*1000 + milliseconds;
     if ((offset_ms > 0) && (value > (MAXOF(value) - offset_ms))) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
     if ((offset_ms < 0) && (value < (MINOF(value) - offset_ms))) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
     value += offset_ms;
     if ((value < MINOF(*time_ms)) || (value > MAXOF(*time_ms))) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
 
     *time_ms = (int32)value;
-    return true;
+    *matched = true;
+    return 0;
 }
 
 static int32
@@ -459,7 +506,7 @@ ncm_lrc_raw_line_len(char *data, int32 data_len, int32 start) {
     return len;
 }
 
-static void
+static int32
 ncm_lrc_parse_offset_tags(NcmLrcDocument *document,
                           char *data, int32 data_len) {
     int32 raw_line_len;
@@ -477,6 +524,9 @@ ncm_lrc_parse_offset_tags(NcmLrcDocument *document,
         cursor = 0;
         while ((cursor < line_len) && (line[cursor] == '[')) {
             int32 close;
+            int32 offset_ms;
+            bool matched;
+            int32 status;
 
             close = cursor + 1;
             while ((close < line_len) && (line[close] != ']')) {
@@ -485,9 +535,15 @@ ncm_lrc_parse_offset_tags(NcmLrcDocument *document,
             if (close >= line_len) {
                 break;
             }
-            if (ncm_lrc_parse_offset_tag(line + cursor + 1,
-                                         close - cursor - 1,
-                                         &document->offset_ms)) {
+            status = ncm_lrc_parse_offset_tag(line + cursor + 1,
+                                              close - cursor - 1,
+                                              &offset_ms,
+                                              &matched);
+            if (status < 0) {
+                return status;
+            }
+            if (matched) {
+                document->offset_ms = offset_ms;
                 document->has_offset = true;
             }
             cursor = close + 1;
@@ -499,10 +555,10 @@ ncm_lrc_parse_offset_tags(NcmLrcDocument *document,
         }
     }
 
-    return;
+    return 0;
 }
 
-static bool
+static int32
 ncm_lrc_parse_line(NcmLrcDocument *document,
                    char *line, int32 line_len,
                    int32 *source_order,
@@ -512,14 +568,14 @@ ncm_lrc_parse_line(NcmLrcDocument *document,
     int32 cursor;
     char *text;
     int32 text_len;
-    bool saw_tag;
 
     times_len = 0;
     cursor = 0;
-    saw_tag = false;
     while ((cursor < line_len) && (line[cursor] == '[')) {
         int32 close;
         int32 time_ms;
+        bool tag_matched;
+        int32 status;
 
         close = cursor + 1;
         while ((close < line_len) && (line[close] != ']')) {
@@ -529,20 +585,22 @@ ncm_lrc_parse_line(NcmLrcDocument *document,
             break;
         }
 
-        saw_tag = true;
-        if (ncm_lrc_parse_timestamp_tag(line + cursor + 1,
-                                        close - cursor - 1,
-                                        document->offset_ms,
-                                        &time_ms)) {
-            if (times_len < LENGTH(times)) {
-                times[times_len] = time_ms;
-                times_len += 1;
-            }
+        status = ncm_lrc_parse_timestamp_tag(line + cursor + 1,
+                                             close - cursor - 1,
+                                             document->offset_ms,
+                                             &time_ms,
+                                             &tag_matched);
+        if (status < 0) {
+            return status;
+        }
+        if (tag_matched && (times_len < LENGTH(times))) {
+            times[times_len] = time_ms;
+            times_len += 1;
         }
         cursor = close + 1;
     }
-    if ((times_len <= 0) || !saw_tag) {
-        return false;
+    if (times_len <= 0) {
+        return 0;
     }
 
     text = line + cursor;
@@ -566,7 +624,7 @@ ncm_lrc_parse_line(NcmLrcDocument *document,
         SB_APPEND(&document->text, text, text_len);
     }
 
-    return true;
+    return 1;
 }
 
 static NcmLrcEntry *

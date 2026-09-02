@@ -404,6 +404,7 @@ lyrics_screen_load_file(LyricsScreen *screen,
     char line[1024];
     int close_err;
     int32 line_len;
+    int32 status;
     bool first;
     bool lrc_file;
 
@@ -443,15 +444,18 @@ lyrics_screen_load_file(LyricsScreen *screen,
         sb_free(&raw);
         lyrics_screen_clear_lyrics_state(
             screen, LYRICS_MODE_FETCH_LOG);
-        ncm_error_set(ncm_error, -close_err, STRLIT("failed to close lyrics"));
+        ncm_error_set(ncm_error, -close_err,
+                      STRLIT("failed to close lyrics"));
         return false;
     }
-    if (lrc_file
-        && !ncm_lrc_parse(&screen->lrc, raw.data, raw.len, ncm_error)) {
-        sb_free(&raw);
-        lyrics_screen_clear_lyrics_state(
-            screen, LYRICS_MODE_FETCH_LOG);
-        return false;
+    if (lrc_file) {
+        status = ncm_lrc_parse(&screen->lrc, raw.data, raw.len, ncm_error);
+        if (status < 0) {
+            sb_free(&raw);
+            lyrics_screen_clear_lyrics_state(
+                screen, LYRICS_MODE_FETCH_LOG);
+            return false;
+        }
     }
 
     if (lrc_file) {
@@ -1258,13 +1262,16 @@ static bool
 lyrics_screen_render_lrc(LyricsScreen *screen,
                          NcmError *ncm_error) {
     NcmLrcRenderTarget target = {0};
+    int32 status;
 
     target.user = screen;
     target.position = lyrics_lrc_buffer_position;
     target.append = lyrics_lrc_buffer_append;
 
-    if (!ncm_lrc_document_render_plain(&screen->lrc, &target)) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("failed to render LRC"));
+    status = ncm_lrc_document_render_plain(&screen->lrc, &target);
+    if (status < 0) {
+        ncm_error_set_status(ncm_error, status,
+                             STRLIT("failed to render LRC"));
         return false;
     }
 
