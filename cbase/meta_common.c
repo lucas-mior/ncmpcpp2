@@ -43,40 +43,40 @@ token_is_ptr_len(Token *token, char *what, int32 what_len) {
 
 int32
 precedence_of(char *op, int32 op_len) {
-#define OP_IS(STRING) STREQUAL(op, op_len, STRING)
+#define OP_IS2(STRING) STREQUAL(op, op_len, STRING)
 
-    if (OP_IS("||")) {
+    if (OP_IS2("||")) {
         return true;
     }
-    if (OP_IS("&&")) {
+    if (OP_IS2("&&")) {
         return 2;
     }
-    if (OP_IS("|")) {
+    if (OP_IS2("|")) {
         return 3;
     }
-    if (OP_IS("^")) {
+    if (OP_IS2("^")) {
         return 4;
     }
-    if (OP_IS("&")) {
+    if (OP_IS2("&")) {
         return 5;
     }
-    if (OP_IS("==") || OP_IS("!=")) {
+    if (OP_IS2("==") || OP_IS2("!=")) {
         return 6;
     }
-    if (OP_IS("<") || OP_IS("<=") || OP_IS(">") || OP_IS(">=")) {
+    if (OP_IS2("<") || OP_IS2("<=") || OP_IS2(">") || OP_IS2(">=")) {
         return 7;
     }
-    if (OP_IS("<<") || OP_IS(">>")) {
+    if (OP_IS2("<<") || OP_IS2(">>")) {
         return 8;
     }
-    if (OP_IS("+") || OP_IS("-")) {
+    if (OP_IS2("+") || OP_IS2("-")) {
         return 9;
     }
-    if (OP_IS("*") || OP_IS("/") || OP_IS("%")) {
+    if (OP_IS2("*") || OP_IS2("/") || OP_IS2("%")) {
         return 10;
     }
 
-#undef OP_IS
+#undef OP_IS2
 
     return false;
 }

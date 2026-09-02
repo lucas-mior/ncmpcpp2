@@ -5,6 +5,30 @@
 
 #include "c/ncm_c.h"
 
+static int32
+ncm_error_code_from_status(int32 status) {
+    if (status == MINOF(status)) {
+        return EOVERFLOW;
+    }
+    if (status < 0) {
+        return -status;
+    }
+
+    return status;
+}
+
+int32
+ncm_status_from_error_code(int32 code) {
+    if (code == 0) {
+        return 0;
+    }
+    if (code < 0) {
+        return code;
+    }
+
+    return -code;
+}
+
 void
 ncm_error_clear(NcmError *ncm_error) {
     if (ncm_error == NULL) {
@@ -49,6 +73,41 @@ ncm_error_is_set(NcmError *ncm_error) {
     }
 
     return ncm_error->code != 0;
+}
+
+int32
+ncm_error_status(NcmError *ncm_error) {
+    if (ncm_error == NULL) {
+        return 0;
+    }
+
+    return ncm_status_from_error_code(ncm_error->code);
+}
+
+int32
+ncm_error_set_status(NcmError *ncm_error, int32 status,
+                     char *message, int32 message_len) {
+    int32 result;
+
+    if (status == 0) {
+        ncm_error_clear(ncm_error);
+        return 0;
+    }
+
+    result = ncm_status_from_error_code(status);
+    if (status == MINOF(status)) {
+        result = -EOVERFLOW;
+    }
+
+    ncm_error_set(ncm_error, ncm_error_code_from_status(status),
+                  message, message_len);
+    return result;
+}
+
+int32
+ncm_error_ok(NcmError *ncm_error) {
+    ncm_error_clear(ncm_error);
+    return 0;
 }
 
 #endif /* NCM_ERROR_C */
