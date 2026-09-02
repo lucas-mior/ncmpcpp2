@@ -1867,8 +1867,8 @@ playlist_editor_update_from_mpd(PlaylistEditorScreen *screen,
     }
 
     ncm_error_clear(&ncm_error);
-    ok = playlist_editor_screen_reload_content_from_mpd(
-        screen, client, &ncm_error);
+    ok = playlist_editor_screen_reload_content_from_mpd(screen, client,
+                                                       &ncm_error);
     if (!ok) {
         screen->content_update_requested = false;
         playlist_editor_report_error(
