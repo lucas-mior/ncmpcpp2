@@ -1534,8 +1534,8 @@ StrBuilder ncm_html_unescape_entities(char *data, int32 data_len);
 StrBuilder ncm_html_strip_tags(char *data, int32 data_len);
 
 /* c/ncm_job.h */
-typedef bool NcmJobRunCallback(void *user, NcmError *ncm_error);
-typedef void NcmJobCompleteCallback(bool success, NcmError *ncm_error,
+typedef int32 NcmJobRunCallback(void *user, NcmError *ncm_error);
+typedef void NcmJobCompleteCallback(int32 status, NcmError *ncm_error,
                                     void *user);
 typedef void NcmJobDestroyCallback(void *user);
 
@@ -1545,7 +1545,7 @@ typedef struct NcmJob {
     NcmJobDestroyCallback *destroy;
     void *user;
     NcmError ncm_error;
-    bool success;
+    int32 status;
 } NcmJob;
 
 typedef struct NcmJobQueue {
@@ -1566,9 +1566,9 @@ typedef struct NcmJobQueue {
 } NcmJobQueue;
 
 void ncm_job_queue_init(NcmJobQueue *queue);
-bool ncm_job_queue_start(NcmJobQueue *queue, NcmError *ncm_error);
-bool ncm_job_queue_push(NcmJobQueue *queue, NcmJob job,
-                        NcmError *ncm_error);
+int32 ncm_job_queue_start(NcmJobQueue *queue, NcmError *ncm_error);
+int32 ncm_job_queue_push(NcmJobQueue *queue, NcmJob job,
+                         NcmError *ncm_error);
 int32 ncm_job_queue_dispatch_completed(NcmJobQueue *queue);
 void ncm_job_queue_stop(NcmJobQueue *queue);
 void ncm_job_queue_destroy(NcmJobQueue *queue);

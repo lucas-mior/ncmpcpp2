@@ -708,8 +708,8 @@ settings_parse_lyrics_fetchers(Configuration *config, char *value,
         if (item_len <= 0) {
             continue;
         }
-        if (!ncm_lyrics_fetcher_registry_append_name(&config->lyrics_fetchers,
-                                                     item, item_len)) {
+        if (ncm_lyrics_fetcher_registry_append_name(&config->lyrics_fetchers,
+                                                    item, item_len) < 0) {
             settings_error(ncm_error, STRLIT("unknown lyrics fetcher"));
             return false;
         }

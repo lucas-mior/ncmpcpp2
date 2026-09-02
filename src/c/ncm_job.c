@@ -16,7 +16,7 @@ ncm_job_set_errno_error(NcmError *ncm_error, int32 code, char *operation) {
     return;
 }
 
-static bool
+static void
 ncm_job_array_reserve(NcmJob **items, int32 *cap,
                       int32 len, int32 extra) {
     int32 needed;
@@ -24,11 +24,11 @@ ncm_job_array_reserve(NcmJob **items, int32 *cap,
     int32 new_cap;
 
     if (extra <= 0) {
-        return true;
+        return;
     }
     needed = len + extra;
     if (needed <= *cap) {
-        return true;
+        return;
     }
 
     old_cap = *cap;
@@ -43,7 +43,7 @@ ncm_job_array_reserve(NcmJob **items, int32 *cap,
     *items = realloc2(*items, old_cap, new_cap, SIZEOF(**items));
     *cap = new_cap;
 
-    return true;
+    return;
 }
 
 static void
@@ -60,7 +60,7 @@ ncm_job_destroy(NcmJob *job) {
     job->destroy = NULL;
     job->user = NULL;
     ncm_error_clear(&job->ncm_error);
-    job->success = false;
+    job->status = -NCM_ERROR_INVALID_STATE;
 
     return;
 }
@@ -125,9 +125,9 @@ ncm_job_queue_thread_main(void *user) {
         if (have_job) {
             ncm_error_clear(&job.ncm_error);
             if (job.run) {
-                job.success = job.run(job.user, &job.ncm_error);
+                job.status = job.run(job.user, &job.ncm_error);
             } else {
-                job.success = false;
+                job.status = -EINVAL;
                 ncm_error_set(&job.ncm_error, EINVAL,
                               STRLIT("job has no run callback"));
             }
@@ -158,16 +158,16 @@ ncm_job_queue_init(NcmJobQueue *queue) {
     return;
 }
 
-bool
+int32
 ncm_job_queue_start(NcmJobQueue *queue, NcmError *ncm_error) {
     int32 code;
 
     if (queue == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing job queue"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing job queue"));
     }
     if (queue->started) {
-        return true;
+        return ncm_error_ok(ncm_error);
     }
 
     queue->stopping = false;
@@ -175,45 +175,43 @@ ncm_job_queue_start(NcmJobQueue *queue, NcmError *ncm_error) {
                           ncm_job_queue_thread_main, queue);
     if (code != 0) {
         ncm_job_set_errno_error(ncm_error, code, "pthread_create");
-        return false;
+        return -code;
     }
 
     queue->started = true;
-    ncm_error_clear(ncm_error);
-    return true;
+    return ncm_error_ok(ncm_error);
 }
 
-bool
+int32
 ncm_job_queue_push(NcmJobQueue *queue, NcmJob job, NcmError *ncm_error) {
     if (queue == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing job queue"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing job queue"));
     }
     if (!queue->started) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("job queue is not started"));
-        return false;
+        return ncm_error_set_status(ncm_error, -NCM_ERROR_INVALID_STATE,
+                                    STRLIT("job queue is not started"));
     }
     if (job.run == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing job callback"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing job callback"));
     }
 
     ncm_error_clear(&job.ncm_error);
-    job.success = false;
+    job.status = -NCM_ERROR_INVALID_STATE;
 
     pthread_mutex_lock(&queue->mutex);
     if (queue->stopping) {
         pthread_mutex_unlock(&queue->mutex);
-        ncm_error_set(ncm_error, EINVAL, STRLIT("job queue is stopping"));
-        return false;
+        return ncm_error_set_status(ncm_error, -NCM_ERROR_INVALID_STATE,
+                                    STRLIT("job queue is stopping"));
     }
     ncm_job_array_push(&queue->pending, &queue->pending_len,
                        &queue->pending_cap, job);
     pthread_cond_signal(&queue->cond);
     pthread_mutex_unlock(&queue->mutex);
 
-    ncm_error_clear(ncm_error);
-    return true;
+    return ncm_error_ok(ncm_error);
 }
 
 int32
@@ -239,7 +237,7 @@ ncm_job_queue_dispatch_completed(NcmJobQueue *queue) {
 
     for (int32 i = 0; i < len; i += 1) {
         if (items[i].complete) {
-            items[i].complete(items[i].success, &items[i].ncm_error,
+            items[i].complete(items[i].status, &items[i].ncm_error,
                               items[i].user);
         }
         ncm_job_destroy(&items[i]);

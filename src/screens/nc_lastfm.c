@@ -35,8 +35,8 @@ static bool lastfm_set_title(LastfmScreen *screen, char *title,
                              int32 title_len);
 static LastfmJob *lastfm_job_create(LastfmScreen *screen,
                                     NcmLastfmService *service);
-static bool lastfm_job_run(void *user, NcmError *ncm_error);
-static void lastfm_job_complete(bool success, NcmError *ncm_error, void *user);
+static int32 lastfm_job_run(void *user, NcmError *ncm_error);
+static void lastfm_job_complete(int32 status, NcmError *ncm_error, void *user);
 static void lastfm_job_destroy(void *user);
 static void lastfm_copy_result(LastfmScreen *screen, NcmLastfmResult *result);
 static void lastfm_render_result(LastfmScreen *screen);
@@ -224,21 +224,21 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
     }
 
     candidate = (NcmLastfmService){0};
-    if (!ncm_lastfm_artist_info_init(&candidate, artist, artist_len,
-                                     lang, lang_len)) {
+    if (ncm_lastfm_artist_info_init(&candidate, artist, artist_len,
+                                    lang, lang_len) < 0) {
         ncm_lastfm_service_destroy(&candidate);
         ncm_error_set(ncm_error, EINVAL,
                       STRLIT("invalid Last.fm service"));
         return false;
     }
     if (screen->has_service
-        && ncm_lastfm_service_equal(&screen->service, &candidate)) {
+        && ncm_lastfm_service_is_equal(&screen->service, &candidate)) {
         ncm_lastfm_service_destroy(&candidate);
         ncm_error_clear(ncm_error);
         return true;
     }
 
-    if (!ncm_job_queue_start(&screen->jobs, ncm_error)) {
+    if (ncm_job_queue_start(&screen->jobs, ncm_error) < 0) {
         ncm_lastfm_service_destroy(&candidate);
         return false;
     }
@@ -250,14 +250,14 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
         return false;
     }
 
-    if (!ncm_job_queue_push(&screen->jobs,
+    if (ncm_job_queue_push(&screen->jobs,
                             (NcmJob){
                                 .run = lastfm_job_run,
                                 .complete = lastfm_job_complete,
                                 .destroy = lastfm_job_destroy,
                                 .user = job,
                             },
-                            ncm_error)) {
+                            ncm_error) < 0) {
         lastfm_job_destroy(job);
         return false;
     }
@@ -451,23 +451,26 @@ lastfm_job_create(LastfmScreen *screen, NcmLastfmService *service) {
     return job;
 }
 
-static bool
+static int32
 lastfm_job_run(void *user, NcmError *ncm_error) {
     LastfmJob *job = user;
+    int32 status;
 
-    (void)ncm_lastfm_service_fetch(&job->service, &job->result);
-    if (!job->result.success) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("Last.fm fetch failed"));
+    status = ncm_lastfm_service_fetch(&job->service, &job->result);
+    if (status < 0) {
+        ncm_error_set_status(ncm_error, status,
+                             STRLIT("Last.fm fetch failed"));
+        return status;
     }
-    return job->result.success;
+    return ncm_error_ok(ncm_error);
 }
 
 static void
-lastfm_job_complete(bool success, NcmError *ncm_error, void *user) {
+lastfm_job_complete(int32 status, NcmError *ncm_error, void *user) {
     LastfmJob *job = user;
     LastfmScreen *screen;
 
-    (void)success;
+    (void)status;
     (void)ncm_error;
     if (job == NULL) {
         return;
@@ -475,7 +478,7 @@ lastfm_job_complete(bool success, NcmError *ncm_error, void *user) {
 
     if (((screen = job->screen) == NULL)
         || !screen->has_service
-        || !ncm_lastfm_service_equal(&job->service, &screen->service)) {
+        || !ncm_lastfm_service_is_equal(&job->service, &screen->service)) {
         return;
     }
 
