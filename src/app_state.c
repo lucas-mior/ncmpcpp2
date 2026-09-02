@@ -6,7 +6,7 @@
 #include "app_state.h"
 
 static NcScreenRegistry screen_registry;
-static bool last_switch_changed_screen;
+static bool last_switch_has_changed_screen;
 
 NcScreen *
 app_state_get_screen(void) {
@@ -24,16 +24,16 @@ app_state_get_locked_screen(void) {
 }
 
 bool
-app_state_last_switch_changed_screen(void) {
-    return last_switch_changed_screen;
+app_state_last_switch_has_changed_screen(void) {
+    return last_switch_has_changed_screen;
 }
 
-bool
+int32
 app_state_register_screen(NcScreen *screen) {
     return nc_screen_registry_register(&screen_registry, screen);
 }
 
-bool
+int32
 app_state_unregister_screen(NcScreen *screen) {
     return nc_screen_registry_unregister(&screen_registry, screen);
 }
@@ -43,22 +43,30 @@ app_state_find_screen_type(int32 type) {
     return nc_screen_registry_find(&screen_registry, type);
 }
 
-bool
+int32
 app_state_switch_to_screen(NcScreen *screen) {
-    last_switch_changed_screen = screen_registry.current_screen != screen;
-    return nc_screen_registry_switch_to(&screen_registry, screen);
+    bool changed_screen;
+    int32 status;
+
+    changed_screen = screen_registry.current_screen != screen;
+    status = nc_screen_registry_switch_to(&screen_registry, screen);
+    if (status < 0) {
+        return status;
+    }
+    last_switch_has_changed_screen = changed_screen;
+    return 0;
 }
 
-bool
+int32
 app_state_lock_current_screen(void) {
     return nc_screen_registry_lock_current(&screen_registry);
 }
 
 void
 app_state_unlock_screen(void) {
-    last_switch_changed_screen = screen_registry.inactive_screen
-                                 && (screen_registry.inactive_screen
-                                     != screen_registry.locked_screen);
+    last_switch_has_changed_screen = screen_registry.inactive_screen
+                                     && (screen_registry.inactive_screen
+                                         != screen_registry.locked_screen);
     nc_screen_registry_unlock(&screen_registry);
     return;
 }
@@ -72,15 +80,15 @@ app_state_can_show_locked_screen(void) {
            && (nc_screen_is_mergable(screen_registry.current_screen));
 }
 
-bool
+int32
 app_state_show_locked_screen(void) {
     if (!app_state_can_show_locked_screen()) {
-        return false;
+        return -EPERM;
     }
 
     screen_registry.inactive_screen = screen_registry.current_screen;
     screen_registry.current_screen = screen_registry.locked_screen;
-    return true;
+    return 0;
 }
 
 bool
@@ -92,15 +100,15 @@ app_state_can_show_inactive_screen(void) {
            && (nc_screen_is_mergable(screen_registry.current_screen));
 }
 
-bool
+int32
 app_state_show_inactive_screen(void) {
     if (!app_state_can_show_inactive_screen()) {
-        return false;
+        return -EPERM;
     }
 
     screen_registry.current_screen = screen_registry.inactive_screen;
     screen_registry.inactive_screen = screen_registry.locked_screen;
-    return true;
+    return 0;
 }
 
 bool

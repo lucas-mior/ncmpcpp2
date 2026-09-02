@@ -276,12 +276,12 @@ ncmpcpp_playlist_enable_highlighting_if_current(void) {
 
 bool
 ncmpcpp_switch_to_screen_type(enum ScreenType screen_type) {
-    return app_screens_switch_to_type(screen_type);
+    return app_screens_switch_to_type(screen_type) == 0;
 }
 
 bool
 ncmpcpp_lock_current_screen(void) {
-    return app_screens_lock_current();
+    return app_screens_lock_current() == 0;
 }
 
 enum ScreenType

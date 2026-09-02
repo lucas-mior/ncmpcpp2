@@ -1655,13 +1655,13 @@ static bool
 playlist_editor_show_screen(PlaylistEditorScreen *screen) {
     ASSERT(screen != NULL);
     if (!app_controller_is_screen_registered(&screen->screen)) {
-        if (!app_controller_register_screen(&screen->screen)) {
+        if (app_controller_register_screen(&screen->screen) < 0) {
             return false;
         }
         screen->registered = true;
     }
     return nc_screen_switcher_switch_to(
-        &screen->screen, nc_screen_has_to_be_resized(&screen->screen));
+        &screen->screen, nc_screen_has_to_be_resized(&screen->screen)) == 0;
 }
 
 static bool

@@ -471,10 +471,10 @@ void nc_screen_get_resize_params(NcScreen *screen, int32 *x_offset,
 void nc_screen_draw_vertical_separator(int32 x);
 void *nc_screen_user(NcScreen *screen);
 
-bool nc_screen_registry_register(NcScreenRegistry *registry,
-                                 NcScreen *screen);
-bool nc_screen_registry_unregister(NcScreenRegistry *registry,
-                                   NcScreen *screen);
+int32 nc_screen_registry_register(NcScreenRegistry *registry,
+                                  NcScreen *screen);
+int32 nc_screen_registry_unregister(NcScreenRegistry *registry,
+                                    NcScreen *screen);
 NcScreen *nc_screen_registry_find(NcScreenRegistry *registry, int32 type);
 NcScreen *nc_screen_registry_current(NcScreenRegistry *registry);
 NcScreen *nc_screen_registry_previous(NcScreenRegistry *registry);
@@ -490,9 +490,9 @@ void nc_screen_registry_request_update_current(
 NcScreenResizeParams nc_screen_registry_resize_params(
     NcScreenRegistry *registry, NcScreen *screen,
     bool adjust_locked_screen);
-bool nc_screen_registry_switch_to(NcScreenRegistry *registry,
-                                  NcScreen *screen);
-bool nc_screen_registry_lock_current(NcScreenRegistry *registry);
+int32 nc_screen_registry_switch_to(NcScreenRegistry *registry,
+                                   NcScreen *screen);
+int32 nc_screen_registry_lock_current(NcScreenRegistry *registry);
 void nc_screen_registry_unlock(NcScreenRegistry *registry);
 bool nc_screen_registry_is_visible(NcScreenRegistry *registry,
                                    NcScreen *screen);
@@ -522,9 +522,9 @@ NcScreen *nc_screen_switcher_current(void);
 NcScreen *nc_screen_switcher_previous(void);
 bool nc_screen_switcher_is_current(NcScreen *screen);
 bool nc_screen_switcher_is_visible(NcScreen *screen);
-bool nc_screen_switcher_switch_to(NcScreen *screen,
-                                  bool has_to_be_resized);
-bool nc_screen_switcher_finish_switch(NcScreen *screen);
+int32 nc_screen_switcher_switch_to(NcScreen *screen,
+                                   bool has_to_be_resized);
+void nc_screen_switcher_finish_switch(NcScreen *screen);
 NcScreenResizeParams nc_screen_switcher_resize_params(
     NcScreen *screen, bool adjust_locked_screen);
 void nc_screen_switcher_get_resize_params(NcScreen *screen,
@@ -2465,8 +2465,8 @@ void app_screens_init_all(void);
 void app_screens_register_initial(void);
 void app_screens_request_registered_resize(void);
 NcScreen *app_screens_find_type(enum ScreenType screen_type);
-bool app_screens_switch_to_type(enum ScreenType screen_type);
-bool app_screens_lock_current(void);
+int32 app_screens_switch_to_type(enum ScreenType screen_type);
+int32 app_screens_lock_current(void);
 enum ScreenType app_screens_current_type(void);
 
 #define NCM_APP_SCREEN_DECLARE_COMMON(suffix) \

@@ -250,8 +250,8 @@ sort_playlist_dialog_open(
     dialog->ignore_leading_the = ignore_leading_the;
     dialog->ready = true;
 
-    if (!nc_screen_switcher_switch_to(
-        sort_playlist_dialog_base(dialog), false)) {
+    if (nc_screen_switcher_switch_to(
+        sort_playlist_dialog_base(dialog), false) < 0) {
         ncm_song_array_clear(&dialog->songs);
         dialog->playlist = NULL;
         dialog->previous_screen = NULL;
