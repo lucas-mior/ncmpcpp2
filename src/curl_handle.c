@@ -47,6 +47,10 @@ write_data(char *buffer, size_t size, size_t nmemb, void *data) {
 
 static int32
 ncm_curl_status_from_code(CURLcode code) {
+#if CC_CLANG
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch-enum"
+#endif
     switch (code) {
     case CURLE_OK:
         return 0;
@@ -60,6 +64,9 @@ ncm_curl_status_from_code(CURLcode code) {
     default:
         return -NCM_ERROR_NETWORK;
     }
+#if CC_CLANG
+#pragma clang diagnostic pop
+#endif
 }
 
 int32
