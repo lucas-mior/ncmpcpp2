@@ -679,15 +679,16 @@ configuration_read_settings(NcmConfigurationOptions *options,
     }
 
     configuration_clear(&Config);
-    if (!configuration_read(&Config, &config_views,
-                            options->ignore_config_errors, options->quiet,
-                            ncm_error)) {
+    status = configuration_read(&Config, &config_views,
+                                options->ignore_config_errors, options->quiet,
+                                ncm_error);
+    if (status < 0) {
         ncm_string_view_array_destroy(&config_views);
         if (!ncm_error_is_set(ncm_error)) {
-            return ncm_error_set_status(ncm_error, -EINVAL,
+            return ncm_error_set_status(ncm_error, status,
                                         STRLIT("failed to read configuration"));
         }
-        return ncm_error_status(ncm_error);
+        return status;
     }
 
     ncm_string_view_array_destroy(&config_views);
