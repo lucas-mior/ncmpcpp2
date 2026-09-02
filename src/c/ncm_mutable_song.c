@@ -739,13 +739,9 @@ ncm_mutable_song_write(NcmMutableSong *song, char *music_dir) {
         return -EINVAL;
     }
 
-    if (!ncm_tags_write(music_dir, song->uri, song->is_from_database,
-                        song->directory, song->new_name,
-                        ncm_mutable_song_write_callback, song)) {
-        return -NCM_ERROR_TAGLIB;
-    }
-
-    return 0;
+    return ncm_tags_write(music_dir, song->uri, song->is_from_database,
+                          song->directory, song->new_name,
+                          ncm_mutable_song_write_callback, song);
 }
 
 #endif /* NCM_MUTABLE_SONG_C */

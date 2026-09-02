@@ -1977,7 +1977,7 @@ browser_make_local_song(NcmSong *song, char *path, int32 path_len,
         pair.name = "file";
         pair.value = path;
         if ((mpd_song = mpd_song_begin(&pair))) {
-            if (ncm_tags_read_song(mpd_song)) {
+            if (ncm_tags_read_song(mpd_song) > 0) {
                 result = ncm_song_from_mpd_song(song, mpd_song) == 0;
                 if (result) {
                     ncm_song_set_mtime(song, mtime);

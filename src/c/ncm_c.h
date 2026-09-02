@@ -98,10 +98,10 @@ void ncm_tags_set_attribute(struct mpd_song *song, char *name, char *value);
 enum NcmTagsReadResult ncm_tags_read_lyrics(char *path,
                                             NcmTagsValueCallback *callback,
                                             void *user);
-bool ncm_tags_read_song(struct mpd_song *song);
-bool ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
-                    char *directory, char *new_name,
-                    NcmTagsGetFieldCallback *callback, void *user);
+int32 ncm_tags_read_song(struct mpd_song *song);
+int32 ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
+                     char *directory, char *new_name,
+                     NcmTagsGetFieldCallback *callback, void *user);
 
 /* c/ncm_type_conversions.h */
 #include <mpd/tag.h>
@@ -1770,19 +1770,19 @@ typedef void NcmTaglibPairCallback(char *name, char *value, void *user);
 typedef void NcmTaglibValueCallback(char *value, void *user);
 
 void ncm_taglib_init(void);
-bool ncm_taglib_file_open(NcmTaglibFile *file, char *path);
+int32 ncm_taglib_file_open(NcmTaglibFile *file, char *path);
 void ncm_taglib_file_close(NcmTaglibFile *file);
-bool ncm_taglib_file_save(NcmTaglibFile *file);
-bool ncm_taglib_file_audio_properties(NcmTaglibFile *file,
-                                      NcmTaglibAudioProperties *properties);
-bool ncm_taglib_read_mapped_properties(NcmTaglibFile *file,
-                                       NcmTaglibPairCallback *callback,
-                                       void *user);
-bool ncm_taglib_read_property(NcmTaglibFile *file, char *property,
-                              NcmTaglibValueCallback *callback, void *user);
-void ncm_taglib_clear_property(NcmTaglibFile *file, char *property);
-void ncm_taglib_append_property(NcmTaglibFile *file, char *property,
-                                char *value);
+int32 ncm_taglib_file_save(NcmTaglibFile *file);
+int32 ncm_taglib_file_audio_properties(NcmTaglibFile *file,
+                                       NcmTaglibAudioProperties *properties);
+int32 ncm_taglib_read_mapped_properties(NcmTaglibFile *file,
+                                        NcmTaglibPairCallback *callback,
+                                        void *user);
+int32 ncm_taglib_read_property(NcmTaglibFile *file, char *property,
+                               NcmTaglibValueCallback *callback, void *user);
+int32 ncm_taglib_clear_property(NcmTaglibFile *file, char *property);
+int32 ncm_taglib_append_property(NcmTaglibFile *file, char *property,
+                                 char *value);
 bool ncm_taglib_extended_set_supported(NcmTaglibFile *file);
 void ncm_taglib_clear_strings(void);
 
