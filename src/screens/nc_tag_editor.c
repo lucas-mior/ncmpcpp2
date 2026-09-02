@@ -877,11 +877,13 @@ tag_editor_screen_load_songs(TagEditorScreen *screen,
     nc_menu_clear_items(nc_tag_row_menu_base(&screen->tags));
     for (int32 i = 0; i < songs->len; i += 1) {
         NcmMutableSong mutable_song;
+        int32 status;
         bool ok;
 
         mutable_song = (NcmMutableSong){0};
-        ok = ncm_mutable_song_load_originals_from_song(&mutable_song,
-                                                       &songs->items[i]);
+        status = ncm_mutable_song_load_originals_from_song(
+            &mutable_song, &songs->items[i]);
+        ok = status == 0;
         if (ok) {
             ok = tag_editor_screen_add_mutable_song(screen, &mutable_song);
         }
@@ -1485,10 +1487,10 @@ tag_editor_parse_filename(NcmMutableSong *song, char *mask,
                 SB_APPEND(preview_buffer, file.data + file_pos,
                           value_end - file_pos);
                 sb_append_byte(preview_buffer, '\n');
-            } else if (!ncm_mutable_song_set_tags(song, field,
-                                                  file.data + file_pos,
-                                                  value_end - file_pos,
-                                                  NULL, 0)) {
+            } else if (ncm_mutable_song_set_tags(song, field,
+                                                 file.data + file_pos,
+                                                 value_end - file_pos,
+                                                 NULL, 0) < 0) {
                 sb_free(&file);
                 return false;
             }
@@ -2331,7 +2333,7 @@ tag_editor_prompt_tag_value(TagEditorScreen *screen,
     } else {
         result = ncm_mutable_song_set_tags(
             song, field, input.data, input.len, Config.tags_separator,
-            Config.tags_separator_len);
+            Config.tags_separator_len) == 0;
     }
     sb_free(&input);
     return result;
@@ -2419,7 +2421,7 @@ tag_editor_set_song_filename_stem(NcmMutableSong *song, char *stem,
                   current_name.len - dot);
     }
     result = ncm_mutable_song_set_new_name(song, new_name.data,
-                                           new_name.len);
+                                           new_name.len) == 0;
     sb_free(&new_name);
     return result;
 }
@@ -3946,7 +3948,7 @@ tag_editor_mutable_song_to_song(NcmMutableSong *source,
         return false;
     }
 
-    if (!ncm_song_set_uri(dest, source->uri, source->uri_len)) {
+    if (ncm_song_set_uri(dest, source->uri, source->uri_len) < 0) {
         return false;
     }
     ncm_song_set_duration(dest, source->duration);
@@ -3965,7 +3967,7 @@ tag_editor_mutable_song_to_song(NcmMutableSong *source,
             || (value_len <= 0)) {
             continue;
         }
-        if (!ncm_song_add_tag(dest, type, value, value_len)) {
+        if (ncm_song_add_tag(dest, type, value, value_len) < 0) {
             return false;
         }
     }
@@ -4003,7 +4005,7 @@ tag_editor_set_song_tag_callback(NcmMutableSong *song, void *user) {
 
     return ncm_mutable_song_set_tags(song, setter->field, setter->value,
                                      setter->value_len, setter->separator,
-                                     setter->separator_len);
+                                     setter->separator_len) == 0;
 }
 
 static bool
@@ -4027,14 +4029,14 @@ tag_editor_number_song_callback(NcmMutableSong *song, void *user) {
         len = SIZEOF(buffer) - 1;
     }
     numberer->current += 1;
-    if (!ncm_mutable_song_set_tag(song, NCM_TAGS_FIELD_TRACK, 0,
-                                  buffer, len)) {
+    if (ncm_mutable_song_set_tag(song, NCM_TAGS_FIELD_TRACK, 0,
+                                 buffer, len) < 0) {
         return false;
     }
     for (int32 i = 1; ncm_mutable_song_get_tag(
         song, NCM_TAGS_FIELD_TRACK, i, &view); i += 1) {
-        if (!ncm_mutable_song_set_tag(
-            song, NCM_TAGS_FIELD_TRACK, i, STRLIT(""))) {
+        if (ncm_mutable_song_set_tag(
+            song, NCM_TAGS_FIELD_TRACK, i, STRLIT("")) < 0) {
             return false;
         }
     }
@@ -4067,8 +4069,8 @@ tag_editor_capitalize_song_callback(NcmMutableSong *song, void *user) {
             if (converted.data) {
                 converted.data[converted.len] = '\0';
             }
-            if (!ncm_mutable_song_set_tag(song, field, i, converted.data,
-                                          converted.len)) {
+            if (ncm_mutable_song_set_tag(song, field, i, converted.data,
+                                         converted.len) < 0) {
                 sb_free(&converted);
                 return false;
             }
@@ -4096,8 +4098,8 @@ tag_editor_lower_song_callback(NcmMutableSong *song, void *user) {
             }
             SB_APPEND(&buffer, view.data, view.len);
             tag_editor_lower_ascii_buffer(&buffer);
-            if (!ncm_mutable_song_set_tag(song, field, i, buffer.data,
-                                          buffer.len)) {
+            if (ncm_mutable_song_set_tag(song, field, i, buffer.data,
+                                         buffer.len) < 0) {
                 sb_free(&buffer);
                 return false;
             }
@@ -4127,7 +4129,7 @@ tag_editor_save_song_callback(NcmMutableSong *song, void *user) {
         context->screen, STRLIT("Writing tags in \""), song,
         STRLIT("\"..."));
     errno = 0;
-    if (!ncm_mutable_song_write(song, context->music_dir)) {
+    if (ncm_mutable_song_write(song, context->music_dir) < 0) {
         error = errno;
         if (error == 0) {
             error = EIO;
@@ -4675,8 +4677,8 @@ tag_editor_build_parser_preview(TagEditorScreen *screen,
                 return true;
             }
             if (apply) {
-                if (!ncm_mutable_song_set_new_name(song, new_name.data,
-                                                   new_name.len)) {
+                if (ncm_mutable_song_set_new_name(song, new_name.data,
+                                                  new_name.len) < 0) {
                     sb_free(&new_name);
                     sb_free(&stem);
                     return false;
@@ -5038,9 +5040,9 @@ tag_editor_mutable_song_to_format_song(NcmMutableSong *source,
         SB_APPEND(&uri, source->name, source->name_len);
     }
     if (uri.data == NULL) {
-        ok = ncm_song_set_uri(dest, STRLIT(""));
+        ok = ncm_song_set_uri(dest, STRLIT("")) == 0;
     } else {
-        ok = ncm_song_set_uri(dest, uri.data, uri.len);
+        ok = ncm_song_set_uri(dest, uri.data, uri.len) == 0;
     }
     sb_free(&uri);
     if (!ok) {
@@ -5068,7 +5070,7 @@ tag_editor_mutable_song_to_format_song(NcmMutableSong *source,
             || (value_len <= 0)) {
             continue;
         }
-        if (!ncm_song_add_tag(dest, type, value, value_len)) {
+        if (ncm_song_add_tag(dest, type, value, value_len) < 0) {
             return false;
         }
     }

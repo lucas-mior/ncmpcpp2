@@ -790,7 +790,7 @@ configuration_print_current_song(NcmConfigurationOptions *options,
 
     result = ncm_mpd_client_connect(&global_mpd, ncm_error)
              && ncm_mpd_client_get_current_song(&global_mpd, &song, ncm_error);
-    if (result && !ncm_song_empty(&song)) {
+    if (result && !ncm_song_is_empty(&song)) {
         result = ncm_format_parse(&format, options->current_song_format.data,
                                   options->current_song_format.len,
                                   NCM_FORMAT_FLAG_TAG, ncm_error);

@@ -187,7 +187,7 @@ tiny_tag_editor_screen_set_edited_song(
     }
 
     edited = (NcmMutableSong){0};
-    if (!ncm_mutable_song_load_originals_from_song(&edited, song)) {
+    if (ncm_mutable_song_load_originals_from_song(&edited, song) < 0) {
         ncm_mutable_song_destroy(&edited);
         return false;
     }
@@ -452,7 +452,8 @@ tiny_tag_editor_screen_set_tag_value(
         return false;
     }
     return ncm_mutable_song_set_tags(&screen->edited, field, value,
-                                     value_len, separator, separator_len);
+                                     value_len, separator,
+                                     separator_len) == 0;
 }
 
 bool
@@ -462,7 +463,8 @@ tiny_tag_editor_screen_set_filename(
     if ((screen == NULL) || !screen->has_edited) {
         return false;
     }
-    return ncm_mutable_song_set_new_name(&screen->edited, name, name_len);
+    return ncm_mutable_song_set_new_name(&screen->edited, name,
+                                         name_len) == 0;
 }
 
 bool
@@ -906,7 +908,7 @@ tiny_editor_write_song(TinyTagEditorScreen *screen,
         return screen->hooks.write_song(
             screen->hooks.user, &screen->edited, music_dir);
     }
-    return ncm_mutable_song_write(&screen->edited, music_dir);
+    return ncm_mutable_song_write(&screen->edited, music_dir) == 0;
 }
 
 static void

@@ -520,6 +520,7 @@ lyrics_screen_fetch(LyricsScreen *screen,
     StrBuilder next_filename = {0};
     StrBuilder lrc_filename = {0};
     StrBuilder txt_filename = {0};
+    int32 status;
     bool changed_song;
     bool changed_filename;
     bool changed;
@@ -527,7 +528,7 @@ lyrics_screen_fetch(LyricsScreen *screen,
     bool txt_found;
     bool win32_filename;
 
-    if ((screen == NULL) || (song == NULL) || ncm_song_empty(song)) {
+    if ((screen == NULL) || (song == NULL) || ncm_song_is_empty(song)) {
         ncm_error_set(ncm_error, EINVAL, STRLIT("missing song"));
         return false;
     }
@@ -580,7 +581,7 @@ lyrics_screen_fetch(LyricsScreen *screen,
         return false;
     }
 
-    changed_song = !screen->has_song || !ncm_song_equal(&screen->song, song);
+    changed_song = !screen->has_song || !ncm_song_is_equal(&screen->song, song);
     changed_filename = !STREQUAL(screen->filename.data,
                                  screen->filename.len,
                                  next_filename.data,
@@ -592,7 +593,14 @@ lyrics_screen_fetch(LyricsScreen *screen,
         nc_scrollpad_reset(&screen->scrollpad);
         nc_lyrics_screen_reset_scroll_begin(&screen->screen);
         ncm_lyrics_result_clear(&screen->result);
-        ncm_song_copy(&screen->song, song);
+        status = ncm_song_copy(&screen->song, song);
+        if (status < 0) {
+            sb_free(&next_filename);
+            sb_free(&txt_filename);
+            sb_free(&lrc_filename);
+            ncm_error_set(ncm_error, -status, STRLIT("failed to copy song"));
+            return false;
+        }
         screen->has_song = true;
         sb_copy(&screen->filename, &next_filename);
     }
@@ -647,7 +655,7 @@ lyrics_screen_fetch_in_background(LyricsScreen *screen,
                                   NcmSong *song,
                                   bool notify,
                                   NcmError *ncm_error) {
-    if ((screen == NULL) || (song == NULL) || ncm_song_empty(song)) {
+    if ((screen == NULL) || (song == NULL) || ncm_song_is_empty(song)) {
         ncm_error_set(ncm_error, EINVAL, STRLIT("missing song"));
         return false;
     }
@@ -1006,6 +1014,7 @@ lyrics_screen_start_foreground_fetch(
 ) {
     LyricsJob *job;
     NcmLyricsFetcherDef *active_fetcher;
+    int32 status;
 
     lyrics_screen_clear_lyrics_state(
         screen, LYRICS_MODE_FETCH_LOG);
@@ -1013,7 +1022,11 @@ lyrics_screen_start_foreground_fetch(
     nc_lyrics_screen_reset_scroll_begin(&screen->screen);
     ncm_lyrics_result_clear(&screen->result);
     if (song != &screen->song) {
-        ncm_song_copy(&screen->song, song);
+        status = ncm_song_copy(&screen->song, song);
+        if (status < 0) {
+            ncm_error_set(ncm_error, -status, STRLIT("failed to copy song"));
+            return false;
+        }
     }
     screen->has_song = true;
     sb_copy(&screen->filename, filename);
@@ -1032,6 +1045,10 @@ lyrics_screen_start_foreground_fetch(
     }
 
     job = lyrics_job_create(screen, song, active_fetcher, false, false);
+    if (job == NULL) {
+        ncm_error_set(ncm_error, EINVAL, STRLIT("failed to create job"));
+        return false;
+    }
     screen->foreground_job = job;
     if (!ncm_job_queue_push(&screen->jobs,
                             (NcmJob){
@@ -1099,7 +1116,7 @@ lyrics_title_callback(NcScreen *screen) {
 
     sb_clear(&lyrics->title);
     SB_APPEND(&lyrics->title, STRLIT(LYRICS_TITLE));
-    if (!lyrics->has_song || ncm_song_empty(&lyrics->song)) {
+    if (!lyrics->has_song || ncm_song_is_empty(&lyrics->song)) {
         return lyrics->title.data;
     }
 
@@ -1511,7 +1528,7 @@ lyrics_queue_song(LyricsScreen *screen,
     LyricsQueuedSong *queued;
     int32 new_cap;
 
-    if ((song == NULL) || ncm_song_empty(song)) {
+    if ((song == NULL) || ncm_song_is_empty(song)) {
         return false;
     }
     if (screen->queued_songs_len >= screen->queued_songs_cap) {
@@ -1533,7 +1550,9 @@ lyrics_queue_song(LyricsScreen *screen,
     }
 
     queued = &screen->queued_songs[screen->queued_songs_len];
-    ncm_song_copy(&queued->song, song);
+    if (ncm_song_copy(&queued->song, song) < 0) {
+        return false;
+    }
     queued->notify = notify;
     screen->queued_songs_len += 1;
 
@@ -1569,7 +1588,10 @@ lyrics_job_create(LyricsScreen *screen,
 
     job->screen = screen;
     job->song = (NcmSong){0};
-    ncm_song_copy(&job->song, song);
+    if (ncm_song_copy(&job->song, song) < 0) {
+        free2(job, SIZEOF(*job));
+        return NULL;
+    }
     job->filename = (StrBuilder){0};
     job->log = (NcBuffer){0};
     pthread_mutex_init(&job->log_mutex, NULL);
@@ -1886,7 +1908,7 @@ lyrics_job_is_current(LyricsJob *job) {
     if ((screen == NULL) || !screen->has_song) {
         return false;
     }
-    if (!ncm_song_equal(&screen->song, &job->song)) {
+    if (!ncm_song_is_equal(&screen->song, &job->song)) {
         return false;
     }
     return STREQUAL(screen->filename.data, screen->filename.len,
@@ -2019,6 +2041,13 @@ lyrics_start_next_background(LyricsScreen *screen,
                             screen->fetcher,
                             queued->notify,
                             true);
+    if (job == NULL) {
+        sb_free(&filename);
+        lyrics_queued_song_destroy(queued);
+        free2(queued, SIZEOF(*queued));
+        ncm_error_set(ncm_error, EINVAL, STRLIT("failed to create job"));
+        return false;
+    }
     if (!ncm_job_queue_push(&screen->jobs,
                             (NcmJob){
                                 .run = lyrics_job_run,
