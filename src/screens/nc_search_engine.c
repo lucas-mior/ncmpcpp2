@@ -1362,7 +1362,7 @@ search_display_callbacks(SearchEngineScreen *screen,
     callbacks = (NcMenuDisplayCallbacks){0};
     callbacks.draw = search_draw_row;
     if (filtering) {
-        callbacks.filter = search_filter_row;
+        callbacks.matches_filter = search_filter_row;
     }
     callbacks.user = screen;
     return callbacks;

@@ -369,7 +369,7 @@ ncm_statusbar_mpd_idle_callback(void) {
 }
 
 bool
-ncm_statusbar_main_hook(char *string, int32 string_len) {
+ncm_statusbar_prompt_should_continue(char *string, int32 string_len) {
     NcmError ncm_error;
 
     (void)string;

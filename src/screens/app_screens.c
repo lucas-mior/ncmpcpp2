@@ -582,9 +582,9 @@ search_snapshot_playlist(
 }
 
 static bool
-search_prompt_hook(char *text, void *user) {
+search_prompt_should_continue(char *text, void *user) {
     (void)user;
-    return ncm_statusbar_main_hook(text, optional_strlen32(text));
+    return ncm_statusbar_prompt_should_continue(text, optional_strlen32(text));
 }
 
 static enum SearchEnginePromptResult
@@ -623,8 +623,8 @@ search_prompt_constraint(
 
     prompt.initial_text = initial_text;
     prompt.width = -1;
-    prompt.hook = search_prompt_hook;
-    prompt.hook_user_data = NULL;
+    prompt.should_continue = search_prompt_should_continue;
+    prompt.should_continue_user_data = NULL;
     prompt.encrypted = false;
     prompt.remember = true;
     status = nc_window_prompt(window, &prompt, &input);
@@ -766,9 +766,9 @@ app_screen_tag_editor_init(void) {
 }
 
 static bool
-statusbar_prompt_hook(char *text, void *user) {
+statusbar_prompt_should_continue(char *text, void *user) {
     (void)user;
-    return ncm_statusbar_main_hook(text, optional_strlen32(text));
+    return ncm_statusbar_prompt_should_continue(text, optional_strlen32(text));
 }
 
 static enum PromptResult
@@ -812,8 +812,8 @@ prompt_buffer(char *label, int32 label_len,
 
     prompt.initial_text = initial_text;
     prompt.width = -1;
-    prompt.hook = statusbar_prompt_hook;
-    prompt.hook_user_data = NULL;
+    prompt.should_continue = statusbar_prompt_should_continue;
+    prompt.should_continue_user_data = NULL;
     prompt.encrypted = false;
     prompt.remember = true;
     status = nc_window_prompt(window, &prompt, &input);

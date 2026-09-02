@@ -1356,7 +1356,7 @@ browser_display_callbacks(BrowserScreen *screen) {
     NcMenuDisplayCallbacks callbacks = {0};
 
     callbacks.draw = browser_draw_item;
-    callbacks.filter = browser_filter_item;
+    callbacks.matches_filter = browser_filter_item;
     callbacks.user = screen;
 
     return callbacks;

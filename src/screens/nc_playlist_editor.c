@@ -2324,14 +2324,14 @@ playlist_editor_set_display_callbacks(PlaylistEditorScreen *screen) {
     NcMenuDisplayCallbacks callbacks = {0};
 
     callbacks.draw = playlist_draw_callback;
-    callbacks.filter = playlist_filter_callback;
+    callbacks.matches_filter = playlist_filter_callback;
     callbacks.user = screen;
     nc_menu_set_display_callbacks(nc_playlist_entry_menu_base(
         &screen->playlists), callbacks);
 
     callbacks = (NcMenuDisplayCallbacks){0};
     callbacks.draw = content_draw_callback;
-    callbacks.filter = content_filter_callback;
+    callbacks.matches_filter = content_filter_callback;
     callbacks.user = screen;
     nc_menu_set_display_callbacks(nc_song_menu_base(&screen->content),
                                   callbacks);

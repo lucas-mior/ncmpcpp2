@@ -134,7 +134,7 @@ nc_color_end(void) {
 }
 
 bool
-nc_color_equal(NcColor left, NcColor right) {
+nc_color_is_equal(NcColor left, NcColor right) {
     return (left.foreground == right.foreground)
            && (left.background == right.background)
            && (left.is_default == right.is_default)
@@ -152,7 +152,7 @@ nc_color_is_end(NcColor color) {
 }
 
 bool
-nc_color_current_background(NcColor color) {
+nc_color_has_current_background(NcColor color) {
     (void)color;
     return false;
 }
@@ -852,7 +852,7 @@ static bool
 lyrics_screen_test_formatted_color_matches(NcFormattedColor *color) {
     enum NcFormat *formats;
 
-    if (!nc_color_equal(color->color,
+    if (!nc_color_is_equal(color->color,
                         nc_color_make(COLOR_WHITE, COLOR_BLACK,
                                       false, false))) {
         return false;
