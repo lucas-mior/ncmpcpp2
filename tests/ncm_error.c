@@ -21,12 +21,24 @@ ncm_error_test_project_codes_are_positive(void) {
 }
 
 static void
+ncm_error_test_error_code_from_status(void) {
+    ASSERT_ZERO(ncm_error_code_from_status(0));
+    ASSERT_EQUAL(ncm_error_code_from_status(EINVAL), EINVAL);
+    ASSERT_EQUAL(ncm_error_code_from_status(-EINVAL), EINVAL);
+    ASSERT_EQUAL(ncm_error_code_from_status(-NCM_ERROR_PARSE),
+                 NCM_ERROR_PARSE);
+    ASSERT_EQUAL(ncm_error_code_from_status(MINOF((int32)0)), EOVERFLOW);
+    return;
+}
+
+static void
 ncm_error_test_status_from_error_code(void) {
     ASSERT_ZERO(ncm_status_from_error_code(0));
     ASSERT_EQUAL(ncm_status_from_error_code(EINVAL), -EINVAL);
     ASSERT_EQUAL(ncm_status_from_error_code(-EINVAL), -EINVAL);
     ASSERT_EQUAL(ncm_status_from_error_code(NCM_ERROR_PARSE),
                  -NCM_ERROR_PARSE);
+    ASSERT_EQUAL(ncm_status_from_error_code(MINOF((int32)0)), -EOVERFLOW);
     return;
 }
 
@@ -41,7 +53,41 @@ ncm_error_test_error_status(void) {
     ASSERT_EQUAL(ncm_error_status(&ncm_error), -EINVAL);
 
     ncm_error_set(&ncm_error, -EINVAL, STRLIT("legacy negative"));
+    ASSERT_EQUAL(ncm_error.code, EINVAL);
     ASSERT_EQUAL(ncm_error_status(&ncm_error), -EINVAL);
+    return;
+}
+
+static void
+ncm_error_test_set_zero_clears_error(void) {
+    NcmError ncm_error = {0};
+
+    ncm_error_set(&ncm_error, EINVAL, STRLIT("invalid input"));
+    ncm_error_set(&ncm_error, 0, STRLIT("ignored message"));
+
+    ASSERT_ZERO(ncm_error.code);
+    ASSERT_EQUAL(ncm_error.message, "");
+    return;
+}
+
+static void
+ncm_error_test_set_code(void) {
+    NcmError ncm_error = {0};
+    int32 status;
+
+    status = ncm_error_set_code(&ncm_error, NCM_ERROR_PARSE,
+                                STRLIT("parse error"));
+    ASSERT_EQUAL(status, -NCM_ERROR_PARSE);
+    ASSERT(ncm_error_is_set(&ncm_error));
+    ASSERT_EQUAL(ncm_error.code, NCM_ERROR_PARSE);
+    ASSERT_EQUAL(ncm_error.message, "parse error");
+
+    status = ncm_error_set_code(&ncm_error, -EINVAL,
+                                STRLIT("invalid input"));
+    ASSERT_EQUAL(status, -EINVAL);
+    ASSERT(ncm_error_is_set(&ncm_error));
+    ASSERT_EQUAL(ncm_error.code, EINVAL);
+    ASSERT_EQUAL(ncm_error.message, "invalid input");
     return;
 }
 
@@ -82,8 +128,11 @@ ncm_error_test_ok_clears_error(void) {
 int
 main(void) {
     ncm_error_test_project_codes_are_positive();
+    ncm_error_test_error_code_from_status();
     ncm_error_test_status_from_error_code();
     ncm_error_test_error_status();
+    ncm_error_test_set_zero_clears_error();
+    ncm_error_test_set_code();
     ncm_error_test_set_status();
     ncm_error_test_ok_clears_error();
     return 0;
