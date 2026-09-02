@@ -952,17 +952,17 @@ visualizer_screen_requested_samples(VisualizerScreen *screen) {
     return (int32)(frames*channels);
 }
 
-bool
+int32
 visualizer_screen_push_samples(VisualizerScreen *screen, int16 *samples,
                                int32 samples_len) {
     if (screen == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (samples_len <= 0) {
-        return true;
+        return 0;
     }
     if (samples == NULL) {
-        return false;
+        return -EINVAL;
     }
 
     visualizer_screen_apply_auto_scale(screen, samples, samples_len);
@@ -2015,8 +2015,8 @@ visualizer_read_samples(VisualizerScreen *screen) {
     if (samples_read <= 0) {
         return 0;
     }
-    if (!visualizer_screen_push_samples(
-        screen, screen->incoming_samples.data, samples_read)) {
+    if (visualizer_screen_push_samples(
+        screen, screen->incoming_samples.data, samples_read) < 0) {
         return 0;
     }
     return samples_read;

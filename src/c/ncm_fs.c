@@ -139,7 +139,7 @@ ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat,
 }
 
 bool
-ncm_fs_exists(char *path, int32 path_len) {
+ncm_fs_path_is_existing(char *path, int32 path_len) {
     NcmFsStat stat;
 
     if (ncm_fs_stat(path, path_len, &stat, NULL) < 0) {

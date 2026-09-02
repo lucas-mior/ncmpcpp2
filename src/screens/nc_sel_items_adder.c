@@ -674,7 +674,7 @@ adder_row_matches(NcEditorActionRow *row, NcmRegex *regex) {
     if ((row == NULL) || (row->label == NULL)) {
         return false;
     }
-    return ncm_regex_search(regex, row->label, row->label_len);
+    return ncm_regex_matches(regex, row->label, row->label_len);
 }
 
 static bool

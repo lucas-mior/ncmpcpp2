@@ -162,7 +162,7 @@ ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
 }
 
 bool
-ncm_regex_search(NcmRegex *regex, char *string, int32 string_len) {
+ncm_regex_matches(NcmRegex *regex, char *string, int32 string_len) {
     StrBuilder buffer = {0};
     bool result;
 

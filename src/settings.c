@@ -1802,7 +1802,7 @@ settings_read_file(Configuration *config, SettingsOption *options,
     StrBuilder path_buffer = {0};
     char line[SETTINGS_LINE_CAP];
 
-    if (!ncm_fs_exists(path, path_len)) {
+    if (!ncm_fs_path_is_existing(path, path_len)) {
         return 0;
     }
 

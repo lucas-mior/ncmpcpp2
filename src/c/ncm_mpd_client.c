@@ -1316,7 +1316,7 @@ ncm_mpd_client_add_random_songs(NcmMpdClient *client,
     added = 0;
     for (int32 i = 0; (i < files.count) && (added < number); i += 1) {
         if (have_regex
-            && ncm_regex_search(&regex, files.items[i].value,
+            && ncm_regex_matches(&regex, files.items[i].value,
                                 files.items[i].value_len)) {
             continue;
         }
