@@ -144,9 +144,7 @@ build|debug-fast|fast_feedback)
     load_package_flags
 
     trace_on
-    $CC $CPPFLAGS $PKG_CFLAGS $CFLAGS \
-        -o $exe src/main.c            \
-        $PKG_LIBS $LDFLAGS
+    $CC $CPPFLAGS $PKG_CFLAGS $CFLAGS -o $exe src/main.c $PKG_LIBS $LDFLAGS
     trace_off
     ;;
 check)
