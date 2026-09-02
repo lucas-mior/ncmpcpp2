@@ -11,7 +11,7 @@
 #include "ui_state.h"
 
 static bool tiny_editor_can_run_current(NcScreen *screen);
-static bool tiny_editor_run_current(NcScreen *screen);
+static int32 tiny_editor_run_current(NcScreen *screen);
 static void tiny_editor_display(TinyTagEditorScreen *screen);
 static void tiny_editor_switch_to(NcScreen *screen);
 static void tiny_editor_resize(NcScreen *screen);
@@ -643,15 +643,21 @@ tiny_tag_editor_screen_run_row(
     return false;
 }
 
-bool
+int32
 tiny_tag_editor_screen_run_current(
     TinyTagEditorScreen *screen
 ) {
-    if (!tiny_tag_editor_screen_action_runnable(screen)) {
-        return false;
+    if (screen == NULL) {
+        return -EINVAL;
     }
-    return tiny_tag_editor_screen_run_row(
-        screen, tiny_editor_current_row(screen));
+    if (!tiny_tag_editor_screen_action_runnable(screen)) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    if (!tiny_tag_editor_screen_run_row(
+        screen, tiny_editor_current_row(screen))) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    return 0;
 }
 
 bool
@@ -679,7 +685,7 @@ tiny_editor_can_run_current(NcScreen *screen) {
         tiny_editor_from_screen(screen));
 }
 
-static bool
+static int32
 tiny_editor_run_current(NcScreen *screen) {
     return tiny_tag_editor_screen_run_current(
         tiny_editor_from_screen(screen));

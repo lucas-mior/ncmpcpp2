@@ -16,7 +16,7 @@ static void sort_dialog_draw_row(NcMenu *menu, NcWindow *window,
                                  void *item, int32 pos,
                                  void *user);
 static bool sort_dialog_can_run_current_callback(NcScreen *screen);
-static bool sort_dialog_run_current_callback(NcScreen *screen);
+static int32 sort_dialog_run_current_callback(NcScreen *screen);
 static void sort_dialog_switch_to_callback(NcScreen *screen);
 static void sort_dialog_resize_callback(NcScreen *screen);
 static char *sort_dialog_title_callback(NcScreen *screen);
@@ -312,19 +312,22 @@ sort_playlist_dialog_move_current_down(
     return true;
 }
 
-bool
+int32
 sort_playlist_dialog_run_current(SortPlaylistDialog *dialog) {
     NcEditorSortRow *row;
 
-    if ((dialog == NULL) || !dialog->ready) {
-        return false;
+    if (dialog == NULL) {
+        return -EINVAL;
+    }
+    if (!dialog->ready) {
+        return -NCM_ERROR_UNAVAILABLE;
     }
     if (((row = nc_editor_sort_menu_current(&dialog->rows)) == NULL)
         || (row->action.run == NULL)) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
     row->action.run(row->action.user);
-    return true;
+    return 0;
 }
 
 int32
@@ -400,7 +403,7 @@ sort_dialog_can_run_current_callback(NcScreen *screen) {
     return row && row->action.run;
 }
 
-static bool
+static int32
 sort_dialog_run_current_callback(NcScreen *screen) {
     return sort_playlist_dialog_run_current(
         sort_dialog_from_screen(screen));

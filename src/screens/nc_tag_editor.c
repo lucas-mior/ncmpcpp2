@@ -44,7 +44,7 @@ static void tag_editor_refresh(NcScreen *screen);
 static void tag_editor_refresh_window(NcScreen *screen);
 static void tag_editor_scroll(NcScreen *screen, enum NcScroll where);
 static bool tag_editor_can_run_current(NcScreen *screen);
-static bool tag_editor_run_current(NcScreen *screen);
+static int32 tag_editor_run_current(NcScreen *screen);
 static void tag_editor_switch_to(NcScreen *screen);
 static void tag_editor_resize(NcScreen *screen);
 static char *tag_editor_title(NcScreen *screen);
@@ -73,7 +73,7 @@ static bool tag_editor_mouse_select_parser_dialog(TagEditorScreen *screen,
                                                   int32 y, bool run);
 static bool tag_editor_mouse_select_parser_row(TagEditorScreen *screen,
                                                int32 y, bool run);
-static bool tag_editor_run_current_action(TagEditorScreen *screen);
+static int32 tag_editor_run_current_action(TagEditorScreen *screen);
 static bool tag_editor_mouse_move_to_column(TagEditorScreen *screen,
                                             enum TagEditorColumn column);
 static bool tag_editor_mouse_move_to_parser_focus(TagEditorScreen *screen,
@@ -1729,33 +1729,42 @@ tag_editor_can_run_current(NcScreen *screen) {
     return false;
 }
 
-static bool
+static int32
 tag_editor_run_current(NcScreen *screen) {
     TagEditorScreen *editor;
+    bool success;
 
     if ((editor = tag_editor_from_screen(screen)) == NULL) {
-        return false;
+        return -EINVAL;
     }
 
     switch (editor->active_focus) {
     case TAG_EDITOR_FOCUS_DIRECTORIES:
-        return tag_editor_run_directory_current(editor);
+        success = tag_editor_run_directory_current(editor);
+        break;
     case TAG_EDITOR_FOCUS_TAG_TYPES:
-        return tag_editor_run_tag_type_current(editor);
+        success = tag_editor_run_tag_type_current(editor);
+        break;
     case TAG_EDITOR_FOCUS_TAGS:
-        return tag_editor_run_tag_current(editor);
+        success = tag_editor_run_tag_current(editor);
+        break;
     case TAG_EDITOR_FOCUS_PARSER_CHOICE:
-        return tag_editor_run_parser_choice_current(editor);
+        success = tag_editor_run_parser_choice_current(editor);
+        break;
     case TAG_EDITOR_FOCUS_PARSER_ACTIONS:
-        return tag_editor_run_parser_action_current(editor);
+        success = tag_editor_run_parser_action_current(editor);
+        break;
     case TAG_EDITOR_FOCUS_PARSER_LEGEND:
     case TAG_EDITOR_FOCUS_PARSER_PREVIEW:
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     case TAG_EDITOR_FOCUS_COUNT:
     default:
-        break;
+        return -NCM_ERROR_UNAVAILABLE;
     }
-    return false;
+    if (!success) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    return 0;
 }
 
 static void
@@ -2014,7 +2023,7 @@ tag_editor_mouse_select_tag_type(TagEditorScreen *screen,
     }
     tag_editor_finish_tag_type_change(screen, true);
     if (run) {
-        return tag_editor_run_current_action(screen);
+        return tag_editor_run_current_action(screen) == 0;
     }
     return true;
 }
@@ -2033,7 +2042,7 @@ tag_editor_mouse_select_tag(TagEditorScreen *screen,
         return false;
     }
     if (run) {
-        return tag_editor_run_current_action(screen);
+        return tag_editor_run_current_action(screen) == 0;
     }
     return true;
 }
@@ -2052,7 +2061,7 @@ tag_editor_mouse_select_parser_dialog(TagEditorScreen *screen,
         return false;
     }
     if (run) {
-        return tag_editor_run_current_action(screen);
+        return tag_editor_run_current_action(screen) == 0;
     }
     return true;
 }
@@ -2071,12 +2080,12 @@ tag_editor_mouse_select_parser_row(TagEditorScreen *screen,
         return false;
     }
     if (run) {
-        return tag_editor_run_current_action(screen);
+        return tag_editor_run_current_action(screen) == 0;
     }
     return true;
 }
 
-static bool
+static int32
 tag_editor_run_current_action(TagEditorScreen *screen) {
     ASSERT(screen != NULL);
     return nc_screen_run_current(tag_editor_screen_base(screen));

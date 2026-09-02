@@ -366,7 +366,7 @@ typedef struct NcScreenCallbacks {
     void (*scroll)(NcScreen *screen, enum NcScroll where);
     void (*list_change_finished)(NcScreen *screen);
     bool (*can_run_current)(NcScreen *screen);
-    bool (*run_current)(NcScreen *screen);
+    int32 (*run_current)(NcScreen *screen);
     void (*switch_to)(NcScreen *screen);
     void (*resize)(NcScreen *screen);
     int32 (*window_timeout)(NcScreen *screen);
@@ -385,7 +385,7 @@ typedef struct NcScreenOps {
     void (*scroll)(NcScreen *screen, enum NcScroll where);
     void (*list_change_finished)(NcScreen *screen);
     bool (*can_run_current)(NcScreen *screen);
-    bool (*run_current)(NcScreen *screen);
+    int32 (*run_current)(NcScreen *screen);
     void (*switch_to)(NcScreen *screen);
     void (*resize)(NcScreen *screen);
     int32 (*window_timeout_callback)(NcScreen *screen);
@@ -433,7 +433,7 @@ void nc_screen_noop_refresh_window(NcScreen *screen);
 void nc_screen_noop_scroll(NcScreen *screen, enum NcScroll where);
 void nc_screen_noop_list_change_finished(NcScreen *screen);
 bool nc_screen_default_can_run_current(NcScreen *screen);
-bool nc_screen_default_run_current(NcScreen *screen);
+int32 nc_screen_default_run_current(NcScreen *screen);
 void nc_screen_noop_switch_to(NcScreen *screen);
 void nc_screen_noop_resize(NcScreen *screen);
 char *nc_screen_default_title(NcScreen *screen);
@@ -446,7 +446,7 @@ void nc_screen_refresh_window(NcScreen *screen);
 void nc_screen_scroll(NcScreen *screen, enum NcScroll where);
 void nc_screen_finish_list_change(NcScreen *screen);
 bool nc_screen_can_run_current(NcScreen *screen);
-bool nc_screen_run_current(NcScreen *screen);
+int32 nc_screen_run_current(NcScreen *screen);
 void nc_screen_switch_to(NcScreen *screen);
 void nc_screen_resize(NcScreen *screen);
 int32 nc_screen_window_timeout(NcScreen *screen);
@@ -1807,7 +1807,7 @@ bool search_engine_screen_execute_search(
     NcmError *ncm_error);
 bool search_engine_screen_can_run_current(
     SearchEngineScreen *screen);
-bool search_engine_screen_run_current(
+int32 search_engine_screen_run_current(
     SearchEngineScreen *screen);
 bool search_engine_screen_start_searching(
     SearchEngineScreen *screen, NcmMpdClient *client,
@@ -1886,7 +1886,7 @@ void selected_items_adder_screen_populate_playlist_selector(
     bool local_browser);
 void selected_items_adder_screen_populate_position_selector(
     SelectedItemsAdderScreen *screen);
-bool selected_items_adder_screen_run_current(
+int32 selected_items_adder_screen_run_current(
     SelectedItemsAdderScreen *screen);
 bool selected_items_adder_screen_return_to_previous(
     SelectedItemsAdderScreen *screen);
@@ -1950,7 +1950,7 @@ bool sort_playlist_dialog_move_current_up(
     SortPlaylistDialog *dialog);
 bool sort_playlist_dialog_move_current_down(
     SortPlaylistDialog *dialog);
-bool sort_playlist_dialog_run_current(
+int32 sort_playlist_dialog_run_current(
     SortPlaylistDialog *dialog);
 int32 sort_playlist_dialog_get_order(
     SortPlaylistDialog *dialog, enum NcmSongGetter *getters,
@@ -2308,7 +2308,7 @@ bool tiny_tag_editor_screen_set_filename_stem(
     TinyTagEditorScreen *screen, char *stem, int32 stem_len);
 bool tiny_tag_editor_screen_run_row(
     TinyTagEditorScreen *screen, int32 row);
-bool tiny_tag_editor_screen_run_current(
+int32 tiny_tag_editor_screen_run_current(
     TinyTagEditorScreen *screen);
 bool tiny_tag_editor_screen_action_runnable(
     TinyTagEditorScreen *screen);
