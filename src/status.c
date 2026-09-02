@@ -324,7 +324,7 @@ ncm_status_handle_client_error(NcmMpdClient *client) {
 
     ncm_status_handle_client_error_value(
         client, ncm_mpd_client_error_message(client), -1,
-        ncm_mpd_client_error_clearable(client));
+        ncm_mpd_client_error_is_clearable(client));
     return;
 }
 
@@ -341,7 +341,7 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
         (void)global_timer_update(ncm_error);
     }
 
-    if (client && ncm_mpd_client_connected(client)) {
+    if (client && ncm_mpd_client_is_connected(client)) {
         if (!status_initialized) {
             (void)ncm_status_init_connection(client, ncm_error);
             hooks = status_active_hooks(NULL);
@@ -1476,7 +1476,7 @@ status_current_song_for_change(NcmSong *song) {
         return true;
     }
 
-    if (!ncm_mpd_client_connected(&global_mpd)) {
+    if (!ncm_mpd_client_is_connected(&global_mpd)) {
         return false;
     }
 
@@ -1694,7 +1694,7 @@ status_update_elapsed_from_mpd(void) {
     NcmError ncm_error;
     int64 elapsed_ms;
 
-    if (!ncm_mpd_client_connected(&global_mpd)) {
+    if (!ncm_mpd_client_is_connected(&global_mpd)) {
         elapsed_ms = status_elapsed_time_ms_now();
         status_rebase_elapsed_time(status_elapsed_time + 1, elapsed_ms);
         return;

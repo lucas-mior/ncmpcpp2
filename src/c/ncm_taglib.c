@@ -331,7 +331,7 @@ ncm_taglib_append_property(NcmTaglibFile *file, char *property, char *value) {
 }
 
 bool
-ncm_taglib_extended_set_supported(NcmTaglibFile *file) {
+ncm_taglib_file_can_set_extended_tags(NcmTaglibFile *file) {
 #if defined(HAVE_TAGLIB_H)
     return ncm_taglib_handle(file) != NULL;
 #else

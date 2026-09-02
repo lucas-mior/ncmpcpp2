@@ -1047,7 +1047,7 @@ ncm_mpd_connection_server_error_code(NcmMpdConnection *connection) {
 }
 
 bool
-ncm_mpd_connection_error_clearable(NcmMpdConnection *connection) {
+ncm_mpd_connection_error_is_clearable(NcmMpdConnection *connection) {
     if (connection == NULL) {
         return false;
     }

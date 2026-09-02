@@ -298,7 +298,7 @@ ncmpcpp_set_noidle_status_callback(void) {
 
 bool
 ncmpcpp_mpd_connected(void) {
-    return ncm_mpd_client_connected(&global_mpd);
+    return ncm_mpd_client_is_connected(&global_mpd);
 }
 
 void
