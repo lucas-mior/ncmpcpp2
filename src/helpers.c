@@ -58,7 +58,7 @@ menu_position_is_selected(NcMenu *menu, enum NcMenuItemSource source,
                                                menu->display_callbacks.user);
 }
 
-static bool
+static int32
 menu_set_position_selected(NcMenu *menu, enum NcMenuItemSource source,
                            int32 pos, bool selected) {
     uint32 flags;
@@ -67,7 +67,7 @@ menu_set_position_selected(NcMenu *menu, enum NcMenuItemSource source,
     ASSERT(menu != NULL);
 
     if ((item = nc_menu_item_at(menu, source, pos)) == NULL) {
-        return false;
+        return -NCM_ERROR_NOT_FOUND;
     }
 
     if (menu->action_callbacks.set_selected) {

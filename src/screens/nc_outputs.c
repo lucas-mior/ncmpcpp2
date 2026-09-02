@@ -229,7 +229,7 @@ nc_outputs_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 
     x = event.x;
     y = event.y;
-    if (nc_menu_empty(&outputs->menu)
+    if (nc_menu_is_empty(&outputs->menu)
         || !nc_window_has_coords(&outputs->window, &x, &y)
         || (y < 0)
         || (y >= nc_menu_item_count(&outputs->menu))) {
@@ -238,7 +238,7 @@ nc_outputs_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 
     if ((event.bstate & BUTTON1_PRESSED)
         || (event.bstate & BUTTON3_PRESSED)) {
-        nc_menu_goto_selectable(&outputs->menu, y);
+        (void)nc_menu_goto_selectable(&outputs->menu, y);
         if (event.bstate & BUTTON3_PRESSED) {
             nc_outputs_screen_toggle_current(outputs);
         }

@@ -145,7 +145,7 @@ nc_server_info_update(NcScreen *screen) {
     }
     nc_buffer_destroy(&server_info->buffer);
     nc_buffer_move(&server_info->buffer, &next_buffer);
-    if (!nc_buffer_empty(&server_info->buffer)) {
+    if (!nc_buffer_is_empty(&server_info->buffer)) {
         nc_scrollpad_flush(&server_info->scrollpad,
                            &server_info->window,
                            &server_info->buffer);

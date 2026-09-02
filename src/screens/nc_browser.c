@@ -739,7 +739,7 @@ browser_screen_selected_songs(BrowserScreen *screen,
     }
 
     menu = browser_screen_menu(screen);
-    if (nc_menu_empty(menu)) {
+    if (nc_menu_is_empty(menu)) {
         return true;
     }
 
@@ -779,7 +779,7 @@ browser_screen_delete_items(BrowserScreen *screen,
     }
 
     menu = browser_screen_menu(screen);
-    if (nc_menu_empty(menu)) {
+    if (nc_menu_is_empty(menu)) {
         ncm_error_set(ncm_error, EINVAL, STRLIT("no browser item selected"));
         return false;
     }
@@ -1092,7 +1092,7 @@ browser_screen_search(BrowserScreen *screen,
     result = nc_menu_search_selectable(menu, screen->main_height, forward,
                                        wrap, skip_current,
                                        browser_search_position,
-                                       &context, NULL);
+                                       &context, NULL) == 0;
 
     ncm_regex_destroy(&regex);
     return result;
@@ -1253,7 +1253,7 @@ browser_switch_to(NcScreen *screen) {
     BrowserScreen *browser = browser_from_screen(screen);
 
     (void)nc_screen_switcher_finish_switch(screen);
-    if (nc_menu_empty(browser_screen_menu(browser))) {
+    if (nc_menu_is_empty(browser_screen_menu(browser))) {
         browser_screen_request_update(browser);
     }
     browser->redraw_header = true;
@@ -1312,7 +1312,7 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     int32 x = event.x;
     int32 y = event.y;
 
-    if (nc_menu_empty(menu)) {
+    if (nc_menu_is_empty(menu)) {
         return;
     }
 
@@ -1321,7 +1321,7 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     }
 
     if ((event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) != 0) {
-        if (!nc_menu_goto_selectable(menu, y)) {
+        if (nc_menu_goto_selectable(menu, y) < 0) {
             return;
         }
         item = browser_screen_current_item(browser);

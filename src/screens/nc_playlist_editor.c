@@ -897,8 +897,8 @@ playlist_editor_timeout_callback(NcScreen *screen) {
 
     editor = playlist_editor_from_screen(screen);
     if ((editor->fetching_delay_ms >= 0)
-        && nc_menu_empty(nc_song_menu_base(&editor->content))
-        && (nc_menu_empty(nc_playlist_entry_menu_base(&editor->playlists))
+        && nc_menu_is_empty(nc_song_menu_base(&editor->content))
+        && (nc_menu_is_empty(nc_playlist_entry_menu_base(&editor->playlists))
             || !playlist_editor_displayed_playlist_is_current(editor))) {
         return editor->window_timeout_ms;
     }
@@ -1792,7 +1792,7 @@ playlist_editor_content_fetch_due(PlaylistEditorScreen *screen) {
         return false;
     }
     playlists = nc_playlist_entry_menu_base(&screen->playlists);
-    if (nc_menu_empty(playlists)) {
+    if (nc_menu_is_empty(playlists)) {
         return false;
     }
 
@@ -1808,7 +1808,7 @@ playlist_editor_content_fetch_due(PlaylistEditorScreen *screen) {
         && screen->displayed_playlist_valid) {
         return false;
     }
-    if (!nc_menu_empty(content)) {
+    if (!nc_menu_is_empty(content)) {
         return false;
     }
     if (screen->fetching_delay_ms < 0) {
@@ -1846,7 +1846,7 @@ playlist_editor_update_from_mpd(PlaylistEditorScreen *screen,
     changed = false;
     ncm_error_clear(&ncm_error);
     if (screen->playlists_update_requested
-        || nc_menu_empty(nc_playlist_entry_menu_base(&screen->playlists))) {
+        || nc_menu_is_empty(nc_playlist_entry_menu_base(&screen->playlists))) {
         if (!playlist_editor_screen_reload_playlists_from_mpd(screen, client,
                                                               &ncm_error)) {
             screen->playlists_update_requested = false;
@@ -2022,7 +2022,7 @@ playlist_editor_mouse_select_playlist(PlaylistEditorScreen *screen,
     if ((y < 0) || (y >= nc_menu_item_count(menu))) {
         return false;
     }
-    if (!nc_menu_goto_selectable(menu, y)) {
+    if (nc_menu_goto_selectable(menu, y) < 0) {
         return false;
     }
     playlist_editor_finish_playlist_change(screen);
@@ -2044,7 +2044,7 @@ playlist_editor_mouse_select_content(PlaylistEditorScreen *screen,
     if ((y < 0) || (y >= nc_menu_item_count(menu))) {
         return false;
     }
-    if (!nc_menu_goto_selectable(menu, y)) {
+    if (nc_menu_goto_selectable(menu, y) < 0) {
         return false;
     }
     if (play) {
@@ -2289,7 +2289,7 @@ playlist_editor_search_menu(PlaylistEditorScreen *screen,
     return nc_menu_search_selectable(menu, screen->main_height, forward,
                                      wrap, skip_current,
                                      playlist_editor_search_position,
-                                     &context, NULL);
+                                     &context, NULL) == 0;
 }
 
 static bool

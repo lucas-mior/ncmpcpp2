@@ -179,7 +179,7 @@ settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
     NcmError ncm_error;
     bool result;
 
-    if (keep_existing && !nc_buffer_empty(buffer)) {
+    if (keep_existing && !nc_buffer_is_empty(buffer)) {
         return true;
     }
 
@@ -708,8 +708,8 @@ settings_parse_lyrics_fetchers(Configuration *config, char *value,
         if (item_len <= 0) {
             continue;
         }
-        if (ncm_lyrics_fetcher_registry_append_name(&config->lyrics_fetchers,
-                                                    item, item_len) < 0) {
+        if (!ncm_lyrics_fetcher_registry_append_name(&config->lyrics_fetchers,
+                                                     item, item_len)) {
             settings_error(ncm_error, STRLIT("unknown lyrics fetcher"));
             return false;
         }
