@@ -704,8 +704,8 @@ playlist_editor_screen_apply_active_filter(
         playlist_editor_update_titles(screen, true);
         return true;
     }
-    if (!ncm_regex_compile(regex, pattern, pattern_len,
-                           regex_flags, ncm_error)) {
+    if (ncm_regex_compile(regex, pattern, pattern_len,
+                          regex_flags, ncm_error) < 0) {
         return false;
     }
     sb_set(constraint, pattern, pattern_len);
@@ -743,8 +743,8 @@ playlist_editor_screen_search_active(
         sb_clear(constraint);
         return false;
     }
-    if (!ncm_regex_compile(regex, pattern, pattern_len,
-                           regex_flags, ncm_error)) {
+    if (ncm_regex_compile(regex, pattern, pattern_len,
+                          regex_flags, ncm_error) < 0) {
         return false;
     }
     sb_set(constraint, pattern, pattern_len);

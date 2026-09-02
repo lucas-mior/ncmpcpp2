@@ -269,7 +269,7 @@ settings_parse_single_color(char *value, int32 value_len, bool background,
     if (settings_color_name(value, value_len, background, result)) {
         return true;
     }
-    if (!ncm_parse_int32(value, value_len, &parsed, ncm_error)) {
+    if (ncm_parse_int32(value, value_len, &parsed, ncm_error) < 0) {
         return false;
     }
     if (background) {
@@ -473,8 +473,8 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
         while ((end < value_len) && (value[end] != ':')) {
             end += 1;
         }
-        if (!ncm_parse_int32(value + start, end - start, &parsed,
-                             ncm_error)) {
+        if (ncm_parse_int32(value + start, end - start, &parsed,
+                            ncm_error) < 0) {
             return false;
         }
         if ((slot = ncm_int32_array_append(array)) == NULL) {
@@ -560,8 +560,8 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
             width.len -= 1;
             width.data[width.len] = '\0';
         }
-        if (!ncm_parse_int32(width.data, width.len, &parsed_width,
-                             ncm_error)) {
+        if (ncm_parse_int32(width.data, width.len, &parsed_width,
+                            ncm_error) < 0) {
             sb_free(&width);
             sb_free(&color);
             sb_free(&tag);
@@ -766,7 +766,7 @@ settings_parse_lyrics_fetchers(Configuration *config, char *value,
     FUNC(Configuration *config, char *value, int32 value_len, \
          NcmError *ncm_error) { \
         return ncm_parse_int32(value, value_len, &config->FIELD, \
-                               ncm_error); \
+                               ncm_error) == 0; \
     }
 
 APPLY_STRING_DIR(apply_ncmpcpp_directory, ncmpcpp_directory)
@@ -867,7 +867,7 @@ apply_mpd_port(Configuration *config, char *value, int32 value_len,
     int32 port;
 
     (void)config;
-    if (!ncm_parse_int32(value, value_len, &port, ncm_error)) {
+    if (ncm_parse_int32(value, value_len, &port, ncm_error) < 0) {
         return false;
     }
     if (port > 65535) {
@@ -892,8 +892,9 @@ apply_mpd_password(Configuration *config, char *value, int32 value_len,
 static bool
 apply_mpd_connection_timeout(Configuration *config, char *value,
                              int32 value_len, NcmError *ncm_error) {
-    if (!ncm_parse_int32(value, value_len,
-                         &config->mpd_connection_timeout, ncm_error)) {
+    if (ncm_parse_int32(value, value_len,
+                        &config->mpd_connection_timeout,
+                        ncm_error) < 0) {
         return false;
     }
     return ncm_mpd_client_set_timeout_ms(
@@ -904,7 +905,7 @@ static bool
 apply_mpd_crossfade_time(Configuration *config, char *value, int32 value_len,
                          NcmError *ncm_error) {
     return ncm_parse_int32(value, value_len, &config->crossfade_time,
-                           ncm_error);
+                           ncm_error) == 0;
 }
 
 static bool
@@ -933,60 +934,62 @@ apply_visualizer_look(Configuration *config, char *value, int32 value_len,
 static bool
 apply_visualizer_fps(Configuration *config, char *value, int32 value_len,
                      NcmError *ncm_error) {
-    if (!ncm_parse_int32(value, value_len, &config->visualizer_fps,
-                         ncm_error)) {
+    if (ncm_parse_int32(value, value_len, &config->visualizer_fps,
+                        ncm_error) < 0) {
         return false;
     }
-    return ncm_bounds_check_i64(config->visualizer_fps, 30, 1000, ncm_error);
+    return ncm_bounds_check_i64(config->visualizer_fps,
+                                30, 1000, ncm_error) == 0;
 }
 
 static bool
 apply_visualizer_spectrum_dft_size(Configuration *config,
                                    char *value, int32 value_len,
                                    NcmError *ncm_error) {
-    if (!ncm_parse_int32(value, value_len,
-                         &config->visualizer_spectrum_dft_size,
-                         ncm_error)) {
+    if (ncm_parse_int32(value, value_len,
+                        &config->visualizer_spectrum_dft_size,
+                        ncm_error) < 0) {
         return false;
     }
-    return ncm_bounds_check_i64(config->visualizer_spectrum_dft_size, 1, 5,
-                                ncm_error);
+    return ncm_bounds_check_i64(config->visualizer_spectrum_dft_size,
+                                1, 5, ncm_error) == 0;
 }
 
 static bool
 apply_visualizer_spectrum_gain(Configuration *config, char *value,
                                int32 value_len, NcmError *ncm_error) {
-    if (!ncm_parse_double(value, value_len,
-                          &config->visualizer_spectrum_gain, ncm_error)) {
+    if (ncm_parse_double(value, value_len,
+                         &config->visualizer_spectrum_gain,
+                         ncm_error) < 0) {
         return false;
     }
-    return ncm_bounds_check_f64(config->visualizer_spectrum_gain, 0, 100,
-                                ncm_error);
+    return ncm_bounds_check_f64(config->visualizer_spectrum_gain,
+                                0, 100, ncm_error) == 0;
 }
 
 static bool
 apply_visualizer_spectrum_hz_min(Configuration *config, char *value,
                                  int32 value_len, NcmError *ncm_error) {
-    if (!ncm_parse_double(value, value_len,
-                          &config->visualizer_spectrum_hz_min,
-                          ncm_error)) {
+    if (ncm_parse_double(value, value_len,
+                         &config->visualizer_spectrum_hz_min,
+                         ncm_error) < 0) {
         return false;
     }
-    return ncm_lower_bound_check_f64(config->visualizer_spectrum_hz_min, 1,
-                                     ncm_error);
+    return ncm_lower_bound_check_f64(config->visualizer_spectrum_hz_min,
+                                     1, ncm_error) == 0;
 }
 
 static bool
 apply_visualizer_spectrum_hz_max(Configuration *config, char *value,
                                  int32 value_len, NcmError *ncm_error) {
-    if (!ncm_parse_double(value, value_len,
-                          &config->visualizer_spectrum_hz_max,
-                          ncm_error)) {
+    if (ncm_parse_double(value, value_len,
+                         &config->visualizer_spectrum_hz_max,
+                         ncm_error) < 0) {
         return false;
     }
-    return ncm_lower_bound_check_f64(config->visualizer_spectrum_hz_max,
-                                     config->visualizer_spectrum_hz_min + 1,
-                                     ncm_error);
+    return ncm_lower_bound_check_f64(
+        config->visualizer_spectrum_hz_max,
+        config->visualizer_spectrum_hz_min + 1, ncm_error) == 0;
 }
 
 static bool
@@ -1019,7 +1022,7 @@ apply_playlist_disable_highlight_delay(Configuration *config, char *value,
                                        int32 value_len, NcmError *ncm_error) {
     return ncm_parse_int32(
         value, value_len, &config->playlist_disable_highlight_delay_seconds,
-        ncm_error);
+        ncm_error) == 0;
 }
 
 static bool
@@ -1383,8 +1386,9 @@ static bool
 apply_locked_screen_width_part(Configuration *config,
                                char *value, int32 value_len,
                                NcmError *ncm_error) {
-    if (!ncm_parse_double(value, value_len,
-                          &config->locked_screen_width_part, ncm_error)) {
+    if (ncm_parse_double(value, value_len,
+                         &config->locked_screen_width_part,
+                         ncm_error) < 0) {
         return false;
     }
     config->locked_screen_width_part /= 100.0;
@@ -1466,10 +1470,10 @@ apply_search_engine_default_search_mode(Configuration *config,
                                         NcmError *ncm_error) {
     int32 mode;
 
-    if (!ncm_parse_int32(value, value_len, &mode, ncm_error)) {
+    if (ncm_parse_int32(value, value_len, &mode, ncm_error) < 0) {
         return false;
     }
-    if (!ncm_bounds_check_i64(mode, 1, 3, ncm_error)) {
+    if (ncm_bounds_check_i64(mode, 1, 3, ncm_error) < 0) {
         return false;
     }
     config->search_engine_default_search_mode = mode - 1;

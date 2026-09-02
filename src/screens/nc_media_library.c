@@ -1633,8 +1633,8 @@ media_library_screen_apply_filter(
         ncm_error_set(ncm_error, EINVAL, STRLIT("invalid active column"));
         return false;
     }
-    if (!ncm_regex_compile(&state->filter_regex, pattern, pattern_len,
-                           Config.regex_flags, ncm_error)) {
+    if (ncm_regex_compile(&state->filter_regex, pattern, pattern_len,
+                          Config.regex_flags, ncm_error) < 0) {
         return false;
     }
     if (sb_set(&state->filter_constraint, pattern, pattern_len) < 0) {
@@ -1701,8 +1701,8 @@ media_library_screen_search(MediaLibraryScreen *screen,
         ncm_error_set(ncm_error, EINVAL, STRLIT("invalid active column"));
         return false;
     }
-    if (!ncm_regex_compile(&state->search_regex, pattern, pattern_len,
-                           Config.regex_flags, ncm_error)) {
+    if (ncm_regex_compile(&state->search_regex, pattern, pattern_len,
+                          Config.regex_flags, ncm_error) < 0) {
         return false;
     }
     if (sb_set(&state->search_constraint, pattern, pattern_len) < 0) {

@@ -373,7 +373,7 @@ search_compile_literal(SearchTestContext *context, char *pattern) {
     ncm_error_clear(&error);
     ASSERT(ncm_regex_compile(&context->regex, pattern, strlen32(pattern),
                              NCM_REGEX_LITERAL_CASE_INSENSITIVE,
-                             &error));
+                             &error) == 0);
     ASSERT(!ncm_error_is_set(&error));
     return;
 }
@@ -401,7 +401,7 @@ search_song_context_init(SearchSongTestContext *context,
     ncm_error_clear(&error);
     ASSERT(ncm_regex_compile(&context->regex, pattern, strlen32(pattern),
                              NCM_REGEX_LITERAL_CASE_INSENSITIVE,
-                             &error));
+                             &error) == 0);
     ASSERT(!ncm_error_is_set(&error));
     return;
 }
@@ -420,7 +420,7 @@ test_regex_handles_empty_strings(void) {
     ncm_error_clear(&error);
     ASSERT(ncm_regex_compile(
         &regex, STRLIT("ohne"), NCM_REGEX_LITERAL_CASE_INSENSITIVE,
-        &error));
+        &error) == 0);
     ASSERT(!ncm_regex_search(&regex, STRLIT("")));
     ncm_regex_destroy(&regex);
 
@@ -428,7 +428,7 @@ test_regex_handles_empty_strings(void) {
     ncm_error_clear(&error);
     ASSERT(ncm_regex_compile(
         &regex, STRLIT(""), NCM_REGEX_LITERAL_CASE_INSENSITIVE,
-        &error));
+        &error) == 0);
     ASSERT(ncm_regex_search(&regex, STRLIT("")));
     ASSERT(ncm_regex_search(&regex, STRLIT("ohne")));
     ncm_regex_destroy(&regex);

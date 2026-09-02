@@ -83,7 +83,7 @@ configuration_append_default_file(StrBuilderArray *paths, char *filename,
     StrBuilder path = {0};
     bool result;
 
-
+    result = false;
     if ((xdg_config_home = getenv("XDG_CONFIG_HOME"))
         && (xdg_config_home[0] != '\0')) {
         SB_APPEND(&directory, xdg_config_home,
@@ -91,16 +91,17 @@ configuration_append_default_file(StrBuilderArray *paths, char *filename,
     } else {
         SB_APPEND(&directory, "~/.config");
     }
-    result = ncm_fs_join(&directory, directory.data, directory.len,
-                         STRLIT("ncmpcpp"));
-    if (result) {
-        result = ncm_fs_join(&path, directory.data, directory.len, filename,
-                             filename_len);
+    if (ncm_fs_join(&directory, directory.data, directory.len,
+                    STRLIT("ncmpcpp")) < 0) {
+        goto cleanup;
     }
-    if (result) {
-        result = configuration_append_buffer_path(paths, &path);
+    if (ncm_fs_join(&path, directory.data, directory.len,
+                    filename, filename_len) < 0) {
+        goto cleanup;
     }
+    result = configuration_append_buffer_path(paths, &path);
 
+cleanup:
     sb_free(&path);
     sb_free(&directory);
     return result;
@@ -113,14 +114,15 @@ configuration_append_legacy_file(StrBuilderArray *paths, char *filename,
     StrBuilder path = {0};
     bool result;
 
-
+    result = false;
     SB_APPEND(&directory, "~/.ncmpcpp");
-    result = ncm_fs_join(&path, directory.data, directory.len, filename,
-                         filename_len);
-    if (result) {
-        result = configuration_append_buffer_path(paths, &path);
+    if (ncm_fs_join(&path, directory.data, directory.len,
+                    filename, filename_len) < 0) {
+        goto cleanup;
     }
+    result = configuration_append_buffer_path(paths, &path);
 
+cleanup:
     sb_free(&path);
     sb_free(&directory);
     return result;
@@ -187,7 +189,7 @@ configuration_parse_port(char *value, int32 value_len, char *option,
                          int32 option_len, int32 *port, NcmError *ncm_error) {
     int32 parsed;
 
-    if (!ncm_parse_int32(value, value_len, &parsed, ncm_error)) {
+    if (ncm_parse_int32(value, value_len, &parsed, ncm_error) < 0) {
         char message[192];
         int32 len;
 
@@ -685,13 +687,13 @@ configuration_read_bindings(NcmConfigurationOptions *options, NcmError *ncm_erro
 static bool
 configuration_create_directories(NcmError *ncm_error) {
     if (!ncm_fs_exists(Config.ncmpcpp_directory, Config.ncmpcpp_directory_len)
-        && !ncm_fs_mkdir_all(Config.ncmpcpp_directory,
-                             Config.ncmpcpp_directory_len, ncm_error)) {
+        && (ncm_fs_mkdir_all(Config.ncmpcpp_directory,
+                              Config.ncmpcpp_directory_len, ncm_error) < 0)) {
         return false;
     }
     if (!ncm_fs_exists(Config.lyrics_directory, Config.lyrics_directory_len)
-        && !ncm_fs_mkdir_all(Config.lyrics_directory,
-                             Config.lyrics_directory_len, ncm_error)) {
+        && (ncm_fs_mkdir_all(Config.lyrics_directory,
+                              Config.lyrics_directory_len, ncm_error) < 0)) {
         return false;
     }
     return true;
@@ -712,7 +714,8 @@ configuration_apply_mpd_environment(NcmError *ncm_error) {
         }
     }
     if (env_port) {
-        if (!ncm_parse_int32(env_port, strlen32(env_port), &port, ncm_error)) {
+        if (ncm_parse_int32(env_port, strlen32(env_port),
+                            &port, ncm_error) < 0) {
             return false;
         }
         if (port > 65535) {

@@ -95,7 +95,7 @@ nc_help_screen_find(NcHelpScreen *screen,
                     NcmError *ncm_error) {
     NcmRegex regex;
     char *data;
-    bool result;
+    int32 match_count;
 
     if (screen == NULL) {
         ncm_error_set(ncm_error, EINVAL, STRLIT("missing help screen"));
@@ -112,10 +112,8 @@ nc_help_screen_find(NcHelpScreen *screen,
     }
 
     regex = (NcmRegex){0};
-    if (!ncm_regex_compile(&regex,
-                           pattern, pattern_len,
-                           Config.regex_flags,
-                           ncm_error)) {
+    if (ncm_regex_compile(&regex, pattern, pattern_len,
+                          Config.regex_flags, ncm_error) < 0) {
         ncm_regex_destroy(&regex);
         return false;
     }
@@ -127,12 +125,11 @@ nc_help_screen_find(NcHelpScreen *screen,
     }
 
     data = nc_buffer_data(&screen->buffer);
-    result = ncm_regex_for_each_match(&regex,
-                                      data, screen->buffer.len,
-                                      nc_help_find_match_callback, screen);
+    match_count = ncm_regex_for_each_match(
+        &regex, data, screen->buffer.len, nc_help_find_match_callback, screen);
     ncm_regex_destroy(&regex);
     nc_scrollpad_flush(&screen->scrollpad, &screen->window, &screen->buffer);
-    return result;
+    return match_count > 0;
 }
 
 void

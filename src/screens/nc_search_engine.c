@@ -1007,8 +1007,8 @@ search_engine_screen_apply_filter(SearchEngineScreen *screen,
         search_engine_screen_clear_filter(screen);
         return true;
     }
-    if (!ncm_regex_compile(&screen->filter_regex, pattern, pattern_len,
-                           NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error)) {
+    if (ncm_regex_compile(&screen->filter_regex, pattern, pattern_len,
+                          NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error) < 0) {
         return false;
     }
     if (sb_set(&screen->filter_constraint, pattern, pattern_len) < 0) {
@@ -1055,8 +1055,8 @@ search_engine_screen_search(SearchEngineScreen *screen,
     }
 
     regex = (NcmRegex){0};
-    if (!ncm_regex_compile(&regex, pattern, pattern_len,
-                           NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error)) {
+    if (ncm_regex_compile(&regex, pattern, pattern_len,
+                          NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error) < 0) {
         ncm_regex_destroy(&regex);
         return false;
     }

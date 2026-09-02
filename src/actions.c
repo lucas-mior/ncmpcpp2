@@ -1111,7 +1111,7 @@ action_runtime_set_crossfade(void) {
     }
 
     ncm_error_clear(&ncm_error);
-    if (!ncm_parse_int32(input.data, input.len, &seconds, &ncm_error)) {
+    if (ncm_parse_int32(input.data, input.len, &seconds, &ncm_error) < 0) {
         sb_free(&input);
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Crossfade must be a non-negative number");
@@ -1148,7 +1148,7 @@ action_runtime_set_volume(void) {
     }
 
     ncm_error_clear(&ncm_error);
-    if (!ncm_parse_int32(input.data, input.len, &volume, &ncm_error)
+    if (ncm_parse_int32(input.data, input.len, &volume, &ncm_error) < 0
         || (volume > 100)) {
         sb_free(&input);
         ncm_statusbar_print_cstring(Config.message_delay_time,
@@ -1237,7 +1237,7 @@ action_runtime_add_random_items(void) {
     }
 
     ncm_error_clear(&ncm_error);
-    if (!ncm_parse_int32(input.data, input.len, &number, &ncm_error)) {
+    if (ncm_parse_int32(input.data, input.len, &number, &ncm_error) < 0) {
         sb_free(&input);
         ncm_statusbar_print_cstring(
             Config.message_delay_time,
@@ -1449,9 +1449,9 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
             if ((text_len - first_colon - 1) != 2) {
                 return false;
             }
-            if (!ncm_parse_int32(text, first_colon, &first, &ncm_error)
-                || !ncm_parse_int32(text + first_colon + 1, 2, &second,
-                                    &ncm_error)
+            if (ncm_parse_int32(text, first_colon, &first, &ncm_error) < 0
+                || ncm_parse_int32(text + first_colon + 1, 2, &second,
+                                    &ncm_error) < 0
                 || (second > 60)) {
                 return false;
             }
@@ -1461,11 +1461,11 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
                 || ((text_len - second_colon - 1) != 2)) {
                 return false;
             }
-            if (!ncm_parse_int32(text, first_colon, &first, &ncm_error)
-                || !ncm_parse_int32(text + first_colon + 1, 2, &second,
-                                    &ncm_error)
-                || !ncm_parse_int32(text + second_colon + 1, 2, &third,
-                                    &ncm_error)
+            if (ncm_parse_int32(text, first_colon, &first, &ncm_error) < 0
+                || ncm_parse_int32(text + first_colon + 1, 2, &second,
+                                    &ncm_error) < 0
+                || ncm_parse_int32(text + second_colon + 1, 2, &third,
+                                    &ncm_error) < 0
                 || (second > 60) || (third > 60)) {
                 return false;
             }
@@ -1484,7 +1484,7 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
         if (number_len <= 0) {
             return false;
         }
-        if (!ncm_parse_int32(text, number_len, &first, &ncm_error)) {
+        if (ncm_parse_int32(text, number_len, &first, &ncm_error) < 0) {
             return false;
         }
         *position = first;
@@ -1496,7 +1496,7 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
     if (number_len <= 0) {
         return false;
     }
-    if (!ncm_parse_int32(text, number_len, &first, &ncm_error)
+    if (ncm_parse_int32(text, number_len, &first, &ncm_error) < 0
         || (first > 100)) {
         return false;
     }
@@ -3552,7 +3552,7 @@ action_runtime_set_selected_items_priority(void) {
     }
 
     ncm_error_clear(&ncm_error);
-    if (!ncm_parse_int32(input.data, input.len, &priority, &ncm_error)
+    if (ncm_parse_int32(input.data, input.len, &priority, &ncm_error) < 0
         || (priority > 255)) {
         sb_free(&input);
         ncm_statusbar_print_cstring(Config.message_delay_time,
@@ -4717,7 +4717,7 @@ action_runtime_toggle_screen_lock(void) {
         }
 
         ncm_error_clear(&ncm_error);
-        if (!ncm_parse_int32(input.data, input.len, &part, &ncm_error)) {
+        if (ncm_parse_int32(input.data, input.len, &part, &ncm_error) < 0) {
             args[0] = ncm_string_format_arg_string(input.data, input.len);
             ncm_statusbar_format(Config.message_delay_time,
                                  STRLIT("Invalid value: %1%"), args, 1);

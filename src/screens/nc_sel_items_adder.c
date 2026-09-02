@@ -485,8 +485,8 @@ selected_items_adder_screen_search(
     }
 
     regex = (NcmRegex){0};
-    if (!ncm_regex_compile(&regex, pattern, pattern_len, regex_flags,
-                           ncm_error)) {
+    if (ncm_regex_compile(&regex, pattern, pattern_len, regex_flags,
+                          ncm_error) < 0) {
         ncm_regex_destroy(&regex);
         return false;
     }

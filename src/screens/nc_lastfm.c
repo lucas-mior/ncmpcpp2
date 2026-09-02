@@ -318,7 +318,7 @@ lastfm_buffer_find(NcBuffer *buffer, char *pattern,
     LastfmFindState state;
     NcmRegex regex;
     char *data;
-    bool result;
+    int32 match_count;
 
     if (buffer == NULL) {
         ncm_error_set(ncm_error, EINVAL, STRLIT("missing Last.fm buffer"));
@@ -332,21 +332,18 @@ lastfm_buffer_find(NcBuffer *buffer, char *pattern,
     }
 
     regex = (NcmRegex){0};
-    if (!ncm_regex_compile(&regex,
-                           pattern, pattern_len,
-                           Config.regex_flags,
-                           ncm_error)) {
+    if (ncm_regex_compile(&regex, pattern, pattern_len,
+                          Config.regex_flags, ncm_error) < 0) {
         ncm_regex_destroy(&regex);
         return false;
     }
 
     state.buffer = buffer;
     data = nc_buffer_data(buffer);
-    result = ncm_regex_for_each_match(&regex,
-                                      data, buffer->len,
-                                      lastfm_find_match_callback, &state);
+    match_count = ncm_regex_for_each_match(
+        &regex, data, buffer->len, lastfm_find_match_callback, &state);
     ncm_regex_destroy(&regex);
-    return result;
+    return match_count > 0;
 }
 
 bool
