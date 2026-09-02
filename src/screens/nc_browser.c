@@ -1025,28 +1025,38 @@ browser_screen_go_to_parent(BrowserScreen *screen) {
     return true;
 }
 
-bool
+int32
 browser_screen_apply_filter(BrowserScreen *screen,
                             char *pattern, int32 pattern_len,
                             NcmError *ncm_error) {
+    int32 status;
+
     if (screen == NULL) {
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing browser screen"));
     }
     if (pattern_len <= 0) {
         browser_screen_clear_filter(screen);
-        return true;
+        return ncm_error_ok(ncm_error);
     }
-    if (ncm_regex_compile(&screen->filter_regex, pattern, pattern_len,
-                          NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error) < 0) {
-        return false;
+    if (pattern == NULL) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing filter pattern"));
     }
-    if (sb_set(&screen->filter_constraint, pattern, pattern_len) < 0) {
-        return false;
+    if ((status = ncm_regex_compile(
+        &screen->filter_regex, pattern, pattern_len,
+        NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error)) < 0) {
+        return status;
+    }
+    if ((status = sb_set(&screen->filter_constraint,
+                         pattern, pattern_len)) < 0) {
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("failed to save filter"));
     }
     screen->filter_enabled = true;
     browser_install_menu_callbacks(screen);
     nc_menu_apply_filter(browser_screen_menu(screen));
-    return true;
+    return ncm_error_ok(ncm_error);
 }
 
 void
@@ -1063,7 +1073,7 @@ browser_screen_clear_filter(BrowserScreen *screen) {
     return;
 }
 
-bool
+int32
 browser_screen_search(BrowserScreen *screen,
                       char *pattern, int32 pattern_len,
                       bool forward, bool wrap,
@@ -1071,33 +1081,45 @@ browser_screen_search(BrowserScreen *screen,
     BrowserSearchContext context;
     NcmRegex regex;
     NcMenu *menu;
-    bool result;
+    bool found;
+    int32 status;
 
-    if ((screen == NULL) || (pattern == NULL) || (pattern_len <= 0)) {
-        return false;
+    if (screen == NULL) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing browser screen"));
+    }
+    if ((pattern == NULL) || (pattern_len <= 0)) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing search pattern"));
     }
 
     regex = (NcmRegex){0};
-    if (ncm_regex_compile(&regex, pattern, pattern_len,
-                          NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error) < 0) {
+    if ((status = ncm_regex_compile(
+        &regex, pattern, pattern_len,
+        NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error)) < 0) {
         ncm_regex_destroy(&regex);
-        return false;
+        return status;
     }
-    if (sb_set(&screen->search_constraint, pattern, pattern_len) < 0) {
+    if ((status = sb_set(&screen->search_constraint,
+                         pattern, pattern_len)) < 0) {
         ncm_regex_destroy(&regex);
-        return false;
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("failed to save search"));
     }
 
     menu = browser_screen_menu(screen);
     context.screen = screen;
     context.regex = &regex;
-    result = nc_menu_search_selectable(menu, screen->main_height, forward,
-                                       wrap, skip_current,
-                                       browser_search_position,
-                                       &context, NULL) == 0;
+    found = nc_menu_search_selectable(menu, screen->main_height, forward,
+                                      wrap, skip_current,
+                                      browser_search_position,
+                                      &context, NULL) == 0;
 
     ncm_regex_destroy(&regex);
-    return result;
+    if (found) {
+        return 1;
+    }
+    return 0;
 }
 
 static bool

@@ -122,10 +122,10 @@ static void tag_editor_init_regexes(TagEditorScreen *screen);
 static void tag_editor_destroy_regexes(TagEditorScreen *screen);
 static bool tag_editor_set_buffer(StrBuilder *buffer, char *data,
                                   int32 data_len);
-static bool tag_editor_compile_constraint(NcmRegex *regex, char *pattern,
-                                          int32 pattern_len,
-                                          uint32 regex_flags,
-                                          NcmError *ncm_error);
+static int32 tag_editor_compile_constraint(NcmRegex *regex, char *pattern,
+                                           int32 pattern_len,
+                                           uint32 regex_flags,
+                                           NcmError *ncm_error);
 static void tag_editor_update_titles(TagEditorScreen *screen,
                                      bool update_windows);
 static void tag_editor_update_visible_counts(TagEditorScreen *screen);
@@ -965,7 +965,8 @@ tag_editor_screen_previous_column_available(TagEditorScreen *screen) {
         return false;
     }
     if (screen->active_focus == TAG_EDITOR_FOCUS_TAGS) {
-        return !nc_menu_is_empty(nc_editor_string_menu_base(&screen->tag_types));
+        return !nc_menu_is_empty(
+            nc_editor_string_menu_base(&screen->tag_types));
     }
     if (screen->active_focus == TAG_EDITOR_FOCUS_TAG_TYPES) {
         if (nc_menu_is_empty(nc_editor_pair_menu_base(&screen->directories))) {
@@ -1159,50 +1160,84 @@ tag_editor_screen_save_action_available(TagEditorScreen *screen) {
     return screen->active_focus == TAG_EDITOR_FOCUS_TAG_TYPES;
 }
 
-bool
+int32
 tag_editor_screen_apply_directory_filter(TagEditorScreen *screen,
                                          char *pattern, int32 pattern_len,
                                          uint32 regex_flags,
                                          NcmError *ncm_error) {
+    int32 status;
+
     if (screen == NULL) {
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing tag editor"));
     }
-    if (!tag_editor_compile_constraint(&screen->directory_filter_regex,
-                                       pattern, pattern_len, regex_flags,
-                                       ncm_error)) {
-        return false;
+    if ((pattern == NULL) || (pattern_len <= 0)) {
+        ncm_regex_destroy(&screen->directory_filter_regex);
+        screen->directory_filter_regex = (NcmRegex){0};
+        sb_clear(&screen->directory_filter_constraint);
+        screen->directory_filter_enabled = false;
+        nc_menu_show_all_items(nc_editor_pair_menu_base(
+            &screen->directories));
+        tag_editor_update_titles(screen, true);
+        return ncm_error_ok(ncm_error);
     }
-    sb_set(&screen->directory_filter_constraint, pattern, pattern_len);
+    if ((status = tag_editor_compile_constraint(
+        &screen->directory_filter_regex, pattern, pattern_len,
+        regex_flags, ncm_error)) < 0) {
+        return status;
+    }
+    if ((status = sb_set(&screen->directory_filter_constraint,
+                         pattern, pattern_len)) < 0) {
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("failed to save filter"));
+    }
     nc_menu_set_display_callbacks(
         nc_editor_pair_menu_base(&screen->directories),
         tag_editor_directory_display_callbacks(screen));
     screen->directory_filter_enabled = true;
     nc_menu_apply_filter(nc_editor_pair_menu_base(&screen->directories));
     tag_editor_update_titles(screen, true);
-    return true;
+    return ncm_error_ok(ncm_error);
 }
 
-bool
+int32
 tag_editor_screen_apply_tag_filter(TagEditorScreen *screen,
                                    char *pattern, int32 pattern_len,
                                    uint32 regex_flags, NcmError *ncm_error) {
+    int32 status;
+
     if (screen == NULL) {
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing tag editor"));
     }
-    if (!tag_editor_compile_constraint(&screen->tag_filter_regex, pattern,
-                                       pattern_len, regex_flags, ncm_error)) {
-        return false;
+    if ((pattern == NULL) || (pattern_len <= 0)) {
+        ncm_regex_destroy(&screen->tag_filter_regex);
+        screen->tag_filter_regex = (NcmRegex){0};
+        sb_clear(&screen->tag_filter_constraint);
+        screen->tag_filter_enabled = false;
+        nc_menu_show_all_items(nc_tag_row_menu_base(&screen->tags));
+        tag_editor_update_titles(screen, true);
+        return ncm_error_ok(ncm_error);
     }
-    sb_set(&screen->tag_filter_constraint, pattern, pattern_len);
+    if ((status = tag_editor_compile_constraint(
+        &screen->tag_filter_regex, pattern, pattern_len,
+        regex_flags, ncm_error)) < 0) {
+        return status;
+    }
+    if ((status = sb_set(&screen->tag_filter_constraint,
+                         pattern, pattern_len)) < 0) {
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("failed to save filter"));
+    }
     nc_menu_set_display_callbacks(nc_tag_row_menu_base(&screen->tags),
                                   tag_editor_tag_display_callbacks(screen));
     screen->tag_filter_enabled = true;
     nc_menu_apply_filter(nc_tag_row_menu_base(&screen->tags));
     tag_editor_update_titles(screen, true);
-    return true;
+    return ncm_error_ok(ncm_error);
 }
 
-bool
+int32
 tag_editor_screen_search(TagEditorScreen *screen,
                          char *pattern, int32 pattern_len,
                          bool forward, bool wrap,
@@ -1213,14 +1248,21 @@ tag_editor_screen_search(TagEditorScreen *screen,
     bool *enabled;
     NcMenu *menu;
     NcWindow *window;
-    bool result;
+    bool found;
+    int32 status;
 
-    if ((screen == NULL) || (pattern == NULL) || (pattern_len <= 0)) {
-        return false;
+    if (screen == NULL) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing tag editor"));
+    }
+    if ((pattern == NULL) || (pattern_len <= 0)) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing search pattern"));
     }
     if ((screen->active_focus != TAG_EDITOR_FOCUS_DIRECTORIES)
         && (screen->active_focus != TAG_EDITOR_FOCUS_TAGS)) {
-        return false;
+        return ncm_error_set_code(ncm_error, NCM_ERROR_UNAVAILABLE,
+                                  STRLIT("tag editor cannot search"));
     }
 
     if (screen->active_focus == TAG_EDITOR_FOCUS_TAGS) {
@@ -1232,25 +1274,29 @@ tag_editor_screen_search(TagEditorScreen *screen,
         constraint = &screen->directory_search_constraint;
         enabled = &screen->directory_search_enabled;
     }
-    if (!tag_editor_compile_constraint(regex, pattern, pattern_len,
-                                       Config.regex_flags, ncm_error)) {
-        return false;
+    if ((status = tag_editor_compile_constraint(
+        regex, pattern, pattern_len, Config.regex_flags, ncm_error)) < 0) {
+        return status;
     }
-    sb_set(constraint, pattern, pattern_len);
+    if ((status = sb_set(constraint, pattern, pattern_len)) < 0) {
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("failed to save search"));
+    }
     *enabled = true;
 
     menu = tag_editor_screen_active_menu(screen);
     window = tag_editor_screen_active_window(screen);
     context.screen = screen;
     context.regex = regex;
-    result = nc_menu_search_selectable(menu, nc_window_height(window),
-                                       forward, wrap, skip_current,
-                                       tag_editor_search_position,
-                                       &context, NULL) == 0;
-    if (result) {
+    found = nc_menu_search_selectable(menu, nc_window_height(window),
+                                      forward, wrap, skip_current,
+                                      tag_editor_search_position,
+                                      &context, NULL) == 0;
+    if (found) {
         tag_editor_screen_finish_directory_change(screen);
+        return 1;
     }
-    return result;
+    return 0;
 }
 
 static bool
@@ -2615,22 +2661,23 @@ tag_editor_destroy_regexes(TagEditorScreen *screen) {
     return;
 }
 
-static bool
+static int32
 tag_editor_compile_constraint(NcmRegex *regex, char *pattern,
-                              int32 pattern_len, uint32 regex_flags,
-                              NcmError *ncm_error) {
+                               int32 pattern_len, uint32 regex_flags,
+                               NcmError *ncm_error) {
     NcmRegex compiled;
+    int32 status;
 
     ASSERT(regex != NULL);
     compiled = (NcmRegex){0};
-    if (ncm_regex_compile(&compiled, pattern, pattern_len, regex_flags,
-                          ncm_error) < 0) {
+    if ((status = ncm_regex_compile(&compiled, pattern, pattern_len,
+                                    regex_flags, ncm_error)) < 0) {
         ncm_regex_destroy(&compiled);
-        return false;
+        return status;
     }
     ncm_regex_destroy(regex);
     *regex = compiled;
-    return true;
+    return ncm_error_ok(ncm_error);
 }
 
 static bool

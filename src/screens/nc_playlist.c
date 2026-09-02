@@ -820,25 +820,30 @@ playlist_screen_copy_sort_range(
     return true;
 }
 
-bool
+int32
 playlist_screen_apply_filter(PlaylistScreen *screen,
                              char *pattern, int32 pattern_len,
                              NcmError *ncm_error) {
     NcMenuDisplayCallbacks callbacks;
+    int32 status;
 
     if (screen == NULL) {
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing playlist screen"));
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
         playlist_screen_clear_filter(screen);
-        return true;
+        return ncm_error_ok(ncm_error);
     }
-    if (ncm_regex_compile(&screen->filter_regex, pattern, pattern_len,
-                          Config.regex_flags, ncm_error) < 0) {
-        return false;
+    if ((status = ncm_regex_compile(
+        &screen->filter_regex, pattern, pattern_len,
+        Config.regex_flags, ncm_error)) < 0) {
+        return status;
     }
-    if (sb_set(&screen->filter_constraint, pattern, pattern_len) < 0) {
-        return false;
+    if ((status = sb_set(&screen->filter_constraint,
+                         pattern, pattern_len)) < 0) {
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("failed to save filter"));
     }
     callbacks = playlist_display_callbacks();
     callbacks.matches_filter = playlist_filter_song;
@@ -846,7 +851,7 @@ playlist_screen_apply_filter(PlaylistScreen *screen,
     nc_menu_set_display_callbacks(playlist_storage_menu(screen),
                                   callbacks);
     nc_menu_apply_filter(playlist_storage_menu(screen));
-    return true;
+    return ncm_error_ok(ncm_error);
 }
 
 void
@@ -863,34 +868,45 @@ playlist_screen_clear_filter(PlaylistScreen *screen) {
     return;
 }
 
-bool
+int32
 playlist_screen_search(PlaylistScreen *screen,
                        char *pattern, int32 pattern_len,
                        bool forward, bool wrap,
                        bool skip_current, NcmError *ncm_error) {
     NcmRegex regex;
-    bool result;
+    bool found;
+    int32 status;
 
-    if ((screen == NULL) || (pattern == NULL) || (pattern_len <= 0)) {
-        return false;
+    if (screen == NULL) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing playlist screen"));
+    }
+    if ((pattern == NULL) || (pattern_len <= 0)) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing search pattern"));
     }
 
     regex = (NcmRegex){0};
-    if (ncm_regex_compile(&regex, pattern, pattern_len,
-                          Config.regex_flags, ncm_error) < 0) {
+    if ((status = ncm_regex_compile(&regex, pattern, pattern_len,
+                                    Config.regex_flags, ncm_error)) < 0) {
         ncm_regex_destroy(&regex);
-        return false;
+        return status;
     }
-    if (sb_set(&screen->search_constraint, pattern, pattern_len) < 0) {
+    if ((status = sb_set(&screen->search_constraint,
+                         pattern, pattern_len)) < 0) {
         ncm_regex_destroy(&regex);
-        return false;
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("failed to save search"));
     }
 
-    result = playlist_search_menu(
+    found = playlist_search_menu(
         screen, playlist_storage_menu(screen), &regex, forward,
         wrap, skip_current);
     ncm_regex_destroy(&regex);
-    return result;
+    if (found) {
+        return 1;
+    }
+    return 0;
 }
 
 bool

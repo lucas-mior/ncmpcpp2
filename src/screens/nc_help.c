@@ -89,17 +89,18 @@ nc_help_screen_reload(NcHelpScreen *screen) {
     return true;
 }
 
-bool
+int32
 nc_help_screen_find(NcHelpScreen *screen,
                     char *pattern, int32 pattern_len,
                     NcmError *ncm_error) {
     NcmRegex regex;
     char *data;
     int32 match_count;
+    int32 status;
 
     if (screen == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing help screen"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing help screen"));
     }
 
     nc_buffer_remove_properties(&screen->buffer, 0);
@@ -107,21 +108,21 @@ nc_help_screen_find(NcHelpScreen *screen,
         sb_clear(&screen->search_constraint);
         nc_scrollpad_flush(&screen->scrollpad, &screen->window,
                            &screen->buffer);
-        ncm_error_clear(ncm_error);
-        return true;
+        return ncm_error_ok(ncm_error);
     }
 
     regex = (NcmRegex){0};
-    if (ncm_regex_compile(&regex, pattern, pattern_len,
-                          Config.regex_flags, ncm_error) < 0) {
+    if ((status = ncm_regex_compile(&regex, pattern, pattern_len,
+                                    Config.regex_flags, ncm_error)) < 0) {
         ncm_regex_destroy(&regex);
-        return false;
+        return status;
     }
 
-    if (sb_set(&screen->search_constraint, pattern, pattern_len) < 0) {
+    if ((status = sb_set(&screen->search_constraint,
+                         pattern, pattern_len)) < 0) {
         ncm_regex_destroy(&regex);
-        ncm_error_set(ncm_error, ENOMEM, STRLIT("failed to save search"));
-        return false;
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("failed to save search"));
     }
 
     data = nc_buffer_data(&screen->buffer);
@@ -129,7 +130,10 @@ nc_help_screen_find(NcHelpScreen *screen,
         &regex, data, screen->buffer.len, nc_help_find_match_callback, screen);
     ncm_regex_destroy(&regex);
     nc_scrollpad_flush(&screen->scrollpad, &screen->window, &screen->buffer);
-    return match_count > 0;
+    if (match_count > 0) {
+        return 1;
+    }
+    return 0;
 }
 
 void

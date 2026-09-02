@@ -674,7 +674,7 @@ playlist_editor_screen_selected_songs(
     return append_current_content(screen, songs);
 }
 
-bool
+int32
 playlist_editor_screen_apply_active_filter(
     PlaylistEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, NcmError *ncm_error
@@ -683,9 +683,11 @@ playlist_editor_screen_apply_active_filter(
     NcmRegex *regex;
     StrBuilder *constraint;
     bool *enabled;
+    int32 status;
 
     if (screen == NULL) {
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing playlist editor"));
     }
     menu = playlist_editor_screen_active_menu(screen);
     if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
@@ -703,20 +705,23 @@ playlist_editor_screen_apply_active_filter(
         sb_clear(constraint);
         nc_menu_show_all_items(menu);
         playlist_editor_update_titles(screen, true);
-        return true;
+        return ncm_error_ok(ncm_error);
     }
-    if (ncm_regex_compile(regex, pattern, pattern_len,
-                          regex_flags, ncm_error) < 0) {
-        return false;
+    if ((status = ncm_regex_compile(regex, pattern, pattern_len,
+                                    regex_flags, ncm_error)) < 0) {
+        return status;
     }
-    sb_set(constraint, pattern, pattern_len);
+    if ((status = sb_set(constraint, pattern, pattern_len)) < 0) {
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("failed to save filter"));
+    }
     *enabled = true;
     nc_menu_apply_filter(menu);
     playlist_editor_update_titles(screen, true);
-    return true;
+    return ncm_error_ok(ncm_error);
 }
 
-bool
+int32
 playlist_editor_screen_search_active(
     PlaylistEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, bool forward, bool wrap, bool skip_current,
@@ -726,9 +731,12 @@ playlist_editor_screen_search_active(
     NcmRegex *regex;
     NcMenu *menu;
     bool *enabled;
+    bool found;
+    int32 status;
 
     if (screen == NULL) {
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing playlist editor"));
     }
     if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
         regex = &screen->content_search_regex;
@@ -742,21 +750,26 @@ playlist_editor_screen_search_active(
     if ((pattern == NULL) || (pattern_len <= 0)) {
         *enabled = false;
         sb_clear(constraint);
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing search pattern"));
     }
-    if (ncm_regex_compile(regex, pattern, pattern_len,
-                          regex_flags, ncm_error) < 0) {
-        return false;
+    if ((status = ncm_regex_compile(regex, pattern, pattern_len,
+                                    regex_flags, ncm_error)) < 0) {
+        return status;
     }
-    sb_set(constraint, pattern, pattern_len);
+    if ((status = sb_set(constraint, pattern, pattern_len)) < 0) {
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("failed to save search"));
+    }
     *enabled = true;
     menu = playlist_editor_screen_active_menu(screen);
-    if (!playlist_editor_search_menu(screen, menu, regex, forward, wrap,
-                                     skip_current)) {
-        return false;
+    found = playlist_editor_search_menu(screen, menu, regex, forward,
+                                        wrap, skip_current);
+    if (found) {
+        playlist_editor_finish_playlist_change(screen);
+        return 1;
     }
-    playlist_editor_finish_playlist_change(screen);
-    return true;
+    return 0;
 }
 
 void

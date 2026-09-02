@@ -470,7 +470,7 @@ selected_items_adder_screen_add_to_existing_playlist(
     return ok;
 }
 
-bool
+int32
 selected_items_adder_screen_search(
     SelectedItemsAdderScreen *screen, char *pattern,
     int32 pattern_len, uint32 regex_flags, bool forward, bool wrap,
@@ -479,28 +479,37 @@ selected_items_adder_screen_search(
     NcmRegex regex;
     NcMenu *menu;
     NcWindow *window;
-    bool result;
+    bool found;
+    int32 status;
 
-    if ((screen == NULL) || (pattern == NULL) || (pattern_len <= 0)) {
-        return false;
+    if (screen == NULL) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing selected-items adder"));
+    }
+    if ((pattern == NULL) || (pattern_len <= 0)) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing search pattern"));
     }
 
     regex = (NcmRegex){0};
-    if (ncm_regex_compile(&regex, pattern, pattern_len, regex_flags,
-                          ncm_error) < 0) {
+    if ((status = ncm_regex_compile(&regex, pattern, pattern_len,
+                                    regex_flags, ncm_error)) < 0) {
         ncm_regex_destroy(&regex);
-        return false;
+        return status;
     }
 
     menu = selected_items_adder_screen_active_menu(screen);
     window = selected_items_adder_screen_active_window(screen);
-    result = nc_menu_search_selectable(menu, nc_window_height(window),
-                                       forward, wrap, skip_current,
-                                       adder_search_position, &regex,
-                                       NULL) == 0;
+    found = nc_menu_search_selectable(menu, nc_window_height(window),
+                                      forward, wrap, skip_current,
+                                      adder_search_position, &regex,
+                                      NULL) == 0;
 
     ncm_regex_destroy(&regex);
-    return result;
+    if (found) {
+        return 1;
+    }
+    return 0;
 }
 
 static bool
