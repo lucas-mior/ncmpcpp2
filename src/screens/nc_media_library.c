@@ -2816,7 +2816,7 @@ library_print_add_status(MediaLibraryScreen *screen,
             SB_APPEND(&message, tag->tag, tag->tag_len);
         }
         SB_APPEND(&message, "\" added");
-        SB_APPEND(&message, ncm_helpers_with_errors(result));
+        sb_printf(&message, "%s", ncm_helpers_with_errors(result));
     } else if (screen->active_column
                == MEDIA_LIBRARY_COLUMN_ALBUMS) {
         if ((album = media_library_screen_current_album(screen))
