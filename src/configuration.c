@@ -854,13 +854,10 @@ configuration_print_current_song(NcmConfigurationOptions *options,
         goto cleanup;
     }
     if (!ncm_song_is_empty(&song)) {
-        if (!ncm_format_parse(&format, options->current_song_format.data,
-                              options->current_song_format.len,
-                              NCM_FORMAT_FLAG_TAG, ncm_error)) {
-            status = ncm_error_status(ncm_error);
-            if (status == 0) {
-                status = -NCM_ERROR_PARSE;
-            }
+        status = ncm_format_parse(&format, options->current_song_format.data,
+                                  options->current_song_format.len,
+                                  NCM_FORMAT_FLAG_TAG, ncm_error);
+        if (status < 0) {
             goto cleanup;
         }
         output = ncm_format_render_string(&format, &song);

@@ -176,7 +176,6 @@ settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
                         NcmError *ncm_error) {
     NcmFormatAst ast;
     NcBuffer tmp;
-    bool parsed;
     int32 status;
 
     if (keep_existing && !nc_buffer_is_empty(buffer)) {
@@ -185,14 +184,10 @@ settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
 
     ast = (NcmFormatAst){0};
     tmp = (NcBuffer){0};
-    parsed = ncm_format_parse(&ast, value, value_len,
+    status = ncm_format_parse(&ast, value, value_len,
                               NCM_FORMAT_FLAG_COLOR | NCM_FORMAT_FLAG_FORMAT,
                               ncm_error);
-    if (!parsed) {
-        status = ncm_error_status(ncm_error);
-        if (status == 0) {
-            status = -NCM_ERROR_PARSE;
-        }
+    if (status < 0) {
         nc_buffer_destroy(&tmp);
         ncm_format_ast_destroy(&ast);
         return status;
@@ -549,6 +544,7 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
     int32 pos;
     int32 last_relative;
     int32 stretch_limit;
+    int32 status;
 
     column_array_clear(&config->columns);
     ncm_format_ast_clear(&config->song_columns_mode_format);
@@ -560,7 +556,6 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
         Column *column;
         int32 next;
         int32 parsed_width;
-        int32 status;
 
         width = ncm_string_get_enclosed(value, value_len, '(', ')', pos,
                                         &next);
@@ -682,9 +677,10 @@ settings_parse_columns(Configuration *config, char *value, int32 value_len,
     for (int32 i = 0; i < config->columns.len; i += 1) {
         Column *column = &config->columns.items[i];
 
-        if (!ncm_format_ast_append_column_types(
+        status = ncm_format_ast_append_column_types(
             &config->song_columns_mode_format, column->type,
-            column->type_len)) {
+            column->type_len);
+        if (status < 0) {
             return settings_error(ncm_error,
                                   STRLIT("failed to build column format"));
         }
@@ -1076,14 +1072,7 @@ settings_parse_format(NcmFormatAst *format, char *value, int32 value_len,
     int32 status;
 
     ncm_format_ast_clear(format);
-    if (ncm_format_parse(format, value, value_len, flags, ncm_error)) {
-        return 0;
-    }
-
-    status = ncm_error_status(ncm_error);
-    if (status == 0) {
-        status = -NCM_ERROR_PARSE;
-    }
+    status = ncm_format_parse(format, value, value_len, flags, ncm_error);
     return status;
 }
 
