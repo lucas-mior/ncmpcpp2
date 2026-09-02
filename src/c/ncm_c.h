@@ -1448,17 +1448,17 @@ int32 ncm_mpd_client_get_tag_types(NcmMpdClient *client,
 #include "cbase/xenums.c"
 
 char *ncm_search_direction_str(enum SearchDirection value);
-bool ncm_space_add_mode_parse(char *string, int32 string_len,
-                              enum SpaceAddMode *value);
-bool ncm_sort_mode_parse(char *string, int32 string_len,
-                         enum SortMode *value);
+int32 ncm_space_add_mode_parse(char *string, int32 string_len,
+                               enum SpaceAddMode *value);
+int32 ncm_sort_mode_parse(char *string, int32 string_len,
+                          enum SortMode *value);
 char *ncm_display_mode_str(enum DisplayMode value);
-bool ncm_display_mode_parse(char *string, int32 string_len,
-                            enum DisplayMode *value);
+int32 ncm_display_mode_parse(char *string, int32 string_len,
+                             enum DisplayMode *value);
 char *ncm_design_str(enum Design value);
-bool ncm_design_parse(char *string, int32 string_len, enum Design *value);
-bool ncm_visualizer_type_parse(char *string, int32 string_len,
-                               enum VisualizerType *value);
+int32 ncm_design_parse(char *string, int32 string_len, enum Design *value);
+int32 ncm_visualizer_type_parse(char *string, int32 string_len,
+                                enum VisualizerType *value);
 
 /* c/ncm_charset.h */
 StrBuilder ncm_charset_utf8_to_locale(char *string, int32 string_len);

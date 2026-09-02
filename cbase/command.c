@@ -1059,13 +1059,15 @@ command_run(Command *command, enum CommandFlag flags) {
 
     flags = command_flags_normalized(flags);
 
+#if OS_UNIX
 #if DEBUGGING && !TESTING_command
-    command_text = command_str(command, &command_text_len);
-    error2("Running %s \n", command_text);
-    free2(command_text, command_text_len + 1);
+    if (!command_flags_capture(flags)) {
+        command_text = command_str(command, &command_text_len);
+        error2("Running %s \n", command_text);
+        free2(command_text, command_text_len + 1);
+    }
 #endif
 
-#if OS_UNIX
     if ((err = command_start(command, flags)) < 0) {
         return err;
     }
