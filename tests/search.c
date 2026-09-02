@@ -478,7 +478,7 @@ test_prompt_search_accepts_current_match(void) {
 
     found = -1;
     ASSERT(nc_menu_search_selectable(&menu, 3, true, true, false,
-                                     search_matches, &context, &found));
+                                     search_matches, &context, &found) == 0);
     ASSERT(found == 0);
     ASSERT(nc_menu_highlight(&menu) == 0);
 
@@ -506,7 +506,7 @@ test_forward_repeat_skips_current_match(void) {
 
     found = -1;
     ASSERT(nc_menu_search_selectable(&menu, 3, true, true, true,
-                                     search_matches, &context, &found));
+                                     search_matches, &context, &found) == 0);
     ASSERT(found == 2);
     ASSERT(nc_menu_highlight(&menu) == 2);
     ASSERT(menu.beginning == 1);
@@ -535,7 +535,7 @@ test_forward_repeat_wraps_to_first_match(void) {
 
     found = -1;
     ASSERT(nc_menu_search_selectable(&menu, 3, true, true, true,
-                                     search_matches, &context, &found));
+                                     search_matches, &context, &found) == 0);
     ASSERT(found == 0);
     ASSERT(nc_menu_highlight(&menu) == 0);
     ASSERT(menu.beginning == 0);
@@ -565,7 +565,7 @@ test_backward_repeat_wraps_to_previous_match(void) {
 
     found = -1;
     ASSERT(nc_menu_search_selectable(&menu, 4, false, true, true,
-                                     search_matches, &context, &found));
+                                     search_matches, &context, &found) == 0);
     ASSERT(found == 4);
     ASSERT(nc_menu_highlight(&menu) == 4);
     ASSERT(menu.beginning == 2);
@@ -600,7 +600,7 @@ test_search_skips_unselectable_matches(void) {
 
     found = -1;
     ASSERT(nc_menu_search_selectable(&menu, 3, true, true, true,
-                                     search_matches, &context, &found));
+                                     search_matches, &context, &found) == 0);
     ASSERT(found == 3);
     ASSERT(nc_menu_highlight(&menu) == 3);
 
@@ -627,8 +627,8 @@ test_search_without_wrap_preserves_position_on_failure(void) {
     menu.beginning = 1;
 
     found = -7;
-    ASSERT(!nc_menu_search_selectable(&menu, 2, true, false, true,
-                                      search_matches, &context, &found));
+    ASSERT(nc_menu_search_selectable(&menu, 2, true, false, true,
+                                      search_matches, &context, &found) < 0);
     ASSERT(found == -7);
     ASSERT(nc_menu_highlight(&menu) == 2);
     ASSERT(menu.beginning == 1);
@@ -705,8 +705,8 @@ test_backward_search_without_wrap_preserves_position(void) {
     menu.beginning = 0;
 
     found = -5;
-    ASSERT(!nc_menu_search_selectable(&menu, 2, false, false, true,
-                                      search_matches, &context, &found));
+    ASSERT(nc_menu_search_selectable(&menu, 2, false, false, true,
+                                      search_matches, &context, &found) < 0);
     ASSERT(found == -5);
     ASSERT(nc_menu_highlight(&menu) == 0);
     ASSERT(menu.beginning == 0);
@@ -734,8 +734,8 @@ test_search_failure_with_wrap_preserves_position(void) {
     menu.beginning = 1;
 
     found = -9;
-    ASSERT(!nc_menu_search_selectable(&menu, 2, true, true, true,
-                                      search_matches, &context, &found));
+    ASSERT(nc_menu_search_selectable(&menu, 2, true, true, true,
+                                      search_matches, &context, &found) < 0);
     ASSERT(found == -9);
     ASSERT(nc_menu_highlight(&menu) == 1);
     ASSERT(menu.beginning == 1);
@@ -763,8 +763,8 @@ test_single_match_repeat_does_not_reselect_current(void) {
     menu.beginning = 0;
 
     found = -1;
-    ASSERT(!nc_menu_search_selectable(&menu, 3, true, true, true,
-                                      search_matches, &context, &found));
+    ASSERT(nc_menu_search_selectable(&menu, 3, true, true, true,
+                                      search_matches, &context, &found) < 0);
     ASSERT(found == -1);
     ASSERT(nc_menu_highlight(&menu) == 1);
     ASSERT(menu.beginning == 0);
@@ -800,7 +800,7 @@ test_search_uses_only_active_filtered_items(void) {
 
     found = -1;
     ASSERT(nc_menu_search_selectable(&menu, 2, true, true, false,
-                                     search_matches, &context, &found));
+                                     search_matches, &context, &found) == 0);
     ASSERT(found == 1);
     ASSERT(nc_menu_highlight(&menu) == 1);
     ASSERT(*(char **)nc_menu_current_item(&menu) == third);
@@ -889,28 +889,28 @@ test_repeat_search_advances_between_column_matches(void) {
     found = -1;
     ASSERT(nc_menu_search_selectable(&menu, 3, true, true, true,
                                      search_song_matches, &context,
-                                     &found));
+                                     &found) == 0);
     ASSERT(found == 1);
     ASSERT(nc_menu_highlight(&menu) == 1);
 
     found = -1;
     ASSERT(nc_menu_search_selectable(&menu, 3, true, true, true,
                                      search_song_matches, &context,
-                                     &found));
+                                     &found) == 0);
     ASSERT(found == 2);
     ASSERT(nc_menu_highlight(&menu) == 2);
 
     found = -1;
     ASSERT(nc_menu_search_selectable(&menu, 3, true, true, true,
                                      search_song_matches, &context,
-                                     &found));
+                                     &found) == 0);
     ASSERT(found == 1);
     ASSERT(nc_menu_highlight(&menu) == 1);
 
     found = -1;
     ASSERT(nc_menu_search_selectable(&menu, 3, false, true, true,
                                      search_song_matches, &context,
-                                     &found));
+                                     &found) == 0);
     ASSERT(found == 2);
     ASSERT(nc_menu_highlight(&menu) == 2);
 
@@ -964,13 +964,13 @@ test_playlist_fixture_finds_ohne_dich(void) {
 
     found = -1;
     ASSERT(nc_menu_search_selectable(&menu, 10, true, true, true,
-                                     search_matches, &context, &found));
+                                     search_matches, &context, &found) == 0);
     ASSERT(found == target);
     ASSERT(nc_menu_highlight(&menu) == target);
 
     found = -1;
-    ASSERT(!nc_menu_search_selectable(&menu, 10, true, true, true,
-                                      search_matches, &context, &found));
+    ASSERT(nc_menu_search_selectable(&menu, 10, true, true, true,
+                                      search_matches, &context, &found) < 0);
     ASSERT(found == -1);
     ASSERT(nc_menu_highlight(&menu) == target);
 

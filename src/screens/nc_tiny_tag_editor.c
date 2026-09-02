@@ -665,7 +665,7 @@ tiny_tag_editor_screen_action_runnable(
         return false;
     }
     menu = nc_editor_buffer_menu_base(&screen->rows);
-    if (nc_menu_empty(menu)) {
+    if (nc_menu_is_empty(menu)) {
         return false;
     }
     row = tiny_editor_current_row(screen);
@@ -753,7 +753,7 @@ tiny_editor_mouse_callback(NcScreen *screen, MEVENT event) {
 
     menu = nc_editor_buffer_menu_base(&editor->rows);
     if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
-        if (!nc_menu_goto_selectable(menu, y)) {
+        if (nc_menu_goto_selectable(menu, y) < 0) {
             return;
         }
         if (event.bstate & BUTTON3_PRESSED) {
@@ -869,7 +869,7 @@ tiny_editor_replace_tag_row(
         &row, &screen->edited, field, screen->tag_separator.data,
         screen->tag_separator.len, screen->show_duplicate_tags);
     result = nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL, row_index,
-                                  &row);
+                                  &row) == 0;
     nc_buffer_destroy(&row);
     return result;
 }
@@ -892,7 +892,8 @@ tiny_editor_replace_filename_row(
     tiny_editor_buffer_key_value(&row, STRLIT("Filename"),
                                  name.data, name.len);
     result = nc_menu_replace_item(
-        menu, NC_MENU_ITEMS_ALL, TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW, &row);
+        menu, NC_MENU_ITEMS_ALL, TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW,
+        &row) == 0;
     nc_buffer_destroy(&row);
     return result;
 }

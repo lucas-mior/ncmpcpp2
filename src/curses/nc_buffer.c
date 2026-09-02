@@ -178,7 +178,7 @@ nc_buffer_clear(NcBuffer *buffer) {
 }
 
 bool
-nc_buffer_empty(NcBuffer *buffer) {
+nc_buffer_is_empty(NcBuffer *buffer) {
     return (buffer->len <= 0) && (ARRAY_LEN(buffer->properties) <= 0);
 }
 

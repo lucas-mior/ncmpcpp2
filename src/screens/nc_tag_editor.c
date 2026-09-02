@@ -940,7 +940,7 @@ tag_editor_screen_selected_songs(TagEditorScreen *screen,
 
     menu = nc_tag_row_menu_base(&screen->tags);
     if (!nc_menu_has_selected(menu)) {
-        if (nc_menu_empty(menu)) {
+        if (nc_menu_is_empty(menu)) {
             return true;
         }
         return tag_editor_copy_selected_song_at(
@@ -965,16 +965,16 @@ tag_editor_screen_previous_column_available(TagEditorScreen *screen) {
         return false;
     }
     if (screen->active_focus == TAG_EDITOR_FOCUS_TAGS) {
-        return !nc_menu_empty(nc_editor_string_menu_base(&screen->tag_types));
+        return !nc_menu_is_empty(nc_editor_string_menu_base(&screen->tag_types));
     }
     if (screen->active_focus == TAG_EDITOR_FOCUS_TAG_TYPES) {
-        if (nc_menu_empty(nc_editor_pair_menu_base(&screen->directories))) {
+        if (nc_menu_is_empty(nc_editor_pair_menu_base(&screen->directories))) {
             return false;
         }
         return true;
     }
     if (tag_editor_focus_is_parser_helper(screen->active_focus)) {
-        return !nc_menu_empty(nc_editor_string_menu_base(
+        return !nc_menu_is_empty(nc_editor_string_menu_base(
             &screen->parser_actions));
     }
     return false;
@@ -988,12 +988,12 @@ tag_editor_screen_next_column_available(TagEditorScreen *screen) {
         return false;
     }
     if (screen->active_focus == TAG_EDITOR_FOCUS_DIRECTORIES) {
-        return !nc_menu_empty(nc_editor_string_menu_base(&screen->tag_types))
-               && !nc_menu_empty(nc_tag_row_menu_base(&screen->tags));
+        return !nc_menu_is_empty(nc_editor_string_menu_base(&screen->tag_types))
+               && !nc_menu_is_empty(nc_tag_row_menu_base(&screen->tags));
     }
     if (screen->active_focus == TAG_EDITOR_FOCUS_TAG_TYPES) {
         tag_types = nc_editor_string_menu_base(&screen->tag_types);
-        return !nc_menu_empty(nc_tag_row_menu_base(&screen->tags))
+        return !nc_menu_is_empty(nc_tag_row_menu_base(&screen->tags))
                && tag_editor_tag_type_choice_is_editable(
                    nc_menu_highlight(tag_types));
     }
@@ -1246,7 +1246,7 @@ tag_editor_screen_search(TagEditorScreen *screen,
     result = nc_menu_search_selectable(menu, nc_window_height(window),
                                        forward, wrap, skip_current,
                                        tag_editor_search_position,
-                                       &context, NULL);
+                                       &context, NULL) == 0;
     if (result) {
         tag_editor_screen_finish_directory_change(screen);
     }
@@ -1341,7 +1341,7 @@ tag_editor_screen_show_parser_dialog(TagEditorScreen *screen) {
     if (screen == NULL) {
         return;
     }
-    if (nc_menu_empty(nc_editor_string_menu_base(&screen->parser_dialog))) {
+    if (nc_menu_is_empty(nc_editor_string_menu_base(&screen->parser_dialog))) {
         (void)tag_editor_screen_prepare_parser_rows(
             screen, TAG_EDITOR_PARSER_NONE, NULL, 0);
     }
@@ -1694,13 +1694,13 @@ tag_editor_can_run_current(NcScreen *screen) {
                    >= (int32)TAG_EDITOR_PARSER_ACTION_RECENT_START;
         }
     case TAG_EDITOR_FOCUS_TAG_TYPES:
-        if (nc_menu_empty(nc_tag_row_menu_base(&editor->tags))) {
+        if (nc_menu_is_empty(nc_tag_row_menu_base(&editor->tags))) {
             return false;
         }
         return tag_editor_current_tag_type_action(editor, &field)
                != TAG_EDITOR_TAG_TYPE_ACTION_NONE;
     case TAG_EDITOR_FOCUS_TAGS:
-        if (nc_menu_empty(nc_tag_row_menu_base(&editor->tags))) {
+        if (nc_menu_is_empty(nc_tag_row_menu_base(&editor->tags))) {
             return false;
         }
         switch (tag_editor_current_tag_type_action(editor, &field)) {
@@ -1989,7 +1989,7 @@ tag_editor_mouse_select_directory(TagEditorScreen *screen,
     if ((y < 0) || (y >= nc_menu_item_count(menu))) {
         return false;
     }
-    if (!nc_menu_goto_selectable(menu, y)) {
+    if (nc_menu_goto_selectable(menu, y) < 0) {
         return false;
     }
     tag_editor_screen_finish_directory_change(screen);
@@ -2009,7 +2009,7 @@ tag_editor_mouse_select_tag_type(TagEditorScreen *screen,
     if ((y < 0) || (y >= nc_menu_item_count(menu))) {
         return false;
     }
-    if (!nc_menu_goto_selectable(menu, y)) {
+    if (nc_menu_goto_selectable(menu, y) < 0) {
         return false;
     }
     tag_editor_finish_tag_type_change(screen, true);
@@ -2029,7 +2029,7 @@ tag_editor_mouse_select_tag(TagEditorScreen *screen,
     if ((y < 0) || (y >= nc_menu_item_count(menu))) {
         return false;
     }
-    if (!nc_menu_goto_selectable(menu, y)) {
+    if (nc_menu_goto_selectable(menu, y) < 0) {
         return false;
     }
     if (run) {
@@ -2048,7 +2048,7 @@ tag_editor_mouse_select_parser_dialog(TagEditorScreen *screen,
     if ((y < 0) || (y >= nc_menu_item_count(menu))) {
         return false;
     }
-    if (!nc_menu_goto_selectable(menu, y)) {
+    if (nc_menu_goto_selectable(menu, y) < 0) {
         return false;
     }
     if (run) {
@@ -2067,7 +2067,7 @@ tag_editor_mouse_select_parser_row(TagEditorScreen *screen,
     if ((y < 0) || (y >= nc_menu_item_count(menu))) {
         return false;
     }
-    if (!nc_menu_goto_selectable(menu, y)) {
+    if (nc_menu_goto_selectable(menu, y) < 0) {
         return false;
     }
     if (run) {
@@ -3165,7 +3165,7 @@ tag_editor_update_from_mpd(TagEditorScreen *screen,
 
     ncm_error_clear(&ncm_error);
     if (screen->directories_update_requested
-        || nc_menu_empty(nc_editor_pair_menu_base(&screen->directories))) {
+        || nc_menu_is_empty(nc_editor_pair_menu_base(&screen->directories))) {
         ok = tag_editor_reload_directories_from_mpd(screen, client,
                                                     &ncm_error);
         if (!ok) {
@@ -3181,7 +3181,7 @@ tag_editor_update_from_mpd(TagEditorScreen *screen,
 
     tag_editor_screen_finish_directory_change(screen);
     if (!screen->tags_update_requested
-        && !nc_menu_empty(nc_tag_row_menu_base(&screen->tags))) {
+        && !nc_menu_is_empty(nc_tag_row_menu_base(&screen->tags))) {
         tag_editor_update_titles(screen, true);
         return changed;
     }
@@ -5026,7 +5026,7 @@ tag_editor_apply_recent_pattern(TagEditorScreen *screen,
     tag_editor_set_focus(screen, TAG_EDITOR_FOCUS_PARSER_ACTIONS);
     return nc_menu_goto_selectable(
         nc_editor_string_menu_base(&screen->parser_actions),
-        TAG_EDITOR_PARSER_ACTION_PATTERN);
+        TAG_EDITOR_PARSER_ACTION_PATTERN) == 0;
 }
 
 static bool

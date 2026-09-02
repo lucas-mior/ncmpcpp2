@@ -497,7 +497,7 @@ selected_items_adder_screen_search(
     result = nc_menu_search_selectable(menu, nc_window_height(window),
                                        forward, wrap, skip_current,
                                        adder_search_position, &regex,
-                                       NULL);
+                                       NULL) == 0;
 
     ncm_regex_destroy(&regex);
     return result;

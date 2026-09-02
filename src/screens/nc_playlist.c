@@ -87,7 +87,7 @@ nc_playlist_screen_goto_y(NcPlaylistScreen *screen, int32 y) {
     if (screen->menu == NULL) {
         return false;
     }
-    return nc_menu_goto_selectable(screen->menu, y);
+    return nc_menu_goto_selectable(screen->menu, y) == 0;
 }
 
 bool
@@ -95,7 +95,7 @@ nc_playlist_screen_activate_current(NcPlaylistScreen *screen) {
     if (screen->menu == NULL) {
         return false;
     }
-    return nc_menu_activate_current(screen->menu);
+    return nc_menu_activate_current(screen->menu) == 0;
 }
 
 void
@@ -108,7 +108,7 @@ nc_playlist_screen_mouse_button_pressed(NcPlaylistScreen *screen,
     if (screen->menu == NULL) {
         return;
     }
-    if (nc_menu_empty(screen->menu)) {
+    if (nc_menu_is_empty(screen->menu)) {
         return;
     }
 
@@ -1071,7 +1071,7 @@ playlist_search_menu(PlaylistScreen *screen,
     return nc_menu_search_selectable(menu, screen->screen.main_height,
                                      forward, wrap, skip_current,
                                      playlist_search_position,
-                                     &context, NULL);
+                                     &context, NULL) == 0;
 }
 
 static bool
@@ -1341,7 +1341,7 @@ playlist_truncate_storage(PlaylistScreen *screen,
     old_count = nc_menu_all_item_count(menu);
     while (old_count > new_count) {
         old_count -= 1;
-        if (!nc_menu_remove_item(menu, NC_MENU_ITEMS_ALL, old_count)) {
+        if (nc_menu_remove_item(menu, NC_MENU_ITEMS_ALL, old_count) < 0) {
             return false;
         }
     }
@@ -1361,7 +1361,7 @@ playlist_apply_changed_song_to_storage(PlaylistScreen *screen,
     position = ncm_song_position(song);
     if (position < nc_menu_all_item_count(menu)) {
         return nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL,
-                                    position, song);
+                                    position, song) == 0;
     }
 
     nc_menu_add_item(menu, song);

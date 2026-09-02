@@ -322,7 +322,7 @@ void nc_buffer_copy(NcBuffer *dest, NcBuffer *source);
 void nc_buffer_move(NcBuffer *dest, NcBuffer *source);
 void nc_buffer_destroy(NcBuffer *buffer);
 void nc_buffer_clear(NcBuffer *buffer);
-bool nc_buffer_empty(NcBuffer *buffer);
+bool nc_buffer_is_empty(NcBuffer *buffer);
 
 char *nc_buffer_data(NcBuffer *buffer);
 int32 nc_buffer_len(NcBuffer *buffer);
@@ -442,15 +442,15 @@ void nc_menu_set_selected_suffix(NcMenu *menu, NcBuffer *buffer);
 void nc_menu_set_highlighting(NcMenu *menu, bool state);
 void nc_menu_set_cyclic_scrolling(NcMenu *menu, bool state);
 void nc_menu_set_centered_cursor(NcMenu *menu, bool state);
-bool nc_menu_goto(NcMenu *menu, int32 y,
-                  NcMenuHighlightableFunc *is_highlightable, void *user);
-bool nc_menu_goto_selectable(NcMenu *menu, int32 y);
-bool nc_menu_goto_selectable_position(NcMenu *menu, int32 pos,
-                                      int32 height);
-bool nc_menu_search_selectable(NcMenu *menu, int32 height, bool forward,
-                               bool wrap, bool skip_current,
-                               NcMenuSearchFunc *matches, void *user,
-                               int32 *found_pos);
+int32 nc_menu_goto(NcMenu *menu, int32 y,
+                   NcMenuHighlightableFunc *is_highlightable, void *user);
+int32 nc_menu_goto_selectable(NcMenu *menu, int32 y);
+int32 nc_menu_goto_selectable_position(NcMenu *menu, int32 pos,
+                                       int32 height);
+int32 nc_menu_search_selectable(NcMenu *menu, int32 height, bool forward,
+                                bool wrap, bool skip_current,
+                                NcMenuSearchFunc *matches, void *user,
+                                int32 *found_pos);
 void nc_menu_prepare_refresh(NcMenu *menu, int32 height,
                              NcMenuHighlightableFunc *is_highlightable,
                              void *user);
@@ -467,10 +467,10 @@ void nc_menu_add_item_with_flags(NcMenu *menu, void *item, uint32 flags);
 void nc_menu_add_separator(NcMenu *menu);
 void nc_menu_insert_item_with_flags(NcMenu *menu, int32 pos, void *item,
                                     uint32 flags);
-bool nc_menu_remove_item(NcMenu *menu, enum NcMenuItemSource source,
-                         int32 pos);
-bool nc_menu_replace_item(NcMenu *menu, enum NcMenuItemSource source,
-                          int32 pos, void *item);
+int32 nc_menu_remove_item(NcMenu *menu, enum NcMenuItemSource source,
+                          int32 pos);
+int32 nc_menu_replace_item(NcMenu *menu, enum NcMenuItemSource source,
+                           int32 pos, void *item);
 void nc_menu_clear_items(NcMenu *menu);
 void nc_menu_clear_filtered_items(NcMenu *menu);
 void nc_menu_add_filtered_item_ref(NcMenu *menu, void *item);
@@ -478,26 +478,26 @@ void nc_menu_apply_filter(NcMenu *menu);
 void nc_menu_show_all_items(NcMenu *menu);
 void nc_menu_show_filtered_items(NcMenu *menu);
 bool nc_menu_is_filtered(NcMenu *menu);
-bool nc_menu_empty(NcMenu *menu);
+bool nc_menu_is_empty(NcMenu *menu);
 bool nc_menu_position_is_selectable(NcMenu *menu, int32 pos);
 bool nc_menu_position_is_separator(NcMenu *menu, int32 pos);
 bool nc_menu_position_is_inactive(NcMenu *menu, int32 pos);
 bool nc_menu_position_is_selected(NcMenu *menu, int32 pos);
-bool nc_menu_set_position_selected(NcMenu *menu, int32 pos, bool selected);
-bool nc_menu_toggle_position_selected(NcMenu *menu, int32 pos);
+int32 nc_menu_set_position_selected(NcMenu *menu, int32 pos, bool selected);
+int32 nc_menu_toggle_position_selected(NcMenu *menu, int32 pos);
 void nc_menu_clear_selection(NcMenu *menu);
 bool nc_menu_has_selected(NcMenu *menu);
 int32 nc_menu_selected_count(NcMenu *menu);
 int32 nc_menu_first_selected_position(NcMenu *menu);
 bool nc_menu_current_is_selectable(NcMenu *menu);
-bool nc_menu_set_current_selected(NcMenu *menu, bool selected);
-bool nc_menu_toggle_current_selected(NcMenu *menu);
-bool nc_menu_activate_position(NcMenu *menu, int32 pos);
-bool nc_menu_activate_current(NcMenu *menu);
+int32 nc_menu_set_current_selected(NcMenu *menu, bool selected);
+int32 nc_menu_toggle_current_selected(NcMenu *menu);
+int32 nc_menu_activate_position(NcMenu *menu, int32 pos);
+int32 nc_menu_activate_current(NcMenu *menu);
 uint32 nc_menu_item_flags_at(NcMenu *menu, enum NcMenuItemSource source,
                              int32 pos);
-bool nc_menu_set_item_flags_at(NcMenu *menu, enum NcMenuItemSource source,
-                               int32 pos, uint32 flags);
+int32 nc_menu_set_item_flags_at(NcMenu *menu, enum NcMenuItemSource source,
+                                int32 pos, uint32 flags);
 void *nc_menu_item_at(NcMenu *menu, enum NcMenuItemSource source, int32 pos);
 void *nc_menu_active_item_at(NcMenu *menu, int32 pos);
 void *nc_menu_current_item(NcMenu *menu);

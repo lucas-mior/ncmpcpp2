@@ -824,7 +824,7 @@ search_engine_screen_can_run_current(SearchEngineScreen *screen) {
     }
 
     menu = search_engine_screen_menu(screen);
-    if (nc_menu_empty(menu)) {
+    if (nc_menu_is_empty(menu)) {
         return false;
     }
     pos = nc_menu_highlight(menu);
@@ -1067,7 +1067,7 @@ search_engine_screen_search(SearchEngineScreen *screen,
     result = nc_menu_search_selectable(menu, screen->main_height, forward,
                                        wrap, skip_current,
                                        search_find_position,
-                                       &context, NULL);
+                                       &context, NULL) == 0;
 
     ncm_regex_destroy(&regex);
     return result;
@@ -1155,7 +1155,7 @@ search_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 
     menu = search_engine_screen_menu(search);
     if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
-        if (!nc_menu_goto_selectable(menu, y)) {
+        if (nc_menu_goto_selectable(menu, y) < 0) {
             return;
         }
         if ((row = nc_search_row_menu_current(&search->rows)) == NULL) {
