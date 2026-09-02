@@ -718,7 +718,7 @@ lyrics_screen_refetch_current(LyricsScreen *screen,
         sb_free(&filename);
         return;
     }
-    if (!ncm_fs_unlink(filename.data, filename.len, ncm_error)) {
+    if (ncm_fs_unlink(filename.data, filename.len, ncm_error) < 0) {
         lyrics_report_unlink_error(&filename, ncm_error);
         sb_free(&filename);
         return;
@@ -819,7 +819,7 @@ lyrics_buffer_find(NcBuffer *buffer,
     LyricsFindState state;
     NcmRegex regex;
     char *data;
-    bool result;
+    int32 match_count;
 
     if (buffer == NULL) {
         ncm_error_set(ncm_error, EINVAL, STRLIT("missing lyrics buffer"));
@@ -833,21 +833,18 @@ lyrics_buffer_find(NcBuffer *buffer,
     }
 
     regex = (NcmRegex){0};
-    if (!ncm_regex_compile(&regex, pattern, pattern_len, Config.regex_flags,
-                           ncm_error)) {
+    if (ncm_regex_compile(&regex, pattern, pattern_len, Config.regex_flags,
+                          ncm_error) < 0) {
         ncm_regex_destroy(&regex);
         return false;
     }
 
     state.buffer = buffer;
     data = nc_buffer_data(buffer);
-    result = ncm_regex_for_each_match(&regex,
-                                      data,
-                                      buffer->len,
-                                      lyrics_find_match_callback,
-                                      &state);
+    match_count = ncm_regex_for_each_match(
+        &regex, data, buffer->len, lyrics_find_match_callback, &state);
     ncm_regex_destroy(&regex);
-    return result;
+    return match_count > 0;
 }
 
 bool

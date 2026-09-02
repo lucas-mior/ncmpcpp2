@@ -5,35 +5,34 @@
 
 #include "c/ncm_c.h"
 
-static void
+static int32
 ncm_time_set_errno_error(NcmError *ncm_error, int32 code, char *operation) {
     char message[256];
     int32 message_len;
 
     message_len = SNPRINTF(message, "%s: %s",
                            operation, strerror(code));
-    ncm_error_set(ncm_error, code, message, message_len);
-    return;
+    return ncm_error_set_status(ncm_error, -code, message, message_len);
 }
 
-bool
+int32
 ncm_time_monotonic_now(NcmTimePoint *point, NcmError *ncm_error) {
     struct timespec timespec;
+    int32 code;
 
     if (point == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing time point"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing time point"));
     }
 
     if (clock_gettime(CLOCK_MONOTONIC, &timespec) != 0) {
-        ncm_time_set_errno_error(ncm_error, errno, "clock_gettime");
-        return false;
+        code = errno;
+        return ncm_time_set_errno_error(ncm_error, code, "clock_gettime");
     }
 
     point->ns = (int64)timespec.tv_sec*1000000000ll;
     point->ns += (int64)timespec.tv_nsec;
-    ncm_error_clear(ncm_error);
-    return true;
+    return ncm_error_ok(ncm_error);
 }
 
 int64

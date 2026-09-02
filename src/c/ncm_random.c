@@ -38,20 +38,22 @@ ncm_random_init(NcmRandom *random, uint64 seed) {
     return;
 }
 
-bool
+int32
 ncm_random_seed_from_time(NcmRandom *random, NcmError *ncm_error) {
     NcmTimePoint point;
+    int32 status;
 
     if (random == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing random state"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing random state"));
     }
-    if (!ncm_time_monotonic_now(&point, ncm_error)) {
-        return false;
+    status = ncm_time_monotonic_now(&point, ncm_error);
+    if (status < 0) {
+        return status;
     }
 
     ncm_random_init(random, (uint64)point.ns);
-    return true;
+    return ncm_error_ok(ncm_error);
 }
 
 uint64

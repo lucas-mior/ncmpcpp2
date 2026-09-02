@@ -5,22 +5,22 @@
 
 #include "c/ncm_c.h"
 
-static bool
+static int32
 ncm_regex_prepare_string(char *string, int32 string_len, StrBuilder *buffer,
                          NcmError *ncm_error) {
     if (buffer == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing regex buffer"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing regex buffer"));
     }
     sb_clear(buffer);
 
     if (string == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing regex string"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing regex string"));
     }
     if (string_len < 0) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("negative string length"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("negative string length"));
     }
 
     SB_APPEND(buffer, string, string_len);
@@ -28,17 +28,17 @@ ncm_regex_prepare_string(char *string, int32 string_len, StrBuilder *buffer,
         sb_reserve(buffer, 1);
         buffer->data[0] = '\0';
     }
-    return true;
+    return ncm_error_ok(ncm_error);
 }
 
-static void
+static int32
 ncm_regex_set_error(NcmRegex *regex, int32 code, NcmError *ncm_error) {
     char message[256];
     int32 message_len;
 
     if (regex == NULL) {
-        ncm_error_set(ncm_error, code, STRLIT("regex error"));
-        return;
+        return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                                    STRLIT("regex error"));
     }
 
     message_len = (int32)regerror(code, &regex->regex,
@@ -46,8 +46,8 @@ ncm_regex_set_error(NcmRegex *regex, int32 code, NcmError *ncm_error) {
     if (message_len > 0) {
         message_len -= 1;
     }
-    ncm_error_set(ncm_error, code, message, message_len);
-    return;
+    return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                                message, message_len);
 }
 
 void
@@ -99,25 +99,26 @@ ncm_regex_escape_literal(StrBuilder *buffer, char *pattern, int32 pattern_len) {
     return;
 }
 
-bool
+int32
 ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
                   uint32 flags, NcmError *ncm_error) {
     StrBuilder escaped = {0};
     StrBuilder compiled_pattern = {0};
     int32 reg_flags;
     int32 code;
+    int32 status;
 
     if (regex == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing regex"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing regex"));
     }
     if (pattern == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing regex pattern"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing regex pattern"));
     }
     if (pattern_len < 0) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("negative pattern length"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("negative pattern length"));
     }
 
     ncm_regex_destroy(regex);
@@ -151,14 +152,13 @@ ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
     sb_free(&compiled_pattern);
     sb_free(&escaped);
     if (code != 0) {
-        ncm_regex_set_error(regex, code, ncm_error);
-        return false;
+        status = ncm_regex_set_error(regex, code, ncm_error);
+        return status;
     }
 
     regex->compiled = true;
     regex->flags = flags;
-    ncm_error_clear(ncm_error);
-    return true;
+    return ncm_error_ok(ncm_error);
 }
 
 bool
@@ -170,7 +170,7 @@ ncm_regex_search(NcmRegex *regex, char *string, int32 string_len) {
         return false;
     }
 
-    if (!ncm_regex_prepare_string(string, string_len, &buffer, NULL)) {
+    if (ncm_regex_prepare_string(string, string_len, &buffer, NULL) < 0) {
         sb_free(&buffer);
         return false;
     }
@@ -180,7 +180,7 @@ ncm_regex_search(NcmRegex *regex, char *string, int32 string_len) {
     return result;
 }
 
-bool
+int32
 ncm_regex_for_each_match(NcmRegex *regex, char *string, int32 string_len,
                          NcmRegexMatchCallback *callback, void *user) {
     StrBuilder buffer = {0};
@@ -189,21 +189,21 @@ ncm_regex_for_each_match(NcmRegex *regex, char *string, int32 string_len,
     int32 offset;
     int32 match_start;
     int32 match_len;
-    bool matched;
+    int32 matches;
 
     if ((regex == NULL) || !regex->compiled) {
-        return false;
+        return -EINVAL;
     }
     if (callback == NULL) {
-        return false;
+        return -EINVAL;
     }
 
-    if (!ncm_regex_prepare_string(string, string_len, &buffer, NULL)) {
+    if (ncm_regex_prepare_string(string, string_len, &buffer, NULL) < 0) {
         sb_free(&buffer);
-        return false;
+        return -EINVAL;
     }
 
-    matched = false;
+    matches = 0;
     cursor = buffer.data;
     offset = 0;
     while (offset <= string_len) {
@@ -216,7 +216,7 @@ ncm_regex_for_each_match(NcmRegex *regex, char *string, int32 string_len,
 
         match_start = offset + (int32)match[0].rm_so;
         match_len = (int32)(match[0].rm_eo - match[0].rm_so);
-        matched = true;
+        matches += 1;
         if (!callback(match_start, match_len, user)) {
             break;
         }
@@ -234,7 +234,7 @@ ncm_regex_for_each_match(NcmRegex *regex, char *string, int32 string_len,
     }
 
     sb_free(&buffer);
-    return matched;
+    return matches;
 }
 
 #endif /* NCM_REGEX_C */

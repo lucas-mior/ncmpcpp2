@@ -806,7 +806,7 @@ typedef struct NcmTimePoint {
     int64 ns;
 } NcmTimePoint;
 
-bool ncm_time_monotonic_now(NcmTimePoint *point, NcmError *ncm_error);
+int32 ncm_time_monotonic_now(NcmTimePoint *point, NcmError *ncm_error);
 int64 ncm_time_elapsed_ns(NcmTimePoint start, NcmTimePoint end);
 int64 ncm_time_elapsed_ms(NcmTimePoint start, NcmTimePoint end);
 
@@ -816,7 +816,7 @@ typedef struct NcmRandom {
 } NcmRandom;
 
 void ncm_random_init(NcmRandom *random, uint64 seed);
-bool ncm_random_seed_from_time(NcmRandom *random, NcmError *ncm_error);
+int32 ncm_random_seed_from_time(NcmRandom *random, NcmError *ncm_error);
 uint64 ncm_random_u64(NcmRandom *random);
 uint32 ncm_random_u32(NcmRandom *random);
 uint32 ncm_random_range_u32(NcmRandom *random, uint32 upper_bound);
@@ -850,12 +850,12 @@ typedef struct NcmRegex {
 void ncm_regex_destroy(NcmRegex *regex);
 void ncm_regex_escape_literal(StrBuilder *buffer,
                               char *pattern, int32 pattern_len);
-bool ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
-                       uint32 flags, NcmError *ncm_error);
+int32 ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
+                        uint32 flags, NcmError *ncm_error);
 bool ncm_regex_search(NcmRegex *regex, char *string, int32 string_len);
-bool ncm_regex_for_each_match(NcmRegex *regex,
-                              char *string, int32 string_len,
-                              NcmRegexMatchCallback *callback, void *user);
+int32 ncm_regex_for_each_match(NcmRegex *regex,
+                               char *string, int32 string_len,
+                               NcmRegexMatchCallback *callback, void *user);
 
 /* c/ncm_mpd_connection.h */
 #include <mpd/client.h>
@@ -1463,20 +1463,20 @@ int32 ncm_compare_locale_strings(char *left, int32 left_len,
                                  bool ignore_the);
 
 /* c/ncm_conversion.h */
-bool ncm_parse_int32(char *source, int32 source_len, int32 *out,
-                     NcmError *ncm_error);
-bool ncm_parse_int64(char *source, int32 source_len, int32 *out,
-                     NcmError *ncm_error);
-bool ncm_parse_double(char *source, int32 source_len,
-                      double *out, NcmError *ncm_error);
+int32 ncm_parse_int32(char *source, int32 source_len, int32 *out,
+                      NcmError *ncm_error);
+int32 ncm_parse_int64(char *source, int32 source_len, int32 *out,
+                      NcmError *ncm_error);
+int32 ncm_parse_double(char *source, int32 source_len,
+                       double *out, NcmError *ncm_error);
 
-bool ncm_bounds_check_i64(int64 value, int64 lbound, int64 ubound,
-                          NcmError *ncm_error);
+int32 ncm_bounds_check_i64(int64 value, int64 lbound, int64 ubound,
+                           NcmError *ncm_error);
 
-bool ncm_bounds_check_f64(double value, double lbound, double ubound,
-                          NcmError *ncm_error);
-bool ncm_lower_bound_check_f64(double value, double lbound,
-                               NcmError *ncm_error);
+int32 ncm_bounds_check_f64(double value, double lbound, double ubound,
+                           NcmError *ncm_error);
+int32 ncm_lower_bound_check_f64(double value, double lbound,
+                                NcmError *ncm_error);
 
 /* c/ncm_fs.h */
 #define ENUM_NAME NcmFsEntryType
@@ -1509,21 +1509,21 @@ typedef struct NcmFsDirectory {
 
 void ncm_fs_entry_init(NcmFsEntry *entry);
 void ncm_fs_entry_destroy(NcmFsEntry *entry);
-bool ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat,
-                 NcmError *ncm_error);
+int32 ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat,
+                  NcmError *ncm_error);
 bool ncm_fs_exists(char *path, int32 path_len);
-bool ncm_fs_unlink(char *path, int32 path_len, NcmError *ncm_error);
-bool ncm_fs_rename(char *old_path, int32 old_path_len,
-                   char *new_path, int32 new_path_len,
-                   NcmError *ncm_error);
-bool ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *ncm_error);
-bool ncm_fs_directory_open(NcmFsDirectory *directory, char *path,
-                           int32 path_len, NcmError *ncm_error);
-bool ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
-                           NcmError *ncm_error);
+int32 ncm_fs_unlink(char *path, int32 path_len, NcmError *ncm_error);
+int32 ncm_fs_rename(char *old_path, int32 old_path_len,
+                    char *new_path, int32 new_path_len,
+                    NcmError *ncm_error);
+int32 ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *ncm_error);
+int32 ncm_fs_directory_open(NcmFsDirectory *directory, char *path,
+                            int32 path_len, NcmError *ncm_error);
+int32 ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
+                            NcmError *ncm_error);
 void ncm_fs_directory_close(NcmFsDirectory *directory);
-bool ncm_fs_join(StrBuilder *buffer, char *left, int32 left_len,
-                 char *right, int32 right_len);
+int32 ncm_fs_join(StrBuilder *buffer, char *left, int32 left_len,
+                  char *right, int32 right_len);
 
 /* c/ncm_html.h */
 StrBuilder ncm_html_unescape_utf8(char *data, int32 data_len);

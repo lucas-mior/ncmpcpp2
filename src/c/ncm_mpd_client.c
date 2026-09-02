@@ -1426,10 +1426,10 @@ ncm_mpd_client_add_random_songs(NcmMpdClient *client,
     }
 
     if (exclude_pattern && (exclude_pattern_len > 0)) {
-        if (!ncm_regex_compile(&regex, exclude_pattern,
-                               exclude_pattern_len,
-                               NCM_REGEX_EXTENDED | NCM_REGEX_NOSUB,
-                               ncm_error)) {
+        if (ncm_regex_compile(&regex, exclude_pattern,
+                              exclude_pattern_len,
+                              NCM_REGEX_EXTENDED | NCM_REGEX_NOSUB,
+                              ncm_error) < 0) {
             goto cleanup;
         }
         have_regex = true;

@@ -833,8 +833,8 @@ playlist_screen_apply_filter(PlaylistScreen *screen,
         playlist_screen_clear_filter(screen);
         return true;
     }
-    if (!ncm_regex_compile(&screen->filter_regex, pattern, pattern_len,
-                           Config.regex_flags, ncm_error)) {
+    if (ncm_regex_compile(&screen->filter_regex, pattern, pattern_len,
+                          Config.regex_flags, ncm_error) < 0) {
         return false;
     }
     if (sb_set(&screen->filter_constraint, pattern, pattern_len) < 0) {
@@ -876,8 +876,8 @@ playlist_screen_search(PlaylistScreen *screen,
     }
 
     regex = (NcmRegex){0};
-    if (!ncm_regex_compile(&regex, pattern, pattern_len,
-                           Config.regex_flags, ncm_error)) {
+    if (ncm_regex_compile(&regex, pattern, pattern_len,
+                          Config.regex_flags, ncm_error) < 0) {
         ncm_regex_destroy(&regex);
         return false;
     }

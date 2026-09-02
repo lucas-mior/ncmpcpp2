@@ -773,6 +773,7 @@ tag_editor_screen_rename_current_directory(TagEditorScreen *screen,
     StrBuilder new_relative = {0};
     NcmError ncm_error;
     enum TagEditorPromptResult result;
+    int32 status;
     bool ok;
 
     if (!tag_editor_screen_rename_directory_available(
@@ -802,16 +803,21 @@ tag_editor_screen_rename_current_directory(TagEditorScreen *screen,
     }
 
     ok = ncm_fs_join(&old_path, music_dir, music_dir_len,
-                     pair->second, pair->second_len)
-         && tag_editor_build_renamed_directory(screen, name.data,
-                                               name.len, &new_relative)
-         && ncm_fs_join(&new_path, music_dir, music_dir_len,
-                        new_relative.data, new_relative.len);
+                     pair->second, pair->second_len) == 0;
+    if (ok) {
+        ok = tag_editor_build_renamed_directory(screen, name.data,
+                                                name.len, &new_relative);
+    }
+    if (ok) {
+        ok = ncm_fs_join(&new_path, music_dir, music_dir_len,
+                         new_relative.data, new_relative.len) == 0;
+    }
     if (ok) {
         ncm_error_clear(&ncm_error);
-        ok = ncm_fs_rename(old_path.data, old_path.len,
-                           new_path.data, new_path.len, &ncm_error);
-        if (!ok) {
+        status = ncm_fs_rename(old_path.data, old_path.len,
+                               new_path.data, new_path.len, &ncm_error);
+        if (status < 0) {
+            ok = false;
             tag_editor_status_directory_rename_error(
                 screen, pair->first, pair->first_len, &ncm_error);
         }
@@ -2608,8 +2614,8 @@ tag_editor_compile_constraint(NcmRegex *regex, char *pattern,
 
     ASSERT(regex != NULL);
     compiled = (NcmRegex){0};
-    if (!ncm_regex_compile(&compiled, pattern, pattern_len, regex_flags,
-                           ncm_error)) {
+    if (ncm_regex_compile(&compiled, pattern, pattern_len, regex_flags,
+                          ncm_error) < 0) {
         ncm_regex_destroy(&compiled);
         return false;
     }
@@ -2874,7 +2880,7 @@ tag_editor_build_renamed_directory(TagEditorScreen *screen,
         return false;
     }
     return ncm_fs_join(result, screen->current_dir.data,
-                       screen->current_dir.len, name, name_len);
+                       screen->current_dir.len, name, name_len) == 0;
 }
 
 static void
@@ -4809,7 +4815,7 @@ tag_editor_history_path(StrBuilder *path) {
         && (Config.ncmpcpp_directory_len > 0)) {
         return ncm_fs_join(path, Config.ncmpcpp_directory,
                            Config.ncmpcpp_directory_len,
-                           STRLIT("patterns.list"));
+                           STRLIT("patterns.list")) == 0;
     }
     return tag_editor_set_buffer(path, STRLIT("patterns.list"));
 }
@@ -5038,8 +5044,8 @@ tag_editor_mutable_song_to_format_song(NcmMutableSong *source,
         SB_APPEND(&uri, source->uri, source->uri_len);
     } else if (source->directory && (source->directory_len > 0)
                && source->name && (source->name_len >= 0)) {
-        if (!ncm_fs_join(&uri, source->directory, source->directory_len,
-                         source->name, source->name_len)) {
+        if (ncm_fs_join(&uri, source->directory, source->directory_len,
+                        source->name, source->name_len) < 0) {
             sb_free(&uri);
             return false;
         }

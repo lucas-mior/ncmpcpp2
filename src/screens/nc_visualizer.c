@@ -914,7 +914,7 @@ visualizer_screen_requested_samples(VisualizerScreen *screen) {
     if ((screen == NULL) || (screen->sample_rate <= 0)) {
         return 0;
     }
-    if (!ncm_time_monotonic_now(&now, NULL)) {
+    if (ncm_time_monotonic_now(&now, NULL) < 0) {
         return 0;
     }
     if (!screen->sample_clock_initialized) {

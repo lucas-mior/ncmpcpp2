@@ -1033,8 +1033,8 @@ browser_screen_apply_filter(BrowserScreen *screen,
         browser_screen_clear_filter(screen);
         return true;
     }
-    if (!ncm_regex_compile(&screen->filter_regex, pattern, pattern_len,
-                           NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error)) {
+    if (ncm_regex_compile(&screen->filter_regex, pattern, pattern_len,
+                          NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error) < 0) {
         return false;
     }
     if (sb_set(&screen->filter_constraint, pattern, pattern_len) < 0) {
@@ -1075,8 +1075,8 @@ browser_screen_search(BrowserScreen *screen,
     }
 
     regex = (NcmRegex){0};
-    if (!ncm_regex_compile(&regex, pattern, pattern_len,
-                           NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error)) {
+    if (ncm_regex_compile(&regex, pattern, pattern_len,
+                          NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error) < 0) {
         ncm_regex_destroy(&regex);
         return false;
     }
@@ -1714,6 +1714,7 @@ browser_reload_from_local(BrowserScreen *screen,
     NcmFsDirectory directory;
     NcmFsEntry entry;
     NcMenu *menu;
+    int32 read_status;
     bool result;
 
     ASSERT(screen != NULL);
@@ -1721,8 +1722,8 @@ browser_reload_from_local(BrowserScreen *screen,
         return false;
     }
 
-    if (!ncm_fs_directory_open(&directory, screen->current_directory.data,
-                               screen->current_directory.len, ncm_error)) {
+    if (ncm_fs_directory_open(&directory, screen->current_directory.data,
+                               screen->current_directory.len, ncm_error) < 0) {
         return false;
     }
 
@@ -1736,14 +1737,19 @@ browser_reload_from_local(BrowserScreen *screen,
     }
 
     ncm_fs_entry_init(&entry);
-    while (result && ncm_fs_directory_read(&directory, &entry, ncm_error)) {
+    while (result) {
+        read_status = ncm_fs_directory_read(&directory, &entry, ncm_error);
+        if (read_status < 0) {
+            result = false;
+            break;
+        }
+        if (read_status == 0) {
+            break;
+        }
         if (!browser_load_local_entry(screen, &directory, &entry,
                                       ncm_error)) {
             result = false;
         }
-    }
-    if (ncm_error_is_set(ncm_error)) {
-        result = false;
     }
     ncm_fs_entry_destroy(&entry);
     ncm_fs_directory_close(&directory);
@@ -1851,8 +1857,8 @@ browser_load_local_entry(BrowserScreen *screen,
         return true;
     }
 
-    if (!ncm_fs_join(&path, directory->path, directory->path_len,
-                     entry->name, entry->name_len)) {
+    if (ncm_fs_join(&path, directory->path, directory->path_len,
+                    entry->name, entry->name_len) < 0) {
         sb_free(&path);
         return false;
     }
@@ -2056,6 +2062,7 @@ browser_collect_local_directory_songs(
 ) {
     NcmFsDirectory directory;
     NcmFsEntry entry;
+    int32 read_status;
     bool result;
 
     ASSERT(screen != NULL);
@@ -2063,18 +2070,23 @@ browser_collect_local_directory_songs(
     ASSERT(path != NULL);
     ASSERT(path_len >= 0);
 
-    if (!ncm_fs_directory_open(&directory, path, path_len, ncm_error)) {
+    if (ncm_fs_directory_open(&directory, path, path_len, ncm_error) < 0) {
         return false;
     }
 
     result = true;
     ncm_fs_entry_init(&entry);
-    while (result && ncm_fs_directory_read(&directory, &entry, ncm_error)) {
+    while (result) {
+        read_status = ncm_fs_directory_read(&directory, &entry, ncm_error);
+        if (read_status < 0) {
+            result = false;
+            break;
+        }
+        if (read_status == 0) {
+            break;
+        }
         result = browser_collect_local_entry_songs(
             screen, songs, &directory, &entry, ncm_error);
-    }
-    if (ncm_error_is_set(ncm_error)) {
-        result = false;
     }
     ncm_fs_entry_destroy(&entry);
     ncm_fs_directory_close(&directory);
@@ -2100,8 +2112,8 @@ browser_collect_local_entry_songs(
         return true;
     }
 
-    if (!ncm_fs_join(&path, directory->path, directory->path_len,
-                     entry->name, entry->name_len)) {
+    if (ncm_fs_join(&path, directory->path, directory->path_len,
+                    entry->name, entry->name_len) < 0) {
         sb_free(&path);
         return false;
     }
@@ -2189,8 +2201,11 @@ browser_delete_song_item(BrowserScreen *screen,
         return false;
     }
 
-    result = browser_real_path(screen, path, &real_path, ncm_error)
-             && ncm_fs_unlink(real_path.data, real_path.len, ncm_error);
+    result = browser_real_path(screen, path, &real_path, ncm_error);
+    if (result
+        && (ncm_fs_unlink(real_path.data, real_path.len, ncm_error) < 0)) {
+        result = false;
+    }
     sb_free(&real_path);
     return result;
 }
@@ -2220,8 +2235,11 @@ browser_delete_playlist_item(BrowserScreen *screen,
         return false;
     }
 
-    result = browser_real_path(screen, path, &real_path, ncm_error)
-             && ncm_fs_unlink(real_path.data, real_path.len, ncm_error);
+    result = browser_real_path(screen, path, &real_path, ncm_error);
+    if (result
+        && (ncm_fs_unlink(real_path.data, real_path.len, ncm_error) < 0)) {
+        result = false;
+    }
     sb_free(&real_path);
     return result;
 }
@@ -2380,12 +2398,17 @@ browser_rename_real_paths(BrowserScreen *screen,
     bool result;
 
     result = browser_real_path(screen, old_path, &old_real_path,
-                               ncm_error)
-             && browser_real_path(screen, new_path, &new_real_path,
-                                  ncm_error)
-             && ncm_fs_rename(old_real_path.data, old_real_path.len,
-                              new_real_path.data, new_real_path.len,
-                              ncm_error);
+                               ncm_error);
+    if (result) {
+        result = browser_real_path(screen, new_path, &new_real_path,
+                                   ncm_error);
+    }
+    if (result
+        && (ncm_fs_rename(old_real_path.data, old_real_path.len,
+                          new_real_path.data, new_real_path.len,
+                          ncm_error) < 0)) {
+        result = false;
+    }
     sb_free(&new_real_path);
     sb_free(&old_real_path);
     return result;
@@ -2448,7 +2471,7 @@ browser_real_path(BrowserScreen *screen, NcmStringView path,
         return false;
     }
     return ncm_fs_join(real_path, Config.mpd_music_dir,
-                       Config.mpd_music_dir_len, path.data, path.len);
+                       Config.mpd_music_dir_len, path.data, path.len) == 0;
 }
 
 static bool
@@ -2457,35 +2480,45 @@ browser_delete_path_recursive(char *path, int32 path_len,
     NcmFsDirectory directory;
     NcmFsEntry entry;
     NcmFsStat stat;
+    int32 read_status;
     bool result;
 
-    if (!ncm_fs_stat(path, path_len, &stat, ncm_error)) {
+    if (ncm_fs_stat(path, path_len, &stat, ncm_error) < 0) {
         return false;
     }
     if (!stat.exists) {
         return true;
     }
     if (stat.type != NCM_FS_ENTRY_DIRECTORY) {
-        return ncm_fs_unlink(path, path_len, ncm_error);
+        return ncm_fs_unlink(path, path_len, ncm_error) == 0;
     }
 
-    if (!ncm_fs_directory_open(&directory, path, path_len, ncm_error)) {
+    if (ncm_fs_directory_open(&directory, path, path_len, ncm_error) < 0) {
         return false;
     }
 
     result = true;
     ncm_fs_entry_init(&entry);
-    while (result && ncm_fs_directory_read(&directory, &entry, ncm_error)) {
+    while (result) {
         StrBuilder child = {0};
 
-        result = ncm_fs_join(&child, directory.path, directory.path_len,
-                             entry.name, entry.name_len)
-                 && browser_delete_path_recursive(
-                     child.data, child.len, ncm_error);
+        read_status = ncm_fs_directory_read(&directory, &entry, ncm_error);
+        if (read_status < 0) {
+            result = false;
+            break;
+        }
+        if (read_status == 0) {
+            break;
+        }
+
+        if (ncm_fs_join(&child, directory.path, directory.path_len,
+                        entry.name, entry.name_len) < 0) {
+            result = false;
+        } else {
+            result = browser_delete_path_recursive(
+                child.data, child.len, ncm_error);
+        }
         sb_free(&child);
-    }
-    if (ncm_error_is_set(ncm_error)) {
-        result = false;
     }
     ncm_fs_entry_destroy(&entry);
     ncm_fs_directory_close(&directory);
