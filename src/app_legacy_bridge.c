@@ -375,7 +375,7 @@ ncmpcpp_execute_binding(NcmBinding *binding) {
 
 bool
 ncmpcpp_execute_action(enum NcmActionType type) {
-    return ncm_action_runtime_run(NULL, type);
+    return ncm_action_runtime_run(NULL, type) == 0;
 }
 
 bool
