@@ -1839,7 +1839,6 @@ playlist_editor_update_from_mpd(PlaylistEditorScreen *screen,
                                 NcmMpdClient *client) {
     NcmError ncm_error;
     bool changed;
-    bool ok;
 
     ASSERT(screen != NULL);
 
@@ -1847,9 +1846,8 @@ playlist_editor_update_from_mpd(PlaylistEditorScreen *screen,
     ncm_error_clear(&ncm_error);
     if (screen->playlists_update_requested
         || nc_menu_empty(nc_playlist_entry_menu_base(&screen->playlists))) {
-        ok = playlist_editor_screen_reload_playlists_from_mpd(
-            screen, client, &ncm_error);
-        if (!ok) {
+        if (!playlist_editor_screen_reload_playlists_from_mpd(screen, client,
+                                                              &ncm_error)) {
             screen->playlists_update_requested = false;
             playlist_editor_report_error(
                 STRLIT("Could not fetch playlists"), &ncm_error);
@@ -1867,9 +1865,8 @@ playlist_editor_update_from_mpd(PlaylistEditorScreen *screen,
     }
 
     ncm_error_clear(&ncm_error);
-    ok = playlist_editor_screen_reload_content_from_mpd(screen, client,
-                                                       &ncm_error);
-    if (!ok) {
+    if (!playlist_editor_screen_reload_content_from_mpd(screen, client,
+                                                        &ncm_error)) {
         screen->content_update_requested = false;
         playlist_editor_report_error(
             STRLIT("Could not fetch playlist content"), &ncm_error);
