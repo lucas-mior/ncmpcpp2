@@ -858,7 +858,7 @@ adder_add_to_current_playlist(
 
 static void
 adder_song_album_view(NcmSong *song, NcmStringView *album) {
-    if (!ncm_song_tag_view(song, MPD_TAG_ALBUM, 0, album)) {
+    if (!ncm_song_has_tag_view(song, MPD_TAG_ALBUM, 0, album)) {
         ncm_string_view_set(album, "", 0);
     }
     return;

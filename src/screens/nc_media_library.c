@@ -1132,7 +1132,7 @@ library_song_first_tag(NcmSong *song, enum mpd_tag_type tag,
     if (view) {
         *view = (NcmStringView){0};
     }
-    return ncm_song_tag_view(song, tag, 0, view);
+    return ncm_song_has_tag_view(song, tag, 0, view);
 }
 
 static bool
@@ -1182,7 +1182,7 @@ library_add_two_column_albums(
     }
 
     for (int32 i = 0;
-         ncm_song_tag_view(song, primary_tag, i, &primary_value);
+         ncm_song_has_tag_view(song, primary_tag, i, &primary_value);
          i += 1) {
         char *tag;
         int32 tag_len;
@@ -1266,7 +1266,7 @@ media_library_tags_from_songs(
             return false;
         }
         for (int32 j = 0;
-             ncm_song_tag_view(song, primary_tag, j, &primary_value);
+             ncm_song_has_tag_view(song, primary_tag, j, &primary_value);
              j += 1) {
             int32 existing;
 
@@ -2773,7 +2773,7 @@ library_locate_song_requirements(NcmSong *song,
                       STRLIT("missing locate-song argument"));
         return false;
     }
-    if (!ncm_song_tag_view(song, Config.media_lib_primary_tag,
+    if (!ncm_song_has_tag_view(song, Config.media_lib_primary_tag,
                            0, primary_value)
         || (primary_value->len <= 0)) {
         ncm_error_set(ncm_error, EINVAL,
