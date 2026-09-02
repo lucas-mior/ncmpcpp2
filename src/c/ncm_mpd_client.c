@@ -154,7 +154,7 @@ ncm_mpd_client_hostname(NcmMpdClient *client) {
 }
 
 bool
-ncm_mpd_client_connected(NcmMpdClient *client) {
+ncm_mpd_client_is_connected(NcmMpdClient *client) {
     if (client == NULL) {
         return false;
     }
@@ -263,7 +263,7 @@ ncm_mpd_client_set_timeout_ms(NcmMpdClient *client,
     }
 
     client->timeout_ms = timeout_ms;
-    if (ncm_mpd_client_connected(client)) {
+    if (ncm_mpd_client_is_connected(client)) {
         NCM_CLIENT_TRY_MPD(
             client,
             ncm_mpd_connection_set_timeout(&client->connection, timeout_ms),
@@ -388,12 +388,12 @@ ncm_mpd_client_server_error_code(NcmMpdClient *client) {
 }
 
 bool
-ncm_mpd_client_error_clearable(NcmMpdClient *client) {
+ncm_mpd_client_error_is_clearable(NcmMpdClient *client) {
     if (client == NULL) {
         return false;
     }
 
-    return ncm_mpd_connection_error_clearable(&client->connection);
+    return ncm_mpd_connection_error_is_clearable(&client->connection);
 }
 
 char *

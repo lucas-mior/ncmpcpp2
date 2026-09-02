@@ -264,12 +264,12 @@ tiny_tag_editor_screen_open_song(
     } else {
         (void)ncm_taglib_file_audio_properties(&file, &properties);
     }
-    if (screen->hooks.taglib_extended_set_supported) {
+    if (screen->hooks.taglib_file_can_set_extended_tags) {
         extended_tags_supported =
-            screen->hooks.taglib_extended_set_supported(
+            screen->hooks.taglib_file_can_set_extended_tags(
                 screen->hooks.user, &file);
     } else {
-        extended_tags_supported = ncm_taglib_extended_set_supported(&file);
+        extended_tags_supported = ncm_taglib_file_can_set_extended_tags(&file);
     }
 
     rows_loaded = tiny_tag_editor_screen_reload_rows(

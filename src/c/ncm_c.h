@@ -985,7 +985,7 @@ enum mpd_error ncm_mpd_connection_error_code(
     NcmMpdConnection *connection);
 enum mpd_server_error ncm_mpd_connection_server_error_code(
     NcmMpdConnection *connection);
-bool ncm_mpd_connection_error_clearable(NcmMpdConnection *connection);
+bool ncm_mpd_connection_error_is_clearable(NcmMpdConnection *connection);
 int32 ncm_mpd_connection_get_stats(NcmMpdConnection *connection,
                                   NcmMpdStats *stats);
 int32 ncm_mpd_connection_get_status(NcmMpdConnection *connection,
@@ -1190,7 +1190,7 @@ typedef struct NcmMpdClient {
 void ncm_mpd_client_init(NcmMpdClient *client);
 void ncm_mpd_client_destroy(NcmMpdClient *client);
 char *ncm_mpd_client_hostname(NcmMpdClient *client);
-bool ncm_mpd_client_connected(NcmMpdClient *client);
+bool ncm_mpd_client_is_connected(NcmMpdClient *client);
 int32 ncm_mpd_client_version(NcmMpdClient *client);
 int32 ncm_mpd_client_fd(NcmMpdClient *client);
 void ncm_mpd_client_set_noidle_callback(NcmMpdClient *client,
@@ -1214,7 +1214,7 @@ int32 ncm_mpd_client_noidle(NcmMpdClient *client, int32 *flags,
 enum mpd_error ncm_mpd_client_error_code(NcmMpdClient *client);
 enum mpd_server_error ncm_mpd_client_server_error_code(
     NcmMpdClient *client);
-bool ncm_mpd_client_error_clearable(NcmMpdClient *client);
+bool ncm_mpd_client_error_is_clearable(NcmMpdClient *client);
 char *ncm_mpd_client_error_message(NcmMpdClient *client);
 
 int32 ncm_mpd_client_get_stats(NcmMpdClient *client, NcmMpdStats *stats,
@@ -1793,7 +1793,7 @@ int32 ncm_taglib_read_property(NcmTaglibFile *file, char *property,
 int32 ncm_taglib_clear_property(NcmTaglibFile *file, char *property);
 int32 ncm_taglib_append_property(NcmTaglibFile *file, char *property,
                                  char *value);
-bool ncm_taglib_extended_set_supported(NcmTaglibFile *file);
+bool ncm_taglib_file_can_set_extended_tags(NcmTaglibFile *file);
 void ncm_taglib_clear_strings(void);
 
 #include "curses/nc_curses.h"

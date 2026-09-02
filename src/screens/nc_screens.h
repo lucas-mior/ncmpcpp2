@@ -2241,7 +2241,7 @@ typedef struct TinyTagEditorHooks {
     int32 (*taglib_audio_properties)(
         void *user, NcmTaglibFile *file,
         NcmTaglibAudioProperties *properties);
-    bool (*taglib_extended_set_supported)(void *user, NcmTaglibFile *file);
+    bool (*taglib_file_can_set_extended_tags)(void *user, NcmTaglibFile *file);
     void (*taglib_close)(void *user, NcmTaglibFile *file);
     int32 (*write_song)(void *user, NcmMutableSong *song, char *music_dir);
     void (*update_directory)(void *user, char *directory,
