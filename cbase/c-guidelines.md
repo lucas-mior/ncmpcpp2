@@ -62,6 +62,9 @@ not input validation: they simply assert (with the assertions of
 - If a boolean variable is used in a very hot loop, `int32` may be preferable.
 - Do not confuse booleans with bits in bit flags. Use `#define BITFLAGS 1` in
   `xenums.c` for up to 32 related flags that occupy 1 bit each.
+- Never cast from `void *pointer` to other pointer typer, let it cast
+  implicitly. This is not stupid C++. This also means: never cast the result of
+  malloc2 and realloc2, etc.
 - When casting to a smaller integer type, or when casting double to integer, or
   double to float, and we are not sure if it fits, check first using the `MAXOF`
   macro:
