@@ -13,15 +13,16 @@ return negative because the input was already validated are always checked,
 which adds lots of unnecessary `if (status < 0)` in the code. As explained in
 detail in cbase/c-guidelines.md, only the external API of each module does input
 validation. If a utility function like `sb_set` might return negative because we
-passed NULL pointers to it, does not mean that we need to check it, because the
-pointers should have been validated at a higher level in the code. Also, some
-functions are made to return int32 only to conform because some lower level
-function that they call returns int32. But again, this is only needed if an
-error is expected. Most internal functions should never fail. Make them return
-void in that case (or the result if they need to return some data). Also, some
-functions need to checked for errors in *some* calls, while not in others. You
-need to know which calls have to be checked by the context. It is okay to assume
-stuff sometimes (add assertions if you are not 100% sure).
+passed NULL pointers to it or pass zero or negative lengths, does not mean that
+we need to check it, because the pointers and lengths should have been validated
+at a higher level in the code. Also, some functions are made to return int32
+only to conform because some lower level function that they call returns int32.
+But again, this is only needed if an error is expected. Most internal functions
+should never fail. Make them return void in that case (or the result if they
+need to return some data). Also, some functions need to checked for errors in
+*some* calls, while not in others. You need to know which calls have to be
+checked by the context. It is okay to assume stuff sometimes (add assertions if
+you are not 100% sure).
 
 Identify instances of the anti-patterns above (excessive NULL pointer checking
 and excessive error checking).  Remove all the instances of this anti-pattern.
