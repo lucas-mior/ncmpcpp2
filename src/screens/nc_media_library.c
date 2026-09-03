@@ -129,15 +129,6 @@ library_mpd_list_tags(void *user, enum mpd_tag_type tag_type,
     return ncm_mpd_client_get_list(client, tag_type, tags, ncm_error);
 }
 
-static void
-library_free_owned_string(char **data, int32 *len, int32 *cap) {
-    free2(*data, *cap);
-    *data = NULL;
-    *len = 0;
-    *cap = 0;
-    return;
-}
-
 static int32
 library_set_owned_string(char **dest, int32 *dest_len,
                          int32 *dest_cap, char *source,
@@ -152,7 +143,12 @@ library_set_owned_string(char **dest, int32 *dest_len,
     if ((source_len < 0) || ((source == NULL) && (source_len > 0))) {
         return -EINVAL;
     }
-    library_free_owned_string(dest, dest_len, dest_cap);
+
+    free2(*dest, *dest_cap);
+    *dest = NULL;
+    *dest_len = 0;
+    *dest_cap = 0;
+
     if (source_len == 0) {
         return 0;
     }
