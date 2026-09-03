@@ -134,11 +134,6 @@ static void app_screen_switch_to(NcScreen *screen);
 static void app_screen_toggle_or_switch_to(NcScreen *screen);
 static NcBorder no_border(void);
 static int32 app_register_screen(NcScreen *screen);
-static TagEditorHooks tag_editor_hooks(void);
-static NcHelpHooks help_hooks(void);
-static NcOutputsHooks outputs_hooks(void);
-static NcServerInfoHooks server_info_hooks(void);
-static NcSongInfoHooks song_info_hooks(void);
 static void show_long_time(NcBuffer *buffer, int32 seconds);
 
 #define NCM_APP_SCREEN_DEFINE_DIRECT_ACCESSOR( \
@@ -274,26 +269,6 @@ app_screen_browser_fetch_supported_extensions(void) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     ncm_error.message);
     }
-    return;
-}
-
-void
-app_screen_help_init(void) {
-    if (help_screen.initialized) {
-        return;
-    }
-
-    nc_help_screen_init(&help_screen.screen,
-                        help_hooks(),
-                        0,
-                        ui_state_screen_width(),
-                        ui_state_main_start_y(),
-                        ui_state_main_height(),
-                        Config.main_color,
-                        no_border(),
-                        Config.lines_scrolled);
-    help_screen.initialized = true;
-    (void)nc_help_screen_reload(&help_screen.screen);
     return;
 }
 
@@ -746,26 +721,6 @@ app_screen_media_library_init(void) {
     return;
 }
 
-void
-app_screen_tag_editor_init(void) {
-    TagEditorHooks hooks;
-
-    if (tag_editor_screen_initialized) {
-        return;
-    }
-
-    tag_editor_screen_init(&tag_editor_screen, 0,
-                           ui_state_screen_width(),
-                           ui_state_main_start_y(),
-                           ui_state_main_height(),
-                           Config.main_color,
-                           no_border());
-    hooks = tag_editor_hooks();
-    tag_editor_screen_set_hooks(&tag_editor_screen, hooks);
-    tag_editor_screen_initialized = true;
-    return;
-}
-
 static bool
 statusbar_prompt_should_continue(char *text, void *user) {
     (void)user;
@@ -919,15 +874,27 @@ tag_editor_hook_update_directory(
     return;
 }
 
-static TagEditorHooks
-tag_editor_hooks(void) {
+void
+app_screen_tag_editor_init(void) {
     TagEditorHooks hooks = {0};
 
+    if (tag_editor_screen_initialized) {
+        return;
+    }
+
+    tag_editor_screen_init(&tag_editor_screen, 0,
+                           ui_state_screen_width(),
+                           ui_state_main_start_y(),
+                           ui_state_main_height(),
+                           Config.main_color,
+                           no_border());
     hooks.prompt = tag_editor_hook_prompt;
     hooks.confirm = tag_editor_hook_confirm;
     hooks.status_message = tag_editor_hook_status_message;
     hooks.update_directory = tag_editor_hook_update_directory;
-    return hooks;
+    tag_editor_screen_set_hooks(&tag_editor_screen, hooks);
+    tag_editor_screen_initialized = true;
+    return;
 }
 
 static enum TinyTagEditorPromptResult
@@ -1016,79 +983,6 @@ app_screen_tiny_tag_editor_init(void) {
     tiny_tag_editor_screen_set_hooks(
         &tiny_tag_editor_screen, hooks);
     tiny_tag_editor_screen_initialized = true;
-    return;
-}
-
-void
-app_screen_song_info_init(void) {
-    if (song_info_screen.initialized) {
-        return;
-    }
-
-    song_info_screen.song = (NcmSong){0};
-    nc_song_info_screen_init(&song_info_screen.screen,
-                             song_info_hooks(),
-                             0,
-                             ui_state_screen_width(),
-                             ui_state_main_start_y(),
-                             ui_state_main_height(),
-                             Config.main_color,
-                             no_border(),
-                             Config.lines_scrolled);
-    song_info_screen.initialized = true;
-    return;
-}
-
-void
-app_screen_server_info_init(void) {
-    if (server_info_screen.initialized) {
-        return;
-    }
-
-    server_info_screen.url_handlers = (NcmMpdStringList){0};
-    server_info_screen.tag_types = (NcmMpdStringList){0};
-    nc_server_info_screen_init(&server_info_screen.screen,
-                               server_info_hooks(),
-                               ui_state_screen_width(),
-                               ui_state_screen_height(),
-                               ui_state_main_start_y(),
-                               ui_state_main_height(),
-                               Config.main_color,
-                               Config.window_border);
-    server_info_screen.initialized = true;
-    return;
-}
-
-void
-app_screen_outputs_init(void) {
-#if defined(ENABLE_OUTPUTS)
-    NcBuffer prefix;
-    NcBuffer suffix;
-
-    if (outputs_screen.initialized) {
-        return;
-    }
-
-    nc_outputs_screen_init(&outputs_screen.screen,
-                           outputs_hooks(),
-                           0,
-                           ui_state_screen_width(),
-                           ui_state_main_start_y(),
-                           ui_state_main_height(),
-                           Config.main_color,
-                           Config.window_border,
-                           Config.lines_scrolled,
-                           Config.mouse_list_scroll_whole_page);
-    prefix = (NcBuffer){0};
-    suffix = (NcBuffer){0};
-    nc_buffer_copy(&prefix, &Config.current_item_prefix);
-    nc_buffer_copy(&suffix, &Config.current_item_suffix);
-    nc_outputs_screen_set_highlight_prefix(&outputs_screen.screen, &prefix);
-    nc_outputs_screen_set_highlight_suffix(&outputs_screen.screen, &suffix);
-    nc_buffer_destroy(&prefix);
-    nc_buffer_destroy(&suffix);
-    outputs_screen.initialized = true;
-#endif
     return;
 }
 
@@ -1377,22 +1271,13 @@ append_song_key_value(NcBuffer *buffer, char *key,
     return;
 }
 
-static int32
-format_action_key_name(NcKey key, char *buffer, int32 buffer_cap) {
-    int32 len;
-
-    len = ncm_bindings_key_name(key, buffer, buffer_cap);
-    if (len < 0) {
-        return 0;
-    }
-    return len;
-}
-
 static void
-append_action_keys(NcBuffer *buffer, enum NcmActionType type) {
+append_help_line(NcBuffer *buffer, enum NcmActionType type,
+                 char *description) {
     int32 column_start;
     int32 width;
 
+    append_cstring(buffer, "    ");
     column_start = nc_buffer_len(buffer);
     width = 0;
     for (int32 i = 0; i < Bindings.keys_len; i += 1) {
@@ -1408,7 +1293,7 @@ append_action_keys(NcBuffer *buffer, enum NcmActionType type) {
             if (!ncm_binding_is_single_action_type(binding, type)) {
                 continue;
             }
-            key_len = format_action_key_name(
+            key_len = ncm_bindings_key_name(
                 key_bindings->key, key_name, SIZEOF(key_name));
             if (key_len <= 0) {
                 continue;
@@ -1424,14 +1309,6 @@ append_action_keys(NcBuffer *buffer, enum NcmActionType type) {
     while ((nc_buffer_len(buffer) - column_start) < 20) {
         nc_buffer_append_char(buffer, ' ');
     }
-    return;
-}
-
-static void
-append_help_line(NcBuffer *buffer, enum NcmActionType type,
-                 char *description) {
-    append_cstring(buffer, "    ");
-    append_action_keys(buffer, type);
     append_cstring(buffer, " : ");
     append_cstring(buffer, description);
     append_cstring(buffer, "\n");
@@ -1540,16 +1417,31 @@ help_destroy(void *user) {
     return;
 }
 
-static NcHelpHooks
-help_hooks(void) {
+void
+app_screen_help_init(void) {
     NcHelpHooks hooks = {0};
+
+    if (help_screen.initialized) {
+        return;
+    }
 
     hooks.render = help_render;
     hooks.switch_to = help_switch_to;
     hooks.resize_layout = help_resize;
     hooks.destroy = help_destroy;
     hooks.user = &help_screen;
-    return hooks;
+    nc_help_screen_init(&help_screen.screen,
+                        hooks,
+                        0,
+                        ui_state_screen_width(),
+                        ui_state_main_start_y(),
+                        ui_state_main_height(),
+                        Config.main_color,
+                        no_border(),
+                        Config.lines_scrolled);
+    help_screen.initialized = true;
+    (void)nc_help_screen_reload(&help_screen.screen);
+    return;
 }
 
 static void
@@ -1681,9 +1573,16 @@ outputs_destroy(void *user) {
     return;
 }
 
-static NcOutputsHooks
-outputs_hooks(void) {
+void
+app_screen_outputs_init(void) {
+#if defined(ENABLE_OUTPUTS)
     NcOutputsHooks hooks = {0};
+    NcBuffer prefix;
+    NcBuffer suffix;
+
+    if (outputs_screen.initialized) {
+        return;
+    }
 
     hooks.fetch_outputs = outputs_fetch;
     hooks.toggle_output = outputs_toggle;
@@ -1691,8 +1590,27 @@ outputs_hooks(void) {
     hooks.resize_layout = outputs_resize;
     hooks.destroy = outputs_destroy;
     hooks.user = &outputs_screen;
-
-    return hooks;
+    nc_outputs_screen_init(&outputs_screen.screen,
+                           hooks,
+                           0,
+                           ui_state_screen_width(),
+                           ui_state_main_start_y(),
+                           ui_state_main_height(),
+                           Config.main_color,
+                           Config.window_border,
+                           Config.lines_scrolled,
+                           Config.mouse_list_scroll_whole_page);
+    prefix = (NcBuffer){0};
+    suffix = (NcBuffer){0};
+    nc_buffer_copy(&prefix, &Config.current_item_prefix);
+    nc_buffer_copy(&suffix, &Config.current_item_suffix);
+    nc_outputs_screen_set_highlight_prefix(&outputs_screen.screen, &prefix);
+    nc_outputs_screen_set_highlight_suffix(&outputs_screen.screen, &suffix);
+    nc_buffer_destroy(&prefix);
+    nc_buffer_destroy(&suffix);
+    outputs_screen.initialized = true;
+#endif
+    return;
 }
 
 static void
@@ -1828,9 +1746,13 @@ server_info_destroy(void *user) {
     return;
 }
 
-static NcServerInfoHooks
-server_info_hooks(void) {
+void
+app_screen_server_info_init(void) {
     NcServerInfoHooks hooks = {0};
+
+    if (server_info_screen.initialized) {
+        return;
+    }
 
     hooks.load_lists = server_info_load_lists;
     hooks.render = server_info_render;
@@ -1839,7 +1761,18 @@ server_info_hooks(void) {
     hooks.title = server_info_title;
     hooks.destroy = server_info_destroy;
     hooks.user = &server_info_screen;
-    return hooks;
+    server_info_screen.url_handlers = (NcmMpdStringList){0};
+    server_info_screen.tag_types = (NcmMpdStringList){0};
+    nc_server_info_screen_init(&server_info_screen.screen,
+                               hooks,
+                               ui_state_screen_width(),
+                               ui_state_screen_height(),
+                               ui_state_main_start_y(),
+                               ui_state_main_height(),
+                               Config.main_color,
+                               Config.window_border);
+    server_info_screen.initialized = true;
+    return;
 }
 
 static int32
@@ -1946,16 +1879,31 @@ song_info_destroy(void *user) {
     return;
 }
 
-static NcSongInfoHooks
-song_info_hooks(void) {
+void
+app_screen_song_info_init(void) {
     NcSongInfoHooks hooks = {0};
+
+    if (song_info_screen.initialized) {
+        return;
+    }
 
     hooks.render = song_info_render;
     hooks.switch_to = song_info_switch_to;
     hooks.resize_layout = song_info_resize;
     hooks.destroy = song_info_destroy;
     hooks.user = &song_info_screen;
-    return hooks;
+    song_info_screen.song = (NcmSong){0};
+    nc_song_info_screen_init(&song_info_screen.screen,
+                             hooks,
+                             0,
+                             ui_state_screen_width(),
+                             ui_state_main_start_y(),
+                             ui_state_main_height(),
+                             Config.main_color,
+                             no_border(),
+                             Config.lines_scrolled);
+    song_info_screen.initialized = true;
+    return;
 }
 
 static void

@@ -7,14 +7,6 @@
 
 #include "c/ncm_c.h"
 
-typedef struct NcmCurlResponseWriter {
-    StrBuilder *buffer;
-} NcmCurlResponseWriter;
-
-void ncm_curl_response_writer_init(NcmCurlResponseWriter *writer,
-                                   StrBuilder *buffer);
-void ncm_curl_response_writer_destroy(NcmCurlResponseWriter *writer);
-
 int32 ncm_curl_perform(StrBuilder *data, char *url, int32 url_len,
                        char *referer, int32 referer_len,
                        bool follow_redirect, int32 timeout_seconds);
