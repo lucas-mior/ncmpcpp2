@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static void library_restart_update_timer(MediaLibraryScreen *screen);
 static bool library_tag_identity_is_equal(NcMediaLibraryTagRow *left, NcMediaLibraryTagRow *right);
 
 static char *
@@ -2550,6 +2549,12 @@ library_album_identity_is_equal(NcMediaLibraryAlbumRow *left,
                        right->date, right->date_len);
 }
 
+static void
+library_restart_update_timer(MediaLibraryScreen *screen) {
+    screen->update_timer = global_timer;
+    return;
+}
+
 void
 media_library_screen_finish_list_change(
     MediaLibraryScreen *screen
@@ -3148,12 +3153,6 @@ library_tag_identity_is_equal(NcMediaLibraryTagRow *left,
         return left == right;
     }
     return STREQUAL(left->tag, left->tag_len, right->tag, right->tag_len);
-}
-
-static void
-library_restart_update_timer(MediaLibraryScreen *screen) {
-    screen->update_timer = global_timer;
-    return;
 }
 
 static bool
