@@ -91,9 +91,7 @@ playlist_editor_update_titles(PlaylistEditorScreen *screen,
 }
 
 static void
-playlist_editor_update_menu_highlights(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_update_menu_highlights(PlaylistEditorScreen *screen) {
     NcMenu *playlists;
     NcMenu *content;
     NcMenu *active;
@@ -104,14 +102,14 @@ playlist_editor_update_menu_highlights(
     playlists = nc_playlist_entry_menu_base(&screen->playlists);
     content = nc_song_menu_base(&screen->content);
 
-    nc_menu_set_highlight_prefix(
-        playlists, &Config.current_item_inactive_column_prefix);
-    nc_menu_set_highlight_suffix(
-        playlists, &Config.current_item_inactive_column_suffix);
-    nc_menu_set_highlight_prefix(
-        content, &Config.current_item_inactive_column_prefix);
-    nc_menu_set_highlight_suffix(
-        content, &Config.current_item_inactive_column_suffix);
+    nc_menu_set_highlight_prefix(playlists,
+                                 &Config.current_item_inactive_column_prefix);
+    nc_menu_set_highlight_suffix(playlists,
+                                 &Config.current_item_inactive_column_suffix);
+    nc_menu_set_highlight_prefix(content,
+                                 &Config.current_item_inactive_column_prefix);
+    nc_menu_set_highlight_suffix(content,
+                                 &Config.current_item_inactive_column_suffix);
 
     active = playlist_editor_screen_active_menu(screen);
     nc_menu_set_highlight_prefix(active, &Config.current_item_prefix);
@@ -2046,20 +2044,5 @@ content_draw_callback(NcMenu *menu, NcWindow *window, void *item,
     nc_buffer_destroy(&buffer);
     return;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #endif /* NCMPCPP_NC_PLAYLIST_EDITOR_C */
