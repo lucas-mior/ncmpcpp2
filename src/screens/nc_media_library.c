@@ -1909,9 +1909,8 @@ library_reset_observed_highlights(
 }
 
 int32
-media_library_screen_set_primary_tag_type(
-    MediaLibraryScreen *screen, enum mpd_tag_type tag_type
-) {
+media_library_screen_set_primary_tag_type(MediaLibraryScreen *screen,
+                                          enum mpd_tag_type tag_type) {
     if ((screen == NULL) || (tag_type == MPD_TAG_UNKNOWN)) {
         return -EINVAL;
     }
