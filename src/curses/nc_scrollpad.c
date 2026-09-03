@@ -107,21 +107,6 @@ nc_scrollpad_scroll(NcScrollpad *scrollpad, NcWindow *window,
 }
 
 void
-nc_scrollpad_prepare_flush(NcScrollpad *scrollpad, NcWindow *window,
-                           int32 generated_height) {
-    scrollpad->real_height = generated_height;
-    if (scrollpad->real_height < window->height) {
-        scrollpad->real_height = window->height;
-    }
-    if (scrollpad->real_height > window->height) {
-        nc_window_recreate(window, window->width, scrollpad->real_height);
-    } else {
-        werase(window->window);
-    }
-    return;
-}
-
-void
 nc_scrollpad_flush(NcScrollpad *scrollpad, NcWindow *window,
                    NcBuffer *buffer) {
     NcScrollpadWriteState state;
@@ -135,7 +120,15 @@ nc_scrollpad_flush(NcScrollpad *scrollpad, NcWindow *window,
     state.property_count = nc_buffer_property_count(buffer);
 
     height = nc_scrollpad_write_buffer(&state, true);
-    nc_scrollpad_prepare_flush(scrollpad, window, height);
+    scrollpad->real_height = height;
+    if (scrollpad->real_height < window->height) {
+        scrollpad->real_height = window->height;
+    }
+    if (scrollpad->real_height > window->height) {
+        nc_window_recreate(window, window->width, scrollpad->real_height);
+    } else {
+        werase(window->window);
+    }
 
     state.i = 0;
     state.property_index = 0;
@@ -227,18 +220,6 @@ nc_scrollpad_buffer_position_row(NcBuffer *buffer, int32 width,
     return row;
 }
 
-int32
-nc_scrollpad_buffer_height(NcBuffer *buffer, int32 width) {
-    int32 len;
-
-    if ((buffer == NULL) || (width <= 0)) {
-        return 1;
-    }
-
-    len = nc_buffer_len(buffer);
-    return nc_scrollpad_buffer_position_row(buffer, width, len) + 1;
-}
-
 void
 nc_scrollpad_center_on_buffer_position(
     NcScrollpad *scrollpad,
@@ -259,7 +240,8 @@ nc_scrollpad_center_on_buffer_position(
     }
 
     row = nc_scrollpad_buffer_position_row(buffer, window->width, position);
-    height = nc_scrollpad_buffer_height(buffer, window->width);
+    height = nc_scrollpad_buffer_position_row(buffer, window->width,
+                                              nc_buffer_len(buffer)) + 1;
     if (height < window->height) {
         height = window->height;
     }
@@ -310,21 +292,6 @@ nc_scrollpad_load_properties(NcScrollpadWriteState *state) {
 }
 
 static void
-nc_scrollpad_write_whitespace(NcScrollpadWriteState *state) {
-    char *data;
-    int32 len;
-
-    data = nc_buffer_data(state->buffer);
-    len = nc_buffer_len(state->buffer);
-    while ((state->i < len) && nc_scrollpad_is_space(data[state->i])) {
-        nc_scrollpad_load_properties(state);
-        nc_window_print_char(state->window, data[state->i]);
-        state->i += 1;
-    }
-    return;
-}
-
-static void
 nc_scrollpad_write_word(NcScrollpadWriteState *state,
                         bool load_properties) {
     char *data;
@@ -345,6 +312,7 @@ nc_scrollpad_write_word(NcScrollpadWriteState *state,
 static int32
 nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
                           bool generate_height_only) {
+    char *data = nc_buffer_data(state->buffer);
     int32 new_y;
     int32 x;
     int32 y;
@@ -360,7 +328,11 @@ nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
     y = nc_window_get_y(state->window);
 
     while (state->i < len) {
-        nc_scrollpad_write_whitespace(state);
+        while ((state->i < len) && nc_scrollpad_is_space(data[state->i])) {
+            nc_scrollpad_load_properties(state);
+            nc_window_print_char(state->window, data[state->i]);
+            state->i += 1;
+        }
 
         if (generate_height_only) {
             new_y = nc_window_get_y(state->window);

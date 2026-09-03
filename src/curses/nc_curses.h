@@ -442,13 +442,7 @@ void nc_menu_set_selected_suffix(NcMenu *menu, NcBuffer *buffer);
 void nc_menu_set_highlighting(NcMenu *menu, bool state);
 void nc_menu_set_cyclic_scrolling(NcMenu *menu, bool state);
 void nc_menu_set_centered_cursor(NcMenu *menu, bool state);
-int32 nc_menu_goto(
-    NcMenu *menu, int32 y,
-    NcMenuPositionIsHighlightableFunc *is_highlightable, void *user
-);
 int32 nc_menu_goto_selectable(NcMenu *menu, int32 y);
-int32 nc_menu_goto_selectable_position(NcMenu *menu, int32 pos,
-                                       int32 height);
 int32 nc_menu_search_selectable(NcMenu *menu, int32 height, bool forward,
                                 bool wrap, bool skip_current,
                                 NcMenuPositionMatchesFunc *matches, void *user,
@@ -478,10 +472,8 @@ int32 nc_menu_replace_item(NcMenu *menu, enum NcMenuItemSource source,
                            int32 pos, void *item);
 void nc_menu_clear_items(NcMenu *menu);
 void nc_menu_clear_filtered_items(NcMenu *menu);
-void nc_menu_add_filtered_item_ref(NcMenu *menu, void *item);
 void nc_menu_apply_filter(NcMenu *menu);
 void nc_menu_show_all_items(NcMenu *menu);
-void nc_menu_show_filtered_items(NcMenu *menu);
 bool nc_menu_is_filtered(NcMenu *menu);
 bool nc_menu_is_empty(NcMenu *menu);
 bool nc_menu_position_is_selectable(NcMenu *menu, int32 pos);
@@ -489,15 +481,12 @@ bool nc_menu_position_is_separator(NcMenu *menu, int32 pos);
 bool nc_menu_position_is_inactive(NcMenu *menu, int32 pos);
 bool nc_menu_position_is_selected(NcMenu *menu, int32 pos);
 int32 nc_menu_set_position_selected(NcMenu *menu, int32 pos, bool selected);
-int32 nc_menu_toggle_position_selected(NcMenu *menu, int32 pos);
 void nc_menu_clear_selection(NcMenu *menu);
 bool nc_menu_has_selected(NcMenu *menu);
 int32 nc_menu_selected_count(NcMenu *menu);
-int32 nc_menu_first_selected_position(NcMenu *menu);
 bool nc_menu_current_is_selectable(NcMenu *menu);
 int32 nc_menu_set_current_selected(NcMenu *menu, bool selected);
 int32 nc_menu_toggle_current_selected(NcMenu *menu);
-int32 nc_menu_activate_position(NcMenu *menu, int32 pos);
 int32 nc_menu_activate_current(NcMenu *menu);
 uint32 nc_menu_item_flags_at(NcMenu *menu, enum NcMenuItemSource source,
                              int32 pos);
@@ -521,14 +510,11 @@ void nc_scrollpad_resize(NcScrollpad *scrollpad, NcWindow *window,
                          int32 new_width, int32 new_height);
 void nc_scrollpad_scroll(NcScrollpad *scrollpad, NcWindow *window,
                          enum NcScroll where);
-void nc_scrollpad_prepare_flush(NcScrollpad *scrollpad, NcWindow *window,
-                                int32 generated_height);
 void nc_scrollpad_flush(NcScrollpad *scrollpad, NcWindow *window,
                         NcBuffer *buffer);
 int32 nc_scrollpad_max_beginning(NcScrollpad *scrollpad, NcWindow *window);
 int32 nc_scrollpad_buffer_position_row(NcBuffer *buffer, int32 width,
                                        int32 position);
-int32 nc_scrollpad_buffer_height(NcBuffer *buffer, int32 width);
 void nc_scrollpad_center_on_buffer_position(NcScrollpad *scrollpad,
                                             NcWindow *window,
                                             NcBuffer *buffer,

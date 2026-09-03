@@ -829,8 +829,6 @@ typedef struct NcmRegex {
 } NcmRegex;
 
 void ncm_regex_destroy(NcmRegex *regex);
-void ncm_regex_escape_literal(StrBuilder *buffer,
-                              char *pattern, int32 pattern_len);
 int32 ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
                         uint32 flags, NcmError *ncm_error);
 bool ncm_regex_matches(NcmRegex *regex, char *string, int32 string_len);
@@ -1539,7 +1537,6 @@ int32 ncm_job_queue_start(NcmJobQueue *queue, NcmError *ncm_error);
 int32 ncm_job_queue_push(NcmJobQueue *queue, NcmJob job,
                          NcmError *ncm_error);
 int32 ncm_job_queue_dispatch_completed(NcmJobQueue *queue);
-void ncm_job_queue_stop(NcmJobQueue *queue);
 void ncm_job_queue_destroy(NcmJobQueue *queue);
 int32 ncm_job_queue_pending_count(NcmJobQueue *queue);
 int32 ncm_job_queue_completed_count(NcmJobQueue *queue);
