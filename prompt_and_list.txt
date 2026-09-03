@@ -1,9 +1,9 @@
 The source code in src/ is at paranoia levels of NULL pointer checking.  For
 instance, lots of functions check if (screen == NULL), but they are called
 internally, *after* the external API of its module has already validated input.
-Your job is: Read the first $file.c on the list below.  Inline the body of
+Your job is: Consider the first $file.c on the list below.  Inline the body of
 functions that are defined in it but only called once and only ever called on
-the same $file.c and then delete those function definitions, since they are no
+the same $file.c; then delete those function definitions, since they are no
 longer needed.  Then re-read the guidelines in cbase/c-guidelines.md; then
 identify instances of the anti-pattern of looking for NULL in internal functions
 of the first $file.c in the list below.  Remove all the instances of this
