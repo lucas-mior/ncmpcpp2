@@ -1941,9 +1941,7 @@ media_library_screen_request_database_update(
 }
 
 int32
-media_library_screen_refresh_inactive_songs(
-    MediaLibraryScreen *screen
-) {
+media_library_screen_refresh_inactive_songs(MediaLibraryScreen *screen) {
     if (screen == NULL) {
         return -EINVAL;
     }
