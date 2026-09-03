@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static bool library_has_pending_songs(MediaLibraryScreen *screen);
 static int32 library_replace_tags(MediaLibraryScreen *screen, MediaLibraryTagArray *tags);
 static void library_restore_tag_identity(NcMediaLibraryTagMenu *menu, NcMediaLibraryTagRow *identity, bool identity_valid, int32 fallback);
 static void library_tag_array_item_destroy(void *item);
@@ -2805,6 +2804,19 @@ library_update_songs(MediaLibraryScreen *screen,
     return status;
 }
 
+static bool
+library_has_pending_songs(MediaLibraryScreen *screen) {
+    NcMenu *songs;
+
+    if ((screen == NULL)
+        || (media_library_screen_current_album(screen) == NULL)) {
+        return false;
+    }
+    songs = nc_media_library_song_menu_base(&screen->songs);
+    return screen->songs_update_request
+           || (nc_menu_all_item_count(songs) <= 0);
+}
+
 int32
 media_library_screen_update(MediaLibraryScreen *screen,
                             NcmError *ncm_error) {
@@ -3143,19 +3155,6 @@ library_has_pending_tags(MediaLibraryScreen *screen) {
     tags = nc_media_library_tag_menu_base(&screen->tags);
     return screen->tags_update_request
            || (nc_menu_all_item_count(tags) <= 0);
-}
-
-static bool
-library_has_pending_songs(MediaLibraryScreen *screen) {
-    NcMenu *songs;
-
-    if ((screen == NULL)
-        || (media_library_screen_current_album(screen) == NULL)) {
-        return false;
-    }
-    songs = nc_media_library_song_menu_base(&screen->songs);
-    return screen->songs_update_request
-           || (nc_menu_all_item_count(songs) <= 0);
 }
 
 static bool
