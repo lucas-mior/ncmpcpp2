@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static bool library_has_fetch_delay_elapsed(MediaLibraryScreen *screen);
 static int32 library_update_tags(MediaLibraryScreen *screen, NcmError *ncm_error);
 static void library_album_array_item_init(void *item);
 static int32 library_update_albums(MediaLibraryScreen *screen, NcmError *ncm_error);
@@ -2824,6 +2823,16 @@ library_has_pending_tags(MediaLibraryScreen *screen) {
            || (nc_menu_all_item_count(tags) <= 0);
 }
 
+static bool
+library_has_fetch_delay_elapsed(MediaLibraryScreen *screen) {
+    ASSERT(screen != NULL);
+    if (screen->fetching_delay_ms < 0) {
+        return true;
+    }
+    return global_timer_elapsed_ms(screen->update_timer)
+           > screen->fetching_delay_ms;
+}
+
 int32
 media_library_screen_update(MediaLibraryScreen *screen,
                             NcmError *ncm_error) {
@@ -3148,16 +3157,6 @@ static void
 library_restart_update_timer(MediaLibraryScreen *screen) {
     screen->update_timer = global_timer;
     return;
-}
-
-static bool
-library_has_fetch_delay_elapsed(MediaLibraryScreen *screen) {
-    ASSERT(screen != NULL);
-    if (screen->fetching_delay_ms < 0) {
-        return true;
-    }
-    return global_timer_elapsed_ms(screen->update_timer)
-           > screen->fetching_delay_ms;
 }
 
 static bool
