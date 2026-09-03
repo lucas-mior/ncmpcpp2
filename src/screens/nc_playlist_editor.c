@@ -826,9 +826,7 @@ playlist_editor_screen_reload_content_from_mpd(PlaylistEditorScreen *screen,
 }
 
 static void
-playlist_editor_clear_playlist_filter(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_clear_playlist_filter(PlaylistEditorScreen *screen) {
     StrBuilder path = {0};
     int32 has_path;
 
@@ -849,16 +847,14 @@ playlist_editor_clear_playlist_filter(
 }
 
 static void
-playlist_editor_clear_content_filter(
-    PlaylistEditorScreen *screen
-) {
-    NcmSong song;
+playlist_editor_clear_content_filter(PlaylistEditorScreen *screen) {
+    NcmSong song = {0};
     int32 has_song;
 
     if (screen == NULL) {
         return;
     }
-    song = (NcmSong){0};
+
     has_song = playlist_editor_store_current_song(screen, &song);
     screen->content_filter_enabled = false;
     sb_clear(&screen->content_filter_constraint);
