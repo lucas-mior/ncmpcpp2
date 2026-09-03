@@ -859,8 +859,7 @@ browser_supported_extensions_contains(StrBuilderArray *extensions,
         StrBuilder *item;
 
         item = &extensions->items[i];
-        if (STREQUAL(item->data, item->len, extension,
-                     extension_len)) {
+        if (STREQUAL(item->data, item->len, extension, extension_len)) {
             return true;
         }
     }
@@ -1738,8 +1737,7 @@ browser_screen_rename_current_directory(
         screen, &old_path, ncm_error)) < 0) {
         return status;
     }
-    if (STREQUAL(old_path.data, old_path.len,
-                 new_path, new_path_len)) {
+    if (STREQUAL(old_path.data, old_path.len, new_path, new_path_len)) {
         return ncm_error_ok(ncm_error);
     }
 
@@ -1813,8 +1811,7 @@ browser_screen_rename_current_playlist(
         screen, &old_path, ncm_error)) < 0) {
         return status;
     }
-    if (STREQUAL(old_path.data, old_path.len,
-                 new_path, new_path_len)) {
+    if (STREQUAL(old_path.data, old_path.len, new_path, new_path_len)) {
         return ncm_error_ok(ncm_error);
     }
 
