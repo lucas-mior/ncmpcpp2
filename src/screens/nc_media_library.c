@@ -3671,6 +3671,7 @@ library_query_from_album(MediaLibraryScreen *screen,
                          MediaLibrarySongQuery *query) {
     ASSERT(screen != NULL);
     ASSERT(album != NULL);
+
     query->primary_tag = Config.media_lib_primary_tag;
     if (screen->mode != MEDIA_LIBRARY_MODE_ALBUM_ONLY) {
         query->primary_value = album->tag;
