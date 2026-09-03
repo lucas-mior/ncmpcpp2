@@ -21,7 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static bool browser_position_matches_search(NcMenu *, int32, void *);
 static bool browser_directory_is_root(char *, int32 );
 static bool browser_path_is_parent_directory(char *, int32 );
 static int32 browser_set_normalized_directory(BrowserScreen *, char *, int32 );
