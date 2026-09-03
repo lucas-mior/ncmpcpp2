@@ -189,8 +189,7 @@ browser_set_parent_of_directory(BrowserScreen *screen,
 
 static int32
 browser_set_normalized_directory(BrowserScreen *screen,
-                                 char *directory,
-                                 int32 directory_len) {
+                                 char *directory, int32 directory_len) {
     ASSERT(screen != NULL);
     if (directory_len < 0) {
         return -EINVAL;
@@ -372,8 +371,9 @@ browser_screen_init(BrowserScreen *screen,
                     int32 main_start_y, int32 main_height,
                     NcColor color, NcBorder border) {
     nc_browser_entry_menu_init(&screen->entries);
-    nc_window_init(&screen->window, start_x, main_start_y, width,
-                   main_height, NULL, 0, color, border);
+    nc_window_init(&screen->window,
+                   start_x, main_start_y, width, main_height,
+                   NULL, 0, color, border);
 
     screen->current_directory = (StrBuilder){0};
     screen->last_highlighted_directory = (StrBuilder){0};
@@ -1714,10 +1714,10 @@ browser_screen_can_rename_playlist(
 }
 
 int32
-browser_screen_rename_current_directory(
-    BrowserScreen *screen, char *new_path, int32 new_path_len,
-    NcmMpdClient *client, NcmError *ncm_error
-) {
+browser_screen_rename_current_directory(BrowserScreen *screen,
+                                        char *new_path, int32 new_path_len,
+                                        NcmMpdClient *client,
+                                        NcmError *ncm_error) {
     NcmStringView old_path;
     NcmStringView new_path_view;
     int32 status;
@@ -1816,9 +1816,7 @@ browser_screen_rename_current_playlist(
 }
 
 static int32
-browser_add_parent_directory_item(
-    BrowserScreen *screen
-) {
+browser_add_parent_directory_item(BrowserScreen *screen) {
     NcmDirectory directory;
     NcmMpdItem item;
     int32 status;
@@ -1849,8 +1847,7 @@ browser_add_parent_directory_item(
 }
 
 static int32
-browser_load_mpd_items(BrowserScreen *screen,
-                       NcmMpdItemArray *items) {
+browser_load_mpd_items(BrowserScreen *screen, NcmMpdItemArray *items) {
     NcMenu *menu;
     int32 status;
 
@@ -1887,8 +1884,7 @@ browser_load_mpd_items(BrowserScreen *screen,
 }
 
 static int32
-browser_reload_from_local(BrowserScreen *screen,
-                          NcmError *ncm_error) {
+browser_reload_from_local(BrowserScreen *screen, NcmError *ncm_error) {
     NcmFsDirectory directory = {0};
     NcmFsEntry entry = {0};
     NcMenu *menu;
@@ -2444,9 +2440,7 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 }
 
 static int32
-browser_locate_last_directory(
-    BrowserScreen *screen
-) {
+browser_locate_last_directory(BrowserScreen *screen) {
     NcmStringView target;
     NcmStringView path;
     NcMenu *menu;
