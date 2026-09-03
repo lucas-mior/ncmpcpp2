@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static void library_free_owned_string(char **data, int32 *len, int32 *cap);
 static int32 library_mpd_list_tags(void *user, enum mpd_tag_type tag_type, NcmMpdStringList *tags, NcmError *ncm_error);
 static int32 library_mpd_list_all_songs(void *user, NcmMpdSongList *songs, NcmError *ncm_error);
 static int32 library_mpd_search_songs(void *user, MediaLibrarySongQuery *query, NcmMpdSongList *songs, NcmError *ncm_error);
@@ -57,6 +56,15 @@ static bool library_has_pending_albums(MediaLibraryScreen *screen);
 static bool library_has_pending_songs(MediaLibraryScreen *screen);
 static bool library_has_fetch_delay_elapsed(MediaLibraryScreen *screen);
 static bool library_search_position(NcMenu *menu, int32 pos, void *user);
+
+static void
+library_free_owned_string(char **data, int32 *len, int32 *cap) {
+    free2(*data, *cap);
+    *data = NULL;
+    *len = 0;
+    *cap = 0;
+    return;
+}
 
 static int32
 library_set_owned_string(char **dest, int32 *dest_len,
@@ -4064,15 +4072,6 @@ library_update(NcScreen *screen) {
 static void
 library_destroy_callback(NcScreen *screen) {
     media_library_screen_destroy(library_from_screen(screen));
-    return;
-}
-
-static void
-library_free_owned_string(char **data, int32 *len, int32 *cap) {
-    free2(*data, *cap);
-    *data = NULL;
-    *len = 0;
-    *cap = 0;
     return;
 }
 
