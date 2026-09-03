@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static void library_reset_observed_highlights(MediaLibraryScreen *screen);
 static void library_set_observed_album(MediaLibraryScreen *screen, NcMediaLibraryAlbumRow *album);
 static void library_album_array_item_destroy(void *item);
 static int32 library_replace_songs(MediaLibraryScreen *screen, NcmSongArray *songs);
@@ -1899,6 +1898,15 @@ media_library_screen_toggle_sort_mode(
     return 0;
 }
 
+static void
+library_reset_observed_highlights(
+    MediaLibraryScreen *screen
+) {
+    library_set_observed_tag(screen, NULL);
+    library_set_observed_album(screen, NULL);
+    return;
+}
+
 int32
 media_library_screen_set_primary_tag_type(
     MediaLibraryScreen *screen, enum mpd_tag_type tag_type
@@ -3121,15 +3129,6 @@ library_set_observed_album(MediaLibraryScreen *screen,
         screen->observed_album_valid = nc_media_library_album_row_copy(
             &screen->observed_album, album) >= 0;
     }
-    return;
-}
-
-static void
-library_reset_observed_highlights(
-    MediaLibraryScreen *screen
-) {
-    library_set_observed_tag(screen, NULL);
-    library_set_observed_album(screen, NULL);
     return;
 }
 
