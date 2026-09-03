@@ -3801,15 +3801,12 @@ library_collect_album_songs(
 }
 
 static int32
-library_collect_visible_song_rows(
-    MediaLibraryScreen *screen, NcmSongArray *songs
-) {
-    NcMenu *menu;
-    bool any_selected;
+library_collect_visible_song_rows(MediaLibraryScreen *screen,
+                                  NcmSongArray *songs) {
+    NcMenu *menu = nc_media_library_song_menu_base(&screen->songs);
+    bool any_selected = nc_menu_has_selected(menu);
     int32 status;
 
-    menu = nc_media_library_song_menu_base(&screen->songs);
-    any_selected = nc_menu_has_selected(menu);
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         if (any_selected && !nc_menu_position_is_selected(menu, i)) {
             continue;
