@@ -113,10 +113,6 @@ tiny_tag_editor_screen_init(
 
 void
 tiny_tag_editor_screen_destroy(TinyTagEditorScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
-
     (void)app_controller_unregister_screen(
         tiny_tag_editor_screen_base(screen));
     ncm_mutable_song_destroy(&screen->edited);
@@ -158,10 +154,6 @@ tiny_tag_editor_screen_set_geometry(
     TinyTagEditorScreen *screen, int32 start_x, int32 width,
     int32 main_start_y, int32 main_height
 ) {
-    if (screen == NULL) {
-        return;
-    }
-
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;
@@ -180,9 +172,6 @@ tiny_tag_editor_screen_set_edited_song(
     NcmMutableSong edited;
     int32 status;
 
-    if ((screen == NULL) || (song == NULL)) {
-        return -EINVAL;
-    }
     if (ncm_song_is_stream(song)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
@@ -304,8 +293,7 @@ tiny_tag_editor_screen_reload_rows(
     int32 duration_len;
     int32 status;
 
-    if ((screen == NULL) || (tag_separator_len < 0)
-        || ((tag_separator == NULL) && (tag_separator_len > 0))) {
+    if (tag_separator_len < 0) {
         return -EINVAL;
     }
     if (!screen->has_edited) {
@@ -475,9 +463,6 @@ tiny_tag_editor_screen_set_tag_value(
     TinyTagEditorScreen *screen, enum NcmTagsField field,
     char *value, int32 value_len, char *separator, int32 separator_len
 ) {
-    if (screen == NULL) {
-        return -EINVAL;
-    }
     if (!screen->has_edited) {
         return -NCM_ERROR_UNAVAILABLE;
     }
@@ -489,9 +474,6 @@ int32
 tiny_tag_editor_screen_set_filename(
     TinyTagEditorScreen *screen, char *name, int32 name_len
 ) {
-    if (screen == NULL) {
-        return -EINVAL;
-    }
     if (!screen->has_edited) {
         return -NCM_ERROR_UNAVAILABLE;
     }
@@ -507,7 +489,7 @@ tiny_tag_editor_screen_set_filename_stem(
     int32 dot;
     int32 status;
 
-    if ((screen == NULL) || (stem == NULL) || (stem_len <= 0)) {
+    if (stem_len <= 0) {
         return -EINVAL;
     }
     if (!screen->has_edited) {
@@ -689,9 +671,6 @@ int32
 tiny_tag_editor_screen_run_current(
     TinyTagEditorScreen *screen
 ) {
-    if (screen == NULL) {
-        return -EINVAL;
-    }
     if (!tiny_tag_editor_screen_action_runnable(screen)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
@@ -706,7 +685,7 @@ tiny_tag_editor_screen_action_runnable(
     NcMenu *menu;
     int32 row;
 
-    if ((screen == NULL) || !screen->has_edited) {
+    if (!screen->has_edited) {
         return false;
     }
     menu = nc_editor_buffer_menu_base(&screen->rows);
@@ -839,9 +818,6 @@ tiny_editor_draw_row(NcMenu *menu, NcWindow *window, void *item,
     (void)pos;
     (void)user;
     buffer = item;
-    if ((window == NULL) || (buffer == NULL)) {
-        return;
-    }
     tiny_editor_print_buffer(window, buffer);
     return;
 }
@@ -872,9 +848,6 @@ tiny_editor_print_buffer(NcWindow *window, NcBuffer *buffer) {
 static int32
 tiny_editor_add_row(TinyTagEditorScreen *screen, NcBuffer *buffer,
                     uint32 flags) {
-    if ((screen == NULL) || (buffer == NULL)) {
-        return -EINVAL;
-    }
     nc_editor_buffer_menu_add_with_flags(&screen->rows, buffer, flags);
     return 0;
 }
@@ -888,8 +861,7 @@ static void
 tiny_editor_status_message(
     TinyTagEditorScreen *screen, char *message, int32 message_len
 ) {
-    if (screen->hooks.status_message && message
-        && (message_len >= 0)) {
+    if (screen->hooks.status_message) {
         screen->hooks.status_message(screen->hooks.user, message,
                                      message_len);
     }
@@ -1000,7 +972,7 @@ tiny_editor_buffer_key_value(NcBuffer *buffer, char *key, int32 key_len,
                              char *value, int32 value_len) {
     nc_buffer_append_data(buffer, key, key_len);
     nc_buffer_append_data(buffer, STRLIT(": "));
-    if (value && (value_len > 0)) {
+    if (value_len > 0) {
         nc_buffer_append_data(buffer, value, value_len);
     }
     return;
