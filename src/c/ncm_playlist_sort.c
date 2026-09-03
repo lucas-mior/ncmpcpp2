@@ -279,8 +279,9 @@ ncm_playlist_sort_plan_execute(NcmPlaylistSortPlan *plan,
         started = true;
     }
     for (int32 i = 0; (status == 0) && (i < plan->len); i += 1) {
-        status = ncm_mpd_client_swap(client, plan->items[i].from,
-                                     plan->items[i].to, ncm_error);
+        status = ncm_mpd_client_swap(client,
+                                     plan->items[i].from, plan->items[i].to,
+                                     ncm_error);
     }
     if (status == 0) {
         status = ncm_mpd_client_commit_command_list(client, ncm_error);
