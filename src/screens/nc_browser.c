@@ -21,7 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static void browser_install_menu_callbacks(BrowserScreen *screen);
 static void browser_draw_item(NcMenu *menu, NcWindow *window, void *item, int32 pos, void *user);
 static void browser_mouse_scroll(BrowserScreen *screen, enum NcScroll where);
 static bool browser_item_matches_filter(NcMenu *menu, void *item, void *user);
@@ -78,6 +77,34 @@ typedef struct BrowserSearchContext {
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
+
+static void
+browser_install_menu_callbacks(BrowserScreen *screen) {
+    NcMenuDisplayCallbacks display_callbacks = {0};
+    NcMenuActionCallbacks action_callbacks = {0};
+    NcMenu *menu;
+
+    ASSERT(screen != NULL);
+    menu = browser_screen_menu(screen);
+
+    display_callbacks.draw = browser_draw_item;
+    display_callbacks.matches_filter = browser_item_matches_filter;
+    display_callbacks.user = screen;
+    nc_menu_set_display_callbacks(menu, display_callbacks);
+
+    action_callbacks.activate = browser_activate_item;
+    action_callbacks.set_selected = browser_set_item_selected;
+    action_callbacks.user = screen;
+    nc_menu_set_action_callbacks(menu, action_callbacks);
+
+    nc_menu_set_highlight_prefix(menu, &Config.current_item_prefix);
+    nc_menu_set_highlight_suffix(menu, &Config.current_item_suffix);
+    nc_menu_set_selected_prefix(menu, &Config.selected_item_prefix);
+    nc_menu_set_selected_suffix(menu, &Config.selected_item_suffix);
+    nc_menu_set_cyclic_scrolling(menu, Config.use_cyclic_scrolling);
+    nc_menu_set_centered_cursor(menu, Config.centered_cursor);
+    return;
+}
 
 void
 browser_screen_init(BrowserScreen *screen,
@@ -1426,34 +1453,6 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     return;
 }
 
-
-static void
-browser_install_menu_callbacks(BrowserScreen *screen) {
-    NcMenuDisplayCallbacks display_callbacks = {0};
-    NcMenuActionCallbacks action_callbacks = {0};
-    NcMenu *menu;
-
-    ASSERT(screen != NULL);
-    menu = browser_screen_menu(screen);
-
-    display_callbacks.draw = browser_draw_item;
-    display_callbacks.matches_filter = browser_item_matches_filter;
-    display_callbacks.user = screen;
-    nc_menu_set_display_callbacks(menu, display_callbacks);
-
-    action_callbacks.activate = browser_activate_item;
-    action_callbacks.set_selected = browser_set_item_selected;
-    action_callbacks.user = screen;
-    nc_menu_set_action_callbacks(menu, action_callbacks);
-
-    nc_menu_set_highlight_prefix(menu, &Config.current_item_prefix);
-    nc_menu_set_highlight_suffix(menu, &Config.current_item_suffix);
-    nc_menu_set_selected_prefix(menu, &Config.selected_item_prefix);
-    nc_menu_set_selected_suffix(menu, &Config.selected_item_suffix);
-    nc_menu_set_cyclic_scrolling(menu, Config.use_cyclic_scrolling);
-    nc_menu_set_centered_cursor(menu, Config.centered_cursor);
-    return;
-}
 
 static void
 browser_draw_item(NcMenu *menu, NcWindow *window,
