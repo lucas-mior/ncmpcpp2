@@ -1129,6 +1129,8 @@ ncm_mpd_client_get_directory_entries(NcmMpdClient *client, char *path,
         if (status < 0) {
             ncm_error_set_status(ncm_error, status,
                                  STRLIT("cannot copy MPD items"));
+        } else {
+            status = ncm_error_ok(ncm_error);
         }
     }
     ncm_mpd_item_list_destroy(&list);
@@ -1154,6 +1156,8 @@ ncm_mpd_client_get_directory_list(NcmMpdClient *client, char *path,
         if (status < 0) {
             ncm_error_set_status(ncm_error, status,
                                  STRLIT("cannot copy MPD directories"));
+        } else {
+            status = ncm_error_ok(ncm_error);
         }
     }
     ncm_mpd_item_list_destroy(&items);
