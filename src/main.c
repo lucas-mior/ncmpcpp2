@@ -254,7 +254,7 @@ main(int32 argc, char **argv) {
     app_create_windows();
 
     (void)global_timer_update(NULL);
-    (void)ncm_random_seed_from_time(&global_random, NULL);
+    rand_int_seed((uint64)global_timer.ns);
     app_apply_startup_screen();
 
     key_pressed = false;
