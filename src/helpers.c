@@ -155,8 +155,8 @@ ncm_menu_find_full_selected_range(NcMenu *menu, enum NcMenuItemSource source,
     int32 range_last;
     int32 status;
 
-    status = ncm_menu_find_selected_range(menu, source, &range_first,
-                                          &range_last);
+    status = ncm_menu_find_selected_range(menu, source,
+                                          &range_first, &range_last);
     if (status < 0) {
         return status;
     }
