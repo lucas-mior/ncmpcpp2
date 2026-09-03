@@ -1,0 +1,11 @@
+# Chronic problems in src/
+
+- Excessive NULL checking
+- Excessive error checking
+- Function creep: functions that do the same thing are redefined in different
+  modules
+- Functions that are never called (dead code)
+- Functions that are called only once and in the same module (should have its
+  body inlined and then deleted).
+- some unnecessary static function declarations at the top of the files
+  * functions definitions could be reordered to not need declarations at the top
