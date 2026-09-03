@@ -139,28 +139,33 @@ nc_outputs_screen_add_output(NcOutputsScreen *screen,
     return;
 }
 
-bool
+int32
 nc_outputs_screen_toggle_current(NcOutputsScreen *screen) {
     NcOutputsItem *output;
-    bool result;
+    int32 status;
 
+    if (screen == NULL) {
+        return -EINVAL;
+    }
     if ((output = nc_menu_current_item(&screen->menu)) == NULL) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
     if (screen->hooks.toggle_output == NULL) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
 
-    result = screen->hooks.toggle_output(screen->hooks.user,
+    status = screen->hooks.toggle_output(screen->hooks.user,
                                          output->id,
                                          output->enabled,
                                          output->name,
                                          output->name_len);
-    if (result) {
-        output->enabled = !output->enabled;
-        nc_outputs_refresh_window(nc_outputs_screen_base(screen));
+    if (status < 0) {
+        return status;
     }
-    return result;
+
+    output->enabled = !output->enabled;
+    nc_outputs_refresh_window(nc_outputs_screen_base(screen));
+    return 0;
 }
 
 static NcMenuItemCallbacks
@@ -240,7 +245,7 @@ nc_outputs_mouse_button_pressed(NcScreen *screen, MEVENT event) {
         || (event.bstate & BUTTON3_PRESSED)) {
         (void)nc_menu_goto_selectable(&outputs->menu, y);
         if (event.bstate & BUTTON3_PRESSED) {
-            nc_outputs_screen_toggle_current(outputs);
+            (void)nc_outputs_screen_toggle_current(outputs);
         }
     }
     return;

@@ -508,18 +508,18 @@ app_screen_sort_playlist_dialog_init(void) {
 bool
 app_screen_sort_playlist_dialog_switch_to(void) {
     NcmError ncm_error;
-    bool success;
+    int32 status;
 
     ncm_error_clear(&ncm_error);
-    success = sort_playlist_dialog_open(
+    status = sort_playlist_dialog_open(
         app_screen_sort_playlist_dialog(),
         app_screen_playlist(), &global_mpd,
         Config.ignore_leading_the, &ncm_error);
-    if (!success && ncm_error_is_set(&ncm_error)) {
+    if ((status < 0) && ncm_error_is_set(&ncm_error)) {
         ncm_statusbar_print_cstring(
             Config.message_delay_time, ncm_error.message);
     }
-    return success;
+    return status == 0;
 }
 
 static int32
@@ -1588,21 +1588,21 @@ outputs_fetch(void *user, NcOutputsScreen *screen) {
     return;
 }
 
-static bool
+static int32
 outputs_toggle(void *user, int32 id, bool enabled,
                char *name, int32 name_len) {
 #if defined(ENABLE_OUTPUTS)
     NcmError ncm_error;
-    bool ok;
+    int32 status;
 
     (void)user;
     ncm_error_clear(&ncm_error);
     if (enabled) {
-        ok = ncm_mpd_client_disable_output(&global_mpd, id, &ncm_error) == 0;
+        status = ncm_mpd_client_disable_output(&global_mpd, id, &ncm_error);
     } else {
-        ok = ncm_mpd_client_enable_output(&global_mpd, id, &ncm_error) == 0;
+        status = ncm_mpd_client_enable_output(&global_mpd, id, &ncm_error);
     }
-    if (!ok) {
+    if (status < 0) {
         NcmStringFormatArg args[2];
 
         args[0] = ncm_string_format_arg_string(name, name_len);
@@ -1611,7 +1611,7 @@ outputs_toggle(void *user, int32 id, bool enabled,
                              STRLIT("Could not toggle output %1: %2"),
                              args,
                              2);
-        return false;
+        return status;
     }
 
     if (enabled) {
@@ -1631,14 +1631,14 @@ outputs_toggle(void *user, int32 id, bool enabled,
                              &arg,
                              1);
     }
-    return true;
+    return 0;
 #else
     (void)user;
     (void)id;
     (void)enabled;
     (void)name;
     (void)name_len;
-    return false;
+    return -NCM_ERROR_UNAVAILABLE;
 #endif
 }
 

@@ -113,6 +113,7 @@ debug|test)
     ;;
 debug-fast)
     CFLAGS="$CFLAGS -g2 -O2 -flto"
+    CFLAGS="$CFLAGS -fsanitize=undefined"
     CPPFLAGS="$CPPFLAGS -DDEBUGGING=1"
     ;;
 build)

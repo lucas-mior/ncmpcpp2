@@ -6170,10 +6170,10 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
         return nc_screen_run_current(app_controller_current_screen()) == 0;
     case NCM_ACTION_MOVE_SORT_ORDER_UP:
         return sort_playlist_dialog_move_current_up(
-            app_screen_sort_playlist_dialog());
+            app_screen_sort_playlist_dialog()) == 0;
     case NCM_ACTION_MOVE_SORT_ORDER_DOWN:
         return sort_playlist_dialog_move_current_down(
-            app_screen_sort_playlist_dialog());
+            app_screen_sort_playlist_dialog()) == 0;
     case NCM_ACTION_MOVE_SELECTED_ITEMS_UP:
         return action_runtime_move_selected_items(false);
     case NCM_ACTION_MOVE_SELECTED_ITEMS_DOWN:
