@@ -2645,8 +2645,8 @@ library_apply_column_filter(
     ASSERT(state != NULL);
     ASSERT(menu != NULL);
 
-    callbacks = library_display_callbacks(
-        screen, column, state->filter_enabled);
+    callbacks = library_display_callbacks(screen, column,
+                                          state->filter_enabled);
     nc_menu_set_display_callbacks(menu, callbacks);
     if (state->filter_enabled) {
         nc_menu_apply_filter(menu);
