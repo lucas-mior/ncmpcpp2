@@ -602,7 +602,7 @@ lyrics_append_slug_profile(StrBuilder *buffer, LyricsSlugProfile profile,
         uint32 rune;
         int32 rune_len;
         char folded[2];
-        int32 folded_len;
+        int32 folded_len = 0;
 
         if (lyrics_ascii_alnum(string[i])) {
             if (pending_separator && wrote && !compact) {
