@@ -114,8 +114,7 @@ ncm_parse_int64(char *source, int32 source_len, int32 *out,
                                     STRLIT("missing conversion output"));
     }
 
-    status = ncm_conversion_copy_source(
-        &buffer, source, source_len, ncm_error);
+    status = ncm_conversion_copy_source(&buffer, source, source_len, ncm_error);
     if (status < 0) {
         sb_free(&buffer);
         return status;
@@ -184,8 +183,7 @@ ncm_parse_double(char *source, int32 source_len, double *out,
                                     STRLIT("missing conversion output"));
     }
 
-    status = ncm_conversion_copy_source(
-        &buffer, source, source_len, ncm_error);
+    status = ncm_conversion_copy_source(&buffer, source, source_len, ncm_error);
     if (status < 0) {
         sb_free(&buffer);
         return status;
