@@ -1050,12 +1050,10 @@ playlist_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 
 static bool
 playlist_song_matches_filter(NcMenu *menu, void *item, void *user) {
-    PlaylistScreen *screen;
+    PlaylistScreen *screen = user;
 
     (void)menu;
-    screen = user;
-    return playlist_song_matches(screen, item,
-                                 &screen->filter_regex);
+    return playlist_song_matches(screen, item, &screen->filter_regex);
 }
 
 static bool
