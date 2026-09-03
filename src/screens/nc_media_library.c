@@ -2514,9 +2514,7 @@ media_library_screen_request_albums_update(MediaLibraryScreen *screen) {
 }
 
 void
-media_library_screen_request_songs_update(
-    MediaLibraryScreen *screen
-) {
+media_library_screen_request_songs_update(MediaLibraryScreen *screen) {
     if (screen == NULL) {
         return;
     }
