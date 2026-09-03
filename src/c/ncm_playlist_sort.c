@@ -59,9 +59,8 @@ ncm_playlist_sort_compare(NcmPlaylistSortContext *context,
     int32 result;
 
     for (int32 i = 0; i < context->getters_len; i += 1) {
-        enum NcmSongGetter getter;
+        enum NcmSongGetter getter = context->getters[i];
 
-        getter = context->getters[i];
         if (getter == NCM_SONG_GETTER_NONE) {
             break;
         }
