@@ -3054,17 +3054,16 @@ lyrics_trim_view(char **data, int32 *len) {
 
 static void
 lyrics_trim_buffer(StrBuilder *buffer) {
-    char *text;
-    int32 text_len;
+    char *text = buffer->data;
+    int32 text_len = buffer->len;
     StrBuilder tmp = {0};
 
-    text = buffer->data;
-    text_len = buffer->len;
     lyrics_trim_view(&text, &text_len);
     SB_APPEND(&tmp, text, text_len);
     sb_clear(buffer);
     SB_APPEND(buffer, tmp.data, tmp.len);
     sb_free(&tmp);
+
     return;
 }
 
