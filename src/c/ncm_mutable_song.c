@@ -5,8 +5,6 @@
 
 #include "c/ncm_c.h"
 
-static void ncm_mutable_song_tag_init(NcmMutableSongTag *tag);
-
 static void
 ncm_mutable_song_free_string(char **string, int32 *string_len) {
     if (string == NULL) {
@@ -76,30 +74,6 @@ ncm_mutable_song_find_tag(NcmMutableSong *song, enum NcmTagsField field,
     return NULL;
 }
 
-static void
-ncm_mutable_song_grow_tags(NcmMutableSong *song) {
-    int32 new_cap;
-
-    ASSERT(song != NULL);
-    if (song->tags_len < song->tags_cap) {
-        return;
-    }
-
-    if (song->tags_cap <= 0) {
-        new_cap = 16;
-    } else {
-        new_cap = song->tags_cap*2;
-    }
-
-    song->tags = (NcmMutableSongTag *)realloc2(
-        song->tags, song->tags_cap, new_cap, SIZEOF(*song->tags));
-    for (int32 i = song->tags_cap; i < new_cap; i += 1) {
-        ncm_mutable_song_tag_init(&song->tags[i]);
-    }
-    song->tags_cap = new_cap;
-    return;
-}
-
 static NcmMutableSongTag *
 ncm_mutable_song_add_tag(NcmMutableSong *song, enum NcmTagsField field,
                          int32 idx) {
@@ -109,27 +83,38 @@ ncm_mutable_song_add_tag(NcmMutableSong *song, enum NcmTagsField field,
     if (idx < 0) {
         return NULL;
     }
-    ncm_mutable_song_grow_tags(song);
+    if (song->tags_len >= song->tags_cap) {
+        int32 new_cap;
+
+        if (song->tags_cap <= 0) {
+            new_cap = 16;
+        } else {
+            new_cap = song->tags_cap*2;
+        }
+
+        song->tags = (NcmMutableSongTag *)realloc2(
+            song->tags, song->tags_cap, new_cap, SIZEOF(*song->tags));
+        for (int32 i = song->tags_cap; i < new_cap; i += 1) {
+            NcmMutableSongTag *new_tag;
+
+            new_tag = &song->tags[i];
+            ASSERT(new_tag != NULL);
+            new_tag->original = NULL;
+            new_tag->value = NULL;
+            new_tag->original_len = 0;
+            new_tag->value_len = 0;
+            new_tag->idx = 0;
+            new_tag->field = NCM_TAGS_FIELD_COUNT;
+            new_tag->modified = false;
+        }
+        song->tags_cap = new_cap;
+    }
 
     tag = &song->tags[song->tags_len];
     song->tags_len += 1;
     tag->field = field;
     tag->idx = idx;
     return tag;
-}
-
-static void
-ncm_mutable_song_tag_init(NcmMutableSongTag *tag) {
-    ASSERT(tag != NULL);
-
-    tag->original = NULL;
-    tag->value = NULL;
-    tag->original_len = 0;
-    tag->value_len = 0;
-    tag->idx = 0;
-    tag->field = NCM_TAGS_FIELD_COUNT;
-    tag->modified = false;
-    return;
 }
 
 static void
@@ -142,29 +127,6 @@ ncm_mutable_song_tag_destroy(NcmMutableSongTag *tag) {
     tag->field = NCM_TAGS_FIELD_COUNT;
     tag->modified = false;
     return;
-}
-
-static int32
-ncm_mutable_song_tag_copy(NcmMutableSongTag *dest,
-                          NcmMutableSongTag *source) {
-    ASSERT(dest != NULL);
-    ASSERT(source != NULL);
-
-    ncm_mutable_song_tag_destroy(dest);
-    dest->field = source->field;
-    dest->idx = source->idx;
-    dest->modified = source->modified;
-    if (ncm_mutable_song_set_string(&dest->original, &dest->original_len,
-                                    source->original,
-                                    source->original_len) < 0) {
-        return -EINVAL;
-    }
-    if (ncm_mutable_song_set_string(&dest->value, &dest->value_len,
-                                    source->value, source->value_len) < 0) {
-        return -EINVAL;
-    }
-
-    return 0;
 }
 
 static bool
@@ -234,15 +196,32 @@ ncm_mutable_song_copy(NcmMutableSong *dest, NcmMutableSong *source) {
     copy.is_from_database = source->is_from_database;
 
     for (int32 i = 0; i < source->tags_len; i += 1) {
-        NcmMutableSongTag *tag = ncm_mutable_song_add_tag(&copy,
-                                                          source->tags[i].field,
-                                                          source->tags[i].idx);
+        NcmMutableSongTag *source_tag;
+        NcmMutableSongTag *tag;
 
+        source_tag = &source->tags[i];
+        tag = ncm_mutable_song_add_tag(&copy, source_tag->field,
+                                       source_tag->idx);
         if (tag == NULL) {
             ncm_mutable_song_destroy(&copy);
             return -EINVAL;
         }
-        if (ncm_mutable_song_tag_copy(tag, &source->tags[i]) < 0) {
+
+        ASSERT(tag != NULL);
+        ASSERT(source_tag != NULL);
+        ncm_mutable_song_tag_destroy(tag);
+        tag->field = source_tag->field;
+        tag->idx = source_tag->idx;
+        tag->modified = source_tag->modified;
+        if (ncm_mutable_song_set_string(&tag->original, &tag->original_len,
+                                        source_tag->original,
+                                        source_tag->original_len) < 0) {
+            ncm_mutable_song_destroy(&copy);
+            return -EINVAL;
+        }
+        if (ncm_mutable_song_set_string(&tag->value, &tag->value_len,
+                                        source_tag->value,
+                                        source_tag->value_len) < 0) {
             ncm_mutable_song_destroy(&copy);
             return -EINVAL;
         }

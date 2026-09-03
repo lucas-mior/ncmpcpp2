@@ -9,22 +9,6 @@
 #include "title.h"
 #include "ui_state.h"
 
-static char *
-title_current_screen_title(void) {
-    NcScreen *screen;
-    char *title;
-
-    if ((screen = app_controller_current_screen()) == NULL) {
-        return "";
-    }
-
-    if ((title = nc_screen_title(screen)) == NULL) {
-        return "";
-    }
-
-    return title;
-}
-
 static void
 title_apply_formatted_color(NcWindow *window, NcFormattedColor *color) {
     enum NcFormat *formats;
@@ -60,51 +44,6 @@ title_apply_formatted_color_end(NcWindow *window, NcFormattedColor *color) {
     for (int32 i = count - 1; i >= 0; i -= 1) {
         nc_window_apply_format(window, nc_format_reverse(formats[i]));
     }
-    return;
-}
-
-static void
-title_draw_classic(NcWindow *window, char *title, int32 title_len,
-                   NcFormattedColor *volume_color) {
-    int32 volume_x;
-
-    nc_window_go_to_xy(window, 0, 0);
-    nc_window_apply_term_manip(window, NC_TERM_CLEAR_TO_EOL);
-    nc_window_apply_format(window, NC_FORMAT_BOLD);
-    nc_window_print_data(window, title, title_len);
-    nc_window_apply_format(window, NC_FORMAT_NO_BOLD);
-
-    volume_x = nc_window_width(window) - global_volume_state_len();
-    if (volume_x < 0) {
-        volume_x = 0;
-    }
-    nc_window_go_to_xy(window, volume_x, 0);
-    title_apply_formatted_color(window, volume_color);
-    nc_window_print_data(window, global_volume_state_cstr(),
-                         global_volume_state_len());
-    title_apply_formatted_color_end(window, volume_color);
-    return;
-}
-
-static void
-title_draw_alternative(NcWindow *window, char *title, int32 title_len,
-                       NcFormattedColor *separator_color) {
-    int32 title_x;
-    int32 title_width;
-
-    nc_window_go_to_xy(window, 0, 3);
-    nc_window_apply_term_manip(window, NC_TERM_CLEAR_TO_EOL);
-    title_apply_formatted_color(window, separator_color);
-    mvwhline(nc_window_raw(window), 2, 0, 0, COLS);
-    mvwhline(nc_window_raw(window), 4, 0, 0, COLS);
-    title_apply_formatted_color_end(window, separator_color);
-
-    title_width = utf8_width(title, title_len);
-    title_x = (COLS - title_width) / 2;
-    nc_window_go_to_xy(window, title_x, 3);
-    nc_window_apply_format(window, NC_FORMAT_BOLD);
-    nc_window_print_data(window, title, title_len);
-    nc_window_apply_format(window, NC_FORMAT_NO_BOLD);
     return;
 }
 
@@ -157,12 +96,45 @@ ncm_title_draw_header_with_config(char *title, int32 title_len,
     }
 
     switch (design) {
-    case NCM_DESIGN_CLASSIC:
-        title_draw_classic(window, title, title_len, volume_color);
+    case NCM_DESIGN_CLASSIC: {
+        int32 volume_x;
+
+        nc_window_go_to_xy(window, 0, 0);
+        nc_window_apply_term_manip(window, NC_TERM_CLEAR_TO_EOL);
+        nc_window_apply_format(window, NC_FORMAT_BOLD);
+        nc_window_print_data(window, title, title_len);
+        nc_window_apply_format(window, NC_FORMAT_NO_BOLD);
+
+        volume_x = nc_window_width(window) - global_volume_state_len();
+        if (volume_x < 0) {
+            volume_x = 0;
+        }
+        nc_window_go_to_xy(window, volume_x, 0);
+        title_apply_formatted_color(window, volume_color);
+        nc_window_print_data(window, global_volume_state_cstr(),
+                             global_volume_state_len());
+        title_apply_formatted_color_end(window, volume_color);
         break;
-    case NCM_DESIGN_ALTERNATIVE:
-        title_draw_alternative(window, title, title_len, separator_color);
+    }
+    case NCM_DESIGN_ALTERNATIVE: {
+        int32 title_x;
+        int32 title_width;
+
+        nc_window_go_to_xy(window, 0, 3);
+        nc_window_apply_term_manip(window, NC_TERM_CLEAR_TO_EOL);
+        title_apply_formatted_color(window, separator_color);
+        mvwhline(nc_window_raw(window), 2, 0, 0, COLS);
+        mvwhline(nc_window_raw(window), 4, 0, 0, COLS);
+        title_apply_formatted_color_end(window, separator_color);
+
+        title_width = utf8_width(title, title_len);
+        title_x = (COLS - title_width) / 2;
+        nc_window_go_to_xy(window, title_x, 3);
+        nc_window_apply_format(window, NC_FORMAT_BOLD);
+        nc_window_print_data(window, title, title_len);
+        nc_window_apply_format(window, NC_FORMAT_NO_BOLD);
         break;
+    }
     case NCM_DESIGN_COUNT:
         break;
     default:
@@ -184,7 +156,15 @@ ncm_title_draw_header(char *title, int32 title_len) {
 
 void
 ncm_title_draw_current_header(void) {
-    char *title = title_current_screen_title();
+    NcScreen *screen;
+    char *title;
+
+    if ((screen = app_controller_current_screen()) == NULL) {
+        title = "";
+    } else if ((title = nc_screen_title(screen)) == NULL) {
+        title = "";
+    }
+
     ncm_title_draw_header(title, optional_strlen32(title));
     return;
 }
