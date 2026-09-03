@@ -1416,12 +1416,10 @@ library_compare_songs(NcmSong *left, NcmSong *right) {
         }
     }
 
-    left_text = ncm_format_render_string(
-        &Config.song_library_format, left);
-    right_text = ncm_format_render_string(
-        &Config.song_library_format, right);
-    result = library_compare_bytes(
-        left_text.data, left_text.len, right_text.data, right_text.len);
+    left_text = ncm_format_render_string(&Config.song_library_format, left);
+    right_text = ncm_format_render_string(&Config.song_library_format, right);
+    result = library_compare_bytes(left_text.data, left_text.len,
+                                   right_text.data, right_text.len);
     sb_free(&right_text);
     sb_free(&left_text);
     return result;
