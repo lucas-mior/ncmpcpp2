@@ -864,9 +864,7 @@ browser_screen_has_current_playlist_path(BrowserScreen *screen,
 }
 
 bool
-browser_screen_can_rename_directory(
-    BrowserScreen *screen
-) {
+browser_screen_can_rename_directory(BrowserScreen *screen) {
     NcmStringView path;
     NcmError ncm_error;
 
