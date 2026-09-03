@@ -3430,7 +3430,7 @@ library_move_to_song(MediaLibraryScreen *screen,
 static int32
 library_insert_locate_tag(MediaLibraryScreen *screen,
                           char *tag, int32 tag_len, time_t mtime) {
-    NcMediaLibraryTagRow row;
+    NcMediaLibraryTagRow row = {0};
     int32 status;
 
     if ((screen == NULL) || (tag_len < 0)
@@ -3438,7 +3438,6 @@ library_insert_locate_tag(MediaLibraryScreen *screen,
         return -EINVAL;
     }
 
-    row = (NcMediaLibraryTagRow){0};
     status = library_set_owned_string(&row.tag, &row.tag_len,
                                       &row.tag_cap, tag, tag_len);
     if (status == 0) {
