@@ -1604,6 +1604,20 @@ media_library_screen_selected_songs(
     return status;
 }
 
+static void
+library_query_from_tag(MediaLibraryScreen *screen,
+                       NcMediaLibraryTagRow *tag,
+                       MediaLibrarySongQuery *query) {
+    (void)screen;
+    query->primary_tag = Config.media_lib_primary_tag;
+    if (tag) {
+        query->primary_value = tag->tag;
+        query->primary_value_len = tag->tag_len;
+        query->match_primary_tag = true;
+    }
+    return;
+}
+
 static int32
 library_collect_tag_songs(MediaLibraryScreen *screen, NcmSongArray *songs,
                           NcmError *ncm_error) {
@@ -3695,20 +3709,6 @@ library_draw_song(NcMenu *menu, NcWindow *window,
     media_library_screen_format_song_row(user, item, &text);
     library_print_buffer(window, &text);
     nc_buffer_destroy(&text);
-    return;
-}
-
-static void
-library_query_from_tag(MediaLibraryScreen *screen,
-                       NcMediaLibraryTagRow *tag,
-                       MediaLibrarySongQuery *query) {
-    (void)screen;
-    query->primary_tag = Config.media_lib_primary_tag;
-    if (tag) {
-        query->primary_value = tag->tag;
-        query->primary_value_len = tag->tag_len;
-        query->match_primary_tag = true;
-    }
     return;
 }
 
