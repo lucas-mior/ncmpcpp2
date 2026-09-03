@@ -1061,7 +1061,6 @@ playlist_editor_screen_locate_song(PlaylistEditorScreen *screen,
                                    NcmError *ncm_error) {
     NcMenu *playlists;
     NcMenu *content;
-    NcmSong current_song;
     int32 playlist_pos;
     int32 song_pos;
     int32 found_pos;
@@ -1140,18 +1139,20 @@ playlist_editor_screen_locate_song(PlaylistEditorScreen *screen,
         return playlist_editor_show_screen(screen);
     }
 
-    current_song = (NcmSong){0};
-    status = playlist_editor_screen_current_content_song(
-        screen, &current_song);
-    if (status > 0) {
-        if (ncm_song_is_equal(&current_song, song)) {
-            ncm_song_destroy(&current_song);
-            screen->active_column = PLAYLIST_EDITOR_COLUMN_CONTENT;
-            playlist_editor_update_menu_highlights(screen);
-            return playlist_editor_show_screen(screen);
+    {
+        NcmSong current_song = {0};
+        status = playlist_editor_screen_current_content_song(screen,
+                                                             &current_song);
+        if (status > 0) {
+            if (ncm_song_is_equal(&current_song, song)) {
+                ncm_song_destroy(&current_song);
+                screen->active_column = PLAYLIST_EDITOR_COLUMN_CONTENT;
+                playlist_editor_update_menu_highlights(screen);
+                return playlist_editor_show_screen(screen);
+            }
         }
+        ncm_song_destroy(&current_song);
     }
-    ncm_song_destroy(&current_song);
     if (status < 0) {
         return ncm_error_set_status(
             ncm_error, status, STRLIT("could not copy current song"));
