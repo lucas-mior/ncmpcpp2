@@ -21,7 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static int32 browser_set_parent_of_directory(BrowserScreen *, char *, int32 );
 static int32 browser_load_mpd_items(BrowserScreen *, NcmMpdItemArray *);
 static int32 browser_reload_from_local(BrowserScreen *, NcmError *);
 static int32 browser_stat_local_path(char *, int32, NcmFsStat *, NcmError *);
@@ -166,6 +165,31 @@ browser_path_is_parent_directory(char *directory,
         return true;
     }
     return ENDS_WITH(directory, directory_len, "/..");
+}
+
+static int32
+browser_set_parent_of_directory(BrowserScreen *screen,
+                                char *directory,
+                                int32 directory_len) {
+    int32 parent_len;
+
+    ASSERT(screen != NULL);
+    if (directory_len < 0) {
+        return -EINVAL;
+    }
+    if ((directory == NULL) && (directory_len > 0)) {
+        return -EINVAL;
+    }
+    if (browser_directory_is_root(directory, directory_len)) {
+        return -ENOENT;
+    }
+
+    parent_len = ncm_string_parent_directory_len(directory, directory_len);
+    if (parent_len <= 0) {
+        return browser_screen_set_current_directory(screen, STRLIT("/"));
+    }
+    return browser_screen_set_current_directory(
+        screen, directory, parent_len);
 }
 
 static int32
@@ -1997,31 +2021,6 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
         }
     }
     return;
-}
-
-static int32
-browser_set_parent_of_directory(BrowserScreen *screen,
-                                char *directory,
-                                int32 directory_len) {
-    int32 parent_len;
-
-    ASSERT(screen != NULL);
-    if (directory_len < 0) {
-        return -EINVAL;
-    }
-    if ((directory == NULL) && (directory_len > 0)) {
-        return -EINVAL;
-    }
-    if (browser_directory_is_root(directory, directory_len)) {
-        return -ENOENT;
-    }
-
-    parent_len = ncm_string_parent_directory_len(directory, directory_len);
-    if (parent_len <= 0) {
-        return browser_screen_set_current_directory(screen, STRLIT("/"));
-    }
-    return browser_screen_set_current_directory(
-        screen, directory, parent_len);
 }
 
 static int32
