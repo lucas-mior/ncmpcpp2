@@ -889,8 +889,8 @@ playlist_editor_screen_locate_playlist(
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing playlist"));
     }
-    status = playlist_editor_screen_reload_playlists_from_mpd(
-        screen, client, ncm_error);
+    status = playlist_editor_screen_reload_playlists_from_mpd(screen, client,
+                                                              ncm_error);
     if (status < 0) {
         return status;
     }
@@ -922,8 +922,8 @@ playlist_editor_screen_locate_playlist(
     playlist_editor_update_menu_highlights(screen);
     playlist_editor_clear_content_filter(screen);
     playlist_editor_clear_stale_content(screen);
-    status = playlist_editor_screen_reload_content_from_mpd(
-        screen, client, ncm_error);
+    status = playlist_editor_screen_reload_content_from_mpd(screen, client,
+                                                            ncm_error);
     if (status < 0) {
         return status;
     }
@@ -959,9 +959,8 @@ playlist_editor_find_song_in_content_range(
 }
 
 static int32
-playlist_editor_highlight_content_position(
-    PlaylistEditorScreen *screen, int32 pos
-) {
+playlist_editor_highlight_content_position(PlaylistEditorScreen *screen,
+                                           int32 pos) {
     NcMenu *menu;
 
     if (screen == NULL) {
@@ -1226,8 +1225,7 @@ append_content_item_from_source(PlaylistEditorScreen *screen,
     if ((screen == NULL) || (songs == NULL)) {
         return -EINVAL;
     }
-    song = nc_menu_item_at(nc_song_menu_base(&screen->content),
-                           source, pos);
+    song = nc_menu_item_at(nc_song_menu_base(&screen->content), source, pos);
     if (song == NULL) {
         return -ENOENT;
     }
