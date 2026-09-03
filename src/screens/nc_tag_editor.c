@@ -54,9 +54,6 @@ static void tag_editor_destroy_callback(NcScreen *screen);
 static void tag_editor_mouse_callback(NcScreen *, MEVENT);
 
 // declarations to delete
-static int32 tag_editor_compile_constraint(NcmRegex *, char *, int32, uint32, NcmError *);
-static bool tag_editor_tag_matches_regex(TagEditorScreen *, NcmMutableSong *, NcmRegex *);
-static bool tag_editor_mouse_move_to_parser_focus(TagEditorScreen *, enum TagEditorFocus);
 static NcMenuDisplayCallbacks tag_editor_directory_display_callbacks( TagEditorScreen *);
 static NcMenuDisplayCallbacks tag_editor_tag_type_display_callbacks( TagEditorScreen *);
 static int32 tag_editor_copy_selected_song_at(TagEditorScreen *, NcmSongArray *, int32);
@@ -1485,6 +1482,25 @@ tag_editor_screen_save_action_available(TagEditorScreen *screen) {
     return screen->active_focus == TAG_EDITOR_FOCUS_TAG_TYPES;
 }
 
+static int32
+tag_editor_compile_constraint(NcmRegex *regex, char *pattern,
+                               int32 pattern_len, uint32 regex_flags,
+                               NcmError *ncm_error) {
+    NcmRegex compiled;
+    int32 status;
+
+    ASSERT(regex != NULL);
+    compiled = (NcmRegex){0};
+    if ((status = ncm_regex_compile(&compiled, pattern, pattern_len,
+                                    regex_flags, ncm_error)) < 0) {
+        ncm_regex_destroy(&compiled);
+        return status;
+    }
+    ncm_regex_destroy(regex);
+    *regex = compiled;
+    return ncm_error_ok(ncm_error);
+}
+
 int32
 tag_editor_screen_apply_directory_filter(TagEditorScreen *screen,
                                          char *pattern, int32 pattern_len,
@@ -1622,6 +1638,41 @@ tag_editor_screen_search(TagEditorScreen *screen,
         return 1;
     }
     return 0;
+}
+
+static bool
+tag_editor_tag_matches_regex(TagEditorScreen *screen,
+                             NcmMutableSong *song, NcmRegex *regex) {
+    StrBuilder buffer = {0};
+    NcMenu *tag_types;
+    enum NcmTagsField field;
+    int32 choice;
+    bool found;
+
+    ASSERT(screen != NULL);
+    ASSERT(song != NULL);
+    ASSERT(regex != NULL);
+
+    tag_types = nc_editor_string_menu_base(&screen->tag_types);
+    choice = nc_menu_highlight(tag_types);
+    if ((choice >= 0) && (choice < 11)) {
+        field = ncm_song_info_tags[choice].field;
+    } else if (choice == 12) {
+        field = NCM_TAGS_FIELD_COUNT;
+    } else {
+        return false;
+    }
+
+    if (tag_editor_song_display_value(song, field, &buffer) < 0) {
+        sb_free(&buffer);
+        return false;
+    }
+    if (buffer.len <= 0) {
+        SB_APPEND(&buffer, Config.empty_tag, Config.empty_tag_len);
+    }
+    found = ncm_regex_matches(regex, buffer.data, buffer.len);
+    sb_free(&buffer);
+    return found;
 }
 
 static bool
@@ -2874,6 +2925,25 @@ tag_editor_update(NcScreen *screen) {
     return;
 }
 
+static bool
+tag_editor_mouse_move_to_parser_focus(TagEditorScreen *screen,
+                                      enum TagEditorFocus focus) {
+    ASSERT(screen != NULL);
+    if (focus == TAG_EDITOR_FOCUS_PARSER_CHOICE) {
+        tag_editor_set_focus(screen, focus);
+        return true;
+    }
+    if (screen->parser_mode == TAG_EDITOR_PARSER_NONE) {
+        return false;
+    }
+    if ((focus == TAG_EDITOR_FOCUS_PARSER_ACTIONS)
+        || tag_editor_focus_is_parser_helper(focus)) {
+        tag_editor_set_focus(screen, focus);
+        return true;
+    }
+    return false;
+}
+
 static void
 tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     TagEditorScreen *editor = tag_editor_from_screen(screen);
@@ -3119,25 +3189,6 @@ tag_editor_mouse_move_to_column(TagEditorScreen *screen,
 }
 
 static bool
-tag_editor_mouse_move_to_parser_focus(TagEditorScreen *screen,
-                                      enum TagEditorFocus focus) {
-    ASSERT(screen != NULL);
-    if (focus == TAG_EDITOR_FOCUS_PARSER_CHOICE) {
-        tag_editor_set_focus(screen, focus);
-        return true;
-    }
-    if (screen->parser_mode == TAG_EDITOR_PARSER_NONE) {
-        return false;
-    }
-    if ((focus == TAG_EDITOR_FOCUS_PARSER_ACTIONS)
-        || tag_editor_focus_is_parser_helper(focus)) {
-        tag_editor_set_focus(screen, focus);
-        return true;
-    }
-    return false;
-}
-
-static bool
 tag_editor_prompt_tag_value(TagEditorScreen *screen,
                             enum NcmTagsField field, bool all_targets) {
     NcmMutableSong *song;
@@ -3271,25 +3322,6 @@ static void
 tag_editor_destroy_callback(NcScreen *screen) {
     tag_editor_screen_destroy(tag_editor_from_screen(screen));
     return;
-}
-
-static int32
-tag_editor_compile_constraint(NcmRegex *regex, char *pattern,
-                               int32 pattern_len, uint32 regex_flags,
-                               NcmError *ncm_error) {
-    NcmRegex compiled;
-    int32 status;
-
-    ASSERT(regex != NULL);
-    compiled = (NcmRegex){0};
-    if ((status = ncm_regex_compile(&compiled, pattern, pattern_len,
-                                    regex_flags, ncm_error)) < 0) {
-        ncm_regex_destroy(&compiled);
-        return status;
-    }
-    ncm_regex_destroy(regex);
-    *regex = compiled;
-    return ncm_error_ok(ncm_error);
 }
 
 static int32
@@ -4175,41 +4207,6 @@ tag_editor_save_song_callback(NcmMutableSong *song, void *user) {
     context->write_count += 1;
     ncm_mutable_song_clear_modifications(song);
     return 0;
-}
-
-static bool
-tag_editor_tag_matches_regex(TagEditorScreen *screen,
-                             NcmMutableSong *song, NcmRegex *regex) {
-    StrBuilder buffer = {0};
-    NcMenu *tag_types;
-    enum NcmTagsField field;
-    int32 choice;
-    bool found;
-
-    ASSERT(screen != NULL);
-    ASSERT(song != NULL);
-    ASSERT(regex != NULL);
-
-    tag_types = nc_editor_string_menu_base(&screen->tag_types);
-    choice = nc_menu_highlight(tag_types);
-    if ((choice >= 0) && (choice < 11)) {
-        field = ncm_song_info_tags[choice].field;
-    } else if (choice == 12) {
-        field = NCM_TAGS_FIELD_COUNT;
-    } else {
-        return false;
-    }
-
-    if (tag_editor_song_display_value(song, field, &buffer) < 0) {
-        sb_free(&buffer);
-        return false;
-    }
-    if (buffer.len <= 0) {
-        SB_APPEND(&buffer, Config.empty_tag, Config.empty_tag_len);
-    }
-    found = ncm_regex_matches(regex, buffer.data, buffer.len);
-    sb_free(&buffer);
-    return found;
 }
 
 static void
