@@ -1513,16 +1513,13 @@ library_find_album(MediaLibraryAlbumArray *albums,
         if (row->all_tracks_entry) {
             continue;
         }
-        if (!STREQUAL(row->tag, row->tag_len,
-                      tag, tag_len)) {
+        if (!STREQUAL(row->tag, row->tag_len, tag, tag_len)) {
             continue;
         }
-        if (!STREQUAL(row->album, row->album_len,
-                      album, album_len)) {
+        if (!STREQUAL(row->album, row->album_len, album, album_len)) {
             continue;
         }
-        if (!STREQUAL(row->date, row->date_len,
-                      date, date_len)) {
+        if (!STREQUAL(row->date, row->date_len, date, date_len)) {
             continue;
         }
         return i;
