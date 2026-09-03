@@ -1463,7 +1463,7 @@ browser_draw_item(NcMenu *menu, NcWindow *window,
     buffer = (NcBuffer){0};
     if (browser_screen_render_item(screen, &buffer, item,
                                    available_width, selected,
-                                   highlighted)) {
+                                   highlighted) >= 0) {
         browser_print_buffer(window, &buffer);
     }
     nc_buffer_destroy(&buffer);
