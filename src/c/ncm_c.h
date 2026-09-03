@@ -1342,43 +1342,43 @@ int32 ncm_mpd_client_get_tag_types(NcmMpdClient *client,
 #define ENUM_NAME SearchDirection
 #define ENUM_PREFIX_ NCM_SEARCH_DIRECTION_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NCM_SEARCH_DIRECTION_BACKWARD)                                          \
+#define ENUM_FIELDS                        \
+    XX(NCM_SEARCH_DIRECTION_BACKWARD)      \
     XX(NCM_SEARCH_DIRECTION_FORWARD)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME SpaceAddMode
 #define ENUM_PREFIX_ NCM_SPACE_ADD_MODE_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NCM_SPACE_ADD_MODE_ADD_REMOVE)                                          \
+#define ENUM_FIELDS                        \
+    XX(NCM_SPACE_ADD_MODE_ADD_REMOVE)      \
     XX(NCM_SPACE_ADD_MODE_ALWAYS_ADD)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME SortMode
 #define ENUM_PREFIX_ NCM_SORT_MODE_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NCM_SORT_MODE_TYPE)                                                     \
-    XX(NCM_SORT_MODE_NAME)                                                     \
-    XX(NCM_SORT_MODE_MODIFICATION_TIME)                                        \
-    XX(NCM_SORT_MODE_CUSTOM_FORMAT)                                            \
+#define ENUM_FIELDS                        \
+    XX(NCM_SORT_MODE_TYPE)                 \
+    XX(NCM_SORT_MODE_NAME)                 \
+    XX(NCM_SORT_MODE_MODIFICATION_TIME)    \
+    XX(NCM_SORT_MODE_CUSTOM_FORMAT)        \
     XX(NCM_SORT_MODE_NONE)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME DisplayMode
 #define ENUM_PREFIX_ NCM_DISPLAY_MODE_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NCM_DISPLAY_MODE_CLASSIC)                                               \
+#define ENUM_FIELDS                        \
+    XX(NCM_DISPLAY_MODE_CLASSIC)           \
     XX(NCM_DISPLAY_MODE_COLUMNS)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME Design
 #define ENUM_PREFIX_ NCM_DESIGN_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NCM_DESIGN_CLASSIC)                                                     \
+#define ENUM_FIELDS                        \
+    XX(NCM_DESIGN_CLASSIC)                 \
     XX(NCM_DESIGN_ALTERNATIVE)
 #include "cbase/xenums.c"
 
@@ -1386,15 +1386,15 @@ int32 ncm_mpd_client_get_tag_types(NcmMpdClient *client,
 #define ENUM_PREFIX_ NCM_VISUALIZER_TYPE_
 #define ENUM_BITFLAGS 0
 #if defined(HAVE_FFTW3_H)
-#define ENUM_FIELDS                                                            \
-    XX(NCM_VISUALIZER_TYPE_WAVE)                                               \
-    XX(NCM_VISUALIZER_TYPE_WAVE_FILLED)                                        \
-    XX(NCM_VISUALIZER_TYPE_SPECTRUM)                                           \
+#define ENUM_FIELDS                        \
+    XX(NCM_VISUALIZER_TYPE_WAVE)           \
+    XX(NCM_VISUALIZER_TYPE_WAVE_FILLED)    \
+    XX(NCM_VISUALIZER_TYPE_SPECTRUM)       \
     XX(NCM_VISUALIZER_TYPE_ELLIPSE)
 #else
-#define ENUM_FIELDS                                                            \
-    XX(NCM_VISUALIZER_TYPE_WAVE)                                               \
-    XX(NCM_VISUALIZER_TYPE_WAVE_FILLED)                                        \
+#define ENUM_FIELDS                        \
+    XX(NCM_VISUALIZER_TYPE_WAVE)           \
+    XX(NCM_VISUALIZER_TYPE_WAVE_FILLED)    \
     XX(NCM_VISUALIZER_TYPE_ELLIPSE)
 #endif
 #include "cbase/xenums.c"
