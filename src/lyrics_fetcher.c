@@ -3016,8 +3016,7 @@ lyrics_fetch_internet(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
                                           title, title_len);
     if (status == 0) {
         SB_APPEND(&message,
-                  "The following search may contain lyrics "
-                  "for this song: ");
+                  "The following search may contain lyrics for this song: ");
         SB_APPEND(&message, url.data, url.len);
         status = ncm_lyrics_result_set(result, false,
                                        message.data, message.len);
