@@ -22,7 +22,7 @@ should never fail. Make them return void in that case (or the result if they
 need to return some data). Also, some functions need to checked for errors in
 *some* calls, while not in others. You need to know which calls have to be
 checked by the context. It is okay to assume stuff sometimes (add assertions if
-you are not 100% sure).
+you are not 100% sure). Never cast functions calls to void.
 
 Identify instances of the anti-patterns above (excessive NULL pointer checking
 and excessive error checking).  Remove all the instances of this anti-pattern.
