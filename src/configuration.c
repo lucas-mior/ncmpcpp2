@@ -797,18 +797,22 @@ configuration_apply_mpd_command_line(NcmConfigurationOptions *options,
 static int32
 configuration_apply_screen_options(NcmConfigurationOptions *options,
                                    NcmError *ncm_error) {
+    int32 status;
+
     if (options->screen) {
-        if (!screen_type_parse_startup(options->screen_name.data,
-                                       options->screen_name.len,
-                                       &Config.startup_screen_type)) {
+        status = screen_type_parse_startup(options->screen_name.data,
+                                           options->screen_name.len,
+                                           &Config.startup_screen_type);
+        if (status < 0) {
             return ncm_error_set_status(ncm_error, -EINVAL,
                                         STRLIT("unknown screen"));
         }
     }
     if (options->slave_screen) {
-        if (!screen_type_parse_startup(options->slave_screen_name.data,
-                                       options->slave_screen_name.len,
-                                       &Config.startup_slave_screen_type)) {
+        status = screen_type_parse_startup(options->slave_screen_name.data,
+                                           options->slave_screen_name.len,
+                                           &Config.startup_slave_screen_type);
+        if (status < 0) {
             return ncm_error_set_status(ncm_error, -EINVAL,
                                         STRLIT("unknown slave screen"));
         }

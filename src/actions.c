@@ -221,19 +221,20 @@ ncm_action_find(char *name, int32 name_len) {
                                  name, name_len);
 }
 
-bool
-ncm_action_type_parse(char *name, int32 name_len, enum NcmActionType *type) {
+int32
+ncm_action_type_parse(char *name, int32 name_len,
+                      enum NcmActionType *type) {
     NcmActionDef *action;
 
-    if (type == NULL) {
-        return false;
+    if ((name == NULL) || (name_len < 0) || (type == NULL)) {
+        return -EINVAL;
     }
 
     if ((action = ncm_action_find(name, name_len)) == NULL) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
     *type = action->type;
-    return true;
+    return 0;
 }
 
 bool

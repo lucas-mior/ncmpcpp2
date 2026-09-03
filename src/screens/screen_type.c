@@ -48,23 +48,27 @@ screen_type_from_nc_type(int32 nc_type) {
     return NCM_SCREEN_TYPE_COUNT;
 }
 
-bool
+int32
 screen_type_parse_startup(char *string, int32 string_len,
                           enum ScreenType *screen_type) {
+    if ((string == NULL) || (string_len < 0) || (screen_type == NULL)) {
+        return -EINVAL;
+    }
+
     #define NCM_SCREEN_PARSE_STARTUP( \
         screen_type_value, nc_type, nc_value, alias, flags \
     ) \
         if (((flags & NCM_SCREEN_FLAG_STARTUP) != 0) \
             && STREQUAL(string, string_len, #alias)) { \
             *screen_type = screen_type_value; \
-            return true; \
+            return 0; \
         }
 
     NCM_SCREEN_TYPES(NCM_SCREEN_PARSE_STARTUP)
 
     #undef NCM_SCREEN_PARSE_STARTUP
     *screen_type = NCM_SCREEN_TYPE_COUNT;
-    return false;
+    return -NCM_ERROR_PARSE;
 }
 
 bool

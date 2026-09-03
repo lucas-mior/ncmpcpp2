@@ -512,8 +512,8 @@ void nc_screen_registry_resize_visible(NcScreenRegistry *registry);
 
 int32 screen_type_to_nc_type(enum ScreenType screen_type);
 enum ScreenType screen_type_from_nc_type(int32 nc_type);
-bool screen_type_parse_startup(char *string, int32 string_len,
-                               enum ScreenType *screen_type);
+int32 screen_type_parse_startup(char *string, int32 string_len,
+                                enum ScreenType *screen_type);
 bool screen_type_parse(char *string, int32 string_len,
                        enum ScreenType *screen_type);
 

@@ -678,6 +678,7 @@ static int32
 ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
                       NcmError *ncm_error) {
     int32 name_len;
+    int32 status;
     NcmStringView argument;
 
     ncm_binding_action_init(result);
@@ -694,7 +695,8 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
     }
 
     if (name_len == line_len) {
-        if (!ncm_action_type_parse(line, name_len, &result->type)) {
+        status = ncm_action_type_parse(line, name_len, &result->type);
+        if (status < 0) {
             ncm_bindings_error(ncm_error, "unknown action: '%.*s'",
                                name_len, line);
             return -NCM_ERROR_PARSE;
@@ -759,8 +761,9 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
     }
 
     if (STREQUAL(line, name_len, "require_runnable")) {
-        if (!ncm_action_type_parse(argument.data, argument.len,
-                                   &result->type)) {
+        status = ncm_action_type_parse(argument.data, argument.len,
+                                       &result->type);
+        if (status < 0) {
             ncm_bindings_error(ncm_error,
                                "unknown action passed to "
                                "require_runnable: '%.*s'",
