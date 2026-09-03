@@ -3208,19 +3208,19 @@ tag_editor_current_tag_type_action(TagEditorScreen *screen,
         }
         return TAG_EDITOR_TAG_TYPE_ACTION_FIELD;
     }
-    if (STREQUAL(row->data, row->len, STRLIT("Filename"))) {
+    if (STREQUAL(row->data, row->len, "Filename")) {
         return TAG_EDITOR_TAG_TYPE_ACTION_FILENAME;
     }
-    if (STREQUAL(row->data, row->len, STRLIT("Capitalize First Letters"))) {
+    if (STREQUAL(row->data, row->len, "Capitalize First Letters")) {
         return TAG_EDITOR_TAG_TYPE_ACTION_CAPITALIZE;
     }
-    if (STREQUAL(row->data, row->len, STRLIT("lower all letters"))) {
+    if (STREQUAL(row->data, row->len, "lower all letters")) {
         return TAG_EDITOR_TAG_TYPE_ACTION_LOWER;
     }
-    if (STREQUAL(row->data, row->len, STRLIT("Reset"))) {
+    if (STREQUAL(row->data, row->len, "Reset")) {
         return TAG_EDITOR_TAG_TYPE_ACTION_RESET;
     }
-    if (STREQUAL(row->data, row->len, STRLIT("Save"))) {
+    if (STREQUAL(row->data, row->len, "Save")) {
         return TAG_EDITOR_TAG_TYPE_ACTION_SAVE;
     }
     return TAG_EDITOR_TAG_TYPE_ACTION_NONE;
