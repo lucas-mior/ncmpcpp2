@@ -753,8 +753,8 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
     }
 
     if (STREQUAL(line, name_len, "require_screen")) {
-        if (!screen_type_parse(argument.data, argument.len,
-                               &result->screen_type)) {
+        if (screen_type_parse(argument.data, argument.len,
+                              &result->screen_type) < 0) {
             ncm_bindings_error(ncm_error,
                                "unknown screen passed to "
                                "require_screen: '%.*s'",
@@ -1016,7 +1016,7 @@ ncm_bindings_bind(NcmBindingsConfiguration *bindings, NcKey key,
 }
 
 static bool
-ncm_bindings_not_bound(NcmBindingsConfiguration *bindings, NcKey key) {
+ncm_bindings_key_is_unbound(NcmBindingsConfiguration *bindings, NcKey key) {
     int32 at;
 
     if (key == NC_KEY_NONE) {
@@ -1034,7 +1034,7 @@ ncm_bindings_bind_single(NcmBindingsConfiguration *bindings, char *key_name,
     int32 status;
 
     key = ncm_bindings_string_to_key(key_name, key_name_len);
-    if (!ncm_bindings_not_bound(bindings, key)) {
+    if (!ncm_bindings_key_is_unbound(bindings, key)) {
         return 0;
     }
     binding = (NcmBinding){0};
@@ -1055,7 +1055,7 @@ ncm_bindings_bind_chain2(NcmBindingsConfiguration *bindings, char *key_name,
 
     binding = (NcmBinding){0};
     key = ncm_bindings_string_to_key(key_name, key_name_len);
-    if (!ncm_bindings_not_bound(bindings, key)) {
+    if (!ncm_bindings_key_is_unbound(bindings, key)) {
         return 0;
     }
 
@@ -1078,7 +1078,7 @@ ncm_bindings_bind_group(NcmBindingsConfiguration *bindings,
     int32 status;
 
     key = ncm_bindings_string_to_key(key_name, key_name_len);
-    if (!ncm_bindings_not_bound(bindings, key)) {
+    if (!ncm_bindings_key_is_unbound(bindings, key)) {
         return 0;
     }
 

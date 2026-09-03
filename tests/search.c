@@ -644,16 +644,16 @@ test_prompt_state_reuses_successful_result(void) {
     bool found;
 
     ncm_search_prompt_state_init(&state, NCM_SEARCH_DIRECTION_FORWARD);
-    ASSERT(!ncm_search_prompt_state_cached_result(
+    ASSERT(!ncm_search_prompt_state_has_cached_result(
         &state, STRLIT("alp"), &found));
 
     ASSERT(ncm_search_prompt_state_finish_result(
-        &state, STRLIT("alp"), true, true));
+        &state, STRLIT("alp"), true, true) == 0);
     found = false;
-    ASSERT(ncm_search_prompt_state_cached_result(
+    ASSERT(ncm_search_prompt_state_has_cached_result(
         &state, STRLIT("alp"), &found));
     ASSERT(found);
-    ASSERT(!ncm_search_prompt_state_cached_result(
+    ASSERT(!ncm_search_prompt_state_has_cached_result(
         &state, STRLIT("alpha"), &found));
 
     ncm_search_prompt_state_destroy(&state);
@@ -667,19 +667,19 @@ test_prompt_state_does_not_cache_search_error(void) {
 
     ncm_search_prompt_state_init(&state, NCM_SEARCH_DIRECTION_FORWARD);
     ASSERT(ncm_search_prompt_state_finish_result(
-        &state, STRLIT("alp"), true, true));
+        &state, STRLIT("alp"), true, true) == 0);
     ASSERT(ncm_search_prompt_state_finish_result(
-        &state, STRLIT("alp["), false, false));
+        &state, STRLIT("alp["), false, false) == 0);
 
     found = true;
-    ASSERT(!ncm_search_prompt_state_cached_result(
+    ASSERT(!ncm_search_prompt_state_has_cached_result(
         &state, STRLIT("alp["), &found));
     ASSERT(found);
 
     ASSERT(ncm_search_prompt_state_finish_result(
-        &state, STRLIT("alp[ha]"), true, true));
+        &state, STRLIT("alp[ha]"), true, true) == 0);
     found = false;
-    ASSERT(ncm_search_prompt_state_cached_result(
+    ASSERT(ncm_search_prompt_state_has_cached_result(
         &state, STRLIT("alp[ha]"), &found));
     ASSERT(found);
 
@@ -817,10 +817,10 @@ test_prompt_state_caches_no_match(void) {
 
     ncm_search_prompt_state_init(&state, NCM_SEARCH_DIRECTION_FORWARD);
     ASSERT(ncm_search_prompt_state_finish_result(
-        &state, STRLIT("ohne"), true, false));
+        &state, STRLIT("ohne"), true, false) == 0);
 
     found = true;
-    ASSERT(ncm_search_prompt_state_cached_result(
+    ASSERT(ncm_search_prompt_state_has_cached_result(
         &state, STRLIT("ohne"), &found));
     ASSERT(!found);
 

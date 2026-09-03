@@ -1695,12 +1695,12 @@ void ncm_search_prompt_state_init(NcmSearchPromptState *state,
 void ncm_search_prompt_state_destroy(NcmSearchPromptState *state);
 void ncm_search_prompt_state_set_start_position(
     NcmSearchPromptState *state, int32 position);
-bool ncm_search_prompt_state_cached_result(NcmSearchPromptState *state,
-                                           char *text, int32 text_len,
-                                           bool *found);
-bool ncm_search_prompt_state_finish_result(NcmSearchPromptState *state,
-                                           char *text, int32 text_len,
-                                           bool search_ok, bool found);
+bool ncm_search_prompt_state_has_cached_result(NcmSearchPromptState *state,
+                                               char *text, int32 text_len,
+                                               bool *found);
+int32 ncm_search_prompt_state_finish_result(NcmSearchPromptState *state,
+                                            char *text, int32 text_len,
+                                            bool search_ok, bool found);
 
 /* c/ncm_string.h */
 NcmStringView ncm_string_view_make(char *data, int32 len);

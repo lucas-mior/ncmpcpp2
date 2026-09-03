@@ -112,7 +112,7 @@ ui_state_set_statusbar_visibility_baseline(bool value) {
 }
 
 bool
-ui_state_statusbar_visibility_baseline(void) {
+ui_state_statusbar_visibility_is_baseline(void) {
     return statusbar_visibility_baseline;
 }
 

@@ -34,9 +34,9 @@ ncm_search_prompt_state_set_start_position(NcmSearchPromptState *state,
 }
 
 bool
-ncm_search_prompt_state_cached_result(NcmSearchPromptState *state,
-                                      char *text, int32 text_len,
-                                      bool *found) {
+ncm_search_prompt_state_has_cached_result(NcmSearchPromptState *state,
+                                          char *text, int32 text_len,
+                                          bool *found) {
     if (!state->has_last_result) {
         return false;
     }
@@ -58,24 +58,27 @@ ncm_search_prompt_state_cached_result(NcmSearchPromptState *state,
     return true;
 }
 
-bool
+int32
 ncm_search_prompt_state_finish_result(NcmSearchPromptState *state,
                                       char *text, int32 text_len,
                                       bool search_ok, bool found) {
+    int32 status;
+
     if (!search_ok) {
-        return true;
+        return 0;
     }
     if (text == NULL) {
         text = "";
         text_len = 0;
     }
-    if (sb_set(&state->last_text, text, text_len) < 0) {
-        return false;
+    status = sb_set(&state->last_text, text, text_len);
+    if (status < 0) {
+        return status;
     }
 
     state->has_last_result = true;
     state->last_found = found;
-    return true;
+    return 0;
 }
 
 #endif /* NCM_SEARCH_PROMPT_C */

@@ -24,7 +24,7 @@ ncm_conversion_copy_source(StrBuilder *buffer, char *source,
 }
 
 static bool
-ncm_conversion_trailing_space_only(char *cursor) {
+ncm_conversion_has_only_trailing_space(char *cursor) {
 
     while (*cursor != '\0') {
         uint8 c = (uint8)*cursor;
@@ -132,7 +132,7 @@ ncm_parse_int64(char *source, int32 source_len, int32 *out,
     value = strtoll(buffer.data, &end, 10);
     ok = (end != buffer.data)
          && !ncm_conversion_is_negative_source(buffer.data)
-         && ncm_conversion_trailing_space_only(end)
+         && ncm_conversion_has_only_trailing_space(end)
          && (errno != ERANGE)
          && (value <= MAXOF(*out));
     if (ok) {
@@ -201,7 +201,7 @@ ncm_parse_double(char *source, int32 source_len, double *out,
     errno = 0;
     value = strtod(buffer.data, &end);
     ok = (end != buffer.data)
-         && ncm_conversion_trailing_space_only(end)
+         && ncm_conversion_has_only_trailing_space(end)
          && (errno != ERANGE);
     if (ok) {
         *out = value;
