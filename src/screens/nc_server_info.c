@@ -12,7 +12,6 @@ static void nc_server_info_update(NcScreen *screen);
 static void nc_server_info_mouse_button_pressed(NcScreen *screen,
                                                 MEVENT event);
 static void nc_server_info_destroy_callback(NcScreen *screen);
-static void nc_server_info_display(NcServerInfoScreen *server_info);
 
 #define NC_SCREEN_IMPL_TYPE NcServerInfoScreen
 #define NC_SCREEN_IMPL_PREFIX nc_server_info
@@ -20,7 +19,11 @@ static void nc_server_info_display(NcServerInfoScreen *server_info);
 #define NC_SCREEN_IMPL_BASE_FIELD scrollpad_screen
 #define NC_SCREEN_IMPL_WINDOW_FIELD window
 #define NC_SCREEN_IMPL_SCROLLPAD_FIELD scrollpad
-#define NC_SCREEN_IMPL_REFRESH_CALLBACK nc_server_info_display
+#define NC_SCREEN_IMPL_REFRESH_CALLBACK(server_info) do { \
+    nc_window_refresh_border(&(server_info)->window); \
+    nc_scrollpad_refresh(&(server_info)->scrollpad, \
+                         &(server_info)->window); \
+} while (0)
 #define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK nc_server_info_switch_to
 #define NC_SCREEN_IMPL_RESIZE_CALLBACK nc_server_info_resize
 #define NC_SCREEN_IMPL_TITLE_CALLBACK nc_server_info_title
@@ -183,13 +186,6 @@ nc_server_info_destroy_callback(NcScreen *screen) {
     if (server_info->hooks.destroy) {
         server_info->hooks.destroy(server_info->hooks.user);
     }
-    return;
-}
-
-static void
-nc_server_info_display(NcServerInfoScreen *server_info) {
-    nc_window_refresh_border(&server_info->window);
-    nc_scrollpad_refresh(&server_info->scrollpad, &server_info->window);
     return;
 }
 

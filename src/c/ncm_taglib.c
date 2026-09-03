@@ -79,20 +79,6 @@ ncm_taglib_value_is_empty(char *value) {
 
 #endif
 
-void
-ncm_taglib_init(void) {
-#if defined(HAVE_TAGLIB_H)
-    if (ncm_taglib_is_initialized) {
-        return;
-    }
-
-    taglib_set_strings_unicode(1);
-    taglib_id3v2_set_default_text_encoding(TagLib_ID3v2_UTF8);
-    ncm_taglib_is_initialized = true;
-#endif
-    return;
-}
-
 int32
 ncm_taglib_file_open(NcmTaglibFile *file, char *path) {
 #if defined(HAVE_TAGLIB_H)
@@ -105,7 +91,12 @@ ncm_taglib_file_open(NcmTaglibFile *file, char *path) {
         return -EINVAL;
     }
 
-    ncm_taglib_init();
+    if (!ncm_taglib_is_initialized) {
+        taglib_set_strings_unicode(1);
+        taglib_id3v2_set_default_text_encoding(TagLib_ID3v2_UTF8);
+        ncm_taglib_is_initialized = true;
+    }
+
     ncm_taglib_file_close(file);
 
     if ((handle = taglib_file_new(path)) == NULL) {
