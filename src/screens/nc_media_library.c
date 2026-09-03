@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static void library_set_observed_album(MediaLibraryScreen *screen, NcMediaLibraryAlbumRow *album);
 static void library_album_array_item_destroy(void *item);
 static int32 library_replace_songs(MediaLibraryScreen *screen, NcmSongArray *songs);
 static bool library_album_identity_is_equal(NcMediaLibraryAlbumRow *left, NcMediaLibraryAlbumRow *right);
@@ -1898,6 +1897,32 @@ media_library_screen_toggle_sort_mode(
 }
 
 static void
+library_set_observed_tag(MediaLibraryScreen *screen,
+                         NcMediaLibraryTagRow *tag) {
+    nc_media_library_tag_row_destroy(&screen->observed_tag);
+    screen->observed_tag = (NcMediaLibraryTagRow){0};
+    screen->observed_tag_valid = false;
+    if (tag) {
+        screen->observed_tag_valid = nc_media_library_tag_row_copy(
+            &screen->observed_tag, tag) >= 0;
+    }
+    return;
+}
+
+static void
+library_set_observed_album(MediaLibraryScreen *screen,
+                           NcMediaLibraryAlbumRow *album) {
+    nc_media_library_album_row_destroy(&screen->observed_album);
+    screen->observed_album = (NcMediaLibraryAlbumRow){0};
+    screen->observed_album_valid = false;
+    if (album) {
+        screen->observed_album_valid = nc_media_library_album_row_copy(
+            &screen->observed_album, album) >= 0;
+    }
+    return;
+}
+
+static void
 library_reset_observed_highlights(
     MediaLibraryScreen *screen
 ) {
@@ -3103,32 +3128,6 @@ library_album_identity_is_equal(NcMediaLibraryAlbumRow *left,
                        right->album, right->album_len)
            && STREQUAL(left->date, left->date_len,
                        right->date, right->date_len);
-}
-
-static void
-library_set_observed_tag(MediaLibraryScreen *screen,
-                         NcMediaLibraryTagRow *tag) {
-    nc_media_library_tag_row_destroy(&screen->observed_tag);
-    screen->observed_tag = (NcMediaLibraryTagRow){0};
-    screen->observed_tag_valid = false;
-    if (tag) {
-        screen->observed_tag_valid = nc_media_library_tag_row_copy(
-            &screen->observed_tag, tag) >= 0;
-    }
-    return;
-}
-
-static void
-library_set_observed_album(MediaLibraryScreen *screen,
-                           NcMediaLibraryAlbumRow *album) {
-    nc_media_library_album_row_destroy(&screen->observed_album);
-    screen->observed_album = (NcMediaLibraryAlbumRow){0};
-    screen->observed_album_valid = false;
-    if (album) {
-        screen->observed_album_valid = nc_media_library_album_row_copy(
-            &screen->observed_album, album) >= 0;
-    }
-    return;
 }
 
 static void
