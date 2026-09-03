@@ -260,6 +260,7 @@ playlist_screen_init(PlaylistScreen *screen, int32 start_x,
     screen->reload_remaining = true;
     screen->registered = false;
     screen->highlighting_requested = false;
+
     nc_playlist_screen_init(&screen->screen, playlist_ops, screen,
                             nc_song_menu_base(&screen->songs), start_x,
                             width, main_start_y, main_height);
@@ -283,6 +284,7 @@ playlist_screen_init(PlaylistScreen *screen, int32 start_x,
         screen, Config.lines_scrolled,
         Config.mouse_list_scroll_whole_page);
     playlist_screen_update_column_title(screen);
+
     return;
 }
 
@@ -414,8 +416,7 @@ playlist_screen_set_mouse_config(PlaylistScreen *screen,
 }
 
 void
-playlist_screen_set_highlighting(PlaylistScreen *screen,
-                                 bool enabled) {
+playlist_screen_set_highlighting(PlaylistScreen *screen, bool enabled) {
     bool was_enabled;
 
     if (screen == NULL) {
@@ -542,9 +543,8 @@ playlist_screen_current_song(PlaylistScreen *screen,
 
 
 int32
-playlist_screen_update_current_mutable_song(
-    PlaylistScreen *screen, NcmMutableSong *song
-) {
+playlist_screen_update_current_mutable_song(PlaylistScreen *screen,
+                                            NcmMutableSong *song) {
     NcmSong replacement;
     NcmSong *current;
     NcMenu *menu;
