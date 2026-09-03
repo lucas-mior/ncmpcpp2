@@ -12,6 +12,7 @@
 #include "statusbar.h"
 #include "ui_state.h"
 
+// callbacks
 static NcWindow *library_active_window(NcScreen *screen);
 static void library_refresh(NcScreen *screen);
 static void library_refresh_window(NcScreen *screen);
@@ -25,6 +26,8 @@ static int32 library_window_timeout(NcScreen *screen);
 static char *library_title(NcScreen *screen);
 static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
+
+// declarations to delete
 static bool library_column_has_visible_items(
     MediaLibraryScreen *screen,
     enum MediaLibraryColumn column);
