@@ -2344,38 +2344,24 @@ NcBrowserEntryMenu *browser_screen_entries(
     BrowserScreen *screen);
 NcMenu *browser_screen_menu(BrowserScreen *screen);
 NcWindow *browser_screen_window(BrowserScreen *screen);
-void browser_screen_set_geometry(BrowserScreen *screen,
-                                 int32 start_x, int32 width,
-                                 int32 main_start_y,
-                                 int32 main_height);
 void browser_screen_set_mouse_config(BrowserScreen *screen,
                                      int32 lines_scrolled,
                                      bool scroll_whole_page);
 void browser_screen_clear(BrowserScreen *screen);
-int32 browser_screen_add_item_copy(
-    BrowserScreen *screen, NcmMpdItem *item);
 void browser_screen_add_item_move(BrowserScreen *screen,
                                   NcmMpdItem *item);
-int32 browser_screen_reload_from_mpd(BrowserScreen *screen,
-                                    NcmMpdClient *client,
-                                    NcmError *ncm_error);
 int32 browser_screen_sort(BrowserScreen *screen);
 int32 browser_screen_set_current_directory(
     BrowserScreen *screen, char *directory, int32 directory_len);
 NcmStringView browser_screen_current_directory(
-    BrowserScreen *screen);
-NcmStringView browser_screen_last_highlighted_directory(
     BrowserScreen *screen);
 void browser_screen_update_title_text(BrowserScreen *screen);
 void browser_screen_update_column_title(BrowserScreen *screen);
 void browser_screen_draw_header(BrowserScreen *screen);
 void browser_screen_set_display_mode(BrowserScreen *screen,
                                      enum DisplayMode mode);
-bool browser_screen_has_supported_extension(
-    BrowserScreen *screen, char *extension, int32 extension_len);
 int32 browser_screen_fetch_supported_extensions(
     BrowserScreen *screen, NcmMpdClient *client, NcmError *ncm_error);
-bool browser_screen_has_update_request(BrowserScreen *screen);
 void browser_screen_clear_update_request(BrowserScreen *screen);
 bool browser_screen_is_in_root_directory(BrowserScreen *screen);
 void browser_screen_set_local(BrowserScreen *screen,
@@ -2420,15 +2406,6 @@ int32 browser_screen_search(BrowserScreen *screen,
                             char *pattern, int32 pattern_len,
                             bool forward, bool wrap,
                             bool skip_current, NcmError *ncm_error);
-int32 browser_screen_render_item(BrowserScreen *screen,
-                                NcBuffer *buffer,
-                                NcmMpdItem *item,
-                                int32 available_width,
-                                bool selected,
-                                bool highlighted);
-int32 browser_screen_item_to_string(BrowserScreen *screen,
-                                   NcmMpdItem *item,
-                                   StrBuilder *buffer);
 void browser_screen_request_update(BrowserScreen *screen);
 bool browser_screen_item_is_parent(NcmMpdItem *item);
 
