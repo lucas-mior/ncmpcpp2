@@ -28,8 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static void library_mouse_scroll(MediaLibraryScreen *screen,
-                                 enum NcScroll where);
 static int32 library_mouse_select(
     MediaLibraryScreen *screen, enum MediaLibraryColumn column,
     NcMenu *menu, int32 y, bool right_click);
@@ -3493,6 +3491,27 @@ library_finish_list_change(NcScreen *screen) {
 }
 
 static void
+library_mouse_scroll(MediaLibraryScreen *screen, enum NcScroll where) {
+    enum NcScroll effective = where;
+    int32 count = Config.lines_scrolled;
+
+    if (Config.mouse_list_scroll_whole_page) {
+        if (where == NC_SCROLL_DOWN) {
+            effective = NC_SCROLL_PAGE_DOWN;
+        } else if (where == NC_SCROLL_UP) {
+            effective = NC_SCROLL_PAGE_UP;
+        }
+        count = 1;
+    }
+
+    for (int32 i = 0; i < count; i += 1) {
+        nc_menu_scroll_selectable(media_library_screen_active_menu(screen),
+                                  screen->main_height, effective);
+    }
+    return;
+}
+
+static void
 library_mouse_button_pressed(NcScreen *screen,
                              MEVENT event) {
     MediaLibraryScreen *library;
@@ -3564,27 +3583,6 @@ library_mouse_button_pressed(NcScreen *screen,
             }
         }
         nc_screen_finish_list_change(screen);
-    }
-    return;
-}
-
-static void
-library_mouse_scroll(MediaLibraryScreen *screen, enum NcScroll where) {
-    enum NcScroll effective = where;
-    int32 count = Config.lines_scrolled;
-
-    if (Config.mouse_list_scroll_whole_page) {
-        if (where == NC_SCROLL_DOWN) {
-            effective = NC_SCROLL_PAGE_DOWN;
-        } else if (where == NC_SCROLL_UP) {
-            effective = NC_SCROLL_PAGE_UP;
-        }
-        count = 1;
-    }
-
-    for (int32 i = 0; i < count; i += 1) {
-        nc_menu_scroll_selectable(media_library_screen_active_menu(screen),
-                                  screen->main_height, effective);
     }
     return;
 }
