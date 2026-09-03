@@ -2587,8 +2587,8 @@ media_library_screen_finish_list_change(
     }
     album_changed = screen->observed_album_valid != album_valid;
     if (!album_changed && album_valid) {
-        album_changed = !library_album_identity_is_equal(
-            &screen->observed_album, album);
+        album_changed
+            = !library_album_identity_is_equal(&screen->observed_album, album);
     }
 
     if (tag_changed) {
