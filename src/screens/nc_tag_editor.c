@@ -604,9 +604,11 @@ tag_editor_screen_init(TagEditorScreen *screen,
 
     tag_editor_update_titles(screen, false);
 
-    nc_window_init(&screen->directories_window, start_x, main_start_y,
-                   width, main_height, screen->directories_title.data,
-                   screen->directories_title.len, color, border);
+    nc_window_init(&screen->directories_window,
+                   start_x, main_start_y, width, main_height,
+                   screen->directories_title.data,
+                   screen->directories_title.len,
+                   color, border);
     nc_window_init(&screen->tag_types_window, start_x, main_start_y,
                    width, main_height, screen->tag_types_title.data,
                    screen->tag_types_title.len, color, border);
