@@ -54,21 +54,21 @@ static void tag_editor_destroy_callback(NcScreen *screen);
 static void tag_editor_mouse_callback(NcScreen *, MEVENT);
 
 // declarations to delete
-static void tag_editor_observe_current_directory(TagEditorScreen *);
-static bool tag_editor_focus_is_parser_helper(enum TagEditorFocus);
-static bool tag_editor_directory_filter(NcMenu *, void *, void *);
-static void tag_editor_update_menu_highlights(TagEditorScreen *);
 static bool tag_editor_confirm(TagEditorScreen *, char *, int32);
-static void tag_editor_refresh_active_helper(TagEditorScreen *);
-static void tag_editor_append_locale(NcBuffer *, char *, int32);
-static bool tag_editor_search_position(NcMenu *, int32, void *);
-static int32 tag_editor_build_parser_legend(TagEditorScreen *);
-static void tag_editor_update_titles(TagEditorScreen *, bool);
-static int32 tag_editor_run_current_action(TagEditorScreen *);
-static bool tag_editor_tag_filter(NcMenu *, void *, void *);
-static int32 tag_editor_separator_width(TagEditorScreen *);
-static void tag_editor_refresh_menu(NcWindow *, NcMenu *);
+static bool tag_editor_directory_filter(NcMenu *, void *, void *);
 static void tag_editor_configure_menus(TagEditorScreen *);
+static void tag_editor_refresh_active_helper(TagEditorScreen *);
+static void tag_editor_refresh_menu(NcWindow *, NcMenu *);
+static void tag_editor_append_locale(NcBuffer *, char *, int32);
+static bool tag_editor_tag_filter(NcMenu *, void *, void *);
+static int32 tag_editor_build_parser_legend(TagEditorScreen *);
+static bool tag_editor_focus_is_parser_helper(enum TagEditorFocus);
+static void tag_editor_observe_current_directory(TagEditorScreen *);
+static void tag_editor_update_menu_highlights(TagEditorScreen *);
+static bool tag_editor_search_position(NcMenu *, int32, void *);
+static int32 tag_editor_run_current_action(TagEditorScreen *);
+static void tag_editor_update_titles(TagEditorScreen *, bool);
+static int32 tag_editor_separator_width(TagEditorScreen *);
 
 static void
 tag_editor_append_formatted_color_end(NcBuffer *buffer,
