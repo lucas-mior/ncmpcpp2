@@ -738,14 +738,14 @@ int32
 playlist_editor_screen_load_content(PlaylistEditorScreen *screen,
                                     NcmMpdSongList *songs) {
     NcMenu *menu;
-    NcmSong preserved_song;
+    NcmSong preserved_song = {0};
     bool had_preserved_song;
     int32 status;
 
     if ((screen == NULL) || (songs == NULL)) {
         return -EINVAL;
     }
-    preserved_song = (NcmSong){0};
+
     status = playlist_editor_store_current_song(screen, &preserved_song);
     if (status < 0) {
         ncm_song_destroy(&preserved_song);
