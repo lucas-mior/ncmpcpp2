@@ -695,7 +695,6 @@ media_library_screen_format_album_row(
     StrBuilder *output
 ) {
     StrBuilder raw = {0};
-    StrBuilder converted;
 
     if (output == NULL) {
         return;
