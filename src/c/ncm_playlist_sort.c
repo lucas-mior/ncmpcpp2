@@ -39,17 +39,19 @@ ncm_playlist_sort_indices(NcmPlaylistSortContext *context,
 
         for (int32 i = 0; i < context->getters_len; i += 1) {
             enum NcmSongGetter getter = context->getters[i];
+            StrBuilder left_buffer;
+            StrBuilder right_buffer;
 
             if (getter == NCM_SONG_GETTER_NONE) {
                 break;
             }
 
-            StrBuilder left_buffer =
-                ncm_song_getter_buffer(&context->songs->items[left_idx],
-                                       getter, 0);
-            StrBuilder right_buffer =
-                ncm_song_getter_buffer(&context->songs->items[right_idx],
-                                       getter, 0);
+            left_buffer
+                = ncm_song_getter_buffer(&context->songs->items[left_idx],
+                                         getter, 0);
+            right_buffer
+                = ncm_song_getter_buffer(&context->songs->items[right_idx],
+                                         getter, 0);
             char *left_data = left_buffer.data;
             char *right_data = right_buffer.data;
             if (left_data == NULL) {
