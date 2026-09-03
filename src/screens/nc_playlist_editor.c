@@ -1093,7 +1093,7 @@ playlist_draw_callback(NcMenu *menu, NcWindow *window, void *item,
         return;
     }
 
-    converted = ncm_charset_utf8_to_locale(playlist->path,
+    converted = ncm_charset_copy(playlist->path,
                                            playlist->path_len);
     nc_window_print_data(window, converted.data, converted.len);
     sb_free(&converted);
