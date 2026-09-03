@@ -3146,8 +3146,6 @@ tag_editor_refresh(NcScreen *screen) {
 static void
 tag_editor_refresh_window(NcScreen *screen) {
     TagEditorScreen *editor = tag_editor_from_screen(screen);
-    NcMenu *menu;
-    NcWindow *window;
 
     tag_editor_update_titles(editor, true);
     tag_editor_update_menu_highlights(editor);
@@ -3155,9 +3153,12 @@ tag_editor_refresh_window(NcScreen *screen) {
         tag_editor_refresh_active_helper(editor);
         return;
     }
-    menu = tag_editor_screen_active_menu(editor);
-    window = tag_editor_screen_active_window(editor);
-    tag_editor_refresh_menu(window, menu);
+
+    {
+        NcMenu *menu = tag_editor_screen_active_menu(editor);
+        NcWindow *window = tag_editor_screen_active_window(editor);
+        tag_editor_refresh_menu(window, menu);
+    }
     return;
 }
 
