@@ -4012,8 +4012,8 @@ library_mouse_button_pressed(NcScreen *screen,
     x = event.x;
     y = event.y;
     if (nc_window_has_coords(&library->songs_window, &x, &y)) {
-        media_library_screen_set_active_column(
-            library, MEDIA_LIBRARY_COLUMN_SONGS);
+        media_library_screen_set_active_column(library,
+                                               MEDIA_LIBRARY_COLUMN_SONGS);
         if (!(((event.bstate
                 & (BUTTON1_PRESSED | BUTTON3_PRESSED)) != 0)
               && (library_mouse_select(
