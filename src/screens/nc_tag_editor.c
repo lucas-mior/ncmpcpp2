@@ -54,8 +54,6 @@ static void tag_editor_destroy_callback(NcScreen *screen);
 static void tag_editor_mouse_callback(NcScreen *, MEVENT);
 
 // declarations to delete
-static void tag_editor_append_parser_filename(StrBuilder *, char *, int32);
-static int32 tag_editor_capitalize_song_callback(NcmMutableSong *, void *);
 static void tag_editor_set_focus(TagEditorScreen *, enum TagEditorFocus);
 static void tag_editor_status_message(TagEditorScreen *, char *, int32);
 static int32 tag_editor_set_song_tag_callback(NcmMutableSong *, void *);
