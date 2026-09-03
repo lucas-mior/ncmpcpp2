@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static void library_album_array_item_destroy(void *item);
 static int32 library_replace_songs(MediaLibraryScreen *screen, NcmSongArray *songs);
 static bool library_album_identity_is_equal(NcMediaLibraryAlbumRow *left, NcMediaLibraryAlbumRow *right);
 static int32 library_update_songs(MediaLibraryScreen *screen, NcmError *ncm_error);
@@ -419,6 +418,32 @@ static NcScreenOps library_callbacks = {
     .mergable = true,
     .destroy = library_destroy_callback,
 };
+
+static void
+library_tag_array_item_destroy(void *item) {
+    nc_media_library_tag_row_destroy(item);
+    return;
+}
+
+static void
+library_album_array_item_init(void *item) {
+    MediaLibraryAlbumItem *album;
+
+    album = item;
+    album->row = (NcMediaLibraryAlbumRow){0};
+    album->menu_flags = NC_MENU_ITEM_SELECTABLE;
+    return;
+}
+
+static void
+library_album_array_item_destroy(void *item) {
+    MediaLibraryAlbumItem *album;
+
+    album = item;
+    nc_media_library_album_row_destroy(&album->row);
+    album->menu_flags = NC_MENU_ITEM_SELECTABLE;
+    return;
+}
 
 static NcmArrayItemCallbacks library_tag_array_callbacks = {
     .destroy = library_tag_array_item_destroy,
@@ -1225,32 +1250,6 @@ media_library_screen_format_song_row(
     }
     ncm_display_song_row(output, &Config.song_library_format, song,
                          NCM_FORMAT_FLAG_ALL);
-    return;
-}
-
-static void
-library_tag_array_item_destroy(void *item) {
-    nc_media_library_tag_row_destroy(item);
-    return;
-}
-
-static void
-library_album_array_item_init(void *item) {
-    MediaLibraryAlbumItem *album;
-
-    album = item;
-    album->row = (NcMediaLibraryAlbumRow){0};
-    album->menu_flags = NC_MENU_ITEM_SELECTABLE;
-    return;
-}
-
-static void
-library_album_array_item_destroy(void *item) {
-    MediaLibraryAlbumItem *album;
-
-    album = item;
-    nc_media_library_album_row_destroy(&album->row);
-    album->menu_flags = NC_MENU_ITEM_SELECTABLE;
     return;
 }
 
