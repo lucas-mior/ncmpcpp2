@@ -1245,9 +1245,8 @@ playlist_storage_menu(PlaylistScreen *screen) {
 
 
 static int32
-playlist_build_mutable_song(
-    NcmSong *replacement, NcmSong *current, NcmMutableSong *edited
-) {
+playlist_build_mutable_song(NcmSong *replacement,
+                            NcmSong *current, NcmMutableSong *edited) {
     NcmStringView value;
     enum NcmTagsField field;
     enum mpd_tag_type type;
