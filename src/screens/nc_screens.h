@@ -2194,7 +2194,7 @@ int32 tag_editor_song_display_value(NcmMutableSong *song,
                                     StrBuilder *buffer);
 
 /* screens/nc_tiny_tag_editor.h */
-#define TINY_TAG_EDITOR_TAG_ROW(FIELD)                                         \
+#define TINY_TAG_EDITOR_TAG_ROW(FIELD) \
     ((int32) TINY_TAG_EDITOR_FIRST_TAG_ROW + (int32)(FIELD))
 
 enum TinyTagEditorRow {
