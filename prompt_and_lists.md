@@ -12,23 +12,6 @@ list below, and go straight to the next file without asking me. If the next file
 also doesn't have any function that fit this pattern, continue deleting the file
 form the list below and searching on the next until you find.
 
-- src/c/ncm_playlist_sort.c
-- src/status.c
-- src/c/ncm_comparators.c
-- src/c/ncm_option_parser.c
-- src/c/ncm_type_conversions.c
-- src/c/ncm_lrc.c
-- src/c/ncm_mpd_item.c
-- src/c/ncm_html.c
-- src/settings_types.c
-- src/c/ncm_mpd_client.c
-- src/curses/nc_curses.c
-- src/c/ncm_directory.c
-- src/c/ncm_macro_utilities.c
-- src/curl_handle.c
-- src/c/ncm_sample_buffer.c
-- src/c/ncm_playlist.c
-- src/c/ncm_format.c
 - src/curses/nc_window.c
 - src/c/ncm_error.c
 - src/curses/nc_buffer.c
