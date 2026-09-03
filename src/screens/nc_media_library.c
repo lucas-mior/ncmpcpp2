@@ -28,7 +28,7 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static NcMenuDisplayCallbacks library_display_callbacks( MediaLibraryScreen *screen, enum MediaLibraryColumn column, bool filter_enabled);
+static NcMenuDisplayCallbacks library_display_callbacks(MediaLibraryScreen *screen, enum MediaLibraryColumn column, bool filter_enabled);
 static void library_update_menu_highlights(MediaLibraryScreen *screen);
 static void library_update_titles(MediaLibraryScreen *screen, bool update_windows);
 static void library_refresh_menu(NcMenu *menu, NcWindow *window);
