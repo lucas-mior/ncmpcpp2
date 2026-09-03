@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static bool library_has_pending_albums(MediaLibraryScreen *screen);
 static void library_reset_observed_highlights(MediaLibraryScreen *screen);
 static void library_set_observed_album(MediaLibraryScreen *screen, NcMediaLibraryAlbumRow *album);
 static void library_album_array_item_destroy(void *item);
@@ -2579,6 +2578,22 @@ media_library_screen_finish_list_change(
     return;
 }
 
+static bool
+library_has_pending_albums(MediaLibraryScreen *screen) {
+    NcMenu *albums;
+
+    if (screen == NULL) {
+        return false;
+    }
+    if ((screen->mode == MEDIA_LIBRARY_MODE_THREE_COLUMNS)
+        && (media_library_screen_current_tag(screen) == NULL)) {
+        return false;
+    }
+    albums = nc_media_library_album_menu_base(&screen->albums);
+    return screen->albums_update_request
+           || (nc_menu_all_item_count(albums) <= 0);
+}
+
 int32
 media_library_screen_update(MediaLibraryScreen *screen,
                             NcmError *ncm_error) {
@@ -3135,22 +3150,6 @@ library_has_pending_tags(MediaLibraryScreen *screen) {
     tags = nc_media_library_tag_menu_base(&screen->tags);
     return screen->tags_update_request
            || (nc_menu_all_item_count(tags) <= 0);
-}
-
-static bool
-library_has_pending_albums(MediaLibraryScreen *screen) {
-    NcMenu *albums;
-
-    if (screen == NULL) {
-        return false;
-    }
-    if ((screen->mode == MEDIA_LIBRARY_MODE_THREE_COLUMNS)
-        && (media_library_screen_current_tag(screen) == NULL)) {
-        return false;
-    }
-    albums = nc_media_library_album_menu_base(&screen->albums);
-    return screen->albums_update_request
-           || (nc_menu_all_item_count(albums) <= 0);
 }
 
 static bool
