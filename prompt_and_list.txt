@@ -7,11 +7,10 @@ the same $file.c; then delete those function definitions, since they are no
 longer needed.  Then re-read the guidelines in cbase/c-guidelines.md; then
 identify instances of the anti-pattern of looking for NULL in internal functions
 of the first $file.c in the list below.  Remove all the instances of this
-anti-pattern.  Then remove the check. You can leave an ASSERT(pointer != NULL)
-in 20% of the cases, just as an occasional sanity check.  But most internal
-functions can simply assume that they have valid input because the external API
-of the module has already validated it.  After done with the $file.c, delete it
-from the list below.
+anti-pattern. You can leave an ASSERT(pointer != NULL) in 20% of the cases, just
+as an occasional sanity check.  But most internal functions can simply assume
+that they have valid input because the external API of the module has already
+validated it.  After done with the $file.c, delete it from the list below.
 
 src/screens/nc_tag_editor.c
 src/screens/nc_tiny_tag_editor.c
