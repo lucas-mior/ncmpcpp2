@@ -3798,9 +3798,11 @@ tag_editor_draw_directory(NcMenu *menu, NcWindow *window, void *item,
     (void)menu;
     (void)pos;
     (void)user;
+
     ASSERT(window != NULL);
     ASSERT(pair != NULL);
     ASSERT(pair->first != NULL);
+
     converted = ncm_charset_copy(pair->first, pair->first_len);
     nc_window_print_data(window, converted.data, converted.len);
     sb_free(&converted);
