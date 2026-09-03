@@ -1,0 +1,102 @@
+# Prompt
+
+For the first of the problems below (functions that are called only once),
+identify instances of it in the first file in the list below it. Then fix those
+instances and remove the file from the list.
+
+## Functions that are called only once
+For functions that are defined inside a file and only used inside the same file,
+if they are called only once: inline their body and then delete them.
+
+- src/c/ncm_conversion.c
+- src/screens/nc_help.c
+- src/c/ncm_tags.c
+- src/c/ncm_type_conversions.c
+- src/c/ncm_sample_buffer.c
+- src/screen_actions.c
+- src/curl_handle.c
+- src/curses/nc_buffer.c
+- src/screens/app_screens.c
+- src/c/ncm_lrc.c
+- src/screens/nc_server_info.c
+- src/screens/nc_outputs.c
+- src/curses/nc_window.c
+- src/c/ncm_taglib.c
+- src/screens/nc_playlist_editor.c
+- src/global.c
+- src/lastfm_service.c
+- src/screens/nc_screen.c
+- src/c/ncm_song.c
+- src/screens/nc_browser.c
+- src/helpers.c
+- src/c/ncm_mpd_connection.c
+- src/curses/nc_cyclic_buffer.c
+- src/app_controller.c
+- src/screens/nc_search_engine.c
+- src/screens/nc_tiny_tag_editor.c
+- src/curses/nc_scrollpad.c
+- src/c/ncm_playlist.c
+- src/c/ncm_fs.c
+- src/c/ncm_search_prompt.c
+- src/settings.c
+- src/ui_state.c
+- src/app_state.c
+- src/c/ncm_job.c
+- src/bindings.c
+- src/screens/nc_sel_items_adder.c
+- src/c/ncm_directory.c
+- src/c/ncm_comparators.c
+- src/c/ncm_regex.c
+- src/curses/nc_menu.c
+- src/screens/nc_screen_switcher.c
+- src/statusbar.c
+- src/c/ncm_string.c
+- src/c/ncm_time.c
+- src/curses/nc_formatted_color.c
+- src/c/ncm_path.c
+- src/c/ncm_mpd_item.c
+- src/screens/screen_type.c
+- src/screens/nc_screens.c
+- src/c/ncm_playlist_sort.c
+- src/app_legacy_bridge.c
+- src/screens/nc_sort_playlist.c
+- src/settings_types.c
+- src/screens/nc_tag_editor.c
+- src/screens/nc_playlist.c
+- src/screens/nc_lyrics.c
+- src/screens/nc_lastfm.c
+- src/c/ncm_html.c
+- src/screens/nc_song_info.c
+- src/c/ncm_display.c
+- src/screens/nc_scrollpad_screen.c
+- src/c/ncm_macro_utilities.c
+- src/c/ncm_enums.c
+- src/status.c
+- src/configuration.c
+- src/c/ncm_app_arrays.c
+- src/main.c
+- src/title.c
+- src/lyrics_fetcher.c
+- src/c/ncm_mpd_client.c
+- src/c/ncm_c.c
+- src/c/ncm_option_parser.c
+- src/screens/nc_visualizer.c
+- src/curses/nc_curses.c
+- src/curses/nc_app_menus.c
+- src/actions.c
+- src/screens/nc_media_library.c
+- src/c/ncm_mutable_song.c
+- src/c/ncm_format.c
+- src/c/ncm_error.c
+- src/c/ncm_string_format.c
+
+## Functions that are never called (dead code)
+## Excessive NULL checking
+## Excessive error checking
+## Function creep: functions that do the same thing are redefined in different
+## modules
+## some unnecessary static function declarations at the top of the files
+## functions definitions could be reordered to not need declarations at the top
+## Style: lines broken prematurely
+## Style: checking return value after the call (call should be inside if().
+## Strings: unecessary conversion to and from StrBuilder: see ncm_conversion_copy_source
