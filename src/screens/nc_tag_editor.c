@@ -422,6 +422,7 @@ tag_editor_update_menu_highlights(TagEditorScreen *screen) {
                        screen->active_focus)) {
             helper_border = Config.active_window_border;
         }
+
         nc_window_set_border(&screen->parser_dialog_window, dialog_border);
         nc_window_set_border(&screen->parser_window, parser_border);
         nc_window_set_border(&screen->parser_helper_window, helper_border);
