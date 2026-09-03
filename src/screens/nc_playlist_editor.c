@@ -889,8 +889,8 @@ playlist_editor_screen_locate_playlist(
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing playlist"));
     }
-    status = playlist_editor_screen_reload_playlists_from_mpd(
-        screen, client, ncm_error);
+    status = playlist_editor_screen_reload_playlists_from_mpd(screen, client,
+                                                              ncm_error);
     if (status < 0) {
         return status;
     }
