@@ -8,7 +8,7 @@
 bool global_show_messages;
 bool global_seeking_in_progress;
 StrBuilder global_volume_state;
-NcmTimePoint global_timer;
+int64 global_timer;
 NcmMpdClient global_mpd;
 
 void
@@ -25,19 +25,20 @@ global_state_destroy(void) {
     return;
 }
 
-int32
-global_timer_update(NcmError *ncm_error) {
-    return ncm_time_monotonic_now(&global_timer, ncm_error);
+void
+global_timer_update(void) {
+    global_timer = time_monotonic_now();
+    return;
 }
 
 int64
-global_timer_elapsed_ms(NcmTimePoint start) {
-    return ncm_time_elapsed_ms(start, global_timer);
+global_timer_elapsed_ms(int64 start) {
+    return time_elapsed_ms(start, global_timer);
 }
 
 int64
-global_timer_elapsed_seconds(NcmTimePoint start) {
-    return ncm_time_elapsed_ms(start, global_timer) / 1000;
+global_timer_elapsed_seconds(int64 start) {
+    return time_elapsed_ms(start, global_timer) / 1000;
 }
 
 void

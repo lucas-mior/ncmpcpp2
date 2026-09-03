@@ -8,14 +8,14 @@
 extern bool global_show_messages;
 extern bool global_seeking_in_progress;
 extern StrBuilder global_volume_state;
-extern NcmTimePoint global_timer;
+extern int64 global_timer;
 extern NcmMpdClient global_mpd;
 
 void global_state_init(void);
 void global_state_destroy(void);
-int32 global_timer_update(NcmError *ncm_error);
-int64 global_timer_elapsed_ms(NcmTimePoint start);
-int64 global_timer_elapsed_seconds(NcmTimePoint start);
+void global_timer_update(void);
+int64 global_timer_elapsed_ms(int64 start);
+int64 global_timer_elapsed_seconds(int64 start);
 void global_volume_state_set(char *string, int32 string_len);
 void global_volume_state_append(char *string, int32 string_len);
 char *global_volume_state_cstr(void);

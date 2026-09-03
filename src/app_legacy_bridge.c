@@ -22,7 +22,7 @@
  * broader application startup path is split across app modules.
  */
 
-static NcmTimePoint app_bridge_header_refresh_time;
+static int64 app_bridge_header_refresh_time;
 
 static void
 app_bridge_request_media_library_database_update(void *user) {

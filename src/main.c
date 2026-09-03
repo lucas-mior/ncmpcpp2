@@ -185,7 +185,7 @@ app_apply_startup_screen(void) {
 }
 
 static void
-app_connect_if_due(NcmTimePoint *connect_attempt) {
+app_connect_if_due(int64 *connect_attempt) {
     if (!ncmpcpp_mpd_is_connected()
         && (global_timer_elapsed_ms(*connect_attempt) > 1000)) {
         *connect_attempt = global_timer;
@@ -225,7 +225,7 @@ app_exit_is_requested(void) {
 int
 main(int32 argc, char **argv) {
     bool key_pressed;
-    NcmTimePoint connect_attempt;
+    int64 connect_attempt;
     int32 redirect_status;
 
     program = argv[0];
@@ -253,12 +253,12 @@ main(int32 argc, char **argv) {
     ncmpcpp_init_screen(Config.colors_enabled, Config.mouse_support);
     app_create_windows();
 
-    (void)global_timer_update(NULL);
-    rand_int_seed((uint64)global_timer.ns);
+    global_timer_update();
+    rand_int_seed((uint64)global_timer);
     app_apply_startup_screen();
 
     key_pressed = false;
-    connect_attempt.ns = 0;
+    connect_attempt = 0;
 
     while (!app_exit_is_requested()) {
         NcKey input;
@@ -278,7 +278,7 @@ main(int32 argc, char **argv) {
             continue;
         }
 
-        (void)global_timer_update(NULL);
+        global_timer_update();
         app_execute_key(input);
         ncmpcpp_playlist_enable_highlighting_if_current();
     }
