@@ -4260,7 +4260,6 @@ library_mpd_search_songs(void *user,
     StrBuilder primary = {0};
     StrBuilder album = {0};
     StrBuilder date = {0};
-    char *value;
     int32 status;
 
     ASSERT(client != NULL);
@@ -4269,7 +4268,7 @@ library_mpd_search_songs(void *user,
 
     status = ncm_mpd_client_start_search(client, true, ncm_error);
     if ((status == 0) && query->match_primary_tag) {
-        value = library_query_cstring(
+        char *value = library_query_cstring(
             &primary, query->primary_value, query->primary_value_len);
         if (value == NULL) {
             status = ncm_error_set_status(
@@ -4280,7 +4279,7 @@ library_mpd_search_songs(void *user,
         }
     }
     if ((status == 0) && query->match_album) {
-        value = library_query_cstring(
+        char *value = library_query_cstring(
             &album, query->album, query->album_len);
         if (value == NULL) {
             status = ncm_error_set_status(ncm_error, -EINVAL,
@@ -4291,7 +4290,7 @@ library_mpd_search_songs(void *user,
         }
     }
     if ((status == 0) && query->match_date) {
-        value = library_query_cstring(
+        char *value = library_query_cstring(
             &date, query->date, query->date_len);
         if (value == NULL) {
             status = ncm_error_set_status(ncm_error, -EINVAL,
