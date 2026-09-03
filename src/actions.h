@@ -181,8 +181,8 @@ NcmActionDef *ncm_action_table_find(NcmActionDef *defs, int32 defs_len,
                                     char *name, int32 name_len);
 NcmActionDef *ncm_action_get(enum NcmActionType type);
 NcmActionDef *ncm_action_find(char *name, int32 name_len);
-bool ncm_action_type_parse(char *name, int32 name_len,
-                           enum NcmActionType *type);
+int32 ncm_action_type_parse(char *name, int32 name_len,
+                            enum NcmActionType *type);
 bool ncm_action_def_can_run(NcmActionDef *action, void *user);
 int32 ncm_action_def_run(NcmActionDef *action, void *user);
 bool ncm_action_can_run(enum NcmActionType type, void *user);

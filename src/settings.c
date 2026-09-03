@@ -716,7 +716,8 @@ settings_parse_screen_list(Configuration *config, char *value, int32 value_len,
         if (item_len <= 0) {
             continue;
         }
-        if (!screen_type_parse_startup(item, item_len, &screen)) {
+        status = screen_type_parse_startup(item, item_len, &screen);
+        if (status < 0) {
             return settings_invalid_value(ncm_error, item, item_len);
         }
         slot = screen_type_array_append(&config->screen_sequence);
@@ -1420,8 +1421,11 @@ apply_screen_switcher_mode(Configuration *config, char *value, int32 value_len,
 static int32
 apply_startup_screen(Configuration *config, char *value, int32 value_len,
                      NcmError *ncm_error) {
-    if (!screen_type_parse_startup(value, value_len,
-                                   &config->startup_screen_type)) {
+    int32 status;
+
+    status = screen_type_parse_startup(value, value_len,
+                                       &config->startup_screen_type);
+    if (status < 0) {
         return settings_invalid_value(ncm_error, value, value_len);
     }
     return 0;
@@ -1430,13 +1434,16 @@ apply_startup_screen(Configuration *config, char *value, int32 value_len,
 static int32
 apply_startup_slave_screen(Configuration *config, char *value, int32 value_len,
                            NcmError *ncm_error) {
+    int32 status;
+
     if (value_len <= 0) {
         config->has_startup_slave_screen_type = false;
         config->startup_slave_screen_type = NCM_SCREEN_TYPE_COUNT;
         return 0;
     }
-    if (!screen_type_parse_startup(value, value_len,
-                                   &config->startup_slave_screen_type)) {
+    status = screen_type_parse_startup(value, value_len,
+                                       &config->startup_slave_screen_type);
+    if (status < 0) {
         return settings_invalid_value(ncm_error, value, value_len);
     }
     config->has_startup_slave_screen_type = true;
