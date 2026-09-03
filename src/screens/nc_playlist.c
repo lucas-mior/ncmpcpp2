@@ -1128,7 +1128,7 @@ playlist_action_callbacks(void) {
 static void
 playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
                    int32 pos, void *user) {
-    NcBuffer buffer;
+    NcBuffer buffer = {0};
     bool is_now_playing;
 
     (void)user;
@@ -1140,7 +1140,6 @@ playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
         playlist_print_buffer(window, &Config.now_playing_prefix);
     }
 
-    buffer = (NcBuffer){0};
     if (Config.playlist_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
         int32 available_width;
         int32 list_width;
