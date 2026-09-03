@@ -21,7 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static int32 browser_collect_local_directory_songs(BrowserScreen *, NcmSongArray *, char *, int32, NcmError *);
 static int32 browser_current_directory_item_path(BrowserScreen *, NcmStringView *, NcmError *);
 static int32 browser_current_playlist_item_path(BrowserScreen *, NcmStringView *, NcmError *);
 static int32 browser_set_parent_of_directory(BrowserScreen *, char *, int32 );
@@ -2051,60 +2050,7 @@ browser_make_local_song(NcmSong *song, char *path, int32 path_len,
 
     return status;
 }
-static int32
-browser_collect_item_songs(BrowserScreen *screen,
-                           NcmSongArray *songs, NcmMpdItem *item) {
-    NcmStringView path;
-    int32 status;
 
-    ASSERT(screen != NULL);
-    ASSERT(songs != NULL);
-    ASSERT(item != NULL);
-
-    switch (ncm_mpd_item_kind(item)) {
-    case NCM_MPD_ITEM_DIRECTORY: {
-        NcmMpdSongList source = {0};
-        NcmError ncm_error = {0};
-        char *directory;
-
-        if (!ncm_directory_has_path_view(ncm_mpd_item_directory(item), &path)) {
-            return -EINVAL;
-        }
-        if (screen->local_browser) {
-            ncm_error_clear(&ncm_error);
-            return browser_collect_local_directory_songs(
-                screen, songs, path.data, path.len, &ncm_error);
-        }
-
-        ncm_error_clear(&ncm_error);
-        directory = path.data;
-        if (path.len <= 0) {
-            directory = "/";
-        }
-        status = ncm_mpd_client_get_directory_recursive(
-            &global_mpd, directory, &source, &ncm_error);
-        for (int32 i = 0; status >= 0 && (i < source.count); i += 1) {
-            status = ncm_song_array_append_copy(songs, &source.items[i]);
-        }
-        if (status > 0) {
-            status = 0;
-        }
-        ncm_mpd_song_list_destroy(&source);
-        return status;
-    }
-    case NCM_MPD_ITEM_SONG:
-        status = ncm_song_array_append_copy(songs, ncm_mpd_item_song(item));
-        if (status < 0) {
-            return status;
-        }
-        return 0;
-    case NCM_MPD_ITEM_PLAYLIST:
-    case NCM_MPD_ITEM_COUNT:
-        return 0;
-    default:
-        return -EINVAL;
-    }
-}
 static int32
 browser_collect_local_directory_songs(
     BrowserScreen *screen, NcmSongArray *songs, char *path,
@@ -2185,7 +2131,63 @@ browser_collect_local_directory_songs(
     ncm_fs_directory_close(&directory);
     return status;
 }
+
 static int32
+browser_collect_item_songs(BrowserScreen *screen,
+                           NcmSongArray *songs, NcmMpdItem *item) {
+    NcmStringView path;
+    int32 status;
+
+    ASSERT(screen != NULL);
+    ASSERT(songs != NULL);
+    ASSERT(item != NULL);
+
+    switch (ncm_mpd_item_kind(item)) {
+    case NCM_MPD_ITEM_DIRECTORY: {
+        NcmMpdSongList source = {0};
+        NcmError ncm_error = {0};
+        char *directory;
+
+        if (!ncm_directory_has_path_view(ncm_mpd_item_directory(item), &path)) {
+            return -EINVAL;
+        }
+        if (screen->local_browser) {
+            ncm_error_clear(&ncm_error);
+            return browser_collect_local_directory_songs(
+                screen, songs, path.data, path.len, &ncm_error);
+        }
+
+        ncm_error_clear(&ncm_error);
+        directory = path.data;
+        if (path.len <= 0) {
+            directory = "/";
+        }
+        status = ncm_mpd_client_get_directory_recursive(
+            &global_mpd, directory, &source, &ncm_error);
+        for (int32 i = 0; status >= 0 && (i < source.count); i += 1) {
+            status = ncm_song_array_append_copy(songs, &source.items[i]);
+        }
+        if (status > 0) {
+            status = 0;
+        }
+        ncm_mpd_song_list_destroy(&source);
+        return status;
+    }
+    case NCM_MPD_ITEM_SONG:
+        status = ncm_song_array_append_copy(songs, ncm_mpd_item_song(item));
+        if (status < 0) {
+            return status;
+        }
+        return 0;
+    case NCM_MPD_ITEM_PLAYLIST:
+    case NCM_MPD_ITEM_COUNT:
+        return 0;
+    default:
+        return -EINVAL;
+    }
+}
+
+int32
 browser_current_directory_item_path(BrowserScreen *screen,
                                     NcmStringView *path,
                                     NcmError *ncm_error) {
