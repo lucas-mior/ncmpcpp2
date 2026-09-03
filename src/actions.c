@@ -4984,7 +4984,6 @@ static int32
 action_runtime_edit_library_tag(void) {
     enum NcmTagsField field;
     NcmMpdSongList songs;
-    NcmMutableSong mutable_song;
     NcmStringView uri;
     StrBuilder current_tag = {0};
     StrBuilder prompt = {0};
@@ -5050,8 +5049,8 @@ action_runtime_edit_library_tag(void) {
     for (int32 i = 0; (status == 0) && (i < ncm_mpd_song_list_count(&songs));
          i += 1) {
         NcmSong *song = ncm_mpd_song_list_at(&songs, i);
+        NcmMutableSong mutable_song = {0};
 
-        mutable_song = (NcmMutableSong){0};
         status = ncm_mutable_song_load_originals_from_song(&mutable_song,
                                                            song);
         if (status == 0) {
