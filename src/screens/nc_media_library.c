@@ -3768,7 +3768,6 @@ library_collect_album_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs,
     NcmError *ncm_error
 ) {
-    NcMediaLibraryAlbumRow *row;
     NcMenu *menu;
     bool any_selected;
     int32 status;
@@ -3777,6 +3776,7 @@ library_collect_album_songs(
     any_selected = nc_menu_has_selected(menu);
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         MediaLibrarySongQuery query = {0};
+        NcMediaLibraryAlbumRow *row;
 
         if (nc_menu_position_is_separator(menu, i)) {
             continue;
