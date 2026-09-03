@@ -1013,9 +1013,7 @@ playlist_resize(NcScreen *screen) {
 
 static char *
 playlist_title(NcScreen *screen) {
-    PlaylistScreen *playlist;
-
-    playlist = playlist_from_screen(screen);
+    PlaylistScreen *playlist = playlist_from_screen(screen);
     playlist_refresh_stats(playlist);
     return playlist->title_cache.data;
 }
