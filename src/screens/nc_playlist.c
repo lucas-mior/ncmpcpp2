@@ -774,11 +774,8 @@ playlist_screen_find_sort_range(
 
 
 bool
-playlist_screen_has_sortable_range(
-    PlaylistScreen *screen
-) {
-    return playlist_screen_find_sort_range(
-        screen, NULL, NULL, NULL, NULL) == 0;
+playlist_screen_has_sortable_range(PlaylistScreen *screen) {
+    return playlist_screen_find_sort_range(screen, NULL, NULL, NULL, NULL) == 0;
 }
 
 
