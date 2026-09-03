@@ -64,51 +64,10 @@ app_signal_handler(int32 signal_number) {
 }
 
 static void
-app_init_state(void) {
-    global_state_init();
-    configuration_init(&Config);
-    Bindings = (NcmBindingsConfiguration){0};
-    return;
-}
-
-static void
 app_destroy_state(void) {
     ncm_bindings_configuration_destroy(&Bindings);
     configuration_destroy(&Config);
     global_state_destroy();
-    return;
-}
-
-static int32
-app_redirect_stderr(void) {
-    StrBuilder path = {0};
-
-    SB_APPEND(&path, Config.ncmpcpp_directory, Config.ncmpcpp_directory_len);
-    SB_APPEND(&path, "error.log");
-
-    if ((app_saved_stderr_fd = dup(STDERR_FILENO)) < 0) {
-        int32 status = -errno;
-
-        sb_free(&path);
-        return status;
-    }
-
-    app_error_log = freopen(path.data, "a", stderr);
-    sb_free(&path);
-    if (app_error_log == NULL) {
-        return -errno;
-    }
-    return 0;
-}
-
-static void
-app_restore_stderr(void) {
-    if (app_saved_stderr_fd >= 0) {
-        fflush(stderr);
-        dup2(app_saved_stderr_fd, STDERR_FILENO);
-        close(app_saved_stderr_fd);
-        app_saved_stderr_fd = -1;
-    }
     return;
 }
 
@@ -129,15 +88,67 @@ app_at_exit(void) {
     }
     ncmpcpp_destroy_screen();
 
-    app_restore_stderr();
+    if (app_saved_stderr_fd >= 0) {
+        fflush(stderr);
+        dup2(app_saved_stderr_fd, STDERR_FILENO);
+        close(app_saved_stderr_fd);
+        app_saved_stderr_fd = -1;
+    }
     app_destroy_state();
     return;
 }
 
-static void
-app_create_windows(void) {
-    ncmpcpp_set_statusbar_visibility_baseline(
-        Config.statusbar_visibility);
+int
+main(int32 argc, char **argv) {
+    bool key_pressed;
+    int64 connect_attempt;
+    int32 redirect_status;
+
+    program = argv[0];
+
+    global_state_init();
+    configuration_init(&Config);
+    Bindings = (NcmBindingsConfiguration){0};
+    setlocale(LC_ALL, "");
+
+    if (configure(argc, argv) <= 0) {
+        app_destroy_state();
+        exit(EXIT_SUCCESS);
+    }
+#if CC_GCC || CC_CLANG
+    atexit(app_at_exit);
+#endif
+    {
+        StrBuilder path = {0};
+
+        SB_APPEND(&path, Config.ncmpcpp_directory,
+                  Config.ncmpcpp_directory_len);
+        SB_APPEND(&path, "error.log");
+
+        if ((app_saved_stderr_fd = dup(STDERR_FILENO)) < 0) {
+            redirect_status = -errno;
+            sb_free(&path);
+        } else {
+            app_error_log = freopen(path.data, "a", stderr);
+            sb_free(&path);
+            if (app_error_log == NULL) {
+                redirect_status = -errno;
+            } else {
+                redirect_status = 0;
+            }
+        }
+    }
+    if (redirect_status < 0) {
+        error2("warning: could not redirect stderr: %s\n",
+               strerror(-redirect_status));
+    }
+
+    signal(SIGPIPE, SIG_IGN);
+    signal(SIGWINCH, app_signal_handler);
+
+    ncmpcpp_set_noidle_status_callback();
+    ncmpcpp_init_screen(Config.colors_enabled, Config.mouse_support);
+    ncmpcpp_set_statusbar_visibility_baseline(Config.statusbar_visibility);
 
     if (Config.design == NCM_DESIGN_ALTERNATIVE) {
         Config.statusbar_visibility = false;
@@ -150,7 +161,8 @@ app_create_windows(void) {
                                               COLS, ncmpcpp_header_height(),
                                               Config.header_color);
     ui_state_set_header_window(app_header_window);
-    if (Config.header_visibility || (Config.design == NCM_DESIGN_ALTERNATIVE)) {
+    if (Config.header_visibility
+        || (Config.design == NCM_DESIGN_ALTERNATIVE)) {
         ncmpcpp_window_display(app_header_window);
     }
 
@@ -158,13 +170,11 @@ app_create_windows(void) {
                                               COLS, ncmpcpp_footer_height(),
                                               Config.statusbar_color);
     ui_state_set_footer_window(app_footer_window);
-    return;
-}
 
-static void
-app_apply_startup_screen(void) {
+    global_timer_update();
+    rand_int_seed((uint64)global_timer);
+
     ncmpcpp_playlist_switch_to();
-
     if (Config.startup_screen_type != ncmpcpp_current_screen_type()) {
         ASSERT_ZERO(ncmpcpp_switch_to_screen_type(Config.startup_screen_type));
     }
@@ -181,89 +191,21 @@ app_apply_startup_screen(void) {
             }
         }
     }
-    return;
-}
-
-static void
-app_connect_if_due(int64 *connect_attempt) {
-    if (!ncmpcpp_mpd_is_connected()
-        && (global_timer_elapsed_ms(*connect_attempt) > 1000)) {
-        *connect_attempt = global_timer;
-        ncmpcpp_status_clear();
-        nc_window_clear_fd_callbacks(app_footer_window);
-        ncmpcpp_connect_or_report();
-    }
-    return;
-}
-
-static void
-app_execute_key(NcKey input) {
-    NcmBindingSlice bindings;
-    bool executed = false;
-
-    if (ncm_bindings_configuration_get(&Bindings, input, &bindings) <= 0) {
-        return;
-    }
-
-    for (int32 i = 0; i < bindings.len; i += 1) {
-        if (ncmpcpp_execute_binding(bindings.data + i) == 0) {
-            executed = true;
-            break;
-        }
-    }
-
-    (void)executed;
-    return;
-}
-
-static bool
-app_exit_is_requested(void) {
-    return ncmpcpp_has_exit_request()
-           || ncm_action_runtime_exit_requested(NULL);
-}
-
-int
-main(int32 argc, char **argv) {
-    bool key_pressed;
-    int64 connect_attempt;
-    int32 redirect_status;
-
-    program = argv[0];
-
-    app_init_state();
-    setlocale(LC_ALL, "");
-
-    if (configure(argc, argv) <= 0) {
-        app_destroy_state();
-        exit(EXIT_SUCCESS);
-    }
-#if CC_GCC || CC_CLANG
-    atexit(app_at_exit);
-#endif
-    redirect_status = app_redirect_stderr();
-    if (redirect_status < 0) {
-        error2("warning: could not redirect stderr: %s\n",
-               strerror(-redirect_status));
-    }
-
-    signal(SIGPIPE, SIG_IGN);
-    signal(SIGWINCH, app_signal_handler);
-
-    ncmpcpp_set_noidle_status_callback();
-    ncmpcpp_init_screen(Config.colors_enabled, Config.mouse_support);
-    app_create_windows();
-
-    global_timer_update();
-    rand_int_seed((uint64)global_timer);
-    app_apply_startup_screen();
 
     key_pressed = false;
     connect_attempt = 0;
 
-    while (!app_exit_is_requested()) {
+    while (!ncmpcpp_has_exit_request()
+           && !ncm_action_runtime_exit_requested(NULL)) {
         NcKey input;
 
-        app_connect_if_due(&connect_attempt);
+        if (!ncmpcpp_mpd_is_connected()
+            && (global_timer_elapsed_ms(connect_attempt) > 1000)) {
+            connect_attempt = global_timer;
+            ncmpcpp_status_clear();
+            nc_window_clear_fd_callbacks(app_footer_window);
+            ncmpcpp_connect_or_report();
+        }
 
         if (app_resize_requested) {
             ncmpcpp_resize_screen(true);
@@ -279,7 +221,21 @@ main(int32 argc, char **argv) {
         }
 
         global_timer_update();
-        app_execute_key(input);
+        {
+            NcmBindingSlice bindings;
+            bool executed = false;
+
+            if (ncm_bindings_configuration_get(&Bindings, input,
+                                                  &bindings) > 0) {
+                for (int32 i = 0; i < bindings.len; i += 1) {
+                    if (ncmpcpp_execute_binding(bindings.data + i) == 0) {
+                        executed = true;
+                        break;
+                    }
+                }
+            }
+            (void)executed;
+        }
         ncmpcpp_playlist_enable_highlighting_if_current();
     }
 
