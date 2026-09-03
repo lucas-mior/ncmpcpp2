@@ -3594,13 +3594,18 @@ static int32
 library_copy_song_at(MediaLibraryScreen *screen,
                      NcmSongArray *songs, int32 pos) {
     NcmSong *song;
+    int32 status;
 
     song = nc_menu_active_item_at(
         nc_media_library_song_menu_base(&screen->songs), pos);
     if (song == NULL) {
         return 0;
     }
-    return ncm_song_array_append_copy(songs, song);
+    status = ncm_song_array_append_copy(songs, song);
+    if (status < 0) {
+        return status;
+    }
+    return 0;
 }
 
 static NcMenu *
@@ -3721,6 +3726,9 @@ library_append_query_songs(
                 break;
             }
         }
+    }
+    if (status > 0) {
+        status = 0;
     }
     ncm_song_array_destroy(&sorted);
     ncm_mpd_song_list_destroy(&source);
@@ -4338,7 +4346,7 @@ library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
     if (play) {
         play_pos = ncm_status_state_playlist_length();
     }
-    if (status == 0) {
+    if (status >= 0) {
         status = ncm_mpd_client_add_song_list(client, &additions, -1,
                                               ncm_error);
     }

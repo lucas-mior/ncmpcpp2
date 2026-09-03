@@ -4969,7 +4969,10 @@ action_runtime_shared_directory_update(StrBuilder *shared_directory,
 
     if (!*valid) {
         *valid = true;
-        return sb_set(shared_directory, directory, directory_len);
+        if (sb_set(shared_directory, directory, directory_len) < 0) {
+            return -EINVAL;
+        }
+        return 0;
     }
 
     shared = ncm_string_shared_directory(shared_directory->data,

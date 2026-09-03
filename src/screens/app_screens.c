@@ -542,6 +542,9 @@ search_list_database_songs(
         ncm_error_set_status(ncm_error, status,
                              STRLIT("failed to copy database songs"));
     }
+    if (status > 0) {
+        status = 0;
+    }
     ncm_mpd_song_list_destroy(&source);
     return status;
 }

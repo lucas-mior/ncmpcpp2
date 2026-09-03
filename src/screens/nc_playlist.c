@@ -1520,6 +1520,7 @@ static int32
 playlist_append_position(NcMenu *menu, int32 pos,
                          NcmSongArray *songs) {
     NcmSong *song;
+    int32 status;
 
     if ((menu == NULL) || (songs == NULL)) {
         return -EINVAL;
@@ -1527,7 +1528,11 @@ playlist_append_position(NcMenu *menu, int32 pos,
     if ((song = nc_menu_active_item_at(menu, pos)) == NULL) {
         return -ENOENT;
     }
-    return ncm_song_array_append_copy(songs, song);
+    status = ncm_song_array_append_copy(songs, song);
+    if (status < 0) {
+        return status;
+    }
+    return 0;
 }
 
 

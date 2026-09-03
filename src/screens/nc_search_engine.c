@@ -342,6 +342,9 @@ search_engine_screen_format_song_text(SearchEngineScreen *screen,
     }
     if (status == 0) {
         status = sb_set(text, formatted.data, formatted.len);
+        if (status > 0) {
+            status = 0;
+        }
     }
     nc_buffer_destroy(&formatted);
     return status;
@@ -1669,6 +1672,9 @@ search_collect_database_results(SearchEngineScreen *screen,
         ncm_error_set_status(ncm_error, status,
                              STRLIT("failed to copy search results"));
     }
+    if (status > 0) {
+        status = 0;
+    }
     ncm_mpd_song_list_destroy(&result);
     return status;
 }
@@ -1952,13 +1958,18 @@ static int32
 search_copy_song_at(SearchEngineScreen *screen,
                     NcmSongArray *songs, int32 pos) {
     NcSearchRow *row;
+    int32 status;
 
     row = nc_menu_active_item_at(search_engine_screen_menu(screen),
                                  pos);
     if ((row == NULL) || !row->is_song) {
         return 0;
     }
-    return ncm_song_array_append_copy(songs, &row->song);
+    status = ncm_song_array_append_copy(songs, &row->song);
+    if (status < 0) {
+        return status;
+    }
+    return 0;
 }
 
 #endif /* NCMPCPP_NC_SEARCH_ENGINE_C */

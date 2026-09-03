@@ -2352,6 +2352,7 @@ append_content_item_from_source(PlaylistEditorScreen *screen,
                                 enum NcMenuItemSource source, int32 pos,
                                 NcmSongArray *songs) {
     NcmSong *song;
+    int32 status;
 
     if ((screen == NULL) || (songs == NULL)) {
         return -EINVAL;
@@ -2361,7 +2362,11 @@ append_content_item_from_source(PlaylistEditorScreen *screen,
     if (song == NULL) {
         return -ENOENT;
     }
-    return ncm_song_array_append_copy(songs, song);
+    status = ncm_song_array_append_copy(songs, song);
+    if (status < 0) {
+        return status;
+    }
+    return 0;
 }
 
 static int32
