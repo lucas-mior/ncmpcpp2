@@ -2909,14 +2909,10 @@ library_replace_tags(MediaLibraryScreen *screen,
 static int32
 library_update_tags(MediaLibraryScreen *screen,
                     NcmError *ncm_error) {
-    MediaLibraryTagArray tags;
-    NcmMpdStringList strings;
-    NcmMpdSongList songs;
+    MediaLibraryTagArray tags = {0};
+    NcmMpdStringList strings = {0};
+    NcmMpdSongList songs = {0};
     int32 status;
-
-    tags = (MediaLibraryTagArray){0};
-    strings = (NcmMpdStringList){0};
-    songs = (NcmMpdSongList){0};
 
     if (screen->sort_by_mtime) {
         status = media_library_screen_list_all_songs(
