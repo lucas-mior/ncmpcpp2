@@ -197,8 +197,7 @@ ncm_playlist_sort_plan_build(
     order = malloc2(songs->len*SIZEOF(*order));
     temporary = malloc2(songs->len*SIZEOF(*temporary));
     current = malloc2(songs->len*SIZEOF(*current));
-    replacement.items = malloc2(
-        (songs->len - 1)*SIZEOF(*replacement.items));
+    replacement.items = malloc2((songs->len - 1)*SIZEOF(*replacement.items));
     replacement.cap = songs->len - 1;
 
     for (int32 i = 0; i < songs->len; i += 1) {
