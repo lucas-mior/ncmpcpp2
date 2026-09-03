@@ -121,10 +121,9 @@ tag_editor_draw_tag(NcMenu *menu, NcWindow *window, void *item,
     tag_types = nc_editor_string_menu_base(&screen->tag_types);
     choice = nc_menu_highlight(tag_types);
     if ((choice >= 0) && (choice < 11)) {
-        StrBuilder tag = {0};
-        enum NcmTagsField field;
+        StrBuilder tag;
+        enum NcmTagsField field = ncm_song_info_tags[choice].field;
 
-        field = ncm_song_info_tags[choice].field;
         tag = ncm_mutable_song_tags_buffer(
             song, field, Config.tags_separator, Config.tags_separator_len,
             Config.show_duplicate_tags);
