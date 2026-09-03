@@ -3351,9 +3351,8 @@ library_mouse_scroll(MediaLibraryScreen *screen,
     }
 
     for (int32 i = 0; i < count; i += 1) {
-        nc_menu_scroll_selectable(
-            media_library_screen_active_menu(screen),
-            screen->main_height, effective);
+        nc_menu_scroll_selectable(media_library_screen_active_menu(screen),
+                                  screen->main_height, effective);
     }
     return;
 }
