@@ -3336,8 +3336,7 @@ library_mouse_button_pressed(NcScreen *screen,
 }
 
 static void
-library_mouse_scroll(MediaLibraryScreen *screen,
-                     enum NcScroll where) {
+library_mouse_scroll(MediaLibraryScreen *screen, enum NcScroll where) {
     enum NcScroll effective = where;
     int32 count = Config.lines_scrolled;
 
