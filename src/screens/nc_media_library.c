@@ -2865,7 +2865,7 @@ static int32
 library_replace_tags(MediaLibraryScreen *screen,
                      MediaLibraryTagArray *tags) {
     NcMediaLibraryTagMenu replacement;
-    NcMediaLibraryTagRow identity;
+    NcMediaLibraryTagRow identity = {0};
     NcMediaLibraryTagRow *current;
     NcMenu *menu;
     NcMenu *replacement_menu;
@@ -2879,7 +2879,7 @@ library_replace_tags(MediaLibraryScreen *screen,
     current = nc_media_library_tag_menu_current(&screen->tags);
     highlight = nc_menu_highlight(menu);
     identity_valid = false;
-    identity = (NcMediaLibraryTagRow){0};
+
     if (current) {
         identity_valid = nc_media_library_tag_row_copy(
             &identity, current) >= 0;
