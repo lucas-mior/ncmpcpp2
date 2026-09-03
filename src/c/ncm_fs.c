@@ -302,9 +302,6 @@ ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
 
 void
 ncm_fs_directory_close(NcmFsDirectory *directory) {
-    if (directory == NULL) {
-        return;
-    }
     if (directory->dir != NULL) {
         closedir((DIR *)directory->dir);
     }
