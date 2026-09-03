@@ -14,8 +14,7 @@ static int32 ncm_lrc_parse_uint(char *data, int32 data_len,
 static int32 ncm_lrc_trim_line_end(char *data, int32 data_len);
 static int32 ncm_lrc_raw_line_len(char *data, int32 data_len,
                                   int32 start);
-static void ncm_lrc_document_clear_buffer_positions(
-    NcmLrcDocument *document);
+static void ncm_lrc_document_clear_buffer_positions(NcmLrcDocument *document);
 static int ncm_lrc_entry_compare(void *left_ptr, void *right_ptr);
 
 void
