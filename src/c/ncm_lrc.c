@@ -34,12 +34,12 @@ ncm_lrc_document_destroy(NcmLrcDocument *document) {
 
 static int32
 ncm_lrc_raw_line_len(char *data, int32 data_len, int32 start) {
-    int32 len;
+    int32 len = 0;
 
-    len = 0;
     while (((start + len) < data_len) && (data[start + len] != '\n')) {
         len += 1;
     }
+
     return len;
 }
 
