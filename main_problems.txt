@@ -9,3 +9,5 @@
   body inlined and then deleted).
 - some unnecessary static function declarations at the top of the files
   * functions definitions could be reordered to not need declarations at the top
+- Style: lines broken prematurely
+- Style: checking return value after the call (call should be inside if().
