@@ -1,9 +1,7 @@
 Diagnostics:
   UnusedIncludes: None
-  ClangTidy:
-    Remove: "*"
+  Suppress: 
+    - "pp_including_mainfile_in_preamble"
+    - "err_enum_redeclare_fixed_mismatch"
 CompileFlags:
-  Add:
-    - "-w"
-    - "-Wimplicit-function-declaration"
-    - "-fno-spell-checking"
+  Add: [-Wno-undefined-internal, -Wno-strict-prototypes, -Wno-documentation-unknown-command, -Wno-unused-function, -Wno-elaborated-enum-base, -Wno-microsoft-fixed-enum, -Wno-microsoft-enum-forward-reference]
