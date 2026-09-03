@@ -1548,14 +1548,16 @@ lyrics_find_matching_div(char *data, int32 data_len, int32 content_start,
     return -1;
 }
 
-static bool
+static int32
 lyrics_extract_divs(StrBuilder *out, char *data, int32 data_len, char *marker,
                     int32 marker_len, bool append_all) {
     int32 pos;
+    int32 status;
     bool found;
 
     sb_clear(out);
     pos = 0;
+    status = -NCM_ERROR_NOT_FOUND;
     found = false;
     while (pos < data_len) {
         int32 open;
@@ -1568,6 +1570,7 @@ lyrics_extract_divs(StrBuilder *out, char *data, int32 data_len, char *marker,
         }
         if ((open_end = lyrics_find_tag_end(data, data_len,
                                             open + STRLIT_LEN("<div"))) < 0) {
+            status = -NCM_ERROR_PARSE;
             break;
         }
         if (lyrics_find(data + open, open_end - open + 1,
@@ -1577,6 +1580,7 @@ lyrics_extract_divs(StrBuilder *out, char *data, int32 data_len, char *marker,
         }
         if ((close = lyrics_find_matching_div(data, data_len,
                                               open_end + 1, &close_end)) < 0) {
+            status = -NCM_ERROR_PARSE;
             break;
         }
 
@@ -1590,7 +1594,10 @@ lyrics_extract_divs(StrBuilder *out, char *data, int32 data_len, char *marker,
             break;
         }
     }
-    return found;
+    if (found) {
+        return 0;
+    }
+    return status;
 }
 
 static int32
@@ -2413,7 +2420,7 @@ lyrics_json_value_start(char *data, int32 data_len, char *key,
     return 0;
 }
 
-static bool
+static int32
 lyrics_extract_genius(StrBuilder *out, char *data, int32 data_len) {
     StrBuilder json = {0};
     StrBuilder html = {0};
@@ -2422,47 +2429,62 @@ lyrics_extract_genius(StrBuilder *out, char *data, int32 data_len) {
     int32 lyrics_data;
     int32 value_start;
     int32 value_end;
-    bool ok;
+    int32 status;
+    int32 fallback_status;
 
     marker = lyrics_find(data, data_len,
                          STRLIT("window.__PRELOADED_STATE__ = JSON.parse('"),
                          0);
-    ok = false;
+    status = -NCM_ERROR_NOT_FOUND;
     if (marker >= 0) {
         marker += STRLIT_LEN("window.__PRELOADED_STATE__ = JSON.parse('");
-        if (lyrics_decode_quoted(&json, data, data_len, marker, '\'',
-                                 &json_end) == 0) {
+        status = lyrics_decode_quoted(&json, data, data_len, marker, '\'',
+                                      &json_end);
+        if (status == 0) {
             lyrics_data = lyrics_find(json.data, json.len,
                                       STRLIT("\"lyricsData\""), 0);
-            if ((lyrics_data >= 0)
-                && (lyrics_json_value_start(json.data, json.len,
-                                            STRLIT("html"), lyrics_data,
-                                            &value_start) == 0)
-                && (lyrics_decode_quoted(&html, json.data, json.len,
-                                         value_start, '"', &value_end) == 0)) {
-                sb_clear(out);
-                SB_APPEND(out, html.data, html.len);
-                ok = out->len > 0;
+            if (lyrics_data < 0) {
+                status = -NCM_ERROR_NOT_FOUND;
+            } else if ((status = lyrics_json_value_start(
+                            json.data, json.len, STRLIT("html"), lyrics_data,
+                            &value_start)) == 0) {
+                status = lyrics_decode_quoted(&html, json.data, json.len,
+                                              value_start, '"', &value_end);
+                if (status == 0) {
+                    sb_clear(out);
+                    SB_APPEND(out, html.data, html.len);
+                    if (out->len <= 0) {
+                        status = -NCM_ERROR_NOT_FOUND;
+                    }
+                }
             }
         }
     }
 
     sb_free(&html);
     sb_free(&json);
-    if (!ok) {
-        ok = lyrics_extract_divs(out, data, data_len,
-                                 STRLIT("data-lyrics-container=\"true\""),
-                                 true);
+    if (status == 0) {
+        return 0;
     }
-    return ok;
+
+    fallback_status = lyrics_extract_divs(
+        out, data, data_len, STRLIT("data-lyrics-container=\"true\""), true);
+    if (fallback_status == 0) {
+        return 0;
+    }
+    if (status == -NCM_ERROR_PARSE) {
+        return status;
+    }
+    return fallback_status;
 }
 
-static bool
+static int32
 lyrics_extract_musixmatch(StrBuilder *out, char *data, int32 data_len) {
     int32 track_info;
     int32 lyrics;
     int32 value_start;
     int32 value_end;
+    int32 status;
 
     if ((track_info = lyrics_find(data, data_len,
                                   STRLIT("\"trackInfo\""), 0)) < 0) {
@@ -2470,15 +2492,16 @@ lyrics_extract_musixmatch(StrBuilder *out, char *data, int32 data_len) {
     }
     if ((lyrics = lyrics_find(data, data_len,
                               STRLIT("\"lyrics\""), track_info)) < 0) {
-        return false;
+        return -NCM_ERROR_NOT_FOUND;
     }
 
-    if (lyrics_json_value_start(data, data_len, STRLIT("body"), lyrics,
-                                &value_start) < 0) {
-        return false;
+    status = lyrics_json_value_start(data, data_len, STRLIT("body"), lyrics,
+                                     &value_start);
+    if (status < 0) {
+        return status;
     }
     return lyrics_decode_quoted(out, data, data_len, value_start, '"',
-                                &value_end) == 0;
+                                &value_end);
 }
 
 static void
@@ -2541,36 +2564,46 @@ lyrics_amalgama_content_end(char *data, int32 data_len, int32 start) {
     return best;
 }
 
-static bool
+static int32
 lyrics_extract_amalgama(StrBuilder *out, char *data, int32 data_len) {
     int32 start;
     int32 end;
+    int32 first_status;
+    int32 second_status;
 
-    if (lyrics_extract_divs(out, data, data_len,
-                            STRLIT("class=\"original\""), true)) {
-        return true;
+    first_status = lyrics_extract_divs(out, data, data_len,
+                                       STRLIT("class=\"original\""), true);
+    if (first_status == 0) {
+        return 0;
     }
-    if (lyrics_extract_divs(out, data, data_len,
-                            STRLIT("class='original'"), true)) {
-        return true;
+    second_status = lyrics_extract_divs(out, data, data_len,
+                                        STRLIT("class='original'"), true);
+    if (second_status == 0) {
+        return 0;
     }
 
     sb_clear(out);
     start = lyrics_amalgama_content_start(data, data_len);
     if (start < 0) {
-        return false;
+        if (first_status == -NCM_ERROR_PARSE) {
+            return first_status;
+        }
+        if (second_status == -NCM_ERROR_PARSE) {
+            return second_status;
+        }
+        return -NCM_ERROR_NOT_FOUND;
     }
 
     end = lyrics_amalgama_content_end(data, data_len, start);
     if (end < 0) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
     if (end <= start) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
 
     SB_APPEND(out, data + start, end - start);
-    return true;
+    return 0;
 }
 
 static int32
@@ -2625,7 +2658,7 @@ lyrics_lacoccinelle_content_end(char *data, int32 data_len, int32 start) {
     return best;
 }
 
-static bool
+static int32
 lyrics_extract_lacoccinelle(StrBuilder *out, char *data, int32 data_len) {
     int32 start;
     int32 end;
@@ -2633,19 +2666,19 @@ lyrics_extract_lacoccinelle(StrBuilder *out, char *data, int32 data_len) {
     sb_clear(out);
     start = lyrics_lacoccinelle_content_start(data, data_len);
     if (start < 0) {
-        return false;
+        return -NCM_ERROR_NOT_FOUND;
     }
 
     end = lyrics_lacoccinelle_content_end(data, data_len, start);
     if (end < 0) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
     if (end <= start) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
 
     SB_APPEND(out, data + start, end - start);
-    return true;
+    return 0;
 }
 
 static int32
@@ -2684,7 +2717,7 @@ lyrics_musica_content_end(char *data, int32 data_len, int32 start) {
     return best;
 }
 
-static bool
+static int32
 lyrics_extract_musica(StrBuilder *out, char *data, int32 data_len) {
     int32 start;
     int32 end;
@@ -2692,19 +2725,19 @@ lyrics_extract_musica(StrBuilder *out, char *data, int32 data_len) {
     sb_clear(out);
     start = lyrics_musica_content_start(data, data_len);
     if (start < 0) {
-        return false;
+        return -NCM_ERROR_NOT_FOUND;
     }
 
     end = lyrics_musica_content_end(data, data_len, start);
     if (end < 0) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
     if (end <= start) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
 
     SB_APPEND(out, data + start, end - start);
-    return true;
+    return 0;
 }
 
 static int32
@@ -2751,7 +2784,7 @@ lyrics_paroles_content_end(char *data, int32 data_len, int32 start) {
     return best;
 }
 
-static bool
+static int32
 lyrics_extract_paroles(StrBuilder *out, char *data, int32 data_len) {
     int32 start;
     int32 end;
@@ -2759,24 +2792,27 @@ lyrics_extract_paroles(StrBuilder *out, char *data, int32 data_len) {
     sb_clear(out);
     start = lyrics_paroles_content_start(data, data_len);
     if (start < 0) {
-        return false;
+        return -NCM_ERROR_NOT_FOUND;
     }
 
     end = lyrics_paroles_content_end(data, data_len, start);
     if (end < 0) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
     if (end <= start) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
 
     SB_APPEND(out, data + start, end - start);
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 lyrics_extract_content(NcmLyricsFetcherDef *fetcher, StrBuilder *out,
                        char *data, int32 data_len, bool *plain_text) {
+    int32 status;
+    int32 fallback_status;
+
     *plain_text = false;
     switch (fetcher->type) {
     case NCM_LYRICS_FETCHER_AMALGAMA:
@@ -2784,7 +2820,7 @@ lyrics_extract_content(NcmLyricsFetcherDef *fetcher, StrBuilder *out,
     case NCM_LYRICS_FETCHER_AZLYRICS:
         return lyrics_extract_after_until(
             out, data, data_len, STRLIT("Usage of azlyrics.com"),
-            STRLIT("-->"), STRLIT("</div>")) == 0;
+            STRLIT("-->"), STRLIT("</div>"));
     case NCM_LYRICS_FETCHER_GENIUS:
         return lyrics_extract_genius(out, data, data_len);
     case NCM_LYRICS_FETCHER_LETRASMUS:
@@ -2805,18 +2841,26 @@ lyrics_extract_content(NcmLyricsFetcherDef *fetcher, StrBuilder *out,
                                    STRLIT("class=\"inner-text\""),
                                    false);
     case NCM_LYRICS_FETCHER_VAGALUME:
-        if (lyrics_extract_divs(out, data, data_len,
-                                STRLIT("id=\"lyrics\""), false)) {
-            return true;
+        status = lyrics_extract_divs(out, data, data_len,
+                                     STRLIT("id=\"lyrics\""), false);
+        if (status == 0) {
+            return 0;
         }
-        return lyrics_extract_divs(out, data, data_len,
-                                   STRLIT("id=lyrics"), false);
+        fallback_status = lyrics_extract_divs(out, data, data_len,
+                                             STRLIT("id=lyrics"), false);
+        if (fallback_status == 0) {
+            return 0;
+        }
+        if (fallback_status == -NCM_ERROR_PARSE) {
+            return fallback_status;
+        }
+        return status;
     case NCM_LYRICS_FETCHER_UNKNOWN:
     case NCM_LYRICS_FETCHER_INTERNET:
     case NCM_LYRICS_FETCHER_LAST:
     default:
         sb_clear(out);
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
 }
 
@@ -2853,7 +2897,6 @@ lyrics_fetch_page(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
     char *message;
     int32 message_len;
     int32 status;
-    bool extracted;
     bool plain_text;
 
     *retry = false;
@@ -2875,9 +2918,9 @@ lyrics_fetch_page(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
         goto cleanup;
     }
 
-    extracted = lyrics_extract_content(fetcher, &lyrics, data.data, data.len,
-                                       &plain_text);
-    if (!extracted || (lyrics.len <= 0)) {
+    status = lyrics_extract_content(fetcher, &lyrics, data.data, data.len,
+                                    &plain_text);
+    if ((status < 0) || (lyrics.len <= 0)) {
         status = ncm_lyrics_result_set(result, false,
                                        STRLIT(LYRICS_MSG_NOT_FOUND));
         *retry = true;
