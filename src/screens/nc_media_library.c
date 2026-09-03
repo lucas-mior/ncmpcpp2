@@ -28,8 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static int32 library_mpd_list_all_songs(void *user, NcmMpdSongList *songs, NcmError *ncm_error);
-static int32 library_mpd_search_songs(void *user, MediaLibrarySongQuery *query, NcmMpdSongList *songs, NcmError *ncm_error);
 static int32 library_mpd_add_songs(void *user, NcmSongArray *songs, bool play, NcmError *ncm_error);
 static void library_tag_array_item_destroy(void *item);
 static void library_album_array_item_init(void *item);
@@ -55,6 +53,96 @@ static bool library_has_pending_albums(MediaLibraryScreen *screen);
 static bool library_has_pending_songs(MediaLibraryScreen *screen);
 static bool library_has_fetch_delay_elapsed(MediaLibraryScreen *screen);
 static bool library_search_position(NcMenu *menu, int32 pos, void *user);
+
+static char *
+library_query_cstring(StrBuilder *buffer, char *string, int32 string_len) {
+    ASSERT(buffer != NULL);
+    if (string_len < 0) {
+        if (string == NULL) {
+            return NULL;
+        }
+        string_len = optional_strlen32(string);
+    }
+    if ((string == NULL) && (string_len > 0)) {
+        return NULL;
+    }
+
+    sb_clear(buffer);
+    SB_APPEND(buffer, string, string_len);
+    return buffer->data;
+}
+
+static int32
+library_mpd_search_songs(void *user,
+                         MediaLibrarySongQuery *query,
+                         NcmMpdSongList *songs,
+                         NcmError *ncm_error) {
+    NcmMpdClient *client = user;
+    StrBuilder primary = {0};
+    StrBuilder album = {0};
+    StrBuilder date = {0};
+    int32 status;
+
+    ASSERT(client != NULL);
+    ASSERT(query != NULL);
+    ASSERT(songs != NULL);
+
+    status = ncm_mpd_client_start_search(client, true, ncm_error);
+    if ((status == 0) && query->match_primary_tag) {
+        char *value = library_query_cstring(
+            &primary, query->primary_value, query->primary_value_len);
+        if (value == NULL) {
+            status = ncm_error_set_status(
+                ncm_error, -EINVAL, STRLIT("missing primary tag value"));
+        } else {
+            status = ncm_mpd_client_add_search_tag(
+                client, query->primary_tag, value, ncm_error);
+        }
+    }
+    if ((status == 0) && query->match_album) {
+        char *value = library_query_cstring(
+            &album, query->album, query->album_len);
+        if (value == NULL) {
+            status = ncm_error_set_status(ncm_error, -EINVAL,
+                                          STRLIT("missing album value"));
+        } else {
+            status = ncm_mpd_client_add_search_tag(
+                client, MPD_TAG_ALBUM, value, ncm_error);
+        }
+    }
+    if ((status == 0) && query->match_date) {
+        char *value = library_query_cstring(
+            &date, query->date, query->date_len);
+        if (value == NULL) {
+            status = ncm_error_set_status(ncm_error, -EINVAL,
+                                          STRLIT("missing date value"));
+        } else {
+            status = ncm_mpd_client_add_search_tag(
+                client, MPD_TAG_DATE, value, ncm_error);
+        }
+    }
+    if (status == 0) {
+        status = ncm_mpd_client_commit_search_songs(client, songs,
+                                                    ncm_error);
+    }
+    sb_free(&date);
+    sb_free(&album);
+    sb_free(&primary);
+    return status;
+}
+
+static int32
+library_mpd_list_all_songs(void *user, NcmMpdSongList *songs,
+                           NcmError *ncm_error) {
+    NcmMpdClient *client;
+
+    if ((client = user) == NULL) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing MPD client"));
+    }
+    return ncm_mpd_client_get_directory_recursive(client, "/",
+                                                  songs, ncm_error);
+}
 
 static int32
 library_mpd_list_tags(void *user, enum mpd_tag_type tag_type,
@@ -4084,97 +4172,6 @@ static void
 library_destroy_callback(NcScreen *screen) {
     media_library_screen_destroy(library_from_screen(screen));
     return;
-}
-
-static char *
-library_query_cstring(StrBuilder *buffer, char *string,
-                      int32 string_len) {
-    ASSERT(buffer != NULL);
-    if (string_len < 0) {
-        if (string == NULL) {
-            return NULL;
-        }
-        string_len = optional_strlen32(string);
-    }
-    if ((string == NULL) && (string_len > 0)) {
-        return NULL;
-    }
-
-    sb_clear(buffer);
-    SB_APPEND(buffer, string, string_len);
-    return buffer->data;
-}
-
-static int32
-library_mpd_list_all_songs(void *user, NcmMpdSongList *songs,
-                           NcmError *ncm_error) {
-    NcmMpdClient *client;
-
-    if ((client = user) == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing MPD client"));
-    }
-    return ncm_mpd_client_get_directory_recursive(client, "/",
-                                                  songs, ncm_error);
-}
-
-static int32
-library_mpd_search_songs(void *user,
-                         MediaLibrarySongQuery *query,
-                         NcmMpdSongList *songs,
-                         NcmError *ncm_error) {
-    NcmMpdClient *client = user;
-    StrBuilder primary = {0};
-    StrBuilder album = {0};
-    StrBuilder date = {0};
-    int32 status;
-
-    ASSERT(client != NULL);
-    ASSERT(query != NULL);
-    ASSERT(songs != NULL);
-
-    status = ncm_mpd_client_start_search(client, true, ncm_error);
-    if ((status == 0) && query->match_primary_tag) {
-        char *value = library_query_cstring(
-            &primary, query->primary_value, query->primary_value_len);
-        if (value == NULL) {
-            status = ncm_error_set_status(
-                ncm_error, -EINVAL, STRLIT("missing primary tag value"));
-        } else {
-            status = ncm_mpd_client_add_search_tag(
-                client, query->primary_tag, value, ncm_error);
-        }
-    }
-    if ((status == 0) && query->match_album) {
-        char *value = library_query_cstring(
-            &album, query->album, query->album_len);
-        if (value == NULL) {
-            status = ncm_error_set_status(ncm_error, -EINVAL,
-                                          STRLIT("missing album value"));
-        } else {
-            status = ncm_mpd_client_add_search_tag(
-                client, MPD_TAG_ALBUM, value, ncm_error);
-        }
-    }
-    if ((status == 0) && query->match_date) {
-        char *value = library_query_cstring(
-            &date, query->date, query->date_len);
-        if (value == NULL) {
-            status = ncm_error_set_status(ncm_error, -EINVAL,
-                                          STRLIT("missing date value"));
-        } else {
-            status = ncm_mpd_client_add_search_tag(
-                client, MPD_TAG_DATE, value, ncm_error);
-        }
-    }
-    if (status == 0) {
-        status = ncm_mpd_client_commit_search_songs(client, songs,
-                                                    ncm_error);
-    }
-    sb_free(&date);
-    sb_free(&album);
-    sb_free(&primary);
-    return status;
 }
 
 static int32
