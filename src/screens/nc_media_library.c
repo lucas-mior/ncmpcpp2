@@ -28,8 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static bool library_song_matches(MediaLibraryScreen *screen,
-                                 NcmSong *song, NcmRegex *regex);
 static int32 library_collect_selected_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs,
     NcmError *ncm_error);
@@ -3573,6 +3571,20 @@ library_album_filter(NcMenu *menu, void *item, void *user) {
 }
 
 static bool
+library_song_matches(MediaLibraryScreen *screen,
+                     NcmSong *song, NcmRegex *regex) {
+    StrBuilder text;
+    bool result;
+
+    (void)screen;
+    ASSERT(song != NULL);
+    text = ncm_format_render_string(&Config.song_library_format, song);
+    result = ncm_regex_matches(regex, text.data, text.len);
+    sb_free(&text);
+    return result;
+}
+
+static bool
 library_song_filter(NcMenu *menu, void *item, void *user) {
     MediaLibraryScreen *screen = user;
 
@@ -4001,20 +4013,6 @@ library_active_item_matches(MediaLibraryScreen *screen,
         return library_song_matches(screen, item, regex);
     }
     return library_tag_matches(screen, item, regex);
-}
-
-static bool
-library_song_matches(MediaLibraryScreen *screen,
-                     NcmSong *song, NcmRegex *regex) {
-    StrBuilder text;
-    bool result;
-
-    (void)screen;
-    ASSERT(song != NULL);
-    text = ncm_format_render_string(&Config.song_library_format, song);
-    result = ncm_regex_matches(regex, text.data, text.len);
-    sb_free(&text);
-    return result;
 }
 
 static void
