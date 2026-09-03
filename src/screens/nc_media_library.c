@@ -3950,15 +3950,13 @@ library_update_menu_highlights(
 static void
 library_update_titles(MediaLibraryScreen *screen,
                       bool update_windows) {
-    char *tag_type_name;
-    int32 tag_type_name_len;
-
     sb_clear(&screen->tags_title);
     sb_clear(&screen->albums_title);
     sb_clear(&screen->songs_title);
     if (Config.titles_visibility) {
-        tag_type_name = ncm_tag_type_name(Config.media_lib_primary_tag);
-        tag_type_name_len = optional_strlen32(tag_type_name);
+        char *tag_type_name = ncm_tag_type_name(Config.media_lib_primary_tag);
+        int32 tag_type_name_len = optional_strlen32(tag_type_name);
+
         SB_APPEND(&screen->tags_title, tag_type_name, tag_type_name_len);
         sb_append_byte(&screen->tags_title, 's');
         SB_APPEND(&screen->albums_title, "Albums");
