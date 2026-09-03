@@ -978,14 +978,12 @@ playlist_screen_reload_remaining(PlaylistScreen *screen) {
 
 static void
 playlist_display(PlaylistScreen *playlist) {
-    NcMenu *menu;
-    NcWindow *window;
+    NcMenu *menu = nc_playlist_screen_menu(&playlist->screen);
+    NcWindow *window = playlist_screen_window(playlist);
 
-    menu = nc_playlist_screen_menu(&playlist->screen);
-    window = playlist_screen_window(playlist);
     nc_window_display(window);
-    nc_menu_refresh(menu, window, nc_window_width(window),
-                    nc_window_height(window));
+    nc_menu_refresh(menu, window,
+                    nc_window_width(window), nc_window_height(window));
     return;
 }
 
