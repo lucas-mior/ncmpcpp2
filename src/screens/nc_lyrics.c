@@ -48,8 +48,6 @@ static void lyrics_mouse_button_pressed_callback(NcScreen *screen,
                                                  MEVENT event);
 static void lyrics_title_song_string(NcmSong *song, StrBuilder *title);
 static void lyrics_replace_search_separators(StrBuilder *buffer);
-static void lyrics_append_locale(NcBuffer *buffer, char *data,
-                                 int32 data_len);
 static int32 lyrics_screen_render_lrc(LyricsScreen *screen,
                                       NcmError *ncm_error);
 static int32 lyrics_screen_update_sync_line(LyricsScreen *screen);
@@ -448,7 +446,7 @@ lyrics_screen_load_file(LyricsScreen *screen,
         if (!first) {
             nc_buffer_append_char(&screen->display, '\n');
         }
-        lyrics_append_locale(&screen->display, line, line_len);
+        nc_buffer_append_data(&screen->display, line, line_len);
         first = false;
     }
 
@@ -1313,12 +1311,6 @@ lyrics_replace_search_separators(StrBuilder *buffer) {
     return;
 }
 
-static void
-lyrics_append_locale(NcBuffer *buffer, char *data, int32 data_len) {
-    nc_buffer_append_data(buffer, data, data_len);
-    return;
-}
-
 static int32
 lyrics_screen_render_lrc(LyricsScreen *screen,
                          NcmError *ncm_error) {
@@ -1364,7 +1356,7 @@ lyrics_lrc_buffer_append(void *user,
         return;
     }
 
-    lyrics_append_locale(&screen->display, data, data_len);
+    nc_buffer_append_data(&screen->display, data, data_len);
     return;
 }
 
@@ -1795,7 +1787,7 @@ lyrics_job_complete(int32 status, NcmError *ncm_error, void *user) {
 
             lyrics_screen_clear_lyrics_state(
                 screen, LYRICS_MODE_PLAIN);
-            lyrics_append_locale(&screen->display,
+            nc_buffer_append_data(&screen->display,
                                  job->result.text,
                                  job->result.text_len);
             sb_copy(&screen->filename, &job->filename);
