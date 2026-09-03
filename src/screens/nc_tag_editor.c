@@ -4110,8 +4110,7 @@ tag_editor_copy_selected_song_at(TagEditorScreen *screen,
         return -EINVAL;
     }
 
-    source = nc_menu_active_item_at(
-        nc_tag_row_menu_base(&screen->tags), pos);
+    source = nc_menu_active_item_at(nc_tag_row_menu_base(&screen->tags), pos);
     if (source == NULL) {
         return -NCM_ERROR_NOT_FOUND;
     }
