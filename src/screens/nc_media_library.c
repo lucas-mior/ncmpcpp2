@@ -28,9 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static int32 library_collect_selected_songs(
-    MediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *ncm_error);
 static int32 library_collect_current_item_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs,
     NcmError *ncm_error);
@@ -1605,6 +1602,20 @@ media_library_screen_selected_songs(
             Config.message_delay_time, ncm_error.message);
     }
     return status;
+}
+
+static int32
+library_collect_selected_songs(
+    MediaLibraryScreen *screen, NcmSongArray *songs,
+    NcmError *ncm_error
+) {
+    if (screen->active_column == MEDIA_LIBRARY_COLUMN_TAGS) {
+        return library_collect_tag_songs(screen, songs, ncm_error);
+    }
+    if (screen->active_column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
+        return library_collect_album_songs(screen, songs, ncm_error);
+    }
+    return library_collect_visible_song_rows(screen, songs);
 }
 
 int32
@@ -3816,20 +3827,6 @@ library_collect_visible_song_rows(MediaLibraryScreen *screen,
         }
     }
     return 0;
-}
-
-static int32
-library_collect_selected_songs(
-    MediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *ncm_error
-) {
-    if (screen->active_column == MEDIA_LIBRARY_COLUMN_TAGS) {
-        return library_collect_tag_songs(screen, songs, ncm_error);
-    }
-    if (screen->active_column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
-        return library_collect_album_songs(screen, songs, ncm_error);
-    }
-    return library_collect_visible_song_rows(screen, songs);
 }
 
 static int32
