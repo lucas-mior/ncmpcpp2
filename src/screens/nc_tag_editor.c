@@ -3003,11 +3003,10 @@ tag_editor_generate_filename(NcmMutableSong *song, char *pattern,
             ncm_song_set_mtime(&format_song, song->mtime);
             for (int32 i = 0; i < song->tags_len; i += 1) {
                 NcmMutableSongTag *tag = &song->tags[i];
-                enum mpd_tag_type type;
+                enum mpd_tag_type type = ncm_tags_field_to_tag_type(tag->field);
                 char *value;
                 int32 value_len;
 
-                type = ncm_tags_field_to_tag_type(tag->field);
                 if (tag->modified) {
                     value = tag->value;
                     value_len = tag->value_len;
