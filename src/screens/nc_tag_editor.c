@@ -1588,6 +1588,43 @@ tag_editor_screen_number_tracks(TagEditorScreen *screen,
                                       &numberer);
 }
 
+static int32
+tag_editor_capitalize_song_callback(NcmMutableSong *song, void *user) {
+    (void)user;
+
+    for (int32 fi = 0; ncm_song_info_tags[fi].name; fi += 1) {
+        enum NcmTagsField field = ncm_song_info_tags[fi].field;
+
+        for (int32 i = 0; ; i += 1) {
+            NcmStringView view;
+            StrBuilder converted = {0};
+            int32 converted_len;
+            int32 status;
+
+            if (!ncm_mutable_song_has_tag_view(song, field, i, &view)) {
+                break;
+            }
+
+            converted_len = utf8_capitalize_first_letters(
+                view.data, view.len, NULL, 0);
+            sb_reserve(&converted, converted_len);
+            converted.len = utf8_capitalize_first_letters(
+                view.data, view.len, converted.data, converted_len);
+            if (converted.data) {
+                converted.data[converted.len] = '\0';
+            }
+            status = ncm_mutable_song_set_tag(song, field, i,
+                                              converted.data, converted.len);
+            sb_free(&converted);
+            if (status < 0) {
+                return status;
+            }
+        }
+    }
+
+    return 0;
+}
+
 void
 tag_editor_screen_capitalize_first_letters(TagEditorScreen *screen) {
     (void)tag_editor_for_each_target(screen,
@@ -2808,6 +2845,16 @@ tag_editor_prompt_tag_value(TagEditorScreen *screen,
     }
     sb_free(&input);
     return result;
+}
+
+static void
+tag_editor_append_parser_filename(StrBuilder *buffer, char *name,
+                                  int32 name_len) {
+    if ((name == NULL) || (name_len <= 0)) {
+        return;
+    }
+    SB_APPEND(buffer, name, name_len);
+    return;
 }
 
 static int32
@@ -4166,43 +4213,6 @@ tag_editor_number_song_callback(NcmMutableSong *song, void *user) {
 }
 
 static int32
-tag_editor_capitalize_song_callback(NcmMutableSong *song, void *user) {
-    (void)user;
-
-    for (int32 fi = 0; ncm_song_info_tags[fi].name; fi += 1) {
-        enum NcmTagsField field = ncm_song_info_tags[fi].field;
-
-        for (int32 i = 0; ; i += 1) {
-            NcmStringView view;
-            StrBuilder converted = {0};
-            int32 converted_len;
-            int32 status;
-
-            if (!ncm_mutable_song_has_tag_view(song, field, i, &view)) {
-                break;
-            }
-
-            converted_len = utf8_capitalize_first_letters(
-                view.data, view.len, NULL, 0);
-            sb_reserve(&converted, converted_len);
-            converted.len = utf8_capitalize_first_letters(
-                view.data, view.len, converted.data, converted_len);
-            if (converted.data) {
-                converted.data[converted.len] = '\0';
-            }
-            status = ncm_mutable_song_set_tag(song, field, i,
-                                              converted.data, converted.len);
-            sb_free(&converted);
-            if (status < 0) {
-                return status;
-            }
-        }
-    }
-
-    return 0;
-}
-
-static int32
 tag_editor_lower_song_callback(NcmMutableSong *song, void *user) {
     (void)user;
     for (int32 field_idx = 0;
@@ -4417,16 +4427,6 @@ tag_editor_set_pattern(TagEditorScreen *screen,
     }
     return tag_editor_set_config_pattern(screen->pattern.data,
                                          screen->pattern.len);
-}
-
-static void
-tag_editor_append_parser_filename(StrBuilder *buffer, char *name,
-                                  int32 name_len) {
-    if ((name == NULL) || (name_len <= 0)) {
-        return;
-    }
-    SB_APPEND(buffer, name, name_len);
-    return;
 }
 
 #endif /* NC_TAG_EDITOR_C */
