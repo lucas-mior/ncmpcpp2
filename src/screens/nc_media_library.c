@@ -3730,10 +3730,8 @@ library_append_query_songs(
 }
 
 static int32
-library_collect_tag_songs(
-    MediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *ncm_error
-) {
+library_collect_tag_songs(MediaLibraryScreen *screen, NcmSongArray *songs,
+                          NcmError *ncm_error) {
     MediaLibrarySongQuery query;
     NcMediaLibraryTagRow *row;
     NcMenu *menu;
