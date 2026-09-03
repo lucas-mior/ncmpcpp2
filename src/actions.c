@@ -4245,7 +4245,7 @@ action_runtime_edit_directory_name(void) {
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
         return tag_editor_screen_rename_current_directory(
             app_screen_tag_editor(), Config.mpd_music_dir,
-            Config.mpd_music_dir_len);
+            Config.mpd_music_dir_len) == 0;
     }
 #endif
     return false;
@@ -4636,7 +4636,7 @@ action_runtime_save_tag_changes(void) {
             return false;
         }
         return tag_editor_screen_save_modified(
-            app_screen_tag_editor(), Config.mpd_music_dir);
+            app_screen_tag_editor(), Config.mpd_music_dir) > 0;
     }
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
         return tiny_tag_editor_screen_run_row(
