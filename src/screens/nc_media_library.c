@@ -3348,8 +3348,7 @@ library_move_to_album(MediaLibraryScreen *screen,
 }
 
 static int32
-library_move_to_song(MediaLibraryScreen *screen,
-                     NcmSong *song) {
+library_move_to_song(MediaLibraryScreen *screen, NcmSong *song) {
     NcMenu *menu;
     int32 status;
 
