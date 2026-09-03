@@ -2487,9 +2487,7 @@ media_library_screen_clear_search(MediaLibraryScreen *screen) {
 }
 
 void
-media_library_screen_request_tags_update(
-    MediaLibraryScreen *screen
-) {
+media_library_screen_request_tags_update(MediaLibraryScreen *screen) {
     if (screen == NULL) {
         return;
     }
