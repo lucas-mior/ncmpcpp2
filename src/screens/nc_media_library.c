@@ -130,9 +130,8 @@ library_mpd_list_tags(void *user, enum mpd_tag_type tag_type,
 }
 
 static int32
-library_set_owned_string(char **dest, int32 *dest_len,
-                         int32 *dest_cap, char *source,
-                         int32 source_len) {
+library_set_owned_string(char **dest, int32 *dest_len, int32 *dest_cap,
+                         char *source, int32 source_len) {
     char *copy;
     int32 cap;
 
