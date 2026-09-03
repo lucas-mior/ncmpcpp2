@@ -1437,9 +1437,9 @@ int32 ncm_lower_bound_check_f64(double value, double lbound,
 #define ENUM_NAME NcmFsEntryType
 #define ENUM_PREFIX_ NCM_FS_ENTRY_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NCM_FS_ENTRY_FILE)                                                      \
-    XX(NCM_FS_ENTRY_DIRECTORY)                                                 \
+#define ENUM_FIELDS                     \
+    XX(NCM_FS_ENTRY_FILE)               \
+    XX(NCM_FS_ENTRY_DIRECTORY)          \
     XX(NCM_FS_ENTRY_SYMLINK)
 #include "cbase/xenums.c"
 
