@@ -5,28 +5,12 @@
 
 #include "c/ncm_c.h"
 
-static int32
-ncm_fs_path_copy(char *path, int32 path_len, char **copy,
-                 NcmError *ncm_error) {
-    if (copy == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing path copy output"));
-    }
-    *copy = NULL;
-
-    if (path == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing path"));
-    }
-    if (path_len < 0) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("negative path length"));
-    }
-
+static void
+ncm_fs_path_copy(char *path, int32 path_len, char **copy) {
     *copy = malloc2(path_len + 1);
     memcpy64(*copy, path, path_len);
     (*copy)[path_len] = '\0';
-    return ncm_error_ok(ncm_error);
+    return;
 }
 
 static int32
@@ -112,10 +96,7 @@ ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat,
     stat->type = NCM_FS_ENTRY_COUNT;
     stat->exists = false;
 
-    status = ncm_fs_path_copy(path, path_len, &path_copy, ncm_error);
-    if (status < 0) {
-        return status;
-    }
+    ncm_fs_path_copy(path, path_len, &path_copy);
 
     if (lstat(path_copy, &statbuf) < 0) {
         code = errno;
@@ -155,10 +136,7 @@ ncm_fs_unlink(char *path, int32 path_len, NcmError *ncm_error) {
     int32 code;
     int32 status;
 
-    status = ncm_fs_path_copy(path, path_len, &path_copy, ncm_error);
-    if (status < 0) {
-        return status;
-    }
+    ncm_fs_path_copy(path, path_len, &path_copy);
 
     if (unlink(path_copy) != 0) {
         code = errno;
@@ -185,15 +163,8 @@ ncm_fs_rename(char *old_path, int32 old_path_len,
     int32 code;
     int32 status;
 
-    status = ncm_fs_path_copy(old_path, old_path_len, &old_copy, ncm_error);
-    if (status < 0) {
-        return status;
-    }
-    status = ncm_fs_path_copy(new_path, new_path_len, &new_copy, ncm_error);
-    if (status < 0) {
-        free2(old_copy, old_path_len + 1);
-        return status;
-    }
+    ncm_fs_path_copy(old_path, old_path_len, &old_copy);
+    ncm_fs_path_copy(new_path, new_path_len, &new_copy);
 
     if (rename(old_copy, new_copy) != 0) {
         code = errno;
@@ -215,10 +186,7 @@ ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *ncm_error) {
     int32 code;
     int32 status;
 
-    status = ncm_fs_path_copy(path, path_len, &copy, ncm_error);
-    if (status < 0) {
-        return status;
-    }
+    ncm_fs_path_copy(path, path_len, &copy);
 
     for (int32 i = 1; i <= path_len; i += 1) {
         if ((copy[i] != '/') && (copy[i] != '\0')) {
@@ -267,10 +235,7 @@ ncm_fs_directory_open(NcmFsDirectory *directory,
     directory->path = NULL;
     directory->path_len = 0;
 
-    status = ncm_fs_path_copy(path, path_len, &path_copy, ncm_error);
-    if (status < 0) {
-        return status;
-    }
+    ncm_fs_path_copy(path, path_len, &path_copy);
 
     if ((dir = opendir(path_copy)) == NULL) {
         code = errno;
