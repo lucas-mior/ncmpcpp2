@@ -113,7 +113,8 @@ tag_editor_draw_tag(NcMenu *menu, NcWindow *window, void *item,
     ASSERT(song != NULL);
 
     if (ncm_mutable_song_is_modified(song)) {
-        nc_buffer_append_data(&buffer, Config.modified_item_prefix.data,
+        nc_buffer_append_data(&buffer,
+                              Config.modified_item_prefix.data,
                               Config.modified_item_prefix.len);
     }
 
