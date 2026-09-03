@@ -4800,28 +4800,17 @@ tag_editor_build_parser_legend(TagEditorScreen *screen) {
         return -EINVAL;
     }
     sb_clear(&screen->parser_legend);
-    SB_APPEND(&screen->parser_legend,
-              "%a - artist\n");
-    SB_APPEND(&screen->parser_legend,
-              "%A - album artist\n");
-    SB_APPEND(&screen->parser_legend,
-              "%t - title\n");
-    SB_APPEND(&screen->parser_legend,
-              "%b - album\n");
-    SB_APPEND(&screen->parser_legend,
-              "%y - date\n");
-    SB_APPEND(&screen->parser_legend,
-              "%n - track number\n");
-    SB_APPEND(&screen->parser_legend,
-              "%g - genre\n");
-    SB_APPEND(&screen->parser_legend,
-              "%c - composer\n");
-    SB_APPEND(&screen->parser_legend,
-              "%p - performer\n");
-    SB_APPEND(&screen->parser_legend,
-              "%d - disc\n");
-    SB_APPEND(&screen->parser_legend,
-              "%C - comment\n\nFiles:\n");
+    SB_APPEND(&screen->parser_legend, "%a - artist\n");
+    SB_APPEND(&screen->parser_legend, "%A - album artist\n");
+    SB_APPEND(&screen->parser_legend, "%t - title\n");
+    SB_APPEND(&screen->parser_legend, "%b - album\n");
+    SB_APPEND(&screen->parser_legend, "%y - date\n");
+    SB_APPEND(&screen->parser_legend, "%n - track number\n");
+    SB_APPEND(&screen->parser_legend, "%g - genre\n");
+    SB_APPEND(&screen->parser_legend, "%c - composer\n");
+    SB_APPEND(&screen->parser_legend, "%p - performer\n");
+    SB_APPEND(&screen->parser_legend, "%d - disc\n");
+    SB_APPEND(&screen->parser_legend, "%C - comment\n\nFiles:\n");
 
     tags = nc_tag_row_menu_base(&screen->tags);
     count = nc_menu_item_count(tags);
