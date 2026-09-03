@@ -3816,9 +3816,11 @@ tag_editor_draw_string(NcMenu *menu, NcWindow *window, void *item,
     (void)menu;
     (void)pos;
     (void)user;
+
     ASSERT(window != NULL);
     ASSERT(string != NULL);
     ASSERT(string->data != NULL);
+
     converted = ncm_charset_copy(string->data, string->len);
     nc_window_print_data(window, converted.data, converted.len);
     sb_free(&converted);
