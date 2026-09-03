@@ -416,8 +416,7 @@ playlist_screen_set_mouse_config(PlaylistScreen *screen,
 }
 
 void
-playlist_screen_set_highlighting(PlaylistScreen *screen,
-                                 bool enabled) {
+playlist_screen_set_highlighting(PlaylistScreen *screen, bool enabled) {
     bool was_enabled;
 
     if (screen == NULL) {
