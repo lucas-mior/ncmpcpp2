@@ -869,12 +869,14 @@ playlist_screen_clear_filter(PlaylistScreen *screen) {
     if (screen == NULL) {
         return;
     }
+
     ncm_regex_destroy(&screen->filter_regex);
     screen->filter_regex = (NcmRegex){0};
     sb_clear(&screen->filter_constraint);
     nc_menu_set_display_callbacks(playlist_storage_menu(screen),
                                   playlist_display_callbacks());
     nc_menu_show_all_items(playlist_storage_menu(screen));
+
     return;
 }
 
