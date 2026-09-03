@@ -1507,12 +1507,12 @@ library_find_album(MediaLibraryAlbumArray *albums,
                    char *album, int32 album_len,
                    char *date, int32 date_len) {
     for (int32 i = 0; i < albums->len; i += 1) {
-        NcMediaLibraryAlbumRow *row;
+        NcMediaLibraryAlbumRow *row = &albums->items[i].row;
 
-        row = &albums->items[i].row;
         if (row->all_tracks_entry) {
             continue;
         }
+
         if (!STREQUAL(row->tag, row->tag_len, tag, tag_len)) {
             continue;
         }
@@ -1522,6 +1522,7 @@ library_find_album(MediaLibraryAlbumArray *albums,
         if (!STREQUAL(row->date, row->date_len, date, date_len)) {
             continue;
         }
+
         return i;
     }
     return -1;
