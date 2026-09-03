@@ -4833,8 +4833,7 @@ tag_editor_build_parser_legend(TagEditorScreen *screen) {
             continue;
         }
         SB_APPEND(&screen->parser_legend, " * ");
-        SB_APPEND(&screen->parser_legend, song->name,
-                  song->name_len);
+        SB_APPEND(&screen->parser_legend, song->name, song->name_len);
         sb_append_byte(&screen->parser_legend, '\n');
     }
     return 0;
