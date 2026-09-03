@@ -1826,14 +1826,13 @@ media_library_albums_from_songs(
 int32
 media_library_songs_from_list(NcmSongArray *songs,
                               NcmMpdSongList *source) {
-    NcmSongArray replacement;
+    NcmSongArray replacement = {0};
     int32 status;
 
     if ((songs == NULL) || (source == NULL)) {
         return -EINVAL;
     }
 
-    replacement = (NcmSongArray){0};
     for (int32 i = 0; i < ncm_mpd_song_list_count(source); i += 1) {
         NcmSong *song;
 
