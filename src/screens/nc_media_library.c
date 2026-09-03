@@ -3404,7 +3404,7 @@ library_insert_locate_album(MediaLibraryScreen *screen,
                             char *album, int32 album_len,
                             char *date, int32 date_len,
                             time_t mtime) {
-    NcMediaLibraryAlbumRow row;
+    NcMediaLibraryAlbumRow row = {0};
     int32 status;
 
     if ((screen == NULL) || (tag_len < 0) || (album_len < 0)
@@ -3414,7 +3414,6 @@ library_insert_locate_album(MediaLibraryScreen *screen,
         return -EINVAL;
     }
 
-    row = (NcMediaLibraryAlbumRow){0};
     status = library_set_owned_string(&row.tag, &row.tag_len,
                                       &row.tag_cap, tag, tag_len);
     if (status == 0) {
