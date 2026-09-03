@@ -1644,12 +1644,10 @@ library_add_two_column_albums(
     for (int32 i = 0;
          ncm_song_has_tag_view(song, primary_tag, i, &primary_value);
          i += 1) {
-        char *tag;
-        int32 tag_len;
+        char *tag = primary_value.data;
+        int32 tag_len = primary_value.len;
         int32 existing;
 
-        tag = primary_value.data;
-        tag_len = primary_value.len;
         if (mode == MEDIA_LIBRARY_MODE_ALBUM_ONLY) {
             tag = NULL;
             tag_len = 0;
