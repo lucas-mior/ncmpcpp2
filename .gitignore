@@ -40,3 +40,4 @@ test-driver
 new-warnings.txt
 *.extract
 static-analyzers-warnings.txt
+static-analyzers-warnings.txt
