@@ -25,11 +25,14 @@ checked by the context. It is okay to assume stuff sometimes (add assertions if
 you are not 100% sure). Never cast functions calls to void.
 
 Identify instances of the anti-patterns above (excessive NULL pointer checking
-and excessive error checking).  Remove all the instances of this anti-pattern.
+and excessive error checking).  Remove all the instances of the anti-pattern.
 You can leave an ASSERT(pointer != NULL) or in 20% of the cases, just as an
 occasional sanity check.  But most internal functions can simply assume that
 they have valid input because the external API of the module has already
-validated it.
+validated it. If you don't find any instance of the anti patterns in the first
+file, remove it from the list below and search in the next without asking me.
+If the next file also does not have the anti pattern, also remove it from the
+list and try the next and so on.
 
 - src/screens/nc_tag_editor.c
 - src/screens/nc_media_library.c
