@@ -717,7 +717,8 @@ action_runtime_update_database(void) {
 
 #if defined(HAVE_TAGLIB_H)
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
-        if (tag_editor_screen_current_dir(app_screen_tag_editor(), &view)) {
+        if (tag_editor_screen_current_dir(app_screen_tag_editor(),
+                                          &view) == 0) {
             path = view.data;
         }
     }
@@ -2229,7 +2230,7 @@ action_runtime_selected_songs(NcmSongArray *songs) {
 #if defined(HAVE_TAGLIB_H)
     case NCM_SCREEN_TYPE_TAG_EDITOR:
         return tag_editor_screen_selected_songs(
-            app_screen_tag_editor(), songs);
+            app_screen_tag_editor(), songs) == 0;
 #endif
     case NCM_SCREEN_TYPE_HELP:
     case NCM_SCREEN_TYPE_LASTFM:
@@ -3961,7 +3962,8 @@ action_runtime_enter_directory(void) {
     }
 #if defined(HAVE_TAGLIB_H)
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
-        return tag_editor_screen_enter_directory(app_screen_tag_editor());
+        return tag_editor_screen_enter_directory(
+            app_screen_tag_editor()) == 0;
     }
 #endif
     return false;
@@ -3974,7 +3976,7 @@ action_runtime_jump_to_parent_directory(void) {
     }
 #if defined(HAVE_TAGLIB_H)
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
-        return tag_editor_screen_go_to_parent(app_screen_tag_editor());
+        return tag_editor_screen_go_to_parent(app_screen_tag_editor()) == 0;
     }
 #endif
     return false;
@@ -4189,7 +4191,7 @@ action_runtime_jump_to_tag_editor(void) {
     }
     if (success) {
         success = tag_editor_screen_locate_song(
-            app_screen_tag_editor(), &song);
+            app_screen_tag_editor(), &song) == 0;
     }
     ncm_song_destroy(&song);
     return success;
