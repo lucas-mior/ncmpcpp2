@@ -1993,7 +1993,7 @@ playlist_draw_callback(NcMenu *menu, NcWindow *window, void *item,
 static void
 content_draw_callback(NcMenu *menu, NcWindow *window, void *item,
                       int32 pos, void *user) {
-    NcBuffer buffer;
+    NcBuffer buffer = {0};
     int32 list_width;
     bool use_colors;
 
@@ -2002,7 +2002,6 @@ content_draw_callback(NcMenu *menu, NcWindow *window, void *item,
     ASSERT(window != NULL);
     ASSERT(item != NULL);
 
-    buffer = (NcBuffer){0};
     if (Config.playlist_editor_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
         list_width = nc_window_width(window) - nc_window_get_x(window);
         if (nc_menu_position_is_selected(menu, pos)) {
