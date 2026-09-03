@@ -861,7 +861,7 @@ tag_editor_hook_confirm(
     NcWindow *window;
     char values[2];
     char answer;
-    bool prompted;
+    int32 status;
 
     (void)user;
     if ((message == NULL) || (message_len < 0)) {
@@ -871,18 +871,18 @@ tag_editor_hook_confirm(
     values[0] = 'y';
     values[1] = 'n';
     answer = 'n';
-    prompted = false;
+    status = 0;
 
     ncm_statusbar_scoped_lock_init(&scoped_lock);
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window, message, message_len);
         nc_window_print_data(window, STRLIT(" [y/n] "));
-        prompted = ncm_statusbar_prompt_return_one_of(
+        status = ncm_statusbar_prompt_return_one_of(
             window, values, LENGTH(values), &answer);
     }
     ncm_statusbar_scoped_lock_destroy(&scoped_lock);
 
-    if (!prompted || (answer != 'y')) {
+    if ((status <= 0) || (answer != 'y')) {
         ncm_statusbar_print_cstring(
             Config.message_delay_time, "Action cancelled");
         return false;
@@ -1435,7 +1435,7 @@ append_help_line(NcBuffer *buffer, enum NcmActionType type,
     return;
 }
 
-static bool
+static int32
 help_render(void *user, NcBuffer *buffer) {
     (void)user;
 
@@ -1502,7 +1502,7 @@ help_render(void *user, NcBuffer *buffer) {
     append_help_line(buffer, NCM_ACTION_EXECUTE_COMMAND,
                             "Execute command");
     append_help_line(buffer, NCM_ACTION_QUIT, "Quit");
-    return true;
+    return 1;
 }
 
 static void
@@ -1709,22 +1709,24 @@ server_info_load_lists(void *user) {
     return;
 }
 
-static bool
+static int32
 server_info_render(void *user, NcBuffer *buffer) {
     ServerInfoScreen *owner;
     NcmMpdStats stats;
     NcmError ncm_error;
     char time_buffer[64];
+    int32 status;
 
     owner = user;
     if (global_timer_elapsed_ms(owner->timer) < 1000) {
-        return false;
+        return 0;
     }
     owner->timer = global_timer;
 
     ncm_error_clear(&ncm_error);
-    if (ncm_mpd_client_get_stats(&global_mpd, &stats, &ncm_error) < 0) {
-        return false;
+    status = ncm_mpd_client_get_stats(&global_mpd, &stats, &ncm_error);
+    if (status < 0) {
+        return status;
     }
 
     append_bold_label(buffer, "Version: ");
@@ -1783,7 +1785,7 @@ server_info_render(void *user, NcBuffer *buffer) {
         }
         append_data(buffer, tag->value, tag->value_len);
     }
-    return true;
+    return 1;
 }
 
 static void
@@ -1837,7 +1839,7 @@ server_info_hooks(void) {
     return hooks;
 }
 
-static bool
+static int32
 song_info_render(void *user, NcSongInfoScreen *screen,
                  NcBuffer *buffer) {
     SongInfoScreen *owner;
@@ -1846,7 +1848,7 @@ song_info_render(void *user, NcSongInfoScreen *screen,
     (void)screen;
     owner = user;
     if (!owner->has_song) {
-        return false;
+        return 0;
     }
 
     value = ncm_song_getter_buffer(&owner->song,
@@ -1883,7 +1885,7 @@ song_info_render(void *user, NcSongInfoScreen *screen,
         append_song_tag(buffer, &value);
         sb_free(&value);
     }
-    return true;
+    return 1;
 }
 
 static void

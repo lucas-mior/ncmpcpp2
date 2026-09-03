@@ -102,7 +102,7 @@ ncm_menu_reverse_selection(NcMenu *menu, enum NcMenuItemSource source) {
     return;
 }
 
-bool
+int32
 ncm_menu_find_selected_range(NcMenu *menu, enum NcMenuItemSource source,
                              int32 *first, int32 *last) {
     int32 range_first;
@@ -115,7 +115,7 @@ ncm_menu_find_selected_range(NcMenu *menu, enum NcMenuItemSource source,
         if (last) {
             *last = 0;
         }
-        return false;
+        return -EINVAL;
     }
 
     count = menu_item_count(menu, source);
@@ -131,7 +131,7 @@ ncm_menu_find_selected_range(NcMenu *menu, enum NcMenuItemSource source,
         }
     }
     if (range_first >= count) {
-        return false;
+        return 0;
     }
 
     if (first) {
@@ -142,31 +142,36 @@ ncm_menu_find_selected_range(NcMenu *menu, enum NcMenuItemSource source,
             if (last) {
                 *last = i + 1;
             }
-            return true;
+            return 1;
         }
     }
-    return false;
+    return 0;
 }
 
-bool
+int32
 ncm_menu_find_full_selected_range(NcMenu *menu, enum NcMenuItemSource source,
                                   int32 *first, int32 *last) {
     int32 range_first;
     int32 range_last;
+    int32 status;
 
-    if (!ncm_menu_find_selected_range(menu, source, &range_first,
-                                      &range_last)) {
+    status = ncm_menu_find_selected_range(menu, source, &range_first,
+                                          &range_last);
+    if (status < 0) {
+        return status;
+    }
+    if (status == 0) {
         if (first) {
             *first = 0;
         }
         if (last) {
             *last = menu_item_count(menu, source);
         }
-        return true;
+        return 0;
     }
     for (int32 i = range_first; i < range_last; i += 1) {
         if (!menu_position_is_selected(menu, source, i)) {
-            return false;
+            return -NCM_ERROR_UNAVAILABLE;
         }
     }
     if (first) {
@@ -175,7 +180,7 @@ ncm_menu_find_full_selected_range(NcMenu *menu, enum NcMenuItemSource source,
     if (last) {
         *last = range_last;
     }
-    return true;
+    return 0;
 }
 
 #endif /* NCMPCPP_HELPERS_C */

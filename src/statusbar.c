@@ -384,13 +384,13 @@ ncm_statusbar_message_delay_time(void) {
     return Config.message_delay_time;
 }
 
-bool
+int32
 ncm_statusbar_prompt_return_one_of(NcWindow *window, char *values,
                                    int32 values_len, char *result) {
     NcKey key;
 
     if ((window == NULL) || (values_len <= 0) || (result == NULL)) {
-        return false;
+        return -EINVAL;
     }
 
     while (true) {
@@ -399,13 +399,13 @@ ncm_statusbar_prompt_return_one_of(NcWindow *window, char *values,
         }
         key = ncm_read_key(window);
         if ((key == NC_KEY_CTRL_C) || (key == NC_KEY_CTRL_G)) {
-            return false;
+            return 0;
         }
 
         for (int32 i = 0; i < values_len; i += 1) {
             if (key == (NcKey)values[i]) {
                 *result = values[i];
-                return true;
+                return 1;
             }
         }
     }

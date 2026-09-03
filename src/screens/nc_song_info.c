@@ -76,18 +76,27 @@ nc_song_info_screen_set_geometry(NcSongInfoScreen *screen,
     return;
 }
 
-bool
+int32
 nc_song_info_screen_prepare_current(NcSongInfoScreen *screen) {
     NcBuffer next_buffer;
+    int32 status;
 
+    if (screen == NULL) {
+        return -EINVAL;
+    }
     if (screen->hooks.render == NULL) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
 
     next_buffer = (NcBuffer){0};
-    if (!screen->hooks.render(screen->hooks.user, screen, &next_buffer)) {
+    status = screen->hooks.render(screen->hooks.user, screen, &next_buffer);
+    if (status < 0) {
         nc_buffer_destroy(&next_buffer);
-        return false;
+        return status;
+    }
+    if (status == 0) {
+        nc_buffer_destroy(&next_buffer);
+        return -NCM_ERROR_UNAVAILABLE;
     }
 
     nc_buffer_destroy(&screen->buffer);
@@ -98,7 +107,7 @@ nc_song_info_screen_prepare_current(NcSongInfoScreen *screen) {
                        &screen->window,
                        &screen->buffer);
     nc_scrollpad_refresh(&screen->scrollpad, &screen->window);
-    return true;
+    return 0;
 }
 
 static void

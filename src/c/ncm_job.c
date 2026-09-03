@@ -81,10 +81,10 @@ ncm_job_array_push(NcmJob **items, int32 *len, int32 *cap, NcmJob job) {
     return;
 }
 
-static bool
+static int32
 ncm_job_queue_pop_pending_locked(NcmJobQueue *queue, NcmJob *job) {
     if (queue->pending_len <= 0) {
-        return false;
+        return 0;
     }
 
     *job = queue->pending[0];
@@ -93,7 +93,7 @@ ncm_job_queue_pop_pending_locked(NcmJobQueue *queue, NcmJob *job) {
                   (queue->pending_len - 1)*SIZEOF(*queue->pending));
     }
     queue->pending_len -= 1;
-    return true;
+    return 1;
 }
 
 static void
@@ -108,21 +108,21 @@ static void *
 ncm_job_queue_thread_main(void *user) {
     NcmJobQueue *queue = user;
     NcmJob job;
-    bool have_job;
+    int32 have_job;
 
     while (true) {
         pthread_mutex_lock(&queue->mutex);
         while ((queue->pending_len <= 0) && !queue->stopping) {
             pthread_cond_wait(&queue->cond, &queue->mutex);
         }
-        if (!(have_job = ncm_job_queue_pop_pending_locked(queue, &job))
-            && queue->stopping) {
+        have_job = ncm_job_queue_pop_pending_locked(queue, &job);
+        if ((have_job <= 0) && queue->stopping) {
             pthread_mutex_unlock(&queue->mutex);
             break;
         }
         pthread_mutex_unlock(&queue->mutex);
 
-        if (have_job) {
+        if (have_job > 0) {
             ncm_error_clear(&job.ncm_error);
             if (job.run) {
                 job.status = job.run(job.user, &job.ncm_error);

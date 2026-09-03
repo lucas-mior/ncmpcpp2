@@ -2049,28 +2049,31 @@ lyrics_url_is_search_wrapper(char *url, int32 url_len) {
                >= 0);
 }
 
-static bool
+static int32
 lyrics_unwrap_search_url(StrBuilder *out, char *url, int32 url_len) {
     int32 query;
 
-    sb_clear(out);
-    if ((url == NULL) || (url_len <= 0)) {
-        return false;
+    if ((out == NULL) || (url == NULL) || (url_len <= 0)) {
+        return -EINVAL;
     }
+    sb_clear(out);
     if (!lyrics_url_is_search_wrapper(url, url_len)) {
         if (lyrics_starts_with_ignore_case(url, url_len,
                                            STRLIT("http://"))
             || lyrics_starts_with_ignore_case(url, url_len,
                                               STRLIT("https://"))) {
             SB_APPEND(out, url, url_len);
-            return (out->data != NULL) && (out->len > 0);
+            if ((out->data != NULL) && (out->len > 0)) {
+                return 1;
+            }
+            return 0;
         }
-        return false;
+        return 0;
     }
 
     query = lyrics_find_char(url, url_len, '?', 0);
     if (query < 0) {
-        return false;
+        return 0;
     }
     query += 1;
     while (query < url_len) {
@@ -2092,13 +2095,13 @@ lyrics_unwrap_search_url(StrBuilder *out, char *url, int32 url_len) {
                                                    STRLIT("http://"))
                     || lyrics_starts_with_ignore_case(out->data, out->len,
                                                       STRLIT("https://")))) {
-                return true;
+                return 1;
             }
             sb_clear(out);
         }
         query = end + 1;
     }
-    return false;
+    return 0;
 }
 
 static int32
@@ -2213,9 +2216,9 @@ lyrics_collect_search_urls(NcmLyricsFetcherDef *fetcher, StrBuilderArray *out,
         if (value_end < 0) {
             break;
         }
-        if (lyrics_unwrap_search_url(&candidate,
-                                     unescaped.data + value_start,
-                                     value_end - value_start)
+        if ((lyrics_unwrap_search_url(&candidate,
+                                       unescaped.data + value_start,
+                                       value_end - value_start) > 0)
             && (candidate.data != NULL)
             && (candidate.len > 0)
             && !lyrics_url_is_collected(out, candidate.data,
