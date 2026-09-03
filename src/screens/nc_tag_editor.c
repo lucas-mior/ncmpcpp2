@@ -74,7 +74,6 @@ static void tag_editor_update_menu_highlights(TagEditorScreen *);
 static bool tag_editor_confirm(TagEditorScreen *, char *, int32);
 static void tag_editor_refresh_active_helper(TagEditorScreen *);
 static void tag_editor_append_locale(NcBuffer *, char *, int32);
-static int32 tag_editor_set_buffer(StrBuilder *, char *, int32);
 static bool tag_editor_search_position(NcMenu *, int32, void *);
 static int32 tag_editor_build_parser_legend(TagEditorScreen *);
 static void tag_editor_update_titles(TagEditorScreen *, bool);
@@ -593,7 +592,7 @@ tag_editor_screen_set_current_dir(TagEditorScreen *screen,
     changed = screen->current_dir.data
               && !STREQUAL(screen->current_dir.data, screen->current_dir.len,
                            dir, dir_len);
-    status = tag_editor_set_buffer(&screen->current_dir, dir, dir_len);
+    status = sb_set(&screen->current_dir, dir, dir_len);
     if (status < 0) {
         return status;
     }
@@ -698,9 +697,9 @@ tag_editor_screen_go_to_parent(TagEditorScreen *screen) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    status = tag_editor_set_buffer(&screen->highlighted_dir,
-                                   screen->current_dir.data,
-                                   screen->current_dir.len);
+    status = sb_set(&screen->highlighted_dir,
+                    screen->current_dir.data,
+                    screen->current_dir.len);
     if (status < 0) {
         sb_free(&parent);
         return status;
@@ -2155,7 +2154,7 @@ tag_editor_history_path(StrBuilder *path) {
                            Config.ncmpcpp_directory_len,
                            STRLIT("patterns.list"));
     }
-    return tag_editor_set_buffer(path, STRLIT("patterns.list"));
+    return sb_set(path, STRLIT("patterns.list"));
 }
 
 void
@@ -2218,8 +2217,7 @@ tag_editor_screen_show_parser_actions(TagEditorScreen *screen,
                         if (item == NULL) {
                             status = -NCM_ERROR_INVALID_STATE;
                         } else {
-                            status = tag_editor_set_buffer(
-                                item, line.data, line.len);
+                            status = sb_set(item, line.data, line.len);
                         }
                         if (status < 0) {
                             break;
@@ -3168,8 +3166,8 @@ tag_editor_run_current(NcScreen *screen) {
                     int32 existing;
 
                     str_builder_array_init(&replacement);
-                    status = tag_editor_set_buffer(
-                        &first, editor->pattern.data, editor->pattern.len);
+                    status = sb_set(&first,
+                                    editor->pattern.data, editor->pattern.len);
                     if (status == 0) {
                         status = str_builder_array_append_copy(
                             &replacement, &first);
@@ -3680,20 +3678,6 @@ static void
 tag_editor_destroy_callback(NcScreen *screen) {
     tag_editor_screen_destroy(tag_editor_from_screen(screen));
     return;
-}
-
-static int32
-tag_editor_set_buffer(StrBuilder *buffer, char *data, int32 data_len) {
-    int32 status;
-
-    status = sb_set(buffer, data, data_len);
-    if (status < 0) {
-        return status;
-    }
-    if (buffer->data) {
-        buffer->data[buffer->len] = '\0';
-    }
-    return 0;
 }
 
 static void
@@ -4417,7 +4401,7 @@ tag_editor_set_pattern(TagEditorScreen *screen,
         return tag_editor_set_config_pattern(screen->pattern.data,
                                              screen->pattern.len);
     }
-    status = tag_editor_set_buffer(&screen->pattern, pattern, pattern_len);
+    status = sb_set(&screen->pattern, pattern, pattern_len);
     if (status < 0) {
         return status;
     }
