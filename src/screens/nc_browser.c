@@ -875,8 +875,8 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
                                     STRLIT("missing extension state"));
     }
 
-    status = ncm_mpd_client_get_supported_extensions(
-        client, &strings, ncm_error);
+    status = ncm_mpd_client_get_supported_extensions(client, &strings,
+                                                     ncm_error);
     if (status < 0) {
         ncm_mpd_string_list_destroy(&strings);
         return status;
