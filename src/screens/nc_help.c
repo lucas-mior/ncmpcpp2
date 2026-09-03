@@ -12,7 +12,6 @@ static void nc_help_resize(NcScreen *screen);
 static void nc_help_mouse_button_pressed(NcScreen *screen, MEVENT event);
 static void nc_help_destroy_callback(NcScreen *screen);
 static void nc_help_display(NcHelpScreen *help);
-static void nc_help_mouse_scroll(NcHelpScreen *help, enum NcScroll where);
 static bool nc_help_find_match_callback(int32 start, int32 len, void *user);
 
 #define NC_SCREEN_IMPL_TYPE NcHelpScreen
@@ -189,6 +188,14 @@ nc_help_resize(NcScreen *screen) {
 }
 
 static void
+nc_help_mouse_scroll(NcHelpScreen *help, enum NcScroll where) {
+    for (int32 i = 0; i < help->lines_scrolled; i += 1) {
+        nc_scrollpad_scroll(&help->scrollpad, &help->window, where);
+    }
+    return;
+}
+
+static void
 nc_help_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     NcHelpScreen *help = nc_help_from_screen(screen);
 
@@ -213,14 +220,6 @@ nc_help_destroy_callback(NcScreen *screen) {
 static void
 nc_help_display(NcHelpScreen *help) {
     nc_scrollpad_refresh(&help->scrollpad, &help->window);
-    return;
-}
-
-static void
-nc_help_mouse_scroll(NcHelpScreen *help, enum NcScroll where) {
-    for (int32 i = 0; i < help->lines_scrolled; i += 1) {
-        nc_scrollpad_scroll(&help->scrollpad, &help->window, where);
-    }
     return;
 }
 
