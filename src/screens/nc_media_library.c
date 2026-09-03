@@ -4007,8 +4007,8 @@ library_update_titles(MediaLibraryScreen *screen,
 static void
 library_refresh_menu(NcMenu *menu, NcWindow *window) {
     nc_window_display(window);
-    nc_menu_refresh(menu, window, nc_window_width(window),
-                    nc_window_height(window));
+    nc_menu_refresh(menu, window,
+                    nc_window_width(window), nc_window_height(window));
     return;
 }
 
