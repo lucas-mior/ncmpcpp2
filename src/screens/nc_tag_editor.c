@@ -609,21 +609,26 @@ tag_editor_screen_init(TagEditorScreen *screen,
                    screen->directories_title.data,
                    screen->directories_title.len,
                    color, border);
-    nc_window_init(&screen->tag_types_window, start_x, main_start_y,
-                   width, main_height, screen->tag_types_title.data,
+    nc_window_init(&screen->tag_types_window,
+                   start_x, main_start_y, width, main_height,
+                   screen->tag_types_title.data,
                    screen->tag_types_title.len, color, border);
-    nc_window_init(&screen->tags_window, start_x, main_start_y,
-                   width, main_height, screen->tags_title.data,
+    nc_window_init(&screen->tags_window,
+                   start_x, main_start_y, width, main_height,
+                   screen->tags_title.data,
                    screen->tags_title.len, color, border);
-    nc_window_init(&screen->parser_dialog_window, start_x, main_start_y,
-                   width, main_height, screen->parser_dialog_title.data,
+    nc_window_init(&screen->parser_dialog_window,
+                   start_x, main_start_y, width, main_height,
+                   screen->parser_dialog_title.data,
                    screen->parser_dialog_title.len, color,
                    Config.window_border);
-    nc_window_init(&screen->parser_window, start_x, main_start_y,
-                   width, main_height, screen->parser_title.data,
+    nc_window_init(&screen->parser_window,
+                   start_x, main_start_y, width, main_height,
+                   screen->parser_title.data,
                    screen->parser_title.len, color, Config.window_border);
-    nc_window_init(&screen->parser_helper_window, start_x, main_start_y,
-                   width, main_height, screen->parser_helper_title.data,
+    nc_window_init(&screen->parser_helper_window,
+                   start_x, main_start_y, width, main_height,
+                   screen->parser_helper_title.data,
                    screen->parser_helper_title.len, color,
                    Config.window_border);
 
