@@ -4861,8 +4861,7 @@ tag_editor_build_parser_preview(TagEditorScreen *screen,
         if ((song = nc_menu_active_item_at(tags, i)) == NULL) {
             continue;
         }
-        if (screen->parser_mode
-            == TAG_EDITOR_PARSER_TAGS_FROM_FILENAME) {
+        if (screen->parser_mode == TAG_EDITOR_PARSER_TAGS_FROM_FILENAME) {
             if (!apply && song->name) {
                 SB_APPEND(&screen->parser_preview, song->name, song->name_len);
                 SB_APPEND(&screen->parser_preview, ":\n");
