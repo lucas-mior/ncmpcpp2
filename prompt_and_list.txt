@@ -11,8 +11,6 @@ for NULL in internal functions of the first $file.c in the list below.
     validated it. After done with the $file.c, delete
     it (them) from the list below.
 
-src/curses/nc_formatted_color.c
-src/c/ncm_taglib.c
 src/curses/nc_buffer.c
 src/main.c
 src/curses/nc_cyclic_buffer.c
