@@ -500,6 +500,7 @@ media_library_mpd_hooks(NcmMpdClient *client) {
     hooks.search_songs = library_mpd_search_songs;
     hooks.add_songs = library_mpd_add_songs;
     hooks.user = client;
+
     return hooks;
 }
 
