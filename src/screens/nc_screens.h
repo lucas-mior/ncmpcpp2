@@ -2054,8 +2054,8 @@ void tag_editor_screen_set_geometry(TagEditorScreen *screen,
 void tag_editor_screen_clear_directories(TagEditorScreen *screen);
 void tag_editor_screen_clear_stale_tags(TagEditorScreen *screen);
 void tag_editor_screen_finish_directory_change(TagEditorScreen *screen);
-int32 tag_editor_screen_set_current_dir(TagEditorScreen *screen,
-                                        char *dir, int32 dir_len);
+void tag_editor_screen_set_current_dir(TagEditorScreen *screen,
+                                       char *dir, int32 dir_len);
 int32 tag_editor_screen_current_dir(TagEditorScreen *screen,
                                     NcmStringView *view);
 int32 tag_editor_screen_current_directory_path(
@@ -2068,13 +2068,13 @@ bool tag_editor_screen_rename_directory_available(
     TagEditorScreen *screen, char *music_dir, int32 music_dir_len);
 int32 tag_editor_screen_rename_current_directory(
     TagEditorScreen *screen, char *music_dir, int32 music_dir_len);
-int32 tag_editor_screen_add_directory(TagEditorScreen *screen,
-                                      char *label, int32 label_len,
-                                      char *path, int32 path_len);
-int32 tag_editor_screen_load_songs(TagEditorScreen *screen,
-                                   NcmSongArray *songs);
-int32 tag_editor_screen_add_mutable_song(
-    TagEditorScreen *screen, NcmMutableSong *song);
+void tag_editor_screen_add_directory(TagEditorScreen *screen,
+                                     char *label, int32 label_len,
+                                     char *path, int32 path_len);
+void tag_editor_screen_load_songs(TagEditorScreen *screen,
+                                  NcmSongArray *songs);
+void tag_editor_screen_add_mutable_song(TagEditorScreen *screen,
+                                        NcmMutableSong *song);
 int32 tag_editor_screen_selected_songs(TagEditorScreen *screen,
                                        NcmSongArray *songs);
 bool tag_editor_screen_previous_column_available(TagEditorScreen *screen);
@@ -2102,7 +2102,7 @@ int32 tag_editor_screen_apply_tag_filter(
 int32 tag_editor_screen_search(
     TagEditorScreen *screen, char *pattern, int32 pattern_len,
     bool forward, bool wrap, bool skip_current, NcmError *ncm_error);
-int32 tag_editor_screen_prepare_parser_rows(
+void tag_editor_screen_prepare_parser_rows(
     TagEditorScreen *screen, enum TagEditorParserMode mode,
     char *pattern, int32 pattern_len);
 void tag_editor_screen_show_parser_dialog(TagEditorScreen *screen);
