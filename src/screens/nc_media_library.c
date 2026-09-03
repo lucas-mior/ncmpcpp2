@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static void library_restore_album_identity(NcMediaLibraryAlbumMenu *menu, NcMediaLibraryAlbumRow *identity, bool identity_valid, int32 fallback);
 static bool library_has_pending_tags(MediaLibraryScreen *screen);
 static bool library_has_fetch_delay_elapsed(MediaLibraryScreen *screen);
 static int32 library_update_tags(MediaLibraryScreen *screen, NcmError *ncm_error);
@@ -2981,6 +2980,31 @@ library_update_tags(MediaLibraryScreen *screen,
     return status;
 }
 
+static void
+library_restore_album_identity(
+    NcMediaLibraryAlbumMenu *menu, NcMediaLibraryAlbumRow *identity,
+    bool identity_valid, int32 fallback
+) {
+    NcMenu *base;
+
+    base = nc_media_library_album_menu_base(menu);
+    if (identity_valid) {
+        for (int32 i = 0; i < nc_menu_item_count(base); i += 1) {
+            NcMediaLibraryAlbumRow *candidate;
+
+            candidate = nc_media_library_album_menu_item_at(
+                menu, base->active_items, i);
+            if (candidate
+                && library_album_identity_is_equal(candidate, identity)
+                && (nc_menu_goto_selectable(base, i) == 0)) {
+                return;
+            }
+        }
+    }
+    library_restore_highlight(base, fallback);
+    return;
+}
+
 static int32
 library_replace_albums(MediaLibraryScreen *screen,
                        MediaLibraryAlbumArray *albums) {
@@ -3097,31 +3121,6 @@ library_update_albums(MediaLibraryScreen *screen,
     ncm_mpd_song_list_destroy(&songs);
     media_library_album_array_destroy(&albums);
     return status;
-}
-
-static void
-library_restore_album_identity(
-    NcMediaLibraryAlbumMenu *menu, NcMediaLibraryAlbumRow *identity,
-    bool identity_valid, int32 fallback
-) {
-    NcMenu *base;
-
-    base = nc_media_library_album_menu_base(menu);
-    if (identity_valid) {
-        for (int32 i = 0; i < nc_menu_item_count(base); i += 1) {
-            NcMediaLibraryAlbumRow *candidate;
-
-            candidate = nc_media_library_album_menu_item_at(
-                menu, base->active_items, i);
-            if (candidate
-                && library_album_identity_is_equal(candidate, identity)
-                && (nc_menu_goto_selectable(base, i) == 0)) {
-                return;
-            }
-        }
-    }
-    library_restore_highlight(base, fallback);
-    return;
 }
 
 static bool
