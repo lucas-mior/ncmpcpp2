@@ -3200,8 +3200,7 @@ library_from_screen(NcScreen *screen) {
 
 static NcWindow *
 library_active_window(NcScreen *screen) {
-    return media_library_screen_active_window(
-        library_from_screen(screen));
+    return media_library_screen_active_window(library_from_screen(screen));
 }
 
 static void
