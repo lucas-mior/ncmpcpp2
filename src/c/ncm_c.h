@@ -60,26 +60,26 @@ struct mpd_song;
 #define ENUM_NAME NcmTagsField
 #define ENUM_PREFIX_ NCM_TAGS_FIELD_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NCM_TAGS_FIELD_TITLE)                                                   \
-    XX(NCM_TAGS_FIELD_ARTIST)                                                  \
-    XX(NCM_TAGS_FIELD_ALBUM_ARTIST)                                            \
-    XX(NCM_TAGS_FIELD_ALBUM)                                                   \
-    XX(NCM_TAGS_FIELD_DATE)                                                    \
-    XX(NCM_TAGS_FIELD_TRACK)                                                   \
-    XX(NCM_TAGS_FIELD_GENRE)                                                   \
-    XX(NCM_TAGS_FIELD_COMPOSER)                                                \
-    XX(NCM_TAGS_FIELD_PERFORMER)                                               \
-    XX(NCM_TAGS_FIELD_DISC)                                                    \
+#define ENUM_FIELDS                      \
+    XX(NCM_TAGS_FIELD_TITLE)             \
+    XX(NCM_TAGS_FIELD_ARTIST)            \
+    XX(NCM_TAGS_FIELD_ALBUM_ARTIST)      \
+    XX(NCM_TAGS_FIELD_ALBUM)             \
+    XX(NCM_TAGS_FIELD_DATE)              \
+    XX(NCM_TAGS_FIELD_TRACK)             \
+    XX(NCM_TAGS_FIELD_GENRE)             \
+    XX(NCM_TAGS_FIELD_COMPOSER)          \
+    XX(NCM_TAGS_FIELD_PERFORMER)         \
+    XX(NCM_TAGS_FIELD_DISC)              \
     XX(NCM_TAGS_FIELD_COMMENT)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcmTagsReadResult
 #define ENUM_PREFIX_ NCM_TAGS_READ_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NCM_TAGS_READ_OK)                                                       \
-    XX(NCM_TAGS_READ_OPEN_FAILED)                                              \
+#define ENUM_FIELDS                      \
+    XX(NCM_TAGS_READ_OK)                 \
+    XX(NCM_TAGS_READ_OPEN_FAILED)        \
     XX(NCM_TAGS_READ_NOT_FOUND)
 #include "cbase/xenums.c"
 
@@ -111,33 +111,33 @@ int32 ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
 #define ENUM_NAME NcmItemType
 #define ENUM_PREFIX_ NCM_ITEM_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NCM_ITEM_DIRECTORY)                                                     \
-    XX(NCM_ITEM_SONG)                                                          \
+#define ENUM_FIELDS                         \
+    XX(NCM_ITEM_DIRECTORY)                  \
+    XX(NCM_ITEM_SONG)                       \
     XX(NCM_ITEM_PLAYLIST)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcmSongGetter
 #define ENUM_PREFIX_ NCM_SONG_GETTER_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NCM_SONG_GETTER_NONE)                                                   \
-    XX(NCM_SONG_GETTER_LENGTH)                                                 \
-    XX(NCM_SONG_GETTER_DIRECTORY)                                              \
-    XX(NCM_SONG_GETTER_NAME)                                                   \
-    XX(NCM_SONG_GETTER_URI)                                                    \
-    XX(NCM_SONG_GETTER_ARTIST)                                                 \
-    XX(NCM_SONG_GETTER_ALBUM_ARTIST)                                           \
-    XX(NCM_SONG_GETTER_TITLE)                                                  \
-    XX(NCM_SONG_GETTER_ALBUM)                                                  \
-    XX(NCM_SONG_GETTER_DATE)                                                   \
-    XX(NCM_SONG_GETTER_TRACK_NUMBER)                                           \
-    XX(NCM_SONG_GETTER_TRACK)                                                  \
-    XX(NCM_SONG_GETTER_GENRE)                                                  \
-    XX(NCM_SONG_GETTER_COMPOSER)                                               \
-    XX(NCM_SONG_GETTER_PERFORMER)                                              \
-    XX(NCM_SONG_GETTER_DISC)                                                   \
-    XX(NCM_SONG_GETTER_COMMENT)                                                \
+#define ENUM_FIELDS                         \
+    XX(NCM_SONG_GETTER_NONE)                \
+    XX(NCM_SONG_GETTER_LENGTH)              \
+    XX(NCM_SONG_GETTER_DIRECTORY)           \
+    XX(NCM_SONG_GETTER_NAME)                \
+    XX(NCM_SONG_GETTER_URI)                 \
+    XX(NCM_SONG_GETTER_ARTIST)              \
+    XX(NCM_SONG_GETTER_ALBUM_ARTIST)        \
+    XX(NCM_SONG_GETTER_TITLE)               \
+    XX(NCM_SONG_GETTER_ALBUM)               \
+    XX(NCM_SONG_GETTER_DATE)                \
+    XX(NCM_SONG_GETTER_TRACK_NUMBER)        \
+    XX(NCM_SONG_GETTER_TRACK)               \
+    XX(NCM_SONG_GETTER_GENRE)               \
+    XX(NCM_SONG_GETTER_COMPOSER)            \
+    XX(NCM_SONG_GETTER_PERFORMER)           \
+    XX(NCM_SONG_GETTER_DISC)                \
+    XX(NCM_SONG_GETTER_COMMENT)             \
     XX(NCM_SONG_GETTER_PRIORITY)
 #include "cbase/xenums.c"
 
