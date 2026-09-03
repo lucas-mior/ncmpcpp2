@@ -4219,11 +4219,9 @@ tag_editor_number_song_callback(NcmMutableSong *song, void *user) {
     int32 status;
 
     if (numberer->extended) {
-        len = SNPRINTF(buffer, "%d/%d",
-                       numberer->current, numberer->total);
+        len = SNPRINTF(buffer, "%d/%d", numberer->current, numberer->total);
     } else {
-        len = SNPRINTF(buffer, "%d",
-                       numberer->current);
+        len = SNPRINTF(buffer, "%d", numberer->current);
     }
     if (len < 0) {
         return -EINVAL;
