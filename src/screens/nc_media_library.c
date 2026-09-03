@@ -1441,6 +1441,7 @@ library_sort_tags(MediaLibraryTagArray *tags) {
             tmp = tags->items[j];
             tags->items[j] = tags->items[j - 1];
             tags->items[j - 1] = tmp;
+
             j -= 1;
         }
     }
