@@ -25,7 +25,6 @@ static int32 library_window_timeout(NcScreen *screen);
 static char *library_title(NcScreen *screen);
 static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
-static void library_print_buffer(NcWindow *window, NcBuffer *buffer);
 static NcMenu *library_column_menu(
     MediaLibraryScreen *screen,
     enum MediaLibraryColumn column);
@@ -3549,20 +3548,6 @@ library_draw_album(NcMenu *menu, NcWindow *window,
 }
 
 static void
-library_draw_song(NcMenu *menu, NcWindow *window,
-                  void *item, int32 pos, void *user) {
-    NcBuffer text = {0};
-
-    (void)menu;
-    (void)pos;
-
-    media_library_screen_format_song_row(user, item, &text);
-    library_print_buffer(window, &text);
-    nc_buffer_destroy(&text);
-    return;
-}
-
-static void
 library_print_buffer(NcWindow *window, NcBuffer *buffer) {
     NcBufferProperty *properties = nc_buffer_properties(buffer);
     char *data = nc_buffer_data(buffer);
@@ -3581,6 +3566,20 @@ library_print_buffer(NcWindow *window, NcBuffer *buffer) {
         }
         nc_window_print_char(window, data[i]);
     }
+    return;
+}
+
+static void
+library_draw_song(NcMenu *menu, NcWindow *window,
+                  void *item, int32 pos, void *user) {
+    NcBuffer text = {0};
+
+    (void)menu;
+    (void)pos;
+
+    media_library_screen_format_song_row(user, item, &text);
+    library_print_buffer(window, &text);
+    nc_buffer_destroy(&text);
     return;
 }
 
