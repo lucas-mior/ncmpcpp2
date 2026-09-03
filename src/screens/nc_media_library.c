@@ -3229,9 +3229,8 @@ library_refresh(NcScreen *screen) {
     }
     nc_screen_draw_vertical_separator(
         nc_window_start_x(&library->songs_window) - 1);
-    library_refresh_menu(
-        nc_media_library_song_menu_base(&library->songs),
-        &library->songs_window);
+    library_refresh_menu(nc_media_library_song_menu_base(&library->songs),
+                         &library->songs_window);
     return;
 }
 
