@@ -6,8 +6,8 @@
 #include "c/ncm_c.h"
 
 static int32
-ncm_conversion_copy_source(StrBuilder *buffer, char *source,
-                           int32 source_len, NcmError *ncm_error) {
+ncm_conversion_copy_source(StrBuilder *buffer, char *source, int32 source_len,
+                           NcmError *ncm_error) {
     sb_clear(buffer);
 
     if (source == NULL) {
