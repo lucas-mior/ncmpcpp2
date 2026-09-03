@@ -603,6 +603,7 @@ tag_editor_screen_init(TagEditorScreen *screen,
     screen->tag_search_regex = (NcmRegex){0};
 
     tag_editor_update_titles(screen, false);
+
     nc_window_init(&screen->directories_window, start_x, main_start_y,
                    width, main_height, screen->directories_title.data,
                    screen->directories_title.len, color, border);
