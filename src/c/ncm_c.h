@@ -1445,9 +1445,6 @@ int32 ncm_design_parse(char *string, int32 string_len, enum Design *value);
 int32 ncm_visualizer_type_parse(char *string, int32 string_len,
                                 enum VisualizerType *value);
 
-/* c/ncm_charset.h */
-StrBuilder ncm_charset_copy(char *string, int32 string_len);
-
 /* c/ncm_comparators.h */
 int32 ncm_compare_locale_strings(char *left, int32 left_len,
                                  char *right, int32 right_len,
