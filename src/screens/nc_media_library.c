@@ -2972,13 +2972,11 @@ library_update_tags(MediaLibraryScreen *screen,
 }
 
 static void
-library_restore_album_identity(
-    NcMediaLibraryAlbumMenu *menu, NcMediaLibraryAlbumRow *identity,
-    bool identity_valid, int32 fallback
-) {
-    NcMenu *base;
+library_restore_album_identity(NcMediaLibraryAlbumMenu *menu,
+                               NcMediaLibraryAlbumRow *identity,
+                               bool identity_valid, int32 fallback) {
+    NcMenu *base = nc_media_library_album_menu_base(menu);
 
-    base = nc_media_library_album_menu_base(menu);
     if (identity_valid) {
         for (int32 i = 0; i < nc_menu_item_count(base); i += 1) {
             NcMediaLibraryAlbumRow *candidate;
