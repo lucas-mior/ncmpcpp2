@@ -1149,7 +1149,7 @@ browser_screen_delete_items(BrowserScreen *screen,
     return ncm_error_ok(ncm_error);
 }
 
-int32
+static int32
 browser_current_directory_item_path(BrowserScreen *screen,
                                     NcmStringView *path,
                                     NcmError *ncm_error) {
