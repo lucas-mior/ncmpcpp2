@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static void library_update_menu_highlights(MediaLibraryScreen *screen);
 static void library_update_titles(MediaLibraryScreen *screen, bool update_windows);
 static void library_refresh_menu(NcMenu *menu, NcWindow *window);
 static bool library_active_item_matches(MediaLibraryScreen *screen, NcMenu *menu, int32 pos, NcmRegex *regex);
