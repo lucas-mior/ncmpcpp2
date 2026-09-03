@@ -1570,10 +1570,9 @@ int32 ncm_lrc_document_next_entry_after_time(NcmLrcDocument *document,
 
 /* c/ncm_macro_utilities.h */
 int32 ncm_macro_run_external_command(char *command, int32 command_len,
-                                    bool block, NcmError *ncm_error);
-int32 ncm_macro_run_external_console_command(char *command,
-                                            int32 command_len,
-                                            NcmError *ncm_error);
+                                     bool block, NcmError *ncm_error);
+int32 ncm_macro_run_external_console_command(char *command, int32 command_len,
+                                             NcmError *ncm_error);
 
 /* c/ncm_option_parser.h */
 typedef struct NcmOptionLine {
