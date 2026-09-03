@@ -79,8 +79,7 @@ ncm_fs_entry_destroy(NcmFsEntry *entry) {
 }
 
 int32
-ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat,
-            NcmError *ncm_error) {
+ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat, NcmError *ncm_error) {
     struct stat statbuf;
     char *path_copy;
     int32 code;
