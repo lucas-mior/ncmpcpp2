@@ -69,19 +69,11 @@ static NcmTaglibPropertyMap ncm_taglib_properties[] = {
 
 static TagLib_File *
 ncm_taglib_handle(NcmTaglibFile *file) {
-    if (file == NULL) {
-        return NULL;
-    }
-
     return (TagLib_File *)file->handle;
 }
 
 static bool
 ncm_taglib_value_is_empty(char *value) {
-    if (value == NULL) {
-        return true;
-    }
-
     return value[0] == '\0';
 }
 
@@ -132,14 +124,18 @@ void
 ncm_taglib_file_close(NcmTaglibFile *file) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
+#endif
 
-    if ((handle = ncm_taglib_handle(file)) != NULL) {
+    if (file == NULL) {
+        return;
+    }
+
+#if defined(HAVE_TAGLIB_H)
+    if ((handle = ncm_taglib_handle(file))) {
         taglib_file_free(handle);
     }
 #endif
-    if (file != NULL) {
-        file->handle = NULL;
-    }
+    file->handle = NULL;
     return;
 }
 
@@ -148,6 +144,9 @@ ncm_taglib_file_save(NcmTaglibFile *file) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
 
+    if (file == NULL) {
+        return -EINVAL;
+    }
     if ((handle = ncm_taglib_handle(file)) == NULL) {
         return -EINVAL;
     }
@@ -169,6 +168,9 @@ ncm_taglib_file_audio_properties(NcmTaglibFile *file,
     TagLib_File *handle;
     TagLib_AudioProperties *audio;
 
+    if (file == NULL) {
+        return -EINVAL;
+    }
     if (properties == NULL) {
         return -EINVAL;
     }
@@ -207,6 +209,9 @@ ncm_taglib_read_property(NcmTaglibFile *file, char *property,
     char **values;
     int32 count;
 
+    if (file == NULL) {
+        return -EINVAL;
+    }
     if ((handle = ncm_taglib_handle(file)) == NULL) {
         return -EINVAL;
     }
@@ -248,6 +253,9 @@ ncm_taglib_read_mapped_properties(NcmTaglibFile *file,
     TagLib_File *handle;
     int32 count;
 
+    if (file == NULL) {
+        return -EINVAL;
+    }
     if ((handle = ncm_taglib_handle(file)) == NULL) {
         return -EINVAL;
     }
@@ -289,6 +297,9 @@ ncm_taglib_clear_property(NcmTaglibFile *file, char *property) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
 
+    if (file == NULL) {
+        return -EINVAL;
+    }
     if ((handle = ncm_taglib_handle(file)) == NULL) {
         return -EINVAL;
     }
@@ -310,6 +321,9 @@ ncm_taglib_append_property(NcmTaglibFile *file, char *property, char *value) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
 
+    if (file == NULL) {
+        return -EINVAL;
+    }
     if ((handle = ncm_taglib_handle(file)) == NULL) {
         return -EINVAL;
     }
@@ -333,6 +347,9 @@ ncm_taglib_append_property(NcmTaglibFile *file, char *property, char *value) {
 bool
 ncm_taglib_file_can_set_extended_tags(NcmTaglibFile *file) {
 #if defined(HAVE_TAGLIB_H)
+    if (file == NULL) {
+        return false;
+    }
     return ncm_taglib_handle(file) != NULL;
 #else
     (void)file;
