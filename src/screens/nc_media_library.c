@@ -3220,9 +3220,8 @@ library_sort_tag_menu(NcMediaLibraryTagMenu *menu) {
 
     base = nc_media_library_tag_menu_base(menu);
     for (int32 i = 1; i < nc_menu_all_item_count(base); i += 1) {
-        int32 j;
+        int32 j = i;
 
-        j = i;
         while (j > 0) {
             NcMediaLibraryTagRow *left;
             NcMediaLibraryTagRow *right;
