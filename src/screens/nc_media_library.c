@@ -4085,8 +4085,8 @@ library_update(NcScreen *screen) {
     status = media_library_screen_update(library, &ncm_error);
     if (status < 0) {
         if (ncm_error_is_set(&ncm_error)) {
-            ncm_statusbar_print_cstring(
-                Config.message_delay_time, ncm_error.message);
+            ncm_statusbar_print_cstring(Config.message_delay_time,
+                                        ncm_error.message);
         }
         return;
     }
