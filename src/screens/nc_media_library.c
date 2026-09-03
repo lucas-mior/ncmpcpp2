@@ -3524,10 +3524,10 @@ library_print_add_status(MediaLibraryScreen *screen,
     }
 
     if (screen->active_column == MEDIA_LIBRARY_COLUMN_TAGS) {
-        NcMediaLibraryTagRow *tag;
+        NcMediaLibraryTagRow *tag = media_library_screen_current_tag(screen);
 
-        tag = media_library_screen_current_tag(screen);
         tag_name = ncm_tag_type_name(Config.media_lib_primary_tag);
+
         SB_APPEND(&message, "Songs with ");
         for (int32 i = 0; tag_name[i] != '\0'; i += 1) {
             char ch;
