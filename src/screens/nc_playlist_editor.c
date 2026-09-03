@@ -1454,11 +1454,8 @@ playlist_editor_search_position(NcMenu *menu, int32 pos, void *user) {
         return false;
     }
     if (menu->item_callbacks.item_size == SIZEOF(NcmPlaylist)) {
-        NcmPlaylist *playlist;
-
-        playlist = item;
-        return playlist_editor_playlist_matches_regex(context->regex,
-                                                      playlist);
+        NcmPlaylist *playlist = item;
+        return playlist_editor_playlist_matches_regex(context->regex, playlist);
     }
     return playlist_editor_content_matches_regex(
         context->screen, context->regex, item);
