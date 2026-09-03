@@ -32,7 +32,9 @@ they have valid input because the external API of the module has already
 validated it. If you don't find any instance of the anti patterns in the first
 file, remove it from the list below and search in the next without asking me.
 If the next file also does not have the anti pattern, also remove it from the
-list and try the next and so on.
+list and try the next and so on. When you end up changing a .c file, send me the
+result as a tar ball (but include all the changes of the previous prompts as
+well).
 
 - src/screens/nc_tag_editor.c
 - src/screens/nc_media_library.c
