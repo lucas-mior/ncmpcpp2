@@ -3267,11 +3267,11 @@ library_sort_album_menu(NcMediaLibraryAlbumMenu *menu) {
             }
 
             left.row = *left_row;
-            left.menu_flags = nc_menu_item_flags_at(
-                base, NC_MENU_ITEMS_ALL, j);
+            left.menu_flags = nc_menu_item_flags_at(base,
+                                                    NC_MENU_ITEMS_ALL, j);
             right.row = *right_row;
-            right.menu_flags = nc_menu_item_flags_at(
-                base, NC_MENU_ITEMS_ALL, j - 1);
+            right.menu_flags = nc_menu_item_flags_at(base, NC_MENU_ITEMS_ALL,
+                                                     j - 1);
 
             left_rank = 0;
             right_rank = 0;
