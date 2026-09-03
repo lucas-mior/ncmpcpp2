@@ -29,6 +29,7 @@ static bool content_filter_callback(NcMenu *menu, void *item, void *user);
 static void playlist_draw_callback(NcMenu *menu, NcWindow *window, void *item, int32 pos, void *user);
 static void content_draw_callback(NcMenu *menu, NcWindow *window, void *item, int32 pos, void *user);
 
+// declarations to delete
 static bool playlist_editor_playlist_matches_regex(NcmRegex *regex, NcmPlaylist *playlist);
 static bool playlist_editor_content_matches_regex(PlaylistEditorScreen *screen, NcmRegex *regex, NcmSong *song);
 static bool playlist_editor_search_text_matches(NcmRegex *regex, char *data, int32 len);
