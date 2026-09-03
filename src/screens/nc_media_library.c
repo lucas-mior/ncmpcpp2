@@ -3491,11 +3491,9 @@ library_tag_filter(NcMenu *menu, void *item, void *user) {
 
 static bool
 library_album_filter(NcMenu *menu, void *item, void *user) {
-    MediaLibraryScreen *screen;
-    NcMediaLibraryAlbumRow *row;
+    MediaLibraryScreen *screen = user;
+    NcMediaLibraryAlbumRow *row = item;
 
-    screen = user;
-    row = item;
     if (library_menu_item_is_separator(menu, item)
         || (row && row->all_tracks_entry)) {
         return true;
