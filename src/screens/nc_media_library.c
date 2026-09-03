@@ -4008,12 +4008,12 @@ library_mouse_select(
     }
 
     if (column == MEDIA_LIBRARY_COLUMN_TAGS) {
-        nc_menu_clear_items(
-            nc_media_library_album_menu_base(&screen->albums));
-        nc_menu_clear_items(
-            nc_media_library_song_menu_base(&screen->songs));
+        nc_menu_clear_items(nc_media_library_album_menu_base(&screen->albums));
+        nc_menu_clear_items(nc_media_library_song_menu_base(&screen->songs));
+
         screen->albums_update_request = true;
         screen->songs_update_request = true;
+
         library_set_observed_album(screen, NULL);
         library_restart_update_timer(screen);
         nc_screen_request_update(&screen->screen);
