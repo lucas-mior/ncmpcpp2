@@ -2554,11 +2554,9 @@ lyrics_amalgama_content_end(char *data, int32 data_len, int32 start) {
     int32 best = -1;
 
     lyrics_update_first_match(data, data_len, start,
-                              STRLIT("Понравился "
-                                          "перевод"), &best);
+                              STRLIT("Понравился перевод"), &best);
     lyrics_update_first_match(data, data_len, start,
-                              STRLIT("Добавить "
-                                          "видео"), &best);
+                              STRLIT("Добавить видео"), &best);
     lyrics_update_first_match(data, data_len, start,
                               STRLIT("Другие песни"), &best);
     lyrics_update_first_match(data, data_len, start,
