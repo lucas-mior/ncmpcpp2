@@ -5242,7 +5242,7 @@ action_runtime_edit_library_album(void) {
 static int32
 action_runtime_edit_current_song(void) {
 #if defined(HAVE_TAGLIB_H)
-    NcmSong song;
+    NcmSong song = {0};
     int32 status;
 
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_LYRICS)) {
@@ -5251,7 +5251,7 @@ action_runtime_edit_current_song(void) {
     if (!action_runtime_has_current_song()) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    song = (NcmSong){0};
+
     status = action_runtime_current_song(&song);
     if (status == 0) {
         status = ncm_action_edit_song(&song);
