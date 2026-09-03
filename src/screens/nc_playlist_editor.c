@@ -1581,9 +1581,7 @@ playlist_editor_from_screen(NcScreen *screen) {
 
 static NcWindow *
 playlist_editor_active_window_callback(NcScreen *screen) {
-    PlaylistEditorScreen *editor;
-
-    editor = playlist_editor_from_screen(screen);
+    PlaylistEditorScreen *editor = playlist_editor_from_screen(screen);
     return playlist_editor_screen_active_window(editor);
 }
 
