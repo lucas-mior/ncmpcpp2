@@ -26,8 +26,6 @@ static char *library_title(NcScreen *screen);
 static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 static void library_print_buffer(NcWindow *window, NcBuffer *buffer);
-static int32 library_copy_song_at(MediaLibraryScreen *screen,
-                                 NcmSongArray *songs, int32 pos);
 static NcMenu *library_column_menu(
     MediaLibraryScreen *screen,
     enum MediaLibraryColumn column);
@@ -1601,6 +1599,24 @@ media_library_screen_selected_songs_checked(
                                     STRLIT("missing media-library songs"));
     }
     return library_collect_selected_songs(screen, songs, ncm_error);
+}
+
+static int32
+library_copy_song_at(MediaLibraryScreen *screen,
+                     NcmSongArray *songs, int32 pos) {
+    NcmSong *song;
+    int32 status;
+
+    song = nc_menu_active_item_at(
+        nc_media_library_song_menu_base(&screen->songs), pos);
+    if (song == NULL) {
+        return 0;
+    }
+    status = ncm_song_array_append_copy(songs, song);
+    if (status < 0) {
+        return status;
+    }
+    return 0;
 }
 
 int32
@@ -3566,24 +3582,6 @@ library_print_buffer(NcWindow *window, NcBuffer *buffer) {
         nc_window_print_char(window, data[i]);
     }
     return;
-}
-
-static int32
-library_copy_song_at(MediaLibraryScreen *screen,
-                     NcmSongArray *songs, int32 pos) {
-    NcmSong *song;
-    int32 status;
-
-    song = nc_menu_active_item_at(
-        nc_media_library_song_menu_base(&screen->songs), pos);
-    if (song == NULL) {
-        return 0;
-    }
-    status = ncm_song_array_append_copy(songs, song);
-    if (status < 0) {
-        return status;
-    }
-    return 0;
 }
 
 static NcMenu *
