@@ -3913,9 +3913,7 @@ library_display_callbacks(
 }
 
 static void
-library_update_menu_highlights(
-    MediaLibraryScreen *screen
-) {
+library_update_menu_highlights(MediaLibraryScreen *screen) {
     NcMenu *tags;
     NcMenu *albums;
     NcMenu *songs;
