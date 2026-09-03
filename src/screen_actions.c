@@ -172,9 +172,8 @@ current_screen_clear_current_search_constraint(void) {
     }
 #if defined(HAVE_TAGLIB_H)
     if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
-        TagEditorScreen *screen;
+        TagEditorScreen *screen = app_screen_tag_editor();
 
-        screen = app_screen_tag_editor();
         if (screen->active_column == TAG_EDITOR_COLUMN_DIRECTORIES) {
             screen->directory_search_enabled = false;
             sb_clear(&screen->directory_search_constraint);
