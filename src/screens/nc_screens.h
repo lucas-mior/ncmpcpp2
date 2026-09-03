@@ -2112,12 +2112,9 @@ void tag_editor_screen_set_geometry(TagEditorScreen *screen,
                                     int32 start_x, int32 width,
                                     int32 main_start_y,
                                     int32 main_height);
-void tag_editor_screen_clear_directories(
-    TagEditorScreen *screen);
-void tag_editor_screen_clear_stale_tags(
-    TagEditorScreen *screen);
-void tag_editor_screen_finish_directory_change(
-    TagEditorScreen *screen);
+void tag_editor_screen_clear_directories(TagEditorScreen *screen);
+void tag_editor_screen_clear_stale_tags(TagEditorScreen *screen);
+void tag_editor_screen_finish_directory_change(TagEditorScreen *screen);
 int32 tag_editor_screen_set_current_dir(TagEditorScreen *screen,
                                         char *dir, int32 dir_len);
 int32 tag_editor_screen_current_dir(TagEditorScreen *screen,
