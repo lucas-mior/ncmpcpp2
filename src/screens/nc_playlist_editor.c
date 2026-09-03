@@ -91,9 +91,7 @@ playlist_editor_update_titles(PlaylistEditorScreen *screen,
 }
 
 static void
-playlist_editor_update_menu_highlights(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_update_menu_highlights(PlaylistEditorScreen *screen) {
     NcMenu *playlists;
     NcMenu *content;
     NcMenu *active;
