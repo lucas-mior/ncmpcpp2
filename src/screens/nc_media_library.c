@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static bool library_search_position(NcMenu *menu, int32 pos, void *user);
 static void library_layout(MediaLibraryScreen *screen);
 static int32 library_ratio_value(NcmInt32Array *ratios, int32 idx, int32 fallback);
 static int32 library_set_owned_string(char **dest, int32 *dest_len, int32 *dest_cap, char *source, int32 source_len);
@@ -60,6 +59,7 @@ static bool library_has_pending_tags(MediaLibraryScreen *screen);
 static bool library_has_pending_albums(MediaLibraryScreen *screen);
 static bool library_has_pending_songs(MediaLibraryScreen *screen);
 static bool library_has_fetch_delay_elapsed(MediaLibraryScreen *screen);
+static bool library_search_position(NcMenu *menu, int32 pos, void *user);
 
 static bool
 library_album_matches(MediaLibraryScreen *screen,
