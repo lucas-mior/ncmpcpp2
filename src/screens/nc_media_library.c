@@ -414,11 +414,11 @@ library_album_array_item_init(void *item) {
 
 static void
 library_album_array_item_destroy(void *item) {
-    MediaLibraryAlbumItem *album;
+    MediaLibraryAlbumItem *album = item;
 
-    album = item;
     nc_media_library_album_row_destroy(&album->row);
     album->menu_flags = NC_MENU_ITEM_SELECTABLE;
+
     return;
 }
 
