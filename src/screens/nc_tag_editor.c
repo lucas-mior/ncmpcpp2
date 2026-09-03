@@ -472,6 +472,7 @@ tag_editor_update_titles(TagEditorScreen *screen,
         nc_editor_pair_menu_base(&screen->directories));
     screen->last_known_tag_count = nc_menu_item_count(
         nc_tag_row_menu_base(&screen->tags));
+
     sb_clear(&screen->directories_title);
     sb_clear(&screen->tag_types_title);
     sb_clear(&screen->tags_title);
