@@ -1610,7 +1610,7 @@ tag_editor_generate_filename(NcmMutableSong *song, char *pattern,
     NcmFormatAst ast = {0};
     NcmSong format_song = {0};
     StrBuilder rendered = {0};
-    NcmError ncm_error = {0};
+    NcmError ncm_error;
     int32 status;
 
     if ((song == NULL) || (filename == NULL) || (pattern_len < 0)) {
