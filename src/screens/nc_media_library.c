@@ -2525,7 +2525,7 @@ media_library_screen_request_songs_update(MediaLibraryScreen *screen) {
 
 static bool
 library_album_identity_is_equal(NcMediaLibraryAlbumRow *left,
-                             NcMediaLibraryAlbumRow *right) {
+                                NcMediaLibraryAlbumRow *right) {
     if ((left == NULL) || (right == NULL)) {
         return left == right;
     }
