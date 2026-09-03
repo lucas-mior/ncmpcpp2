@@ -3287,10 +3287,9 @@ tag_editor_reload_songs_from_mpd(TagEditorScreen *screen,
 
     for (int32 i = 1; i < songs.len; i += 1) {
         NcmSong current = {0};
-        int32 j;
+        int32 j = i;
 
         ncm_song_move(&current, &songs.items[i]);
-        j = i;
         while (j > 0) {
             NcmSong *left = &songs.items[j - 1];
             NcmStringView left_uri;
