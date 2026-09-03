@@ -54,9 +54,6 @@ static void tag_editor_destroy_callback(NcScreen *screen);
 static void tag_editor_mouse_callback(NcScreen *, MEVENT);
 
 // declarations to delete
-static void tag_editor_draw_string(NcMenu *, NcWindow *, void *, int32, void *);
-static void tag_editor_mouse_scroll_menu(NcMenu *, NcWindow *, enum NcScroll);
-static void tag_editor_append_formatted_color(NcBuffer *, NcFormattedColor *);
 static int32 tag_editor_build_parser_preview(TagEditorScreen *, bool, bool *);
 static enum TagEditorFocus tag_editor_current_helper_focus(TagEditorScreen *);
 static void tag_editor_draw_tag(NcMenu *, NcWindow *, void *, int32, void *);
@@ -89,6 +86,101 @@ static bool tag_editor_tag_filter(NcMenu *, void *, void *);
 static int32 tag_editor_separator_width(TagEditorScreen *);
 static void tag_editor_refresh_menu(NcWindow *, NcMenu *);
 static void tag_editor_configure_menus(TagEditorScreen *);
+
+static void
+tag_editor_append_formatted_color_end(NcBuffer *buffer,
+                                      NcFormattedColor *color) {
+    nc_buffer_add_formatted_color_end(buffer, nc_buffer_len(buffer), color,
+                                      0);
+    return;
+}
+
+static void
+tag_editor_append_formatted_color(NcBuffer *buffer,
+                                  NcFormattedColor *color) {
+    nc_buffer_add_formatted_color(buffer, nc_buffer_len(buffer), color, 0);
+    return;
+}
+
+static void
+tag_editor_draw_tag(NcMenu *menu, NcWindow *window, void *item,
+                    int32 pos, void *user) {
+    TagEditorScreen *screen = user;
+    NcmMutableSong *song = item;
+    NcBuffer buffer = {0};
+    NcMenu *tag_types;
+    NcBufferProperty *properties;
+    char *data;
+    int32 choice;
+    int32 property_count;
+    int32 property_index;
+    int32 len;
+
+    (void)menu;
+    (void)pos;
+
+    ASSERT(screen != NULL);
+    ASSERT(window != NULL);
+    ASSERT(song != NULL);
+
+    if (ncm_mutable_song_is_modified(song)) {
+        nc_buffer_append_data(&buffer, Config.modified_item_prefix.data,
+                              Config.modified_item_prefix.len);
+    }
+
+    tag_types = nc_editor_string_menu_base(&screen->tag_types);
+    choice = nc_menu_highlight(tag_types);
+    if ((choice >= 0) && (choice < 11)) {
+        StrBuilder tag = {0};
+        enum NcmTagsField field;
+
+        field = ncm_song_info_tags[choice].field;
+        tag = ncm_mutable_song_tags_buffer(
+            song, field, Config.tags_separator, Config.tags_separator_len,
+            Config.show_duplicate_tags);
+        if (tag.len <= 0) {
+            tag_editor_append_formatted_color(
+                &buffer, &Config.empty_tags_color);
+            nc_buffer_append_data(&buffer, Config.empty_tag,
+                                  Config.empty_tag_len);
+            tag_editor_append_formatted_color_end(
+                &buffer, &Config.empty_tags_color);
+        } else {
+            tag_editor_append_locale(&buffer, tag.data, tag.len);
+        }
+        sb_free(&tag);
+    } else if (choice == 12) {
+        tag_editor_append_locale(&buffer, song->name, song->name_len);
+        if (song->new_name && (song->new_name_len > 0)) {
+            tag_editor_append_formatted_color(&buffer, &Config.color2);
+            nc_buffer_append_data(&buffer, STRLIT(" -> "));
+            tag_editor_append_formatted_color_end(&buffer, &Config.color2);
+            tag_editor_append_locale(&buffer, song->new_name,
+                                     song->new_name_len);
+        }
+    }
+
+    data = nc_buffer_data(&buffer);
+    len = nc_buffer_len(&buffer);
+    properties = nc_buffer_properties(&buffer);
+    property_count = nc_buffer_property_count(&buffer);
+    property_index = 0;
+    for (int32 i = 0; ; i += 1) {
+        while ((property_index < property_count)
+               && (properties[property_index].position == i)) {
+            nc_buffer_apply_property(window, &properties[property_index]);
+            property_index += 1;
+        }
+        if (i >= len) {
+            break;
+        }
+        nc_window_print_char(window, data[i]);
+    }
+
+    nc_buffer_destroy(&buffer);
+    return;
+}
+
 static bool tag_editor_focus_is_main(enum TagEditorFocus);
 static void tag_editor_layout(TagEditorScreen *);
 
@@ -3193,6 +3285,34 @@ tag_editor_mouse_move_to_column(TagEditorScreen *screen,
 }
 
 static void
+tag_editor_mouse_scroll_menu(NcMenu *menu, NcWindow *window,
+                             enum NcScroll where) {
+    enum NcScroll effective;
+    int32 count;
+
+    ASSERT(menu != NULL);
+    ASSERT(window != NULL);
+    effective = where;
+    count = Config.lines_scrolled;
+    if (Config.mouse_list_scroll_whole_page) {
+        count = 1;
+        if (where == NC_SCROLL_DOWN) {
+            effective = NC_SCROLL_PAGE_DOWN;
+        } else if (where == NC_SCROLL_UP) {
+            effective = NC_SCROLL_PAGE_UP;
+        }
+    }
+    if (count < 1) {
+        count = 1;
+    }
+    for (int32 i = 0; i < count; i += 1) {
+        nc_menu_scroll_selectable(menu, nc_window_height(window),
+                                  effective);
+    }
+    return;
+}
+
+static void
 tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     TagEditorScreen *editor = tag_editor_from_screen(screen);
     int32 x;
@@ -3368,34 +3488,6 @@ tag_editor_mouse_scroll(TagEditorScreen *screen,
     tag_editor_mouse_scroll_menu(menu, window, where);
     tag_editor_screen_finish_directory_change(screen);
     tag_editor_finish_tag_type_change(screen, true);
-    return;
-}
-
-static void
-tag_editor_mouse_scroll_menu(NcMenu *menu, NcWindow *window,
-                             enum NcScroll where) {
-    enum NcScroll effective;
-    int32 count;
-
-    ASSERT(menu != NULL);
-    ASSERT(window != NULL);
-    effective = where;
-    count = Config.lines_scrolled;
-    if (Config.mouse_list_scroll_whole_page) {
-        count = 1;
-        if (where == NC_SCROLL_DOWN) {
-            effective = NC_SCROLL_PAGE_DOWN;
-        } else if (where == NC_SCROLL_UP) {
-            effective = NC_SCROLL_PAGE_UP;
-        }
-    }
-    if (count < 1) {
-        count = 1;
-    }
-    for (int32 i = 0; i < count; i += 1) {
-        nc_menu_scroll_selectable(menu, nc_window_height(window),
-                                  effective);
-    }
     return;
 }
 
@@ -3729,6 +3821,23 @@ tag_editor_configure_menu(NcMenu *menu) {
     return;
 }
 
+static void
+tag_editor_draw_string(NcMenu *menu, NcWindow *window, void *item,
+                       int32 pos, void *user) {
+    NcMenuString *string = item;
+
+    (void)menu;
+    (void)pos;
+    (void)user;
+
+    ASSERT(window != NULL);
+    ASSERT(string != NULL);
+    ASSERT(string->data != NULL);
+
+    nc_window_print_data(window, string->data, string->len);
+    return;
+}
+
 static NcMenuDisplayCallbacks
 tag_editor_tag_type_display_callbacks(TagEditorScreen *screen) {
     NcMenuDisplayCallbacks callbacks = {0};
@@ -3870,117 +3979,6 @@ tag_editor_refresh_menu(NcWindow *window, NcMenu *menu) {
     nc_window_display(window);
     nc_menu_refresh(menu, window, nc_window_width(window),
                     nc_window_height(window));
-    return;
-}
-
-static void
-tag_editor_draw_string(NcMenu *menu, NcWindow *window, void *item,
-                       int32 pos, void *user) {
-    NcMenuString *string = item;
-
-    (void)menu;
-    (void)pos;
-    (void)user;
-
-    ASSERT(window != NULL);
-    ASSERT(string != NULL);
-    ASSERT(string->data != NULL);
-
-    nc_window_print_data(window, string->data, string->len);
-    return;
-}
-
-static void
-tag_editor_append_formatted_color_end(NcBuffer *buffer,
-                                      NcFormattedColor *color) {
-    nc_buffer_add_formatted_color_end(buffer, nc_buffer_len(buffer), color,
-                                      0);
-    return;
-}
-
-static void
-tag_editor_draw_tag(NcMenu *menu, NcWindow *window, void *item,
-                    int32 pos, void *user) {
-    TagEditorScreen *screen = user;
-    NcmMutableSong *song = item;
-    NcBuffer buffer = {0};
-    NcMenu *tag_types;
-    NcBufferProperty *properties;
-    char *data;
-    int32 choice;
-    int32 property_count;
-    int32 property_index;
-    int32 len;
-
-    (void)menu;
-    (void)pos;
-
-    ASSERT(screen != NULL);
-    ASSERT(window != NULL);
-    ASSERT(song != NULL);
-
-    if (ncm_mutable_song_is_modified(song)) {
-        nc_buffer_append_data(&buffer, Config.modified_item_prefix.data,
-                              Config.modified_item_prefix.len);
-    }
-
-    tag_types = nc_editor_string_menu_base(&screen->tag_types);
-    choice = nc_menu_highlight(tag_types);
-    if ((choice >= 0) && (choice < 11)) {
-        StrBuilder tag = {0};
-        enum NcmTagsField field;
-
-        field = ncm_song_info_tags[choice].field;
-        tag = ncm_mutable_song_tags_buffer(
-            song, field, Config.tags_separator, Config.tags_separator_len,
-            Config.show_duplicate_tags);
-        if (tag.len <= 0) {
-            tag_editor_append_formatted_color(
-                &buffer, &Config.empty_tags_color);
-            nc_buffer_append_data(&buffer, Config.empty_tag,
-                                  Config.empty_tag_len);
-            tag_editor_append_formatted_color_end(
-                &buffer, &Config.empty_tags_color);
-        } else {
-            tag_editor_append_locale(&buffer, tag.data, tag.len);
-        }
-        sb_free(&tag);
-    } else if (choice == 12) {
-        tag_editor_append_locale(&buffer, song->name, song->name_len);
-        if (song->new_name && (song->new_name_len > 0)) {
-            tag_editor_append_formatted_color(&buffer, &Config.color2);
-            nc_buffer_append_data(&buffer, STRLIT(" -> "));
-            tag_editor_append_formatted_color_end(&buffer, &Config.color2);
-            tag_editor_append_locale(&buffer, song->new_name,
-                                     song->new_name_len);
-        }
-    }
-
-    data = nc_buffer_data(&buffer);
-    len = nc_buffer_len(&buffer);
-    properties = nc_buffer_properties(&buffer);
-    property_count = nc_buffer_property_count(&buffer);
-    property_index = 0;
-    for (int32 i = 0; ; i += 1) {
-        while ((property_index < property_count)
-               && (properties[property_index].position == i)) {
-            nc_buffer_apply_property(window, &properties[property_index]);
-            property_index += 1;
-        }
-        if (i >= len) {
-            break;
-        }
-        nc_window_print_char(window, data[i]);
-    }
-
-    nc_buffer_destroy(&buffer);
-    return;
-}
-
-static void
-tag_editor_append_formatted_color(NcBuffer *buffer,
-                                  NcFormattedColor *color) {
-    nc_buffer_add_formatted_color(buffer, nc_buffer_len(buffer), color, 0);
     return;
 }
 
