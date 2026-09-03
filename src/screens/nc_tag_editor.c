@@ -54,10 +54,6 @@ static void tag_editor_destroy_callback(NcScreen *screen);
 static void tag_editor_mouse_callback(NcScreen *, MEVENT);
 
 // declarations to delete
-static void tag_editor_configure_menus(TagEditorScreen *);
-static void tag_editor_refresh_active_helper(TagEditorScreen *);
-static void tag_editor_refresh_menu(NcWindow *, NcMenu *);
-static void tag_editor_append_locale(NcBuffer *, char *, int32);
 static bool tag_editor_tag_filter(NcMenu *, void *, void *);
 static int32 tag_editor_build_parser_legend(TagEditorScreen *);
 static bool tag_editor_focus_is_parser_helper(enum TagEditorFocus);
@@ -78,6 +74,15 @@ tag_editor_append_formatted_color_end(NcBuffer *buffer,
 static void
 tag_editor_append_formatted_color(NcBuffer *buffer, NcFormattedColor *color) {
     nc_buffer_add_formatted_color(buffer, nc_buffer_len(buffer), color, 0);
+    return;
+}
+
+static void
+tag_editor_append_locale(NcBuffer *buffer, char *data, int32 data_len) {
+    if ((data == NULL) || (data_len <= 0)) {
+        return;
+    }
+    nc_buffer_append_data(buffer, data, data_len);
     return;
 }
 
@@ -220,6 +225,148 @@ tag_editor_append_string_row(NcEditorStringMenu *menu,
     }
     nc_menu_string_destroy(&string);
     return status;
+}
+
+static void
+tag_editor_configure_menu(NcMenu *menu) {
+    ASSERT(menu != NULL);
+    nc_menu_set_selected_prefix(menu, &Config.selected_item_prefix);
+    nc_menu_set_selected_suffix(menu, &Config.selected_item_suffix);
+    nc_menu_set_cyclic_scrolling(menu, Config.use_cyclic_scrolling);
+    nc_menu_set_centered_cursor(menu, Config.centered_cursor);
+    return;
+}
+
+static void
+tag_editor_draw_directory(NcMenu *menu, NcWindow *window, void *item,
+                          int32 pos, void *user) {
+    NcMenuStringPair *pair = item;
+
+    (void)menu;
+    (void)pos;
+    (void)user;
+
+    ASSERT(window != NULL);
+    ASSERT(pair != NULL);
+    ASSERT(pair->first != NULL);
+
+    nc_window_print_data(window, pair->first, pair->first_len);
+    return;
+}
+
+static bool
+tag_editor_directory_matches_regex(NcMenuStringPair *pair,
+                                   NcmRegex *regex, bool filter) {
+    if (pair->first == NULL) {
+        return false;
+    }
+    if (STREQUAL(pair->first, pair->first_len, ".")) {
+        return filter;
+    }
+    if (STREQUAL(pair->first, pair->first_len, "..")) {
+        return filter;
+    }
+    return ncm_regex_matches(regex, pair->first, pair->first_len);
+}
+
+static bool
+tag_editor_directory_filter(NcMenu *menu, void *item, void *user) {
+    TagEditorScreen *screen = user;
+    NcMenuStringPair *pair = item;
+
+    (void)menu;
+    if (!screen->directory_filter_enabled) {
+        return true;
+    }
+    return tag_editor_directory_matches_regex(
+        pair, &screen->directory_filter_regex, true);
+}
+
+static NcMenuDisplayCallbacks
+tag_editor_directory_display_callbacks(TagEditorScreen *screen) {
+    NcMenuDisplayCallbacks callbacks = {0};
+
+    callbacks.draw = tag_editor_draw_directory;
+    callbacks.matches_filter = tag_editor_directory_filter;
+    callbacks.user = screen;
+    return callbacks;
+}
+
+static void
+tag_editor_draw_string(NcMenu *menu, NcWindow *window, void *item,
+                       int32 pos, void *user) {
+    NcMenuString *string = item;
+
+    (void)menu;
+    (void)pos;
+    (void)user;
+
+    ASSERT(window != NULL);
+    ASSERT(string != NULL);
+    ASSERT(string->data != NULL);
+
+    nc_window_print_data(window, string->data, string->len);
+    return;
+}
+
+static NcMenuDisplayCallbacks
+tag_editor_tag_type_display_callbacks(TagEditorScreen *screen) {
+    NcMenuDisplayCallbacks callbacks = {0};
+
+    callbacks.draw = tag_editor_draw_string;
+    callbacks.user = screen;
+    return callbacks;
+}
+
+static NcMenuDisplayCallbacks
+tag_editor_tag_display_callbacks(TagEditorScreen *screen) {
+    NcMenuDisplayCallbacks callbacks = {0};
+
+    callbacks.draw = tag_editor_draw_tag;
+    callbacks.matches_filter = tag_editor_tag_filter;
+    callbacks.user = screen;
+
+    return callbacks;
+}
+
+static void
+tag_editor_configure_menus(TagEditorScreen *screen) {
+    NcMenu *directories;
+    NcMenu *tag_types;
+    NcMenu *tags;
+    NcMenu *parser_dialog;
+    NcMenu *parser_rows;
+    NcMenu *parser_actions;
+
+    directories = nc_editor_pair_menu_base(&screen->directories);
+    tag_types = nc_editor_string_menu_base(&screen->tag_types);
+    tags = nc_tag_row_menu_base(&screen->tags);
+    parser_dialog = nc_editor_string_menu_base(&screen->parser_dialog);
+    parser_rows = nc_editor_string_menu_base(&screen->parser_rows);
+    parser_actions = nc_editor_string_menu_base(&screen->parser_actions);
+
+    tag_editor_configure_menu(directories);
+    tag_editor_configure_menu(tag_types);
+    tag_editor_configure_menu(tags);
+    tag_editor_configure_menu(parser_dialog);
+    tag_editor_configure_menu(parser_rows);
+    tag_editor_configure_menu(parser_actions);
+
+    nc_menu_set_display_callbacks(
+        directories, tag_editor_directory_display_callbacks(screen));
+    nc_menu_set_display_callbacks(
+        tag_types, tag_editor_tag_type_display_callbacks(screen));
+    nc_menu_set_display_callbacks(tags, tag_editor_tag_display_callbacks(
+        screen));
+    nc_menu_set_display_callbacks(
+        parser_dialog, tag_editor_tag_type_display_callbacks(screen));
+    nc_menu_set_display_callbacks(
+        parser_rows, tag_editor_tag_type_display_callbacks(screen));
+    nc_menu_set_display_callbacks(
+        parser_actions, tag_editor_tag_type_display_callbacks(screen));
+
+    tag_editor_update_menu_highlights(screen);
+    return;
 }
 
 void
@@ -1474,6 +1621,17 @@ tag_editor_screen_next_column_available(TagEditorScreen *screen) {
 }
 
 static void
+tag_editor_refresh_menu(NcWindow *window, NcMenu *menu) {
+    ASSERT(window != NULL);
+    ASSERT(menu != NULL);
+    nc_menu_prepare_refresh(menu, nc_window_height(window), NULL, NULL);
+    nc_window_display(window);
+    nc_menu_refresh(menu, window, nc_window_width(window),
+                    nc_window_height(window));
+    return;
+}
+
+static void
 tag_editor_finish_tag_type_change(TagEditorScreen *screen,
                                   bool refresh_tags) {
     NcMenu *menu;
@@ -1926,61 +2084,6 @@ tag_editor_compile_constraint(NcmRegex *regex, char *pattern,
     return ncm_error_ok(ncm_error);
 }
 
-static void
-tag_editor_draw_directory(NcMenu *menu, NcWindow *window, void *item,
-                          int32 pos, void *user) {
-    NcMenuStringPair *pair = item;
-
-    (void)menu;
-    (void)pos;
-    (void)user;
-
-    ASSERT(window != NULL);
-    ASSERT(pair != NULL);
-    ASSERT(pair->first != NULL);
-
-    nc_window_print_data(window, pair->first, pair->first_len);
-    return;
-}
-
-static bool
-tag_editor_directory_matches_regex(NcMenuStringPair *pair,
-                                   NcmRegex *regex, bool filter) {
-    if (pair->first == NULL) {
-        return false;
-    }
-    if (STREQUAL(pair->first, pair->first_len, ".")) {
-        return filter;
-    }
-    if (STREQUAL(pair->first, pair->first_len, "..")) {
-        return filter;
-    }
-    return ncm_regex_matches(regex, pair->first, pair->first_len);
-}
-
-static bool
-tag_editor_directory_filter(NcMenu *menu, void *item, void *user) {
-    TagEditorScreen *screen = user;
-    NcMenuStringPair *pair = item;
-
-    (void)menu;
-    if (!screen->directory_filter_enabled) {
-        return true;
-    }
-    return tag_editor_directory_matches_regex(
-        pair, &screen->directory_filter_regex, true);
-}
-
-static NcMenuDisplayCallbacks
-tag_editor_directory_display_callbacks(TagEditorScreen *screen) {
-    NcMenuDisplayCallbacks callbacks = {0};
-
-    callbacks.draw = tag_editor_draw_directory;
-    callbacks.matches_filter = tag_editor_directory_filter;
-    callbacks.user = screen;
-    return callbacks;
-}
-
 int32
 tag_editor_screen_apply_directory_filter(TagEditorScreen *screen,
                                          char *pattern, int32 pattern_len,
@@ -2019,17 +2122,6 @@ tag_editor_screen_apply_directory_filter(TagEditorScreen *screen,
     nc_menu_apply_filter(nc_editor_pair_menu_base(&screen->directories));
     tag_editor_update_titles(screen, true);
     return ncm_error_ok(ncm_error);
-}
-
-static NcMenuDisplayCallbacks
-tag_editor_tag_display_callbacks(TagEditorScreen *screen) {
-    NcMenuDisplayCallbacks callbacks = {0};
-
-    callbacks.draw = tag_editor_draw_tag;
-    callbacks.matches_filter = tag_editor_tag_filter;
-    callbacks.user = screen;
-
-    return callbacks;
 }
 
 int32
@@ -2814,6 +2906,23 @@ tag_editor_active_window(NcScreen *screen) {
     TagEditorScreen *editor = tag_editor_from_screen(screen);
 
     return tag_editor_screen_active_window(editor);
+}
+
+static void
+tag_editor_refresh_active_helper(TagEditorScreen *screen) {
+    StrBuilder *buffer;
+
+    nc_window_display(&screen->parser_helper_window);
+    if (screen->active_focus == TAG_EDITOR_FOCUS_PARSER_PREVIEW) {
+        buffer = &screen->parser_preview;
+    } else {
+        buffer = &screen->parser_legend;
+    }
+    if (buffer->data && (buffer->len > 0)) {
+        nc_window_print_data(&screen->parser_helper_window,
+                             buffer->data, buffer->len);
+    }
+    return;
 }
 
 static void
@@ -4176,82 +4285,6 @@ tag_editor_separator_width(TagEditorScreen *screen) {
 }
 
 static void
-tag_editor_configure_menu(NcMenu *menu) {
-    ASSERT(menu != NULL);
-    nc_menu_set_selected_prefix(menu, &Config.selected_item_prefix);
-    nc_menu_set_selected_suffix(menu, &Config.selected_item_suffix);
-    nc_menu_set_cyclic_scrolling(menu, Config.use_cyclic_scrolling);
-    nc_menu_set_centered_cursor(menu, Config.centered_cursor);
-    return;
-}
-
-static void
-tag_editor_draw_string(NcMenu *menu, NcWindow *window, void *item,
-                       int32 pos, void *user) {
-    NcMenuString *string = item;
-
-    (void)menu;
-    (void)pos;
-    (void)user;
-
-    ASSERT(window != NULL);
-    ASSERT(string != NULL);
-    ASSERT(string->data != NULL);
-
-    nc_window_print_data(window, string->data, string->len);
-    return;
-}
-
-static NcMenuDisplayCallbacks
-tag_editor_tag_type_display_callbacks(TagEditorScreen *screen) {
-    NcMenuDisplayCallbacks callbacks = {0};
-
-    callbacks.draw = tag_editor_draw_string;
-    callbacks.user = screen;
-    return callbacks;
-}
-
-static void
-tag_editor_configure_menus(TagEditorScreen *screen) {
-    NcMenu *directories;
-    NcMenu *tag_types;
-    NcMenu *tags;
-    NcMenu *parser_dialog;
-    NcMenu *parser_rows;
-    NcMenu *parser_actions;
-
-    directories = nc_editor_pair_menu_base(&screen->directories);
-    tag_types = nc_editor_string_menu_base(&screen->tag_types);
-    tags = nc_tag_row_menu_base(&screen->tags);
-    parser_dialog = nc_editor_string_menu_base(&screen->parser_dialog);
-    parser_rows = nc_editor_string_menu_base(&screen->parser_rows);
-    parser_actions = nc_editor_string_menu_base(&screen->parser_actions);
-
-    tag_editor_configure_menu(directories);
-    tag_editor_configure_menu(tag_types);
-    tag_editor_configure_menu(tags);
-    tag_editor_configure_menu(parser_dialog);
-    tag_editor_configure_menu(parser_rows);
-    tag_editor_configure_menu(parser_actions);
-
-    nc_menu_set_display_callbacks(
-        directories, tag_editor_directory_display_callbacks(screen));
-    nc_menu_set_display_callbacks(
-        tag_types, tag_editor_tag_type_display_callbacks(screen));
-    nc_menu_set_display_callbacks(tags, tag_editor_tag_display_callbacks(
-        screen));
-    nc_menu_set_display_callbacks(
-        parser_dialog, tag_editor_tag_type_display_callbacks(screen));
-    nc_menu_set_display_callbacks(
-        parser_rows, tag_editor_tag_type_display_callbacks(screen));
-    nc_menu_set_display_callbacks(
-        parser_actions, tag_editor_tag_type_display_callbacks(screen));
-
-    tag_editor_update_menu_highlights(screen);
-    return;
-}
-
-static void
 tag_editor_update_menu_highlights(TagEditorScreen *screen) {
     NcMenu *directories;
     NcMenu *tag_types;
@@ -4315,43 +4348,6 @@ tag_editor_update_menu_highlights(TagEditorScreen *screen) {
         nc_window_set_border(&screen->parser_window, parser_border);
         nc_window_set_border(&screen->parser_helper_window, helper_border);
     }
-    return;
-}
-
-static void
-tag_editor_refresh_active_helper(TagEditorScreen *screen) {
-    StrBuilder *buffer;
-
-    nc_window_display(&screen->parser_helper_window);
-    if (screen->active_focus == TAG_EDITOR_FOCUS_PARSER_PREVIEW) {
-        buffer = &screen->parser_preview;
-    } else {
-        buffer = &screen->parser_legend;
-    }
-    if (buffer->data && (buffer->len > 0)) {
-        nc_window_print_data(&screen->parser_helper_window,
-                             buffer->data, buffer->len);
-    }
-    return;
-}
-
-static void
-tag_editor_refresh_menu(NcWindow *window, NcMenu *menu) {
-    ASSERT(window != NULL);
-    ASSERT(menu != NULL);
-    nc_menu_prepare_refresh(menu, nc_window_height(window), NULL, NULL);
-    nc_window_display(window);
-    nc_menu_refresh(menu, window, nc_window_width(window),
-                    nc_window_height(window));
-    return;
-}
-
-static void
-tag_editor_append_locale(NcBuffer *buffer, char *data, int32 data_len) {
-    if ((data == NULL) || (data_len <= 0)) {
-        return;
-    }
-    nc_buffer_append_data(buffer, data, data_len);
     return;
 }
 
