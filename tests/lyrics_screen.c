@@ -931,7 +931,7 @@ lyrics_screen_test_lrc_preferred_over_txt(void) {
     lyrics_screen_test_song(&song);
     lyrics_screen_test_init(&screen);
     lyrics_screen_test_clear_status_message();
-    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error));
+    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error) == 0);
     lyrics_screen_test_assert_status_message(
         STRLIT("Artist - Title.lrc found; Artist - Title.txt found"));
     mode = lyrics_screen_mode(&screen);
@@ -966,7 +966,7 @@ lyrics_screen_test_txt_used_when_lrc_missing(void) {
     lyrics_screen_test_song(&song);
     lyrics_screen_test_init(&screen);
     lyrics_screen_test_clear_status_message();
-    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error));
+    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error) == 0);
     lyrics_screen_test_assert_status_message(
         STRLIT("Artist - Title.lrc not found; Artist - Title.txt found"));
     mode = lyrics_screen_mode(&screen);
@@ -1004,7 +1004,7 @@ lyrics_screen_test_invalid_lrc_falls_back_to_txt(void) {
     lyrics_screen_test_song(&song);
     lyrics_screen_test_init(&screen);
     lyrics_screen_test_clear_status_message();
-    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error));
+    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error) == 0);
     lyrics_screen_test_assert_status_message(
         STRLIT("Artist - Title.lrc found; Artist - Title.txt found"));
     mode = lyrics_screen_mode(&screen);
@@ -1036,7 +1036,7 @@ lyrics_screen_test_missing_sidecars_report_status(void) {
     lyrics_screen_test_song(&song);
     lyrics_screen_test_init(&screen);
     lyrics_screen_test_clear_status_message();
-    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error));
+    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error) == 0);
     lyrics_screen_test_assert_status_message(
         STRLIT("Artist - Title.lrc not found; Artist - Title.txt not found"));
 
@@ -1074,7 +1074,7 @@ lyrics_screen_test_active_line_selection(void) {
     ASSERT(lyrics_screen_load_file(&screen,
                                           path,
                                           strlen32(path),
-                                          &error));
+                                          &error) == 0);
 
     lyrics_screen_test_update_at(4999, &screen, -1);
     lyrics_screen_test_update_at(5000, &screen, 0);
@@ -1102,7 +1102,7 @@ lyrics_screen_test_search_and_sync_properties_are_independent(void) {
     ASSERT(lyrics_screen_load_file(&screen,
                                           path,
                                           strlen32(path),
-                                          &error));
+                                          &error) == 0);
     ASSERT_EQUAL(lyrics_screen_find(&screen, STRLIT("alpha"), &error), 1);
     ASSERT(lyrics_screen_test_has_property(
         &screen.display, LYRICS_SEARCH_PROPERTY_ID));
@@ -1142,7 +1142,7 @@ lyrics_screen_test_auto_scroll_clamps(void) {
     ASSERT(lyrics_screen_load_file(&screen,
                                           path,
                                           strlen32(path),
-                                          &error));
+                                          &error) == 0);
     nc_scrollpad_flush(&screen.scrollpad, &screen.window, &screen.display);
 
     lyrics_screen_test_update_at(1000, &screen, 0);
@@ -1170,7 +1170,7 @@ lyrics_screen_test_resize_reflushes_plain_lyrics(void) {
     ASSERT(lyrics_screen_load_file(&screen,
                                           path,
                                           strlen32(path),
-                                          &error));
+                                          &error) == 0);
     ASSERT(lyrics_screen_mode(&screen) == LYRICS_MODE_PLAIN);
 
     lyrics_test_print_count = 0;
@@ -1211,7 +1211,7 @@ lyrics_screen_test_lrc_integration_fixture(void) {
 
     lyrics_screen_test_song(&song);
     lyrics_screen_test_init(&screen);
-    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error));
+    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error) == 0);
     ASSERT(lyrics_screen_mode(&screen)
            == LYRICS_MODE_SYNCHRONIZED);
     ASSERT_EQUAL(screen.display.data, screen.display.len,
@@ -1238,7 +1238,7 @@ lyrics_screen_test_lrc_integration_fixture(void) {
 
     lyrics_screen_test_remove_file(lrc_path);
     lyrics_screen_test_init(&plain_screen);
-    ASSERT(lyrics_screen_fetch(&plain_screen, &song, NULL, &error));
+    ASSERT(lyrics_screen_fetch(&plain_screen, &song, NULL, &error) == 0);
     ASSERT(lyrics_screen_mode(&plain_screen)
            == LYRICS_MODE_PLAIN);
     ASSERT_EQUAL(plain_screen.display.data, plain_screen.display.len,
@@ -1273,7 +1273,7 @@ lyrics_screen_test_refetch_writes_txt_without_removing_lrc(void) {
 
     lyrics_screen_test_song(&song);
     lyrics_screen_test_init(&screen);
-    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error));
+    ASSERT(lyrics_screen_fetch(&screen, &song, NULL, &error) == 0);
     ASSERT(lyrics_screen_mode(&screen)
            == LYRICS_MODE_SYNCHRONIZED);
 
@@ -1326,18 +1326,18 @@ lyrics_screen_test_background_fetch_respects_lrc_and_txt(void) {
     lyrics_screen_test_song(&song);
     lyrics_screen_test_init(&screen);
     ASSERT(lyrics_screen_fetch_in_background(
-        &screen, &song, false, &error));
+        &screen, &song, false, &error) == 0);
     ASSERT(!lyrics_test_has_pushed_job);
 
     lyrics_screen_test_remove_file(lrc_path);
     lyrics_screen_test_write_file(txt_path, STRLIT("plain\n"));
     ASSERT(lyrics_screen_fetch_in_background(
-        &screen, &song, false, &error));
+        &screen, &song, false, &error) == 0);
     ASSERT(!lyrics_test_has_pushed_job);
 
     lyrics_screen_test_remove_file(txt_path);
     ASSERT(lyrics_screen_fetch_in_background(
-        &screen, &song, false, &error));
+        &screen, &song, false, &error) == 0);
     ASSERT(lyrics_test_has_pushed_job);
     job = lyrics_screen_test_pushed_lyrics_job();
     ASSERT_EQUAL(job->filename.data, job->filename.len,
@@ -1367,7 +1367,7 @@ lyrics_screen_test_locked_visible_update_refreshes_lrc(void) {
     ASSERT(lyrics_screen_load_file(&screen,
                                           path,
                                           strlen32(path),
-                                          &error));
+                                          &error) == 0);
 
     callbacks.is_mergable = lyrics_screen_test_dummy_is_mergable;
     nc_screen_init(&dummy, callbacks, NULL, NC_SCREEN_TYPE_BROWSER);
