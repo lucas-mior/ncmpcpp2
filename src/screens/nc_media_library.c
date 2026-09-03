@@ -2634,10 +2634,9 @@ library_has_pending_albums(MediaLibraryScreen *screen) {
 }
 
 static void
-library_apply_column_filter(
-    MediaLibraryScreen *screen,
-    enum MediaLibraryColumn column, NcMenu *menu
-) {
+library_apply_column_filter(MediaLibraryScreen *screen,
+                            enum MediaLibraryColumn column,
+                            NcMenu *menu) {
     MediaLibraryColumnState *state;
     NcMenuDisplayCallbacks callbacks;
 
