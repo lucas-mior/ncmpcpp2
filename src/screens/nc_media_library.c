@@ -2743,8 +2743,8 @@ library_update_songs(MediaLibraryScreen *screen,
                      NcmError *ncm_error) {
     MediaLibrarySongQuery query = {0};
     NcMediaLibraryAlbumRow *album;
-    NcmMpdSongList source;
-    NcmSongArray songs;
+    NcmMpdSongList source = {0};
+    NcmSongArray songs = {0};
     int32 status;
 
     if ((album = media_library_screen_current_album(screen)) == NULL) {
@@ -2768,8 +2768,6 @@ library_update_songs(MediaLibraryScreen *screen,
         }
     }
 
-    source = (NcmMpdSongList){0};
-    songs = (NcmSongArray){0};
     status = media_library_screen_search_songs(
         screen, &query, &source, ncm_error);
     if (status < 0) {
