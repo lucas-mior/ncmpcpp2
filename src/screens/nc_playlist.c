@@ -780,10 +780,10 @@ playlist_screen_has_sortable_range(PlaylistScreen *screen) {
 
 
 int32
-playlist_screen_copy_sort_range(
-    PlaylistScreen *screen, NcmSongArray *songs,
-    int32 *start_position, NcmError *ncm_error
-) {
+playlist_screen_copy_sort_range(PlaylistScreen *screen,
+                                NcmSongArray *songs,
+                                int32 *start_position,
+                                NcmError *ncm_error) {
     NcmSongArray replacement;
     NcMenu *menu;
     NcmSong *song;
