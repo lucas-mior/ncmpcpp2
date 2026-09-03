@@ -4983,7 +4983,7 @@ action_runtime_update_tag_directory(StrBuilder *shared_directory, bool valid) {
 static int32
 action_runtime_edit_library_tag(void) {
     enum NcmTagsField field;
-    NcmMpdSongList songs;
+    NcmMpdSongList songs = {0};
     StrBuilder current_tag = {0};
     StrBuilder prompt = {0};
     StrBuilder new_tag = {0};
@@ -5001,8 +5001,6 @@ action_runtime_edit_library_tag(void) {
     if (!action_runtime_media_library_current_tag(&tag, &tag_len)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-
-    songs = (NcmMpdSongList){0};
 
     status = sb_set(&current_tag, tag, tag_len);
     if (status < 0) {
