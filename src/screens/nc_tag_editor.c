@@ -3811,7 +3811,6 @@ static void
 tag_editor_draw_string(NcMenu *menu, NcWindow *window, void *item,
                        int32 pos, void *user) {
     NcMenuString *string = item;
-    StrBuilder converted;
 
     (void)menu;
     (void)pos;
@@ -3821,9 +3820,7 @@ tag_editor_draw_string(NcMenu *menu, NcWindow *window, void *item,
     ASSERT(string != NULL);
     ASSERT(string->data != NULL);
 
-    converted = ncm_charset_copy(string->data, string->len);
-    nc_window_print_data(window, converted.data, converted.len);
-    sb_free(&converted);
+    nc_window_print_data(window, string->data, string->len);
     return;
 }
 
