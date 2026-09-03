@@ -4332,8 +4332,7 @@ library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
     }
 
     {
-        int32 play_pos;
-        play_pos = -1;
+        int32 play_pos = -1;
         if (play) {
             play_pos = ncm_status_state_playlist_length();
         }
