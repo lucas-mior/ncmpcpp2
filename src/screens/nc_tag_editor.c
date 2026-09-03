@@ -98,8 +98,8 @@ tag_editor_draw_tag(NcMenu *menu, NcWindow *window, void *item,
             song, field, Config.tags_separator, Config.tags_separator_len,
             Config.show_duplicate_tags);
         if (tag.len <= 0) {
-            tag_editor_append_formatted_color(
-                &buffer, &Config.empty_tags_color);
+            tag_editor_append_formatted_color(&buffer,
+                                              &Config.empty_tags_color);
             nc_buffer_append_data(&buffer,
                                   Config.empty_tag, Config.empty_tag_len);
             tag_editor_append_formatted_color_end(
