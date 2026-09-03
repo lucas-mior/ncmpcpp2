@@ -64,8 +64,8 @@ ncm_playlist_sort_compare(NcmPlaylistSortContext *context,
         if (getter == NCM_SONG_GETTER_NONE) {
             break;
         }
-        result = ncm_playlist_sort_compare_key(
-            context, left_idx, right_idx, getter);
+        result = ncm_playlist_sort_compare_key(context,
+                                               left_idx, right_idx, getter);
         if (result != 0) {
             return result;
         }
