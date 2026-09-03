@@ -2399,6 +2399,7 @@ media_library_screen_clear_filter(MediaLibraryScreen *screen) {
     if ((state = library_active_column_state(screen)) == NULL) {
         return;
     }
+
     ncm_regex_destroy(&state->filter_regex);
     state->filter_regex = (NcmRegex){0};
     sb_clear(&state->filter_constraint);
@@ -2408,6 +2409,7 @@ media_library_screen_clear_filter(MediaLibraryScreen *screen) {
     nc_menu_show_all_items(menu);
     state->filter_enabled = false;
     nc_screen_finish_list_change(&screen->screen);
+
     return;
 }
 
