@@ -4110,8 +4110,7 @@ tag_editor_copy_selected_song_at(TagEditorScreen *screen,
         return -EINVAL;
     }
 
-    source = nc_menu_active_item_at(
-        nc_tag_row_menu_base(&screen->tags), pos);
+    source = nc_menu_active_item_at(nc_tag_row_menu_base(&screen->tags), pos);
     if (source == NULL) {
         return -NCM_ERROR_NOT_FOUND;
     }
@@ -4219,11 +4218,9 @@ tag_editor_number_song_callback(NcmMutableSong *song, void *user) {
     int32 status;
 
     if (numberer->extended) {
-        len = SNPRINTF(buffer, "%d/%d",
-                       numberer->current, numberer->total);
+        len = SNPRINTF(buffer, "%d/%d", numberer->current, numberer->total);
     } else {
-        len = SNPRINTF(buffer, "%d",
-                       numberer->current);
+        len = SNPRINTF(buffer, "%d", numberer->current);
     }
     if (len < 0) {
         return -EINVAL;
@@ -4252,9 +4249,7 @@ static int32
 tag_editor_capitalize_song_callback(NcmMutableSong *song, void *user) {
     (void)user;
 
-    for (int32 fi = 0;
-         ncm_song_info_tags[fi].name;
-         fi += 1) {
+    for (int32 fi = 0; ncm_song_info_tags[fi].name; fi += 1) {
         enum NcmTagsField field = ncm_song_info_tags[fi].field;
 
         for (int32 i = 0; ; i += 1) {
