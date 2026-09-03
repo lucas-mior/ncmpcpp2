@@ -61,7 +61,6 @@ if they are called only once: inline their body and then delete them.
 - src/app_legacy_bridge.c
 - src/screens/nc_sort_playlist.c
 - src/settings_types.c
-- src/screens/nc_tag_editor.c
 - src/screens/nc_playlist.c
 - src/screens/nc_lyrics.c
 - src/screens/nc_lastfm.c
