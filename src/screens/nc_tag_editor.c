@@ -615,8 +615,7 @@ tag_editor_screen_enter_directory(TagEditorScreen *screen) {
     if (status < 0) {
         return status;
     }
-    if (!tag_editor_directory_has_subdirectories(screen, path.data,
-                                                 path.len)) {
+    if (!tag_editor_directory_has_subdirectories(screen, path.data, path.len)) {
         tag_editor_status_message(screen, STRLIT("No subdirectories found"));
         return -NCM_ERROR_NOT_FOUND;
     }
