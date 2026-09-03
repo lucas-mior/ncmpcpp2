@@ -1454,7 +1454,7 @@ tag_editor_screen_locate_song(TagEditorScreen *screen,
                 continue;
             }
             if (STREQUAL(item->uri, item->uri_len, uri.data, uri.len)) {
-                (void)nc_menu_goto_selectable(menu, i);
+                nc_menu_goto_selectable(menu, i);
                 found = true;
                 break;
             }
@@ -1593,8 +1593,7 @@ tag_editor_screen_rename_current_directory(TagEditorScreen *screen,
                 screen->hooks.user, screen->current_dir.data,
                 screen->current_dir.len);
         }
-        (void)sb_set(&screen->highlighted_dir,
-                     new_relative.data, new_relative.len);
+        sb_set(&screen->highlighted_dir, new_relative.data, new_relative.len);
         screen->directories_update_requested = true;
         tag_editor_update_titles(screen, true);
     }
@@ -2069,9 +2068,9 @@ tag_editor_capitalize_song_callback(NcmMutableSong *song, void *user) {
 
 void
 tag_editor_screen_capitalize_first_letters(TagEditorScreen *screen) {
-    (void)tag_editor_for_each_target(screen,
-                                     tag_editor_capitalize_song_callback,
-                                     NULL);
+    tag_editor_for_each_target(screen,
+                               tag_editor_capitalize_song_callback,
+                               NULL);
     return;
 }
 
@@ -2108,8 +2107,7 @@ tag_editor_lower_song_callback(NcmMutableSong *song, void *user) {
 
 void
 tag_editor_screen_lower_all_letters(TagEditorScreen *screen) {
-    (void)tag_editor_for_each_target(screen, tag_editor_lower_song_callback,
-                                     NULL);
+    tag_editor_for_each_target(screen, tag_editor_lower_song_callback, NULL);
     return;
 }
 
@@ -2697,8 +2695,9 @@ tag_editor_screen_prepare_parser_rows(TagEditorScreen *screen,
 void
 tag_editor_screen_show_parser_dialog(TagEditorScreen *screen) {
     if (nc_menu_is_empty(nc_editor_string_menu_base(&screen->parser_dialog))) {
-        (void)tag_editor_screen_prepare_parser_rows(
-            screen, TAG_EDITOR_PARSER_NONE, NULL, 0);
+        tag_editor_screen_prepare_parser_rows(screen,
+                                              TAG_EDITOR_PARSER_NONE,
+                                              NULL, 0);
     }
     screen->parser_mode = TAG_EDITOR_PARSER_NONE;
     tag_editor_set_focus(screen, TAG_EDITOR_FOCUS_PARSER_CHOICE);
@@ -2816,11 +2815,12 @@ tag_editor_screen_show_parser_actions(TagEditorScreen *screen,
         StrBuilder *pattern;
 
         pattern = &screen->recent_patterns.items[0];
-        (void)tag_editor_set_pattern(screen, pattern->data, pattern->len);
+        tag_editor_set_pattern(screen, pattern->data, pattern->len);
     }
-    (void)tag_editor_screen_prepare_parser_rows(
-        screen, mode, screen->pattern.data, screen->pattern.len);
-    (void)tag_editor_build_parser_legend(screen);
+    tag_editor_screen_prepare_parser_rows(screen, mode,
+                                          screen->pattern.data,
+                                          screen->pattern.len);
+    tag_editor_build_parser_legend(screen);
     screen->parser_preview_enabled = false;
     tag_editor_set_focus(screen, TAG_EDITOR_FOCUS_PARSER_ACTIONS);
     return;
@@ -3749,7 +3749,7 @@ tag_editor_run_current(NcScreen *screen) {
             if (result) {
                 tag_editor_set_focus(
                     editor, TAG_EDITOR_FOCUS_PARSER_ACTIONS);
-                (void)nc_menu_goto_selectable(
+                nc_menu_goto_selectable(
                     nc_editor_string_menu_base(&editor->parser_actions),
                     TAG_EDITOR_PARSER_ACTION_PATTERN);
                 return 0;
@@ -3822,7 +3822,7 @@ tag_editor_run_current(NcScreen *screen) {
                 if (status < 0) {
                     return -NCM_ERROR_UNAVAILABLE;
                 }
-                (void)tag_editor_save_recent_patterns(editor);
+                tag_editor_save_recent_patterns(editor);
                 tag_editor_status_message(editor,
                                           STRLIT("Operation finished"));
                 tag_editor_screen_close_parser(editor);
@@ -3831,7 +3831,7 @@ tag_editor_run_current(NcScreen *screen) {
             return -NCM_ERROR_UNAVAILABLE;
         }
         if (choice == TAG_EDITOR_PARSER_ACTION_CANCEL) {
-            (void)tag_editor_save_recent_patterns(editor);
+            tag_editor_save_recent_patterns(editor);
             tag_editor_screen_close_parser(editor);
             return 0;
         }
@@ -3870,7 +3870,7 @@ tag_editor_run_current(NcScreen *screen) {
 
 static void
 tag_editor_switch_to(NcScreen *screen) {
-    (void)nc_screen_switcher_finish_switch(screen);
+    nc_screen_switcher_finish_switch(screen);
     ncm_title_draw_header(STRLIT("Tag editor"));
     return;
 }
@@ -4092,7 +4092,7 @@ tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
                 if ((y >= 0) && (y < nc_menu_item_count(menu))
                     && (nc_menu_goto_selectable(menu, y) >= 0)
                     && (event.bstate & BUTTON3_PRESSED)) {
-                    (void)tag_editor_run_current_action(editor);
+                    tag_editor_run_current_action(editor);
                 }
             } else if (event.bstate & BUTTON5_PRESSED) {
                 tag_editor_mouse_scroll_menu(
@@ -4121,7 +4121,7 @@ tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
                 if ((y >= 0) && (y < nc_menu_item_count(menu))
                     && (nc_menu_goto_selectable(menu, y) >= 0)
                     && (event.bstate & BUTTON3_PRESSED)) {
-                    (void)tag_editor_run_current_action(editor);
+                    tag_editor_run_current_action(editor);
                 }
             } else if (event.bstate & BUTTON5_PRESSED) {
                 tag_editor_mouse_scroll_menu(
@@ -4169,7 +4169,7 @@ tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
                 && (nc_menu_goto_selectable(menu, y) >= 0)) {
                 tag_editor_screen_finish_directory_change(editor);
                 if (event.bstate & BUTTON1_PRESSED) {
-                    (void)tag_editor_screen_enter_directory(editor);
+                    tag_editor_screen_enter_directory(editor);
                 }
             }
         } else if (event.bstate & BUTTON5_PRESSED) {
@@ -4196,7 +4196,7 @@ tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
                 && (nc_menu_goto_selectable(menu, y) >= 0)) {
                 tag_editor_finish_tag_type_change(editor, true);
                 if (event.bstate & BUTTON3_PRESSED) {
-                    (void)tag_editor_run_current_action(editor);
+                    tag_editor_run_current_action(editor);
                 }
             }
         } else if (event.bstate & BUTTON5_PRESSED) {
@@ -4222,7 +4222,7 @@ tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
             if ((y >= 0) && (y < nc_menu_item_count(menu))
                 && (nc_menu_goto_selectable(menu, y) >= 0)
                 && (event.bstate & BUTTON3_PRESSED)) {
-                (void)tag_editor_run_current_action(editor);
+                tag_editor_run_current_action(editor);
             }
         } else if (event.bstate & BUTTON5_PRESSED) {
             tag_editor_mouse_scroll(editor, NC_SCROLL_DOWN);
