@@ -13,6 +13,7 @@ But most internal functions can simply assume that they have valid input because
 the external API of the module has already validated it.  After done with the
 $file.c, delete it from the list below.
 
+src/curses/nc_cyclic_buffer.c
 src/c/ncm_sample_buffer.c
 src/c/ncm_option_parser.c
 src/configuration.c

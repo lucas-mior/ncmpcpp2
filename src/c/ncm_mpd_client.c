@@ -1192,7 +1192,6 @@ int32
 ncm_mpd_client_add_random_tag(NcmMpdClient *client,
                               enum mpd_tag_type tag,
                               int32 number,
-                              NcmRandom *random,
                               NcmError *ncm_error) {
     NcmMpdStringList tags;
     NcmMpdSongList songs;
@@ -1215,7 +1214,7 @@ ncm_mpd_client_add_random_tag(NcmMpdClient *client,
         goto cleanup;
     }
 
-    ncm_random_shuffle(random, tags.items, tags.count, SIZEOF(*tags.items));
+    rand_shuffle(tags.items, tags.count, SIZEOF(*tags.items));
     for (int32 i = 0; i < number; i += 1) {
         if ((status = ncm_mpd_client_start_search(client, true,
                                                   ncm_error)) < 0) {
@@ -1264,7 +1263,6 @@ ncm_mpd_client_add_random_songs(NcmMpdClient *client,
                                 int32 number,
                                 char *exclude_pattern,
                                 int32 exclude_pattern_len,
-                                NcmRandom *random,
                                 NcmError *ncm_error) {
     NcmMpdStringList files;
     NcmRegex regex;
@@ -1311,7 +1309,7 @@ ncm_mpd_client_add_random_songs(NcmMpdClient *client,
         have_regex = true;
     }
 
-    ncm_random_shuffle(random, files.items, files.count, SIZEOF(*files.items));
+    rand_shuffle(files.items, files.count, SIZEOF(*files.items));
     if ((status = ncm_mpd_client_start_command_list(client,
                                                     ncm_error)) < 0) {
         goto cleanup;

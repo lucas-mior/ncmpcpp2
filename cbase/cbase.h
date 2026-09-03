@@ -164,6 +164,8 @@ void qsort64(void *, int64, int64, int (*)(void *, void *));
 void random_filename_inplace(char *, int32);
 void rand_int_seed(uint64);
 int32 rand_int(void);
+int32 rand_int_range(int32);
+void rand_shuffle(void *, int32, int32);
 double rad2deg(double);
 int32 random_ascii_string(char *, int32, int32);
 bool path_missing(char *);

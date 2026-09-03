@@ -9,7 +9,6 @@ bool global_show_messages;
 bool global_seeking_in_progress;
 StrBuilder global_volume_state;
 NcmTimePoint global_timer;
-NcmRandom global_random;
 NcmMpdClient global_mpd;
 
 void

@@ -1268,12 +1268,10 @@ action_runtime_add_random_items(void) {
     if (random_type == 's') {
         success = ncm_mpd_client_add_random_songs(
             &global_mpd, count, Config.random_exclude_pattern,
-            Config.random_exclude_pattern_len, &global_random,
-            &ncm_error) == 0;
+            Config.random_exclude_pattern_len, &ncm_error) == 0;
     } else {
         success = ncm_mpd_client_add_random_tag(
-            &global_mpd, tag_type, count, &global_random,
-            &ncm_error) == 0;
+            &global_mpd, tag_type, count, &ncm_error) == 0;
     }
     if (!success) {
         return action_runtime_mpd_error_status(&ncm_error);

@@ -817,20 +817,6 @@ int32 ncm_time_monotonic_now(NcmTimePoint *point, NcmError *ncm_error);
 int64 ncm_time_elapsed_ns(NcmTimePoint start, NcmTimePoint end);
 int64 ncm_time_elapsed_ms(NcmTimePoint start, NcmTimePoint end);
 
-/* c/ncm_random.h */
-typedef struct NcmRandom {
-    uint64 state;
-} NcmRandom;
-
-void ncm_random_init(NcmRandom *random, uint64 seed);
-int32 ncm_random_seed_from_time(NcmRandom *random, NcmError *ncm_error);
-uint64 ncm_random_u64(NcmRandom *random);
-uint32 ncm_random_u32(NcmRandom *random);
-uint32 ncm_random_range_u32(NcmRandom *random, uint32 upper_bound);
-int32 ncm_random_range_i32(NcmRandom *random, int32 upper_bound);
-void ncm_random_shuffle(NcmRandom *random, void *items,
-                        int32 item_count, int32 item_size);
-
 /* c/ncm_regex.h */
 #include <regex.h>
 
@@ -1305,13 +1291,11 @@ int32 ncm_mpd_client_add(NcmMpdClient *client, char *path, bool *added,
 int32 ncm_mpd_client_add_random_tag(NcmMpdClient *client,
                                    enum mpd_tag_type tag,
                                    int32 number,
-                                   NcmRandom *random,
                                    NcmError *ncm_error);
 int32 ncm_mpd_client_add_random_songs(NcmMpdClient *client,
                                      int32 number,
                                      char *exclude_pattern,
                                      int32 exclude_pattern_len,
-                                     NcmRandom *random,
                                      NcmError *ncm_error);
 int32 ncm_mpd_client_delete(NcmMpdClient *client, int32 pos,
                            NcmError *ncm_error);
