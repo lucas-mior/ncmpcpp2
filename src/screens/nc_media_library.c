@@ -28,9 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static int32 library_collect_current_item_songs(
-    MediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *ncm_error);
 static void library_mouse_scroll(MediaLibraryScreen *screen,
                                  enum NcScroll where);
 static int32 library_mouse_select(
@@ -3209,6 +3206,38 @@ media_library_screen_add_songs(
                                    ncm_error);
 }
 
+static int32
+library_collect_current_item_songs(
+    MediaLibraryScreen *screen, NcmSongArray *songs,
+    NcmError *ncm_error
+) {
+    MediaLibrarySongQuery query = {0};
+    NcMediaLibraryTagRow *tag;
+    NcMediaLibraryAlbumRow *album;
+    NcMenu *menu;
+
+    if (screen->active_column == MEDIA_LIBRARY_COLUMN_TAGS) {
+        if ((tag = media_library_screen_current_tag(screen)) == NULL) {
+            return 0;
+        }
+        library_query_from_tag(screen, tag, &query);
+        return library_append_query_songs(screen, &query, songs,
+                                          ncm_error);
+    }
+
+    if (screen->active_column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
+        if ((album = media_library_screen_current_album(screen)) == NULL) {
+            return 0;
+        }
+        library_query_from_album(screen, album, &query);
+        return library_append_query_songs(screen, &query, songs,
+                                          ncm_error);
+    }
+
+    menu = nc_media_library_song_menu_base(&screen->songs);
+    return library_copy_song_at(screen, songs, nc_menu_highlight(menu));
+}
+
 int32
 media_library_screen_add_item_to_playlist(
     MediaLibraryScreen *screen, bool play, NcmError *ncm_error
@@ -3827,38 +3856,6 @@ library_draw_song(NcMenu *menu, NcWindow *window,
     library_print_buffer(window, &text);
     nc_buffer_destroy(&text);
     return;
-}
-
-static int32
-library_collect_current_item_songs(
-    MediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *ncm_error
-) {
-    MediaLibrarySongQuery query = {0};
-    NcMediaLibraryTagRow *tag;
-    NcMediaLibraryAlbumRow *album;
-    NcMenu *menu;
-
-    if (screen->active_column == MEDIA_LIBRARY_COLUMN_TAGS) {
-        if ((tag = media_library_screen_current_tag(screen)) == NULL) {
-            return 0;
-        }
-        library_query_from_tag(screen, tag, &query);
-        return library_append_query_songs(screen, &query, songs,
-                                          ncm_error);
-    }
-
-    if (screen->active_column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
-        if ((album = media_library_screen_current_album(screen)) == NULL) {
-            return 0;
-        }
-        library_query_from_album(screen, album, &query);
-        return library_append_query_songs(screen, &query, songs,
-                                          ncm_error);
-    }
-
-    menu = nc_media_library_song_menu_base(&screen->songs);
-    return library_copy_song_at(screen, songs, nc_menu_highlight(menu));
 }
 
 static MediaLibraryColumnState *
