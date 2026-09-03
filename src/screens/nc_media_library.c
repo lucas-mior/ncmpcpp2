@@ -3754,8 +3754,7 @@ library_collect_tag_songs(
         }
         query = (MediaLibrarySongQuery){0};
         library_query_from_tag(screen, row, &query);
-        status = library_append_query_songs(
-            screen, &query, songs, ncm_error);
+        status = library_append_query_songs(screen, &query, songs, ncm_error);
         if (status < 0) {
             return status;
         }
