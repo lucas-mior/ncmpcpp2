@@ -5106,7 +5106,7 @@ cleanup:
 
 static int32
 action_runtime_edit_library_album(void) {
-    NcmSongArray songs;
+    NcmSongArray songs = {0};
     StrBuilder current_album = {0};
     StrBuilder new_album = {0};
     StrBuilder path = {0};
@@ -5125,7 +5125,6 @@ action_runtime_edit_library_album(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    songs = (NcmSongArray){0};
     ncm_error_clear(&ncm_error);
 
     status = sb_set(&current_album, album, album_len);
