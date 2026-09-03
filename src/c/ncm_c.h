@@ -855,16 +855,11 @@ typedef struct NcmMpdItemList {
     int32 capacity;
 } NcmMpdItemList;
 
-typedef struct NcmMpdString {
-    char *value;
-    int32 value_len;
-} NcmMpdString;
-
-typedef struct NcmMpdStringList {
-    NcmMpdString *items;
+typedef struct NcmStringViewList {
+    NcmStringView *items;
     int32 count;
     int32 capacity;
-} NcmMpdStringList;
+} NcmStringViewList;
 
 typedef struct NcmMpdOutput {
     int32 id;
@@ -952,7 +947,7 @@ int32 ncm_mpd_connection_start_command_list(NcmMpdConnection *connection);
 int32 ncm_mpd_connection_commit_command_list(NcmMpdConnection *connection);
 int32 ncm_mpd_connection_get_supported_extensions(
     NcmMpdConnection *connection,
-    NcmMpdStringList *strings);
+    NcmStringViewList *strings);
 int32 ncm_mpd_connection_get_replay_gain_mode(
     NcmMpdConnection *connection,
     enum NcmMpdReplayGainMode *mode);
@@ -963,11 +958,11 @@ int32 ncm_mpd_connection_get_playlists(NcmMpdConnection *connection,
                                       NcmMpdPlaylistList *playlists);
 int32 ncm_mpd_connection_list_all_song_uris(NcmMpdConnection *connection,
                                            char *path,
-                                           NcmMpdStringList *strings);
+                                           NcmStringViewList *strings);
 int32 ncm_mpd_connection_get_url_handlers(NcmMpdConnection *connection,
-                                         NcmMpdStringList *strings);
+                                         NcmStringViewList *strings);
 int32 ncm_mpd_connection_get_tag_types(NcmMpdConnection *connection,
-                                      NcmMpdStringList *strings);
+                                      NcmStringViewList *strings);
 
 void ncm_mpd_song_list_destroy(NcmMpdSongList *list);
 void ncm_mpd_song_list_clear(NcmMpdSongList *list);
@@ -985,10 +980,10 @@ int32 ncm_mpd_item_list_to_item_array(
 int32 ncm_mpd_item_list_to_directory_array(
     NcmMpdItemList *list, NcmDirectoryArray *directories);
 
-void ncm_mpd_string_list_destroy(NcmMpdStringList *list);
-void ncm_mpd_string_list_clear(NcmMpdStringList *list);
-int32 ncm_mpd_string_list_count(NcmMpdStringList *list);
-NcmMpdString *ncm_mpd_string_list_at(NcmMpdStringList *list,
+void ncm_mpd_string_list_destroy(NcmStringViewList *list);
+void ncm_mpd_string_list_clear(NcmStringViewList *list);
+int32 ncm_mpd_string_list_count(NcmStringViewList *list);
+NcmStringView *ncm_mpd_string_list_at(NcmStringViewList *list,
                                      int32 idx);
 
 void ncm_mpd_output_list_destroy(NcmMpdOutputList *list);
@@ -1034,7 +1029,7 @@ int32 ncm_mpd_connection_commit_search_songs(NcmMpdConnection *connection,
                                             NcmMpdSongList *songs);
 int32 ncm_mpd_connection_list_tag_values(NcmMpdConnection *connection,
                                         enum mpd_tag_type tag,
-                                        NcmMpdStringList *strings);
+                                        NcmStringViewList *strings);
 
 int32 ncm_mpd_connection_update_database(NcmMpdConnection *connection,
                                         char *path,
@@ -1211,7 +1206,7 @@ int32 ncm_mpd_client_get_playlist_content_no_info(NcmMpdClient *client,
                                                  NcmMpdSongList *songs,
                                                  NcmError *ncm_error);
 int32 ncm_mpd_client_get_supported_extensions(NcmMpdClient *client,
-                                             NcmMpdStringList *strings,
+                                             NcmStringViewList *strings,
                                              NcmError *ncm_error);
 
 int32 ncm_mpd_client_set_repeat(NcmMpdClient *client, bool mode,
@@ -1306,7 +1301,7 @@ int32 ncm_mpd_client_get_playlists(NcmMpdClient *client,
                                   NcmMpdPlaylistList *playlists,
                                   NcmError *ncm_error);
 int32 ncm_mpd_client_get_list(NcmMpdClient *client, enum mpd_tag_type tag,
-                             NcmMpdStringList *strings, NcmError *ncm_error);
+                             NcmStringViewList *strings, NcmError *ncm_error);
 int32 ncm_mpd_client_get_directory(NcmMpdClient *client, char *path,
                                   NcmMpdItemList *items, NcmError *ncm_error);
 int32 ncm_mpd_client_get_directory_recursive(NcmMpdClient *client,
@@ -1330,10 +1325,10 @@ int32 ncm_mpd_client_enable_output(NcmMpdClient *client, int32 id,
 int32 ncm_mpd_client_disable_output(NcmMpdClient *client, int32 id,
                                    NcmError *ncm_error);
 int32 ncm_mpd_client_get_url_handlers(NcmMpdClient *client,
-                                     NcmMpdStringList *strings,
+                                     NcmStringViewList *strings,
                                      NcmError *ncm_error);
 int32 ncm_mpd_client_get_tag_types(NcmMpdClient *client,
-                                  NcmMpdStringList *strings,
+                                  NcmStringViewList *strings,
                                   NcmError *ncm_error);
 
 /* c/ncm_enums.h */

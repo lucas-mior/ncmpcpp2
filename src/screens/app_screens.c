@@ -26,8 +26,8 @@ struct OutputsScreen {
 
 struct ServerInfoScreen {
     NcServerInfoScreen screen;
-    NcmMpdStringList url_handlers;
-    NcmMpdStringList tag_types;
+    NcmStringViewList url_handlers;
+    NcmStringViewList tag_types;
     int64 timer;
     bool initialized;
 };
@@ -1679,7 +1679,7 @@ server_info_render(void *user, NcBuffer *buffer) {
 
     append_bold_label(buffer, "URL Handlers:");
     for (int32 i = 0; i < owner->url_handlers.count; i += 1) {
-        NcmMpdString *handler;
+        NcmStringView *handler;
 
         handler = owner->url_handlers.items + i;
         if (i == 0) {
@@ -1687,21 +1687,21 @@ server_info_render(void *user, NcBuffer *buffer) {
         } else {
             append_cstring(buffer, ", ");
         }
-        append_data(buffer, handler->value, handler->value_len);
+        append_data(buffer, handler->data, handler->len);
     }
     append_cstring(buffer, "\n\n");
 
     append_bold_label(buffer, "Tag Types:");
     for (int32 i = 0; i < owner->tag_types.count; i += 1) {
-        NcmMpdString *tag;
+        NcmStringView *tag = owner->tag_types.items + i;
 
-        tag = owner->tag_types.items + i;
         if (i == 0) {
             append_cstring(buffer, " ");
         } else {
             append_cstring(buffer, ", ");
         }
-        append_data(buffer, tag->value, tag->value_len);
+
+        append_data(buffer, tag->data, tag->len);
     }
     return 1;
 }
@@ -1758,8 +1758,8 @@ app_screen_server_info_init(void) {
     hooks.title = server_info_title;
     hooks.destroy = server_info_destroy;
     hooks.user = &server_info_screen;
-    server_info_screen.url_handlers = (NcmMpdStringList){0};
-    server_info_screen.tag_types = (NcmMpdStringList){0};
+    server_info_screen.url_handlers = (NcmStringViewList){0};
+    server_info_screen.tag_types = (NcmStringViewList){0};
     nc_server_info_screen_init(&server_info_screen.screen,
                                hooks,
                                ui_state_screen_width(),

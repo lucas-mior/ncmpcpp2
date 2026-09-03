@@ -865,7 +865,7 @@ int32
 browser_screen_fetch_supported_extensions(BrowserScreen *screen,
                                           NcmMpdClient *client,
                                           NcmError *ncm_error) {
-    NcmMpdStringList strings = {0};
+    NcmStringViewList strings = {0};
     StrBuilderArray extensions = {0};
     int32 status;
 
@@ -884,10 +884,10 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
     status = 0;
     str_builder_array_init(&extensions);
     for (int32 i = 0; status >= 0 && (i < strings.count); i += 1) {
-        NcmMpdString *string = &strings.items[i];
+        NcmStringView *string = &strings.items[i];
         StrBuilder buffer = {0};
-        char *extension = string->value;
-        int32 extension_len = string->value_len;
+        char *extension = string->data;
+        int32 extension_len = string->len;
 
         if (extension == NULL) {
             extension = "";

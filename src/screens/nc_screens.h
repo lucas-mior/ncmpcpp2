@@ -1212,7 +1212,7 @@ typedef struct MediaLibraryColumnState {
 
 typedef struct MediaLibraryHooks {
     int32 (*list_tags)(void *user, enum mpd_tag_type tag_type,
-                       NcmMpdStringList *tags, NcmError *ncm_error);
+                       NcmStringViewList *tags, NcmError *ncm_error);
     int32 (*list_all_songs)(void *user, NcmMpdSongList *songs,
                             NcmError *ncm_error);
     int32 (*search_songs)(void *user,
@@ -1322,7 +1322,7 @@ void media_library_screen_format_song_row(
     MediaLibraryScreen *screen, NcmSong *song, NcBuffer *output);
 
 int32 media_library_tags_from_strings(
-    MediaLibraryTagArray *tags, NcmMpdStringList *strings);
+    MediaLibraryTagArray *tags, NcmStringViewList *strings);
 int32 media_library_tags_from_songs(
     MediaLibraryTagArray *tags, NcmMpdSongList *songs,
     enum mpd_tag_type primary_tag);
@@ -1375,7 +1375,7 @@ int32 media_library_screen_update(MediaLibraryScreen *screen,
 
 int32 media_library_screen_list_tags(MediaLibraryScreen *screen,
                                        enum mpd_tag_type tag_type,
-                                       NcmMpdStringList *tags,
+                                       NcmStringViewList *tags,
                                        NcmError *ncm_error);
 int32 media_library_screen_list_all_songs(MediaLibraryScreen *screen,
                                          NcmMpdSongList *songs,
