@@ -1403,6 +1403,35 @@ tag_editor_reset_parser_navigation(TagEditorScreen *screen) {
     return;
 }
 
+static int32
+tag_editor_append_parser_separator(TagEditorScreen *screen) {
+    nc_editor_string_menu_add_separator(&screen->parser_rows);
+    nc_editor_string_menu_add_separator(&screen->parser_actions);
+    return 0;
+}
+
+static int32
+tag_editor_append_parser_action_row(TagEditorScreen *screen,
+                                    char *data, int32 data_len,
+                                    uint32 flags) {
+    int32 status;
+
+    status = tag_editor_append_parser_row(&screen->parser_rows, data,
+                                          data_len, flags);
+    if (status < 0) {
+        return status;
+    }
+    return tag_editor_append_parser_row(&screen->parser_actions, data,
+                                        data_len, flags);
+}
+
+static int32
+tag_editor_append_parser_action_label(TagEditorScreen *screen,
+                                      char *label, int32 label_len) {
+    return tag_editor_append_parser_action_row(screen, label, label_len,
+                                               NC_MENU_ITEM_SELECTABLE);
+}
+
 int32
 tag_editor_screen_prepare_parser_rows(TagEditorScreen *screen,
                                       enum TagEditorParserMode mode,
@@ -1546,6 +1575,23 @@ tag_editor_screen_show_parser_dialog(TagEditorScreen *screen) {
     screen->parser_mode = TAG_EDITOR_PARSER_NONE;
     tag_editor_set_focus(screen, TAG_EDITOR_FOCUS_PARSER_CHOICE);
     return;
+}
+
+static int32
+tag_editor_find_recent_pattern(TagEditorScreen *screen,
+                               char *pattern, int32 pattern_len) {
+    if (pattern_len <= 0) {
+        return -1;
+    }
+    for (int32 i = 0; i < screen->recent_patterns.len; i += 1) {
+        StrBuilder *item;
+
+        item = &screen->recent_patterns.items[i];
+        if (STREQUAL(item->data, item->len, pattern, pattern_len)) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 void
@@ -2400,6 +2446,23 @@ tag_editor_title(NcScreen *screen) {
 }
 
 static void
+tag_editor_report_error(char *context, int32 context_len,
+                        NcmError *ncm_error) {
+    StrBuilder message = {0};
+
+    SB_APPEND(&message, context, context_len);
+    if (ncm_error && (ncm_error->message[0] != 0)) {
+        SB_APPEND(&message, ": ");
+        SB_APPEND(&message, ncm_error->message,
+                  strlen32(ncm_error->message));
+    }
+    ncm_statusbar_print_cstring(Config.message_delay_time,
+                                message.data);
+    sb_free(&message);
+    return;
+}
+
+static void
 tag_editor_update(NcScreen *screen) {
     TagEditorScreen *editor = tag_editor_from_screen(screen);
     NcmError ncm_error;
@@ -3038,23 +3101,6 @@ tag_editor_restore_current_directory(TagEditorScreen *screen,
             return;
         }
     }
-    return;
-}
-
-static void
-tag_editor_report_error(char *context, int32 context_len,
-                        NcmError *ncm_error) {
-    StrBuilder message = {0};
-
-    SB_APPEND(&message, context, context_len);
-    if (ncm_error && (ncm_error->message[0] != 0)) {
-        SB_APPEND(&message, ": ");
-        SB_APPEND(&message, ncm_error->message,
-                  strlen32(ncm_error->message));
-    }
-    ncm_statusbar_print_cstring(Config.message_delay_time,
-                                message.data);
-    sb_free(&message);
     return;
 }
 
@@ -4232,35 +4278,6 @@ tag_editor_append_parser_row(NcEditorStringMenu *menu, char *data,
 }
 
 static int32
-tag_editor_append_parser_separator(TagEditorScreen *screen) {
-    nc_editor_string_menu_add_separator(&screen->parser_rows);
-    nc_editor_string_menu_add_separator(&screen->parser_actions);
-    return 0;
-}
-
-static int32
-tag_editor_append_parser_action_row(TagEditorScreen *screen,
-                                    char *data, int32 data_len,
-                                    uint32 flags) {
-    int32 status;
-
-    status = tag_editor_append_parser_row(&screen->parser_rows, data,
-                                          data_len, flags);
-    if (status < 0) {
-        return status;
-    }
-    return tag_editor_append_parser_row(&screen->parser_actions, data,
-                                        data_len, flags);
-}
-
-static int32
-tag_editor_append_parser_action_label(TagEditorScreen *screen,
-                                      char *label, int32 label_len) {
-    return tag_editor_append_parser_action_row(screen, label, label_len,
-                                               NC_MENU_ITEM_SELECTABLE);
-}
-
-static int32
 tag_editor_build_parser_legend(TagEditorScreen *screen) {
     NcMenu *tags;
     int32 count;
@@ -4462,23 +4479,6 @@ tag_editor_history_path(StrBuilder *path) {
                            STRLIT("patterns.list"));
     }
     return tag_editor_set_buffer(path, STRLIT("patterns.list"));
-}
-
-static int32
-tag_editor_find_recent_pattern(TagEditorScreen *screen,
-                               char *pattern, int32 pattern_len) {
-    if (pattern_len <= 0) {
-        return -1;
-    }
-    for (int32 i = 0; i < screen->recent_patterns.len; i += 1) {
-        StrBuilder *item;
-
-        item = &screen->recent_patterns.items[i];
-        if (STREQUAL(item->data, item->len, pattern, pattern_len)) {
-            return i;
-        }
-    }
-    return -1;
 }
 
 static int32
