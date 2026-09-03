@@ -260,6 +260,7 @@ playlist_screen_init(PlaylistScreen *screen, int32 start_x,
     screen->reload_remaining = true;
     screen->registered = false;
     screen->highlighting_requested = false;
+
     nc_playlist_screen_init(&screen->screen, playlist_ops, screen,
                             nc_song_menu_base(&screen->songs), start_x,
                             width, main_start_y, main_height);
@@ -283,6 +284,7 @@ playlist_screen_init(PlaylistScreen *screen, int32 start_x,
         screen, Config.lines_scrolled,
         Config.mouse_list_scroll_whole_page);
     playlist_screen_update_column_title(screen);
+
     return;
 }
 
