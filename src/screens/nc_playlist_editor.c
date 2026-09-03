@@ -263,7 +263,7 @@ playlist_editor_screen_destroy(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return;
     }
-    (void)app_controller_unregister_screen(playlist_editor_screen_base(screen));
+    app_controller_unregister_screen(playlist_editor_screen_base(screen));
     nc_window_destroy(&screen->content_window);
     nc_window_destroy(&screen->playlists_window);
     nc_song_menu_destroy(&screen->content);
@@ -618,12 +618,12 @@ playlist_editor_screen_load_playlists(PlaylistEditorScreen *screen,
                                    &playlists->items[i]);
     }
     if (had_preserved) {
-        (void)playlist_editor_restore_playlist_path(screen, &preserved);
+        playlist_editor_restore_playlist_path(screen, &preserved);
     }
     if (screen->playlist_filter_enabled) {
         nc_menu_apply_filter(menu);
         if (had_preserved) {
-            (void)playlist_editor_restore_playlist_path(screen,
+            playlist_editor_restore_playlist_path(screen,
                                                         &preserved);
         }
     }
@@ -769,7 +769,7 @@ playlist_editor_screen_load_content(PlaylistEditorScreen *screen,
         nc_menu_apply_filter(menu);
     }
     if (had_preserved_song) {
-        (void)playlist_editor_restore_content_song(screen,
+        playlist_editor_restore_content_song(screen,
                                                    &preserved_song);
     }
     {
@@ -841,7 +841,7 @@ playlist_editor_clear_playlist_filter(
     nc_menu_show_all_items(nc_playlist_entry_menu_base(
         &screen->playlists));
     if (has_path > 0) {
-        (void)playlist_editor_restore_playlist_path(screen, &path);
+        playlist_editor_restore_playlist_path(screen, &path);
     }
     sb_free(&path);
     playlist_editor_update_titles(screen, true);
@@ -864,7 +864,7 @@ playlist_editor_clear_content_filter(
     sb_clear(&screen->content_filter_constraint);
     nc_menu_show_all_items(nc_song_menu_base(&screen->content));
     if (has_song > 0) {
-        (void)playlist_editor_restore_content_song(screen, &song);
+        playlist_editor_restore_content_song(screen, &song);
     }
     ncm_song_destroy(&song);
     playlist_editor_update_titles(screen, true);
