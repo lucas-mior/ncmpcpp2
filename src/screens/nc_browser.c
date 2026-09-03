@@ -22,28 +22,28 @@ static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
 static bool browser_position_matches_search(NcMenu *, int32, void *);
-static bool browser_directory_is_root(char *, int32 directory_len);
-static bool browser_path_is_parent_directory(char *, int32 directory_len);
-static int32 browser_set_normalized_directory(BrowserScreen *, char *, int32 directory_len);
-static int32 browser_set_parent_of_directory(BrowserScreen *, char *, int32 directory_len);
-static int32 browser_load_mpd_items(BrowserScreen *, NcmMpdItemArray *items);
-static int32 browser_reload_from_local(BrowserScreen *, NcmError *ncm_error);
-static int32 browser_stat_local_path(char *, int32, NcmFsStat *, NcmError *ncm_error);
-static bool browser_local_path_has_supported_extension(BrowserScreen *, char *, int32 path_len);
-static int32 browser_make_local_song(NcmSong *, char *, int32, time_t mtime);
-static int32 browser_collect_item_songs(BrowserScreen *, NcmSongArray *, NcmMpdItem *item);
-static int32 browser_collect_local_directory_songs(BrowserScreen *, NcmSongArray *, char *, int32, NcmError *ncm_error);
-static int32 browser_current_directory_item_path(BrowserScreen *, NcmStringView *, NcmError *ncm_error);
-static int32 browser_current_playlist_item_path(BrowserScreen *, NcmStringView *, NcmError *ncm_error);
-static int32 browser_real_path(BrowserScreen *, NcmStringView, StrBuilder *, NcmError *ncm_error);
-static int32 browser_delete_path_recursive(char *, int32, NcmError *ncm_error);
-static bool browser_supported_extensions_contains(StrBuilderArray *, char *, int32 extension_len);
-static int32 browser_item_sort_rank(NcmMpdItem *item);
-static int32 browser_compare_views(NcmStringView, NcmStringView right);
-static int32 browser_compare_times(time_t, time_t right);
-static NcmStringView browser_directory_sort_view(NcmMpdItem *item);
-static NcmStringView browser_playlist_sort_view(NcmMpdItem *item);
-static NcmStringView browser_song_name_sort_view(NcmMpdItem *item);
+static bool browser_directory_is_root(char *, int32 );
+static bool browser_path_is_parent_directory(char *, int32 );
+static int32 browser_set_normalized_directory(BrowserScreen *, char *, int32 );
+static int32 browser_set_parent_of_directory(BrowserScreen *, char *, int32 );
+static int32 browser_load_mpd_items(BrowserScreen *, NcmMpdItemArray *);
+static int32 browser_reload_from_local(BrowserScreen *, NcmError *);
+static int32 browser_stat_local_path(char *, int32, NcmFsStat *, NcmError *);
+static bool browser_local_path_has_supported_extension(BrowserScreen *, char *, int32 );
+static int32 browser_make_local_song(NcmSong *, char *, int32, time_t );
+static int32 browser_collect_item_songs(BrowserScreen *, NcmSongArray *, NcmMpdItem *);
+static int32 browser_collect_local_directory_songs(BrowserScreen *, NcmSongArray *, char *, int32, NcmError *);
+static int32 browser_current_directory_item_path(BrowserScreen *, NcmStringView *, NcmError *);
+static int32 browser_current_playlist_item_path(BrowserScreen *, NcmStringView *, NcmError *);
+static int32 browser_real_path(BrowserScreen *, NcmStringView, StrBuilder *, NcmError *);
+static int32 browser_delete_path_recursive(char *, int32, NcmError *);
+static bool browser_supported_extensions_contains(StrBuilderArray *, char *, int32 );
+static int32 browser_item_sort_rank(NcmMpdItem *);
+static int32 browser_compare_views(NcmStringView, NcmStringView );
+static int32 browser_compare_times(time_t, time_t );
+static NcmStringView browser_directory_sort_view(NcmMpdItem *);
+static NcmStringView browser_playlist_sort_view(NcmMpdItem *);
+static NcmStringView browser_song_name_sort_view(NcmMpdItem *);
 
 #define NC_SCREEN_IMPL_TYPE BrowserScreen
 #define NC_SCREEN_IMPL_PREFIX browser
