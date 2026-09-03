@@ -224,24 +224,30 @@ lastfm_find(char *data, int32 data_len, char *needle, int32 needle_len,
     return -1;
 }
 
-static bool
+static int32
 lastfm_extract_between(StrBuilder *out, char *data, int32 data_len, char *start,
                        int32 start_len, char *end, int32 end_len) {
     int32 a;
     int32 b;
 
+    if ((out == NULL) || (data == NULL) || (data_len < 0)
+        || (start == NULL) || (start_len <= 0)
+        || (end == NULL) || (end_len <= 0)) {
+        return -EINVAL;
+    }
+
     sb_clear(out);
     a = lastfm_find(data, data_len, start, start_len, 0);
     if (a < 0) {
-        return false;
+        return -NCM_ERROR_NOT_FOUND;
     }
     a += start_len;
     b = lastfm_find(data, data_len, end, end_len, a);
     if (b < 0) {
-        return false;
+        return -NCM_ERROR_NOT_FOUND;
     }
     SB_APPEND(out, data + a, b - a);
-    return true;
+    return 0;
 }
 
 static void
@@ -336,10 +342,10 @@ lastfm_append_similars(StrBuilder *out, char *data, int32 data_len,
 
         have_name = lastfm_extract_between(&name, data + pos, item_end - pos,
                                            STRLIT("<name>"),
-                                           STRLIT("</name>"));
+                                           STRLIT("</name>")) == 0;
         have_url = lastfm_extract_between(&url, data + pos, item_end - pos,
                                           STRLIT("<url>"),
-                                          STRLIT("</url>"));
+                                          STRLIT("</url>")) == 0;
         if (have_name && have_url) {
             lastfm_strip_unescape_trim(&clean_name, name.data, name.len);
             lastfm_strip_unescape_trim(&clean_url, url.data, url.len);
@@ -403,9 +409,9 @@ lastfm_fetch_artist_info(NcmLastfmService *service, NcmLastfmResult *result) {
                                        STRLIT(LASTFM_INVALID_RESPONSE));
         goto cleanup;
     }
-    if (!lastfm_extract_between(&content, data.data, data.len,
-                                STRLIT("<content>"),
-                                STRLIT("</content>"))) {
+    if (lastfm_extract_between(&content, data.data, data.len,
+                               STRLIT("<content>"),
+                               STRLIT("</content>")) < 0) {
         status = ncm_lastfm_result_set(result, false,
                                        STRLIT(LASTFM_INVALID_RESPONSE));
         goto cleanup;
@@ -426,7 +432,7 @@ lastfm_fetch_artist_info(NcmLastfmService *service, NcmLastfmResult *result) {
                            STRLIT("</tags>"),
                            STRLIT("\n\nSimilar tags:\n"));
     if (lastfm_extract_between(&original_link, data.data, data.len,
-                               STRLIT("<url>"), STRLIT("</url>"))) {
+                               STRLIT("<url>"), STRLIT("</url>")) == 0) {
         StrBuilder clean_url = {0};
 
         lastfm_strip_unescape_trim(&clean_url, original_link.data,

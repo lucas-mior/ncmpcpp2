@@ -49,14 +49,17 @@ hex_value(char c) {
     return result;
 }
 
-static bool
+static int32
 parse_entity_number(char *data, int32 data_len, uint32 *rune) {
     uint32 value;
     int32 base;
     int32 start;
 
-    if (data_len <= 0) {
-        return false;
+    if ((data == NULL) || (data_len < 0) || (rune == NULL)) {
+        return -EINVAL;
+    }
+    if (data_len == 0) {
+        return -NCM_ERROR_PARSE;
     }
 
     start = 0;
@@ -66,7 +69,7 @@ parse_entity_number(char *data, int32 data_len, uint32 *rune) {
         base = 16;
     }
     if (start >= data_len) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
 
     value = 0;
@@ -82,16 +85,16 @@ parse_entity_number(char *data, int32 data_len, uint32 *rune) {
         }
 
         if (digit < 0) {
-            return false;
+            return -NCM_ERROR_PARSE;
         }
         if (value > ((0x10ffffu - (uint32)digit) / (uint32)base)) {
-            return false;
+            return -NCM_ERROR_PARSE;
         }
         value = value*(uint32)base + (uint32)digit;
     }
 
     *rune = value;
-    return true;
+    return 0;
 }
 
 static bool
@@ -146,7 +149,7 @@ ncm_html_unescape_utf8(char *data, int32 data_len) {
             if (entity_end < data_len) {
                 entity_len = entity_end - entity_start;
                 if (parse_entity_number(data + entity_start,
-                                        entity_len, &rune)) {
+                                        entity_len, &rune) == 0) {
                     encoded_len = utf8_encode(rune, encoded,
                                               SIZEOF(encoded));
                     if (encoded_len > 0) {

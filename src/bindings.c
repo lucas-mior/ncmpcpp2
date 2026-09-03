@@ -79,11 +79,16 @@ ncm_trim_end(char *string, int32 string_len) {
     return string_len;
 }
 
-static bool
+static int32
 ncm_extract_enclosed(char *line, int32 line_len, char open, char close,
                      NcmStringView *result) {
     int32 start;
     int32 end;
+
+    if ((result == NULL) || (line_len < 0)
+        || ((line == NULL) && (line_len > 0))) {
+        return -EINVAL;
+    }
 
     result->data = NULL;
     result->len = 0;
@@ -100,12 +105,12 @@ ncm_extract_enclosed(char *line, int32 line_len, char open, char close,
         }
     }
     if ((start < 0) || (end < start)) {
-        return false;
+        return -NCM_ERROR_NOT_FOUND;
     }
 
     result->data = line + start;
     result->len = end - start;
-    return true;
+    return 0;
 }
 
 void
@@ -705,8 +710,8 @@ ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
         return 0;
     }
 
-    if (!ncm_extract_enclosed(line + name_len, line_len - name_len, '"', '"',
-                              &argument)) {
+    if (ncm_extract_enclosed(line + name_len, line_len - name_len, '"', '"',
+                             &argument) < 0) {
         ncm_bindings_error(ncm_error, "missing quoted argument: '%.*s'",
                            line_len, line);
         return -NCM_ERROR_PARSE;
@@ -1237,8 +1242,8 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             if (status < 0) {
                 break;
             }
-            if (!ncm_extract_enclosed(line + start, len - start, '"', '"',
-                                      &enclosed)) {
+            if (ncm_extract_enclosed(line + start, len - start, '"', '"',
+                                     &enclosed) < 0) {
                 ncm_bindings_error(ncm_error,
                                    "%.*s:%d: command must have non-empty name",
                                    path_len, path, line_no);
@@ -1256,8 +1261,8 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             command_name = ncm_string_copy(enclosed.data, enclosed.len,
                                            &command_name_cap);
             command_name_len = enclosed.len;
-            if (!ncm_extract_enclosed(line + start, len - start, '[', ']',
-                                      &enclosed)) {
+            if (ncm_extract_enclosed(line + start, len - start, '[', ']',
+                                     &enclosed) < 0) {
                 ncm_bindings_error(ncm_error, "%.*s:%d: missing command type",
                                    path_len, path, line_no);
                 status = -NCM_ERROR_PARSE;
@@ -1285,8 +1290,8 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             if (status < 0) {
                 break;
             }
-            if (!ncm_extract_enclosed(line + start, len - start, '"', '"',
-                                      &enclosed)) {
+            if (ncm_extract_enclosed(line + start, len - start, '"', '"',
+                                     &enclosed) < 0) {
                 ncm_bindings_error(ncm_error, "%.*s:%d: invalid key", path_len,
                                    path, line_no);
                 status = -NCM_ERROR_PARSE;
