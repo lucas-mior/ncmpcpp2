@@ -896,9 +896,6 @@ typedef struct NcmMpdOutputList {
     int32 capacity;
 } NcmMpdOutputList;
 
-void ncm_mpd_string_destroy(NcmMpdString *string);
-void ncm_mpd_output_destroy(NcmMpdOutput *output);
-
 typedef struct NcmMpdPlaylistList {
     NcmPlaylist *items;
     int32 count;
@@ -1035,10 +1032,6 @@ int32 ncm_mpd_connection_get_playlist_content_no_info(
 int32 ncm_mpd_connection_get_directory(NcmMpdConnection *connection,
                                       char *path,
                                       NcmMpdItemList *items);
-int32 ncm_mpd_connection_get_directory_recursive(
-    NcmMpdConnection *connection,
-    char *path,
-    NcmMpdSongList *songs);
 int32 ncm_mpd_connection_get_directory_songs(NcmMpdConnection *connection,
                                             char *path,
                                             NcmMpdSongList *songs);
