@@ -47,8 +47,7 @@ playlist_editor_update_titles(PlaylistEditorScreen *screen,
     sb_clear(&screen->playlists_title);
     sb_clear(&screen->content_title);
     if (Config.titles_visibility) {
-        SB_APPEND(&screen->playlists_title,
-                  "Playlists");
+        SB_APPEND(&screen->playlists_title, "Playlists");
         SB_APPEND(&screen->content_title, "Content");
         if (screen->last_known_content_count >= 0) {
             SB_APPEND(&screen->content_title, " (");
@@ -73,11 +72,9 @@ playlist_editor_update_titles(PlaylistEditorScreen *screen,
                 }
             }
             if (screen->last_known_content_count == 1) {
-                SB_APPEND(&screen->content_title,
-                          " item)");
+                SB_APPEND(&screen->content_title, " item)");
             } else {
-                SB_APPEND(&screen->content_title,
-                          " items)");
+                SB_APPEND(&screen->content_title, " items)");
             }
         }
     }
@@ -1881,9 +1878,10 @@ playlist_editor_mouse_callback(NcScreen *screen, MEVENT event) {
                             StrBuilder message = {0};
 
                             SB_APPEND(&message, "Playlist \"");
-                            SB_APPEND(&message, playlist->path,
-                                      playlist->path_len);
+                            SB_APPEND(&message,
+                                      playlist->path, playlist->path_len);
                             SB_APPEND(&message, "\" loaded");
+
                             ncm_statusbar_print(
                                 Config.message_delay_time,
                                 message.data, message.len);
