@@ -1697,38 +1697,38 @@ void ncm_taglib_clear_strings(void);
 #define ENUM_NAME NcmFormatFlags
 #define ENUM_PREFIX_ NCM_FORMAT_FLAG_
 #define ENUM_BITFLAGS 1
-#define ENUM_FIELDS                                                            \
-    XX(NCM_FORMAT_FLAG_COLOR)                                                  \
-    XX(NCM_FORMAT_FLAG_FORMAT)                                                 \
-    XX(NCM_FORMAT_FLAG_OUTPUT_SWITCH)                                          \
+#define ENUM_FIELDS                         \
+    XX(NCM_FORMAT_FLAG_COLOR)               \
+    XX(NCM_FORMAT_FLAG_FORMAT)              \
+    XX(NCM_FORMAT_FLAG_OUTPUT_SWITCH)       \
     XX(NCM_FORMAT_FLAG_TAG)
 #include "cbase/xenums.c"
 
-#define NCM_FORMAT_FLAG_ALL                                                    \
-    (NCM_FORMAT_FLAG_COLOR                                                     \
-     |NCM_FORMAT_FLAG_FORMAT                                                   \
-     |NCM_FORMAT_FLAG_OUTPUT_SWITCH                                            \
+#define NCM_FORMAT_FLAG_ALL                 \
+    (NCM_FORMAT_FLAG_COLOR                  \
+     |NCM_FORMAT_FLAG_FORMAT                \
+     |NCM_FORMAT_FLAG_OUTPUT_SWITCH         \
      |NCM_FORMAT_FLAG_TAG)
 
 #define ENUM_NAME NcmFormatExprType
 #define ENUM_PREFIX_ NCM_FORMAT_EXPR_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NCM_FORMAT_EXPR_TEXT)                                                   \
-    XX(NCM_FORMAT_EXPR_COLOR)                                                  \
-    XX(NCM_FORMAT_EXPR_FORMAT)                                                 \
-    XX(NCM_FORMAT_EXPR_OUTPUT_SWITCH)                                          \
-    XX(NCM_FORMAT_EXPR_SONG_TAG)                                               \
-    XX(NCM_FORMAT_EXPR_GROUP)                                                  \
+#define ENUM_FIELDS                         \
+    XX(NCM_FORMAT_EXPR_TEXT)                \
+    XX(NCM_FORMAT_EXPR_COLOR)               \
+    XX(NCM_FORMAT_EXPR_FORMAT)              \
+    XX(NCM_FORMAT_EXPR_OUTPUT_SWITCH)       \
+    XX(NCM_FORMAT_EXPR_SONG_TAG)            \
+    XX(NCM_FORMAT_EXPR_GROUP)               \
     XX(NCM_FORMAT_EXPR_FIRST_OF)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcmFormatResult
 #define ENUM_PREFIX_ NCM_FORMAT_RESULT_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NCM_FORMAT_RESULT_EMPTY)                                                \
-    XX(NCM_FORMAT_RESULT_MISSING)                                              \
+#define ENUM_FIELDS                         \
+    XX(NCM_FORMAT_RESULT_EMPTY)             \
+    XX(NCM_FORMAT_RESULT_MISSING)           \
     XX(NCM_FORMAT_RESULT_OK)
 #include "cbase/xenums.c"
 
