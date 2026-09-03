@@ -1936,15 +1936,12 @@ void sort_playlist_dialog_init(SortPlaylistDialog *dialog,
                                int32 width, int32 height,
                                NcColor color, NcBorder border);
 void sort_playlist_dialog_destroy(SortPlaylistDialog *dialog);
-NcScreen *sort_playlist_dialog_base(
-    SortPlaylistDialog *dialog);
-NcEditorSortMenu *sort_playlist_dialog_menu(
-    SortPlaylistDialog *dialog);
-void sort_playlist_dialog_set_geometry(
-    SortPlaylistDialog *dialog, int32 start_x, int32 start_y,
-    int32 width, int32 height);
-void sort_playlist_dialog_populate_defaults(
-    SortPlaylistDialog *dialog);
+NcScreen *sort_playlist_dialog_base(SortPlaylistDialog *dialog);
+NcEditorSortMenu *sort_playlist_dialog_menu(SortPlaylistDialog *dialog);
+void sort_playlist_dialog_set_geometry(SortPlaylistDialog *dialog,
+                                       int32 start_x, int32 start_y,
+                                       int32 width, int32 height);
+void sort_playlist_dialog_populate_defaults(SortPlaylistDialog *dialog);
 int32 sort_playlist_dialog_add_row(SortPlaylistDialog *dialog,
                                     char *label, int32 label_len,
                                     enum NcmSongGetter getter,
