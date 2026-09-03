@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static int32 library_replace_tags(MediaLibraryScreen *screen, MediaLibraryTagArray *tags);
 static void library_restore_tag_identity(NcMediaLibraryTagMenu *menu, NcMediaLibraryTagRow *identity, bool identity_valid, int32 fallback);
 static void library_tag_array_item_destroy(void *item);
 static void library_set_observed_tag(MediaLibraryScreen *screen, NcMediaLibraryTagRow *tag);
@@ -2852,6 +2851,51 @@ media_library_screen_update(MediaLibraryScreen *screen,
 }
 
 static int32
+library_replace_tags(MediaLibraryScreen *screen,
+                     MediaLibraryTagArray *tags) {
+    NcMediaLibraryTagMenu replacement;
+    NcMediaLibraryTagRow identity;
+    NcMediaLibraryTagRow *current;
+    NcMenu *menu;
+    NcMenu *replacement_menu;
+    int32 highlight;
+    bool identity_valid;
+
+    ASSERT(screen != NULL);
+    ASSERT(tags != NULL);
+
+    menu = nc_media_library_tag_menu_base(&screen->tags);
+    current = nc_media_library_tag_menu_current(&screen->tags);
+    highlight = nc_menu_highlight(menu);
+    identity_valid = false;
+    identity = (NcMediaLibraryTagRow){0};
+    if (current) {
+        identity_valid = nc_media_library_tag_row_copy(
+            &identity, current) >= 0;
+        library_set_observed_tag(screen, current);
+    } else {
+        library_set_observed_tag(screen, NULL);
+    }
+
+    nc_media_library_tag_menu_init(&replacement);
+    replacement_menu = nc_media_library_tag_menu_base(&replacement);
+    nc_menu_copy(replacement_menu, menu);
+    for (int32 i = 0; i < tags->len; i += 1) {
+        nc_media_library_tag_menu_add(&replacement, &tags->items[i]);
+    }
+    library_apply_column_filter(
+        screen, MEDIA_LIBRARY_COLUMN_TAGS, replacement_menu);
+    library_restore_tag_identity(
+        &replacement, &identity, identity_valid, highlight);
+
+    nc_menu_swap(menu, replacement_menu);
+    nc_media_library_tag_menu_destroy(&replacement);
+    nc_media_library_tag_row_destroy(&identity);
+    nc_screen_finish_list_change(&screen->screen);
+    return 0;
+}
+
+static int32
 library_update_tags(MediaLibraryScreen *screen,
                     NcmError *ncm_error) {
     MediaLibraryTagArray tags;
@@ -3032,51 +3076,6 @@ library_update_albums(MediaLibraryScreen *screen,
     ncm_mpd_song_list_destroy(&songs);
     media_library_album_array_destroy(&albums);
     return status;
-}
-
-static int32
-library_replace_tags(MediaLibraryScreen *screen,
-                     MediaLibraryTagArray *tags) {
-    NcMediaLibraryTagMenu replacement;
-    NcMediaLibraryTagRow identity;
-    NcMediaLibraryTagRow *current;
-    NcMenu *menu;
-    NcMenu *replacement_menu;
-    int32 highlight;
-    bool identity_valid;
-
-    ASSERT(screen != NULL);
-    ASSERT(tags != NULL);
-
-    menu = nc_media_library_tag_menu_base(&screen->tags);
-    current = nc_media_library_tag_menu_current(&screen->tags);
-    highlight = nc_menu_highlight(menu);
-    identity_valid = false;
-    identity = (NcMediaLibraryTagRow){0};
-    if (current) {
-        identity_valid = nc_media_library_tag_row_copy(
-            &identity, current) >= 0;
-        library_set_observed_tag(screen, current);
-    } else {
-        library_set_observed_tag(screen, NULL);
-    }
-
-    nc_media_library_tag_menu_init(&replacement);
-    replacement_menu = nc_media_library_tag_menu_base(&replacement);
-    nc_menu_copy(replacement_menu, menu);
-    for (int32 i = 0; i < tags->len; i += 1) {
-        nc_media_library_tag_menu_add(&replacement, &tags->items[i]);
-    }
-    library_apply_column_filter(
-        screen, MEDIA_LIBRARY_COLUMN_TAGS, replacement_menu);
-    library_restore_tag_identity(
-        &replacement, &identity, identity_valid, highlight);
-
-    nc_menu_swap(menu, replacement_menu);
-    nc_media_library_tag_menu_destroy(&replacement);
-    nc_media_library_tag_row_destroy(&identity);
-    nc_screen_finish_list_change(&screen->screen);
-    return 0;
 }
 
 static void
