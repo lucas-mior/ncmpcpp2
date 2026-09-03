@@ -3764,10 +3764,8 @@ library_collect_tag_songs(
 }
 
 static int32
-library_collect_album_songs(
-    MediaLibraryScreen *screen, NcmSongArray *songs,
-    NcmError *ncm_error
-) {
+library_collect_album_songs(MediaLibraryScreen *screen, NcmSongArray *songs,
+                            NcmError *ncm_error) {
     NcMenu *menu = nc_media_library_album_menu_base(&screen->albums);
     bool any_selected = nc_menu_has_selected(menu);
     int32 status;
