@@ -514,21 +514,17 @@ adder_position_matches(NcMenu *menu, int32 pos, void *user) {
 static void
 adder_draw_row(NcMenu *menu, NcWindow *window, void *item,
                int32 pos, void *user) {
-    NcEditorActionRow *row;
-    StrBuilder converted;
+    NcEditorActionRow *row = item;
 
     (void)menu;
     (void)pos;
     (void)user;
-    row = item;
-    if ((row == NULL) || (row->label == NULL)
-        || (row->label_len <= 0)) {
+
+    if ((row == NULL) || (row->label == NULL) || (row->label_len <= 0)) {
         return;
     }
 
-    converted = ncm_charset_copy(row->label, row->label_len);
-    nc_window_print_data(window, converted.data, converted.len);
-    sb_free(&converted);
+    nc_window_print_data(window, row->label, row->label_len);
     return;
 }
 
