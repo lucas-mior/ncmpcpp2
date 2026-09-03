@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static bool library_active_item_matches(MediaLibraryScreen *screen, NcMenu *menu, int32 pos, NcmRegex *regex);
 static bool library_search_position(NcMenu *menu, int32 pos, void *user);
 static void library_layout(MediaLibraryScreen *screen);
 static int32 library_ratio_value(NcmInt32Array *ratios, int32 idx, int32 fallback);
@@ -61,6 +60,69 @@ static bool library_has_pending_tags(MediaLibraryScreen *screen);
 static bool library_has_pending_albums(MediaLibraryScreen *screen);
 static bool library_has_pending_songs(MediaLibraryScreen *screen);
 static bool library_has_fetch_delay_elapsed(MediaLibraryScreen *screen);
+
+static bool
+library_album_matches(MediaLibraryScreen *screen,
+                      NcMediaLibraryAlbumRow *row,
+                      NcmRegex *regex) {
+    StrBuilder text = {0};
+    bool result;
+
+    ASSERT(row != NULL);
+    media_library_screen_format_album_row(screen, row, &text);
+    result = ncm_regex_matches(regex, text.data, text.len);
+    sb_free(&text);
+    return result;
+}
+
+static bool
+library_song_matches(MediaLibraryScreen *screen,
+                     NcmSong *song, NcmRegex *regex) {
+    StrBuilder text;
+    bool result;
+
+    (void)screen;
+    ASSERT(song != NULL);
+    text = ncm_format_render_string(&Config.song_library_format, song);
+    result = ncm_regex_matches(regex, text.data, text.len);
+    sb_free(&text);
+    return result;
+}
+
+static bool
+library_tag_matches(MediaLibraryScreen *screen,
+                    NcMediaLibraryTagRow *row, NcmRegex *regex) {
+    StrBuilder text = {0};
+    bool result;
+
+    ASSERT(row != NULL);
+    media_library_screen_format_tag_row(screen, row, &text);
+    result = ncm_regex_matches(regex, text.data, text.len);
+    sb_free(&text);
+    return result;
+}
+
+static bool
+library_active_item_matches(MediaLibraryScreen *screen,
+                            NcMenu *menu, int32 pos,
+                            NcmRegex *regex) {
+    void *item = nc_menu_active_item_at(menu, pos);
+
+    if (screen->active_column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
+        NcMediaLibraryAlbumRow *album = item;
+
+        if (nc_menu_position_is_separator(menu, pos)
+            || (album && album->all_tracks_entry)) {
+            return false;
+        }
+        return library_album_matches(screen, album, regex);
+    }
+    if (screen->active_column == MEDIA_LIBRARY_COLUMN_SONGS) {
+        return library_song_matches(screen, item, regex);
+    }
+    return library_tag_matches(screen, item, regex);
+}
+
 static void
 library_refresh_menu(NcMenu *menu, NcWindow *window) {
     nc_window_display(window);
@@ -261,19 +323,6 @@ library_draw_tag(NcMenu *menu, NcWindow *window,
 }
 
 static bool
-library_tag_matches(MediaLibraryScreen *screen,
-                    NcMediaLibraryTagRow *row, NcmRegex *regex) {
-    StrBuilder text = {0};
-    bool result;
-
-    ASSERT(row != NULL);
-    media_library_screen_format_tag_row(screen, row, &text);
-    result = ncm_regex_matches(regex, text.data, text.len);
-    sb_free(&text);
-    return result;
-}
-
-static bool
 library_menu_item_is_separator(NcMenu *menu, void *item) {
     ASSERT(menu != NULL);
     ASSERT(item != NULL);
@@ -288,20 +337,6 @@ library_menu_item_is_separator(NcMenu *menu, void *item) {
 }
 
 static bool
-library_album_matches(MediaLibraryScreen *screen,
-                      NcMediaLibraryAlbumRow *row,
-                      NcmRegex *regex) {
-    StrBuilder text = {0};
-    bool result;
-
-    ASSERT(row != NULL);
-    media_library_screen_format_album_row(screen, row, &text);
-    result = ncm_regex_matches(regex, text.data, text.len);
-    sb_free(&text);
-    return result;
-}
-
-static bool
 library_album_filter(NcMenu *menu, void *item, void *user) {
     MediaLibraryScreen *screen = user;
     NcMediaLibraryAlbumRow *row = item;
@@ -313,20 +348,6 @@ library_album_filter(NcMenu *menu, void *item, void *user) {
     return library_album_matches(
         screen, row,
         &screen->column_state[MEDIA_LIBRARY_COLUMN_ALBUMS].filter_regex);
-}
-
-static bool
-library_song_matches(MediaLibraryScreen *screen,
-                     NcmSong *song, NcmRegex *regex) {
-    StrBuilder text;
-    bool result;
-
-    (void)screen;
-    ASSERT(song != NULL);
-    text = ncm_format_render_string(&Config.song_library_format, song);
-    result = ncm_regex_matches(regex, text.data, text.len);
-    sb_free(&text);
-    return result;
 }
 
 static bool
@@ -3928,27 +3949,6 @@ static void
 library_destroy_callback(NcScreen *screen) {
     media_library_screen_destroy(library_from_screen(screen));
     return;
-}
-
-static bool
-library_active_item_matches(MediaLibraryScreen *screen,
-                            NcMenu *menu, int32 pos,
-                            NcmRegex *regex) {
-    void *item = nc_menu_active_item_at(menu, pos);
-
-    if (screen->active_column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
-        NcMediaLibraryAlbumRow *album = item;
-
-        if (nc_menu_position_is_separator(menu, pos)
-            || (album && album->all_tracks_entry)) {
-            return false;
-        }
-        return library_album_matches(screen, album, regex);
-    }
-    if (screen->active_column == MEDIA_LIBRARY_COLUMN_SONGS) {
-        return library_song_matches(screen, item, regex);
-    }
-    return library_tag_matches(screen, item, regex);
 }
 
 static void
