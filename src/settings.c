@@ -769,51 +769,51 @@ settings_parse_lyrics_fetchers(Configuration *config, char *value,
     return 0;
 }
 
-#define APPLY_STRING_DIR(FUNC, FIELD) \
-    static int32 \
-    FUNC(Configuration *config, char *value, int32 value_len, \
-         NcmError *ncm_error) { \
-        (void)ncm_error; \
-        return settings_string_set_directory(&config->FIELD, \
-                                             &config->FIELD##_len, \
-                                             &config->FIELD##_cap, \
-                                             value, value_len); \
+#define APPLY_STRING_DIR(FUNC, FIELD)                                          \
+    static int32                                                               \
+    FUNC(Configuration *config, char *value, int32 value_len,                  \
+         NcmError *ncm_error) {                                                \
+        (void)ncm_error;                                                       \
+        return settings_string_set_directory(&config->FIELD,                   \
+                                             &config->FIELD##_len,             \
+                                             &config->FIELD##_cap,             \
+                                             value, value_len);                \
     }
 
-#define APPLY_STRING_PATH(FUNC, FIELD) \
-    static int32 \
-    FUNC(Configuration *config, char *value, int32 value_len, \
-         NcmError *ncm_error) { \
-        (void)ncm_error; \
-        return settings_string_set_expanded(&config->FIELD, \
-                                            &config->FIELD##_len, \
-                                            &config->FIELD##_cap, \
-                                            value, value_len); \
+#define APPLY_STRING_PATH(FUNC, FIELD)                                         \
+    static int32                                                               \
+    FUNC(Configuration *config, char *value, int32 value_len,                  \
+         NcmError *ncm_error) {                                                \
+        (void)ncm_error;                                                       \
+        return settings_string_set_expanded(&config->FIELD,                    \
+                                            &config->FIELD##_len,              \
+                                            &config->FIELD##_cap,              \
+                                            value, value_len);                 \
     }
 
-#define APPLY_STRING(FUNC, FIELD) \
-    static int32 \
-    FUNC(Configuration *config, char *value, int32 value_len, \
-         NcmError *ncm_error) { \
-        (void)ncm_error; \
-        return settings_string_set(&config->FIELD, &config->FIELD##_len, \
-                                   &config->FIELD##_cap, value, value_len); \
+#define APPLY_STRING(FUNC, FIELD)                                              \
+    static int32                                                               \
+    FUNC(Configuration *config, char *value, int32 value_len,                  \
+         NcmError *ncm_error) {                                                \
+        (void)ncm_error;                                                       \
+        return settings_string_set(&config->FIELD, &config->FIELD##_len,       \
+                                   &config->FIELD##_cap, value, value_len);    \
     }
 
-#define APPLY_BOOL(FUNC, FIELD) \
-    static int32 \
-    FUNC(Configuration *config, char *value, int32 value_len, \
-         NcmError *ncm_error) { \
-        return settings_parse_bool(value, value_len, &config->FIELD, \
-                                   ncm_error); \
+#define APPLY_BOOL(FUNC, FIELD)                                                \
+    static int32                                                               \
+    FUNC(Configuration *config, char *value, int32 value_len,                  \
+         NcmError *ncm_error) {                                                \
+        return settings_parse_bool(value, value_len, &config->FIELD,           \
+                                   ncm_error);                                 \
     }
 
-#define APPLY_UINT(FUNC, FIELD) \
-    static int32 \
-    FUNC(Configuration *config, char *value, int32 value_len, \
-         NcmError *ncm_error) { \
-        return ncm_parse_int32(value, value_len, &config->FIELD, \
-                               ncm_error); \
+#define APPLY_UINT(FUNC, FIELD)                                                \
+    static int32                                                               \
+    FUNC(Configuration *config, char *value, int32 value_len,                  \
+         NcmError *ncm_error) {                                                \
+        return ncm_parse_int32(value, value_len, &config->FIELD,               \
+                               ncm_error);                                     \
     }
 
 APPLY_STRING_DIR(apply_ncmpcpp_directory, ncmpcpp_directory)
