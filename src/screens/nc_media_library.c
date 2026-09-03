@@ -3768,7 +3768,6 @@ library_collect_album_songs(
     MediaLibraryScreen *screen, NcmSongArray *songs,
     NcmError *ncm_error
 ) {
-    MediaLibrarySongQuery query;
     NcMediaLibraryAlbumRow *row;
     NcMenu *menu;
     bool any_selected;
@@ -3777,6 +3776,8 @@ library_collect_album_songs(
     menu = nc_media_library_album_menu_base(&screen->albums);
     any_selected = nc_menu_has_selected(menu);
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        MediaLibrarySongQuery query = {0};
+
         if (nc_menu_position_is_separator(menu, i)) {
             continue;
         }
@@ -3789,7 +3790,7 @@ library_collect_album_songs(
         if ((row = nc_menu_active_item_at(menu, i)) == NULL) {
             continue;
         }
-        query = (MediaLibrarySongQuery){0};
+
         library_query_from_album(screen, row, &query);
         status = library_append_query_songs(
             screen, &query, songs, ncm_error);
