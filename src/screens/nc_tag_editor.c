@@ -3793,7 +3793,6 @@ static void
 tag_editor_draw_directory(NcMenu *menu, NcWindow *window, void *item,
                           int32 pos, void *user) {
     NcMenuStringPair *pair = item;
-    StrBuilder converted;
 
     (void)menu;
     (void)pos;
@@ -3803,9 +3802,7 @@ tag_editor_draw_directory(NcMenu *menu, NcWindow *window, void *item,
     ASSERT(pair != NULL);
     ASSERT(pair->first != NULL);
 
-    converted = ncm_charset_copy(pair->first, pair->first_len);
-    nc_window_print_data(window, converted.data, converted.len);
-    sb_free(&converted);
+    nc_window_print_data(window, pair->first, pair->first_len);
     return;
 }
 
