@@ -428,9 +428,7 @@ playlist_editor_screen_set_column_ratio(PlaylistEditorScreen *screen,
 }
 
 bool
-playlist_editor_screen_can_move_to_previous_column(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_screen_can_move_to_previous_column(PlaylistEditorScreen *screen) {
     NcMenu *playlists;
 
     if (screen == NULL) {
@@ -454,9 +452,7 @@ playlist_editor_screen_can_move_to_next_column(PlaylistEditorScreen *screen) {
 }
 
 void
-playlist_editor_screen_previous_column(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_screen_previous_column(PlaylistEditorScreen *screen) {
     if (playlist_editor_screen_can_move_to_previous_column(screen)) {
         screen->active_column = PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
         playlist_editor_update_menu_highlights(screen);
@@ -538,9 +534,7 @@ playlist_editor_restore_playlist_path(PlaylistEditorScreen *screen,
 }
 
 static bool
-playlist_editor_displayed_playlist_is_current(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_displayed_playlist_is_current(PlaylistEditorScreen *screen) {
     char *path;
     int32 path_len;
 
@@ -1216,9 +1210,7 @@ playlist_editor_screen_current_content_song(
 }
 
 int32
-playlist_editor_screen_selected_playlist_count(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_screen_selected_playlist_count(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return 0;
     }
@@ -1561,9 +1553,7 @@ playlist_editor_screen_search_active(
 }
 
 void
-playlist_editor_screen_request_playlists_update(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_screen_request_playlists_update(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return;
     }
@@ -1573,9 +1563,7 @@ playlist_editor_screen_request_playlists_update(
 }
 
 void
-playlist_editor_screen_request_content_update(
-    PlaylistEditorScreen *screen
-) {
+playlist_editor_screen_request_content_update(PlaylistEditorScreen *screen) {
     if (screen == NULL) {
         return;
     }
