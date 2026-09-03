@@ -1675,14 +1675,13 @@ library_add_two_column_albums(
 int32
 media_library_tags_from_strings(MediaLibraryTagArray *tags,
                                 NcmMpdStringList *strings) {
-    MediaLibraryTagArray replacement;
+    MediaLibraryTagArray replacement = {0};
     int32 status;
 
     if ((tags == NULL) || (strings == NULL)) {
         return -EINVAL;
     }
 
-    replacement = (MediaLibraryTagArray){0};
     for (int32 i = 0; i < ncm_mpd_string_list_count(strings); i += 1) {
         NcmMpdString *string;
 
