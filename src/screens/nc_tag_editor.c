@@ -906,9 +906,8 @@ tag_editor_screen_load_songs(TagEditorScreen *screen,
     }
     nc_menu_clear_items(nc_tag_row_menu_base(&screen->tags));
     for (int32 i = 0; i < songs->len; i += 1) {
-        NcmMutableSong mutable_song;
+        NcmMutableSong mutable_song = {0};
 
-        mutable_song = (NcmMutableSong){0};
         status = ncm_mutable_song_load_originals_from_song(
             &mutable_song, &songs->items[i]);
         if (status == 0) {
