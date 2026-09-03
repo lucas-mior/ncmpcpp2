@@ -19,72 +19,41 @@ static void browser_resize(NcScreen *screen);
 static char *browser_title(NcScreen *screen);
 static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
+
 static void browser_install_menu_callbacks(BrowserScreen *screen);
-static void browser_draw_item(NcMenu *menu, NcWindow *window,
-                              void *item, int32 pos, void *user);
-static void browser_mouse_scroll(BrowserScreen *screen,
-                                 enum NcScroll where);
+static void browser_draw_item(NcMenu *menu, NcWindow *window, void *item, int32 pos, void *user);
+static void browser_mouse_scroll(BrowserScreen *screen, enum NcScroll where);
 static bool browser_item_matches_filter(NcMenu *menu, void *item, void *user);
-static void browser_activate_item(NcMenu *menu, void *item,
-                                  int32 pos, void *user);
-static void browser_set_item_selected(void *item, bool selected,
-                                      void *user);
-static int32 browser_enter_item(BrowserScreen *screen,
-                                NcmMpdItem *item);
+static void browser_activate_item(NcMenu *menu, void *item, int32 pos, void *user);
+static void browser_set_item_selected(void *item, bool selected, void *user);
+static int32 browser_enter_item(BrowserScreen *screen, NcmMpdItem *item);
 static void browser_sync_display_mode(BrowserScreen *screen);
-static bool browser_item_matches(BrowserScreen *screen,
-                                 NcmMpdItem *item,
-                                 NcmRegex *regex, bool filter);
-static bool browser_position_matches_search(NcMenu *menu, int32 pos,
-                                            void *user);
+static bool browser_item_matches(BrowserScreen *screen, NcmMpdItem *item, NcmRegex *regex, bool filter);
+static bool browser_position_matches_search(NcMenu *menu, int32 pos, void *user);
 static bool browser_directory_is_root(char *directory, int32 directory_len);
-static bool browser_path_is_parent_directory(char *directory,
-                                             int32 directory_len);
-static int32 browser_set_normalized_directory(
-    BrowserScreen *screen, char *directory, int32 directory_len);
-static int32 browser_set_parent_of_directory(
-    BrowserScreen *screen, char *directory, int32 directory_len);
-static int32 browser_load_mpd_items(BrowserScreen *screen,
-                                    NcmMpdItemArray *items);
-static int32 browser_reload_from_local(BrowserScreen *screen,
-                                       NcmError *ncm_error);
-static int32 browser_stat_local_path(char *path, int32 path_len,
-                                     NcmFsStat *out,
-                                     NcmError *ncm_error);
-static bool browser_local_path_has_supported_extension(
-    BrowserScreen *screen, char *path, int32 path_len);
-static int32 browser_make_local_song(NcmSong *song, char *path,
-                                     int32 path_len, time_t mtime);
-static int32 browser_collect_item_songs(
-    BrowserScreen *screen, NcmSongArray *songs, NcmMpdItem *item);
-static int32 browser_collect_local_directory_songs(
-    BrowserScreen *screen, NcmSongArray *songs, char *path,
-    int32 path_len, NcmError *ncm_error);
-static int32 browser_current_directory_item_path(
-    BrowserScreen *screen, NcmStringView *path, NcmError *ncm_error);
-static int32 browser_current_playlist_item_path(
-    BrowserScreen *screen, NcmStringView *path, NcmError *ncm_error);
-static int32 browser_real_path(BrowserScreen *screen,
-                               NcmStringView path,
-                               StrBuilder *real_path,
-                               NcmError *ncm_error);
-static int32 browser_delete_path_recursive(char *path,
-                                           int32 path_len,
-                                           NcmError *ncm_error);
-static bool browser_supported_extensions_contains(
-    StrBuilderArray *extensions, char *extension, int32 extension_len);
+static bool browser_path_is_parent_directory(char *directory, int32 directory_len);
+static int32 browser_set_normalized_directory(BrowserScreen *screen, char *directory, int32 directory_len);
+static int32 browser_set_parent_of_directory(BrowserScreen *screen, char *directory, int32 directory_len);
+static int32 browser_load_mpd_items(BrowserScreen *screen, NcmMpdItemArray *items);
+static int32 browser_reload_from_local(BrowserScreen *screen, NcmError *ncm_error);
+static int32 browser_stat_local_path(char *path, int32 path_len, NcmFsStat *out, NcmError *ncm_error);
+static bool browser_local_path_has_supported_extension(BrowserScreen *screen, char *path, int32 path_len);
+static int32 browser_make_local_song(NcmSong *song, char *path, int32 path_len, time_t mtime);
+static int32 browser_collect_item_songs(BrowserScreen *screen, NcmSongArray *songs, NcmMpdItem *item);
+static int32 browser_collect_local_directory_songs(BrowserScreen *screen, NcmSongArray *songs, char *path, int32 path_len, NcmError *ncm_error);
+static int32 browser_current_directory_item_path(BrowserScreen *screen, NcmStringView *path, NcmError *ncm_error);
+static int32 browser_current_playlist_item_path(BrowserScreen *screen, NcmStringView *path, NcmError *ncm_error);
+static int32 browser_real_path(BrowserScreen *screen, NcmStringView path, StrBuilder *real_path, NcmError *ncm_error);
+static int32 browser_delete_path_recursive(char *path, int32 path_len, NcmError *ncm_error);
+static bool browser_supported_extensions_contains(StrBuilderArray *extensions, char *extension, int32 extension_len);
 static int32 browser_item_sort_rank(NcmMpdItem *item);
-static int32 browser_compare_views(NcmStringView left,
-                                   NcmStringView right);
+static int32 browser_compare_views(NcmStringView left, NcmStringView right);
 static int32 browser_compare_times(time_t left, time_t right);
-static NcmStringView browser_directory_sort_view(
-    NcmMpdItem *item);
+static NcmStringView browser_directory_sort_view(NcmMpdItem *item);
 static NcmStringView browser_playlist_sort_view(NcmMpdItem *item);
 static NcmStringView browser_song_name_sort_view(NcmMpdItem *item);
-static int32 browser_locate_last_directory(
-    BrowserScreen *screen);
-static bool browser_string_views_matches(NcmStringView left,
-                                       NcmStringView right);
+static int32 browser_locate_last_directory(BrowserScreen *screen);
+static bool browser_string_views_matches(NcmStringView left, NcmStringView right);
 
 typedef struct BrowserSearchContext {
     BrowserScreen *screen;
