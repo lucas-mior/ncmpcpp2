@@ -5451,7 +5451,7 @@ action_runtime_show_artist_info(void) {
     char *media_library_artist = NULL;
     int32 media_library_artist_len = 0;
     bool has_artist = false;
-    bool success;
+    int32 status;
 
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_LASTFM)) {
         return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_LASTFM);
@@ -5476,12 +5476,12 @@ action_runtime_show_artist_info(void) {
 
     if (has_artist && (artist.len > 0)) {
         ncm_error_clear(&ncm_error);
-        success = lastfm_screen_queue_artist_info(
+        status = lastfm_screen_queue_artist_info(
             app_screen_lastfm(), artist.data, artist.len,
             Config.lastfm_preferred_language,
             Config.lastfm_preferred_language_len, &ncm_error);
         ncm_song_destroy(&song);
-        if (!success) {
+        if (status < 0) {
             return false;
         }
         if (!app_controller_is_screen_visible(app_screen_lastfm_base())) {

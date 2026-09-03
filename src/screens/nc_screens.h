@@ -662,10 +662,10 @@ void lastfm_screen_set_geometry(LastfmScreen *screen,
                                 int32 start_x, int32 width,
                                 int32 main_start_y,
                                 int32 main_height);
-bool lastfm_screen_queue_artist_info(LastfmScreen *screen,
-                                     char *artist, int32 artist_len,
-                                     char *lang, int32 lang_len,
-                                     NcmError *ncm_error);
+int32 lastfm_screen_queue_artist_info(LastfmScreen *screen,
+                                      char *artist, int32 artist_len,
+                                      char *lang, int32 lang_len,
+                                      NcmError *ncm_error);
 int32 lastfm_screen_dispatch_jobs(LastfmScreen *screen);
 void lastfm_screen_update(LastfmScreen *screen);
 char *lastfm_screen_title(LastfmScreen *screen);
@@ -1106,7 +1106,7 @@ VisualizerDataSourceHooks visualizer_data_source_system_hooks(
 void visualizer_screen_init_data_source(VisualizerScreen *screen,
                                         char *source_location,
                                         int32 source_location_len);
-bool visualizer_screen_open_data_source(VisualizerScreen *screen);
+int32 visualizer_screen_open_data_source(VisualizerScreen *screen);
 void visualizer_screen_close_data_source(VisualizerScreen *screen);
 int32 visualizer_screen_drain_data_source(VisualizerScreen *screen);
 bool visualizer_screen_find_output_id(VisualizerScreen *screen);

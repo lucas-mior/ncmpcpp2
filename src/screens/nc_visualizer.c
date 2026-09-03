@@ -422,13 +422,13 @@ visualizer_screen_init_data_source(VisualizerScreen *screen,
     return;
 }
 
-bool
+int32
 visualizer_screen_open_data_source(VisualizerScreen *screen) {
     if (screen == NULL) {
-        return false;
+        return -EINVAL;
     }
     if (screen->source_fd >= 0) {
-        return true;
+        return screen->source_fd;
     }
 
     {
@@ -445,7 +445,7 @@ visualizer_screen_open_data_source(VisualizerScreen *screen) {
 
         if (screen->source_port.len > 0) {
             if (screen->data_source_hooks.open_udp == NULL) {
-                return false;
+                return -NCM_ERROR_UNAVAILABLE;
             }
             fd = screen->data_source_hooks.open_udp(
                 screen->data_source_hooks.user,
@@ -455,7 +455,7 @@ visualizer_screen_open_data_source(VisualizerScreen *screen) {
                 screen->source_port.len);
         } else {
             if (screen->data_source_hooks.open_fifo == NULL) {
-                return false;
+                return -NCM_ERROR_UNAVAILABLE;
             }
             fd = screen->data_source_hooks.open_fifo(
                 screen->data_source_hooks.user,
@@ -463,10 +463,12 @@ visualizer_screen_open_data_source(VisualizerScreen *screen) {
                 screen->source_location.len);
         }
 
+        if (fd < 0) {
+            return fd;
+        }
         screen->source_fd = fd;
-        return fd >= 0;
+        return fd;
     }
-    return false;
 }
 
 void
@@ -1791,19 +1793,25 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
 
 static int32
 visualizer_system_open_fifo(void *user, char *location, int32 location_len) {
+    int32 error_code;
     int32 fd;
 
     (void)user;
     if ((fd = open(location, O_RDONLY | O_NONBLOCK)) < 0) {
         NcmStringFormatArg args[2];
 
+        error_code = errno;
+        if (error_code == 0) {
+            error_code = EIO;
+        }
         args[0] = ncm_string_format_arg_string(location, location_len);
-        args[1] = ncm_string_format_arg_cstring(strerror(errno));
+        args[1] = ncm_string_format_arg_cstring(strerror(error_code));
         ncm_statusbar_format(
             ncm_statusbar_message_delay_time(),
             STRLIT("Couldn't open \"%1\" for reading PCM data: %2"),
             args,
             2);
+        return -error_code;
     }
     return fd;
 }
@@ -1815,6 +1823,7 @@ visualizer_system_open_udp(void *user, char *location, int32 location_len,
     struct addrinfo *addresses;
     struct addrinfo *address;
     int32 error_code;
+    int32 status;
     int32 fd;
 
     (void)user;
@@ -1834,9 +1843,10 @@ visualizer_system_open_udp(void *user, char *location, int32 location_len,
                              STRLIT("Couldn't resolve \"%1:%2\": %3"),
                              args,
                              3);
-        return -1;
+        return -NCM_ERROR_NETWORK;
     }
 
+    status = -NCM_ERROR_NETWORK;
     fd = -1;
     for (address = addresses; address; address = address->ai_next) {
         int32 socket_flags;
@@ -1845,7 +1855,12 @@ visualizer_system_open_udp(void *user, char *location, int32 location_len,
                     address->ai_socktype,
                     address->ai_protocol);
         if (fd < 0) {
-            error("Creation of socket failed: %s\n", strerror(errno));
+            error_code = errno;
+            if (error_code == 0) {
+                error_code = EIO;
+            }
+            status = -error_code;
+            error("Creation of socket failed: %s\n", strerror(error_code));
             continue;
         }
 
@@ -1853,7 +1868,12 @@ visualizer_system_open_udp(void *user, char *location, int32 location_len,
         fcntl(fd, F_SETFL, socket_flags | O_NONBLOCK);
         error_code = bind(fd, address->ai_addr, address->ai_addrlen);
         if (error_code < 0) {
-            error("Binding a socket failed: %s\n", strerror(errno));
+            error_code = errno;
+            if (error_code == 0) {
+                error_code = EIO;
+            }
+            status = -error_code;
+            error("Binding a socket failed: %s\n", strerror(error_code));
             close(fd);
             fd = -1;
             continue;
@@ -1862,6 +1882,9 @@ visualizer_system_open_udp(void *user, char *location, int32 location_len,
     }
 
     freeaddrinfo(addresses);
+    if (fd < 0) {
+        return status;
+    }
     return fd;
 }
 
@@ -1934,16 +1957,17 @@ visualizer_system_sleep_microseconds(void *user, int32 microseconds) {
     return;
 }
 
-static bool
+static int32
 visualizer_reset_output(VisualizerScreen *screen) {
     NcmError ncm_error;
+    int32 status;
 
     if (!screen->reset_output || (screen->output_id < 0)) {
-        return true;
+        return 0;
     }
     if ((screen->data_source_hooks.disable_output == NULL)
         || (screen->data_source_hooks.enable_output == NULL)) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
 
     ncm_error_clear(&ncm_error);
@@ -1958,7 +1982,11 @@ visualizer_reset_output(VisualizerScreen *screen) {
                              STRLIT("Could not disable visualizer output: %1"),
                              &arg,
                              1);
-        return false;
+        status = ncm_error_status(&ncm_error);
+        if (status == 0) {
+            status = -NCM_ERROR_UNAVAILABLE;
+        }
+        return status;
     }
     if (screen->data_source_hooks.sleep_microseconds) {
         screen->data_source_hooks.sleep_microseconds(
@@ -1975,11 +2003,15 @@ visualizer_reset_output(VisualizerScreen *screen) {
                              STRLIT("Could not enable visualizer output: %1"),
                              &arg,
                              1);
-        return false;
+        status = ncm_error_status(&ncm_error);
+        if (status == 0) {
+            status = -NCM_ERROR_UNAVAILABLE;
+        }
+        return status;
     }
 
     screen->reset_output = false;
-    return true;
+    return 0;
 }
 
 static int32
@@ -2048,7 +2080,7 @@ visualizer_switch_to_callback(NcScreen *screen) {
     VisualizerScreen *visualizer = visualizer_from_screen(screen);
 
     if (visualizer->source_fd < 0) {
-        if (visualizer_screen_open_data_source(visualizer)) {
+        if (visualizer_screen_open_data_source(visualizer) >= 0) {
             (void)visualizer_screen_find_output_id(visualizer);
         }
     }
@@ -2093,7 +2125,7 @@ visualizer_update_callback(NcScreen *screen) {
     if (visualizer->source_fd < 0) {
         return;
     }
-    if (!visualizer_reset_output(visualizer)) {
+    if (visualizer_reset_output(visualizer) < 0) {
         return;
     }
 
