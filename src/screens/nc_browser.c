@@ -421,7 +421,11 @@ browser_screen_set_current_directory(BrowserScreen *screen,
         screen->title_scroll_beginning = 0;
         screen->redraw_header = true;
     }
-    return sb_set(&screen->current_directory, directory, directory_len);
+    status = sb_set(&screen->current_directory, directory, directory_len);
+    if (status < 0) {
+        return status;
+    }
+    return 0;
 }
 
 NcmStringView
@@ -591,15 +595,16 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
 
     status = 0;
     str_builder_array_init(&extensions);
-    for (int32 i = 0; status == 0 && (i < strings.count); i += 1) {
+    for (int32 i = 0; status >= 0 && (i < strings.count); i += 1) {
         string = &strings.items[i];
         status = browser_supported_extensions_add(
             &extensions, string->value, string->value_len);
     }
 
-    if (status == 0) {
+    if (status >= 0) {
         str_builder_array_move(&screen->supported_extensions, &extensions);
         ncm_error_clear(ncm_error);
+        status = 0;
     }
     str_builder_array_destroy(&extensions);
     ncm_mpd_string_list_destroy(&strings);
@@ -2051,6 +2056,7 @@ static int32
 browser_collect_item_songs(BrowserScreen *screen,
                            NcmSongArray *songs, NcmMpdItem *item) {
     NcmStringView path;
+    int32 status;
 
     ASSERT(screen != NULL);
     ASSERT(songs != NULL);
@@ -2071,7 +2077,11 @@ browser_collect_item_songs(BrowserScreen *screen,
         return browser_collect_mpd_directory_songs(
             songs, path.data, path.len);
     case NCM_MPD_ITEM_SONG:
-        return ncm_song_array_append_copy(songs, ncm_mpd_item_song(item));
+        status = ncm_song_array_append_copy(songs, ncm_mpd_item_song(item));
+        if (status < 0) {
+            return status;
+        }
+        return 0;
     case NCM_MPD_ITEM_PLAYLIST:
     case NCM_MPD_ITEM_COUNT:
         return 0;
@@ -2101,8 +2111,11 @@ browser_collect_mpd_directory_songs(
     }
     status = ncm_mpd_client_get_directory_recursive(
         &global_mpd, directory, &source, &ncm_error);
-    for (int32 i = 0; status == 0 && (i < source.count); i += 1) {
+    for (int32 i = 0; status >= 0 && (i < source.count); i += 1) {
         status = ncm_song_array_append_copy(songs, &source.items[i]);
+    }
+    if (status > 0) {
+        status = 0;
     }
     ncm_mpd_song_list_destroy(&source);
     return status;
@@ -2191,6 +2204,9 @@ browser_collect_local_entry_songs(
                                          (time_t)stat.mtime);
         if (status == 0) {
             status = ncm_song_array_append_copy(songs, &song);
+            if (status > 0) {
+                status = 0;
+            }
         }
         ncm_song_destroy(&song);
     }
@@ -2693,17 +2709,20 @@ browser_supported_extensions_add(StrBuilderArray *extensions,
 
     if ((extension_len <= 0) || (extension[0] != '.')) {
         status = sb_set(&buffer, STRLIT("."));
-        if (status == 0) {
+        if (status >= 0) {
             SB_APPEND(&buffer, extension, extension_len);
         }
     } else {
         status = sb_set(&buffer, extension, extension_len);
     }
 
-    if ((status == 0)
+    if ((status >= 0)
         && !browser_supported_extensions_contains(
             extensions, buffer.data, buffer.len)) {
         status = str_builder_array_append_copy(extensions, &buffer);
+    }
+    if (status > 0) {
+        status = 0;
     }
     sb_free(&buffer);
     return status;
