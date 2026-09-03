@@ -6306,11 +6306,10 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
                                     "Selection removed");
         return 0;
     case NCM_ACTION_ADD_SELECTED_ITEMS: {
-        NcmSongArray songs;
+        NcmSongArray songs = {0};
         NcmError ncm_error;
         int32 status;
 
-        songs = (NcmSongArray){0};
         if ((action_runtime_selected_songs(&songs) < 0)
             || (songs.len <= 0)) {
             ncm_song_array_destroy(&songs);
