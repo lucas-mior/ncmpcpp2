@@ -44,14 +44,6 @@ static int32 browser_compare_times(time_t left, time_t right);
 static NcmStringView browser_directory_sort_view(NcmMpdItem *item);
 static NcmStringView browser_playlist_sort_view(NcmMpdItem *item);
 static NcmStringView browser_song_name_sort_view(NcmMpdItem *item);
-static int32 browser_locate_last_directory(BrowserScreen *screen);
-static bool browser_string_views_matches(NcmStringView left, NcmStringView right);
-
-typedef struct BrowserSearchContext {
-    BrowserScreen *screen;
-    NcmRegex *regex;
-} BrowserSearchContext;
-
 #define NC_SCREEN_IMPL_TYPE BrowserScreen
 #define NC_SCREEN_IMPL_PREFIX browser
 #define NC_SCREEN_IMPL_PUBLIC_PREFIX browser_screen
@@ -69,6 +61,14 @@ typedef struct BrowserSearchContext {
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
+
+static int32 browser_locate_last_directory(BrowserScreen *screen);
+static bool browser_string_views_matches(NcmStringView left, NcmStringView right);
+
+typedef struct BrowserSearchContext {
+    BrowserScreen *screen;
+    NcmRegex *regex;
+} BrowserSearchContext;
 
 static void
 browser_sync_display_mode(BrowserScreen *screen) {
@@ -203,6 +203,81 @@ browser_set_item_selected(void *item, bool selected, void *user) {
     (void)selected;
     (void)user;
     return;
+}
+
+static bool
+browser_item_matches(BrowserScreen *screen, NcmMpdItem *item,
+                     NcmRegex *regex, bool filter) {
+    NcmStringView path = {0};
+    StrBuilder rendered = {0};
+    int32 basename;
+    int32 status = 0;
+
+    ASSERT(screen != NULL);
+    if (regex == NULL) {
+        return false;
+    }
+    if (browser_screen_item_is_parent(item)) {
+        return filter;
+    }
+    if (item == NULL) {
+        return false;
+    }
+
+    browser_sync_display_mode(screen);
+    sb_clear(&screen->item_text_buffer);
+    switch (ncm_mpd_item_kind(item)) {
+    case NCM_MPD_ITEM_DIRECTORY:
+        if (!ncm_directory_has_path_view(
+            ncm_mpd_item_directory(item), &path)) {
+            status = -EINVAL;
+            break;
+        }
+        basename = ncm_path_basename_start(path.data, path.len);
+        sb_append_byte(&screen->item_text_buffer, '[');
+        SB_APPEND(&screen->item_text_buffer, path.data + basename,
+                  path.len - basename);
+        sb_append_byte(&screen->item_text_buffer, ']');
+        break;
+    case NCM_MPD_ITEM_SONG:
+        if (screen->active_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
+            rendered = ncm_format_render_string(
+                &Config.song_columns_mode_format,
+                ncm_mpd_item_song(item));
+        } else {
+            rendered = ncm_format_render_string(
+                &Config.song_list_format, ncm_mpd_item_song(item));
+        }
+        sb_move(&screen->item_text_buffer, &rendered);
+        sb_free(&rendered);
+        break;
+    case NCM_MPD_ITEM_PLAYLIST:
+        if (Config.browser_playlist_prefix.data
+            && (Config.browser_playlist_prefix.len > 0)) {
+            SB_APPEND(&screen->item_text_buffer,
+                      Config.browser_playlist_prefix.data,
+                      Config.browser_playlist_prefix.len);
+        }
+        if (!ncm_playlist_has_path_view(
+            ncm_mpd_item_playlist(item), &path)) {
+            status = -EINVAL;
+            break;
+        }
+        basename = ncm_path_basename_start(path.data, path.len);
+        SB_APPEND(&screen->item_text_buffer, path.data + basename,
+                  path.len - basename);
+        break;
+    case NCM_MPD_ITEM_COUNT:
+        break;
+    default:
+        status = -EINVAL;
+        break;
+    }
+    if (status < 0) {
+        return false;
+    }
+    return ncm_regex_matches(regex, screen->item_text_buffer.data,
+                            screen->item_text_buffer.len);
 }
 
 static bool
@@ -1598,81 +1673,6 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
         }
     }
     return;
-}
-
-static bool
-browser_item_matches(BrowserScreen *screen, NcmMpdItem *item,
-                     NcmRegex *regex, bool filter) {
-    NcmStringView path = {0};
-    StrBuilder rendered = {0};
-    int32 basename;
-    int32 status = 0;
-
-    ASSERT(screen != NULL);
-    if (regex == NULL) {
-        return false;
-    }
-    if (browser_screen_item_is_parent(item)) {
-        return filter;
-    }
-    if (item == NULL) {
-        return false;
-    }
-
-    browser_sync_display_mode(screen);
-    sb_clear(&screen->item_text_buffer);
-    switch (ncm_mpd_item_kind(item)) {
-    case NCM_MPD_ITEM_DIRECTORY:
-        if (!ncm_directory_has_path_view(
-            ncm_mpd_item_directory(item), &path)) {
-            status = -EINVAL;
-            break;
-        }
-        basename = ncm_path_basename_start(path.data, path.len);
-        sb_append_byte(&screen->item_text_buffer, '[');
-        SB_APPEND(&screen->item_text_buffer, path.data + basename,
-                  path.len - basename);
-        sb_append_byte(&screen->item_text_buffer, ']');
-        break;
-    case NCM_MPD_ITEM_SONG:
-        if (screen->active_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
-            rendered = ncm_format_render_string(
-                &Config.song_columns_mode_format,
-                ncm_mpd_item_song(item));
-        } else {
-            rendered = ncm_format_render_string(
-                &Config.song_list_format, ncm_mpd_item_song(item));
-        }
-        sb_move(&screen->item_text_buffer, &rendered);
-        sb_free(&rendered);
-        break;
-    case NCM_MPD_ITEM_PLAYLIST:
-        if (Config.browser_playlist_prefix.data
-            && (Config.browser_playlist_prefix.len > 0)) {
-            SB_APPEND(&screen->item_text_buffer,
-                      Config.browser_playlist_prefix.data,
-                      Config.browser_playlist_prefix.len);
-        }
-        if (!ncm_playlist_has_path_view(
-            ncm_mpd_item_playlist(item), &path)) {
-            status = -EINVAL;
-            break;
-        }
-        basename = ncm_path_basename_start(path.data, path.len);
-        SB_APPEND(&screen->item_text_buffer, path.data + basename,
-                  path.len - basename);
-        break;
-    case NCM_MPD_ITEM_COUNT:
-        break;
-    default:
-        status = -EINVAL;
-        break;
-    }
-    if (status < 0) {
-        return false;
-    }
-    return ncm_regex_matches(regex, screen->item_text_buffer.data,
-                            screen->item_text_buffer.len);
 }
 
 static bool
