@@ -867,7 +867,6 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
                                           NcmError *ncm_error) {
     NcmMpdStringList strings = {0};
     StrBuilderArray extensions = {0};
-    NcmMpdString *string;
     int32 status;
 
     if ((screen == NULL) || (client == NULL)) {
@@ -885,13 +884,11 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
     status = 0;
     str_builder_array_init(&extensions);
     for (int32 i = 0; status >= 0 && (i < strings.count); i += 1) {
+        NcmMpdString *string = &strings.items[i];
         StrBuilder buffer = {0};
-        char *extension;
-        int32 extension_len;
+        char *extension = string->value;
+        int32 extension_len = string->value_len;
 
-        string = &strings.items[i];
-        extension = string->value;
-        extension_len = string->value_len;
         if (extension == NULL) {
             extension = "";
             extension_len = 0;
