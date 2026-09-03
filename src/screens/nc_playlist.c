@@ -543,9 +543,8 @@ playlist_screen_current_song(PlaylistScreen *screen,
 
 
 int32
-playlist_screen_update_current_mutable_song(
-    PlaylistScreen *screen, NcmMutableSong *song
-) {
+playlist_screen_update_current_mutable_song(PlaylistScreen *screen,
+                                            NcmMutableSong *song) {
     NcmSong replacement;
     NcmSong *current;
     NcMenu *menu;
