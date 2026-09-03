@@ -1482,6 +1482,7 @@ library_sort_songs(NcmSongArray *songs) {
             tmp = songs->items[j];
             songs->items[j] = songs->items[j - 1];
             songs->items[j - 1] = tmp;
+
             j -= 1;
         }
     }
