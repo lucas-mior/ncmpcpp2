@@ -2173,16 +2173,12 @@ int32 tag_editor_screen_search(
 int32 tag_editor_screen_prepare_parser_rows(
     TagEditorScreen *screen, enum TagEditorParserMode mode,
     char *pattern, int32 pattern_len);
-void tag_editor_screen_show_parser_dialog(
-    TagEditorScreen *screen);
+void tag_editor_screen_show_parser_dialog(TagEditorScreen *screen);
 void tag_editor_screen_show_parser_actions(
     TagEditorScreen *screen, enum TagEditorParserMode mode);
-void tag_editor_screen_show_parser_legend(
-    TagEditorScreen *screen);
-void tag_editor_screen_show_parser_preview(
-    TagEditorScreen *screen);
-void tag_editor_screen_close_parser(
-    TagEditorScreen *screen);
+void tag_editor_screen_show_parser_legend(TagEditorScreen *screen);
+void tag_editor_screen_show_parser_preview(TagEditorScreen *screen);
+void tag_editor_screen_close_parser(TagEditorScreen *screen);
 int32 tag_editor_parse_filename(NcmMutableSong *song, char *mask,
                                 int32 mask_len, bool preview,
                                 StrBuilder *preview_buffer);
