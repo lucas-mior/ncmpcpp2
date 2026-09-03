@@ -3507,10 +3507,10 @@ library_album_filter(NcMenu *menu, void *item, void *user) {
 
 static bool
 library_song_filter(NcMenu *menu, void *item, void *user) {
-    MediaLibraryScreen *screen;
+    MediaLibraryScreen *screen = user;
 
     (void)menu;
-    screen = user;
+
     return library_song_matches(
         screen, item,
         &screen->column_state[MEDIA_LIBRARY_COLUMN_SONGS].filter_regex);
