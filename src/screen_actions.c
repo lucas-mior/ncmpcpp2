@@ -155,14 +155,12 @@ current_screen_clear_current_search_constraint(void) {
         return;
     }
     if (current_screen_is(NC_SCREEN_TYPE_MEDIA_LIBRARY)) {
-        media_library_screen_clear_search(
-            app_screen_media_library());
+        media_library_screen_clear_search(app_screen_media_library());
         return;
     }
     if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)) {
-        PlaylistEditorScreen *screen;
+        PlaylistEditorScreen *screen = app_screen_playlist_editor();
 
-        screen = app_screen_playlist_editor();
         if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
             screen->content_search_enabled = false;
             sb_clear(&screen->content_search_constraint);
