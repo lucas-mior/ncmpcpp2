@@ -55,7 +55,6 @@ int32 ncm_error_ok(NcmError *ncm_error);
 /* c/ncm_tags.h */
 #include <mpd/tag.h>
 
-
 struct mpd_song;
 
 #define ENUM_NAME NcmTagsField
@@ -109,7 +108,6 @@ int32 ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
 /* c/ncm_type_conversions.h */
 #include <mpd/tag.h>
 
-
 #define ENUM_NAME NcmItemType
 #define ENUM_PREFIX_ NCM_ITEM_
 #define ENUM_BITFLAGS 0
@@ -158,7 +156,6 @@ char *ncm_tags_field_name(enum NcmTagsField field);
 
 /* c/ncm_song.h */
 #include <mpd/tag.h>
-
 
 struct mpd_song;
 
@@ -748,7 +745,6 @@ NCM_ARRAY_DECLARE_APPEND(ncm_string_view_array,
                          NcmStringViewArray,
                          NcmStringView)
 
-
 NCM_ARRAY_DECLARE_TYPE(NcmSongArray, NcmSong)
 NCM_ARRAY_DECLARE_CLEAR(ncm_song_array, NcmSongArray)
 NCM_ARRAY_DECLARE_DESTROY(ncm_song_array, NcmSongArray)
@@ -799,7 +795,6 @@ NCM_ARRAY_DECLARE_APPEND_COPY(ncm_mpd_item_array,
 /* c/ncm_regex.h */
 #include <regex.h>
 
-
 #define NCM_REGEX_EXTENDED 0x01u
 #define NCM_REGEX_ICASE    0x02u
 #define NCM_REGEX_LITERAL  0x04u
@@ -829,7 +824,6 @@ int32 ncm_regex_for_each_match(NcmRegex *regex,
 
 /* c/ncm_mpd_connection.h */
 #include <mpd/client.h>
-
 
 typedef struct NcmMpdConnection {
     struct mpd_connection *mpd;
