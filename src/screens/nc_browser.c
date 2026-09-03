@@ -21,8 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static void browser_sync_display_mode(BrowserScreen *screen);
-static bool browser_item_matches(BrowserScreen *screen, NcmMpdItem *item, NcmRegex *regex, bool filter);
 static bool browser_position_matches_search(NcMenu *menu, int32 pos, void *user);
 static bool browser_directory_is_root(char *directory, int32 directory_len);
 static bool browser_path_is_parent_directory(char *directory, int32 directory_len);
@@ -71,6 +69,13 @@ typedef struct BrowserSearchContext {
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
+
+static void
+browser_sync_display_mode(BrowserScreen *screen) {
+    ASSERT(screen != NULL);
+    browser_screen_set_display_mode(screen, Config.browser_display_mode);
+    return;
+}
 
 static void
 browser_draw_item(NcMenu *menu, NcWindow *window,
@@ -177,19 +182,6 @@ browser_enter_item(BrowserScreen *screen, NcmMpdItem *item) {
         screen, directory->path, directory->path_len);
 }
 
-static bool
-browser_item_matches_filter(NcMenu *menu, void *item, void *user) {
-    BrowserScreen *screen = user;
-
-    (void)menu;
-
-    ASSERT(screen != NULL);
-    if (!screen->filter_enabled) {
-        return true;
-    }
-    return browser_item_matches(screen, item, &screen->filter_regex, true);
-}
-
 static void
 browser_activate_item(NcMenu *menu, void *item, int32 pos, void *user) {
     BrowserScreen *screen = user;
@@ -211,6 +203,19 @@ browser_set_item_selected(void *item, bool selected, void *user) {
     (void)selected;
     (void)user;
     return;
+}
+
+static bool
+browser_item_matches_filter(NcMenu *menu, void *item, void *user) {
+    BrowserScreen *screen = user;
+
+    (void)menu;
+
+    ASSERT(screen != NULL);
+    if (!screen->filter_enabled) {
+        return true;
+    }
+    return browser_item_matches(screen, item, &screen->filter_regex, true);
 }
 
 static void
@@ -1592,13 +1597,6 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
             browser_mouse_scroll(browser, NC_SCROLL_UP);
         }
     }
-    return;
-}
-
-static void
-browser_sync_display_mode(BrowserScreen *screen) {
-    ASSERT(screen != NULL);
-    browser_screen_set_display_mode(screen, Config.browser_display_mode);
     return;
 }
 
