@@ -481,30 +481,23 @@ tag_editor_update_titles(TagEditorScreen *screen,
     sb_clear(&screen->parser_helper_title);
 
     if (Config.titles_visibility) {
-        SB_APPEND(&screen->directories_title,
-                  "Directories");
-        SB_APPEND(&screen->tag_types_title,
-                  "Tag types");
+        SB_APPEND(&screen->directories_title, "Directories");
+        SB_APPEND(&screen->tag_types_title, "Tag types");
         SB_APPEND(&screen->tags_title, "Tags");
         if (screen->parser_mode
             == TAG_EDITOR_PARSER_TAGS_FROM_FILENAME) {
-            SB_APPEND(&screen->parser_title,
-                      "Get tags from filename");
+            SB_APPEND(&screen->parser_title, "Get tags from filename");
         } else if (screen->parser_mode
                    == TAG_EDITOR_PARSER_RENAME_FILES) {
-            SB_APPEND(&screen->parser_title,
-                      "Rename files");
+            SB_APPEND(&screen->parser_title, "Rename files");
         } else {
-            SB_APPEND(&screen->parser_title,
-                      "Pattern");
+            SB_APPEND(&screen->parser_title, "Pattern");
         }
         if ((screen->active_focus == TAG_EDITOR_FOCUS_PARSER_LEGEND)
             || !screen->parser_preview_enabled) {
-            SB_APPEND(&screen->parser_helper_title,
-                      "Legend");
+            SB_APPEND(&screen->parser_helper_title, "Legend");
         } else {
-            SB_APPEND(&screen->parser_helper_title,
-                      "Preview");
+            SB_APPEND(&screen->parser_helper_title, "Preview");
         }
     }
 
@@ -2620,8 +2613,8 @@ tag_editor_screen_prepare_parser_rows(TagEditorScreen *screen,
 
         SB_APPEND(&row, "Pattern: ");
         SB_APPEND(&row, screen->pattern.data, screen->pattern.len);
-        status = tag_editor_append_parser_action_label(
-            screen, row.data, row.len);
+        status = tag_editor_append_parser_action_label(screen,
+                                                       row.data, row.len);
         sb_free(&row);
     }
     if (status < 0) {
@@ -2941,8 +2934,8 @@ tag_editor_parse_filename(NcmMutableSong *song, char *mask,
                 sb_append_byte(preview_buffer, '%');
                 sb_append_byte(preview_buffer, tag_char);
                 SB_APPEND(preview_buffer, ": ");
-                SB_APPEND(preview_buffer, file.data + file_pos,
-                          value_end - file_pos);
+                SB_APPEND(preview_buffer,
+                          file.data + file_pos, value_end - file_pos);
                 sb_append_byte(preview_buffer, '\n');
             } else {
                 status = ncm_mutable_song_set_tags(
