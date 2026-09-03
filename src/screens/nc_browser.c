@@ -1738,11 +1738,10 @@ browser_screen_rename_current_directory(
         StrBuilder old_real_path = {0};
         StrBuilder new_real_path = {0};
 
-        status = browser_real_path(
-            screen, old_path, &old_real_path, ncm_error);
+        status = browser_real_path(screen, old_path, &old_real_path, ncm_error);
         if (status == 0) {
-            status = browser_real_path(
-                screen, new_path_view, &new_real_path, ncm_error);
+            status = browser_real_path(screen, new_path_view, &new_real_path,
+                                       ncm_error);
         }
         if (status == 0) {
             status = ncm_fs_rename(
