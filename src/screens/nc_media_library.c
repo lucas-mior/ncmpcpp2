@@ -109,7 +109,7 @@ library_mpd_list_all_songs(void *user, NcmMpdSongList *songs,
 
 static int32
 library_mpd_list_tags(void *user, enum mpd_tag_type tag_type,
-                      NcmMpdStringList *tags, NcmError *ncm_error) {
+                      NcmStringViewList *tags, NcmError *ncm_error) {
     NcmMpdClient *client;
 
     if ((client = user) == NULL) {
@@ -1413,7 +1413,7 @@ library_song_has_first_tag(NcmSong *song, enum mpd_tag_type tag,
 
 int32
 media_library_tags_from_strings(MediaLibraryTagArray *tags,
-                                NcmMpdStringList *strings) {
+                                NcmStringViewList *strings) {
     MediaLibraryTagArray replacement = {0};
     int32 status;
 
@@ -1422,18 +1422,16 @@ media_library_tags_from_strings(MediaLibraryTagArray *tags,
     }
 
     for (int32 i = 0; i < ncm_mpd_string_list_count(strings); i += 1) {
-        NcmMpdString *string;
+        NcmStringView *string;
 
         if ((string = ncm_mpd_string_list_at(strings, i)) == NULL) {
             media_library_tag_array_destroy(&replacement);
             return -EINVAL;
         }
-        if (library_find_tag(&replacement, string->value,
-                             string->value_len) >= 0) {
+        if (library_find_tag(&replacement, string->data, string->len) >= 0) {
             continue;
         }
-        status = library_append_tag(
-            &replacement, string->value, string->value_len, 0);
+        status = library_append_tag(&replacement, string->data, string->len, 0);
         if (status < 0) {
             media_library_tag_array_destroy(&replacement);
             return status;
@@ -2602,7 +2600,7 @@ media_library_screen_update(MediaLibraryScreen *screen,
 
     if (library_has_pending_tags(screen)) {
         MediaLibraryTagArray tags = {0};
-        NcmMpdStringList strings = {0};
+        NcmStringViewList strings = {0};
         NcmMpdSongList songs = {0};
         int32 status;
 
@@ -3088,7 +3086,7 @@ library_move_to_album(MediaLibraryScreen *screen,
 int32
 media_library_screen_list_tags(
     MediaLibraryScreen *screen, enum mpd_tag_type tag_type,
-    NcmMpdStringList *tags, NcmError *ncm_error
+    NcmStringViewList *tags, NcmError *ncm_error
 ) {
     if ((screen == NULL) || (screen->hooks.list_tags == NULL)) {
         return ncm_error_set_status(ncm_error, -ENOSYS,
