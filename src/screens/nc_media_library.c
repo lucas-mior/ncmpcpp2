@@ -4018,8 +4018,7 @@ library_mouse_select(
         library_restart_update_timer(screen);
         nc_screen_request_update(&screen->screen);
     } else if (column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
-        nc_menu_clear_items(
-            nc_media_library_song_menu_base(&screen->songs));
+        nc_menu_clear_items(nc_media_library_song_menu_base(&screen->songs));
         screen->songs_update_request = true;
         library_restart_update_timer(screen);
         nc_screen_request_update(&screen->screen);
