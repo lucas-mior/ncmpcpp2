@@ -3448,14 +3448,13 @@ library_title(NcScreen *screen) {
 
 static void
 library_update(NcScreen *screen) {
-    MediaLibraryScreen *library;
+    MediaLibraryScreen *library = library_from_screen(screen);
     NcmError ncm_error;
-    bool update_due;
+    bool update_due = library_has_update_due(library);
     int32 status;
 
-    library = library_from_screen(screen);
-    update_due = library_has_update_due(library);
     ncm_error_clear(&ncm_error);
+
     status = media_library_screen_update(library, &ncm_error);
     if (status < 0) {
         if (ncm_error_is_set(&ncm_error)) {
