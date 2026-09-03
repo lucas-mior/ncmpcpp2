@@ -1154,8 +1154,7 @@ media_library_screen_format_tag_row(
     }
     if ((row->tag == NULL) || (row->tag_len <= 0)) {
         if (Config.empty_tag && (Config.empty_tag_len > 0)) {
-            SB_APPEND(output, Config.empty_tag,
-                      Config.empty_tag_len);
+            SB_APPEND(output, Config.empty_tag, Config.empty_tag_len);
         }
         return;
     }
@@ -1188,8 +1187,7 @@ media_library_screen_format_album_row(
         if ((row->tag == NULL) || (row->tag_len <= 0)) {
             if (Config.empty_tag
                 && (Config.empty_tag_len > 0)) {
-                SB_APPEND(&raw, Config.empty_tag,
-                          Config.empty_tag_len);
+                SB_APPEND(&raw, Config.empty_tag, Config.empty_tag_len);
             }
         } else {
             SB_APPEND(&raw, row->tag, row->tag_len);
@@ -3516,17 +3514,15 @@ library_print_add_status(MediaLibraryScreen *screen,
             }
             SB_APPEND(&message, "\" added");
         } else {
-            SB_APPEND(&message,
-                      "Songs from album \"");
+            SB_APPEND(&message, "Songs from album \"");
             if (album && album->album) {
-                SB_APPEND(&message, album->album,
-                          album->album_len);
+                SB_APPEND(&message, album->album, album->album_len);
             }
             SB_APPEND(&message, "\" added");
         }
-        SB_APPEND(&message, ncm_helpers_with_errors(result),
-                  optional_strlen32(
-                      ncm_helpers_with_errors(result)));
+        SB_APPEND(&message,
+                  ncm_helpers_with_errors(result),
+                  optional_strlen32(ncm_helpers_with_errors(result)));
     } else if (result && (songs->len == 1)) {
         rendered = ncm_format_render_string(&Config.song_status_format,
                                             &songs->items[0]);
@@ -3535,9 +3531,9 @@ library_print_add_status(MediaLibraryScreen *screen,
         sb_free(&rendered);
     } else if (result) {
         SB_APPEND(&message, "Songs added");
-        SB_APPEND(&message, ncm_helpers_with_errors(result),
-                  optional_strlen32(
-                      ncm_helpers_with_errors(result)));
+        SB_APPEND(&message,
+                  ncm_helpers_with_errors(result),
+                  optional_strlen32(ncm_helpers_with_errors(result)));
     } else {
         sb_free(&message);
         return;
