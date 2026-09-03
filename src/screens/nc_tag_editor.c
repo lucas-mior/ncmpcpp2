@@ -866,7 +866,7 @@ int32
 tag_editor_screen_add_directory(TagEditorScreen *screen,
                                 char *label, int32 label_len,
                                 char *path, int32 path_len) {
-    NcMenuStringPair pair;
+    NcMenuStringPair pair = {0};
     StrBuilder first = {0};
     StrBuilder second = {0};
     int32 status;
@@ -874,7 +874,7 @@ tag_editor_screen_add_directory(TagEditorScreen *screen,
     if (screen == NULL) {
         return -EINVAL;
     }
-    pair = (NcMenuStringPair){0};
+
     status = sb_set(&first, label, label_len);
     if (status >= 0) {
         status = sb_set(&second, path, path_len);
