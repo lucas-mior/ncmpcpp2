@@ -471,7 +471,7 @@ playlist_editor_screen_next_column(PlaylistEditorScreen *screen) {
 
 static bool
 playlist_editor_has_current_playlist_path(PlaylistEditorScreen *screen,
-                                      char **path, int32 *path_len) {
+                                          char **path, int32 *path_len) {
     NcmPlaylist *playlist;
 
     ASSERT(path != NULL);
