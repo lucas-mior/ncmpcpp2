@@ -4800,6 +4800,7 @@ tag_editor_build_parser_legend(TagEditorScreen *screen) {
         return -EINVAL;
     }
     sb_clear(&screen->parser_legend);
+
     SB_APPEND(&screen->parser_legend, "%a - artist\n");
     SB_APPEND(&screen->parser_legend, "%A - album artist\n");
     SB_APPEND(&screen->parser_legend, "%t - title\n");
