@@ -1020,10 +1020,9 @@ playlist_title(NcScreen *screen) {
 
 static void
 playlist_update(NcScreen *screen) {
-    PlaylistScreen *playlist;
+    PlaylistScreen *playlist = playlist_from_screen(screen);
     int32 delay;
 
-    playlist = playlist_from_screen(screen);
     if (!playlist_screen_is_highlighting(playlist)) {
         return;
     }
