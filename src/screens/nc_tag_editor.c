@@ -54,10 +54,6 @@ static void tag_editor_destroy_callback(NcScreen *screen);
 static void tag_editor_mouse_callback(NcScreen *, MEVENT);
 
 // declarations to delete
-static void tag_editor_draw_directory(NcMenu *, NcWindow *, void *, int32, void *);
-static NcMenuDisplayCallbacks tag_editor_tag_display_callbacks( TagEditorScreen *);
-static bool tag_editor_current_directory_path(TagEditorScreen *, char **, int32 *);
-static void tag_editor_append_formatted_color_end(NcBuffer *, NcFormattedColor *);
 static void tag_editor_draw_string(NcMenu *, NcWindow *, void *, int32, void *);
 static void tag_editor_mouse_scroll_menu(NcMenu *, NcWindow *, enum NcScroll);
 static void tag_editor_append_formatted_color(NcBuffer *, NcFormattedColor *);
@@ -446,6 +442,26 @@ tag_editor_screen_clear_stale_tags(TagEditorScreen *screen) {
     screen->last_known_tag_count = 0;
     tag_editor_update_titles(screen, true);
     return;
+}
+
+static bool
+tag_editor_current_directory_path(TagEditorScreen *screen,
+                                  char **path, int32 *path_len) {
+    NcMenuStringPair *pair;
+
+    ASSERT(screen != NULL);
+    ASSERT(path != NULL);
+    ASSERT(path_len != NULL);
+
+    *path = NULL;
+    *path_len = 0;
+    if (((pair = nc_editor_pair_menu_current(&screen->directories)) == NULL)
+        || (pair->second == NULL)) {
+        return false;
+    }
+    *path = pair->second;
+    *path_len = pair->second_len;
+    return true;
 }
 
 void
@@ -1573,6 +1589,23 @@ tag_editor_compile_constraint(NcmRegex *regex, char *pattern,
     return ncm_error_ok(ncm_error);
 }
 
+static void
+tag_editor_draw_directory(NcMenu *menu, NcWindow *window, void *item,
+                          int32 pos, void *user) {
+    NcMenuStringPair *pair = item;
+
+    (void)menu;
+    (void)pos;
+    (void)user;
+
+    ASSERT(window != NULL);
+    ASSERT(pair != NULL);
+    ASSERT(pair->first != NULL);
+
+    nc_window_print_data(window, pair->first, pair->first_len);
+    return;
+}
+
 static NcMenuDisplayCallbacks
 tag_editor_directory_display_callbacks(TagEditorScreen *screen) {
     NcMenuDisplayCallbacks callbacks = {0};
@@ -1621,6 +1654,17 @@ tag_editor_screen_apply_directory_filter(TagEditorScreen *screen,
     nc_menu_apply_filter(nc_editor_pair_menu_base(&screen->directories));
     tag_editor_update_titles(screen, true);
     return ncm_error_ok(ncm_error);
+}
+
+static NcMenuDisplayCallbacks
+tag_editor_tag_display_callbacks(TagEditorScreen *screen) {
+    NcMenuDisplayCallbacks callbacks = {0};
+
+    callbacks.draw = tag_editor_draw_tag;
+    callbacks.matches_filter = tag_editor_tag_filter;
+    callbacks.user = screen;
+
+    return callbacks;
 }
 
 int32
@@ -3537,26 +3581,6 @@ tag_editor_observe_current_directory(TagEditorScreen *screen) {
     return;
 }
 
-static bool
-tag_editor_current_directory_path(TagEditorScreen *screen,
-                                  char **path, int32 *path_len) {
-    NcMenuStringPair *pair;
-
-    ASSERT(screen != NULL);
-    ASSERT(path != NULL);
-    ASSERT(path_len != NULL);
-
-    *path = NULL;
-    *path_len = 0;
-    if (((pair = nc_editor_pair_menu_current(&screen->directories)) == NULL)
-        || (pair->second == NULL)) {
-        return false;
-    }
-    *path = pair->second;
-    *path_len = pair->second_len;
-    return true;
-}
-
 static void
 tag_editor_layout(TagEditorScreen *screen) {
     int32 separator_width;
@@ -3849,34 +3873,6 @@ tag_editor_refresh_menu(NcWindow *window, NcMenu *menu) {
     return;
 }
 
-static NcMenuDisplayCallbacks
-tag_editor_tag_display_callbacks(TagEditorScreen *screen) {
-    NcMenuDisplayCallbacks callbacks = {0};
-
-    callbacks.draw = tag_editor_draw_tag;
-    callbacks.matches_filter = tag_editor_tag_filter;
-    callbacks.user = screen;
-
-    return callbacks;
-}
-
-static void
-tag_editor_draw_directory(NcMenu *menu, NcWindow *window, void *item,
-                          int32 pos, void *user) {
-    NcMenuStringPair *pair = item;
-
-    (void)menu;
-    (void)pos;
-    (void)user;
-
-    ASSERT(window != NULL);
-    ASSERT(pair != NULL);
-    ASSERT(pair->first != NULL);
-
-    nc_window_print_data(window, pair->first, pair->first_len);
-    return;
-}
-
 static void
 tag_editor_draw_string(NcMenu *menu, NcWindow *window, void *item,
                        int32 pos, void *user) {
@@ -3891,6 +3887,14 @@ tag_editor_draw_string(NcMenu *menu, NcWindow *window, void *item,
     ASSERT(string->data != NULL);
 
     nc_window_print_data(window, string->data, string->len);
+    return;
+}
+
+static void
+tag_editor_append_formatted_color_end(NcBuffer *buffer,
+                                      NcFormattedColor *color) {
+    nc_buffer_add_formatted_color_end(buffer, nc_buffer_len(buffer), color,
+                                      0);
     return;
 }
 
@@ -3977,14 +3981,6 @@ static void
 tag_editor_append_formatted_color(NcBuffer *buffer,
                                   NcFormattedColor *color) {
     nc_buffer_add_formatted_color(buffer, nc_buffer_len(buffer), color, 0);
-    return;
-}
-
-static void
-tag_editor_append_formatted_color_end(NcBuffer *buffer,
-                                      NcFormattedColor *color) {
-    nc_buffer_add_formatted_color_end(buffer, nc_buffer_len(buffer), color,
-                                      0);
     return;
 }
 
