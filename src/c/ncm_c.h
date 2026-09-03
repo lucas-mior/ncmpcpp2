@@ -1519,8 +1519,7 @@ typedef struct NcmJobQueue {
 
 void ncm_job_queue_init(NcmJobQueue *queue);
 int32 ncm_job_queue_start(NcmJobQueue *queue, NcmError *ncm_error);
-int32 ncm_job_queue_push(NcmJobQueue *queue, NcmJob job,
-                         NcmError *ncm_error);
+int32 ncm_job_queue_push(NcmJobQueue *queue, NcmJob job, NcmError *ncm_error);
 int32 ncm_job_queue_dispatch_completed(NcmJobQueue *queue);
 void ncm_job_queue_destroy(NcmJobQueue *queue);
 int32 ncm_job_queue_pending_count(NcmJobQueue *queue);
