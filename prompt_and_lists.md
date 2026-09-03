@@ -8,7 +8,9 @@ instances and remove the file from the list.
 For functions that are defined inside a file and only used inside the same file,
 if they are called only once: inline their body and then delete them. If there
 aren't any functions that fit this pattern, simply delete the file from the
-list below, and go straight to the next file without asking me.
+list below, and go straight to the next file without asking me. If the next file
+also doesn't have any function that fit this pattern, continue deleting the file
+form the list below and searching on the next until you find.
 
 - src/c/ncm_app_arrays.c
 - src/main.c
