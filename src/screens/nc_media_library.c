@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static int32 library_mpd_list_tags(void *user, enum mpd_tag_type tag_type, NcmMpdStringList *tags, NcmError *ncm_error);
 static int32 library_mpd_list_all_songs(void *user, NcmMpdSongList *songs, NcmError *ncm_error);
 static int32 library_mpd_search_songs(void *user, MediaLibrarySongQuery *query, NcmMpdSongList *songs, NcmError *ncm_error);
 static int32 library_mpd_add_songs(void *user, NcmSongArray *songs, bool play, NcmError *ncm_error);
@@ -56,6 +55,18 @@ static bool library_has_pending_albums(MediaLibraryScreen *screen);
 static bool library_has_pending_songs(MediaLibraryScreen *screen);
 static bool library_has_fetch_delay_elapsed(MediaLibraryScreen *screen);
 static bool library_search_position(NcMenu *menu, int32 pos, void *user);
+
+static int32
+library_mpd_list_tags(void *user, enum mpd_tag_type tag_type,
+                      NcmMpdStringList *tags, NcmError *ncm_error) {
+    NcmMpdClient *client;
+
+    if ((client = user) == NULL) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing MPD client"));
+    }
+    return ncm_mpd_client_get_list(client, tag_type, tags, ncm_error);
+}
 
 static void
 library_free_owned_string(char **data, int32 *len, int32 *cap) {
@@ -4092,18 +4103,6 @@ library_query_cstring(StrBuilder *buffer, char *string,
     sb_clear(buffer);
     SB_APPEND(buffer, string, string_len);
     return buffer->data;
-}
-
-static int32
-library_mpd_list_tags(void *user, enum mpd_tag_type tag_type,
-                      NcmMpdStringList *tags, NcmError *ncm_error) {
-    NcmMpdClient *client;
-
-    if ((client = user) == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing MPD client"));
-    }
-    return ncm_mpd_client_get_list(client, tag_type, tags, ncm_error);
 }
 
 static int32
