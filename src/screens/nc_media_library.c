@@ -2679,9 +2679,8 @@ library_restore_song_identity(
     NcMediaLibrarySongMenu *menu, NcmSong *identity,
     bool identity_valid, int32 fallback
 ) {
-    NcMenu *base;
+    NcMenu *base = nc_media_library_song_menu_base(menu);
 
-    base = nc_media_library_song_menu_base(menu);
     if (identity_valid) {
         for (int32 i = 0; i < nc_menu_item_count(base); i += 1) {
             NcmSong *candidate;
