@@ -624,8 +624,7 @@ playlist_screen_now_playing_song(PlaylistScreen *screen,
 
 
 int32
-playlist_screen_locate_position(PlaylistScreen *screen,
-                                int32 position) {
+playlist_screen_locate_position(PlaylistScreen *screen, int32 position) {
     NcMenu *menu;
     NcmSong *song;
     int32 height;
@@ -648,8 +647,7 @@ playlist_screen_locate_position(PlaylistScreen *screen,
 
 
 int32
-playlist_screen_selected_songs(PlaylistScreen *screen,
-                               NcmSongArray *songs) {
+playlist_screen_selected_songs(PlaylistScreen *screen, NcmSongArray *songs) {
     NcMenu *menu;
     int32 status;
 
@@ -776,11 +774,8 @@ playlist_screen_find_sort_range(
 
 
 bool
-playlist_screen_has_sortable_range(
-    PlaylistScreen *screen
-) {
-    return playlist_screen_find_sort_range(
-        screen, NULL, NULL, NULL, NULL) == 0;
+playlist_screen_has_sortable_range(PlaylistScreen *screen) {
+    return playlist_screen_find_sort_range(screen, NULL, NULL, NULL, NULL) == 0;
 }
 
 
