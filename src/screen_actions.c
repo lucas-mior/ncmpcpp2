@@ -285,9 +285,7 @@ current_screen_can_search(void) {
     }
     if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
 #if defined(HAVE_TAGLIB_H)
-        TagEditorScreen *screen;
-
-        screen = app_screen_tag_editor();
+        TagEditorScreen *screen = app_screen_tag_editor();
         return screen->active_column != TAG_EDITOR_COLUMN_TAG_TYPES;
 #else
         return false;
