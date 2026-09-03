@@ -1080,8 +1080,7 @@ playlist_song_matches(PlaylistScreen *screen, NcmSong *song, NcmRegex *regex) {
 static int32
 playlist_search_menu(PlaylistScreen *screen,
                      NcMenu *menu, NcmRegex *regex,
-                     bool forward, bool wrap,
-                     bool skip_current) {
+                     bool forward, bool wrap, bool skip_current) {
     PlaylistSearchContext context;
     int32 status;
 
