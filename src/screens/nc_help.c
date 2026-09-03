@@ -12,7 +12,6 @@ static void nc_help_resize(NcScreen *screen);
 static void nc_help_mouse_button_pressed(NcScreen *screen, MEVENT event);
 static void nc_help_destroy_callback(NcScreen *screen);
 static void nc_help_display(NcHelpScreen *help);
-static bool nc_help_find_match_callback(int32 start, int32 len, void *user);
 
 #define NC_SCREEN_IMPL_TYPE NcHelpScreen
 #define NC_SCREEN_IMPL_PREFIX nc_help
@@ -96,6 +95,19 @@ nc_help_screen_reload(NcHelpScreen *screen) {
     nc_buffer_move(&screen->buffer, &next_buffer);
     nc_scrollpad_flush(&screen->scrollpad, &screen->window, &screen->buffer);
     return 0;
+}
+
+static bool
+nc_help_find_match_callback(int32 start, int32 len, void *user) {
+    NcHelpScreen *screen = user;
+
+    if (len <= 0) {
+        return true;
+    }
+
+    nc_buffer_add_format(&screen->buffer, start, NC_FORMAT_REVERSE, 0);
+    nc_buffer_add_format(&screen->buffer, start + len, NC_FORMAT_NO_REVERSE, 0);
+    return true;
 }
 
 int32
@@ -221,19 +233,6 @@ static void
 nc_help_display(NcHelpScreen *help) {
     nc_scrollpad_refresh(&help->scrollpad, &help->window);
     return;
-}
-
-static bool
-nc_help_find_match_callback(int32 start, int32 len, void *user) {
-    NcHelpScreen *screen = user;
-
-    if (len <= 0) {
-        return true;
-    }
-
-    nc_buffer_add_format(&screen->buffer, start, NC_FORMAT_REVERSE, 0);
-    nc_buffer_add_format(&screen->buffer, start + len, NC_FORMAT_NO_REVERSE, 0);
-    return true;
 }
 
 #endif /* NCMPCPP_NC_HELP_C */
