@@ -1235,7 +1235,7 @@ status_tracklength_buffer(StrBuilder *buffer) {
 
 void
 ncm_status_changes_elapsed_time(bool update_elapsed) {
-    NcmSong song;
+    NcmSong song = {0};
     NcWindow *footer;
     NcWindow *header;
     char player_state[32];
