@@ -1462,6 +1462,7 @@ library_sort_albums(MediaLibraryAlbumArray *albums) {
             tmp = albums->items[j];
             albums->items[j] = albums->items[j - 1];
             albums->items[j - 1] = tmp;
+
             j -= 1;
         }
     }
