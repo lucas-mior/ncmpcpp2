@@ -54,9 +54,6 @@ static void tag_editor_destroy_callback(NcScreen *screen);
 static void tag_editor_mouse_callback(NcScreen *, MEVENT);
 
 // declarations to delete
-static void tag_editor_set_focus(TagEditorScreen *, enum TagEditorFocus);
-static void tag_editor_status_message(TagEditorScreen *, char *, int32);
-static int32 tag_editor_set_song_tag_callback(NcmMutableSong *, void *);
 static void tag_editor_finish_tag_type_change(TagEditorScreen *, bool);
 static int32 tag_editor_number_song_callback(NcmMutableSong *, void *);
 static void tag_editor_mouse_scroll(TagEditorScreen *, enum NcScroll);
@@ -630,6 +627,16 @@ tag_editor_screen_current_directory_path(TagEditorScreen *screen,
     return 0;
 }
 
+static void
+tag_editor_status_message(TagEditorScreen *screen,
+                          char *message, int32 message_len) {
+    if (screen->hooks.status_message) {
+        screen->hooks.status_message(screen->hooks.user, message,
+                                     message_len);
+    }
+    return;
+}
+
 int32
 tag_editor_screen_enter_directory(TagEditorScreen *screen) {
     NcmStringView path = {0};
@@ -1001,6 +1008,29 @@ tag_editor_reload_songs_from_mpd(TagEditorScreen *screen,
     ncm_song_array_destroy(&songs);
     ncm_mpd_song_list_destroy(&list);
     return 0;
+}
+
+static void
+tag_editor_set_focus(TagEditorScreen *screen,
+                     enum TagEditorFocus focus) {
+    ASSERT(screen != NULL);
+
+    screen->active_focus = focus;
+
+    if (focus == TAG_EDITOR_FOCUS_DIRECTORIES) {
+        screen->active_column = TAG_EDITOR_COLUMN_DIRECTORIES;
+    } else if (focus == TAG_EDITOR_FOCUS_TAG_TYPES) {
+        screen->active_column = TAG_EDITOR_COLUMN_TAG_TYPES;
+    } else if (focus == TAG_EDITOR_FOCUS_TAGS) {
+        screen->active_column = TAG_EDITOR_COLUMN_TAGS;
+    } else if (focus == TAG_EDITOR_FOCUS_PARSER_LEGEND) {
+        screen->parser_preview_enabled = false;
+    } else if (focus == TAG_EDITOR_FOCUS_PARSER_PREVIEW) {
+        screen->parser_preview_enabled = true;
+    }
+
+    tag_editor_update_menu_highlights(screen);
+    return;
 }
 
 int32
@@ -1544,6 +1574,15 @@ tag_editor_for_each_target(TagEditorScreen *screen,
         count += 1;
     }
     return count;
+}
+
+static int32
+tag_editor_set_song_tag_callback(NcmMutableSong *song, void *user) {
+    TagSetter *setter = user;
+
+    return ncm_mutable_song_set_tags(song, setter->field, setter->value,
+                                     setter->value_len, setter->separator,
+                                     setter->separator_len);
 }
 
 int32
@@ -3683,29 +3722,6 @@ tag_editor_focus_is_parser_helper(enum TagEditorFocus focus) {
 }
 
 static void
-tag_editor_set_focus(TagEditorScreen *screen,
-                     enum TagEditorFocus focus) {
-    ASSERT(screen != NULL);
-
-    screen->active_focus = focus;
-
-    if (focus == TAG_EDITOR_FOCUS_DIRECTORIES) {
-        screen->active_column = TAG_EDITOR_COLUMN_DIRECTORIES;
-    } else if (focus == TAG_EDITOR_FOCUS_TAG_TYPES) {
-        screen->active_column = TAG_EDITOR_COLUMN_TAG_TYPES;
-    } else if (focus == TAG_EDITOR_FOCUS_TAGS) {
-        screen->active_column = TAG_EDITOR_COLUMN_TAGS;
-    } else if (focus == TAG_EDITOR_FOCUS_PARSER_LEGEND) {
-        screen->parser_preview_enabled = false;
-    } else if (focus == TAG_EDITOR_FOCUS_PARSER_PREVIEW) {
-        screen->parser_preview_enabled = true;
-    }
-
-    tag_editor_update_menu_highlights(screen);
-    return;
-}
-
-static void
 tag_editor_finish_tag_type_change(TagEditorScreen *screen,
                                   bool refresh_tags) {
     NcMenu *menu;
@@ -4167,15 +4183,6 @@ tag_editor_tag_filter(NcMenu *menu, void *item, void *user) {
 }
 
 static int32
-tag_editor_set_song_tag_callback(NcmMutableSong *song, void *user) {
-    TagSetter *setter = user;
-
-    return ncm_mutable_song_set_tags(song, setter->field, setter->value,
-                                     setter->value_len, setter->separator,
-                                     setter->separator_len);
-}
-
-static int32
 tag_editor_number_song_callback(NcmMutableSong *song, void *user) {
     TrackNumberer *numberer = user;
     NcmStringView view;
@@ -4322,16 +4329,6 @@ tag_editor_save_song_callback(NcmMutableSong *song, void *user) {
     context->write_count += 1;
     ncm_mutable_song_clear_modifications(song);
     return 0;
-}
-
-static void
-tag_editor_status_message(TagEditorScreen *screen,
-                          char *message, int32 message_len) {
-    if (screen->hooks.status_message) {
-        screen->hooks.status_message(screen->hooks.user, message,
-                                     message_len);
-    }
-    return;
 }
 
 static bool
