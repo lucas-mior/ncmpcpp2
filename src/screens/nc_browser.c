@@ -21,7 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static void browser_draw_item(NcMenu *menu, NcWindow *window, void *item, int32 pos, void *user);
 static void browser_mouse_scroll(BrowserScreen *screen, enum NcScroll where);
 static bool browser_item_matches_filter(NcMenu *menu, void *item, void *user);
 static void browser_activate_item(NcMenu *menu, void *item, int32 pos, void *user);
@@ -77,6 +76,111 @@ typedef struct BrowserSearchContext {
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
+
+static void
+browser_draw_item(NcMenu *menu, NcWindow *window,
+                  void *item, int32 pos, void *user) {
+    BrowserScreen *screen = user;
+    NcBuffer buffer = {0};
+    int32 available_width;
+    int32 list_width;
+    int32 render_status = 0;
+    bool highlighted;
+    bool selected;
+    bool use_colors;
+
+    ASSERT(menu != NULL);
+    ASSERT(window != NULL);
+    ASSERT(item != NULL);
+    ASSERT(screen != NULL);
+
+    available_width = nc_window_width(window) - nc_window_get_x(window);
+    selected = nc_menu_position_is_selected(menu, pos);
+    highlighted = !menu->highlight_disabled && (pos == menu->highlight);
+
+    browser_sync_display_mode(screen);
+    nc_buffer_clear(&buffer);
+    switch (ncm_mpd_item_kind(item)) {
+    case NCM_MPD_ITEM_DIRECTORY:
+        ncm_display_directory_row(&buffer, ncm_mpd_item_directory(item));
+        break;
+    case NCM_MPD_ITEM_SONG:
+        if (screen->active_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
+            list_width = available_width;
+            if (selected) {
+                list_width -= utf8_width(menu->selected_suffix.data,
+                                         menu->selected_suffix.len);
+            }
+            if (highlighted) {
+                list_width -= utf8_width(menu->highlight_suffix.data,
+                                         menu->highlight_suffix.len);
+            }
+            if (list_width < 0) {
+                list_width = 0;
+            }
+            use_colors = !Config.discard_colors_if_item_is_selected
+                         || !selected;
+            ncm_display_song_columns(
+                &buffer, ncm_mpd_item_song(item), Config.columns.items,
+                Config.columns.len, list_width, use_colors);
+        } else {
+            ncm_display_song_row(&buffer, &Config.song_list_format,
+                                 ncm_mpd_item_song(item),
+                                 NCM_FORMAT_FLAG_ALL);
+        }
+        break;
+    case NCM_MPD_ITEM_PLAYLIST:
+        ncm_display_playlist_row(
+            &buffer, ncm_mpd_item_playlist(item),
+            Config.browser_playlist_prefix.data,
+            Config.browser_playlist_prefix.len);
+        break;
+    case NCM_MPD_ITEM_COUNT:
+        break;
+    default:
+        render_status = -EINVAL;
+        break;
+    }
+
+    if (render_status >= 0) {
+        NcBufferProperty *properties = nc_buffer_properties(&buffer);
+        char *data = nc_buffer_data(&buffer);
+        int32 data_len = nc_buffer_len(&buffer);
+        int32 property_count = nc_buffer_property_count(&buffer);
+        int32 property_index = 0;
+
+        for (int32 i = 0;; i += 1) {
+            while ((property_index < property_count)
+                   && (properties[property_index].position == i)) {
+                nc_buffer_apply_property(
+                    window, &properties[property_index]);
+                property_index += 1;
+            }
+            if (i >= data_len) {
+                break;
+            }
+            nc_window_print_char(window, data[i]);
+        }
+    }
+    nc_buffer_destroy(&buffer);
+    return;
+}
+
+static int32
+browser_enter_item(BrowserScreen *screen, NcmMpdItem *item) {
+    NcmDirectory *directory;
+
+    if ((screen == NULL) || (item == NULL)) {
+        return -EINVAL;
+    }
+    if (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_DIRECTORY) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+
+    directory = ncm_mpd_item_directory(item);
+    return browser_set_normalized_directory(
+        screen, directory->path, directory->path_len);
+}
 
 static void
 browser_install_menu_callbacks(BrowserScreen *screen) {
@@ -694,7 +798,6 @@ browser_screen_current_item(BrowserScreen *screen) {
     return nc_browser_entry_menu_current(&screen->entries);
 }
 
-
 int32
 browser_screen_current_song(BrowserScreen *screen,
                             NcmSong *song) {
@@ -1218,7 +1321,6 @@ browser_screen_clear_filter(BrowserScreen *screen) {
     return;
 }
 
-
 int32
 browser_screen_search(BrowserScreen *screen,
                       char *pattern, int32 pattern_len,
@@ -1453,96 +1555,6 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     return;
 }
 
-
-static void
-browser_draw_item(NcMenu *menu, NcWindow *window,
-                  void *item, int32 pos, void *user) {
-    BrowserScreen *screen = user;
-    NcBuffer buffer = {0};
-    int32 available_width;
-    int32 list_width;
-    int32 render_status = 0;
-    bool highlighted;
-    bool selected;
-    bool use_colors;
-
-    ASSERT(menu != NULL);
-    ASSERT(window != NULL);
-    ASSERT(item != NULL);
-    ASSERT(screen != NULL);
-
-    available_width = nc_window_width(window) - nc_window_get_x(window);
-    selected = nc_menu_position_is_selected(menu, pos);
-    highlighted = !menu->highlight_disabled && (pos == menu->highlight);
-
-    browser_sync_display_mode(screen);
-    nc_buffer_clear(&buffer);
-    switch (ncm_mpd_item_kind(item)) {
-    case NCM_MPD_ITEM_DIRECTORY:
-        ncm_display_directory_row(&buffer, ncm_mpd_item_directory(item));
-        break;
-    case NCM_MPD_ITEM_SONG:
-        if (screen->active_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
-            list_width = available_width;
-            if (selected) {
-                list_width -= utf8_width(menu->selected_suffix.data,
-                                         menu->selected_suffix.len);
-            }
-            if (highlighted) {
-                list_width -= utf8_width(menu->highlight_suffix.data,
-                                         menu->highlight_suffix.len);
-            }
-            if (list_width < 0) {
-                list_width = 0;
-            }
-            use_colors = !Config.discard_colors_if_item_is_selected
-                         || !selected;
-            ncm_display_song_columns(
-                &buffer, ncm_mpd_item_song(item), Config.columns.items,
-                Config.columns.len, list_width, use_colors);
-        } else {
-            ncm_display_song_row(&buffer, &Config.song_list_format,
-                                 ncm_mpd_item_song(item),
-                                 NCM_FORMAT_FLAG_ALL);
-        }
-        break;
-    case NCM_MPD_ITEM_PLAYLIST:
-        ncm_display_playlist_row(
-            &buffer, ncm_mpd_item_playlist(item),
-            Config.browser_playlist_prefix.data,
-            Config.browser_playlist_prefix.len);
-        break;
-    case NCM_MPD_ITEM_COUNT:
-        break;
-    default:
-        render_status = -EINVAL;
-        break;
-    }
-
-    if (render_status >= 0) {
-        NcBufferProperty *properties = nc_buffer_properties(&buffer);
-        char *data = nc_buffer_data(&buffer);
-        int32 data_len = nc_buffer_len(&buffer);
-        int32 property_count = nc_buffer_property_count(&buffer);
-        int32 property_index = 0;
-
-        for (int32 i = 0;; i += 1) {
-            while ((property_index < property_count)
-                   && (properties[property_index].position == i)) {
-                nc_buffer_apply_property(
-                    window, &properties[property_index]);
-                property_index += 1;
-            }
-            if (i >= data_len) {
-                break;
-            }
-            nc_window_print_char(window, data[i]);
-        }
-    }
-    nc_buffer_destroy(&buffer);
-    return;
-}
-
 static void
 browser_mouse_scroll(BrowserScreen *screen, enum NcScroll where) {
     for (int32 i = 0; i < screen->lines_scrolled; i += 1) {
@@ -1586,22 +1598,6 @@ browser_set_item_selected(void *item, bool selected, void *user) {
     (void)selected;
     (void)user;
     return;
-}
-
-static int32
-browser_enter_item(BrowserScreen *screen, NcmMpdItem *item) {
-    NcmDirectory *directory;
-
-    if ((screen == NULL) || (item == NULL)) {
-        return -EINVAL;
-    }
-    if (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_DIRECTORY) {
-        return -NCM_ERROR_UNAVAILABLE;
-    }
-
-    directory = ncm_mpd_item_directory(item);
-    return browser_set_normalized_directory(
-        screen, directory->path, directory->path_len);
 }
 
 static void
