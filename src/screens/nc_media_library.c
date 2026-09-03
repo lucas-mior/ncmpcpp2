@@ -1854,9 +1854,8 @@ media_library_songs_from_list(
 }
 
 int32
-media_library_screen_toggle_sort_mode(
-    MediaLibraryScreen *screen, bool *enabled
-) {
+media_library_screen_toggle_sort_mode(MediaLibraryScreen *screen,
+                                      bool *enabled) {
     if (screen == NULL) {
         return -EINVAL;
     }
