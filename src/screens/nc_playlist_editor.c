@@ -1164,9 +1164,8 @@ playlist_editor_screen_locate_song(PlaylistEditorScreen *screen,
 }
 
 int32
-playlist_editor_screen_current_playlist(
-    PlaylistEditorScreen *screen, NcmPlaylist *playlist
-) {
+playlist_editor_screen_current_playlist(PlaylistEditorScreen *screen,
+                                        NcmPlaylist *playlist) {
     NcmPlaylist *current;
     int32 status;
 
