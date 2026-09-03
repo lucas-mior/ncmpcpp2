@@ -2159,8 +2159,7 @@ void tag_editor_screen_clear_modifications(
     TagEditorScreen *screen);
 int32 tag_editor_screen_save_modified(TagEditorScreen *screen,
                                       char *music_dir);
-bool tag_editor_screen_save_action_available(
-    TagEditorScreen *screen);
+bool tag_editor_screen_save_action_available(TagEditorScreen *screen);
 int32 tag_editor_screen_apply_directory_filter(
     TagEditorScreen *screen, char *pattern, int32 pattern_len,
     uint32 regex_flags, NcmError *ncm_error);
