@@ -4468,8 +4468,9 @@ tag_editor_directory_matches(TagEditorScreen *screen,
     if (!screen->directory_filter_enabled) {
         return true;
     }
-    return tag_editor_directory_matches_regex(
-        pair, &screen->directory_filter_regex, true);
+    return tag_editor_directory_matches_regex(pair,
+                                              &screen->directory_filter_regex,
+                                              true);
 }
 
 static bool
@@ -4719,8 +4720,7 @@ tag_editor_append_pattern_row(TagEditorScreen *screen) {
 
     SB_APPEND(&row, "Pattern: ");
     SB_APPEND(&row, screen->pattern.data, screen->pattern.len);
-    status = tag_editor_append_parser_action_label(screen, row.data,
-                                                   row.len);
+    status = tag_editor_append_parser_action_label(screen, row.data, row.len);
     sb_free(&row);
     return status;
 }
@@ -4800,28 +4800,18 @@ tag_editor_build_parser_legend(TagEditorScreen *screen) {
         return -EINVAL;
     }
     sb_clear(&screen->parser_legend);
-    SB_APPEND(&screen->parser_legend,
-              "%a - artist\n");
-    SB_APPEND(&screen->parser_legend,
-              "%A - album artist\n");
-    SB_APPEND(&screen->parser_legend,
-              "%t - title\n");
-    SB_APPEND(&screen->parser_legend,
-              "%b - album\n");
-    SB_APPEND(&screen->parser_legend,
-              "%y - date\n");
-    SB_APPEND(&screen->parser_legend,
-              "%n - track number\n");
-    SB_APPEND(&screen->parser_legend,
-              "%g - genre\n");
-    SB_APPEND(&screen->parser_legend,
-              "%c - composer\n");
-    SB_APPEND(&screen->parser_legend,
-              "%p - performer\n");
-    SB_APPEND(&screen->parser_legend,
-              "%d - disc\n");
-    SB_APPEND(&screen->parser_legend,
-              "%C - comment\n\nFiles:\n");
+
+    SB_APPEND(&screen->parser_legend, "%a - artist\n");
+    SB_APPEND(&screen->parser_legend, "%A - album artist\n");
+    SB_APPEND(&screen->parser_legend, "%t - title\n");
+    SB_APPEND(&screen->parser_legend, "%b - album\n");
+    SB_APPEND(&screen->parser_legend, "%y - date\n");
+    SB_APPEND(&screen->parser_legend, "%n - track number\n");
+    SB_APPEND(&screen->parser_legend, "%g - genre\n");
+    SB_APPEND(&screen->parser_legend, "%c - composer\n");
+    SB_APPEND(&screen->parser_legend, "%p - performer\n");
+    SB_APPEND(&screen->parser_legend, "%d - disc\n");
+    SB_APPEND(&screen->parser_legend, "%C - comment\n\nFiles:\n");
 
     tags = nc_tag_row_menu_base(&screen->tags);
     count = nc_menu_item_count(tags);
@@ -4833,8 +4823,7 @@ tag_editor_build_parser_legend(TagEditorScreen *screen) {
             continue;
         }
         SB_APPEND(&screen->parser_legend, " * ");
-        SB_APPEND(&screen->parser_legend, song->name,
-                  song->name_len);
+        SB_APPEND(&screen->parser_legend, song->name, song->name_len);
         sb_append_byte(&screen->parser_legend, '\n');
     }
     return 0;
@@ -4861,13 +4850,10 @@ tag_editor_build_parser_preview(TagEditorScreen *screen,
         if ((song = nc_menu_active_item_at(tags, i)) == NULL) {
             continue;
         }
-        if (screen->parser_mode
-            == TAG_EDITOR_PARSER_TAGS_FROM_FILENAME) {
+        if (screen->parser_mode == TAG_EDITOR_PARSER_TAGS_FROM_FILENAME) {
             if (!apply && song->name) {
-                SB_APPEND(&screen->parser_preview, song->name,
-                          song->name_len);
-                SB_APPEND(&screen->parser_preview,
-                          ":\n");
+                SB_APPEND(&screen->parser_preview, song->name, song->name_len);
+                SB_APPEND(&screen->parser_preview, ":\n");
             }
             status = tag_editor_parse_filename(
                 song, screen->pattern.data, screen->pattern.len, !apply,
@@ -4879,8 +4865,7 @@ tag_editor_build_parser_preview(TagEditorScreen *screen,
             if (!apply) {
                 sb_append_byte(&screen->parser_preview, '\n');
             }
-        } else if (screen->parser_mode
-                   == TAG_EDITOR_PARSER_RENAME_FILES) {
+        } else if (screen->parser_mode == TAG_EDITOR_PARSER_RENAME_FILES) {
             StrBuilder stem = {0};
             StrBuilder new_name = {0};
             int32 extension_start;
