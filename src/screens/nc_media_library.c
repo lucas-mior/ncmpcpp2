@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static bool library_album_identity_is_equal(NcMediaLibraryAlbumRow *left, NcMediaLibraryAlbumRow *right);
 static int32 library_update_songs(MediaLibraryScreen *screen, NcmError *ncm_error);
 static bool library_has_pending_songs(MediaLibraryScreen *screen);
 static int32 library_replace_tags(MediaLibraryScreen *screen, MediaLibraryTagArray *tags);
@@ -2548,6 +2547,21 @@ media_library_screen_request_songs_update(
     return;
 }
 
+static bool
+library_album_identity_is_equal(NcMediaLibraryAlbumRow *left,
+                             NcMediaLibraryAlbumRow *right) {
+    if ((left == NULL) || (right == NULL)) {
+        return left == right;
+    }
+    return left->all_tracks_entry == right->all_tracks_entry
+           && STREQUAL(left->tag, left->tag_len,
+                       right->tag, right->tag_len)
+           && STREQUAL(left->album, left->album_len,
+                       right->album, right->album_len)
+           && STREQUAL(left->date, left->date_len,
+                       right->date, right->date_len);
+}
+
 void
 media_library_screen_finish_list_change(
     MediaLibraryScreen *screen
@@ -3111,21 +3125,6 @@ library_tag_identity_is_equal(NcMediaLibraryTagRow *left,
         return left == right;
     }
     return STREQUAL(left->tag, left->tag_len, right->tag, right->tag_len);
-}
-
-static bool
-library_album_identity_is_equal(NcMediaLibraryAlbumRow *left,
-                             NcMediaLibraryAlbumRow *right) {
-    if ((left == NULL) || (right == NULL)) {
-        return left == right;
-    }
-    return left->all_tracks_entry == right->all_tracks_entry
-           && STREQUAL(left->tag, left->tag_len,
-                       right->tag, right->tag_len)
-           && STREQUAL(left->album, left->album_len,
-                       right->album, right->album_len)
-           && STREQUAL(left->date, left->date_len,
-                       right->date, right->date_len);
 }
 
 static void
