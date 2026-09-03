@@ -72,9 +72,8 @@ current_screen_search_buffer(void) {
         return &app_screen_browser()->search_constraint;
     }
     if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)) {
-        PlaylistEditorScreen *screen;
+        PlaylistEditorScreen *screen = app_screen_playlist_editor();
 
-        screen = app_screen_playlist_editor();
         if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
             return &screen->content_search_constraint;
         }
