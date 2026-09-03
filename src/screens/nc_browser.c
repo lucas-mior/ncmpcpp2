@@ -21,7 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static int32 browser_current_playlist_item_path(BrowserScreen *, NcmStringView *, NcmError *);
 static int32 browser_set_parent_of_directory(BrowserScreen *, char *, int32 );
 static int32 browser_load_mpd_items(BrowserScreen *, NcmMpdItemArray *);
 static int32 browser_reload_from_local(BrowserScreen *, NcmError *);
@@ -1194,6 +1193,37 @@ browser_screen_has_current_directory_path(BrowserScreen *screen,
     return browser_current_directory_item_path(screen, path, &ncm_error) == 0;
 }
 
+static int32
+browser_current_playlist_item_path(BrowserScreen *screen,
+                                   NcmStringView *path,
+                                   NcmError *ncm_error) {
+    NcmMpdItem *item;
+
+    if (path == NULL) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing path output"));
+    }
+    ncm_string_view_clear(path);
+    if (screen == NULL) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing browser state"));
+    }
+
+    if ((item = browser_screen_current_item(screen)) == NULL) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing browser item"));
+    }
+    if (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_PLAYLIST) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("browser item is not a playlist"));
+    }
+    if (!ncm_playlist_has_path_view(ncm_mpd_item_playlist(item), path)) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing playlist path"));
+    }
+    return ncm_error_ok(ncm_error);
+}
+
 bool
 browser_screen_has_current_playlist_path(BrowserScreen *screen,
                                          NcmStringView *path) {
@@ -2219,37 +2249,6 @@ browser_collect_item_songs(BrowserScreen *screen,
     default:
         return -EINVAL;
     }
-}
-
-static int32
-browser_current_playlist_item_path(BrowserScreen *screen,
-                                   NcmStringView *path,
-                                   NcmError *ncm_error) {
-    NcmMpdItem *item;
-
-    if (path == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing path output"));
-    }
-    ncm_string_view_clear(path);
-    if (screen == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing browser state"));
-    }
-
-    if ((item = browser_screen_current_item(screen)) == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing browser item"));
-    }
-    if (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_PLAYLIST) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("browser item is not a playlist"));
-    }
-    if (!ncm_playlist_has_path_view(ncm_mpd_item_playlist(item), path)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing playlist path"));
-    }
-    return ncm_error_ok(ncm_error);
 }
 
 static int32
