@@ -28,8 +28,7 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 static char *
-library_query_cstring(StrBuilder *buffer, char *string, int32 string_len) {
-    ASSERT(buffer != NULL);
+library_query_cstring(char *string, int32 string_len) {
     if (string_len < 0) {
         if (string == NULL) {
             return NULL;
@@ -40,9 +39,7 @@ library_query_cstring(StrBuilder *buffer, char *string, int32 string_len) {
         return NULL;
     }
 
-    sb_clear(buffer);
-    SB_APPEND(buffer, string, string_len);
-    return buffer->data;
+    return string;
 }
 
 static int32
@@ -51,9 +48,6 @@ library_mpd_search_songs(void *user,
                          NcmMpdSongList *songs,
                          NcmError *ncm_error) {
     NcmMpdClient *client = user;
-    StrBuilder primary = {0};
-    StrBuilder album = {0};
-    StrBuilder date = {0};
     int32 status;
 
     ASSERT(client != NULL);
@@ -62,8 +56,7 @@ library_mpd_search_songs(void *user,
 
     status = ncm_mpd_client_start_search(client, true, ncm_error);
     if ((status == 0) && query->match_primary_tag) {
-        char *value = library_query_cstring(
-            &primary, query->primary_value, query->primary_value_len);
+        char *value = library_query_cstring(query->primary_value, query->primary_value_len);
         if (value == NULL) {
             status = ncm_error_set_status(
                 ncm_error, -EINVAL, STRLIT("missing primary tag value"));
@@ -73,8 +66,7 @@ library_mpd_search_songs(void *user,
         }
     }
     if ((status == 0) && query->match_album) {
-        char *value = library_query_cstring(
-            &album, query->album, query->album_len);
+        char *value = library_query_cstring(query->album, query->album_len);
         if (value == NULL) {
             status = ncm_error_set_status(ncm_error, -EINVAL,
                                           STRLIT("missing album value"));
@@ -84,8 +76,7 @@ library_mpd_search_songs(void *user,
         }
     }
     if ((status == 0) && query->match_date) {
-        char *value = library_query_cstring(
-            &date, query->date, query->date_len);
+        char *value = library_query_cstring(query->date, query->date_len);
         if (value == NULL) {
             status = ncm_error_set_status(ncm_error, -EINVAL,
                                           STRLIT("missing date value"));
@@ -98,9 +89,7 @@ library_mpd_search_songs(void *user,
         status = ncm_mpd_client_commit_search_songs(client, songs,
                                                     ncm_error);
     }
-    sb_free(&date);
-    sb_free(&album);
-    sb_free(&primary);
+
     return status;
 }
 
