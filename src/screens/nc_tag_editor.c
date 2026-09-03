@@ -64,7 +64,6 @@ static int32 tag_editor_set_pattern(TagEditorScreen *, char *, int32);
 static int32 tag_editor_lower_song_callback(NcmMutableSong *, void *);
 static int32 tag_editor_save_song_callback(NcmMutableSong *, void *);
 static void tag_editor_observe_current_directory(TagEditorScreen *);
-static bool tag_editor_strings_equal(char *, int32, char *, int32);
 static bool tag_editor_focus_is_parser_helper(enum TagEditorFocus);
 static bool tag_editor_directory_filter(NcMenu *, void *, void *);
 static void tag_editor_update_menu_highlights(TagEditorScreen *);
@@ -2656,23 +2655,23 @@ tag_editor_current_tag_type_action(TagEditorScreen *screen,
         }
         return TAG_EDITOR_TAG_TYPE_ACTION_FIELD;
     }
-    if (tag_editor_strings_equal(row->data, row->len,
+    if (STREQUAL(row->data, row->len,
                                  STRLIT("Filename"))) {
         return TAG_EDITOR_TAG_TYPE_ACTION_FILENAME;
     }
-    if (tag_editor_strings_equal(row->data, row->len,
+    if (STREQUAL(row->data, row->len,
                                  STRLIT("Capitalize First Letters"))) {
         return TAG_EDITOR_TAG_TYPE_ACTION_CAPITALIZE;
     }
-    if (tag_editor_strings_equal(row->data, row->len,
+    if (STREQUAL(row->data, row->len,
                                  STRLIT("lower all letters"))) {
         return TAG_EDITOR_TAG_TYPE_ACTION_LOWER;
     }
-    if (tag_editor_strings_equal(row->data, row->len,
+    if (STREQUAL(row->data, row->len,
                                  STRLIT("Reset"))) {
         return TAG_EDITOR_TAG_TYPE_ACTION_RESET;
     }
-    if (tag_editor_strings_equal(row->data, row->len,
+    if (STREQUAL(row->data, row->len,
                                  STRLIT("Save"))) {
         return TAG_EDITOR_TAG_TYPE_ACTION_SAVE;
     }
@@ -4342,15 +4341,6 @@ tag_editor_confirm(TagEditorScreen *screen, char *message,
         return false;
     }
     return screen->hooks.confirm(screen->hooks.user, message, message_len);
-}
-
-static bool
-tag_editor_strings_equal(char *left, int32 left_len,
-                         char *right, int32 right_len) {
-    if (left_len != right_len) {
-        return false;
-    }
-    return STREQUAL(left, left_len, right, right_len);
 }
 
 static int32
