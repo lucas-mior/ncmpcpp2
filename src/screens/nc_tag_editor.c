@@ -429,7 +429,8 @@ tag_editor_configure_menus(TagEditorScreen *screen) {
     NcMenu *tags = nc_tag_row_menu_base(&screen->tags);
     NcMenu *parser_dialog = nc_editor_string_menu_base(&screen->parser_dialog);
     NcMenu *parser_rows = nc_editor_string_menu_base(&screen->parser_rows);
-    NcMenu *parser_actions = nc_editor_string_menu_base(&screen->parser_actions);
+    NcMenu *parser_actions =
+        nc_editor_string_menu_base(&screen->parser_actions);
 
     tag_editor_configure_menu(directories);
     tag_editor_configure_menu(tag_types);
