@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static int32 library_mpd_add_songs(void *user, NcmSongArray *songs, bool play, NcmError *ncm_error);
 static int32 library_replace_albums(MediaLibraryScreen *screen, MediaLibraryAlbumArray *albums);
 static void library_restore_song_identity(NcMediaLibrarySongMenu *menu, NcmSong *identity, bool identity_valid, int32 fallback);
 static bool library_has_pending_albums(MediaLibraryScreen *screen);
@@ -468,6 +467,42 @@ NCM_ARRAY_DEFINE_APPEND(media_library_album_array,
 NCM_ARRAY_DEFINE_REMOVE_ORDERED(media_library_album_array,
                                 MediaLibraryAlbumArray,
                                 &library_album_array_callbacks)
+
+static int32
+library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
+                      NcmError *ncm_error) {
+    NcmMpdClient *client = user;
+    NcmMpdSongList additions = {0};
+    int32 status = 0;
+
+    ASSERT(client != NULL);
+    ASSERT(songs != NULL);
+
+    for (int32 i = 0; i < songs->len; i += 1) {
+        status = ncm_mpd_song_list_append_copy(&additions, &songs->items[i]);
+        if (status < 0) {
+            status = ncm_error_set_status(ncm_error, status,
+                                          STRLIT("cannot copy songs for MPD"));
+            break;
+        }
+    }
+
+    {
+        int32 play_pos = -1;
+        if (play) {
+            play_pos = ncm_status_state_playlist_length();
+        }
+        if (status >= 0) {
+            status = ncm_mpd_client_add_song_list(client, &additions, -1,
+                                                  ncm_error);
+        }
+        if ((status == 0) && play) {
+            status = ncm_mpd_client_play_pos(client, play_pos, ncm_error);
+        }
+    }
+    ncm_mpd_song_list_destroy(&additions);
+    return status;
+}
 
 MediaLibraryHooks
 media_library_mpd_hooks(NcmMpdClient *client) {
@@ -4168,42 +4203,6 @@ static void
 library_destroy_callback(NcScreen *screen) {
     media_library_screen_destroy(library_from_screen(screen));
     return;
-}
-
-static int32
-library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
-                      NcmError *ncm_error) {
-    NcmMpdClient *client = user;
-    NcmMpdSongList additions = {0};
-    int32 status = 0;
-
-    ASSERT(client != NULL);
-    ASSERT(songs != NULL);
-
-    for (int32 i = 0; i < songs->len; i += 1) {
-        status = ncm_mpd_song_list_append_copy(&additions, &songs->items[i]);
-        if (status < 0) {
-            status = ncm_error_set_status(ncm_error, status,
-                                          STRLIT("cannot copy songs for MPD"));
-            break;
-        }
-    }
-
-    {
-        int32 play_pos = -1;
-        if (play) {
-            play_pos = ncm_status_state_playlist_length();
-        }
-        if (status >= 0) {
-            status = ncm_mpd_client_add_song_list(client, &additions, -1,
-                                                  ncm_error);
-        }
-        if ((status == 0) && play) {
-            status = ncm_mpd_client_play_pos(client, play_pos, ncm_error);
-        }
-    }
-    ncm_mpd_song_list_destroy(&additions);
-    return status;
 }
 
 #endif /* NCMPCPP_NC_MEDIA_LIBRARY_C */
