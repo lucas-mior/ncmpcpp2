@@ -3130,9 +3130,11 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
         album_tag_len = 0;
     }
 
-    status = library_move_to_album(
-        screen, primary_value.data, primary_value.len,
-        album.data, album.len, date.data, date.len, true);
+    status = library_move_to_album(screen,
+                                   primary_value.data, primary_value.len,
+                                   album.data, album.len,
+                                   date.data, date.len, 
+                                   true);
     if (status < 0) {
         return ncm_error_set_status(
             ncm_error, status, STRLIT("failed to select song album"));
@@ -3200,8 +3202,7 @@ library_from_screen(NcScreen *screen) {
 
 static NcWindow *
 library_active_window(NcScreen *screen) {
-    return media_library_screen_active_window(
-        library_from_screen(screen));
+    return media_library_screen_active_window(library_from_screen(screen));
 }
 
 static void
@@ -3229,9 +3230,8 @@ library_refresh(NcScreen *screen) {
     }
     nc_screen_draw_vertical_separator(
         nc_window_start_x(&library->songs_window) - 1);
-    library_refresh_menu(
-        nc_media_library_song_menu_base(&library->songs),
-        &library->songs_window);
+    library_refresh_menu(nc_media_library_song_menu_base(&library->songs),
+                         &library->songs_window);
     return;
 }
 
