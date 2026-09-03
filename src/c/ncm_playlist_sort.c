@@ -42,9 +42,10 @@ ncm_playlist_sort_compare_key(NcmPlaylistSortContext *context,
         right_data = "";
     }
 
-    result = ncm_compare_locale_strings(
-        left_data, left.len, right_data, right.len,
-        context->ignore_leading_the);
+    result = ncm_compare_locale_strings(left_data, left.len,
+                                        right_data, right.len,
+                                        context->ignore_leading_the);
+
     sb_free(&right);
     sb_free(&left);
     return result;
