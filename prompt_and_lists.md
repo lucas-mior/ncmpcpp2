@@ -8,7 +8,6 @@ instances and remove the file from the list.
 For functions that are defined inside a file and only used inside the same file,
 if they are called only once: inline their body and then delete them.
 
-- src/c/ncm_song.c
 - src/screens/nc_browser.c
 - src/helpers.c
 - src/c/ncm_mpd_connection.c

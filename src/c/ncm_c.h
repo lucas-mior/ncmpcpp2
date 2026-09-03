@@ -220,18 +220,9 @@ bool ncm_song_has_directory_view(NcmSong *song, int32 idx,
 bool ncm_song_is_from_database(NcmSong *song);
 bool ncm_song_is_stream(NcmSong *song);
 
-int32 ncm_song_resolve_name_from_uri(char *uri, int32 uri_len,
-                                     NcmStringView *view);
-int32 ncm_song_resolve_directory_from_uri(char *uri, int32 uri_len,
-                                          NcmStringView *view);
-bool ncm_song_uri_is_from_database(char *uri, int32 uri_len);
-bool ncm_song_uri_is_stream(char *uri, int32 uri_len);
 int32 ncm_song_numeric_tag_len(char *tag, int32 tag_len);
-int32 ncm_song_track_number_len(char *tag, int32 tag_len);
 int32 ncm_song_format_numeric_tag(char *buffer, int32 buffer_cap,
                                   char *tag, int32 tag_len);
-int32 ncm_song_format_track_number(char *buffer, int32 buffer_cap,
-                                   char *tag, int32 tag_len);
 int32 ncm_song_show_time(int32 length, char *buffer, int32 buffer_cap);
 StrBuilder ncm_song_getter_buffer(NcmSong *song,
                                   enum NcmSongGetter getter, int32 idx);
