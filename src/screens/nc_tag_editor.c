@@ -139,8 +139,8 @@ struct SaveContext {
 };
 
 static int32
-tag_editor_append_string_row(NcEditorStringMenu *menu, char *data,
-                             int32 data_len, uint32 flags) {
+tag_editor_append_string_row(NcEditorStringMenu *menu,
+                             char *data, int32 data_len, uint32 flags) {
     NcMenuString string;
     int32 status;
 
