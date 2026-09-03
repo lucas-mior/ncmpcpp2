@@ -140,9 +140,8 @@ statusbar_apply_formatted_color_end(NcWindow *window, NcFormattedColor *color) {
 
 static void
 statusbar_progressbar_split(NcmStringView items[3]) {
-    int32 byte;
+    int32 byte = 0;
 
-    byte = 0;
     for (int32 i = 0; i < 3; i += 1) {
         int32 next;
 
