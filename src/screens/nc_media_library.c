@@ -3338,11 +3338,9 @@ library_mouse_button_pressed(NcScreen *screen,
 static void
 library_mouse_scroll(MediaLibraryScreen *screen,
                      enum NcScroll where) {
-    enum NcScroll effective;
-    int32 count;
+    enum NcScroll effective = where;
+    int32 count = Config.lines_scrolled;
 
-    effective = where;
-    count = Config.lines_scrolled;
     if (Config.mouse_list_scroll_whole_page) {
         if (where == NC_SCROLL_DOWN) {
             effective = NC_SCROLL_PAGE_DOWN;
