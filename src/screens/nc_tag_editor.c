@@ -1192,11 +1192,10 @@ tag_editor_reload_directories_from_mpd(TagEditorScreen *screen,
         return status;
     }
     for (int32 i = 0; i < directories.len; i += 1) {
-        NcmDirectory *directory;
+        NcmDirectory *directory = &directories.items[i];
         NcmStringView path;
         int32 basename_start;
 
-        directory = &directories.items[i];
         if (!ncm_directory_has_path_view(directory, &path)) {
             continue;
         }
