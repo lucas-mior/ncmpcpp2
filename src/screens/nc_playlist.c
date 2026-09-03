@@ -1103,12 +1103,10 @@ playlist_search_menu(PlaylistScreen *screen,
 static bool
 playlist_position_matches_search(NcMenu *menu, int32 pos,
                          void *user) {
-    PlaylistSearchContext *context;
-
-    context = user;
-    return playlist_song_matches(
-        context->screen, nc_menu_active_item_at(menu, pos),
-        context->regex);
+    PlaylistSearchContext *context = user;
+    return playlist_song_matches(context->screen,
+                                 nc_menu_active_item_at(menu, pos),
+                                 context->regex);
 }
 
 static NcMenuDisplayCallbacks
