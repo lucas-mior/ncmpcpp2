@@ -1843,20 +1843,10 @@ int32 selected_items_adder_screen_open(SelectedItemsAdderScreen *screen,
                                        PlaylistScreen *playlist,
                                        NcmMpdClient *client,
                                        NcmError *ncm_error);
-void selected_items_adder_screen_populate_playlist_selector(
-    SelectedItemsAdderScreen *screen, NcmMpdPlaylistList *playlists,
-    bool local_browser);
-void selected_items_adder_screen_populate_position_selector(
-    SelectedItemsAdderScreen *screen);
 int32 selected_items_adder_screen_run_current(
     SelectedItemsAdderScreen *screen);
 int32 selected_items_adder_screen_return_to_previous(
     SelectedItemsAdderScreen *screen);
-void selected_items_adder_screen_choose_current_playlist(
-    SelectedItemsAdderScreen *screen);
-int32 selected_items_adder_screen_add_to_existing_playlist(
-    SelectedItemsAdderScreen *screen, NcmMpdClient *client,
-    char *playlist, NcmError *ncm_error);
 int32 selected_items_adder_screen_search(
     SelectedItemsAdderScreen *screen, char *pattern,
     int32 pattern_len, uint32 regex_flags, bool forward, bool wrap,

@@ -10,20 +10,6 @@ if they are called only once: inline their body and then delete them. If there
 aren't any functions that fit this pattern, simply delete the file from the
 list below, and go straight to the next file without asking me.
 
-- src/curses/nc_scrollpad.c
-- src/c/ncm_playlist.c
-- src/c/ncm_fs.c
-- src/c/ncm_search_prompt.c
-- src/settings.c
-- src/ui_state.c
-- src/app_state.c
-- src/c/ncm_job.c
-- src/bindings.c
-- src/screens/nc_sel_items_adder.c
-- src/c/ncm_directory.c
-- src/c/ncm_comparators.c
-- src/c/ncm_regex.c
-- src/curses/nc_menu.c
 - src/screens/nc_screen_switcher.c
 - src/statusbar.c
 - src/c/ncm_string.c

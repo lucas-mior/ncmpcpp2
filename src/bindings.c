@@ -135,28 +135,6 @@ ncm_binding_action_destroy(NcmBindingAction *action) {
     return;
 }
 
-int32
-ncm_binding_action_copy(NcmBindingAction *dest, NcmBindingAction *source) {
-    ncm_binding_action_init(dest);
-    dest->type = source->type;
-    dest->kind = source->kind;
-    dest->screen_type = source->screen_type;
-
-    if (source->argument_len > 0) {
-        dest->argument = ncm_string_copy(source->argument, source->argument_len,
-                                         &dest->argument_cap);
-        dest->argument_len = source->argument_len;
-    }
-    if (source->keys_len > 0) {
-        dest->keys_cap = source->keys_len;
-        dest->keys = malloc2(dest->keys_cap*SIZEOF(*dest->keys));
-        memcpy64(dest->keys, source->keys,
-                 source->keys_len*SIZEOF(*dest->keys));
-        dest->keys_len = source->keys_len;
-    }
-    return 0;
-}
-
 void
 ncm_binding_destroy(NcmBinding *binding) {
     ncm_binding_clear(binding);
@@ -177,7 +155,6 @@ ncm_binding_clear(NcmBinding *binding) {
 int32
 ncm_binding_append_action(NcmBinding *binding, NcmBindingAction *action) {
     NcmBindingAction copy;
-    int32 status;
 
     if (binding->actions_len >= binding->actions_cap) {
         int32 new_cap;
@@ -192,9 +169,23 @@ ncm_binding_append_action(NcmBinding *binding, NcmBindingAction *action) {
         binding->actions_cap = new_cap;
     }
 
-    if ((status = ncm_binding_action_copy(&copy, action)) < 0) {
-        return status;
+    ncm_binding_action_init(&copy);
+    copy.type = action->type;
+    copy.kind = action->kind;
+    copy.screen_type = action->screen_type;
+    if (action->argument_len > 0) {
+        copy.argument = ncm_string_copy(action->argument, action->argument_len,
+                                       &copy.argument_cap);
+        copy.argument_len = action->argument_len;
     }
+    if (action->keys_len > 0) {
+        copy.keys_cap = action->keys_len;
+        copy.keys = malloc2(copy.keys_cap*SIZEOF(*copy.keys));
+        memcpy64(copy.keys, action->keys,
+                 action->keys_len*SIZEOF(*copy.keys));
+        copy.keys_len = action->keys_len;
+    }
+
     binding->actions[binding->actions_len] = copy;
     binding->actions_len += 1;
     return 0;
@@ -213,14 +204,6 @@ ncm_binding_copy(NcmBinding *dest, NcmBinding *source) {
         }
     }
     return 0;
-}
-
-bool
-ncm_binding_is_single(NcmBinding *binding) {
-    if (binding == NULL) {
-        return false;
-    }
-    return binding->actions_len == 1;
 }
 
 bool
@@ -252,88 +235,6 @@ ncm_binding_action_can_run(NcmBindingAction *action,
     }
 
     return false;
-}
-
-int32
-ncm_binding_action_run(NcmBindingAction *action, NcmBindingRuntime *runtime) {
-    if (!ncm_binding_action_can_run(action, runtime)) {
-        return -NCM_ERROR_UNAVAILABLE;
-    }
-
-    switch (action->kind) {
-    case NCM_BINDING_ACTION_NORMAL:
-        if ((runtime != NULL) && (runtime->run_action != NULL)) {
-            return runtime->run_action(action->type, runtime->user);
-        }
-        return ncm_action_run(action->type, NULL);
-    case NCM_BINDING_ACTION_PUSH_CHARACTERS:
-        if ((runtime == NULL) || (runtime->push_key == NULL)) {
-            return -EINVAL;
-        }
-        for (int32 i = 0; i < action->keys_len; i += 1) {
-            runtime->push_key(action->keys[i], runtime->user);
-        }
-        return 0;
-    case NCM_BINDING_ACTION_REQUIRE_SCREEN:
-    case NCM_BINDING_ACTION_REQUIRE_RUNNABLE:
-        return 0;
-    case NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND:
-        if ((runtime == NULL) || (runtime->run_external_command == NULL)) {
-            return -EINVAL;
-        }
-        return runtime->run_external_command(action->argument,
-                                             action->argument_len,
-                                             runtime->user);
-    case NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
-        if ((runtime == NULL)
-            || (runtime->run_external_console_command == NULL)) {
-            return -EINVAL;
-        }
-        return runtime->run_external_console_command(action->argument,
-                                                     action->argument_len,
-                                                     runtime->user);
-    default:
-        break;
-    }
-
-    return -NCM_ERROR_INVALID_STATE;
-}
-
-bool
-ncm_binding_can_execute_runtime(NcmBinding *binding,
-                                NcmBindingRuntime *runtime) {
-    if ((binding == NULL) || (binding->actions_len <= 0)) {
-        return false;
-    }
-
-    for (int32 i = 0; i < binding->actions_len; i += 1) {
-        if (!ncm_binding_action_can_run(binding->actions + i, runtime)) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-int32
-ncm_binding_execute_runtime(NcmBinding *binding, NcmBindingRuntime *runtime) {
-    int32 status;
-
-    if (binding == NULL) {
-        return -EINVAL;
-    }
-    if (binding->actions_len <= 0) {
-        return -NCM_ERROR_UNAVAILABLE;
-    }
-
-    for (int32 i = 0; i < binding->actions_len; i += 1) {
-        if ((status = ncm_binding_action_run(binding->actions + i,
-                                             runtime)) < 0) {
-            return status;
-        }
-    }
-
-    return 0;
 }
 
 bool
@@ -398,31 +299,21 @@ ncm_binding_runtime_run_external_console_command(char *command,
     return status;
 }
 
-void
-ncm_binding_runtime_init(NcmBindingRuntime *runtime,
-                         NcmActionRuntime *action_runtime) {
-    if (runtime == NULL) {
-        return;
-    }
-
-    runtime->can_run_action = ncm_binding_runtime_can_run_action;
-    runtime->run_action = ncm_binding_runtime_run_action;
-    runtime->current_screen_is = ncm_binding_runtime_current_screen_is;
-    runtime->push_key = ncm_binding_runtime_push_key;
-    runtime->run_external_command = ncm_binding_runtime_run_external_command;
-    runtime->run_external_console_command =
-        ncm_binding_runtime_run_external_console_command;
-    runtime->user = action_runtime;
-    return;
-}
-
 NcmBindingRuntime *
 ncm_binding_default_runtime(void) {
     static NcmBindingRuntime runtime;
     static bool initialized;
 
     if (!initialized) {
-        ncm_binding_runtime_init(&runtime, ncm_action_runtime_global());
+        runtime.can_run_action = ncm_binding_runtime_can_run_action;
+        runtime.run_action = ncm_binding_runtime_run_action;
+        runtime.current_screen_is = ncm_binding_runtime_current_screen_is;
+        runtime.push_key = ncm_binding_runtime_push_key;
+        runtime.run_external_command =
+            ncm_binding_runtime_run_external_command;
+        runtime.run_external_console_command =
+            ncm_binding_runtime_run_external_console_command;
+        runtime.user = ncm_action_runtime_global();
         initialized = true;
     }
     return &runtime;
@@ -430,19 +321,97 @@ ncm_binding_default_runtime(void) {
 
 bool
 ncm_binding_can_execute_default(NcmBinding *binding) {
-    return ncm_binding_can_execute_runtime(binding,
-                                           ncm_binding_default_runtime());
+    NcmBindingRuntime *runtime;
+
+    if ((binding == NULL) || (binding->actions_len <= 0)) {
+        return false;
+    }
+
+    runtime = ncm_binding_default_runtime();
+    for (int32 i = 0; i < binding->actions_len; i += 1) {
+        if (!ncm_binding_action_can_run(binding->actions + i, runtime)) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 int32
 ncm_binding_execute_default(NcmBinding *binding) {
-    return ncm_binding_execute_runtime(binding, ncm_binding_default_runtime());
+    NcmBindingRuntime *runtime;
+    int32 status;
+
+    if (binding == NULL) {
+        return -EINVAL;
+    }
+    if (binding->actions_len <= 0) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+
+    runtime = ncm_binding_default_runtime();
+    for (int32 i = 0; i < binding->actions_len; i += 1) {
+        NcmBindingAction *action = binding->actions + i;
+
+        if (!ncm_binding_action_can_run(action, runtime)) {
+            return -NCM_ERROR_UNAVAILABLE;
+        }
+
+        switch (action->kind) {
+        case NCM_BINDING_ACTION_NORMAL:
+            if ((runtime != NULL) && (runtime->run_action != NULL)) {
+                status = runtime->run_action(action->type, runtime->user);
+            } else {
+                status = ncm_action_run(action->type, NULL);
+            }
+            break;
+        case NCM_BINDING_ACTION_PUSH_CHARACTERS:
+            if ((runtime == NULL) || (runtime->push_key == NULL)) {
+                return -EINVAL;
+            }
+            for (int32 j = 0; j < action->keys_len; j += 1) {
+                runtime->push_key(action->keys[j], runtime->user);
+            }
+            status = 0;
+            break;
+        case NCM_BINDING_ACTION_REQUIRE_SCREEN:
+        case NCM_BINDING_ACTION_REQUIRE_RUNNABLE:
+            status = 0;
+            break;
+        case NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND:
+            if ((runtime == NULL)
+                || (runtime->run_external_command == NULL)) {
+                return -EINVAL;
+            }
+            status = runtime->run_external_command(action->argument,
+                                                   action->argument_len,
+                                                   runtime->user);
+            break;
+        case NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
+            if ((runtime == NULL)
+                || (runtime->run_external_console_command == NULL)) {
+                return -EINVAL;
+            }
+            status = runtime->run_external_console_command(action->argument,
+                                                           action->argument_len,
+                                                           runtime->user);
+            break;
+        default:
+            return -NCM_ERROR_INVALID_STATE;
+        }
+
+        if (status < 0) {
+            return status;
+        }
+    }
+
+    return 0;
 }
 
 bool
 ncm_binding_is_single_action_type(NcmBinding *binding,
                                   enum NcmActionType type) {
-    if (!ncm_binding_is_single(binding)) {
+    if ((binding == NULL) || (binding->actions_len != 1)) {
         return false;
     }
     if (binding->actions[0].kind != NCM_BINDING_ACTION_NORMAL) {
@@ -469,17 +438,6 @@ ncm_key_bindings_init(NcmKeyBindings *key_bindings) {
 }
 
 void
-ncm_key_bindings_destroy(NcmKeyBindings *key_bindings) {
-    for (int32 i = 0; i < key_bindings->bindings_len; i += 1) {
-        ncm_binding_destroy(key_bindings->bindings + i);
-    }
-    free2(key_bindings->bindings,
-          key_bindings->bindings_cap*SIZEOF(*key_bindings->bindings));
-    ncm_key_bindings_init(key_bindings);
-    return;
-}
-
-void
 ncm_bindings_configuration_destroy(NcmBindingsConfiguration *bindings) {
     ncm_bindings_configuration_clear(bindings);
     free2(bindings->commands,
@@ -495,7 +453,14 @@ ncm_bindings_configuration_clear(NcmBindingsConfiguration *bindings) {
         ncm_command_destroy(bindings->commands + i);
     }
     for (int32 i = 0; i < bindings->keys_len; i += 1) {
-        ncm_key_bindings_destroy(bindings->keys + i);
+        NcmKeyBindings *key_bindings = bindings->keys + i;
+
+        for (int32 j = 0; j < key_bindings->bindings_len; j += 1) {
+            ncm_binding_destroy(key_bindings->bindings + j);
+        }
+        free2(key_bindings->bindings,
+              key_bindings->bindings_cap*SIZEOF(*key_bindings->bindings));
+        ncm_key_bindings_init(key_bindings);
     }
     bindings->commands_len = 0;
     bindings->keys_len = 0;
@@ -600,20 +565,6 @@ ncm_bindings_string_to_key(char *string, int32 string_len) {
     return result;
 }
 
-void
-ncm_bindings_format_key(StrBuilder *buffer, NcKey key) {
-    char name[64];
-    int32 name_len;
-
-    name_len = nc_key_name(key, name, SIZEOF(name));
-    if (name_len < 0) {
-        return;
-    }
-
-    SB_APPEND(buffer, name, name_len);
-    return;
-}
-
 NcKey
 ncm_read_key(NcWindow *window) {
     NcKey result;
@@ -659,13 +610,19 @@ ncm_read_key(NcWindow *window) {
 int32
 ncm_bindings_key_name(NcKey key, char *buffer, int32 buffer_len) {
     StrBuilder key_name = {0};
+    char name[64];
+    int32 name_len;
     int32 result;
 
     if ((buffer == NULL) || (buffer_len <= 0)) {
         return -1;
     }
 
-    ncm_bindings_format_key(&key_name, key);
+    name_len = nc_key_name(key, name, SIZEOF(name));
+    if (name_len >= 0) {
+        SB_APPEND(&key_name, name, name_len);
+    }
+
     if (key_name.len >= buffer_len) {
         result = -1;
     } else {
@@ -677,136 +634,6 @@ ncm_bindings_key_name(NcKey key, char *buffer, int32 buffer_len) {
     }
     sb_free(&key_name);
     return result;
-}
-
-static int32
-ncm_parse_action_line(char *line, int32 line_len, NcmBindingAction *result,
-                      NcmError *ncm_error) {
-    int32 name_len;
-    int32 status;
-    NcmStringView argument;
-
-    ncm_binding_action_init(result);
-    line_len = ncm_trim_end(line, line_len);
-    name_len = 0;
-    while ((name_len < line_len) && !isspace((uint8)line[name_len])) {
-        name_len += 1;
-    }
-
-    if (STREQUAL(line, name_len, "set_visualizer_sample_multiplier")) {
-        result->kind = NCM_BINDING_ACTION_NORMAL;
-        result->type = NCM_ACTION_DUMMY;
-        return 0;
-    }
-
-    if (name_len == line_len) {
-        status = ncm_action_type_parse(line, name_len, &result->type);
-        if (status < 0) {
-            ncm_bindings_error(ncm_error, "unknown action: '%.*s'",
-                               name_len, line);
-            return -NCM_ERROR_PARSE;
-        }
-        result->kind = NCM_BINDING_ACTION_NORMAL;
-        return 0;
-    }
-
-    if (ncm_extract_enclosed(line + name_len, line_len - name_len, '"', '"',
-                             &argument) < 0) {
-        ncm_bindings_error(ncm_error, "missing quoted argument: '%.*s'",
-                           line_len, line);
-        return -NCM_ERROR_PARSE;
-    }
-
-    if (STREQUAL(line, name_len, "push_character")) {
-        NcKey key;
-
-        key = ncm_bindings_string_to_key(argument.data, argument.len);
-        if (key == NC_KEY_NONE) {
-            ncm_bindings_error(ncm_error,
-                               "invalid character passed to "
-                               "push_character: '%.*s'",
-                               argument.len, argument.data);
-            return -NCM_ERROR_PARSE;
-        }
-        result->kind = NCM_BINDING_ACTION_PUSH_CHARACTERS;
-        result->keys_cap = 1;
-        result->keys_len = 1;
-        result->keys = malloc2(SIZEOF(*result->keys));
-        result->keys[0] = key;
-        return 0;
-    }
-
-    if (STREQUAL(line, name_len, "push_characters")) {
-        if (argument.len <= 0) {
-            ncm_bindings_error(ncm_error, "empty argument passed to "
-                                          "push_characters");
-            return -NCM_ERROR_PARSE;
-        }
-        result->kind = NCM_BINDING_ACTION_PUSH_CHARACTERS;
-        result->keys_cap = argument.len;
-        result->keys_len = argument.len;
-        result->keys = malloc2(result->keys_cap*SIZEOF(*result->keys));
-        for (int32 i = 0; i < argument.len; i += 1) {
-            result->keys[i] = (NcKey)(uint8)argument.data[i];
-        }
-        return 0;
-    }
-
-    if (STREQUAL(line, name_len, "require_screen")) {
-        if (screen_type_parse(argument.data, argument.len,
-                              &result->screen_type) < 0) {
-            ncm_bindings_error(ncm_error,
-                               "unknown screen passed to "
-                               "require_screen: '%.*s'",
-                               argument.len, argument.data);
-            return -NCM_ERROR_PARSE;
-        }
-        result->kind = NCM_BINDING_ACTION_REQUIRE_SCREEN;
-        return 0;
-    }
-
-    if (STREQUAL(line, name_len, "require_runnable")) {
-        status = ncm_action_type_parse(argument.data, argument.len,
-                                       &result->type);
-        if (status < 0) {
-            ncm_bindings_error(ncm_error,
-                               "unknown action passed to "
-                               "require_runnable: '%.*s'",
-                               argument.len, argument.data);
-            return -NCM_ERROR_PARSE;
-        }
-        result->kind = NCM_BINDING_ACTION_REQUIRE_RUNNABLE;
-        return 0;
-    }
-
-    if (STREQUAL(line, name_len, "run_external_command")) {
-        if (argument.len <= 0) {
-            ncm_bindings_error(ncm_error, "empty command passed to "
-                                          "run_external_command");
-            return -NCM_ERROR_PARSE;
-        }
-        result->kind = NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND;
-        result->argument = ncm_string_copy(argument.data, argument.len,
-                                           &result->argument_cap);
-        result->argument_len = argument.len;
-        return 0;
-    }
-
-    if (STREQUAL(line, name_len, "run_external_console_command")) {
-        if (argument.len <= 0) {
-            ncm_bindings_error(ncm_error, "empty command passed to "
-                                          "run_external_console_command");
-            return -NCM_ERROR_PARSE;
-        }
-        result->kind = NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND;
-        result->argument = ncm_string_copy(argument.data, argument.len,
-                                           &result->argument_cap);
-        result->argument_len = argument.len;
-        return 0;
-    }
-
-    ncm_bindings_error(ncm_error, "unknown action: '%.*s'", line_len, line);
-    return -NCM_ERROR_PARSE;
 }
 
 static int32
@@ -906,55 +733,6 @@ ncm_bindings_key_index(NcmBindingsConfiguration *bindings, NcKey key) {
         return -1;
     }
     return at;
-}
-
-static int32
-ncm_bindings_insert_command(NcmBindingsConfiguration *bindings,
-                            NcmCommand *command, NcmError *ncm_error) {
-    int32 at;
-    NcmCommand copy;
-    int32 status;
-
-    if (ncm_bindings_command_index(bindings, command->name,
-                                   command->name_len) >= 0) {
-        ncm_bindings_error(ncm_error, "redefinition of command '%.*s'",
-                           command->name_len, command->name);
-        return -NCM_ERROR_PARSE;
-    }
-
-    if (bindings->commands_len >= bindings->commands_cap) {
-        int32 new_cap;
-
-        if (bindings->commands_cap == 0) {
-            new_cap = 8;
-        } else {
-            new_cap = bindings->commands_cap*2;
-        }
-        bindings->commands = realloc2(bindings->commands,
-                                      bindings->commands_cap, new_cap,
-                                      SIZEOF(*bindings->commands));
-        bindings->commands_cap = new_cap;
-    }
-
-    copy = (NcmCommand){0};
-    copy.name = ncm_string_copy(command->name, command->name_len,
-                                &copy.name_cap);
-    copy.name_len = command->name_len;
-    copy.immediate = command->immediate;
-    if ((status = ncm_binding_copy(&copy.binding, &command->binding)) < 0) {
-        ncm_command_destroy(&copy);
-        return status;
-    }
-
-    at = ncm_bindings_command_lower_bound(bindings, command->name,
-                                          command->name_len);
-    if (at < bindings->commands_len) {
-        memmove64(bindings->commands + at + 1, bindings->commands + at,
-                  (bindings->commands_len - at)*SIZEOF(*bindings->commands));
-    }
-    bindings->commands[at] = copy;
-    bindings->commands_len += 1;
-    return 0;
 }
 
 static int32
@@ -1120,10 +898,9 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
     }
 
     if (in_progress == 1) {
-        NcmCommand command;
+        NcmCommand command = {0};
         int32 status;
 
-        command = (NcmCommand){0};
         command.name = command_name;
         command.name_len = command_name_len;
         command.name_cap = command_name_len + 1;
@@ -1133,7 +910,51 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
             return status;
         }
 
-        status = ncm_bindings_insert_command(bindings, &command, ncm_error);
+        if (ncm_bindings_command_index(bindings, command.name,
+                                       command.name_len) >= 0) {
+            ncm_bindings_error(ncm_error, "redefinition of command '%.*s'",
+                               command.name_len, command.name);
+            status = -NCM_ERROR_PARSE;
+        } else {
+            NcmCommand copy = {0};
+            int32 at;
+
+            if (bindings->commands_len >= bindings->commands_cap) {
+                int32 new_cap;
+
+                if (bindings->commands_cap == 0) {
+                    new_cap = 8;
+                } else {
+                    new_cap = bindings->commands_cap*2;
+                }
+                bindings->commands = realloc2(bindings->commands,
+                                              bindings->commands_cap, new_cap,
+                                              SIZEOF(*bindings->commands));
+                bindings->commands_cap = new_cap;
+            }
+
+            copy.name = ncm_string_copy(command.name, command.name_len,
+                                        &copy.name_cap);
+            copy.name_len = command.name_len;
+            copy.immediate = command.immediate;
+            if ((status = ncm_binding_copy(&copy.binding,
+                                           &command.binding)) < 0) {
+                ncm_command_destroy(&copy);
+            } else {
+                at = ncm_bindings_command_lower_bound(bindings, command.name,
+                                                      command.name_len);
+                if (at < bindings->commands_len) {
+                    memmove64(bindings->commands + at + 1,
+                              bindings->commands + at,
+                              (bindings->commands_len - at)
+                                  *SIZEOF(*bindings->commands));
+                }
+                bindings->commands[at] = copy;
+                bindings->commands_len += 1;
+                status = 0;
+            }
+        }
+
         ncm_binding_destroy(&command.binding);
         return status;
     }
@@ -1312,14 +1133,144 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             in_progress = IN_PROGRESS_KEY;
         } else if (isspace((uint8)line[0])) {
             NcmBindingAction action;
+            NcmStringView argument;
             int32 action_start;
             int32 action_len;
+            int32 name_len;
 
             action_start = ncm_trim_start(line, len);
             action_len = ncm_trim_end(line + action_start, len - action_start);
-            if ((status = ncm_parse_action_line(line + action_start,
-                                                action_len, &action,
-                                                ncm_error)) < 0) {
+            ncm_binding_action_init(&action);
+            name_len = 0;
+            while ((name_len < action_len)
+                   && !isspace((uint8)line[action_start + name_len])) {
+                name_len += 1;
+            }
+
+            if (STREQUAL(line + action_start, name_len,
+                         "set_visualizer_sample_multiplier")) {
+                action.kind = NCM_BINDING_ACTION_NORMAL;
+                action.type = NCM_ACTION_DUMMY;
+                status = 0;
+            } else if (name_len == action_len) {
+                if (ncm_action_type_parse(line + action_start, name_len,
+                                          &action.type) < 0) {
+                    ncm_bindings_error(ncm_error, "unknown action: '%.*s'",
+                                       name_len, line + action_start);
+                    status = -NCM_ERROR_PARSE;
+                } else {
+                    action.kind = NCM_BINDING_ACTION_NORMAL;
+                    status = 0;
+                }
+            } else if (ncm_extract_enclosed(line + action_start + name_len,
+                                            action_len - name_len,
+                                            '"', '"', &argument) < 0) {
+                ncm_bindings_error(ncm_error,
+                                   "missing quoted argument: '%.*s'",
+                                   action_len, line + action_start);
+                status = -NCM_ERROR_PARSE;
+            } else if (STREQUAL(line + action_start, name_len,
+                                "push_character")) {
+                NcKey action_key;
+
+                action_key = ncm_bindings_string_to_key(argument.data,
+                                                        argument.len);
+                if (action_key == NC_KEY_NONE) {
+                    ncm_bindings_error(ncm_error,
+                                       "invalid character passed to "
+                                       "push_character: '%.*s'",
+                                       argument.len, argument.data);
+                    status = -NCM_ERROR_PARSE;
+                } else {
+                    action.kind = NCM_BINDING_ACTION_PUSH_CHARACTERS;
+                    action.keys_cap = 1;
+                    action.keys_len = 1;
+                    action.keys = malloc2(SIZEOF(*action.keys));
+                    action.keys[0] = action_key;
+                    status = 0;
+                }
+            } else if (STREQUAL(line + action_start, name_len,
+                                "push_characters")) {
+                if (argument.len <= 0) {
+                    ncm_bindings_error(ncm_error,
+                                       "empty argument passed to "
+                                       "push_characters");
+                    status = -NCM_ERROR_PARSE;
+                } else {
+                    action.kind = NCM_BINDING_ACTION_PUSH_CHARACTERS;
+                    action.keys_cap = argument.len;
+                    action.keys_len = argument.len;
+                    action.keys =
+                        malloc2(action.keys_cap*SIZEOF(*action.keys));
+                    for (int32 i = 0; i < argument.len; i += 1) {
+                        action.keys[i] = (NcKey)(uint8)argument.data[i];
+                    }
+                    status = 0;
+                }
+            } else if (STREQUAL(line + action_start, name_len,
+                                "require_screen")) {
+                if (screen_type_parse(argument.data, argument.len,
+                                      &action.screen_type) < 0) {
+                    ncm_bindings_error(ncm_error,
+                                       "unknown screen passed to "
+                                       "require_screen: '%.*s'",
+                                       argument.len, argument.data);
+                    status = -NCM_ERROR_PARSE;
+                } else {
+                    action.kind = NCM_BINDING_ACTION_REQUIRE_SCREEN;
+                    status = 0;
+                }
+            } else if (STREQUAL(line + action_start, name_len,
+                                "require_runnable")) {
+                if (ncm_action_type_parse(argument.data, argument.len,
+                                          &action.type) < 0) {
+                    ncm_bindings_error(ncm_error,
+                                       "unknown action passed to "
+                                       "require_runnable: '%.*s'",
+                                       argument.len, argument.data);
+                    status = -NCM_ERROR_PARSE;
+                } else {
+                    action.kind = NCM_BINDING_ACTION_REQUIRE_RUNNABLE;
+                    status = 0;
+                }
+            } else if (STREQUAL(line + action_start, name_len,
+                                "run_external_command")) {
+                if (argument.len <= 0) {
+                    ncm_bindings_error(ncm_error,
+                                       "empty command passed to "
+                                       "run_external_command");
+                    status = -NCM_ERROR_PARSE;
+                } else {
+                    action.kind = NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND;
+                    action.argument
+                        = ncm_string_copy(argument.data, argument.len,
+                                          &action.argument_cap);
+                    action.argument_len = argument.len;
+                    status = 0;
+                }
+            } else if (STREQUAL(line + action_start, name_len,
+                                "run_external_console_command")) {
+                if (argument.len <= 0) {
+                    ncm_bindings_error(ncm_error,
+                                       "empty command passed to "
+                                       "run_external_console_command");
+                    status = -NCM_ERROR_PARSE;
+                } else {
+                    action.kind =
+                        NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND;
+                    action.argument
+                        = ncm_string_copy(argument.data, argument.len,
+                                          &action.argument_cap);
+                    action.argument_len = argument.len;
+                    status = 0;
+                }
+            } else {
+                ncm_bindings_error(ncm_error, "unknown action: '%.*s'",
+                                   action_len, line + action_start);
+                status = -NCM_ERROR_PARSE;
+            }
+
+            if (status < 0) {
                 break;
             }
             status = ncm_binding_append_action(&actions, &action);

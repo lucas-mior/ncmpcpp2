@@ -6,47 +6,6 @@
 #include "c/ncm_c.h"
 
 static void
-ncm_job_set_errno_error(NcmError *ncm_error, int32 code, char *operation) {
-    char message[256];
-    int32 message_len;
-
-    message_len = SNPRINTF(message, "%s: %s", operation, strerror(code));
-    ncm_error_set(ncm_error, code, message, message_len);
-
-    return;
-}
-
-static void
-ncm_job_array_reserve(NcmJob **items, int32 *cap,
-                      int32 len, int32 extra) {
-    int32 needed;
-    int32 old_cap;
-    int32 new_cap;
-
-    if (extra <= 0) {
-        return;
-    }
-    needed = len + extra;
-    if (needed <= *cap) {
-        return;
-    }
-
-    old_cap = *cap;
-    new_cap = *cap;
-    if (new_cap <= 0) {
-        new_cap = 8;
-    }
-    while (new_cap < needed) {
-        new_cap *= 2;
-    }
-
-    *items = realloc2(*items, old_cap, new_cap, SIZEOF(**items));
-    *cap = new_cap;
-
-    return;
-}
-
-static void
 ncm_job_destroy(NcmJob *job) {
     if (job == NULL) {
         return;
@@ -75,32 +34,27 @@ ncm_job_array_clear(NcmJob *items, int32 len) {
 
 static void
 ncm_job_array_push(NcmJob **items, int32 *len, int32 *cap, NcmJob job) {
-    ncm_job_array_reserve(items, cap, *len, 1);
+    int32 needed;
+    int32 old_cap;
+    int32 new_cap;
+
+    needed = *len + 1;
+    if (needed > *cap) {
+        old_cap = *cap;
+        new_cap = *cap;
+        if (new_cap <= 0) {
+            new_cap = 8;
+        }
+        while (new_cap < needed) {
+            new_cap *= 2;
+        }
+
+        *items = realloc2(*items, old_cap, new_cap, SIZEOF(**items));
+        *cap = new_cap;
+    }
+
     (*items)[*len] = job;
     *len += 1;
-    return;
-}
-
-static int32
-ncm_job_queue_pop_pending_locked(NcmJobQueue *queue, NcmJob *job) {
-    if (queue->pending_len <= 0) {
-        return 0;
-    }
-
-    *job = queue->pending[0];
-    if (queue->pending_len > 1) {
-        memmove64(&queue->pending[0], &queue->pending[1],
-                  (queue->pending_len - 1)*SIZEOF(*queue->pending));
-    }
-    queue->pending_len -= 1;
-    return 1;
-}
-
-static void
-ncm_job_queue_push_completed_locked(NcmJobQueue *queue, NcmJob job) {
-    ncm_job_array_push(&queue->completed,
-                       &queue->completed_len, &queue->completed_cap,
-                       job);
     return;
 }
 
@@ -115,7 +69,17 @@ ncm_job_queue_thread_main(void *user) {
         while ((queue->pending_len <= 0) && !queue->stopping) {
             pthread_cond_wait(&queue->cond, &queue->mutex);
         }
-        have_job = ncm_job_queue_pop_pending_locked(queue, &job);
+        if (queue->pending_len <= 0) {
+            have_job = 0;
+        } else {
+            job = queue->pending[0];
+            if (queue->pending_len > 1) {
+                memmove64(&queue->pending[0], &queue->pending[1],
+                          (queue->pending_len - 1)*SIZEOF(*queue->pending));
+            }
+            queue->pending_len -= 1;
+            have_job = 1;
+        }
         if ((have_job <= 0) && queue->stopping) {
             pthread_mutex_unlock(&queue->mutex);
             break;
@@ -133,7 +97,8 @@ ncm_job_queue_thread_main(void *user) {
             }
 
             pthread_mutex_lock(&queue->mutex);
-            ncm_job_queue_push_completed_locked(queue, job);
+            ncm_job_array_push(&queue->completed, &queue->completed_len,
+                               &queue->completed_cap, job);
             pthread_mutex_unlock(&queue->mutex);
         }
     }
@@ -174,7 +139,12 @@ ncm_job_queue_start(NcmJobQueue *queue, NcmError *ncm_error) {
     code = pthread_create(&queue->thread, NULL,
                           ncm_job_queue_thread_main, queue);
     if (code != 0) {
-        ncm_job_set_errno_error(ncm_error, code, "pthread_create");
+        char message[256];
+        int32 message_len;
+
+        message_len = SNPRINTF(message, "pthread_create: %s",
+                               strerror(code));
+        ncm_error_set(ncm_error, code, message, message_len);
         return -code;
     }
 
@@ -248,32 +218,22 @@ ncm_job_queue_dispatch_completed(NcmJobQueue *queue) {
 }
 
 void
-ncm_job_queue_stop(NcmJobQueue *queue) {
-    if (queue == NULL) {
-        return;
-    }
-    if (!queue->started) {
-        return;
-    }
-
-    pthread_mutex_lock(&queue->mutex);
-    queue->stopping = true;
-    pthread_cond_signal(&queue->cond);
-    pthread_mutex_unlock(&queue->mutex);
-
-    pthread_join(queue->thread, NULL);
-    queue->started = false;
-    ncm_job_queue_dispatch_completed(queue);
-    return;
-}
-
-void
 ncm_job_queue_destroy(NcmJobQueue *queue) {
     if (queue == NULL) {
         return;
     }
 
-    ncm_job_queue_stop(queue);
+    if (queue->started) {
+        pthread_mutex_lock(&queue->mutex);
+        queue->stopping = true;
+        pthread_cond_signal(&queue->cond);
+        pthread_mutex_unlock(&queue->mutex);
+
+        pthread_join(queue->thread, NULL);
+        queue->started = false;
+        ncm_job_queue_dispatch_completed(queue);
+    }
+
     ncm_job_array_clear(queue->pending, queue->pending_len);
     ncm_job_array_clear(queue->completed, queue->completed_len);
 

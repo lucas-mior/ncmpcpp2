@@ -28,41 +28,6 @@ ncm_fs_set_errno_error(NcmError *ncm_error, int32 code, char *operation,
     return ncm_error_set_status(ncm_error, -code, message, message_len);
 }
 
-static enum NcmFsEntryType
-ncm_fs_mode_type(mode_t mode) {
-    if (S_ISREG(mode)) {
-        return NCM_FS_ENTRY_FILE;
-    }
-    if (S_ISDIR(mode)) {
-        return NCM_FS_ENTRY_DIRECTORY;
-    }
-    if (S_ISLNK(mode)) {
-        return NCM_FS_ENTRY_SYMLINK;
-    }
-
-    return NCM_FS_ENTRY_COUNT;
-}
-
-static enum NcmFsEntryType
-ncm_fs_dirent_type(int32 type) {
-    switch (type) {
-#if defined(DT_REG)
-    case DT_REG:
-        return NCM_FS_ENTRY_FILE;
-#endif
-#if defined(DT_DIR)
-    case DT_DIR:
-        return NCM_FS_ENTRY_DIRECTORY;
-#endif
-#if defined(DT_LNK)
-    case DT_LNK:
-        return NCM_FS_ENTRY_SYMLINK;
-#endif
-    default:
-        return NCM_FS_ENTRY_COUNT;
-    }
-}
-
 void
 ncm_fs_entry_init(NcmFsEntry *entry) {
     entry->name = NULL;
@@ -111,7 +76,13 @@ ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat, NcmError *ncm_error) {
 
     stat->size = (int32)statbuf.st_size;
     stat->mtime = (int32)statbuf.st_mtime;
-    stat->type = ncm_fs_mode_type(statbuf.st_mode);
+    if (S_ISREG(statbuf.st_mode)) {
+        stat->type = NCM_FS_ENTRY_FILE;
+    } else if (S_ISDIR(statbuf.st_mode)) {
+        stat->type = NCM_FS_ENTRY_DIRECTORY;
+    } else if (S_ISLNK(statbuf.st_mode)) {
+        stat->type = NCM_FS_ENTRY_SYMLINK;
+    }
     stat->exists = true;
 
     free2(path_copy, path_len + 1);
@@ -282,7 +253,26 @@ ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
         name_len = strlen32(dirent->d_name);
         entry->name = malloc2(name_len + 1);
         entry->name_len = name_len;
-        entry->type = ncm_fs_dirent_type(dirent->d_type);
+        switch (dirent->d_type) {
+#if defined(DT_REG)
+        case DT_REG:
+            entry->type = NCM_FS_ENTRY_FILE;
+            break;
+#endif
+#if defined(DT_DIR)
+        case DT_DIR:
+            entry->type = NCM_FS_ENTRY_DIRECTORY;
+            break;
+#endif
+#if defined(DT_LNK)
+        case DT_LNK:
+            entry->type = NCM_FS_ENTRY_SYMLINK;
+            break;
+#endif
+        default:
+            entry->type = NCM_FS_ENTRY_COUNT;
+            break;
+        }
         memcpy64(entry->name, dirent->d_name, name_len + 1);
 
         ncm_error_clear(ncm_error);
