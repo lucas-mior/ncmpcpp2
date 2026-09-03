@@ -1226,8 +1226,7 @@ append_content_item_from_source(PlaylistEditorScreen *screen,
     if ((screen == NULL) || (songs == NULL)) {
         return -EINVAL;
     }
-    song = nc_menu_item_at(nc_song_menu_base(&screen->content),
-                           source, pos);
+    song = nc_menu_item_at(nc_song_menu_base(&screen->content), source, pos);
     if (song == NULL) {
         return -ENOENT;
     }
