@@ -172,7 +172,7 @@ Functions that do the same thing are redefined in different
 
 ## Style: checking return value after the call (call should be inside if().
 
-## Style: breaking function calls before the first argument
+## Style: breaking function calls before the first argument and not alining
 
 ## Strings unecessary conversion to and from StrBuilder
 Investigate:
