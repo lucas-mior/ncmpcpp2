@@ -4164,8 +4164,6 @@ library_update(NcScreen *screen) {
     return;
 }
 
-
-
 static void
 library_destroy_callback(NcScreen *screen) {
     media_library_screen_destroy(library_from_screen(screen));
