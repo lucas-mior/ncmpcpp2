@@ -4252,9 +4252,7 @@ static int32
 tag_editor_capitalize_song_callback(NcmMutableSong *song, void *user) {
     (void)user;
 
-    for (int32 fi = 0;
-         ncm_song_info_tags[fi].name;
-         fi += 1) {
+    for (int32 fi = 0; ncm_song_info_tags[fi].name; fi += 1) {
         enum NcmTagsField field = ncm_song_info_tags[fi].field;
 
         for (int32 i = 0; ; i += 1) {
