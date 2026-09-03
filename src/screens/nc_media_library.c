@@ -3806,8 +3806,8 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
     }
     if (nc_menu_is_empty(songs_menu)) {
         nc_menu_clear_items(albums_menu);
-        (void)media_library_screen_set_active_column(
-            screen, MEDIA_LIBRARY_COLUMN_ALBUMS);
+        media_library_screen_set_active_column(screen,
+                                               MEDIA_LIBRARY_COLUMN_ALBUMS);
         return ncm_error_set_status(
             ncm_error, -ENOENT,
             STRLIT("song is not visible in media library"));
@@ -3817,15 +3817,14 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
         if (status == 0) {
             status = -ENOENT;
         }
-        (void)media_library_screen_set_active_column(
-            screen, MEDIA_LIBRARY_COLUMN_SONGS);
+        media_library_screen_set_active_column(screen,
+                                               MEDIA_LIBRARY_COLUMN_SONGS);
         return ncm_error_set_status(
             ncm_error, status,
             STRLIT("song is not visible in media library"));
     }
 
-    (void)media_library_screen_set_active_column(
-        screen, MEDIA_LIBRARY_COLUMN_SONGS);
+    media_library_screen_set_active_column(screen, MEDIA_LIBRARY_COLUMN_SONGS);
     ncm_error_clear(ncm_error);
     return 0;
 }
