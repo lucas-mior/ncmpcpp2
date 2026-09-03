@@ -54,9 +54,6 @@ static void tag_editor_destroy_callback(NcScreen *screen);
 static void tag_editor_mouse_callback(NcScreen *, MEVENT);
 
 // declarations to delete
-static void tag_editor_finish_tag_type_change(TagEditorScreen *, bool);
-static int32 tag_editor_number_song_callback(NcmMutableSong *, void *);
-static void tag_editor_mouse_scroll(TagEditorScreen *, enum NcScroll);
 static int32 tag_editor_set_pattern(TagEditorScreen *, char *, int32);
 static int32 tag_editor_lower_song_callback(NcmMutableSong *, void *);
 static int32 tag_editor_save_song_callback(NcmMutableSong *, void *);
@@ -1484,6 +1481,29 @@ tag_editor_screen_next_column_available(TagEditorScreen *screen) {
     return false;
 }
 
+static void
+tag_editor_finish_tag_type_change(TagEditorScreen *screen,
+                                  bool refresh_tags) {
+    NcMenu *menu;
+    int32 highlight;
+
+    ASSERT(screen != NULL);
+    if (screen->active_focus != TAG_EDITOR_FOCUS_TAG_TYPES) {
+        return;
+    }
+    menu = nc_editor_string_menu_base(&screen->tag_types);
+    highlight = nc_menu_highlight(menu);
+    if (screen->last_tag_type_highlight == highlight) {
+        return;
+    }
+    screen->last_tag_type_highlight = highlight;
+    if (refresh_tags) {
+        tag_editor_refresh_menu(&screen->tags_window,
+                                nc_tag_row_menu_base(&screen->tags));
+    }
+    return;
+}
+
 void
 tag_editor_screen_previous_column(TagEditorScreen *screen) {
     if (!tag_editor_screen_previous_column_available(screen)) {
@@ -1604,6 +1624,42 @@ tag_editor_screen_apply_tag_to_selection(TagEditorScreen *screen,
     setter.separator_len = separator_len;
     return tag_editor_for_each_target(screen, tag_editor_set_song_tag_callback,
                                       &setter);
+}
+
+static int32
+tag_editor_number_song_callback(NcmMutableSong *song, void *user) {
+    TrackNumberer *numberer = user;
+    NcmStringView view;
+    char buffer[64];
+    int32 len;
+    int32 status;
+
+    if (numberer->extended) {
+        len = SNPRINTF(buffer, "%d/%d", numberer->current, numberer->total);
+    } else {
+        len = SNPRINTF(buffer, "%d", numberer->current);
+    }
+    if (len < 0) {
+        return -EINVAL;
+    }
+    if (len >= SIZEOF(buffer)) {
+        len = SIZEOF(buffer) - 1;
+    }
+    numberer->current += 1;
+    status = ncm_mutable_song_set_tag(song, NCM_TAGS_FIELD_TRACK, 0,
+                                      buffer, len);
+    if (status < 0) {
+        return status;
+    }
+    for (int32 i = 1; ncm_mutable_song_has_tag_view(
+        song, NCM_TAGS_FIELD_TRACK, i, &view); i += 1) {
+        status = ncm_mutable_song_set_tag(
+            song, NCM_TAGS_FIELD_TRACK, i, STRLIT(""));
+        if (status < 0) {
+            return status;
+        }
+    }
+    return 0;
 }
 
 int32
@@ -3522,6 +3578,21 @@ tag_editor_mouse_scroll_menu(NcMenu *menu, NcWindow *window,
 }
 
 static void
+tag_editor_mouse_scroll(TagEditorScreen *screen,
+                        enum NcScroll where) {
+    NcMenu *menu;
+    NcWindow *window;
+
+    ASSERT(screen != NULL);
+    menu = tag_editor_screen_active_menu(screen);
+    window = tag_editor_screen_active_window(screen);
+    tag_editor_mouse_scroll_menu(menu, window, where);
+    tag_editor_screen_finish_directory_change(screen);
+    tag_editor_finish_tag_type_change(screen, true);
+    return;
+}
+
+static void
 tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     TagEditorScreen *editor = tag_editor_from_screen(screen);
     int32 x;
@@ -3685,21 +3756,6 @@ tag_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     return;
 }
 
-static void
-tag_editor_mouse_scroll(TagEditorScreen *screen,
-                        enum NcScroll where) {
-    NcMenu *menu;
-    NcWindow *window;
-
-    ASSERT(screen != NULL);
-    menu = tag_editor_screen_active_menu(screen);
-    window = tag_editor_screen_active_window(screen);
-    tag_editor_mouse_scroll_menu(menu, window, where);
-    tag_editor_screen_finish_directory_change(screen);
-    tag_editor_finish_tag_type_change(screen, true);
-    return;
-}
-
 static int32
 tag_editor_run_current_action(TagEditorScreen *screen) {
     ASSERT(screen != NULL);
@@ -3717,29 +3773,6 @@ static bool
 tag_editor_focus_is_parser_helper(enum TagEditorFocus focus) {
     return (focus == TAG_EDITOR_FOCUS_PARSER_LEGEND)
            || (focus == TAG_EDITOR_FOCUS_PARSER_PREVIEW);
-}
-
-static void
-tag_editor_finish_tag_type_change(TagEditorScreen *screen,
-                                  bool refresh_tags) {
-    NcMenu *menu;
-    int32 highlight;
-
-    ASSERT(screen != NULL);
-    if (screen->active_focus != TAG_EDITOR_FOCUS_TAG_TYPES) {
-        return;
-    }
-    menu = nc_editor_string_menu_base(&screen->tag_types);
-    highlight = nc_menu_highlight(menu);
-    if (screen->last_tag_type_highlight == highlight) {
-        return;
-    }
-    screen->last_tag_type_highlight = highlight;
-    if (refresh_tags) {
-        tag_editor_refresh_menu(&screen->tags_window,
-                                nc_tag_row_menu_base(&screen->tags));
-    }
-    return;
 }
 
 
@@ -4178,42 +4211,6 @@ tag_editor_tag_filter(NcMenu *menu, void *item, void *user) {
     }
     return tag_editor_tag_matches_regex(screen, song,
                                         &screen->tag_filter_regex);
-}
-
-static int32
-tag_editor_number_song_callback(NcmMutableSong *song, void *user) {
-    TrackNumberer *numberer = user;
-    NcmStringView view;
-    char buffer[64];
-    int32 len;
-    int32 status;
-
-    if (numberer->extended) {
-        len = SNPRINTF(buffer, "%d/%d", numberer->current, numberer->total);
-    } else {
-        len = SNPRINTF(buffer, "%d", numberer->current);
-    }
-    if (len < 0) {
-        return -EINVAL;
-    }
-    if (len >= SIZEOF(buffer)) {
-        len = SIZEOF(buffer) - 1;
-    }
-    numberer->current += 1;
-    status = ncm_mutable_song_set_tag(song, NCM_TAGS_FIELD_TRACK, 0,
-                                      buffer, len);
-    if (status < 0) {
-        return status;
-    }
-    for (int32 i = 1; ncm_mutable_song_has_tag_view(
-        song, NCM_TAGS_FIELD_TRACK, i, &view); i += 1) {
-        status = ncm_mutable_song_set_tag(
-            song, NCM_TAGS_FIELD_TRACK, i, STRLIT(""));
-        if (status < 0) {
-            return status;
-        }
-    }
-    return 0;
 }
 
 static int32
