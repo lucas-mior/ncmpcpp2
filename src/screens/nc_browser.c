@@ -21,7 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static int32 browser_collect_item_songs(BrowserScreen *, NcmSongArray *, NcmMpdItem *);
 static bool browser_supported_extensions_contains(StrBuilderArray *, char *, int32 );
 static int32 browser_set_parent_of_directory(BrowserScreen *, char *, int32 );
 static int32 browser_load_mpd_items(BrowserScreen *, NcmMpdItemArray *);
@@ -958,6 +957,160 @@ browser_screen_current_song(BrowserScreen *screen,
         return -ENOENT;
     }
     return ncm_song_copy(song, ncm_mpd_item_song(item));
+}
+
+static bool
+browser_local_path_has_supported_extension(
+    BrowserScreen *screen, char *path, int32 path_len
+) {
+    int32 extension;
+
+    extension = ncm_path_extension_start(path, path_len);
+    if (extension <= 0) {
+        return false;
+    }
+    if (screen == NULL) {
+        return false;
+    }
+    return browser_supported_extensions_contains(
+        &screen->supported_extensions, path + extension - 1,
+        path_len - extension + 1);
+}
+
+static int32
+browser_collect_local_directory_songs(
+    BrowserScreen *screen, NcmSongArray *songs, char *path,
+    int32 path_len, NcmError *ncm_error
+) {
+    NcmFsDirectory directory = {0};
+    NcmFsEntry entry = {0};
+    int32 read_status;
+    int32 status;
+
+    ASSERT(screen != NULL);
+    ASSERT(songs != NULL);
+    ASSERT(path != NULL);
+    ASSERT(path_len >= 0);
+
+    status = ncm_fs_directory_open(&directory, path, path_len, ncm_error);
+    if (status < 0) {
+        return status;
+    }
+
+    ncm_fs_entry_init(&entry);
+    while (true) {
+        StrBuilder entry_path = {0};
+        NcmFsStat stat = {0};
+
+        read_status = ncm_fs_directory_read(&directory, &entry, ncm_error);
+        if (read_status < 0) {
+            status = read_status;
+            break;
+        }
+        if (read_status == 0) {
+            status = 0;
+            break;
+        }
+        if (!Config.local_browser_show_hidden_files
+            && (entry.name_len > 0) && (entry.name[0] == '.')) {
+            continue;
+        }
+
+        status = ncm_fs_join(
+            &entry_path, directory.path, directory.path_len,
+            entry.name, entry.name_len);
+        if (status < 0) {
+            status = ncm_error_set_status(
+                ncm_error, status, STRLIT("failed to build path"));
+            sb_free(&entry_path);
+            break;
+        }
+
+        status = browser_stat_local_path(
+            entry_path.data, entry_path.len, &stat, ncm_error);
+        if ((status == 0) && stat.exists
+            && (stat.type == NCM_FS_ENTRY_DIRECTORY)) {
+            status = browser_collect_local_directory_songs(
+                screen, songs, entry_path.data, entry_path.len, ncm_error);
+        } else if ((status == 0) && stat.exists
+                   && (stat.type == NCM_FS_ENTRY_FILE)
+                   && browser_local_path_has_supported_extension(
+                       screen, entry_path.data, entry_path.len)) {
+            NcmSong song = {0};
+
+            status = browser_make_local_song(
+                &song, entry_path.data, entry_path.len, (time_t)stat.mtime);
+            if (status == 0) {
+                status = ncm_song_array_append_copy(songs, &song);
+                if (status > 0) {
+                    status = 0;
+                }
+            }
+            ncm_song_destroy(&song);
+        }
+        sb_free(&entry_path);
+        if (status < 0) {
+            break;
+        }
+    }
+    ncm_fs_entry_destroy(&entry);
+    ncm_fs_directory_close(&directory);
+    return status;
+}
+
+static int32
+browser_collect_item_songs(BrowserScreen *screen,
+                           NcmSongArray *songs, NcmMpdItem *item) {
+    NcmStringView path;
+    int32 status;
+
+    ASSERT(screen != NULL);
+    ASSERT(songs != NULL);
+    ASSERT(item != NULL);
+
+    switch (ncm_mpd_item_kind(item)) {
+    case NCM_MPD_ITEM_DIRECTORY: {
+        NcmMpdSongList source = {0};
+        NcmError ncm_error = {0};
+        char *directory;
+
+        if (!ncm_directory_has_path_view(ncm_mpd_item_directory(item), &path)) {
+            return -EINVAL;
+        }
+        if (screen->local_browser) {
+            ncm_error_clear(&ncm_error);
+            return browser_collect_local_directory_songs(
+                screen, songs, path.data, path.len, &ncm_error);
+        }
+
+        ncm_error_clear(&ncm_error);
+        directory = path.data;
+        if (path.len <= 0) {
+            directory = "/";
+        }
+        status = ncm_mpd_client_get_directory_recursive(
+            &global_mpd, directory, &source, &ncm_error);
+        for (int32 i = 0; status >= 0 && (i < source.count); i += 1) {
+            status = ncm_song_array_append_copy(songs, &source.items[i]);
+        }
+        if (status > 0) {
+            status = 0;
+        }
+        ncm_mpd_song_list_destroy(&source);
+        return status;
+    }
+    case NCM_MPD_ITEM_SONG:
+        status = ncm_song_array_append_copy(songs, ncm_mpd_item_song(item));
+        if (status < 0) {
+            return status;
+        }
+        return 0;
+    case NCM_MPD_ITEM_PLAYLIST:
+    case NCM_MPD_ITEM_COUNT:
+        return 0;
+    default:
+        return -EINVAL;
+    }
 }
 
 int32
@@ -1919,24 +2072,6 @@ browser_load_mpd_items(BrowserScreen *screen,
     return 0;
 }
 
-static bool
-browser_local_path_has_supported_extension(
-    BrowserScreen *screen, char *path, int32 path_len
-) {
-    int32 extension;
-
-    extension = ncm_path_extension_start(path, path_len);
-    if (extension <= 0) {
-        return false;
-    }
-    if (screen == NULL) {
-        return false;
-    }
-    return browser_supported_extensions_contains(
-        &screen->supported_extensions, path + extension - 1,
-        path_len - extension + 1);
-}
-
 static int32
 browser_reload_from_local(BrowserScreen *screen,
                           NcmError *ncm_error) {
@@ -2156,142 +2291,6 @@ browser_make_local_song(NcmSong *song, char *path, int32 path_len,
 #endif
 
     return status;
-}
-
-static int32
-browser_collect_local_directory_songs(
-    BrowserScreen *screen, NcmSongArray *songs, char *path,
-    int32 path_len, NcmError *ncm_error
-) {
-    NcmFsDirectory directory = {0};
-    NcmFsEntry entry = {0};
-    int32 read_status;
-    int32 status;
-
-    ASSERT(screen != NULL);
-    ASSERT(songs != NULL);
-    ASSERT(path != NULL);
-    ASSERT(path_len >= 0);
-
-    status = ncm_fs_directory_open(&directory, path, path_len, ncm_error);
-    if (status < 0) {
-        return status;
-    }
-
-    ncm_fs_entry_init(&entry);
-    while (true) {
-        StrBuilder entry_path = {0};
-        NcmFsStat stat = {0};
-
-        read_status = ncm_fs_directory_read(&directory, &entry, ncm_error);
-        if (read_status < 0) {
-            status = read_status;
-            break;
-        }
-        if (read_status == 0) {
-            status = 0;
-            break;
-        }
-        if (!Config.local_browser_show_hidden_files
-            && (entry.name_len > 0) && (entry.name[0] == '.')) {
-            continue;
-        }
-
-        status = ncm_fs_join(
-            &entry_path, directory.path, directory.path_len,
-            entry.name, entry.name_len);
-        if (status < 0) {
-            status = ncm_error_set_status(
-                ncm_error, status, STRLIT("failed to build path"));
-            sb_free(&entry_path);
-            break;
-        }
-
-        status = browser_stat_local_path(
-            entry_path.data, entry_path.len, &stat, ncm_error);
-        if ((status == 0) && stat.exists
-            && (stat.type == NCM_FS_ENTRY_DIRECTORY)) {
-            status = browser_collect_local_directory_songs(
-                screen, songs, entry_path.data, entry_path.len, ncm_error);
-        } else if ((status == 0) && stat.exists
-                   && (stat.type == NCM_FS_ENTRY_FILE)
-                   && browser_local_path_has_supported_extension(
-                       screen, entry_path.data, entry_path.len)) {
-            NcmSong song = {0};
-
-            status = browser_make_local_song(
-                &song, entry_path.data, entry_path.len, (time_t)stat.mtime);
-            if (status == 0) {
-                status = ncm_song_array_append_copy(songs, &song);
-                if (status > 0) {
-                    status = 0;
-                }
-            }
-            ncm_song_destroy(&song);
-        }
-        sb_free(&entry_path);
-        if (status < 0) {
-            break;
-        }
-    }
-    ncm_fs_entry_destroy(&entry);
-    ncm_fs_directory_close(&directory);
-    return status;
-}
-
-static int32
-browser_collect_item_songs(BrowserScreen *screen,
-                           NcmSongArray *songs, NcmMpdItem *item) {
-    NcmStringView path;
-    int32 status;
-
-    ASSERT(screen != NULL);
-    ASSERT(songs != NULL);
-    ASSERT(item != NULL);
-
-    switch (ncm_mpd_item_kind(item)) {
-    case NCM_MPD_ITEM_DIRECTORY: {
-        NcmMpdSongList source = {0};
-        NcmError ncm_error = {0};
-        char *directory;
-
-        if (!ncm_directory_has_path_view(ncm_mpd_item_directory(item), &path)) {
-            return -EINVAL;
-        }
-        if (screen->local_browser) {
-            ncm_error_clear(&ncm_error);
-            return browser_collect_local_directory_songs(
-                screen, songs, path.data, path.len, &ncm_error);
-        }
-
-        ncm_error_clear(&ncm_error);
-        directory = path.data;
-        if (path.len <= 0) {
-            directory = "/";
-        }
-        status = ncm_mpd_client_get_directory_recursive(
-            &global_mpd, directory, &source, &ncm_error);
-        for (int32 i = 0; status >= 0 && (i < source.count); i += 1) {
-            status = ncm_song_array_append_copy(songs, &source.items[i]);
-        }
-        if (status > 0) {
-            status = 0;
-        }
-        ncm_mpd_song_list_destroy(&source);
-        return status;
-    }
-    case NCM_MPD_ITEM_SONG:
-        status = ncm_song_array_append_copy(songs, ncm_mpd_item_song(item));
-        if (status < 0) {
-            return status;
-        }
-        return 0;
-    case NCM_MPD_ITEM_PLAYLIST:
-    case NCM_MPD_ITEM_COUNT:
-        return 0;
-    default:
-        return -EINVAL;
-    }
 }
 
 static int32
