@@ -1950,15 +1950,12 @@ int32 sort_playlist_dialog_add_row(SortPlaylistDialog *dialog,
 int32 sort_playlist_dialog_open(
     SortPlaylistDialog *dialog, PlaylistScreen *playlist,
     NcmMpdClient *client, bool ignore_leading_the, NcmError *ncm_error);
-int32 sort_playlist_dialog_move_current_up(
-    SortPlaylistDialog *dialog);
-int32 sort_playlist_dialog_move_current_down(
-    SortPlaylistDialog *dialog);
-int32 sort_playlist_dialog_run_current(
-    SortPlaylistDialog *dialog);
-int32 sort_playlist_dialog_get_order(
-    SortPlaylistDialog *dialog, enum NcmSongGetter *getters,
-    int32 getters_cap);
+int32 sort_playlist_dialog_move_current_up(SortPlaylistDialog *dialog);
+int32 sort_playlist_dialog_move_current_down(SortPlaylistDialog *dialog);
+int32 sort_playlist_dialog_run_current(SortPlaylistDialog *dialog);
+int32 sort_playlist_dialog_get_order(SortPlaylistDialog *dialog,
+                                     enum NcmSongGetter *getters,
+                                     int32 getters_cap);
 
 /* screens/nc_tag_editor.h */
 #define ENUM_NAME TagEditorColumn
