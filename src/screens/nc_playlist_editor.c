@@ -922,8 +922,8 @@ playlist_editor_screen_locate_playlist(
     playlist_editor_update_menu_highlights(screen);
     playlist_editor_clear_content_filter(screen);
     playlist_editor_clear_stale_content(screen);
-    status = playlist_editor_screen_reload_content_from_mpd(
-        screen, client, ncm_error);
+    status = playlist_editor_screen_reload_content_from_mpd(screen, client,
+                                                            ncm_error);
     if (status < 0) {
         return status;
     }
