@@ -1714,10 +1714,10 @@ browser_screen_can_rename_playlist(
 }
 
 int32
-browser_screen_rename_current_directory(
-    BrowserScreen *screen, char *new_path, int32 new_path_len,
-    NcmMpdClient *client, NcmError *ncm_error
-) {
+browser_screen_rename_current_directory(BrowserScreen *screen,
+                                        char *new_path, int32 new_path_len,
+                                        NcmMpdClient *client,
+                                        NcmError *ncm_error) {
     NcmStringView old_path;
     NcmStringView new_path_view;
     int32 status;
