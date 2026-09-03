@@ -1,28 +1,8 @@
 # Prompt
 
-For the first of the problems below (functions that are called only once),
+For the first of the problems below (excessive NULL checking),
 identify instances of it in the first file in the list below it. Then fix those
 instances and remove the file from the list.
-
-## Functions that are called only once
-For functions that are defined inside a file and only used inside the same file,
-if they are called only once: inline their body and then delete them. If there
-aren't any functions that fit this pattern, simply delete the file from the
-list below, and go straight to the next file without asking me. If the next file
-also doesn't have any function that fit this pattern, continue deleting the file
-form the list below and searching on the next until you find.
-
-- src/curses/nc_window.c
-- src/c/ncm_error.c
-- src/curses/nc_buffer.c
-- src/global.c
-- src/bindings.c
-- src/curses/nc_scrollpad.c
-- src/c/ncm_fs.c
-- src/c/ncm_display.c
-- src/c/ncm_regex.c
-- src/c/ncm_tags.c
-- src/curses/nc_cyclic_buffer.c
 
 ## Excessive NULL checking
 The source code in src/ is at paranoia levels of NULL pointer checking.  For
