@@ -340,7 +340,7 @@ ncmpcpp_update_environment(bool update_timer, bool refresh_window,
 
     lyrics_screen_dispatch_jobs(app_screen_lyrics());
     if (lyrics_screen_try_take_consumer_message(app_screen_lyrics(),
-                                                &message)) {
+                                                &message) > 0) {
         ncm_statusbar_print(Config.message_delay_time,
                             message.data, message.len);
     }

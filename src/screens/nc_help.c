@@ -69,24 +69,34 @@ nc_help_screen_set_geometry(NcHelpScreen *screen,
     return;
 }
 
-bool
+int32
 nc_help_screen_reload(NcHelpScreen *screen) {
     NcBuffer next_buffer;
 
+    int32 status;
+
+    if (screen == NULL) {
+        return -EINVAL;
+    }
     if (screen->hooks.render == NULL) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
 
     next_buffer = (NcBuffer){0};
-    if (!screen->hooks.render(screen->hooks.user, &next_buffer)) {
+    status = screen->hooks.render(screen->hooks.user, &next_buffer);
+    if (status < 0) {
         nc_buffer_destroy(&next_buffer);
-        return false;
+        return status;
+    }
+    if (status == 0) {
+        nc_buffer_destroy(&next_buffer);
+        return -NCM_ERROR_UNAVAILABLE;
     }
 
     nc_buffer_destroy(&screen->buffer);
     nc_buffer_move(&screen->buffer, &next_buffer);
     nc_scrollpad_flush(&screen->scrollpad, &screen->window, &screen->buffer);
-    return true;
+    return 0;
 }
 
 int32

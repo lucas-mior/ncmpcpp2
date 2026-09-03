@@ -92,12 +92,12 @@ static int32 visualizer_system_open_udp(void *user,
 static int32 visualizer_system_read_source(void *user, int32 fd,
                                            void *buffer, int32 buffer_size);
 static void visualizer_system_close_source(void *user, int32 fd);
-static bool visualizer_system_get_outputs(void *user, NcmMpdOutputList *outputs,
-                                          NcmError *ncm_error);
-static bool visualizer_system_disable_output(void *user, int32 id,
+static int32 visualizer_system_get_outputs(
+    void *user, NcmMpdOutputList *outputs, NcmError *ncm_error);
+static int32 visualizer_system_disable_output(void *user, int32 id,
+                                              NcmError *ncm_error);
+static int32 visualizer_system_enable_output(void *user, int32 id,
                                              NcmError *ncm_error);
-static bool visualizer_system_enable_output(void *user, int32 id,
-                                            NcmError *ncm_error);
 static void visualizer_system_sleep_microseconds(void *user,
                                                  int32 microseconds);
 static void visualizer_reset_sample_clock(VisualizerScreen *screen);
@@ -523,28 +523,30 @@ visualizer_screen_drain_data_source(VisualizerScreen *screen) {
     return total_read;
 }
 
-bool
+int32
 visualizer_screen_find_output_id(VisualizerScreen *screen) {
     NcmMpdOutputList outputs;
     NcmError ncm_error;
+    int32 status;
     bool found = false;
 
     if (screen == NULL) {
-        return false;
+        return -EINVAL;
     }
 
     screen->output_id = -1;
     if ((screen->output_name.len <= 0) || (screen->source_port.len > 0)) {
-        return true;
+        return 0;
     }
     if (screen->data_source_hooks.get_outputs == NULL) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
 
     ncm_error_clear(&ncm_error);
     outputs = (NcmMpdOutputList){0};
-    if (!screen->data_source_hooks.get_outputs(
-        screen->data_source_hooks.user, &outputs, &ncm_error)) {
+    status = screen->data_source_hooks.get_outputs(
+        screen->data_source_hooks.user, &outputs, &ncm_error);
+    if (status < 0) {
         NcmStringFormatArg arg =
             ncm_string_format_arg_cstring(ncm_error.message);
 
@@ -553,7 +555,7 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
                              &arg,
                              1);
         ncm_mpd_output_list_destroy(&outputs);
-        return false;
+        return status;
     }
 
     for (int32 i = 0; i < outputs.count; i += 1) {
@@ -578,7 +580,10 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
                              &arg,
                              1);
     }
-    return found;
+    if (!found) {
+        return -NCM_ERROR_NOT_FOUND;
+    }
+    return 0;
 }
 
 void
@@ -1704,7 +1709,7 @@ visualizer_draw_frequency(VisualizerScreen *screen,
 }
 #endif
 
-bool
+int32
 visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
                        int32 samples_len) {
     int32 height;
@@ -1712,11 +1717,11 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
 
     if ((screen == NULL) || !screen->initialized
         || (samples == NULL) || (samples_len <= 0)) {
-        return false;
+        return -EINVAL;
     }
     height = nc_window_height(&screen->window);
     if ((nc_window_width(&screen->window) <= 0) || (height <= 0)) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
 
     nc_window_clear(&screen->window);
@@ -1725,7 +1730,7 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
             screen, samples, samples_len);
 
         if (channel_samples <= 0) {
-            return false;
+            return -NCM_ERROR_UNAVAILABLE;
         }
         half_height = height / 2;
         switch (screen->visualization_type) {
@@ -1762,9 +1767,9 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
             break;
         case VISUALIZER_TYPE_COUNT:
         default:
-            return false;
+            return -NCM_ERROR_INVALID_STATE;
         }
-        return true;
+        return 0;
     }
 
     switch (screen->visualization_type) {
@@ -1786,9 +1791,9 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
         break;
     case VISUALIZER_TYPE_COUNT:
     default:
-        return false;
+        return -NCM_ERROR_INVALID_STATE;
     }
-    return true;
+    return 0;
 }
 
 static int32
@@ -1911,41 +1916,38 @@ visualizer_system_close_source(void *user, int32 fd) {
     return;
 }
 
-static bool
+static int32
 visualizer_system_get_outputs(void *user, NcmMpdOutputList *outputs,
                               NcmError *ncm_error) {
     NcmMpdClient *client = user;
 
     if (client == NULL) {
-        ncm_error_set(ncm_error, EINVAL,
-                      STRLIT("MPD client is not configured"));
-        return false;
+        return ncm_error_set_status(
+            ncm_error, -EINVAL, STRLIT("MPD client is not configured"));
     }
-    return ncm_mpd_client_get_outputs(client, outputs, ncm_error) == 0;
+    return ncm_mpd_client_get_outputs(client, outputs, ncm_error);
 }
 
-static bool
+static int32
 visualizer_system_disable_output(void *user, int32 id, NcmError *ncm_error) {
     NcmMpdClient *client = user;
 
     if (client == NULL) {
-        ncm_error_set(ncm_error, EINVAL,
-                      STRLIT("MPD client is not configured"));
-        return false;
+        return ncm_error_set_status(
+            ncm_error, -EINVAL, STRLIT("MPD client is not configured"));
     }
-    return ncm_mpd_client_disable_output(client, id, ncm_error) == 0;
+    return ncm_mpd_client_disable_output(client, id, ncm_error);
 }
 
-static bool
+static int32
 visualizer_system_enable_output(void *user, int32 id, NcmError *ncm_error) {
     NcmMpdClient *client = user;
 
     if (client == NULL) {
-        ncm_error_set(ncm_error, EINVAL,
-                      STRLIT("MPD client is not configured"));
-        return false;
+        return ncm_error_set_status(
+            ncm_error, -EINVAL, STRLIT("MPD client is not configured"));
     }
-    return ncm_mpd_client_enable_output(client, id, ncm_error) == 0;
+    return ncm_mpd_client_enable_output(client, id, ncm_error);
 }
 
 static void
@@ -1971,10 +1973,11 @@ visualizer_reset_output(VisualizerScreen *screen) {
     }
 
     ncm_error_clear(&ncm_error);
-    if (!screen->data_source_hooks.disable_output(
+    status = screen->data_source_hooks.disable_output(
         screen->data_source_hooks.user,
         screen->output_id,
-        &ncm_error)) {
+        &ncm_error);
+    if (status < 0) {
         NcmStringFormatArg arg;
 
         arg = ncm_string_format_arg_cstring(ncm_error.message);
@@ -1982,10 +1985,6 @@ visualizer_reset_output(VisualizerScreen *screen) {
                              STRLIT("Could not disable visualizer output: %1"),
                              &arg,
                              1);
-        status = ncm_error_status(&ncm_error);
-        if (status == 0) {
-            status = -NCM_ERROR_UNAVAILABLE;
-        }
         return status;
     }
     if (screen->data_source_hooks.sleep_microseconds) {
@@ -1994,8 +1993,9 @@ visualizer_reset_output(VisualizerScreen *screen) {
     }
 
     ncm_error_clear(&ncm_error);
-    if (!screen->data_source_hooks.enable_output(
-        screen->data_source_hooks.user, screen->output_id, &ncm_error)) {
+    status = screen->data_source_hooks.enable_output(
+        screen->data_source_hooks.user, screen->output_id, &ncm_error);
+    if (status < 0) {
         NcmStringFormatArg arg;
 
         arg = ncm_string_format_arg_cstring(ncm_error.message);
@@ -2003,10 +2003,6 @@ visualizer_reset_output(VisualizerScreen *screen) {
                              STRLIT("Could not enable visualizer output: %1"),
                              &arg,
                              1);
-        status = ncm_error_status(&ncm_error);
-        if (status == 0) {
-            status = -NCM_ERROR_UNAVAILABLE;
-        }
         return status;
     }
 
@@ -2137,9 +2133,9 @@ visualizer_update_callback(NcScreen *screen) {
         return;
     }
 
-    if (!visualizer_screen_draw(visualizer,
-                                visualizer->rendered_samples.data,
-                                visualizer->rendered_samples.cap)) {
+    if (visualizer_screen_draw(visualizer,
+                               visualizer->rendered_samples.data,
+                               visualizer->rendered_samples.cap) < 0) {
         return;
     }
     nc_window_refresh(&visualizer->window);

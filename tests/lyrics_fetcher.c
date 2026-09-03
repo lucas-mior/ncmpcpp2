@@ -761,8 +761,8 @@ test_provider_aware_slug_normalization(void) {
                     "luis_fonsi/echame_la_culpa.html"),
         STRLIT("Luis Fonsi"), STRLIT("Despacito")) == 0);
 
-    ASSERT(!lyrics_unwrap_search_url(&unwrapped, STRLIT("")));
-    ASSERT(!lyrics_unwrap_search_url(&unwrapped, STRLIT("/url?q=")));
+    ASSERT(lyrics_unwrap_search_url(&unwrapped, STRLIT("")) < 0);
+    ASSERT(lyrics_unwrap_search_url(&unwrapped, STRLIT("/url?q=")) == 0);
     ASSERT(lyrics_collect_search_urls(
         &fetcher, &urls,
         STRLIT("<a href=\"\"></a><a href=\"/url?q=\"></a>"

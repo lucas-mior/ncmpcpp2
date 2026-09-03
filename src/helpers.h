@@ -15,10 +15,11 @@ char *ncm_helpers_with_errors(bool success);
 int32 ncm_helpers_show_song_time(int32 length, char *buffer, int32 buffer_cap);
 
 void ncm_menu_reverse_selection(NcMenu *menu, enum NcMenuItemSource source);
-bool ncm_menu_find_selected_range(NcMenu *menu, enum NcMenuItemSource source,
-                                  int32 *first, int32 *last);
-bool ncm_menu_find_full_selected_range(NcMenu *menu,
-                                       enum NcMenuItemSource source,
-                                       int32 *first, int32 *last);
+int32 ncm_menu_find_selected_range(NcMenu *menu,
+                                   enum NcMenuItemSource source,
+                                   int32 *first, int32 *last);
+int32 ncm_menu_find_full_selected_range(NcMenu *menu,
+                                        enum NcMenuItemSource source,
+                                        int32 *first, int32 *last);
 
 #endif /* NCMPCPP_HELPERS_H */

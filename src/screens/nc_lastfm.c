@@ -31,7 +31,7 @@ static char *lastfm_title_callback(NcScreen *screen);
 static void lastfm_update_callback(NcScreen *screen);
 static void lastfm_mouse_button_pressed_callback(NcScreen *screen,
                                                  MEVENT event);
-static bool lastfm_set_title(LastfmScreen *screen, char *title,
+static void lastfm_set_title(LastfmScreen *screen, char *title,
                              int32 title_len);
 static LastfmJob *lastfm_job_create(LastfmScreen *screen,
                                     NcmLastfmService *service);
@@ -157,7 +157,7 @@ lastfm_screen_init(LastfmScreen *screen,
     screen->initialized = true;
 
     nc_window_set_timeout(&screen->window, lines_scrolled);
-    (void)lastfm_set_title(screen, STRLIT(LASTFM_DEFAULT_TITLE));
+    lastfm_set_title(screen, STRLIT(LASTFM_DEFAULT_TITLE));
     return;
 }
 
@@ -271,7 +271,7 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
                                       lang, lang_len);
     screen->has_service = true;
     title = ncm_lastfm_service_name(&screen->service);
-    (void)lastfm_set_title(screen, title, strlen32(title));
+    lastfm_set_title(screen, title, strlen32(title));
     nc_buffer_clear(&screen->buffer);
     nc_buffer_append_cstring(&screen->buffer,
                              (char *)LASTFM_FETCHING);
@@ -287,7 +287,7 @@ lastfm_screen_dispatch_jobs(LastfmScreen *screen) {
 void
 lastfm_screen_update(LastfmScreen *screen) {
     lastfm_screen_dispatch_jobs(screen);
-    if (lastfm_screen_take_refresh_request(screen)) {
+    if (lastfm_screen_take_refresh_request(screen) > 0) {
         nc_scrollpad_flush(&screen->scrollpad,
                            &screen->window,
                            &screen->buffer);
@@ -304,13 +304,20 @@ lastfm_screen_title(LastfmScreen *screen) {
     return screen->title;
 }
 
-bool
+int32
 lastfm_screen_take_refresh_request(LastfmScreen *screen) {
     bool result;
 
+    if (screen == NULL) {
+        return -EINVAL;
+    }
+
     result = screen->refresh_window;
     screen->refresh_window = false;
-    return result;
+    if (result) {
+        return 1;
+    }
+    return 0;
 }
 
 int32
@@ -426,10 +433,13 @@ lastfm_mouse_button_pressed_callback(NcScreen *screen, MEVENT event) {
     return;
 }
 
-static bool
+static void
 lastfm_set_title(LastfmScreen *screen, char *title, int32 title_len) {
     int32 cap;
 
+    if (screen == NULL) {
+        return;
+    }
     if (title == NULL) {
         title = (char *)LASTFM_DEFAULT_TITLE;
         title_len = STRLIT_LEN(LASTFM_DEFAULT_TITLE);
@@ -447,7 +457,7 @@ lastfm_set_title(LastfmScreen *screen, char *title, int32 title_len) {
     screen->title[title_len] = '\0';
     screen->title_len = title_len;
 
-    return true;
+    return;
 }
 
 static LastfmJob *
