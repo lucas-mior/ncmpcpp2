@@ -3847,9 +3847,8 @@ library_refresh(NcScreen *screen) {
     library_update_menu_highlights(library);
     if (media_library_screen_column_is_visible(
         library, MEDIA_LIBRARY_COLUMN_TAGS)) {
-        library_refresh_menu(
-            nc_media_library_tag_menu_base(&library->tags),
-            &library->tags_window);
+        library_refresh_menu(nc_media_library_tag_menu_base(&library->tags),
+                             &library->tags_window);
         nc_screen_draw_vertical_separator(
             nc_window_start_x(&library->albums_window) - 1);
     }
