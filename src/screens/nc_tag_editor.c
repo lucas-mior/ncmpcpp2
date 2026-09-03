@@ -3260,10 +3260,10 @@ tag_editor_reload_songs_from_mpd(TagEditorScreen *screen,
     {
         NcmMutableSong *current;
 
-        current = nc_tag_row_menu_current(&screen->tags);
-        if ((current != NULL) && (current->uri != NULL)
-            && (current->uri_len > 0)) {
-            sb_set(&preserved_uri, current->uri, current->uri_len);
+        if ((current = nc_tag_row_menu_current(&screen->tags))) {
+            if (current->uri && (current->uri_len > 0)) {
+                sb_set(&preserved_uri, current->uri, current->uri_len);
+            }
         }
     }
 
