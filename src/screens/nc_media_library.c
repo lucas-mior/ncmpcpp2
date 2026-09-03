@@ -3324,9 +3324,10 @@ library_move_to_tag(MediaLibraryScreen *screen,
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcMediaLibraryTagRow *row;
 
-        row = nc_menu_active_item_at(menu, i);
-        if (row
-            && STREQUAL(row->tag, row->tag_len, tag, tag_len)) {
+        if ((row = nc_menu_active_item_at(menu, i)) == NULL) {
+            continue;
+        }
+        if (STREQUAL(row->tag, row->tag_len, tag, tag_len)) {
             status = nc_menu_goto_selectable(menu, i);
             if (status < 0) {
                 return status;
