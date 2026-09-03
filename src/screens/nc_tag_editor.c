@@ -98,10 +98,10 @@ tag_editor_draw_tag(NcMenu *menu, NcWindow *window, void *item,
             song, field, Config.tags_separator, Config.tags_separator_len,
             Config.show_duplicate_tags);
         if (tag.len <= 0) {
-            tag_editor_append_formatted_color(
-                &buffer, &Config.empty_tags_color);
-            nc_buffer_append_data(&buffer, Config.empty_tag,
-                                  Config.empty_tag_len);
+            tag_editor_append_formatted_color(&buffer,
+                                              &Config.empty_tags_color);
+            nc_buffer_append_data(&buffer,
+                                  Config.empty_tag, Config.empty_tag_len);
             tag_editor_append_formatted_color_end(
                 &buffer, &Config.empty_tags_color);
         } else {
@@ -114,8 +114,7 @@ tag_editor_draw_tag(NcMenu *menu, NcWindow *window, void *item,
             tag_editor_append_formatted_color(&buffer, &Config.color2);
             nc_buffer_append_data(&buffer, STRLIT(" -> "));
             tag_editor_append_formatted_color_end(&buffer, &Config.color2);
-            nc_buffer_append_data(&buffer, song->new_name,
-                                     song->new_name_len);
+            nc_buffer_append_data(&buffer, song->new_name, song->new_name_len);
         }
     }
 
@@ -380,30 +379,30 @@ tag_editor_update_menu_highlights(TagEditorScreen *screen) {
     parser_rows = nc_editor_string_menu_base(&screen->parser_rows);
     parser_actions = nc_editor_string_menu_base(&screen->parser_actions);
 
-    nc_menu_set_highlight_prefix(
-        directories, &Config.current_item_inactive_column_prefix);
-    nc_menu_set_highlight_suffix(
-        directories, &Config.current_item_inactive_column_suffix);
-    nc_menu_set_highlight_prefix(
-        tag_types, &Config.current_item_inactive_column_prefix);
-    nc_menu_set_highlight_suffix(
-        tag_types, &Config.current_item_inactive_column_suffix);
-    nc_menu_set_highlight_prefix(
-        tags, &Config.current_item_inactive_column_prefix);
-    nc_menu_set_highlight_suffix(
-        tags, &Config.current_item_inactive_column_suffix);
-    nc_menu_set_highlight_prefix(
-        parser_dialog, &Config.current_item_inactive_column_prefix);
-    nc_menu_set_highlight_suffix(
-        parser_dialog, &Config.current_item_inactive_column_suffix);
-    nc_menu_set_highlight_prefix(
-        parser_rows, &Config.current_item_inactive_column_prefix);
-    nc_menu_set_highlight_suffix(
-        parser_rows, &Config.current_item_inactive_column_suffix);
-    nc_menu_set_highlight_prefix(
-        parser_actions, &Config.current_item_inactive_column_prefix);
-    nc_menu_set_highlight_suffix(
-        parser_actions, &Config.current_item_inactive_column_suffix);
+    nc_menu_set_highlight_prefix(directories,
+                                 &Config.current_item_inactive_column_prefix);
+    nc_menu_set_highlight_suffix(directories,
+                                 &Config.current_item_inactive_column_suffix);
+    nc_menu_set_highlight_prefix(tag_types,
+                                 &Config.current_item_inactive_column_prefix);
+    nc_menu_set_highlight_suffix(tag_types,
+                                 &Config.current_item_inactive_column_suffix);
+    nc_menu_set_highlight_prefix(tags,
+                                 &Config.current_item_inactive_column_prefix);
+    nc_menu_set_highlight_suffix(tags,
+                                 &Config.current_item_inactive_column_suffix);
+    nc_menu_set_highlight_prefix(parser_dialog,
+                                 &Config.current_item_inactive_column_prefix);
+    nc_menu_set_highlight_suffix(parser_dialog,
+                                 &Config.current_item_inactive_column_suffix);
+    nc_menu_set_highlight_prefix(parser_rows,
+                                 &Config.current_item_inactive_column_prefix);
+    nc_menu_set_highlight_suffix(parser_rows,
+                                 &Config.current_item_inactive_column_suffix);
+    nc_menu_set_highlight_prefix(parser_actions,
+                                 &Config.current_item_inactive_column_prefix);
+    nc_menu_set_highlight_suffix(parser_actions,
+                                 &Config.current_item_inactive_column_suffix);
 
     if ((active = tag_editor_screen_active_menu(screen))) {
         nc_menu_set_highlight_prefix(active, &Config.current_item_prefix);
@@ -423,6 +422,7 @@ tag_editor_update_menu_highlights(TagEditorScreen *screen) {
                        screen->active_focus)) {
             helper_border = Config.active_window_border;
         }
+
         nc_window_set_border(&screen->parser_dialog_window, dialog_border);
         nc_window_set_border(&screen->parser_window, parser_border);
         nc_window_set_border(&screen->parser_helper_window, helper_border);
