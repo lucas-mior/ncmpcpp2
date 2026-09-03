@@ -6,7 +6,9 @@ instances and remove the file from the list.
 
 ## Functions that are called only once
 For functions that are defined inside a file and only used inside the same file,
-if they are called only once: inline their body and then delete them.
+if they are called only once: inline their body and then delete them. If there
+aren't any functions that fit this pattern, simply delete the file from the
+list below, and go straight to the next file without asking me.
 
 - src/curses/nc_scrollpad.c
 - src/c/ncm_playlist.c
