@@ -1090,7 +1090,8 @@ browser_stat_local_path(char *path, int32 path_len, NcmFsStat *out,
         if (code == ENOENT) {
             return ncm_error_ok(ncm_error);
         }
-        message_len = SNPRINTF(message, "stat '%.*s': %s",
+        message_len = SNPRINTF(message,
+                               "stat '%.*s': %s",
                                path_len, path, strerror(code));
         return ncm_error_set_status(ncm_error, -code, message, message_len);
     }
