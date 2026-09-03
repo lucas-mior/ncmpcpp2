@@ -2092,9 +2092,8 @@ media_library_screen_current_song(MediaLibraryScreen *screen,
 }
 
 int32
-media_library_screen_selected_songs(
-    MediaLibraryScreen *screen, NcmSongArray *songs
-) {
+media_library_screen_selected_songs(MediaLibraryScreen *screen,
+                                    NcmSongArray *songs) {
     NcmError ncm_error;
     int32 status;
 
