@@ -21,7 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static int32 browser_set_normalized_directory(BrowserScreen *, char *, int32 );
 static int32 browser_set_parent_of_directory(BrowserScreen *, char *, int32 );
 static int32 browser_load_mpd_items(BrowserScreen *, NcmMpdItemArray *);
 static int32 browser_reload_from_local(BrowserScreen *, NcmError *);
@@ -162,6 +161,42 @@ browser_draw_item(NcMenu *menu, NcWindow *window,
     }
     nc_buffer_destroy(&buffer);
     return;
+}
+
+static bool
+browser_path_is_parent_directory(char *directory,
+                                 int32 directory_len) {
+    if (directory_len <= 0) {
+        return false;
+    }
+    if (STREQUAL(directory, directory_len, "..")) {
+        return true;
+    }
+    return ENDS_WITH(directory, directory_len, "/..");
+}
+
+static int32
+browser_set_normalized_directory(BrowserScreen *screen,
+                                 char *directory,
+                                 int32 directory_len) {
+    ASSERT(screen != NULL);
+    if (directory_len < 0) {
+        return -EINVAL;
+    }
+    if ((directory == NULL) && (directory_len > 0)) {
+        return -EINVAL;
+    }
+    if (browser_path_is_parent_directory(directory, directory_len)) {
+        if (STREQUAL(directory, directory_len, "..")) {
+            return browser_set_parent_of_directory(
+                screen, screen->current_directory.data,
+                screen->current_directory.len);
+        }
+        return browser_set_parent_of_directory(
+            screen, directory, directory_len - STRLIT_LEN("/.."));
+    }
+    return browser_screen_set_current_directory(
+        screen, directory, directory_len);
 }
 
 static int32
@@ -1498,18 +1533,6 @@ browser_screen_search(BrowserScreen *screen,
     return status;
 }
 
-static bool
-browser_path_is_parent_directory(char *directory,
-                                 int32 directory_len) {
-    if (directory_len <= 0) {
-        return false;
-    }
-    if (STREQUAL(directory, directory_len, "..")) {
-        return true;
-    }
-    return ENDS_WITH(directory, directory_len, "/..");
-}
-
 bool
 browser_screen_item_is_parent(NcmMpdItem *item) {
     NcmStringView view;
@@ -1691,30 +1714,6 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
         }
     }
     return;
-}
-
-static int32
-browser_set_normalized_directory(BrowserScreen *screen,
-                                 char *directory,
-                                 int32 directory_len) {
-    ASSERT(screen != NULL);
-    if (directory_len < 0) {
-        return -EINVAL;
-    }
-    if ((directory == NULL) && (directory_len > 0)) {
-        return -EINVAL;
-    }
-    if (browser_path_is_parent_directory(directory, directory_len)) {
-        if (STREQUAL(directory, directory_len, "..")) {
-            return browser_set_parent_of_directory(
-                screen, screen->current_directory.data,
-                screen->current_directory.len);
-        }
-        return browser_set_parent_of_directory(
-            screen, directory, directory_len - STRLIT_LEN("/.."));
-    }
-    return browser_screen_set_current_directory(
-        screen, directory, directory_len);
 }
 
 static int32
