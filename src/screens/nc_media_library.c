@@ -2768,8 +2768,8 @@ library_update_songs(MediaLibraryScreen *screen,
         }
     }
 
-    status = media_library_screen_search_songs(
-        screen, &query, &source, ncm_error);
+    status = media_library_screen_search_songs(screen, &query, &source,
+                                               ncm_error);
     if (status < 0) {
         screen->songs_update_request = true;
         ncm_song_array_destroy(&songs);
