@@ -44,6 +44,7 @@ static int32 browser_compare_times(time_t left, time_t right);
 static NcmStringView browser_directory_sort_view(NcmMpdItem *item);
 static NcmStringView browser_playlist_sort_view(NcmMpdItem *item);
 static NcmStringView browser_song_name_sort_view(NcmMpdItem *item);
+
 #define NC_SCREEN_IMPL_TYPE BrowserScreen
 #define NC_SCREEN_IMPL_PREFIX browser
 #define NC_SCREEN_IMPL_PUBLIC_PREFIX browser_screen
