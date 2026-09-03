@@ -5,20 +5,9 @@
 
 #include "c/ncm_c.h"
 
-static int32
-ncm_time_set_errno_error(NcmError *ncm_error, int32 code, char *operation) {
-    char message[256];
-    int32 message_len;
-
-    message_len = SNPRINTF(message, "%s: %s",
-                           operation, strerror(code));
-    return ncm_error_set_status(ncm_error, -code, message, message_len);
-}
-
 int32
 ncm_time_monotonic_now(NcmTimePoint *point, NcmError *ncm_error) {
     struct timespec timespec;
-    int32 code;
 
     if (point == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
@@ -26,8 +15,12 @@ ncm_time_monotonic_now(NcmTimePoint *point, NcmError *ncm_error) {
     }
 
     if (clock_gettime(CLOCK_MONOTONIC, &timespec) != 0) {
-        code = errno;
-        return ncm_time_set_errno_error(ncm_error, code, "clock_gettime");
+        char message[256];
+        int32 code = errno;
+        int32 message_len;
+
+        message_len = SNPRINTF(message, "clock_gettime: %s", strerror(code));
+        return ncm_error_set_status(ncm_error, -code, message, message_len);
     }
 
     point->ns = (int64)timespec.tv_sec*1000000000ll;

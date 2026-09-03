@@ -8,26 +8,82 @@
 
 static NcmArrayItemCallbacks settings_no_callbacks = {0};
 
-static void settings_formatted_color_array_init_item(void *item);
 static void settings_formatted_color_array_destroy_item(void *item);
 
 static NcmArrayItemCallbacks settings_formatted_color_callbacks = {
-    .init = settings_formatted_color_array_init_item,
     .destroy = settings_formatted_color_array_destroy_item,
 };
 
+static void *
+settings_array_reserve_append(void *items, int32 len, int32 *cap,
+                              int64 item_size) {
+    int64 needed = (int64)len + 1;
+    int32 old_cap;
+    int32 new_cap;
+
+    if (needed <= *cap) {
+        return items;
+    }
+    if (needed >= MAXOF(*cap)) {
+        error("Array only supports fewer than 2GB items.\n");
+        fatal(EXIT_FAILURE);
+    }
+
+    old_cap = *cap;
+    new_cap = *cap;
+    if (new_cap <= 0) {
+        new_cap = 8;
+    }
+    if (needed >= MAXOF(new_cap)/2) {
+        new_cap = (int32)needed;
+    } else {
+        while (new_cap < needed) {
+            new_cap *= 2;
+        }
+    }
+
+    items = realloc2(items, old_cap, new_cap, item_size);
+    *cap = new_cap;
+    return items;
+}
+
 NCM_ARRAY_DEFINE_CLEAR(ncm_int32_array, NcmInt32Array, &settings_no_callbacks)
 NCM_ARRAY_DEFINE_DESTROY(ncm_int32_array, NcmInt32Array)
-NCM_ARRAY_DEFINE_RESERVE(ncm_int32_array, NcmInt32Array)
-NCM_ARRAY_DEFINE_APPEND(ncm_int32_array, NcmInt32Array, int32,
-                        &settings_no_callbacks)
+
+int32 *
+ncm_int32_array_append(NcmInt32Array *array) {
+    int32 *item;
+
+    if (array == NULL) {
+        return NULL;
+    }
+
+    array->items = settings_array_reserve_append(
+        array->items, array->len, &array->cap, SIZEOF(*array->items));
+    item = &array->items[array->len];
+    array->len += 1;
+    *item = 0;
+    return item;
+}
 
 NCM_ARRAY_DEFINE_CLEAR(ncm_formatted_color_array, NcmFormattedColorArray,
                        &settings_formatted_color_callbacks)
-NCM_ARRAY_DEFINE_DESTROY(ncm_formatted_color_array, NcmFormattedColorArray)
-NCM_ARRAY_DEFINE_RESERVE(ncm_formatted_color_array, NcmFormattedColorArray)
-NCM_ARRAY_DEFINE_APPEND(ncm_formatted_color_array, NcmFormattedColorArray,
-                        NcFormattedColor, &settings_formatted_color_callbacks)
+
+NcFormattedColor *
+ncm_formatted_color_array_append(NcmFormattedColorArray *array) {
+    NcFormattedColor *item;
+
+    if (array == NULL) {
+        return NULL;
+    }
+
+    array->items = settings_array_reserve_append(
+        array->items, array->len, &array->cap, SIZEOF(*array->items));
+    item = &array->items[array->len];
+    array->len += 1;
+    nc_formatted_color_init(item);
+    return item;
+}
 
 static void
 settings_string_destroy(char **data, int32 *len, int32 *cap) {
@@ -56,81 +112,21 @@ column_init(Column *column) {
 }
 
 void
-column_destroy(Column *column) {
-    if (column == NULL) {
-        return;
-    }
-    settings_string_destroy(&column->name, &column->name_len,
-                            &column->name_cap);
-    settings_string_destroy(&column->type, &column->type_len,
-                            &column->type_cap);
-    column_init(column);
-    return;
-}
-
-void
 column_array_clear(ColumnArray *array) {
     if (array == NULL) {
         return;
     }
     for (int32 i = 0; i < array->len; i += 1) {
-        column_destroy(&array->items[i]);
+        Column *column = &array->items[i];
+
+        settings_string_destroy(&column->name, &column->name_len,
+                                &column->name_cap);
+        settings_string_destroy(&column->type, &column->type_len,
+                                &column->type_cap);
+        column_init(column);
     }
     array->len = 0;
     return;
-}
-
-void
-column_array_destroy(ColumnArray *array) {
-    if (array == NULL) {
-        return;
-    }
-    column_array_clear(array);
-    free2(array->items, array->cap*SIZEOF(*array->items));
-    *array = (ColumnArray){0};
-    return;
-}
-
-static int32
-column_array_reserve(ColumnArray *array, int32 extra) {
-    int64 needed;
-    int32 old_cap;
-    int32 new_cap;
-
-    ASSERT(array != NULL);
-    if (extra < 0) {
-        return -EINVAL;
-    }
-    if (extra == 0) {
-        return array->cap;
-    }
-
-    needed = (int64)array->len + extra;
-    if (needed <= array->cap) {
-        return array->cap;
-    }
-    if (needed >= MAXOF(array->cap)) {
-        error("Array only supports fewer than 2GB items.\n");
-        fatal(EXIT_FAILURE);
-    }
-
-    old_cap = array->cap;
-    new_cap = array->cap;
-    if (new_cap <= 0) {
-        new_cap = 8;
-    }
-    if (needed >= MAXOF(new_cap)/2) {
-        new_cap = (int32)needed;
-    } else {
-        while (new_cap < needed) {
-            new_cap *= 2;
-        }
-    }
-
-    array->items
-        = realloc2(array->items, old_cap, new_cap, SIZEOF(*array->items));
-    array->cap = new_cap;
-    return array->cap;
 }
 
 Column *
@@ -140,10 +136,9 @@ column_array_append(ColumnArray *array) {
     if (array == NULL) {
         return NULL;
     }
-    if (column_array_reserve(array, 1) < 0) {
-        return NULL;
-    }
 
+    array->items = settings_array_reserve_append(
+        array->items, array->len, &array->cap, SIZEOF(*array->items));
     column = &array->items[array->len];
     array->len += 1;
     column_init(column);
@@ -159,58 +154,6 @@ screen_type_array_clear(ScreenTypeArray *array) {
     return;
 }
 
-void
-screen_type_array_destroy(ScreenTypeArray *array) {
-    if (array == NULL) {
-        return;
-    }
-    free2(array->items, array->cap*SIZEOF(*array->items));
-    *array = (ScreenTypeArray){0};
-    return;
-}
-
-static int32
-screen_type_array_reserve(ScreenTypeArray *array, int32 extra) {
-    int64 needed;
-    int32 old_cap;
-    int32 new_cap;
-
-    ASSERT(array != NULL);
-    if (extra < 0) {
-        return -EINVAL;
-    }
-    if (extra == 0) {
-        return array->cap;
-    }
-
-    needed = (int64)array->len + extra;
-    if (needed <= array->cap) {
-        return array->cap;
-    }
-    if (needed >= MAXOF(array->cap)) {
-        error("Array only supports fewer than 2GB items.\n");
-        fatal(EXIT_FAILURE);
-    }
-
-    old_cap = array->cap;
-    new_cap = array->cap;
-    if (new_cap <= 0) {
-        new_cap = 8;
-    }
-    if (needed >= MAXOF(new_cap)/2) {
-        new_cap = (int32)needed;
-    } else {
-        while (new_cap < needed) {
-            new_cap *= 2;
-        }
-    }
-
-    array->items
-        = realloc2(array->items, old_cap, new_cap, SIZEOF(*array->items));
-    array->cap = new_cap;
-    return array->cap;
-}
-
 enum ScreenType *
 screen_type_array_append(ScreenTypeArray *array) {
     enum ScreenType *screen_type;
@@ -218,20 +161,13 @@ screen_type_array_append(ScreenTypeArray *array) {
     if (array == NULL) {
         return NULL;
     }
-    if (screen_type_array_reserve(array, 1) < 0) {
-        return NULL;
-    }
+
+    array->items = settings_array_reserve_append(
+        array->items, array->len, &array->cap, SIZEOF(*array->items));
     screen_type = &array->items[array->len];
     array->len += 1;
     *screen_type = NCM_SCREEN_TYPE_PLAYLIST;
     return screen_type;
-}
-
-static void
-settings_formatted_color_array_init_item(void *item) {
-    ASSERT(item != NULL);
-    nc_formatted_color_init(item);
-    return;
 }
 
 static void
@@ -241,8 +177,12 @@ settings_formatted_color_array_destroy_item(void *item) {
     return;
 }
 
-static void
-configuration_init_strings(Configuration *config) {
+void
+configuration_init(Configuration *config) {
+    if (config == NULL) {
+        return;
+    }
+
 #define NCM_CONFIG_STRING_INIT(name) \
     config->name = NULL; \
     config->name##_len = 0; \
@@ -265,37 +205,7 @@ configuration_init_strings(Configuration *config) {
     NCM_CONFIG_STRING_INIT(tags_separator);
 
 #undef NCM_CONFIG_STRING_INIT
-    return;
-}
 
-static void
-configuration_destroy_strings(Configuration *config) {
-#define NCM_CONFIG_STRING_DESTROY(name) \
-    settings_string_destroy(&config->name, &config->name##_len, \
-                            &config->name##_cap)
-
-    NCM_CONFIG_STRING_DESTROY(ncmpcpp_directory);
-    NCM_CONFIG_STRING_DESTROY(lyrics_directory);
-    NCM_CONFIG_STRING_DESTROY(mpd_music_dir);
-    NCM_CONFIG_STRING_DESTROY(visualizer_fifo_path);
-    NCM_CONFIG_STRING_DESTROY(visualizer_data_source);
-    NCM_CONFIG_STRING_DESTROY(visualizer_output_name);
-    NCM_CONFIG_STRING_DESTROY(empty_tag);
-    NCM_CONFIG_STRING_DESTROY(external_editor);
-    NCM_CONFIG_STRING_DESTROY(system_encoding);
-    NCM_CONFIG_STRING_DESTROY(execute_on_song_change);
-    NCM_CONFIG_STRING_DESTROY(execute_on_player_state_change);
-    NCM_CONFIG_STRING_DESTROY(lastfm_preferred_language);
-    NCM_CONFIG_STRING_DESTROY(pattern);
-    NCM_CONFIG_STRING_DESTROY(random_exclude_pattern);
-    NCM_CONFIG_STRING_DESTROY(tags_separator);
-
-#undef NCM_CONFIG_STRING_DESTROY
-    return;
-}
-
-static void
-configuration_init_buffers(Configuration *config) {
     config->progressbar = (StrBuilder){0};
     config->visualizer_chars = (StrBuilder){0};
 
@@ -309,30 +219,7 @@ configuration_init_buffers(Configuration *config) {
     config->current_item_suffix = (NcBuffer){0};
     config->current_item_inactive_column_prefix = (NcBuffer){0};
     config->current_item_inactive_column_suffix = (NcBuffer){0};
-    return;
-}
 
-static void
-configuration_destroy_buffers(Configuration *config) {
-    sb_free(&config->progressbar);
-    sb_free(&config->visualizer_chars);
-
-    nc_buffer_destroy(&config->browser_playlist_prefix);
-    nc_buffer_destroy(&config->selected_item_prefix);
-    nc_buffer_destroy(&config->selected_item_suffix);
-    nc_buffer_destroy(&config->now_playing_prefix);
-    nc_buffer_destroy(&config->now_playing_suffix);
-    nc_buffer_destroy(&config->modified_item_prefix);
-    nc_buffer_destroy(&config->current_item_prefix);
-    nc_buffer_destroy(&config->current_item_suffix);
-    nc_buffer_destroy(&config->current_item_inactive_column_prefix);
-    nc_buffer_destroy(&config->current_item_inactive_column_suffix);
-
-    return;
-}
-
-static void
-configuration_init_formats(Configuration *config) {
     config->song_list_format = (NcmFormatAst){0};
     config->song_window_title_format = (NcmFormatAst){0};
     config->song_library_format = (NcmFormatAst){0};
@@ -341,24 +228,7 @@ configuration_init_formats(Configuration *config) {
     config->song_status_format = (NcmFormatAst){0};
     config->new_header_first_line = (NcmFormatAst){0};
     config->new_header_second_line = (NcmFormatAst){0};
-    return;
-}
 
-static void
-configuration_destroy_formats(Configuration *config) {
-    ncm_format_ast_destroy(&config->song_list_format);
-    ncm_format_ast_destroy(&config->song_window_title_format);
-    ncm_format_ast_destroy(&config->song_library_format);
-    ncm_format_ast_destroy(&config->song_columns_mode_format);
-    ncm_format_ast_destroy(&config->browser_sort_format);
-    ncm_format_ast_destroy(&config->song_status_format);
-    ncm_format_ast_destroy(&config->new_header_first_line);
-    ncm_format_ast_destroy(&config->new_header_second_line);
-    return;
-}
-
-static void
-configuration_init_colors(Configuration *config) {
     config->header_color = nc_color_default();
     config->main_color = nc_color_default();
     config->statusbar_color = nc_color_default();
@@ -378,27 +248,6 @@ configuration_init_colors(Configuration *config) {
     config->window_border = nc_border_none();
     config->active_window_border = nc_border_none();
 
-    return;
-}
-
-static void
-configuration_destroy_colors(Configuration *config) {
-    nc_formatted_color_destroy(&config->color1);
-    nc_formatted_color_destroy(&config->color2);
-    nc_formatted_color_destroy(&config->empty_tags_color);
-    nc_formatted_color_destroy(&config->volume_color);
-    nc_formatted_color_destroy(&config->state_line_color);
-    nc_formatted_color_destroy(&config->state_flags_color);
-    nc_formatted_color_destroy(&config->progressbar_color);
-    nc_formatted_color_destroy(&config->progressbar_elapsed_color);
-    nc_formatted_color_destroy(&config->player_state_color);
-    nc_formatted_color_destroy(&config->statusbar_time_color);
-    nc_formatted_color_destroy(&config->alternative_ui_separator_color);
-    return;
-}
-
-static void
-configuration_init_arrays(Configuration *config) {
     config->playlist_editor_column_width_ratio = (NcmInt32Array){0};
     config->media_library_column_width_ratio_two = (NcmInt32Array){0};
     config->media_library_column_width_ratio_three = (NcmInt32Array){0};
@@ -406,32 +255,6 @@ configuration_init_arrays(Configuration *config) {
     config->visualizer_colors = (NcmFormattedColorArray){0};
     config->screen_sequence = (ScreenTypeArray){0};
     config->lyrics_fetchers = (NcmLyricsFetcherRegistry){0};
-    return;
-}
-
-static void
-configuration_destroy_arrays(Configuration *config) {
-    ncm_int32_array_destroy(&config->playlist_editor_column_width_ratio);
-    ncm_int32_array_destroy(&config->media_library_column_width_ratio_two);
-    ncm_int32_array_destroy(&config->media_library_column_width_ratio_three);
-    column_array_destroy(&config->columns);
-    ncm_formatted_color_array_destroy(&config->visualizer_colors);
-    screen_type_array_destroy(&config->screen_sequence);
-    ncm_lyrics_fetcher_registry_destroy(&config->lyrics_fetchers);
-    return;
-}
-
-void
-configuration_init(Configuration *config) {
-    if (config == NULL) {
-        return;
-    }
-
-    configuration_init_strings(config);
-    configuration_init_buffers(config);
-    configuration_init_formats(config);
-    configuration_init_colors(config);
-    configuration_init_arrays(config);
 
     config->playlist_display_mode = NCM_DISPLAY_MODE_CLASSIC;
     config->browser_display_mode = NCM_DISPLAY_MODE_CLASSIC;
@@ -533,11 +356,82 @@ configuration_destroy(Configuration *config) {
         return;
     }
 
-    configuration_destroy_strings(config);
-    configuration_destroy_buffers(config);
-    configuration_destroy_formats(config);
-    configuration_destroy_colors(config);
-    configuration_destroy_arrays(config);
+#define NCM_CONFIG_STRING_DESTROY(name) \
+    settings_string_destroy(&config->name, &config->name##_len, \
+                            &config->name##_cap)
+
+    NCM_CONFIG_STRING_DESTROY(ncmpcpp_directory);
+    NCM_CONFIG_STRING_DESTROY(lyrics_directory);
+    NCM_CONFIG_STRING_DESTROY(mpd_music_dir);
+    NCM_CONFIG_STRING_DESTROY(visualizer_fifo_path);
+    NCM_CONFIG_STRING_DESTROY(visualizer_data_source);
+    NCM_CONFIG_STRING_DESTROY(visualizer_output_name);
+    NCM_CONFIG_STRING_DESTROY(empty_tag);
+    NCM_CONFIG_STRING_DESTROY(external_editor);
+    NCM_CONFIG_STRING_DESTROY(system_encoding);
+    NCM_CONFIG_STRING_DESTROY(execute_on_song_change);
+    NCM_CONFIG_STRING_DESTROY(execute_on_player_state_change);
+    NCM_CONFIG_STRING_DESTROY(lastfm_preferred_language);
+    NCM_CONFIG_STRING_DESTROY(pattern);
+    NCM_CONFIG_STRING_DESTROY(random_exclude_pattern);
+    NCM_CONFIG_STRING_DESTROY(tags_separator);
+
+#undef NCM_CONFIG_STRING_DESTROY
+
+    sb_free(&config->progressbar);
+    sb_free(&config->visualizer_chars);
+
+    nc_buffer_destroy(&config->browser_playlist_prefix);
+    nc_buffer_destroy(&config->selected_item_prefix);
+    nc_buffer_destroy(&config->selected_item_suffix);
+    nc_buffer_destroy(&config->now_playing_prefix);
+    nc_buffer_destroy(&config->now_playing_suffix);
+    nc_buffer_destroy(&config->modified_item_prefix);
+    nc_buffer_destroy(&config->current_item_prefix);
+    nc_buffer_destroy(&config->current_item_suffix);
+    nc_buffer_destroy(&config->current_item_inactive_column_prefix);
+    nc_buffer_destroy(&config->current_item_inactive_column_suffix);
+
+    ncm_format_ast_destroy(&config->song_list_format);
+    ncm_format_ast_destroy(&config->song_window_title_format);
+    ncm_format_ast_destroy(&config->song_library_format);
+    ncm_format_ast_destroy(&config->song_columns_mode_format);
+    ncm_format_ast_destroy(&config->browser_sort_format);
+    ncm_format_ast_destroy(&config->song_status_format);
+    ncm_format_ast_destroy(&config->new_header_first_line);
+    ncm_format_ast_destroy(&config->new_header_second_line);
+
+    nc_formatted_color_destroy(&config->color1);
+    nc_formatted_color_destroy(&config->color2);
+    nc_formatted_color_destroy(&config->empty_tags_color);
+    nc_formatted_color_destroy(&config->volume_color);
+    nc_formatted_color_destroy(&config->state_line_color);
+    nc_formatted_color_destroy(&config->state_flags_color);
+    nc_formatted_color_destroy(&config->progressbar_color);
+    nc_formatted_color_destroy(&config->progressbar_elapsed_color);
+    nc_formatted_color_destroy(&config->player_state_color);
+    nc_formatted_color_destroy(&config->statusbar_time_color);
+    nc_formatted_color_destroy(&config->alternative_ui_separator_color);
+
+    ncm_int32_array_destroy(&config->playlist_editor_column_width_ratio);
+    ncm_int32_array_destroy(&config->media_library_column_width_ratio_two);
+    ncm_int32_array_destroy(&config->media_library_column_width_ratio_three);
+    column_array_clear(&config->columns);
+    free2(config->columns.items,
+          config->columns.cap*SIZEOF(*config->columns.items));
+    config->columns = (ColumnArray){0};
+    ncm_formatted_color_array_clear(&config->visualizer_colors);
+    if (config->visualizer_colors.items) {
+        free2(config->visualizer_colors.items,
+              config->visualizer_colors.cap
+                  *SIZEOF(*config->visualizer_colors.items));
+    }
+    config->visualizer_colors = (NcmFormattedColorArray){0};
+    free2(config->screen_sequence.items,
+          config->screen_sequence.cap*SIZEOF(*config->screen_sequence.items));
+    config->screen_sequence = (ScreenTypeArray){0};
+    ncm_lyrics_fetcher_registry_destroy(&config->lyrics_fetchers);
+
     configuration_init(config);
 
     return;
