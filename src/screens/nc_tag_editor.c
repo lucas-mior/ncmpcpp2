@@ -52,6 +52,7 @@ static char *tag_editor_title(NcScreen *screen);
 static void tag_editor_update(NcScreen *screen);
 static void tag_editor_destroy_callback(NcScreen *screen);
 
+// declarations to delete
 static int32 tag_editor_reload_directories_from_mpd(TagEditorScreen *screen,
                                                     NcmMpdClient *client,
                                                     NcmError *ncm_error);
