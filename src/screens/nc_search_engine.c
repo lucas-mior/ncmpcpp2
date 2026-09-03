@@ -794,7 +794,7 @@ search_engine_screen_execute_search(SearchEngineScreen *screen,
             status = search_engine_screen_snapshot_playlist(
                 screen, &source, ncm_error);
         }
-        if (status == 0) {
+        if (status >= 0) {
             status = search_collect_local_results(screen, &source, &songs,
                                                   ncm_error);
         }
