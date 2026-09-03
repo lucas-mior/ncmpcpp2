@@ -3956,8 +3956,7 @@ library_scroll(NcScreen *screen, enum NcScroll where) {
 
 static void
 library_finish_list_change(NcScreen *screen) {
-    media_library_screen_finish_list_change(
-        library_from_screen(screen));
+    media_library_screen_finish_list_change(library_from_screen(screen));
     return;
 }
 
