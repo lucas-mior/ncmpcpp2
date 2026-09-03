@@ -571,9 +571,11 @@ tag_editor_screen_init(TagEditorScreen *screen,
     nc_editor_pair_menu_init(&screen->directories);
     nc_editor_string_menu_init(&screen->tag_types);
     nc_tag_row_menu_init(&screen->tags);
+
     nc_editor_string_menu_init(&screen->parser_dialog);
     nc_editor_string_menu_init(&screen->parser_rows);
     nc_editor_string_menu_init(&screen->parser_actions);
+
     screen->hooks = (TagEditorHooks){0};
     screen->current_dir = (StrBuilder){0};
     screen->displayed_dir = (StrBuilder){0};
@@ -587,7 +589,9 @@ tag_editor_screen_init(TagEditorScreen *screen,
     screen->parser_helper_title = (StrBuilder){0};
     screen->parser_legend = (StrBuilder){0};
     screen->parser_preview = (StrBuilder){0};
+
     str_builder_array_init(&screen->recent_patterns);
+
     screen->directory_filter_constraint = (StrBuilder){0};
     screen->tag_filter_constraint = (StrBuilder){0};
     screen->directory_search_constraint = (StrBuilder){0};
@@ -597,6 +601,7 @@ tag_editor_screen_init(TagEditorScreen *screen,
     screen->tag_filter_regex = (NcmRegex){0};
     screen->directory_search_regex = (NcmRegex){0};
     screen->tag_search_regex = (NcmRegex){0};
+
     tag_editor_update_titles(screen, false);
     nc_window_init(&screen->directories_window, start_x, main_start_y,
                    width, main_height, screen->directories_title.data,
