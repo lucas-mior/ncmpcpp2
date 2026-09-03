@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static void library_refresh_menu(NcMenu *menu, NcWindow *window);
 static bool library_active_item_matches(MediaLibraryScreen *screen, NcMenu *menu, int32 pos, NcmRegex *regex);
 static bool library_search_position(NcMenu *menu, int32 pos, void *user);
 static void library_layout(MediaLibraryScreen *screen);
@@ -62,6 +61,14 @@ static bool library_has_pending_tags(MediaLibraryScreen *screen);
 static bool library_has_pending_albums(MediaLibraryScreen *screen);
 static bool library_has_pending_songs(MediaLibraryScreen *screen);
 static bool library_has_fetch_delay_elapsed(MediaLibraryScreen *screen);
+static void
+library_refresh_menu(NcMenu *menu, NcWindow *window) {
+    nc_window_display(window);
+    nc_menu_refresh(menu, window,
+                    nc_window_width(window), nc_window_height(window));
+    return;
+}
+
 static void
 library_update_titles(MediaLibraryScreen *screen,
                       bool update_windows) {
@@ -3920,14 +3927,6 @@ library_update(NcScreen *screen) {
 static void
 library_destroy_callback(NcScreen *screen) {
     media_library_screen_destroy(library_from_screen(screen));
-    return;
-}
-
-static void
-library_refresh_menu(NcMenu *menu, NcWindow *window) {
-    nc_window_display(window);
-    nc_menu_refresh(menu, window,
-                    nc_window_width(window), nc_window_height(window));
     return;
 }
 
