@@ -735,9 +735,7 @@ media_library_screen_format_album_row(
         SB_APPEND(&raw, row->album, row->album_len);
     }
 
-    converted = ncm_charset_copy(raw.data, raw.len);
-    SB_APPEND(output, converted.data, converted.len);
-    sb_free(&converted);
+    SB_APPEND(output, raw.data, raw.len);
     sb_free(&raw);
     return;
 }
