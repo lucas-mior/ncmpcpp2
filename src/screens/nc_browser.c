@@ -1091,7 +1091,7 @@ browser_stat_local_path(char *path, int32 path_len, NcmFsStat *out,
             return ncm_error_ok(ncm_error);
         }
         message_len = SNPRINTF(message, "stat '%.*s': %s",
-                               path_len, path, strerror(code));
+                                        path_len, path, strerror(code));
         return ncm_error_set_status(ncm_error, -code, message, message_len);
     }
 
@@ -1738,11 +1738,10 @@ browser_screen_rename_current_directory(
         StrBuilder old_real_path = {0};
         StrBuilder new_real_path = {0};
 
-        status = browser_real_path(
-            screen, old_path, &old_real_path, ncm_error);
+        status = browser_real_path(screen, old_path, &old_real_path, ncm_error);
         if (status == 0) {
-            status = browser_real_path(
-                screen, new_path_view, &new_real_path, ncm_error);
+            status = browser_real_path(screen, new_path_view, &new_real_path,
+                                       ncm_error);
         }
         if (status == 0) {
             status = ncm_fs_rename(
