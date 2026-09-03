@@ -2292,26 +2292,26 @@ NcEditorBufferMenu *tiny_tag_editor_screen_rows(
 void tiny_tag_editor_screen_set_geometry(
     TinyTagEditorScreen *screen, int32 start_x, int32 width,
     int32 main_start_y, int32 main_height);
-bool tiny_tag_editor_screen_set_edited_song(
+int32 tiny_tag_editor_screen_set_edited_song(
     TinyTagEditorScreen *screen, NcmSong *song);
 enum TinyTagEditorOpenResult
 tiny_tag_editor_screen_open_song(
     TinyTagEditorScreen *screen, NcmSong *song,
     char *music_dir, int32 music_dir_len, char *tag_separator,
     int32 tag_separator_len, bool show_duplicate_tags, StrBuilder *path);
-bool tiny_tag_editor_screen_reload_rows(
+int32 tiny_tag_editor_screen_reload_rows(
     TinyTagEditorScreen *screen,
     NcmTaglibAudioProperties *properties,
     bool extended_tags_supported, char *tag_separator,
     int32 tag_separator_len, bool show_duplicate_tags);
-bool tiny_tag_editor_screen_set_tag_value(
+int32 tiny_tag_editor_screen_set_tag_value(
     TinyTagEditorScreen *screen, enum NcmTagsField field,
     char *value, int32 value_len, char *separator, int32 separator_len);
-bool tiny_tag_editor_screen_set_filename(
+int32 tiny_tag_editor_screen_set_filename(
     TinyTagEditorScreen *screen, char *name, int32 name_len);
-bool tiny_tag_editor_screen_set_filename_stem(
+int32 tiny_tag_editor_screen_set_filename_stem(
     TinyTagEditorScreen *screen, char *stem, int32 stem_len);
-bool tiny_tag_editor_screen_run_row(
+int32 tiny_tag_editor_screen_run_row(
     TinyTagEditorScreen *screen, int32 row);
 int32 tiny_tag_editor_screen_run_current(
     TinyTagEditorScreen *screen);
