@@ -54,9 +54,6 @@ static void tag_editor_destroy_callback(NcScreen *screen);
 static void tag_editor_mouse_callback(NcScreen *, MEVENT);
 
 // declarations to delete
-static int32 tag_editor_save_recent_patterns(TagEditorScreen *); static int32 tag_editor_history_path(StrBuilder *);
-static enum TagEditorTagTypeAction tag_editor_current_tag_type_action( TagEditorScreen *, enum NcmTagsField *);
-static int32 tag_editor_for_each_target(TagEditorScreen *, int32 (*)(NcmMutableSong *, void *), void *);
 static int32 tag_editor_compile_constraint(NcmRegex *, char *, int32, uint32, NcmError *);
 static bool tag_editor_tag_matches_regex(TagEditorScreen *, NcmMutableSong *, NcmRegex *);
 static bool tag_editor_mouse_move_to_parser_focus(TagEditorScreen *, enum TagEditorFocus);
@@ -1340,6 +1337,37 @@ tag_editor_screen_next_column(TagEditorScreen *screen) {
     return;
 }
 
+static int32
+tag_editor_for_each_target(TagEditorScreen *screen,
+                           int32 (*cb)(NcmMutableSong *song, void *user),
+                           void *user) {
+    NcMenu *menu;
+    bool has_selected;
+    int32 count;
+    int32 status;
+
+    menu = nc_tag_row_menu_base(&screen->tags);
+    has_selected = nc_menu_has_selected(menu);
+    count = 0;
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        NcmMutableSong *song;
+
+        if (has_selected && !nc_menu_position_is_selected(menu, i)) {
+            continue;
+        }
+        song = nc_menu_active_item_at(menu, i);
+        if (song == NULL) {
+            continue;
+        }
+        status = cb(song, user);
+        if (status < 0) {
+            return status;
+        }
+        count += 1;
+    }
+    return count;
+}
+
 int32
 tag_editor_screen_apply_tag_to_selection(TagEditorScreen *screen,
                                          enum NcmTagsField field,
@@ -1812,6 +1840,18 @@ tag_editor_find_recent_pattern(TagEditorScreen *screen,
     return -1;
 }
 
+static int32
+tag_editor_history_path(StrBuilder *path) {
+    ASSERT(path != NULL);
+    if (Config.ncmpcpp_directory
+        && (Config.ncmpcpp_directory_len > 0)) {
+        return ncm_fs_join(path, Config.ncmpcpp_directory,
+                           Config.ncmpcpp_directory_len,
+                           STRLIT("patterns.list"));
+    }
+    return tag_editor_set_buffer(path, STRLIT("patterns.list"));
+}
+
 void
 tag_editor_screen_show_parser_actions(TagEditorScreen *screen,
                                       enum TagEditorParserMode mode) {
@@ -2238,6 +2278,56 @@ tag_editor_scroll(NcScreen *screen, enum NcScroll where) {
     return;
 }
 
+static enum TagEditorTagTypeAction
+tag_editor_current_tag_type_action(TagEditorScreen *screen,
+                                   enum NcmTagsField *field) {
+    NcMenu *menu;
+    NcMenuString *row;
+    int32 choice;
+
+    ASSERT(screen != NULL);
+    ASSERT(field != NULL);
+
+    *field = NCM_TAGS_FIELD_COUNT;
+    menu = nc_editor_string_menu_base(&screen->tag_types);
+    choice = nc_menu_highlight(menu);
+    if (((row = nc_menu_current_item(menu)) == NULL)
+        || !nc_menu_current_is_selectable(menu)) {
+        return TAG_EDITOR_TAG_TYPE_ACTION_NONE;
+    }
+
+    if ((choice >= 0) && (choice < 11)) {
+        *field = ncm_song_info_tags[choice].field;
+        if ((ncm_song_info_tags[choice].field == NCM_TAGS_FIELD_TRACK)
+            && (screen->active_focus
+                == TAG_EDITOR_FOCUS_TAG_TYPES)) {
+            return TAG_EDITOR_TAG_TYPE_ACTION_NUMBER_TRACKS;
+        }
+        return TAG_EDITOR_TAG_TYPE_ACTION_FIELD;
+    }
+    if (tag_editor_strings_equal(row->data, row->len,
+                                 STRLIT("Filename"))) {
+        return TAG_EDITOR_TAG_TYPE_ACTION_FILENAME;
+    }
+    if (tag_editor_strings_equal(row->data, row->len,
+                                 STRLIT("Capitalize First Letters"))) {
+        return TAG_EDITOR_TAG_TYPE_ACTION_CAPITALIZE;
+    }
+    if (tag_editor_strings_equal(row->data, row->len,
+                                 STRLIT("lower all letters"))) {
+        return TAG_EDITOR_TAG_TYPE_ACTION_LOWER;
+    }
+    if (tag_editor_strings_equal(row->data, row->len,
+                                 STRLIT("Reset"))) {
+        return TAG_EDITOR_TAG_TYPE_ACTION_RESET;
+    }
+    if (tag_editor_strings_equal(row->data, row->len,
+                                 STRLIT("Save"))) {
+        return TAG_EDITOR_TAG_TYPE_ACTION_SAVE;
+    }
+    return TAG_EDITOR_TAG_TYPE_ACTION_NONE;
+}
+
 static bool
 tag_editor_can_run_current(NcScreen *screen) {
     TagEditorScreen *editor = tag_editor_from_screen(screen);
@@ -2299,6 +2389,51 @@ tag_editor_can_run_current(NcScreen *screen) {
         break;
     }
     return false;
+}
+
+static int32
+tag_editor_save_recent_patterns(TagEditorScreen *screen) {
+    StrBuilder path = {0};
+    FILE *file;
+    int32 limit;
+    int32 status;
+
+    status = tag_editor_history_path(&path);
+    if (status < 0) {
+        sb_free(&path);
+        return status;
+    }
+    file = fopen(path.data, "w");
+    if (file == NULL) {
+        status = errno ? -errno : -EIO;
+        sb_free(&path);
+        return status;
+    }
+    status = 0;
+    limit = screen->recent_patterns.len;
+    if (limit > TAG_EDITOR_PATTERN_HISTORY_MAX) {
+        limit = TAG_EDITOR_PATTERN_HISTORY_MAX;
+    }
+    for (int32 i = 0; i < limit; i += 1) {
+        StrBuilder *pattern;
+
+        pattern = &screen->recent_patterns.items[i];
+        if ((pattern->len > 0)
+            && (fwrite64(pattern->data, 1, pattern->len, file)
+                != pattern->len)) {
+            status = -EIO;
+            break;
+        }
+        if (fputc('\n', file) == EOF) {
+            status = errno ? -errno : -EIO;
+            break;
+        }
+    }
+    if ((fclose(file) == EOF) && (status == 0)) {
+        status = errno ? -errno : -EIO;
+    }
+    sb_free(&path);
+    return status;
 }
 
 static int32
@@ -3848,37 +3983,6 @@ tag_editor_copy_selected_song_at(TagEditorScreen *screen,
 }
 
 static int32
-tag_editor_for_each_target(TagEditorScreen *screen,
-                           int32 (*cb)(NcmMutableSong *song, void *user),
-                           void *user) {
-    NcMenu *menu;
-    bool has_selected;
-    int32 count;
-    int32 status;
-
-    menu = nc_tag_row_menu_base(&screen->tags);
-    has_selected = nc_menu_has_selected(menu);
-    count = 0;
-    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        NcmMutableSong *song;
-
-        if (has_selected && !nc_menu_position_is_selected(menu, i)) {
-            continue;
-        }
-        song = nc_menu_active_item_at(menu, i);
-        if (song == NULL) {
-            continue;
-        }
-        status = cb(song, user);
-        if (status < 0) {
-            return status;
-        }
-        count += 1;
-    }
-    return count;
-}
-
-static int32
 tag_editor_set_song_tag_callback(NcmMutableSong *song, void *user) {
     TagSetter *setter = user;
 
@@ -4108,56 +4212,6 @@ tag_editor_tag_matches_regex(TagEditorScreen *screen,
     return found;
 }
 
-static enum TagEditorTagTypeAction
-tag_editor_current_tag_type_action(TagEditorScreen *screen,
-                                   enum NcmTagsField *field) {
-    NcMenu *menu;
-    NcMenuString *row;
-    int32 choice;
-
-    ASSERT(screen != NULL);
-    ASSERT(field != NULL);
-
-    *field = NCM_TAGS_FIELD_COUNT;
-    menu = nc_editor_string_menu_base(&screen->tag_types);
-    choice = nc_menu_highlight(menu);
-    if (((row = nc_menu_current_item(menu)) == NULL)
-        || !nc_menu_current_is_selectable(menu)) {
-        return TAG_EDITOR_TAG_TYPE_ACTION_NONE;
-    }
-
-    if ((choice >= 0) && (choice < 11)) {
-        *field = ncm_song_info_tags[choice].field;
-        if ((ncm_song_info_tags[choice].field == NCM_TAGS_FIELD_TRACK)
-            && (screen->active_focus
-                == TAG_EDITOR_FOCUS_TAG_TYPES)) {
-            return TAG_EDITOR_TAG_TYPE_ACTION_NUMBER_TRACKS;
-        }
-        return TAG_EDITOR_TAG_TYPE_ACTION_FIELD;
-    }
-    if (tag_editor_strings_equal(row->data, row->len,
-                                 STRLIT("Filename"))) {
-        return TAG_EDITOR_TAG_TYPE_ACTION_FILENAME;
-    }
-    if (tag_editor_strings_equal(row->data, row->len,
-                                 STRLIT("Capitalize First Letters"))) {
-        return TAG_EDITOR_TAG_TYPE_ACTION_CAPITALIZE;
-    }
-    if (tag_editor_strings_equal(row->data, row->len,
-                                 STRLIT("lower all letters"))) {
-        return TAG_EDITOR_TAG_TYPE_ACTION_LOWER;
-    }
-    if (tag_editor_strings_equal(row->data, row->len,
-                                 STRLIT("Reset"))) {
-        return TAG_EDITOR_TAG_TYPE_ACTION_RESET;
-    }
-    if (tag_editor_strings_equal(row->data, row->len,
-                                 STRLIT("Save"))) {
-        return TAG_EDITOR_TAG_TYPE_ACTION_SAVE;
-    }
-    return TAG_EDITOR_TAG_TYPE_ACTION_NONE;
-}
-
 static void
 tag_editor_status_message(TagEditorScreen *screen,
                           char *message, int32 message_len) {
@@ -4362,63 +4416,6 @@ tag_editor_build_parser_preview(TagEditorScreen *screen,
         screen->parser_preview_enabled = true;
     }
     return 0;
-}
-
-static int32
-tag_editor_save_recent_patterns(TagEditorScreen *screen) {
-    StrBuilder path = {0};
-    FILE *file;
-    int32 limit;
-    int32 status;
-
-    status = tag_editor_history_path(&path);
-    if (status < 0) {
-        sb_free(&path);
-        return status;
-    }
-    file = fopen(path.data, "w");
-    if (file == NULL) {
-        status = errno ? -errno : -EIO;
-        sb_free(&path);
-        return status;
-    }
-    status = 0;
-    limit = screen->recent_patterns.len;
-    if (limit > TAG_EDITOR_PATTERN_HISTORY_MAX) {
-        limit = TAG_EDITOR_PATTERN_HISTORY_MAX;
-    }
-    for (int32 i = 0; i < limit; i += 1) {
-        StrBuilder *pattern;
-
-        pattern = &screen->recent_patterns.items[i];
-        if ((pattern->len > 0)
-            && (fwrite64(pattern->data, 1, pattern->len, file)
-                != pattern->len)) {
-            status = -EIO;
-            break;
-        }
-        if (fputc('\n', file) == EOF) {
-            status = errno ? -errno : -EIO;
-            break;
-        }
-    }
-    if ((fclose(file) == EOF) && (status == 0)) {
-        status = errno ? -errno : -EIO;
-    }
-    sb_free(&path);
-    return status;
-}
-
-static int32
-tag_editor_history_path(StrBuilder *path) {
-    ASSERT(path != NULL);
-    if (Config.ncmpcpp_directory
-        && (Config.ncmpcpp_directory_len > 0)) {
-        return ncm_fs_join(path, Config.ncmpcpp_directory,
-                           Config.ncmpcpp_directory_len,
-                           STRLIT("patterns.list"));
-    }
-    return tag_editor_set_buffer(path, STRLIT("patterns.list"));
 }
 
 static int32
