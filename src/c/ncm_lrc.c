@@ -534,10 +534,9 @@ ncm_lrc_document_render_plain(NcmLrcDocument *document,
 
     ncm_lrc_document_clear_buffer_positions(document);
     for (int32 i = 0; i < document->entries_len; i += 1) {
-        NcmLrcEntry *entry;
+        NcmLrcEntry *entry = &document->entries[i];
         NcmStringView text;
 
-        entry = &document->entries[i];
         if (i > 0) {
             target->append(target->user, line_break, STRLIT_LEN("\n"));
             for (int32 j = 0; j < entry->blank_lines_before; j += 1) {
