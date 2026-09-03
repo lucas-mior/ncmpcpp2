@@ -1,5 +1,8 @@
 Diagnostics:
   UnusedIncludes: None
-  Suppress: "pp_including_mainfile_in_preamble"
+  ClangTidy:
+    Remove: "*"
 CompileFlags:
-  Add: [-Wno-undefined-internal]
+  Add:
+    - "-w"
+    - "-Wimplicit-function-declaration"
