@@ -2660,8 +2660,7 @@ static void
 library_restore_highlight(NcMenu *menu, int32 highlight) {
     int32 count;
 
-    count = nc_menu_item_count(menu);
-    if (count <= 0) {
+    if ((count = nc_menu_item_count(menu)) <= 0) {
         return;
     }
     if (highlight < 0) {
