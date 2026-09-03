@@ -522,12 +522,12 @@ playlist_editor_restore_playlist_path(PlaylistEditorScreen *screen,
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         NcmPlaylist *playlist;
 
-        playlist = nc_menu_active_item_at(menu, i);
-        if (playlist
-            && STREQUAL(playlist->path, playlist->path_len,
-                        buffer->data, buffer->len)) {
-            nc_menu_highlight_position(menu, i, screen->main_height);
-            return 1;
+        if ((playlist = nc_menu_active_item_at(menu, i))) {
+            if (STREQUAL(playlist->path, playlist->path_len,
+                         buffer->data, buffer->len)) {
+                nc_menu_highlight_position(menu, i, screen->main_height);
+                return 1;
+            }
         }
     }
     return 0;
