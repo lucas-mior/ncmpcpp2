@@ -3874,8 +3874,7 @@ library_collect_current_item_songs(
 static MediaLibraryColumnState *
 library_active_column_state(MediaLibraryScreen *screen) {
     ASSERT(screen != NULL);
-    return media_library_screen_column_state(screen,
-                                             screen->active_column);
+    return media_library_screen_column_state(screen, screen->active_column);
 }
 
 static NcMenuDisplayCallbacks
