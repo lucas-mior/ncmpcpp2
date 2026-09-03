@@ -28,9 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static bool library_column_has_visible_items(
-    MediaLibraryScreen *screen,
-    enum MediaLibraryColumn column);
 static bool library_song_matches(MediaLibraryScreen *screen,
                                  NcmSong *song, NcmRegex *regex);
 static int32 library_collect_selected_songs(
@@ -1463,6 +1460,20 @@ media_library_screen_refresh_inactive_songs(
         nc_media_library_song_menu_base(&screen->songs),
         &screen->songs_window);
     return 1;
+}
+
+static bool
+library_column_has_visible_items(MediaLibraryScreen *screen,
+                                 enum MediaLibraryColumn column) {
+    NcMenu *menu;
+
+    if (!media_library_screen_column_is_visible(screen, column)) {
+        return false;
+    }
+    if ((menu = library_column_menu(screen, column)) == NULL) {
+        return false;
+    }
+    return nc_menu_all_item_count(menu) > 0;
 }
 
 bool
@@ -3632,20 +3643,6 @@ library_draw_song(NcMenu *menu, NcWindow *window,
     library_print_buffer(window, &text);
     nc_buffer_destroy(&text);
     return;
-}
-
-static bool
-library_column_has_visible_items(MediaLibraryScreen *screen,
-                                 enum MediaLibraryColumn column) {
-    NcMenu *menu;
-
-    if (!media_library_screen_column_is_visible(screen, column)) {
-        return false;
-    }
-    if ((menu = library_column_menu(screen, column)) == NULL) {
-        return false;
-    }
-    return nc_menu_all_item_count(menu) > 0;
 }
 
 static void
