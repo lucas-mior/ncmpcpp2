@@ -90,7 +90,6 @@ form the list below and searching on the next until you find.
 - src/status.c
 - src/title.c
 - src/ui_state.c
-- src/actions.c
 
 ## Excessive NULL checking
 The source code in src/ is at paranoia levels of NULL pointer checking.  For
