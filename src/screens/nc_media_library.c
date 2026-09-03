@@ -3046,16 +3046,14 @@ library_replace_albums(MediaLibraryScreen *screen,
 static int32
 library_update_albums(MediaLibraryScreen *screen,
                       NcmError *ncm_error) {
-    MediaLibraryAlbumArray albums;
+    MediaLibraryAlbumArray albums = {0};
     MediaLibrarySongQuery query = {0};
     NcMediaLibraryTagRow *tag;
-    NcmMpdSongList songs;
+    NcmMpdSongList songs = {0};
     char *selected_tag;
     int32 selected_tag_len;
     int32 status;
 
-    albums = (MediaLibraryAlbumArray){0};
-    songs = (NcmMpdSongList){0};
     selected_tag = NULL;
     selected_tag_len = 0;
 
