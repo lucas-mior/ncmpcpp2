@@ -209,7 +209,7 @@ lastfm_screen_set_geometry(LastfmScreen *screen,
     return;
 }
 
-bool
+int32
 lastfm_screen_queue_artist_info(LastfmScreen *screen,
                                 char *artist, int32 artist_len,
                                 char *lang, int32 lang_len,
@@ -217,49 +217,51 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
     LastfmJob *job;
     NcmLastfmService candidate;
     char *title;
+    int32 status;
 
     if ((screen == NULL) || (artist == NULL) || (artist_len <= 0)) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing artist"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing artist"));
     }
 
     candidate = (NcmLastfmService){0};
-    if (ncm_lastfm_artist_info_init(&candidate, artist, artist_len,
-                                    lang, lang_len) < 0) {
+    status = ncm_lastfm_artist_info_init(&candidate, artist, artist_len,
+                                         lang, lang_len);
+    if (status < 0) {
         ncm_lastfm_service_destroy(&candidate);
-        ncm_error_set(ncm_error, EINVAL,
-                      STRLIT("invalid Last.fm service"));
-        return false;
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("invalid Last.fm service"));
     }
     if (screen->has_service
         && ncm_lastfm_service_is_equal(&screen->service, &candidate)) {
         ncm_lastfm_service_destroy(&candidate);
-        ncm_error_clear(ncm_error);
-        return true;
+        return ncm_error_ok(ncm_error);
     }
 
-    if (ncm_job_queue_start(&screen->jobs, ncm_error) < 0) {
+    status = ncm_job_queue_start(&screen->jobs, ncm_error);
+    if (status < 0) {
         ncm_lastfm_service_destroy(&candidate);
-        return false;
+        return status;
     }
 
     job = lastfm_job_create(screen, &candidate);
     ncm_lastfm_service_destroy(&candidate);
     if (job == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("failed to create job"));
-        return false;
+        return ncm_error_set_status(ncm_error, -NCM_ERROR_INVALID_STATE,
+                                    STRLIT("failed to create job"));
     }
 
-    if (ncm_job_queue_push(&screen->jobs,
-                            (NcmJob){
-                                .run = lastfm_job_run,
-                                .complete = lastfm_job_complete,
-                                .destroy = lastfm_job_destroy,
-                                .user = job,
-                            },
-                            ncm_error) < 0) {
+    status = ncm_job_queue_push(&screen->jobs,
+                                (NcmJob){
+                                    .run = lastfm_job_run,
+                                    .complete = lastfm_job_complete,
+                                    .destroy = lastfm_job_destroy,
+                                    .user = job,
+                                },
+                                ncm_error);
+    if (status < 0) {
         lastfm_job_destroy(job);
-        return false;
+        return status;
     }
 
     ncm_lastfm_service_destroy(&screen->service);
@@ -274,8 +276,7 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
     nc_buffer_append_cstring(&screen->buffer,
                              (char *)LASTFM_FETCHING);
     screen->refresh_window = true;
-    ncm_error_clear(ncm_error);
-    return true;
+    return ncm_error_ok(ncm_error);
 }
 
 int32
