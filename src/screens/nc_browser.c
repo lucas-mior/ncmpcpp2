@@ -1849,8 +1849,7 @@ browser_add_parent_directory_item(
 }
 
 static int32
-browser_load_mpd_items(BrowserScreen *screen,
-                       NcmMpdItemArray *items) {
+browser_load_mpd_items(BrowserScreen *screen, NcmMpdItemArray *items) {
     NcMenu *menu;
     int32 status;
 
