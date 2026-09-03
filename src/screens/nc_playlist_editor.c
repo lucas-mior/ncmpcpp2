@@ -1184,9 +1184,8 @@ playlist_editor_screen_current_playlist(
 }
 
 int32
-playlist_editor_screen_current_song(
-    PlaylistEditorScreen *screen, NcmSong *song
-) {
+playlist_editor_screen_current_song(PlaylistEditorScreen *screen,
+                                    NcmSong *song) {
     return playlist_editor_screen_current_content_song(screen, song);
 }
 
