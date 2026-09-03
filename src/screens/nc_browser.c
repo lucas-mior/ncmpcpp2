@@ -20,6 +20,7 @@ static char *browser_title(NcScreen *screen);
 static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
+// declarations to delete
 static void browser_install_menu_callbacks(BrowserScreen *screen);
 static void browser_draw_item(NcMenu *menu, NcWindow *window, void *item, int32 pos, void *user);
 static void browser_mouse_scroll(BrowserScreen *screen, enum NcScroll where);
