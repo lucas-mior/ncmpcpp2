@@ -4818,10 +4818,9 @@ action_runtime_mpd_music_dir_is_set(void) {
         return true;
     }
 
-    ncm_statusbar_print_cstring(
-        Config.message_delay_time,
-        "Proper mpd_music_dir variable has to be set in "
-        "configuration file");
+    ncm_statusbar_print_cstring(Config.message_delay_time,
+                                "Proper mpd_music_dir variable"
+                                " has to be set in configuration file");
     return false;
 }
 
