@@ -517,13 +517,10 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
 
 static int32
 settings_column_append_type(Column *column, char ch) {
-    char *new_data;
-    int32 new_len;
-    int32 new_cap;
+    int32 new_len = column->type_len + 1;
+    int32 new_cap = new_len + 1;
+    char *new_data = malloc2(new_cap);
 
-    new_len = column->type_len + 1;
-    new_cap = new_len + 1;
-    new_data = malloc2(new_cap);
     if (column->type_len > 0) {
         memcpy64(new_data, column->type, column->type_len);
     }
