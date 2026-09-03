@@ -28,8 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static int32 library_ratio_value(NcmInt32Array *ratios, int32 idx, int32 fallback);
-static int32 library_set_owned_string(char **dest, int32 *dest_len, int32 *dest_cap, char *source, int32 source_len);
 static void library_free_owned_string(char **data, int32 *len, int32 *cap);
 static int32 library_mpd_list_tags(void *user, enum mpd_tag_type tag_type, NcmMpdStringList *tags, NcmError *ncm_error);
 static int32 library_mpd_list_all_songs(void *user, NcmMpdSongList *songs, NcmError *ncm_error);
@@ -59,6 +57,46 @@ static bool library_has_pending_albums(MediaLibraryScreen *screen);
 static bool library_has_pending_songs(MediaLibraryScreen *screen);
 static bool library_has_fetch_delay_elapsed(MediaLibraryScreen *screen);
 static bool library_search_position(NcMenu *menu, int32 pos, void *user);
+
+static int32
+library_set_owned_string(char **dest, int32 *dest_len,
+                         int32 *dest_cap, char *source,
+                         int32 source_len) {
+    char *copy;
+    int32 cap;
+
+    ASSERT(dest != NULL);
+    ASSERT(dest_len != NULL);
+    ASSERT(dest_cap != NULL);
+
+    if ((source_len < 0) || ((source == NULL) && (source_len > 0))) {
+        return -EINVAL;
+    }
+    library_free_owned_string(dest, dest_len, dest_cap);
+    if (source_len == 0) {
+        return 0;
+    }
+    cap = source_len + 1;
+    copy = malloc2(cap);
+    memcpy64(copy, source, source_len);
+    copy[source_len] = '\0';
+    *dest = copy;
+    *dest_len = source_len;
+    *dest_cap = cap;
+    return 0;
+}
+
+static int32
+library_ratio_value(NcmInt32Array *ratios, int32 idx,
+                    int32 fallback) {
+    if ((ratios == NULL) || (idx < 0) || (idx >= ratios->len)) {
+        return fallback;
+    }
+    if (ratios->items[idx] <= 0) {
+        return fallback;
+    }
+    return ratios->items[idx];
+}
 
 static void
 library_layout(MediaLibraryScreen *screen) {
@@ -4027,46 +4065,6 @@ static void
 library_destroy_callback(NcScreen *screen) {
     media_library_screen_destroy(library_from_screen(screen));
     return;
-}
-
-static int32
-library_ratio_value(NcmInt32Array *ratios, int32 idx,
-                    int32 fallback) {
-    if ((ratios == NULL) || (idx < 0) || (idx >= ratios->len)) {
-        return fallback;
-    }
-    if (ratios->items[idx] <= 0) {
-        return fallback;
-    }
-    return ratios->items[idx];
-}
-
-static int32
-library_set_owned_string(char **dest, int32 *dest_len,
-                         int32 *dest_cap, char *source,
-                         int32 source_len) {
-    char *copy;
-    int32 cap;
-
-    ASSERT(dest != NULL);
-    ASSERT(dest_len != NULL);
-    ASSERT(dest_cap != NULL);
-
-    if ((source_len < 0) || ((source == NULL) && (source_len > 0))) {
-        return -EINVAL;
-    }
-    library_free_owned_string(dest, dest_len, dest_cap);
-    if (source_len == 0) {
-        return 0;
-    }
-    cap = source_len + 1;
-    copy = malloc2(cap);
-    memcpy64(copy, source, source_len);
-    copy[source_len] = '\0';
-    *dest = copy;
-    *dest_len = source_len;
-    *dest_cap = cap;
-    return 0;
 }
 
 static void
