@@ -1824,9 +1824,8 @@ media_library_albums_from_songs(
 }
 
 int32
-media_library_songs_from_list(
-    NcmSongArray *songs, NcmMpdSongList *source
-) {
+media_library_songs_from_list(NcmSongArray *songs,
+                              NcmMpdSongList *source) {
     NcmSongArray replacement;
     int32 status;
 
