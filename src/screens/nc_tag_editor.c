@@ -54,8 +54,6 @@ static void tag_editor_destroy_callback(NcScreen *screen);
 static void tag_editor_mouse_callback(NcScreen *, MEVENT);
 
 // declarations to delete
-static bool tag_editor_confirm(TagEditorScreen *, char *, int32);
-static bool tag_editor_directory_filter(NcMenu *, void *, void *);
 static void tag_editor_configure_menus(TagEditorScreen *);
 static void tag_editor_refresh_active_helper(TagEditorScreen *);
 static void tag_editor_refresh_menu(NcWindow *, NcMenu *);
@@ -1499,6 +1497,15 @@ tag_editor_finish_tag_type_change(TagEditorScreen *screen,
     return;
 }
 
+static bool
+tag_editor_confirm(TagEditorScreen *screen, char *message,
+                   int32 message_len) {
+    if (screen->hooks.confirm == NULL) {
+        return false;
+    }
+    return screen->hooks.confirm(screen->hooks.user, message, message_len);
+}
+
 void
 tag_editor_screen_previous_column(TagEditorScreen *screen) {
     if (!tag_editor_screen_previous_column_available(screen)) {
@@ -1937,6 +1944,34 @@ tag_editor_draw_directory(NcMenu *menu, NcWindow *window, void *item,
     return;
 }
 
+static bool
+tag_editor_directory_matches_regex(NcMenuStringPair *pair,
+                                   NcmRegex *regex, bool filter) {
+    if (pair->first == NULL) {
+        return false;
+    }
+    if (STREQUAL(pair->first, pair->first_len, ".")) {
+        return filter;
+    }
+    if (STREQUAL(pair->first, pair->first_len, "..")) {
+        return filter;
+    }
+    return ncm_regex_matches(regex, pair->first, pair->first_len);
+}
+
+static bool
+tag_editor_directory_filter(NcMenu *menu, void *item, void *user) {
+    TagEditorScreen *screen = user;
+    NcMenuStringPair *pair = item;
+
+    (void)menu;
+    if (!screen->directory_filter_enabled) {
+        return true;
+    }
+    return tag_editor_directory_matches_regex(
+        pair, &screen->directory_filter_regex, true);
+}
+
 static NcMenuDisplayCallbacks
 tag_editor_directory_display_callbacks(TagEditorScreen *screen) {
     NcMenuDisplayCallbacks callbacks = {0};
@@ -2130,21 +2165,6 @@ tag_editor_tag_matches_regex(TagEditorScreen *screen,
     found = ncm_regex_matches(regex, buffer.data, buffer.len);
     sb_free(&buffer);
     return found;
-}
-
-static bool
-tag_editor_directory_matches_regex(NcMenuStringPair *pair,
-                                   NcmRegex *regex, bool filter) {
-    if (pair->first == NULL) {
-        return false;
-    }
-    if (STREQUAL(pair->first, pair->first_len, ".")) {
-        return filter;
-    }
-    if (STREQUAL(pair->first, pair->first_len, "..")) {
-        return filter;
-    }
-    return ncm_regex_matches(regex, pair->first, pair->first_len);
 }
 
 static bool
@@ -4337,19 +4357,6 @@ tag_editor_append_locale(NcBuffer *buffer, char *data, int32 data_len) {
 }
 
 static bool
-tag_editor_directory_filter(NcMenu *menu, void *item, void *user) {
-    TagEditorScreen *screen = user;
-    NcMenuStringPair *pair = item;
-
-    (void)menu;
-    if (!screen->directory_filter_enabled) {
-        return true;
-    }
-    return tag_editor_directory_matches_regex(
-        pair, &screen->directory_filter_regex, true);
-}
-
-static bool
 tag_editor_tag_filter(NcMenu *menu, void *item, void *user) {
     TagEditorScreen *screen = user;
     NcmMutableSong *song = item;
@@ -4360,15 +4367,6 @@ tag_editor_tag_filter(NcMenu *menu, void *item, void *user) {
     }
     return tag_editor_tag_matches_regex(screen, song,
                                         &screen->tag_filter_regex);
-}
-
-static bool
-tag_editor_confirm(TagEditorScreen *screen, char *message,
-                   int32 message_len) {
-    if (screen->hooks.confirm == NULL) {
-        return false;
-    }
-    return screen->hooks.confirm(screen->hooks.user, message, message_len);
 }
 
 static int32
