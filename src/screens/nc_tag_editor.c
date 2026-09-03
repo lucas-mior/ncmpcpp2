@@ -4719,8 +4719,7 @@ tag_editor_append_pattern_row(TagEditorScreen *screen) {
 
     SB_APPEND(&row, "Pattern: ");
     SB_APPEND(&row, screen->pattern.data, screen->pattern.len);
-    status = tag_editor_append_parser_action_label(screen, row.data,
-                                                   row.len);
+    status = tag_editor_append_parser_action_label(screen, row.data, row.len);
     sb_free(&row);
     return status;
 }
