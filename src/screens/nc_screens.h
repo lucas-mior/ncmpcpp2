@@ -2116,29 +2116,29 @@ void tag_editor_screen_clear_stale_tags(
     TagEditorScreen *screen);
 void tag_editor_screen_finish_directory_change(
     TagEditorScreen *screen);
-bool tag_editor_screen_set_current_dir(TagEditorScreen *screen,
-                                       char *dir, int32 dir_len);
-bool tag_editor_screen_current_dir(TagEditorScreen *screen,
-                                   NcmStringView *view);
-bool tag_editor_screen_current_directory_path(
+int32 tag_editor_screen_set_current_dir(TagEditorScreen *screen,
+                                        char *dir, int32 dir_len);
+int32 tag_editor_screen_current_dir(TagEditorScreen *screen,
+                                    NcmStringView *view);
+int32 tag_editor_screen_current_directory_path(
     TagEditorScreen *screen, NcmStringView *view);
-bool tag_editor_screen_enter_directory(TagEditorScreen *screen);
-bool tag_editor_screen_go_to_parent(TagEditorScreen *screen);
-bool tag_editor_screen_locate_song(TagEditorScreen *screen,
-                                   NcmSong *song);
+int32 tag_editor_screen_enter_directory(TagEditorScreen *screen);
+int32 tag_editor_screen_go_to_parent(TagEditorScreen *screen);
+int32 tag_editor_screen_locate_song(TagEditorScreen *screen,
+                                    NcmSong *song);
 bool tag_editor_screen_rename_directory_available(
     TagEditorScreen *screen, char *music_dir, int32 music_dir_len);
 bool tag_editor_screen_rename_current_directory(
     TagEditorScreen *screen, char *music_dir, int32 music_dir_len);
-bool tag_editor_screen_add_directory(TagEditorScreen *screen,
-                                     char *label, int32 label_len,
-                                     char *path, int32 path_len);
-bool tag_editor_screen_load_songs(TagEditorScreen *screen,
-                                  NcmSongArray *songs);
-bool tag_editor_screen_add_mutable_song(
+int32 tag_editor_screen_add_directory(TagEditorScreen *screen,
+                                      char *label, int32 label_len,
+                                      char *path, int32 path_len);
+int32 tag_editor_screen_load_songs(TagEditorScreen *screen,
+                                   NcmSongArray *songs);
+int32 tag_editor_screen_add_mutable_song(
     TagEditorScreen *screen, NcmMutableSong *song);
-bool tag_editor_screen_selected_songs(TagEditorScreen *screen,
-                                      NcmSongArray *songs);
+int32 tag_editor_screen_selected_songs(TagEditorScreen *screen,
+                                       NcmSongArray *songs);
 bool tag_editor_screen_previous_column_available(
     TagEditorScreen *screen);
 bool tag_editor_screen_next_column_available(
