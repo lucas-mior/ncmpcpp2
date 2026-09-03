@@ -2950,8 +2950,8 @@ media_library_screen_update(MediaLibraryScreen *screen,
 }
 
 static void
-library_set_conversion_error(NcmError *ncm_error, char *message,
-                             int32 message_len) {
+library_set_conversion_error(NcmError *ncm_error,
+                             char *message, int32 message_len) {
     if (ncm_error && !ncm_error_is_set(ncm_error)) {
         ncm_error_set(ncm_error, EINVAL, message, message_len);
     }
