@@ -1248,7 +1248,6 @@ static int32
 playlist_build_mutable_song(NcmSong *replacement,
                             NcmSong *current, NcmMutableSong *edited) {
     NcmStringView value;
-    enum NcmTagsField field;
     int32 mtime;
     int32 duration;
     int32 status;
@@ -1262,9 +1261,12 @@ playlist_build_mutable_song(NcmSong *replacement,
     }
 
     for (int32 i = 0; i < current->tags_len; i += 1) {
+        enum NcmTagsField field;
+
         if (current->tags[i].type == MPD_TAG_UNKNOWN) {
             continue;
         }
+
         field = ncm_tags_field_from_tag_type(current->tags[i].type);
         if (field != NCM_TAGS_FIELD_COUNT) {
             continue;
