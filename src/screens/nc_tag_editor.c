@@ -5328,13 +5328,11 @@ tag_editor_mutable_song_to_format_song(NcmMutableSong *source,
     ncm_song_set_duration(dest, source->duration);
     ncm_song_set_mtime(dest, source->mtime);
     for (int32 i = 0; i < source->tags_len; i += 1) {
-        NcmMutableSongTag *tag;
-        enum mpd_tag_type type;
+        NcmMutableSongTag *tag = &source->tags[i];
+        enum mpd_tag_type type = ncm_tags_field_to_tag_type(tag->field);
         char *value;
         int32 value_len;
 
-        tag = &source->tags[i];
-        type = ncm_tags_field_to_tag_type(tag->field);
         if (tag->modified) {
             value = tag->value;
             value_len = tag->value_len;
