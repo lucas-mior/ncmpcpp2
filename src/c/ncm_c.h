@@ -741,14 +741,11 @@ typedef struct NcmSampleBuffer {
 void ncm_sample_buffer_destroy(NcmSampleBuffer *buffer);
 int32 ncm_sample_buffer_put(NcmSampleBuffer *buffer,
                             int16 *samples, int32 samples_len);
-int32 ncm_sample_buffer_get(NcmSampleBuffer *buffer,
-                            int32 samples_len, int16 *dest, int32 dest_len);
 int32 ncm_sample_buffer_get_clamped(NcmSampleBuffer *buffer,
                                     int32 samples_len,
                                     int16 *dest, int32 dest_len);
 void ncm_sample_buffer_resize(NcmSampleBuffer *buffer, int32 cap);
 void ncm_sample_buffer_clear(NcmSampleBuffer *buffer);
-int32 ncm_sample_buffer_size(NcmSampleBuffer *buffer);
 int32 ncm_sample_buffer_capacity(NcmSampleBuffer *buffer);
 
 /* c/ncm_app_arrays.h */
@@ -967,7 +964,8 @@ int32 ncm_mpd_connection_recv_idle(NcmMpdConnection *connection,
 int32 ncm_mpd_connection_check_error(NcmMpdConnection *connection);
 char *ncm_mpd_connection_error(NcmMpdConnection *connection);
 void ncm_mpd_connection_clear_error(NcmMpdConnection *connection);
-enum mpd_error ncm_mpd_connection_error_code(NcmMpdConnection *connection);
+enum mpd_error ncm_mpd_connection_error_code(
+    NcmMpdConnection *connection);
 enum mpd_server_error ncm_mpd_connection_server_error_code(
     NcmMpdConnection *connection);
 bool ncm_mpd_connection_error_is_clearable(NcmMpdConnection *connection);
