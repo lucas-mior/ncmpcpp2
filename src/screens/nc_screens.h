@@ -811,8 +811,8 @@ typedef struct NcOutputsScreen NcOutputsScreen;
 
 typedef struct NcOutputsHooks {
     void (*fetch_outputs)(void *user, NcOutputsScreen *screen);
-    bool (*toggle_output)(void *user, int32 id, bool enabled,
-                          char *name, int32 name_len);
+    int32 (*toggle_output)(void *user, int32 id, bool enabled,
+                             char *name, int32 name_len);
     void (*switch_to)(void *user);
     void (*resize_layout)(void *user, NcOutputsScreen *screen);
     void (*resize_background)(void *user);
@@ -858,7 +858,7 @@ void nc_outputs_screen_add_output(NcOutputsScreen *screen,
                                   char *name,
                                   int32 name_len,
                                   bool enabled);
-bool nc_outputs_screen_toggle_current(NcOutputsScreen *screen);
+int32 nc_outputs_screen_toggle_current(NcOutputsScreen *screen);
 NcScreen *nc_outputs_screen_base(NcOutputsScreen *screen);
 int32 nc_outputs_screen_start_x(NcOutputsScreen *screen);
 int32 nc_outputs_screen_start_y(NcOutputsScreen *screen);
@@ -1943,17 +1943,17 @@ void sort_playlist_dialog_set_geometry(
     int32 width, int32 height);
 void sort_playlist_dialog_populate_defaults(
     SortPlaylistDialog *dialog);
-bool sort_playlist_dialog_add_row(SortPlaylistDialog *dialog,
-                                  char *label, int32 label_len,
-                                  enum NcmSongGetter getter,
-                                  void (*run)(void *user),
-                                  void *user);
-bool sort_playlist_dialog_open(
+int32 sort_playlist_dialog_add_row(SortPlaylistDialog *dialog,
+                                    char *label, int32 label_len,
+                                    enum NcmSongGetter getter,
+                                    void (*run)(void *user),
+                                    void *user);
+int32 sort_playlist_dialog_open(
     SortPlaylistDialog *dialog, PlaylistScreen *playlist,
     NcmMpdClient *client, bool ignore_leading_the, NcmError *ncm_error);
-bool sort_playlist_dialog_move_current_up(
+int32 sort_playlist_dialog_move_current_up(
     SortPlaylistDialog *dialog);
-bool sort_playlist_dialog_move_current_down(
+int32 sort_playlist_dialog_move_current_down(
     SortPlaylistDialog *dialog);
 int32 sort_playlist_dialog_run_current(
     SortPlaylistDialog *dialog);

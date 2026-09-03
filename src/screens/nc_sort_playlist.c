@@ -26,7 +26,7 @@ static bool sort_dialog_position_is_sort_key(NcMenu *menu, int32 pos);
 static void sort_dialog_show_move_hint(void *user);
 static void sort_dialog_run_sort(void *user);
 static void sort_dialog_cancel(void *user);
-static bool sort_dialog_label_set(NcEditorSortRow *row, char *label,
+static void sort_dialog_label_set(NcEditorSortRow *row, char *label,
                                   int32 label_len);
 static void sort_dialog_apply_geometry(SortPlaylistDialog *dialog);
 static void sort_dialog_finish(SortPlaylistDialog *dialog);
@@ -177,29 +177,27 @@ sort_playlist_dialog_populate_defaults(
     return;
 }
 
-bool
+int32
 sort_playlist_dialog_add_row(SortPlaylistDialog *dialog,
                              char *label, int32 label_len,
                              enum NcmSongGetter getter,
                              void (*run)(void *user), void *user) {
     NcEditorSortRow row;
-    bool ok;
 
     if (dialog == NULL) {
-        return false;
+        return -EINVAL;
     }
     row = (NcEditorSortRow){0};
     row.getter = getter;
     row.action.run = run;
     row.action.user = user;
-    if ((ok = sort_dialog_label_set(&row, label, label_len))) {
-        nc_editor_sort_menu_add(&dialog->rows, &row);
-    }
+    sort_dialog_label_set(&row, label, label_len);
+    nc_editor_sort_menu_add(&dialog->rows, &row);
     nc_editor_sort_row_destroy(&row);
-    return ok;
+    return 0;
 }
 
-bool
+int32
 sort_playlist_dialog_open(
     SortPlaylistDialog *dialog, PlaylistScreen *playlist,
     NcmMpdClient *client, bool ignore_leading_the, NcmError *ncm_error
@@ -207,33 +205,34 @@ sort_playlist_dialog_open(
     NcmSongArray songs;
     NcScreen *current;
     int32 start_position;
+    int32 status;
 
     if (dialog == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing sort dialog"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing sort dialog"));
     }
     if (playlist == NULL) {
-        ncm_error_set(ncm_error, EINVAL,
-                      STRLIT("missing playlist screen"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing playlist screen"));
     }
     if (client == NULL) {
-        ncm_error_set(ncm_error, EINVAL, STRLIT("missing MPD client"));
-        return false;
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing MPD client"));
     }
 
     current = nc_screen_switcher_current();
     if (current != playlist_screen_base(playlist)) {
-        ncm_error_set(ncm_error, EINVAL,
-                      STRLIT("sort dialog requires playlist screen"));
-        return false;
+        return ncm_error_set_status(
+            ncm_error, -EINVAL,
+            STRLIT("sort dialog requires playlist screen"));
     }
 
     songs = (NcmSongArray){0};
-    if (playlist_screen_copy_sort_range(
-        playlist, &songs, &start_position, ncm_error) < 0) {
+    status = playlist_screen_copy_sort_range(
+        playlist, &songs, &start_position, ncm_error);
+    if (status < 0) {
         ncm_song_array_destroy(&songs);
-        return false;
+        return status;
     }
 
     sort_playlist_dialog_populate_defaults(dialog);
@@ -250,23 +249,23 @@ sort_playlist_dialog_open(
     dialog->ignore_leading_the = ignore_leading_the;
     dialog->ready = true;
 
-    if (nc_screen_switcher_switch_to(
-        sort_playlist_dialog_base(dialog), false) < 0) {
+    status = nc_screen_switcher_switch_to(
+        sort_playlist_dialog_base(dialog), false);
+    if (status < 0) {
         ncm_song_array_clear(&dialog->songs);
         dialog->playlist = NULL;
         dialog->previous_screen = NULL;
         dialog->client = NULL;
         dialog->ready = false;
-        ncm_error_set(ncm_error, EINVAL,
-                      STRLIT("sort dialog is not registered"));
-        return false;
+        return ncm_error_set_status(
+            ncm_error, status, STRLIT("sort dialog is not registered"));
     }
 
     ncm_error_clear(ncm_error);
-    return true;
+    return 0;
 }
 
-bool
+int32
 sort_playlist_dialog_move_current_up(
     SortPlaylistDialog *dialog
 ) {
@@ -274,22 +273,22 @@ sort_playlist_dialog_move_current_up(
     int32 pos;
 
     if (dialog == NULL) {
-        return false;
+        return -EINVAL;
     }
     menu = nc_editor_sort_menu_base(&dialog->rows);
     pos = nc_menu_highlight(menu);
     if ((pos <= 0) || !sort_dialog_position_is_sort_key(menu, pos)) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
     if (!sort_dialog_position_is_sort_key(menu, pos - 1)) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
     nc_menu_swap_item_slots(menu, NC_MENU_ITEMS_ALL, pos, pos - 1);
     nc_menu_highlight_position(menu, pos - 1, nc_menu_item_count(menu));
-    return true;
+    return 0;
 }
 
-bool
+int32
 sort_playlist_dialog_move_current_down(
     SortPlaylistDialog *dialog
 ) {
@@ -297,19 +296,19 @@ sort_playlist_dialog_move_current_down(
     int32 pos;
 
     if (dialog == NULL) {
-        return false;
+        return -EINVAL;
     }
     menu = nc_editor_sort_menu_base(&dialog->rows);
     pos = nc_menu_highlight(menu);
     if (!sort_dialog_position_is_sort_key(menu, pos)) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
     if (!sort_dialog_position_is_sort_key(menu, pos + 1)) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
     nc_menu_swap_item_slots(menu, NC_MENU_ITEMS_ALL, pos, pos + 1);
     nc_menu_highlight_position(menu, pos + 1, nc_menu_item_count(menu));
-    return true;
+    return 0;
 }
 
 int32
@@ -533,18 +532,18 @@ sort_dialog_cancel(void *user) {
     return;
 }
 
-static bool
+static void
 sort_dialog_label_set(NcEditorSortRow *row, char *label, int32 label_len) {
     ASSERT(row != NULL);
     if ((label == NULL) || (label_len <= 0)) {
-        return true;
+        return;
     }
     row->action.label_cap = label_len + 1;
     row->action.label = malloc2(row->action.label_cap);
     memcpy64(row->action.label, label, label_len);
     row->action.label[label_len] = '\0';
     row->action.label_len = label_len;
-    return true;
+    return;
 }
 
 static void
