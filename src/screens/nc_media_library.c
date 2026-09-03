@@ -3130,9 +3130,11 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
         album_tag_len = 0;
     }
 
-    status = library_move_to_album(
-        screen, primary_value.data, primary_value.len,
-        album.data, album.len, date.data, date.len, true);
+    status = library_move_to_album(screen,
+                                   primary_value.data, primary_value.len,
+                                   album.data, album.len,
+                                   date.data, date.len, 
+                                   true);
     if (status < 0) {
         return ncm_error_set_status(
             ncm_error, status, STRLIT("failed to select song album"));
