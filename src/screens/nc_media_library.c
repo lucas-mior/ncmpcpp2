@@ -27,9 +27,6 @@ static char *library_title(NcScreen *screen);
 static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
-// declarations to delete
-static bool library_tag_identity_is_equal(NcMediaLibraryTagRow *left, NcMediaLibraryTagRow *right);
-
 static char *
 library_query_cstring(StrBuilder *buffer, char *string, int32 string_len) {
     ASSERT(buffer != NULL);
@@ -2555,6 +2552,15 @@ library_restart_update_timer(MediaLibraryScreen *screen) {
     return;
 }
 
+static bool
+library_tag_identity_is_equal(NcMediaLibraryTagRow *left,
+                           NcMediaLibraryTagRow *right) {
+    if ((left == NULL) || (right == NULL)) {
+        return left == right;
+    }
+    return STREQUAL(left->tag, left->tag_len, right->tag, right->tag_len);
+}
+
 void
 media_library_screen_finish_list_change(
     MediaLibraryScreen *screen
@@ -3144,15 +3150,6 @@ media_library_screen_update(MediaLibraryScreen *screen,
         nc_screen_clear_update_request(&screen->screen);
     }
     return 0;
-}
-
-static bool
-library_tag_identity_is_equal(NcMediaLibraryTagRow *left,
-                           NcMediaLibraryTagRow *right) {
-    if ((left == NULL) || (right == NULL)) {
-        return left == right;
-    }
-    return STREQUAL(left->tag, left->tag_len, right->tag, right->tag_len);
 }
 
 static bool
