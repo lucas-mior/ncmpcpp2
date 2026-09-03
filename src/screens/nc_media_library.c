@@ -2592,10 +2592,8 @@ media_library_screen_finish_list_change(
     }
 
     if (tag_changed) {
-        nc_menu_clear_items(
-            nc_media_library_album_menu_base(&screen->albums));
-        nc_menu_clear_items(
-            nc_media_library_song_menu_base(&screen->songs));
+        nc_menu_clear_items(nc_media_library_album_menu_base(&screen->albums));
+        nc_menu_clear_items(nc_media_library_song_menu_base(&screen->songs));
         library_restart_update_timer(screen);
         library_set_observed_tag(screen, tag);
         library_set_observed_album(screen, NULL);
