@@ -21,7 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static bool browser_path_is_parent_directory(char *, int32 );
 static int32 browser_set_normalized_directory(BrowserScreen *, char *, int32 );
 static int32 browser_set_parent_of_directory(BrowserScreen *, char *, int32 );
 static int32 browser_load_mpd_items(BrowserScreen *, NcmMpdItemArray *);
@@ -1499,6 +1498,18 @@ browser_screen_search(BrowserScreen *screen,
     return status;
 }
 
+static bool
+browser_path_is_parent_directory(char *directory,
+                                 int32 directory_len) {
+    if (directory_len <= 0) {
+        return false;
+    }
+    if (STREQUAL(directory, directory_len, "..")) {
+        return true;
+    }
+    return ENDS_WITH(directory, directory_len, "/..");
+}
+
 bool
 browser_screen_item_is_parent(NcmMpdItem *item) {
     NcmStringView view;
@@ -1680,18 +1691,6 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
         }
     }
     return;
-}
-
-static bool
-browser_path_is_parent_directory(char *directory,
-                                 int32 directory_len) {
-    if (directory_len <= 0) {
-        return false;
-    }
-    if (STREQUAL(directory, directory_len, "..")) {
-        return true;
-    }
-    return ENDS_WITH(directory, directory_len, "/..");
 }
 
 static int32
