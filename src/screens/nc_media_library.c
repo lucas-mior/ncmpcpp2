@@ -4256,14 +4256,13 @@ library_mpd_search_songs(void *user,
                          MediaLibrarySongQuery *query,
                          NcmMpdSongList *songs,
                          NcmError *ncm_error) {
-    NcmMpdClient *client;
+    NcmMpdClient *client = user;
     StrBuilder primary = {0};
     StrBuilder album = {0};
     StrBuilder date = {0};
     char *value;
     int32 status;
 
-    client = user;
     ASSERT(client != NULL);
     ASSERT(query != NULL);
     ASSERT(songs != NULL);
