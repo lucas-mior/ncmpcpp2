@@ -2244,11 +2244,11 @@ static int32
 tag_editor_compile_constraint(NcmRegex *regex, char *pattern,
                                int32 pattern_len, uint32 regex_flags,
                                NcmError *ncm_error) {
-    NcmRegex compiled;
+    NcmRegex compiled = {0};
     int32 status;
 
     ASSERT(regex != NULL);
-    compiled = (NcmRegex){0};
+
     if ((status = ncm_regex_compile(&compiled, pattern, pattern_len,
                                     regex_flags, ncm_error)) < 0) {
         ncm_regex_destroy(&compiled);
