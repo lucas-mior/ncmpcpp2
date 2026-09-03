@@ -3915,14 +3915,10 @@ tag_editor_append_formatted_color_end(NcBuffer *buffer,
 
 static void
 tag_editor_append_locale(NcBuffer *buffer, char *data, int32 data_len) {
-    StrBuilder converted;
-
     if ((data == NULL) || (data_len <= 0)) {
         return;
     }
-    converted = ncm_charset_copy(data, data_len);
-    nc_buffer_append_data(buffer, converted.data, converted.len);
-    sb_free(&converted);
+    nc_buffer_append_data(buffer, data, data_len);
     return;
 }
 
