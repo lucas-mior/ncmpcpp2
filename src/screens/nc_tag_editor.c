@@ -54,9 +54,6 @@ static void tag_editor_destroy_callback(NcScreen *screen);
 static void tag_editor_mouse_callback(NcScreen *, MEVENT);
 
 // declarations to delete
-static int32 tag_editor_build_parser_preview(TagEditorScreen *, bool, bool *);
-static enum TagEditorFocus tag_editor_current_helper_focus(TagEditorScreen *);
-static void tag_editor_draw_tag(NcMenu *, NcWindow *, void *, int32, void *);
 static bool tag_editor_next_mask_tag(char *, int32, int32, int32 *, char *);
 static void tag_editor_append_parser_filename(StrBuilder *, char *, int32);
 static int32 tag_editor_capitalize_song_callback(NcmMutableSong *, void *);
@@ -1497,6 +1494,15 @@ tag_editor_screen_previous_column(TagEditorScreen *screen) {
     return;
 }
 
+static enum TagEditorFocus
+tag_editor_current_helper_focus(TagEditorScreen *screen) {
+    ASSERT(screen != NULL);
+    if (!screen->parser_preview_enabled) {
+        return TAG_EDITOR_FOCUS_PARSER_LEGEND;
+    }
+    return TAG_EDITOR_FOCUS_PARSER_PREVIEW;
+}
+
 void
 tag_editor_screen_next_column(TagEditorScreen *screen) {
     if (!tag_editor_screen_next_column_available(screen)) {
@@ -2797,6 +2803,118 @@ tag_editor_prompt_tag_value(TagEditorScreen *screen,
 }
 
 static int32
+tag_editor_build_parser_preview(TagEditorScreen *screen,
+                                bool apply, bool *success) {
+    NcMenu *tags;
+    int32 count;
+    int32 status;
+
+    ASSERT(screen != NULL);
+    ASSERT(success != NULL);
+
+    *success = true;
+    tag_editor_status_message(screen, STRLIT("Parsing..."));
+    sb_clear(&screen->parser_preview);
+    tags = nc_tag_row_menu_base(&screen->tags);
+    count = nc_menu_item_count(tags);
+    for (int32 i = 0; i < count; i += 1) {
+        NcmMutableSong *song;
+
+        if ((song = nc_menu_active_item_at(tags, i)) == NULL) {
+            continue;
+        }
+        if (screen->parser_mode == TAG_EDITOR_PARSER_TAGS_FROM_FILENAME) {
+            if (!apply && song->name) {
+                SB_APPEND(&screen->parser_preview, song->name, song->name_len);
+                SB_APPEND(&screen->parser_preview, ":\n");
+            }
+            status = tag_editor_parse_filename(
+                song, screen->pattern.data, screen->pattern.len, !apply,
+                &screen->parser_preview);
+            if ((status < 0) && !apply) {
+                SB_APPEND(&screen->parser_preview,
+                          "Error while parsing filename!\n");
+            }
+            if (!apply) {
+                sb_append_byte(&screen->parser_preview, '\n');
+            }
+        } else if (screen->parser_mode == TAG_EDITOR_PARSER_RENAME_FILES) {
+            StrBuilder stem = {0};
+            StrBuilder new_name = {0};
+            int32 extension_start;
+
+            status = tag_editor_generate_filename(
+                song, screen->pattern.data, screen->pattern.len, &stem);
+            if (status < 0) {
+                sb_free(&new_name);
+                sb_free(&stem);
+                return status;
+            }
+            extension_start = -1;
+            if ((song->name != NULL) && (song->name_len > 0)) {
+                for (int32 j = song->name_len - 1; j > 0; j -= 1) {
+                    if (song->name[j] == '.') {
+                        extension_start = j;
+                        break;
+                    }
+                }
+            }
+            SB_APPEND(&new_name, stem.data, stem.len);
+            if ((extension_start >= 0) && song->name) {
+                SB_APPEND(&new_name, song->name + extension_start,
+                          song->name_len - extension_start);
+            }
+            if (apply && (stem.len <= 0)) {
+                sb_clear(&screen->parser_preview);
+                SB_APPEND(&screen->parser_preview, "File \"");
+                tag_editor_append_parser_filename(
+                    &screen->parser_preview, song->name, song->name_len);
+                SB_APPEND(&screen->parser_preview,
+                          STRLIT("\" would have an empty name"));
+                tag_editor_status_message(
+                    screen, screen->parser_preview.data,
+                    screen->parser_preview.len);
+                screen->parser_preview_enabled = true;
+                *success = false;
+                sb_free(&new_name);
+                sb_free(&stem);
+                return 0;
+            }
+            if (apply) {
+                status = ncm_mutable_song_set_new_name(song, new_name.data,
+                                                       new_name.len);
+                if (status < 0) {
+                    sb_free(&new_name);
+                    sb_free(&stem);
+                    return status;
+                }
+            } else {
+                tag_editor_append_parser_filename(
+                    &screen->parser_preview, song->name, song->name_len);
+                SB_APPEND(&screen->parser_preview,
+                          " -> ");
+                if (new_name.len > 0) {
+                    SB_APPEND(&screen->parser_preview,
+                              new_name.data, new_name.len);
+                } else if (Config.empty_tag) {
+                    SB_APPEND(&screen->parser_preview,
+                              Config.empty_tag,
+                              Config.empty_tag_len);
+                }
+                SB_APPEND(&screen->parser_preview,
+                          "\n\n");
+            }
+            sb_free(&new_name);
+            sb_free(&stem);
+        }
+    }
+    if (!apply) {
+        screen->parser_preview_enabled = true;
+    }
+    return 0;
+}
+
+static int32
 tag_editor_run_current(NcScreen *screen) {
     TagEditorScreen *editor = tag_editor_from_screen(screen);
 
@@ -3533,15 +3651,6 @@ tag_editor_set_focus(TagEditorScreen *screen,
     return;
 }
 
-static enum TagEditorFocus
-tag_editor_current_helper_focus(TagEditorScreen *screen) {
-    ASSERT(screen != NULL);
-    if (!screen->parser_preview_enabled) {
-        return TAG_EDITOR_FOCUS_PARSER_LEGEND;
-    }
-    return TAG_EDITOR_FOCUS_PARSER_PREVIEW;
-}
-
 static void
 tag_editor_finish_tag_type_change(TagEditorScreen *screen,
                                   bool refresh_tags) {
@@ -4271,118 +4380,6 @@ tag_editor_build_parser_legend(TagEditorScreen *screen) {
         SB_APPEND(&screen->parser_legend, " * ");
         SB_APPEND(&screen->parser_legend, song->name, song->name_len);
         sb_append_byte(&screen->parser_legend, '\n');
-    }
-    return 0;
-}
-
-static int32
-tag_editor_build_parser_preview(TagEditorScreen *screen,
-                                bool apply, bool *success) {
-    NcMenu *tags;
-    int32 count;
-    int32 status;
-
-    ASSERT(screen != NULL);
-    ASSERT(success != NULL);
-
-    *success = true;
-    tag_editor_status_message(screen, STRLIT("Parsing..."));
-    sb_clear(&screen->parser_preview);
-    tags = nc_tag_row_menu_base(&screen->tags);
-    count = nc_menu_item_count(tags);
-    for (int32 i = 0; i < count; i += 1) {
-        NcmMutableSong *song;
-
-        if ((song = nc_menu_active_item_at(tags, i)) == NULL) {
-            continue;
-        }
-        if (screen->parser_mode == TAG_EDITOR_PARSER_TAGS_FROM_FILENAME) {
-            if (!apply && song->name) {
-                SB_APPEND(&screen->parser_preview, song->name, song->name_len);
-                SB_APPEND(&screen->parser_preview, ":\n");
-            }
-            status = tag_editor_parse_filename(
-                song, screen->pattern.data, screen->pattern.len, !apply,
-                &screen->parser_preview);
-            if ((status < 0) && !apply) {
-                SB_APPEND(&screen->parser_preview,
-                          "Error while parsing filename!\n");
-            }
-            if (!apply) {
-                sb_append_byte(&screen->parser_preview, '\n');
-            }
-        } else if (screen->parser_mode == TAG_EDITOR_PARSER_RENAME_FILES) {
-            StrBuilder stem = {0};
-            StrBuilder new_name = {0};
-            int32 extension_start;
-
-            status = tag_editor_generate_filename(
-                song, screen->pattern.data, screen->pattern.len, &stem);
-            if (status < 0) {
-                sb_free(&new_name);
-                sb_free(&stem);
-                return status;
-            }
-            extension_start = -1;
-            if ((song->name != NULL) && (song->name_len > 0)) {
-                for (int32 j = song->name_len - 1; j > 0; j -= 1) {
-                    if (song->name[j] == '.') {
-                        extension_start = j;
-                        break;
-                    }
-                }
-            }
-            SB_APPEND(&new_name, stem.data, stem.len);
-            if ((extension_start >= 0) && song->name) {
-                SB_APPEND(&new_name, song->name + extension_start,
-                          song->name_len - extension_start);
-            }
-            if (apply && (stem.len <= 0)) {
-                sb_clear(&screen->parser_preview);
-                SB_APPEND(&screen->parser_preview, "File \"");
-                tag_editor_append_parser_filename(
-                    &screen->parser_preview, song->name, song->name_len);
-                SB_APPEND(&screen->parser_preview,
-                          STRLIT("\" would have an empty name"));
-                tag_editor_status_message(
-                    screen, screen->parser_preview.data,
-                    screen->parser_preview.len);
-                screen->parser_preview_enabled = true;
-                *success = false;
-                sb_free(&new_name);
-                sb_free(&stem);
-                return 0;
-            }
-            if (apply) {
-                status = ncm_mutable_song_set_new_name(song, new_name.data,
-                                                       new_name.len);
-                if (status < 0) {
-                    sb_free(&new_name);
-                    sb_free(&stem);
-                    return status;
-                }
-            } else {
-                tag_editor_append_parser_filename(
-                    &screen->parser_preview, song->name, song->name_len);
-                SB_APPEND(&screen->parser_preview,
-                          " -> ");
-                if (new_name.len > 0) {
-                    SB_APPEND(&screen->parser_preview,
-                              new_name.data, new_name.len);
-                } else if (Config.empty_tag) {
-                    SB_APPEND(&screen->parser_preview,
-                              Config.empty_tag,
-                              Config.empty_tag_len);
-                }
-                SB_APPEND(&screen->parser_preview,
-                          "\n\n");
-            }
-            sb_free(&new_name);
-            sb_free(&stem);
-        }
-    }
-    if (!apply) {
-        screen->parser_preview_enabled = true;
     }
     return 0;
 }
