@@ -1089,7 +1089,7 @@ tag_editor_screen_apply_tag_to_selection(TagEditorScreen *screen,
     if (screen == NULL) {
         return -EINVAL;
     }
-    if ((field < 0) || (field >= NCM_TAGS_FIELD_COUNT)) {
+    if (field >= NCM_TAGS_FIELD_COUNT) {
         return -EINVAL;
     }
     if (((value == NULL) && (value_len > 0))
@@ -5284,7 +5284,7 @@ tag_editor_mutable_song_get_field(NcmMutableSong *song,
     if ((song == NULL) || (buffer == NULL)) {
         return -EINVAL;
     }
-    if ((field < 0) || (field >= NCM_TAGS_FIELD_COUNT)) {
+    if (field >= NCM_TAGS_FIELD_COUNT) {
         return -EINVAL;
     }
     ncm_mutable_song_get_tag_buffer(song, field, 0, &tag);
