@@ -21,7 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static int32 browser_real_path(BrowserScreen *, NcmStringView, StrBuilder *, NcmError *);
 static int32 browser_collect_item_songs(BrowserScreen *, NcmSongArray *, NcmMpdItem *);
 static bool browser_supported_extensions_contains(StrBuilderArray *, char *, int32 );
 static int32 browser_set_parent_of_directory(BrowserScreen *, char *, int32 );
@@ -996,6 +995,51 @@ browser_screen_selected_songs(BrowserScreen *screen,
         }
     }
     return 0;
+}
+
+static int32
+browser_real_path(BrowserScreen *screen, NcmStringView path,
+                  StrBuilder *real_path, NcmError *ncm_error) {
+    int32 status;
+
+    ASSERT(screen != NULL);
+    if (real_path == NULL) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing real path output"));
+    }
+    if (path.len < 0) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("negative path length"));
+    }
+    if ((path.data == NULL) && (path.len > 0)) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing path"));
+    }
+
+    sb_clear(real_path);
+    if (screen->local_browser) {
+        status = sb_set(real_path, path.data, path.len);
+        if (status < 0) {
+            return ncm_error_set_status(ncm_error, status,
+                                        STRLIT("failed to build path"));
+        }
+        return ncm_error_ok(ncm_error);
+    }
+
+    if (Config.mpd_music_dir_len <= 0) {
+        return ncm_error_set_status(
+            ncm_error, -ENOENT,
+            STRLIT(
+                "Proper mpd_music_dir variable has to be set in "
+                "configuration file"));
+    }
+    status = ncm_fs_join(real_path, Config.mpd_music_dir,
+                         Config.mpd_music_dir_len, path.data, path.len);
+    if (status < 0) {
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("failed to build path"));
+    }
+    return ncm_error_ok(ncm_error);
 }
 
 int32
@@ -2248,51 +2292,6 @@ browser_collect_item_songs(BrowserScreen *screen,
     default:
         return -EINVAL;
     }
-}
-
-static int32
-browser_real_path(BrowserScreen *screen, NcmStringView path,
-                  StrBuilder *real_path, NcmError *ncm_error) {
-    int32 status;
-
-    ASSERT(screen != NULL);
-    if (real_path == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing real path output"));
-    }
-    if (path.len < 0) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("negative path length"));
-    }
-    if ((path.data == NULL) && (path.len > 0)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing path"));
-    }
-
-    sb_clear(real_path);
-    if (screen->local_browser) {
-        status = sb_set(real_path, path.data, path.len);
-        if (status < 0) {
-            return ncm_error_set_status(ncm_error, status,
-                                        STRLIT("failed to build path"));
-        }
-        return ncm_error_ok(ncm_error);
-    }
-
-    if (Config.mpd_music_dir_len <= 0) {
-        return ncm_error_set_status(
-            ncm_error, -ENOENT,
-            STRLIT(
-                "Proper mpd_music_dir variable has to be set in "
-                "configuration file"));
-    }
-    status = ncm_fs_join(real_path, Config.mpd_music_dir,
-                         Config.mpd_music_dir_len, path.data, path.len);
-    if (status < 0) {
-        return ncm_error_set_status(ncm_error, status,
-                                    STRLIT("failed to build path"));
-    }
-    return ncm_error_ok(ncm_error);
 }
 
 static int32
