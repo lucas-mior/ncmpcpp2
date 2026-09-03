@@ -1083,7 +1083,6 @@ static void
 playlist_draw_callback(NcMenu *menu, NcWindow *window, void *item,
                        int32 pos, void *user) {
     NcmPlaylist *playlist;
-    StrBuilder converted;
 
     (void)menu;
     (void)pos;
@@ -1093,9 +1092,7 @@ playlist_draw_callback(NcMenu *menu, NcWindow *window, void *item,
         return;
     }
 
-    converted = ncm_charset_copy(playlist->path, playlist->path_len);
-    nc_window_print_data(window, converted.data, converted.len);
-    sb_free(&converted);
+    nc_window_print_data(window, playlist->path, playlist->path_len);
     return;
 }
 
