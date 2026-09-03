@@ -21,7 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static bool browser_local_path_has_supported_extension(BrowserScreen *, char *, int32 );
 static int32 browser_real_path(BrowserScreen *, NcmStringView, StrBuilder *, NcmError *);
 static int32 browser_collect_item_songs(BrowserScreen *, NcmSongArray *, NcmMpdItem *);
 static bool browser_supported_extensions_contains(StrBuilderArray *, char *, int32 );
@@ -1876,6 +1875,24 @@ browser_load_mpd_items(BrowserScreen *screen,
     return 0;
 }
 
+static bool
+browser_local_path_has_supported_extension(
+    BrowserScreen *screen, char *path, int32 path_len
+) {
+    int32 extension;
+
+    extension = ncm_path_extension_start(path, path_len);
+    if (extension <= 0) {
+        return false;
+    }
+    if (screen == NULL) {
+        return false;
+    }
+    return browser_supported_extensions_contains(
+        &screen->supported_extensions, path + extension - 1,
+        path_len - extension + 1);
+}
+
 static int32
 browser_reload_from_local(BrowserScreen *screen,
                           NcmError *ncm_error) {
@@ -2058,24 +2075,6 @@ browser_stat_local_path(char *path, int32 path_len, NcmFsStat *out,
     }
     out->exists = true;
     return ncm_error_ok(ncm_error);
-}
-
-static bool
-browser_local_path_has_supported_extension(
-    BrowserScreen *screen, char *path, int32 path_len
-) {
-    int32 extension;
-
-    extension = ncm_path_extension_start(path, path_len);
-    if (extension <= 0) {
-        return false;
-    }
-    if (screen == NULL) {
-        return false;
-    }
-    return browser_supported_extensions_contains(
-        &screen->supported_extensions, path + extension - 1,
-        path_len - extension + 1);
 }
 
 static int32
