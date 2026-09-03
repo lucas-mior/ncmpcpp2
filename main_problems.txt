@@ -11,3 +11,5 @@
   * functions definitions could be reordered to not need declarations at the top
 - Style: lines broken prematurely
 - Style: checking return value after the call (call should be inside if().
+- Strings: unecessary conversion to and from StrBuilder: see ncm_charset_copy()
+  definition and uses
