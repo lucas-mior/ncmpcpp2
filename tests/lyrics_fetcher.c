@@ -524,7 +524,7 @@ lyrics_test_assert_first_direct_url(
 
     str_builder_array_init(&urls);
     ASSERT(lyrics_collect_direct_urls(fetcher, &urls, artist, artist_len,
-                                      title, title_len));
+                                      title, title_len) == 0);
     ASSERT(urls.len > 0);
     ASSERT_EQUAL(urls.items[0].data, urls.items[0].len,
                  expected, expected_len);
@@ -540,7 +540,7 @@ lyrics_test_assert_no_direct_urls(NcmLyricsFetcherDef *fetcher, char *artist,
 
     str_builder_array_init(&urls);
     ASSERT(lyrics_collect_direct_urls(fetcher, &urls, artist, artist_len,
-                                      title, title_len));
+                                      title, title_len) == 0);
     ASSERT(urls.len == 0);
     str_builder_array_destroy(&urls);
     return;
@@ -768,7 +768,7 @@ test_provider_aware_slug_normalization(void) {
         STRLIT("<a href=\"\"></a><a href=\"/url?q=\"></a>"
                "<a href=\"https://www.amalgama-lab.com/songs/l/"
                "luis_fonsi/despacito.html\"></a>"),
-        STRLIT("Luis Fonsi"), STRLIT("Despacito")));
+        STRLIT("Luis Fonsi"), STRLIT("Despacito")) == 0);
     ASSERT(urls.len == 1);
     ASSERT_EQUAL(urls.items[0].data, urls.items[0].len,
                  "https://www.amalgama-lab.com/songs/l/"
