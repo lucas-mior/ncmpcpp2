@@ -355,7 +355,6 @@ int32
 browser_screen_reload_from_mpd(BrowserScreen *screen,
                                NcmMpdClient *client,
                                NcmError *ncm_error) {
-    NcmMpdItemArray items;
     int32 status;
 
     if ((screen == NULL) || (client == NULL)) {
@@ -368,7 +367,7 @@ browser_screen_reload_from_mpd(BrowserScreen *screen,
     }
 
     while (true) {
-        items = (NcmMpdItemArray){0};
+        NcmMpdItemArray items = {0};
         status = ncm_mpd_client_get_directory_entries(
             client, screen->current_directory.data, &items, ncm_error);
         if (status == 0) {
