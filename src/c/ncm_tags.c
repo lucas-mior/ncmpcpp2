@@ -50,169 +50,6 @@ ncm_tags_mapped_property_callback(char *name, char *value, void *user) {
     return;
 }
 
-static char *
-ncm_tags_build_file_path(char *music_dir, char *uri, bool is_from_database,
-                         int32 *path_len) {
-    char *path;
-    int32 music_dir_len;
-    int32 uri_len;
-    int32 len;
-
-    if (uri == NULL) {
-        return NULL;
-    }
-
-    music_dir_len = 0;
-    if (is_from_database) {
-        music_dir_len = optional_strlen32(music_dir);
-    }
-    uri_len = optional_strlen32(uri);
-    len = music_dir_len + uri_len;
-
-    path = (char *)malloc2(len + 1);
-    if (music_dir_len > 0) {
-        memcpy64(path, music_dir, music_dir_len);
-    }
-    memcpy64(path + music_dir_len, uri, uri_len + 1);
-
-    if (path_len) {
-        *path_len = len;
-    }
-    return path;
-}
-
-static char *
-ncm_tags_build_renamed_path(char *music_dir, char *directory, char *new_name,
-                            bool is_from_database, int32 *path_len) {
-    char *path;
-    int32 music_dir_len;
-    int32 directory_len;
-    int32 new_name_len;
-    int32 len;
-    int32 offset;
-
-    if (new_name == NULL) {
-        return NULL;
-    }
-
-    music_dir_len = 0;
-    if (is_from_database) {
-        music_dir_len = optional_strlen32(music_dir);
-    }
-    directory_len = optional_strlen32(directory);
-    new_name_len = optional_strlen32(new_name);
-    len = music_dir_len + directory_len + 1 + new_name_len;
-
-    path = (char *)malloc2(len + 1);
-    offset = 0;
-    if (music_dir_len > 0) {
-        memcpy64(path + offset, music_dir, music_dir_len);
-        offset += music_dir_len;
-    }
-    if (directory_len > 0) {
-        memcpy64(path + offset, directory, directory_len);
-        offset += directory_len;
-    }
-    path[offset] = '/';
-    offset += 1;
-    memcpy64(path + offset, new_name, new_name_len + 1);
-
-    if (path_len) {
-        *path_len = len;
-    }
-    return path;
-}
-
-static char *
-ncm_tags_field_property(enum NcmTagsField field) {
-    switch (field) {
-    case NCM_TAGS_FIELD_TITLE:
-        return "TITLE";
-    case NCM_TAGS_FIELD_ARTIST:
-        return "ARTIST";
-    case NCM_TAGS_FIELD_ALBUM_ARTIST:
-        return "ALBUMARTIST";
-    case NCM_TAGS_FIELD_ALBUM:
-        return "ALBUM";
-    case NCM_TAGS_FIELD_DATE:
-        return "DATE";
-    case NCM_TAGS_FIELD_TRACK:
-        return "TRACKNUMBER";
-    case NCM_TAGS_FIELD_GENRE:
-        return "GENRE";
-    case NCM_TAGS_FIELD_COMPOSER:
-        return "COMPOSER";
-    case NCM_TAGS_FIELD_PERFORMER:
-        return "PERFORMER";
-    case NCM_TAGS_FIELD_DISC:
-        return "DISCNUMBER";
-    case NCM_TAGS_FIELD_COMMENT:
-        return "COMMENT";
-    case NCM_TAGS_FIELD_COUNT:
-        break;
-    default:
-        break;
-    }
-
-    return NULL;
-}
-
-static int32
-ncm_tags_write_field(NcmTaglibFile *file, enum NcmTagsField field,
-                     NcmTagsGetFieldCallback *callback, void *user) {
-    char *property;
-    int32 status;
-
-    if ((property = ncm_tags_field_property(field)) == NULL) {
-        return -EINVAL;
-    }
-
-    if ((status = ncm_taglib_clear_property(file, property)) < 0) {
-        return status;
-    }
-    for (int32 i = 0; ; i += 1) {
-        NcmStringView value;
-
-        value = (NcmStringView){0};
-        if (!callback(field, i, &value, user)) {
-            break;
-        }
-        if (value.data == NULL) {
-            break;
-        }
-        if (value.len <= 0) {
-            break;
-        }
-
-        if ((status = ncm_taglib_append_property(file, property,
-                                                 value.data)) < 0) {
-            return status;
-        }
-    }
-
-    return 0;
-}
-
-static int32
-ncm_tags_clear_write_aliases(NcmTaglibFile *file) {
-    int32 status;
-
-    if ((status = ncm_taglib_clear_property(file, "ALBUM ARTIST")) < 0) {
-        return status;
-    }
-    if ((status = ncm_taglib_clear_property(file, "TRACK")) < 0) {
-        return status;
-    }
-    if ((status = ncm_taglib_clear_property(file, "DISC")) < 0) {
-        return status;
-    }
-    if ((status = ncm_taglib_clear_property(file, "DESCRIPTION")) < 0) {
-        return status;
-    }
-
-    return 0;
-}
-
 void
 ncm_tags_set_attribute(struct mpd_song *song, char *name, char *value) {
     struct mpd_pair pair;
@@ -332,11 +169,23 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
     if (callback == NULL) {
         return -EINVAL;
     }
-
-    old_path = ncm_tags_build_file_path(music_dir, uri, is_from_database,
-                                        &old_path_len);
-    if (old_path == NULL) {
+    if (uri == NULL) {
         return -EINVAL;
+    }
+
+    {
+        int32 music_dir_len = 0;
+        int32 uri_len = optional_strlen32(uri);
+
+        if (is_from_database) {
+            music_dir_len = optional_strlen32(music_dir);
+        }
+        old_path_len = music_dir_len + uri_len;
+        old_path = (char *)malloc2(old_path_len + 1);
+        if (music_dir_len > 0) {
+            memcpy64(old_path, music_dir, music_dir_len);
+        }
+        memcpy64(old_path + music_dir_len, uri, uri_len + 1);
     }
 
     file = (NcmTaglibFile){0};
@@ -345,18 +194,96 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
         return status;
     }
 
-    if ((status = ncm_tags_clear_write_aliases(&file)) < 0) {
+    if ((status = ncm_taglib_clear_property(&file, "ALBUM ARTIST")) < 0) {
         ncm_taglib_file_close(&file);
         free2(old_path, old_path_len + 1);
         return status;
     }
+    if ((status = ncm_taglib_clear_property(&file, "TRACK")) < 0) {
+        ncm_taglib_file_close(&file);
+        free2(old_path, old_path_len + 1);
+        return status;
+    }
+    if ((status = ncm_taglib_clear_property(&file, "DISC")) < 0) {
+        ncm_taglib_file_close(&file);
+        free2(old_path, old_path_len + 1);
+        return status;
+    }
+    if ((status = ncm_taglib_clear_property(&file, "DESCRIPTION")) < 0) {
+        ncm_taglib_file_close(&file);
+        free2(old_path, old_path_len + 1);
+        return status;
+    }
+
     for (uint32 i = 0; i < NCM_TAGS_FIELD_COUNT; i += 1) {
-        status = ncm_tags_write_field(&file, (enum NcmTagsField)i,
-                                      callback, user);
-        if (status < 0) {
+        enum NcmTagsField field = (enum NcmTagsField)i;
+        char *property;
+
+        switch (field) {
+        case NCM_TAGS_FIELD_TITLE:
+            property = "TITLE";
+            break;
+        case NCM_TAGS_FIELD_ARTIST:
+            property = "ARTIST";
+            break;
+        case NCM_TAGS_FIELD_ALBUM_ARTIST:
+            property = "ALBUMARTIST";
+            break;
+        case NCM_TAGS_FIELD_ALBUM:
+            property = "ALBUM";
+            break;
+        case NCM_TAGS_FIELD_DATE:
+            property = "DATE";
+            break;
+        case NCM_TAGS_FIELD_TRACK:
+            property = "TRACKNUMBER";
+            break;
+        case NCM_TAGS_FIELD_GENRE:
+            property = "GENRE";
+            break;
+        case NCM_TAGS_FIELD_COMPOSER:
+            property = "COMPOSER";
+            break;
+        case NCM_TAGS_FIELD_PERFORMER:
+            property = "PERFORMER";
+            break;
+        case NCM_TAGS_FIELD_DISC:
+            property = "DISCNUMBER";
+            break;
+        case NCM_TAGS_FIELD_COMMENT:
+            property = "COMMENT";
+            break;
+        case NCM_TAGS_FIELD_COUNT:
+        default:
+            ncm_taglib_file_close(&file);
+            free2(old_path, old_path_len + 1);
+            return -EINVAL;
+        }
+
+        if ((status = ncm_taglib_clear_property(&file, property)) < 0) {
             ncm_taglib_file_close(&file);
             free2(old_path, old_path_len + 1);
             return status;
+        }
+        for (int32 value_i = 0; ; value_i += 1) {
+            NcmStringView value = {0};
+
+            if (!callback(field, value_i, &value, user)) {
+                break;
+            }
+            if (value.data == NULL) {
+                break;
+            }
+            if (value.len <= 0) {
+                break;
+            }
+
+            if ((status = ncm_taglib_append_property(&file, property,
+                                                     value.data)) < 0) {
+                ncm_taglib_file_close(&file);
+                free2(old_path, old_path_len + 1);
+                return status;
+            }
         }
     }
 
@@ -368,13 +295,28 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
     }
 
     if ((new_name != NULL) && (new_name[0] != '\0')) {
-        new_path = ncm_tags_build_renamed_path(music_dir, directory, new_name,
-                                               is_from_database,
-                                               &new_path_len);
-        if (new_path == NULL) {
-            free2(old_path, old_path_len + 1);
-            return -EINVAL;
+        int32 music_dir_len = 0;
+        int32 directory_len = optional_strlen32(directory);
+        int32 new_name_len = optional_strlen32(new_name);
+        int32 offset = 0;
+
+        if (is_from_database) {
+            music_dir_len = optional_strlen32(music_dir);
         }
+        new_path_len = music_dir_len + directory_len + 1 + new_name_len;
+        new_path = (char *)malloc2(new_path_len + 1);
+        if (music_dir_len > 0) {
+            memcpy64(new_path + offset, music_dir, music_dir_len);
+            offset += music_dir_len;
+        }
+        if (directory_len > 0) {
+            memcpy64(new_path + offset, directory, directory_len);
+            offset += directory_len;
+        }
+        new_path[offset] = '/';
+        offset += 1;
+        memcpy64(new_path + offset, new_name, new_name_len + 1);
+
         if (rename(old_path, new_path) != 0) {
             status = -errno;
             free2(new_path, new_path_len + 1);

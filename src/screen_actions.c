@@ -113,31 +113,6 @@ current_screen_search_buffer(void) {
     return NULL;
 }
 
-static int32
-current_screen_set_search_constraint(char *pattern, int32 pattern_len,
-                                     NcmError *ncm_error) {
-    StrBuilder *buffer;
-    int32 status;
-
-    if ((buffer = current_screen_search_buffer()) == NULL) {
-        return ncm_error_set_code(ncm_error, NCM_ERROR_UNAVAILABLE,
-                                  STRLIT("screen cannot search"));
-    }
-    if ((status = sb_set(buffer, pattern, pattern_len)) < 0) {
-        return ncm_error_set_status(ncm_error, status,
-                                    STRLIT("failed to save search"));
-    }
-    return ncm_error_ok(ncm_error);
-}
-
-static bool
-current_screen_search_direction_is_forward(enum SearchDirection direction) {
-    if (direction == NCM_SEARCH_DIRECTION_FORWARD) {
-        return true;
-    }
-    return false;
-}
-
 static void
 current_screen_clear_current_search_constraint(void) {
     StrBuilder *buffer;
@@ -311,7 +286,7 @@ current_screen_search(enum SearchDirection direction, char *pattern,
     }
 
     attempted = false;
-    forward = current_screen_search_direction_is_forward(direction);
+    forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
     status = -NCM_ERROR_UNAVAILABLE;
 
     if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST)) {
@@ -374,10 +349,17 @@ current_screen_search(enum SearchDirection direction, char *pattern,
     }
 
     if (attempted) {
-        if ((status = current_screen_set_search_constraint(
-            pattern, pattern_len, ncm_error)) < 0) {
-            return status;
+        StrBuilder *buffer;
+
+        if ((buffer = current_screen_search_buffer()) == NULL) {
+            return ncm_error_set_code(ncm_error, NCM_ERROR_UNAVAILABLE,
+                                      STRLIT("screen cannot search"));
         }
+        if ((status = sb_set(buffer, pattern, pattern_len)) < 0) {
+            return ncm_error_set_status(ncm_error, status,
+                                        STRLIT("failed to save search"));
+        }
+        status = ncm_error_ok(ncm_error);
         current_screen_finish_immediate_change();
     }
     return status;

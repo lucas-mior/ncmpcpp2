@@ -6,18 +6,9 @@
 #include "c/ncm_c.h"
 #include "curl_handle.h"
 
-void
-ncm_curl_response_writer_init(NcmCurlResponseWriter *writer,
-                              StrBuilder *buffer) {
-    writer->buffer = buffer;
-    return;
-}
-
-void
-ncm_curl_response_writer_destroy(NcmCurlResponseWriter *writer) {
-    writer->buffer = NULL;
-    return;
-}
+typedef struct NcmCurlResponseWriter {
+    StrBuilder *buffer;
+} NcmCurlResponseWriter;
 
 // Note: write_data is a callback used from curl lib,
 // so we are forced to use stupid size_t
@@ -45,30 +36,6 @@ write_data(char *buffer, size_t size, size_t nmemb, void *data) {
     return bytes;
 }
 
-static int32
-ncm_curl_status_from_code(CURLcode code) {
-#if CC_CLANG
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wswitch-enum"
-#endif
-    switch (code) {
-    case CURLE_OK:
-        return 0;
-    case CURLE_OUT_OF_MEMORY:
-        return -ENOMEM;
-    case CURLE_OPERATION_TIMEDOUT:
-        return -ETIMEDOUT;
-    case CURLE_URL_MALFORMAT:
-    case CURLE_BAD_FUNCTION_ARGUMENT:
-        return -EINVAL;
-    default:
-        return -NCM_ERROR_NETWORK;
-    }
-#if CC_CLANG
-#pragma clang diagnostic pop
-#endif
-}
-
 int32
 ncm_curl_perform(StrBuilder *data, char *url, int32 url_len, char *referer,
                  int32 referer_len, bool follow_redirect,
@@ -77,10 +44,9 @@ ncm_curl_perform(StrBuilder *data, char *url, int32 url_len, char *referer,
     CURL *curl;
     StrBuilder url_string = {0};
     StrBuilder referer_string = {0};
-    NcmCurlResponseWriter writer;
+    NcmCurlResponseWriter writer = {.buffer = data};
 
     sb_clear(data);
-    ncm_curl_response_writer_init(&writer, data);
 
     SB_APPEND(&url_string, url, url_len);
     SB_APPEND(&referer_string, referer, referer_len);
@@ -111,10 +77,29 @@ ncm_curl_perform(StrBuilder *data, char *url, int32 url_len, char *referer,
     curl_easy_cleanup(curl);
 
 cleanup:
-    ncm_curl_response_writer_destroy(&writer);
+    writer.buffer = NULL;
     sb_free(&referer_string);
     sb_free(&url_string);
-    return ncm_curl_status_from_code(result);
+#if CC_CLANG
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wswitch-enum"
+#endif
+    switch (result) {
+    case CURLE_OK:
+        return 0;
+    case CURLE_OUT_OF_MEMORY:
+        return -ENOMEM;
+    case CURLE_OPERATION_TIMEDOUT:
+        return -ETIMEDOUT;
+    case CURLE_URL_MALFORMAT:
+    case CURLE_BAD_FUNCTION_ARGUMENT:
+        return -EINVAL;
+    default:
+        return -NCM_ERROR_NETWORK;
+    }
+#if CC_CLANG
+#pragma clang diagnostic pop
+#endif
 }
 
 int32
