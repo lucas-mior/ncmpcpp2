@@ -21,7 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static int32 browser_enter_item(BrowserScreen *screen, NcmMpdItem *item);
 static void browser_sync_display_mode(BrowserScreen *screen);
 static bool browser_item_matches(BrowserScreen *screen, NcmMpdItem *item, NcmRegex *regex, bool filter);
 static bool browser_position_matches_search(NcMenu *menu, int32 pos, void *user);
