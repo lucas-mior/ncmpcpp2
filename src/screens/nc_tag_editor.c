@@ -643,8 +643,7 @@ tag_editor_screen_init(TagEditorScreen *screen,
     screen->observed_dir_valid = false;
     screen->registered = false;
 
-    (void)tag_editor_screen_set_current_dir(screen,
-                                            STRLIT("/"));
+    (void)tag_editor_screen_set_current_dir(screen, STRLIT("/"));
     {
         NcEditorStringMenu *menu = &screen->tag_types;
         int32 status = 0;
@@ -1151,19 +1150,22 @@ tag_editor_reload_directories_from_mpd(TagEditorScreen *screen,
 
         if ((control_dir == NULL) || (control_dir_len <= 0)
             || STREQUAL(control_dir, control_dir_len, "/")) {
-            status = tag_editor_screen_add_directory(
-                screen, STRLIT("."), STRLIT("/"));
+            status = tag_editor_screen_add_directory(screen,
+                                                     STRLIT("."), STRLIT("/"));
         } else {
             int32 parent_len;
 
             parent_len = ncm_string_parent_directory_len(
                 control_dir, control_dir_len);
             if (parent_len <= 0) {
-                status = tag_editor_screen_add_directory(
-                    screen, STRLIT(".."), STRLIT("/"));
+                status = tag_editor_screen_add_directory(screen,
+                                                         STRLIT(".."),
+                                                         STRLIT("/"));
             } else {
-                status = tag_editor_screen_add_directory(
-                    screen, STRLIT(".."), control_dir, parent_len);
+                status = tag_editor_screen_add_directory(screen,
+                                                         STRLIT(".."),
+                                                         control_dir,
+                                                         parent_len);
             }
         }
     }
@@ -1858,8 +1860,7 @@ tag_editor_screen_previous_column(TagEditorScreen *screen) {
         }
         if (modified
             && !tag_editor_confirm(
-                screen, STRLIT("There are pending changes, "
-                               "are you sure?"))) {
+                screen, STRLIT("There are pending changes, are you sure?"))) {
             return;
         }
         tag_editor_set_focus(screen, TAG_EDITOR_FOCUS_DIRECTORIES);
