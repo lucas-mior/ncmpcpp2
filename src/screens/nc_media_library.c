@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static void library_restore_tag_identity(NcMediaLibraryTagMenu *menu, NcMediaLibraryTagRow *identity, bool identity_valid, int32 fallback);
 static void library_tag_array_item_destroy(void *item);
 static void library_set_observed_tag(MediaLibraryScreen *screen, NcMediaLibraryTagRow *tag);
 static void library_restore_album_identity(NcMediaLibraryAlbumMenu *menu, NcMediaLibraryAlbumRow *identity, bool identity_valid, int32 fallback);
@@ -2850,6 +2849,30 @@ media_library_screen_update(MediaLibraryScreen *screen,
     return 0;
 }
 
+static void
+library_restore_tag_identity(
+    NcMediaLibraryTagMenu *menu, NcMediaLibraryTagRow *identity,
+    bool identity_valid, int32 fallback
+) {
+    NcMenu *base = nc_media_library_tag_menu_base(menu);
+
+    if (identity_valid) {
+        for (int32 i = 0; i < nc_menu_item_count(base); i += 1) {
+            NcMediaLibraryTagRow *candidate;
+
+            candidate = nc_media_library_tag_menu_item_at(
+                menu, base->active_items, i);
+            if (candidate
+                && library_tag_identity_is_equal(candidate, identity)
+                && (nc_menu_goto_selectable(base, i) == 0)) {
+                return;
+            }
+        }
+    }
+    library_restore_highlight(base, fallback);
+    return;
+}
+
 static int32
 library_replace_tags(MediaLibraryScreen *screen,
                      MediaLibraryTagArray *tags) {
@@ -3076,31 +3099,6 @@ library_update_albums(MediaLibraryScreen *screen,
     ncm_mpd_song_list_destroy(&songs);
     media_library_album_array_destroy(&albums);
     return status;
-}
-
-static void
-library_restore_tag_identity(
-    NcMediaLibraryTagMenu *menu, NcMediaLibraryTagRow *identity,
-    bool identity_valid, int32 fallback
-) {
-    NcMenu *base;
-
-    base = nc_media_library_tag_menu_base(menu);
-    if (identity_valid) {
-        for (int32 i = 0; i < nc_menu_item_count(base); i += 1) {
-            NcMediaLibraryTagRow *candidate;
-
-            candidate = nc_media_library_tag_menu_item_at(
-                menu, base->active_items, i);
-            if (candidate
-                && library_tag_identity_is_equal(candidate, identity)
-                && (nc_menu_goto_selectable(base, i) == 0)) {
-                return;
-            }
-        }
-    }
-    library_restore_highlight(base, fallback);
-    return;
 }
 
 static void
