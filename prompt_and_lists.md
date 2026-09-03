@@ -178,7 +178,12 @@ Functions that do the same thing are redefined in different
 
 ## some unnecessary static function declarations at the top of the files
 ## functions definitions could be reordered to not need declarations at the top
+
 ## Style: lines broken prematurely
+
 ## Style: checking return value after the call (call should be inside if().
+
 ## Strings unecessary conversion to and from StrBuilder
-for instance see ncm_conversion_copy_source
+Investigate:
+- ncm_conversion_copy_source()
+- NcmStringFormatArg
