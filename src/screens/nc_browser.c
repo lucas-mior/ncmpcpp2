@@ -21,9 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static int32 browser_reload_from_local(BrowserScreen *, NcmError *);
-static int32 browser_stat_local_path(char *, int32, NcmFsStat *, NcmError *);
-static int32 browser_make_local_song(NcmSong *, char *, int32, time_t );
 static int32 browser_delete_path_recursive(char *, int32, NcmError *);
 static int32 browser_item_sort_rank(NcmMpdItem *);
 static int32 browser_compare_views(NcmStringView, NcmStringView );
@@ -1025,6 +1022,86 @@ browser_local_path_has_supported_extension(
 }
 
 static int32
+browser_stat_local_path(char *path, int32 path_len, NcmFsStat *out,
+                        NcmError *ncm_error) {
+    struct stat statbuf;
+    char message[256];
+    int32 message_len;
+    int32 code;
+
+    ASSERT(out != NULL);
+    out->size = 0;
+    out->mtime = 0;
+    out->type = NCM_FS_ENTRY_COUNT;
+    out->exists = false;
+
+    ASSERT(path != NULL);
+    if (path_len < 0) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("negative path length"));
+    }
+
+    if (stat(path, &statbuf) != 0) {
+        code = errno;
+        if (code == ENOENT) {
+            return ncm_error_ok(ncm_error);
+        }
+        message_len = SNPRINTF(message, "stat '%.*s': %s",
+                               path_len, path, strerror(code));
+        return ncm_error_set_status(ncm_error, -code, message, message_len);
+    }
+
+    out->size = (int32)statbuf.st_size;
+    out->mtime = (int32)statbuf.st_mtime;
+    if (S_ISREG(statbuf.st_mode)) {
+        out->type = NCM_FS_ENTRY_FILE;
+    } else if (S_ISDIR(statbuf.st_mode)) {
+        out->type = NCM_FS_ENTRY_DIRECTORY;
+    } else if (S_ISLNK(statbuf.st_mode)) {
+        out->type = NCM_FS_ENTRY_SYMLINK;
+    }
+    out->exists = true;
+    return ncm_error_ok(ncm_error);
+}
+
+static int32
+browser_make_local_song(NcmSong *song, char *path, int32 path_len,
+                        time_t mtime) {
+#if defined(HAVE_TAGLIB_H)
+    struct mpd_pair pair;
+    struct mpd_song *mpd_song;
+#endif
+    int32 status;
+
+    ASSERT(song != NULL);
+    ASSERT(path != NULL);
+    ASSERT(path_len >= 0);
+
+    status = ncm_song_set_uri(song, path, path_len);
+    if (status == 0) {
+        ncm_song_set_mtime(song, mtime);
+    }
+
+#if defined(HAVE_TAGLIB_H)
+    if (status == 0) {
+        pair.name = "file";
+        pair.value = path;
+        if ((mpd_song = mpd_song_begin(&pair))) {
+            if (ncm_tags_read_song(mpd_song) > 0) {
+                status = ncm_song_from_mpd_song(song, mpd_song);
+                if (status == 0) {
+                    ncm_song_set_mtime(song, mtime);
+                }
+            }
+            mpd_song_free(mpd_song);
+        }
+    }
+#endif
+
+    return status;
+}
+
+static int32
 browser_collect_local_directory_songs(
     BrowserScreen *screen, NcmSongArray *songs, char *path,
     int32 path_len, NcmError *ncm_error
@@ -1678,6 +1755,147 @@ browser_load_mpd_items(BrowserScreen *screen,
     return 0;
 }
 
+static int32
+browser_reload_from_local(BrowserScreen *screen,
+                          NcmError *ncm_error) {
+    NcmFsDirectory directory = {0};
+    NcmFsEntry entry = {0};
+    NcMenu *menu;
+    int32 read_status;
+    int32 status;
+
+    ASSERT(screen != NULL);
+    if (screen->current_directory.len <= 0) {
+        status = sb_set(&screen->current_directory, STRLIT("~"));
+        if (status < 0) {
+            return ncm_error_set_status(ncm_error, status,
+                                        STRLIT("failed to set directory"));
+        }
+        status = ncm_path_expand_home(&screen->current_directory, ncm_error);
+        if (status < 0) {
+            return status;
+        }
+    } else if (browser_path_is_parent_directory(
+        screen->current_directory.data, screen->current_directory.len)) {
+        status = browser_set_normalized_directory(
+            screen, screen->current_directory.data,
+            screen->current_directory.len);
+        if (status < 0) {
+            return ncm_error_set_status(ncm_error, status,
+                                        STRLIT("invalid local directory"));
+        }
+    }
+    (void)ncm_error_ok(ncm_error);
+
+    status = ncm_fs_directory_open(&directory, screen->current_directory.data,
+                                   screen->current_directory.len, ncm_error);
+    if (status < 0) {
+        return status;
+    }
+
+    menu = browser_screen_menu(screen);
+    screen->title_scroll_beginning = 0;
+    nc_menu_show_all_items(menu);
+    browser_screen_clear(screen);
+    status = browser_add_parent_directory_item(screen);
+
+    ncm_fs_entry_init(&entry);
+    while (status == 0) {
+        StrBuilder path = {0};
+        NcmFsStat stat = {0};
+
+        read_status = ncm_fs_directory_read(&directory, &entry, ncm_error);
+        if (read_status < 0) {
+            status = read_status;
+            break;
+        }
+        if (read_status == 0) {
+            break;
+        }
+        if (!Config.local_browser_show_hidden_files
+            && (entry.name_len > 0) && (entry.name[0] == '.')) {
+            continue;
+        }
+
+        status = ncm_fs_join(&path, directory.path, directory.path_len,
+                             entry.name, entry.name_len);
+        if (status < 0) {
+            status = ncm_error_set_status(
+                ncm_error, status, STRLIT("failed to build path"));
+            sb_free(&path);
+            break;
+        }
+
+        status = browser_stat_local_path(
+            path.data, path.len, &stat, ncm_error);
+        if ((status < 0) || !stat.exists) {
+            sb_free(&path);
+            if (status < 0) {
+                break;
+            }
+            continue;
+        }
+
+        if (stat.type == NCM_FS_ENTRY_DIRECTORY) {
+            NcmDirectory local_directory = {0};
+            NcmMpdItem item = {0};
+
+            ncm_mpd_item_init(&item);
+            status = ncm_directory_set(
+                &local_directory, path.data, path.len, (time_t)stat.mtime);
+            if (status == 0) {
+                status = ncm_mpd_item_set_directory(&item, &local_directory);
+            }
+            if (status == 0) {
+                browser_screen_add_item_move(screen, &item);
+            }
+            ncm_mpd_item_destroy(&item);
+            ncm_directory_destroy(&local_directory);
+        } else if ((stat.type == NCM_FS_ENTRY_FILE)
+                   && browser_local_path_has_supported_extension(
+                       screen, path.data, path.len)) {
+            NcmSong song = {0};
+            NcmMpdItem item = {0};
+
+            ncm_mpd_item_init(&item);
+            status = browser_make_local_song(
+                &song, path.data, path.len, (time_t)stat.mtime);
+            if (status == 0) {
+                status = ncm_mpd_item_set_song(&item, &song);
+            }
+            if (status == 0) {
+                browser_screen_add_item_move(screen, &item);
+            }
+            ncm_mpd_item_destroy(&item);
+            ncm_song_destroy(&song);
+        }
+        sb_free(&path);
+    }
+    ncm_fs_entry_destroy(&entry);
+    ncm_fs_directory_close(&directory);
+
+    if ((status == 0)
+        && ((Config.browser_sort_mode == NCM_SORT_MODE_NONE)
+            || (Config.browser_sort_mode == NCM_SORT_MODE_TYPE))) {
+        Config.browser_sort_mode = NCM_SORT_MODE_NAME;
+    }
+    if (status == 0) {
+        status = browser_screen_sort(screen);
+    }
+
+    if (status == 0) {
+        if (screen->filter_enabled) {
+            nc_menu_apply_filter(menu);
+        } else {
+            nc_menu_show_all_items(menu);
+        }
+        (void)browser_locate_last_directory(screen);
+        screen->redraw_header = true;
+        browser_screen_clear_update_request(screen);
+    }
+    return status;
+}
+
 int32
 browser_screen_locate_song(BrowserScreen *screen,
                            NcmSong *song, NcmMpdClient *client,
@@ -2092,227 +2310,6 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
         }
     }
     return;
-}
-
-static int32
-browser_reload_from_local(BrowserScreen *screen,
-                          NcmError *ncm_error) {
-    NcmFsDirectory directory = {0};
-    NcmFsEntry entry = {0};
-    NcMenu *menu;
-    int32 read_status;
-    int32 status;
-
-    ASSERT(screen != NULL);
-    if (screen->current_directory.len <= 0) {
-        status = sb_set(&screen->current_directory, STRLIT("~"));
-        if (status < 0) {
-            return ncm_error_set_status(ncm_error, status,
-                                        STRLIT("failed to set directory"));
-        }
-        status = ncm_path_expand_home(&screen->current_directory, ncm_error);
-        if (status < 0) {
-            return status;
-        }
-    } else if (browser_path_is_parent_directory(
-        screen->current_directory.data, screen->current_directory.len)) {
-        status = browser_set_normalized_directory(
-            screen, screen->current_directory.data,
-            screen->current_directory.len);
-        if (status < 0) {
-            return ncm_error_set_status(ncm_error, status,
-                                        STRLIT("invalid local directory"));
-        }
-    }
-    (void)ncm_error_ok(ncm_error);
-
-    status = ncm_fs_directory_open(&directory, screen->current_directory.data,
-                                   screen->current_directory.len, ncm_error);
-    if (status < 0) {
-        return status;
-    }
-
-    menu = browser_screen_menu(screen);
-    screen->title_scroll_beginning = 0;
-    nc_menu_show_all_items(menu);
-    browser_screen_clear(screen);
-    status = browser_add_parent_directory_item(screen);
-
-    ncm_fs_entry_init(&entry);
-    while (status == 0) {
-        StrBuilder path = {0};
-        NcmFsStat stat = {0};
-
-        read_status = ncm_fs_directory_read(&directory, &entry, ncm_error);
-        if (read_status < 0) {
-            status = read_status;
-            break;
-        }
-        if (read_status == 0) {
-            break;
-        }
-        if (!Config.local_browser_show_hidden_files
-            && (entry.name_len > 0) && (entry.name[0] == '.')) {
-            continue;
-        }
-
-        status = ncm_fs_join(&path, directory.path, directory.path_len,
-                             entry.name, entry.name_len);
-        if (status < 0) {
-            status = ncm_error_set_status(
-                ncm_error, status, STRLIT("failed to build path"));
-            sb_free(&path);
-            break;
-        }
-
-        status = browser_stat_local_path(
-            path.data, path.len, &stat, ncm_error);
-        if ((status < 0) || !stat.exists) {
-            sb_free(&path);
-            if (status < 0) {
-                break;
-            }
-            continue;
-        }
-
-        if (stat.type == NCM_FS_ENTRY_DIRECTORY) {
-            NcmDirectory local_directory = {0};
-            NcmMpdItem item = {0};
-
-            ncm_mpd_item_init(&item);
-            status = ncm_directory_set(
-                &local_directory, path.data, path.len, (time_t)stat.mtime);
-            if (status == 0) {
-                status = ncm_mpd_item_set_directory(&item, &local_directory);
-            }
-            if (status == 0) {
-                browser_screen_add_item_move(screen, &item);
-            }
-            ncm_mpd_item_destroy(&item);
-            ncm_directory_destroy(&local_directory);
-        } else if ((stat.type == NCM_FS_ENTRY_FILE)
-                   && browser_local_path_has_supported_extension(
-                       screen, path.data, path.len)) {
-            NcmSong song = {0};
-            NcmMpdItem item = {0};
-
-            ncm_mpd_item_init(&item);
-            status = browser_make_local_song(
-                &song, path.data, path.len, (time_t)stat.mtime);
-            if (status == 0) {
-                status = ncm_mpd_item_set_song(&item, &song);
-            }
-            if (status == 0) {
-                browser_screen_add_item_move(screen, &item);
-            }
-            ncm_mpd_item_destroy(&item);
-            ncm_song_destroy(&song);
-        }
-        sb_free(&path);
-    }
-    ncm_fs_entry_destroy(&entry);
-    ncm_fs_directory_close(&directory);
-
-    if ((status == 0)
-        && ((Config.browser_sort_mode == NCM_SORT_MODE_NONE)
-            || (Config.browser_sort_mode == NCM_SORT_MODE_TYPE))) {
-        Config.browser_sort_mode = NCM_SORT_MODE_NAME;
-    }
-    if (status == 0) {
-        status = browser_screen_sort(screen);
-    }
-
-    if (status == 0) {
-        if (screen->filter_enabled) {
-            nc_menu_apply_filter(menu);
-        } else {
-            nc_menu_show_all_items(menu);
-        }
-        (void)browser_locate_last_directory(screen);
-        screen->redraw_header = true;
-        browser_screen_clear_update_request(screen);
-    }
-    return status;
-}
-
-static int32
-browser_stat_local_path(char *path, int32 path_len, NcmFsStat *out,
-                        NcmError *ncm_error) {
-    struct stat statbuf;
-    char message[256];
-    int32 message_len;
-    int32 code;
-
-    ASSERT(out != NULL);
-    out->size = 0;
-    out->mtime = 0;
-    out->type = NCM_FS_ENTRY_COUNT;
-    out->exists = false;
-
-    ASSERT(path != NULL);
-    if (path_len < 0) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("negative path length"));
-    }
-
-    if (stat(path, &statbuf) != 0) {
-        code = errno;
-        if (code == ENOENT) {
-            return ncm_error_ok(ncm_error);
-        }
-        message_len = SNPRINTF(message, "stat '%.*s': %s",
-                               path_len, path, strerror(code));
-        return ncm_error_set_status(ncm_error, -code, message, message_len);
-    }
-
-    out->size = (int32)statbuf.st_size;
-    out->mtime = (int32)statbuf.st_mtime;
-    if (S_ISREG(statbuf.st_mode)) {
-        out->type = NCM_FS_ENTRY_FILE;
-    } else if (S_ISDIR(statbuf.st_mode)) {
-        out->type = NCM_FS_ENTRY_DIRECTORY;
-    } else if (S_ISLNK(statbuf.st_mode)) {
-        out->type = NCM_FS_ENTRY_SYMLINK;
-    }
-    out->exists = true;
-    return ncm_error_ok(ncm_error);
-}
-
-static int32
-browser_make_local_song(NcmSong *song, char *path, int32 path_len,
-                        time_t mtime) {
-#if defined(HAVE_TAGLIB_H)
-    struct mpd_pair pair;
-    struct mpd_song *mpd_song;
-#endif
-    int32 status;
-
-    ASSERT(song != NULL);
-    ASSERT(path != NULL);
-    ASSERT(path_len >= 0);
-
-    status = ncm_song_set_uri(song, path, path_len);
-    if (status == 0) {
-        ncm_song_set_mtime(song, mtime);
-    }
-
-#if defined(HAVE_TAGLIB_H)
-    if (status == 0) {
-        pair.name = "file";
-        pair.value = path;
-        if ((mpd_song = mpd_song_begin(&pair))) {
-            if (ncm_tags_read_song(mpd_song) > 0) {
-                status = ncm_song_from_mpd_song(song, mpd_song);
-                if (status == 0) {
-                    ncm_song_set_mtime(song, mtime);
-                }
-            }
-            mpd_song_free(mpd_song);
-        }
-    }
-#endif
-
-    return status;
 }
 
 static int32
