@@ -1431,39 +1431,10 @@ lyrics_percent_decode(StrBuilder *out, char *data, int32 data_len) {
 }
 
 static int32
-lyrics_find(char *data, int32 data_len, char *needle, int32 needle_len,
-            int32 start) {
-    if ((data == NULL) || (needle == NULL) || (needle_len <= 0)) {
-        return -1;
-    }
-    if (start < 0) {
-        start = 0;
-    }
-    for (int32 i = start; i + needle_len <= data_len; i += 1) {
-        if (BEGINS_WITH(data + i, data_len - i, needle, needle_len)) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-static int32
-lyrics_find_char(char *data, int32 data_len, char needle, int32 start) {
-    if (start < 0) {
-        start = 0;
-    }
-    for (int32 i = start; i < data_len; i += 1) {
-        if (data[i] == needle) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-static int32
 lyrics_extract_after_until(StrBuilder *out, char *data, int32 data_len,
                            char *start, int32 start_len, char *after,
                            int32 after_len, char *end, int32 end_len) {
+    char *match;
     int32 a;
     int32 b;
 
@@ -1476,20 +1447,25 @@ lyrics_extract_after_until(StrBuilder *out, char *data, int32 data_len,
 
     sb_clear(out);
 
-    if ((a = lyrics_find(data, data_len, start, start_len, 0)) < 0) {
+    match = memmem64(data, data_len, start, start_len);
+    if (match == NULL) {
         return -NCM_ERROR_NOT_FOUND;
     }
+    a = (int32)(match - data);
 
-    if ((a = lyrics_find(data, data_len,
-                         after, after_len, a + start_len)) < 0) {
+    match = memmem64(data + a + start_len, data_len - a - start_len,
+                     after, after_len);
+    if (match == NULL) {
         return -NCM_ERROR_NOT_FOUND;
     }
+    a = (int32)(match - data) + after_len;
 
-    a += after_len;
-
-    if ((b = lyrics_find(data, data_len, end, end_len, a)) < 0) {
+    match = memmem64(data + a, data_len - a, end, end_len);
+    if (match == NULL) {
         return -NCM_ERROR_NOT_FOUND;
     }
+    b = (int32)(match - data);
+
     SB_APPEND(out, data + a, b - a);
     return 0;
 }
@@ -1519,8 +1495,15 @@ lyrics_find_matching_div(char *data, int32 data_len, int32 content_start,
     int32 pos = content_start;
 
     while (pos < data_len) {
-        int32 open = lyrics_find(data, data_len, STRLIT("<div"), pos);
-        int32 close = lyrics_find(data, data_len, STRLIT("</div"), pos);
+        char *open_match;
+        char *close_match;
+        int32 open;
+        int32 close;
+
+        open_match = memmem64(data + pos, data_len - pos, STRLIT("<div"));
+        close_match = memmem64(data + pos, data_len - pos, STRLIT("</div"));
+        open = open_match ? (int32)(open_match - data) : -1;
+        close = close_match ? (int32)(close_match - data) : -1;
 
         if (close < 0) {
             return -1;
@@ -1567,16 +1550,21 @@ lyrics_extract_divs(StrBuilder *out, char *data, int32 data_len, char *marker,
         int32 close;
         int32 close_end;
 
-        if ((open = lyrics_find(data, data_len, STRLIT("<div"), pos)) < 0) {
-            break;
+        {
+            char *match = memmem64(data + pos, data_len - pos, STRLIT("<div"));
+
+            if (match == NULL) {
+                break;
+            }
+            open = (int32)(match - data);
         }
         if ((open_end = lyrics_find_tag_end(data, data_len,
                                             open + STRLIT_LEN("<div"))) < 0) {
             status = -NCM_ERROR_PARSE;
             break;
         }
-        if (lyrics_find(data + open, open_end - open + 1,
-                        marker, marker_len, 0) < 0) {
+        if (memmem64(data + open, open_end - open + 1,
+                     marker, marker_len) == NULL) {
             pos = open_end + 1;
             continue;
         }
@@ -1731,19 +1719,29 @@ lyrics_url_path_has_segments(char *url, int32 url_len, int32 path_start,
 static bool
 lyrics_url_query_has_key(char *url, int32 url_len, char *key,
                          int32 key_len) {
+    char *match;
     int32 query;
 
-    if ((query = lyrics_find_char(url, url_len, '?', 0)) < 0) {
+    match = memchr64(url, '?', url_len);
+    if (match == NULL) {
         return false;
     }
+    query = (int32)(match - url) + 1;
 
-    query += 1;
     while (query < url_len) {
-        int32 equal = lyrics_find_char(url, url_len, '=', query);
-        int32 end = lyrics_find_char(url, url_len, '&', query);
+        char *equal_match;
+        char *end_match;
+        int32 equal;
+        int32 end;
+
+        equal_match = memchr64(url + query, '=', url_len - query);
+        end_match = memchr64(url + query, '&', url_len - query);
+        equal = equal_match ? (int32)(equal_match - url) : -1;
+        end = end_match ? (int32)(end_match - url) : -1;
 
         if (end < 0) {
-            end = lyrics_find_char(url, url_len, '#', query);
+            end_match = memchr64(url + query, '#', url_len - query);
+            end = end_match ? (int32)(end_match - url) : -1;
         }
         if (end < 0) {
             end = url_len;
@@ -1843,6 +1841,8 @@ lyrics_slug_match_score(char *wanted, int32 wanted_len,
         return 50;
     }
     if (candid_len > wanted_len) {
+        char *match = memmem64(candid, candid_len, wanted, wanted_len);
+
         if (lyrics_starts_with_ignore_case(candid, candid_len,
                                            wanted, wanted_len)
             && lyrics_slug_match_separator(candid[wanted_len])) {
@@ -1855,8 +1855,9 @@ lyrics_slug_match_score(char *wanted, int32 wanted_len,
                                                   - wanted_len - 1])) {
             return 35;
         }
-        if (lyrics_find(candid, candid_len, wanted, wanted_len, 0) > 0) {
-            int32 pos = lyrics_find(candid, candid_len, wanted, wanted_len, 0);
+        if (match && (match > candid)) {
+            int32 pos = (int32)(match - candid);
+
             if (lyrics_slug_match_separator(candid[pos - 1])
                 && (pos + wanted_len < candid_len)
                 && lyrics_slug_match_separator(candid[pos + wanted_len])) {
@@ -2049,6 +2050,7 @@ lyrics_url_is_search_wrapper(char *url, int32 url_len) {
 
 static int32
 lyrics_unwrap_search_url(StrBuilder *out, char *url, int32 url_len) {
+    char *match;
     int32 query;
 
     if ((out == NULL) || (url == NULL) || (url_len <= 0)) {
@@ -2069,20 +2071,23 @@ lyrics_unwrap_search_url(StrBuilder *out, char *url, int32 url_len) {
         return 0;
     }
 
-    query = lyrics_find_char(url, url_len, '?', 0);
-    if (query < 0) {
+    match = memchr64(url, '?', url_len);
+    if (match == NULL) {
         return 0;
     }
-    query += 1;
+    query = (int32)(match - url) + 1;
+
     while (query < url_len) {
+        char *equal_match;
+        char *end_match;
         int32 equal;
         int32 end;
 
-        equal = lyrics_find_char(url, url_len, '=', query);
-        end = lyrics_find_char(url, url_len, '&', query);
-        if (end < 0) {
-            end = url_len;
-        }
+        equal_match = memchr64(url + query, '=', url_len - query);
+        end_match = memchr64(url + query, '&', url_len - query);
+        equal = equal_match ? (int32)(equal_match - url) : -1;
+        end = end_match ? (int32)(end_match - url) : url_len;
+
         if ((equal > query) && (equal < end)
             && (STREQUAL(url + query, equal - query, "q")
                 || STREQUAL(url + query, equal - query, "url")
@@ -2197,9 +2202,12 @@ lyrics_collect_search_urls(NcmLyricsFetcherDef *fetcher, StrBuilderArray *out,
 
         quote = unescaped.data[value_start];
         if ((quote == '\'') || (quote == '"')) {
+            char *match;
+
             value_start += 1;
-            value_end = lyrics_find_char(unescaped.data, unescaped.len, quote,
-                                         value_start);
+            match = memchr64(unescaped.data + value_start, quote,
+                             unescaped.len - value_start);
+            value_end = match ? (int32)(match - unescaped.data) : -1;
         } else {
             value_end = value_start;
             while ((value_end < unescaped.len)
@@ -2378,6 +2386,7 @@ static int32
 lyrics_json_value_start(char *data, int32 data_len, char *key,
                         int32 key_len, int32 start, int32 *value_start) {
     StrBuilder pattern = {0};
+    char *match;
     int32 key_pos;
     int32 pos;
 
@@ -2387,18 +2396,20 @@ lyrics_json_value_start(char *data, int32 data_len, char *key,
     if ((data_len < 0) || (key_len <= 0) || (start < 0)) {
         return -EINVAL;
     }
-    if (data_len == 0) {
+    if ((data_len == 0) || (start >= data_len)) {
         return -NCM_ERROR_NOT_FOUND;
     }
 
     sb_append_byte(&pattern, '"');
     SB_APPEND(&pattern, key, key_len);
     sb_append_byte(&pattern, '"');
-    key_pos = lyrics_find(data, data_len, pattern.data, pattern.len, start);
+    match = memmem64(data + start, data_len - start,
+                     pattern.data, pattern.len);
     sb_free(&pattern);
-    if (key_pos < 0) {
+    if (match == NULL) {
         return -NCM_ERROR_NOT_FOUND;
     }
+    key_pos = (int32)(match - data);
 
     pos = key_pos + key_len + 2;
     while ((pos < data_len)
@@ -2426,6 +2437,7 @@ static int32
 lyrics_extract_genius(StrBuilder *out, char *data, int32 data_len) {
     StrBuilder json = {0};
     StrBuilder html = {0};
+    char *match;
     int32 marker;
     int32 json_end;
     int32 lyrics_data;
@@ -2434,17 +2446,17 @@ lyrics_extract_genius(StrBuilder *out, char *data, int32 data_len) {
     int32 status;
     int32 fallback_status;
 
-    marker = lyrics_find(data, data_len,
-                         STRLIT("window.__PRELOADED_STATE__ = JSON.parse('"),
-                         0);
+    match = memmem64(data, data_len,
+                     STRLIT("window.__PRELOADED_STATE__ = JSON.parse('"));
+    marker = match ? (int32)(match - data) : -1;
     status = -NCM_ERROR_NOT_FOUND;
     if (marker >= 0) {
         marker += STRLIT_LEN("window.__PRELOADED_STATE__ = JSON.parse('");
         status = lyrics_decode_quoted(&json, data, data_len, marker, '\'',
                                       &json_end);
         if (status == 0) {
-            lyrics_data = lyrics_find(json.data, json.len,
-                                      STRLIT("\"lyricsData\""), 0);
+            match = memmem64(json.data, json.len, STRLIT("\"lyricsData\""));
+            lyrics_data = match ? (int32)(match - json.data) : -1;
             if (lyrics_data < 0) {
                 status = -NCM_ERROR_NOT_FOUND;
             } else if ((status = lyrics_json_value_start(
@@ -2482,20 +2494,22 @@ lyrics_extract_genius(StrBuilder *out, char *data, int32 data_len) {
 
 static int32
 lyrics_extract_musixmatch(StrBuilder *out, char *data, int32 data_len) {
+    char *match;
     int32 track_info;
     int32 lyrics;
     int32 value_start;
     int32 value_end;
     int32 status;
 
-    if ((track_info = lyrics_find(data, data_len,
-                                  STRLIT("\"trackInfo\""), 0)) < 0) {
-        track_info = 0;
-    }
-    if ((lyrics = lyrics_find(data, data_len,
-                              STRLIT("\"lyrics\""), track_info)) < 0) {
+    match = memmem64(data, data_len, STRLIT("\"trackInfo\""));
+    track_info = match ? (int32)(match - data) : 0;
+
+    match = memmem64(data + track_info, data_len - track_info,
+                     STRLIT("\"lyrics\""));
+    if (match == NULL) {
         return -NCM_ERROR_NOT_FOUND;
     }
+    lyrics = (int32)(match - data);
 
     status = lyrics_json_value_start(data, data_len, STRLIT("body"), lyrics,
                                      &value_start);
@@ -2521,6 +2535,7 @@ lyrics_update_first_match(char *data, int32 data_len, int32 start,
 
 static int32
 lyrics_amalgama_content_start(char *data, int32 data_len) {
+    char *match;
     int32 marker;
     int32 content_start;
 
@@ -2539,10 +2554,11 @@ lyrics_amalgama_content_start(char *data, int32 data_len) {
         return content_start + STRLIT_LEN("</h2>");
     }
 
-    content_start = lyrics_find_char(data, data_len, '>', marker);
-    if (content_start < 0) {
+    match = memchr64(data + marker, '>', data_len - marker);
+    if (match == NULL) {
         return -1;
     }
+    content_start = (int32)(match - data);
     return content_start + 1;
 }
 
@@ -2608,6 +2624,7 @@ lyrics_extract_amalgama(StrBuilder *out, char *data, int32 data_len) {
 
 static int32
 lyrics_lacoccinelle_content_start(char *data, int32 data_len) {
+    char *match;
     int32 marker;
     int32 second_marker;
     int32 content_start;
@@ -2631,10 +2648,11 @@ lyrics_lacoccinelle_content_start(char *data, int32 data_len) {
         marker = second_marker;
     }
 
-    content_start = lyrics_find_char(data, data_len, '>', marker);
-    if (content_start < 0) {
+    match = memchr64(data + marker, '>', data_len - marker);
+    if (match == NULL) {
         return -1;
     }
+    content_start = (int32)(match - data);
     return content_start + 1;
 }
 
@@ -2683,6 +2701,7 @@ lyrics_extract_lacoccinelle(StrBuilder *out, char *data, int32 data_len) {
 
 static int32
 lyrics_musica_content_start(char *data, int32 data_len) {
+    char *match;
     int32 marker;
     int32 content_start;
 
@@ -2691,11 +2710,12 @@ lyrics_musica_content_start(char *data, int32 data_len) {
         return -1;
     }
 
-    content_start = lyrics_find_char(data, data_len, '>',
-                                     marker + STRLIT_LEN(">LETRA<") - 1);
-    if (content_start < 0) {
+    content_start = marker + STRLIT_LEN(">LETRA<") - 1;
+    match = memchr64(data + content_start, '>', data_len - content_start);
+    if (match == NULL) {
         return -1;
     }
+    content_start = (int32)(match - data);
     return content_start + 1;
 }
 
@@ -2742,6 +2762,7 @@ lyrics_extract_musica(StrBuilder *out, char *data, int32 data_len) {
 
 static int32
 lyrics_paroles_content_start(char *data, int32 data_len) {
+    char *match;
     int32 marker;
     int32 second_marker;
     int32 content_start;
@@ -2759,10 +2780,11 @@ lyrics_paroles_content_start(char *data, int32 data_len) {
         marker = second_marker;
     }
 
-    content_start = lyrics_find_char(data, data_len, '>', marker);
-    if (content_start < 0) {
+    match = memchr64(data + marker, '>', data_len - marker);
+    if (match == NULL) {
         return -1;
     }
+    content_start = (int32)(match - data);
     return content_start + 1;
 }
 
@@ -2910,9 +2932,7 @@ lyrics_fetch_page(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
     }
 
     if ((fetcher->type == NCM_LYRICS_FETCHER_AZLYRICS)
-        && (lyrics_find(data.data, data.len,
-                        STRLIT("request for access"), 0)
-            >= 0)) {
+        && memmem64(data.data, data.len, STRLIT("request for access"))) {
         status = ncm_lyrics_result_set(result, false,
                                        STRLIT(LYRICS_MSG_ACCESS_DENIED));
         goto cleanup;
