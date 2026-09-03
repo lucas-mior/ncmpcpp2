@@ -4,15 +4,31 @@ For the first of the problems below (excessive NULL checking),
 identify instances of it in the first file in the list below it. Then fix those
 instances and remove the file from the list.
 
-## Excessive NULL checking
+## Excessive NULL checking and error checking
 The source code in src/ is at paranoia levels of NULL pointer checking.  For
 instance, lots of functions check if (screen == NULL), but they are called
 internally, *after* the external API of its module has already validated input.
-Identify instances of the anti-pattern of looking for NULL in internal
-functions.  Remove all the instances of this anti-pattern. You can leave an
-ASSERT(pointer != NULL) in 20% of the cases, just as an occasional sanity check.
-But most internal functions can simply assume that they have valid input because
-the external API of the module has already validated it.
+Another bad pattern comes in the form of errors. Functions that should never
+return negative because the input was already validated are always checked,
+which adds lots of unnecessary `if (status < 0)` in the code. As explained in
+detail in cbase/c-guidelines.md, only the external API of each module does input
+validation. If a utility function like `sb_set` might return negative because we
+passed NULL pointers to it, does not mean that we need to check it, because the
+pointers should have been validated at a higher level in the code. Also, some
+functions are made to return int32 only to conform because some lower level
+function that they call returns int32. But again, this is only needed if an
+error is expected. Most internal functions should never fail. Make them return
+void in that case (or the result if they need to return some data). Also, some
+functions need to checked for errors in *some* calls, while not in others. You
+need to know which calls have to be checked by the context. It is okay to assume
+stuff sometimes (add assertions if you are not 100% sure).
+
+Identify instances of the anti-patterns above (excessive NULL pointer checking
+and excessive error checking).  Remove all the instances of this anti-pattern.
+You can leave an ASSERT(pointer != NULL) or in 20% of the cases, just as an
+occasional sanity check.  But most internal functions can simply assume that
+they have valid input because the external API of the module has already
+validated it.
 
 - src/c/ncm_conversion.c
 - src/screens/nc_help.c
