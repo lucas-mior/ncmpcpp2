@@ -2029,9 +2029,7 @@ media_library_screen_can_move_to_next_column(
 }
 
 void
-media_library_screen_previous_column(
-    MediaLibraryScreen *screen
-) {
+media_library_screen_previous_column(MediaLibraryScreen *screen) {
     if (!media_library_screen_can_move_to_previous_column(screen)) {
         return;
     }
