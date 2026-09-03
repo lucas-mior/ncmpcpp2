@@ -222,9 +222,8 @@ current_screen_current_filter(void) {
 int32
 current_screen_apply_filter(char *pattern, int32 pattern_len,
                             NcmError *ncm_error) {
-    int32 status;
+    int32 status = -NCM_ERROR_UNAVAILABLE;
 
-    status = -NCM_ERROR_UNAVAILABLE;
     if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST)) {
         status = playlist_screen_apply_filter(
             app_screen_playlist(), pattern, pattern_len, ncm_error);
