@@ -3691,18 +3691,15 @@ library_query_from_album(MediaLibraryScreen *screen,
 }
 
 static int32
-library_append_query_songs(
-    MediaLibraryScreen *screen, MediaLibrarySongQuery *query,
-    NcmSongArray *songs, NcmError *ncm_error
-) {
-    NcmMpdSongList source;
-    NcmSongArray sorted;
+library_append_query_songs(MediaLibraryScreen *screen,
+                           MediaLibrarySongQuery *query,
+                           NcmSongArray *songs, NcmError *ncm_error) {
+    NcmMpdSongList source = {0};
+    NcmSongArray sorted = {0};
     int32 status;
 
-    source = (NcmMpdSongList){0};
-    sorted = (NcmSongArray){0};
-    status = media_library_screen_search_songs(
-        screen, query, &source, ncm_error);
+    status = media_library_screen_search_songs(screen, query, &source,
+                                               ncm_error);
     if (status == 0) {
         status = media_library_songs_from_list(&sorted, &source);
         if (status < 0) {
