@@ -3959,16 +3959,13 @@ library_update_titles(MediaLibraryScreen *screen,
     if (Config.titles_visibility) {
         tag_type_name = ncm_tag_type_name(Config.media_lib_primary_tag);
         tag_type_name_len = optional_strlen32(tag_type_name);
-        SB_APPEND(&screen->tags_title, tag_type_name,
-                  tag_type_name_len);
+        SB_APPEND(&screen->tags_title, tag_type_name, tag_type_name_len);
         sb_append_byte(&screen->tags_title, 's');
-        SB_APPEND(&screen->albums_title,
-                  "Albums");
+        SB_APPEND(&screen->albums_title, "Albums");
         SB_APPEND(&screen->songs_title, "Songs");
 
         if (screen->mode == MEDIA_LIBRARY_MODE_TWO_COLUMNS) {
-            SB_APPEND(&screen->albums_title,
-                      " (sorted by ");
+            SB_APPEND(&screen->albums_title, " (sorted by ");
             for (int32 i = 0; i < tag_type_name_len; i += 1) {
                 char ch = tag_type_name[i];
 
@@ -3978,15 +3975,12 @@ library_update_titles(MediaLibraryScreen *screen,
                 sb_append_byte(&screen->albums_title, ch);
             }
             if (screen->sort_by_mtime) {
-                SB_APPEND(&screen->albums_title,
-                          " and mtime");
+                SB_APPEND(&screen->albums_title, " and mtime");
             }
             sb_append_byte(&screen->albums_title, ')');
-        } else if ((screen->mode
-                    == MEDIA_LIBRARY_MODE_ALBUM_ONLY)
+        } else if ((screen->mode == MEDIA_LIBRARY_MODE_ALBUM_ONLY)
                    && screen->sort_by_mtime) {
-            SB_APPEND(&screen->albums_title,
-                      " (sorted by mtime)");
+            SB_APPEND(&screen->albums_title, " (sorted by mtime)");
         }
     }
 
