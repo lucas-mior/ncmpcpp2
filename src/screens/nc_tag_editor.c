@@ -432,19 +432,12 @@ tag_editor_update_menu_highlights(TagEditorScreen *screen) {
 
 static void
 tag_editor_configure_menus(TagEditorScreen *screen) {
-    NcMenu *directories;
-    NcMenu *tag_types;
-    NcMenu *tags;
-    NcMenu *parser_dialog;
-    NcMenu *parser_rows;
-    NcMenu *parser_actions;
-
-    directories = nc_editor_pair_menu_base(&screen->directories);
-    tag_types = nc_editor_string_menu_base(&screen->tag_types);
-    tags = nc_tag_row_menu_base(&screen->tags);
-    parser_dialog = nc_editor_string_menu_base(&screen->parser_dialog);
-    parser_rows = nc_editor_string_menu_base(&screen->parser_rows);
-    parser_actions = nc_editor_string_menu_base(&screen->parser_actions);
+    NcMenu *directories = nc_editor_pair_menu_base(&screen->directories);
+    NcMenu *tag_types = nc_editor_string_menu_base(&screen->tag_types);
+    NcMenu *tags = nc_tag_row_menu_base(&screen->tags);
+    NcMenu *parser_dialog = nc_editor_string_menu_base(&screen->parser_dialog);
+    NcMenu *parser_rows = nc_editor_string_menu_base(&screen->parser_rows);
+    NcMenu *parser_actions = nc_editor_string_menu_base(&screen->parser_actions);
 
     tag_editor_configure_menu(directories);
     tag_editor_configure_menu(tag_types);
