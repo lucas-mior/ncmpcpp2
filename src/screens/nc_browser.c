@@ -21,7 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static bool browser_supported_extensions_contains(StrBuilderArray *, char *, int32 );
 static int32 browser_set_parent_of_directory(BrowserScreen *, char *, int32 );
 static int32 browser_load_mpd_items(BrowserScreen *, NcmMpdItemArray *);
 static int32 browser_reload_from_local(BrowserScreen *, NcmError *);
@@ -760,6 +759,31 @@ browser_screen_set_display_mode(BrowserScreen *screen, enum DisplayMode mode) {
     screen->redraw_header = true;
     browser_screen_update_column_title(screen);
     return;
+}
+
+static bool
+browser_supported_extensions_contains(StrBuilderArray *extensions,
+                                      char *extension,
+                                      int32 extension_len) {
+    ASSERT(extensions != NULL);
+    if (extension == NULL) {
+        extension = "";
+        extension_len = 0;
+    }
+    if (extension_len < 0) {
+        extension_len = strlen32(extension);
+    }
+
+    for (int32 i = 0; i < extensions->len; i += 1) {
+        StrBuilder *item;
+
+        item = &extensions->items[i];
+        if (STREQUAL(item->data, item->len, extension,
+                     extension_len)) {
+            return true;
+        }
+    }
+    return false;
 }
 
 int32
@@ -2382,31 +2406,6 @@ browser_delete_path_recursive(char *path, int32 path_len,
         free2(copy, path_len + 1);
     }
     return ncm_error_ok(ncm_error);
-}
-
-static bool
-browser_supported_extensions_contains(StrBuilderArray *extensions,
-                                      char *extension,
-                                      int32 extension_len) {
-    ASSERT(extensions != NULL);
-    if (extension == NULL) {
-        extension = "";
-        extension_len = 0;
-    }
-    if (extension_len < 0) {
-        extension_len = strlen32(extension);
-    }
-
-    for (int32 i = 0; i < extensions->len; i += 1) {
-        StrBuilder *item;
-
-        item = &extensions->items[i];
-        if (STREQUAL(item->data, item->len, extension,
-                     extension_len)) {
-            return true;
-        }
-    }
-    return false;
 }
 
 static int32
