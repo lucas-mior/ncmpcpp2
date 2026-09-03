@@ -967,8 +967,7 @@ int32 ncm_mpd_connection_recv_idle(NcmMpdConnection *connection,
 int32 ncm_mpd_connection_check_error(NcmMpdConnection *connection);
 char *ncm_mpd_connection_error(NcmMpdConnection *connection);
 void ncm_mpd_connection_clear_error(NcmMpdConnection *connection);
-enum mpd_error ncm_mpd_connection_error_code(
-    NcmMpdConnection *connection);
+enum mpd_error ncm_mpd_connection_error_code(NcmMpdConnection *connection);
 enum mpd_server_error ncm_mpd_connection_server_error_code(
     NcmMpdConnection *connection);
 bool ncm_mpd_connection_error_is_clearable(NcmMpdConnection *connection);
