@@ -84,7 +84,6 @@ src/helpers.c
 src/c/ncm_time.c
 src/c/ncm_c.c
 src/c/ncm_tags.c
-src/c/ncm_random.c
 src/app_legacy_bridge.c
 src/settings.c
 src/c/ncm_playlist_sort.c
