@@ -3249,9 +3249,8 @@ library_sort_album_menu(NcMediaLibraryAlbumMenu *menu) {
 
     base = nc_media_library_album_menu_base(menu);
     for (int32 i = 1; i < nc_menu_all_item_count(base); i += 1) {
-        int32 j;
+        int32 j = i;
 
-        j = i;
         while (j > 0) {
             MediaLibraryAlbumItem left;
             MediaLibraryAlbumItem right;
