@@ -2602,8 +2602,7 @@ media_library_screen_finish_list_change(
     }
 
     if (album_changed) {
-        nc_menu_clear_items(
-            nc_media_library_song_menu_base(&screen->songs));
+        nc_menu_clear_items(nc_media_library_song_menu_base(&screen->songs));
         library_restart_update_timer(screen);
         library_set_observed_album(screen, album);
         nc_screen_request_update(&screen->screen);
