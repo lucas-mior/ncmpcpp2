@@ -54,8 +54,6 @@ static void tag_editor_destroy_callback(NcScreen *screen);
 static void tag_editor_mouse_callback(NcScreen *, MEVENT);
 
 // declarations to delete
-static int32 tag_editor_reload_directories_from_mpd(TagEditorScreen *, NcmMpdClient *, NcmError *);
-static int32 tag_editor_reload_songs_from_mpd(TagEditorScreen *, NcmMpdClient *, NcmError *);
 static void tag_editor_mouse_scroll(TagEditorScreen *, enum NcScroll);
 static void tag_editor_mouse_scroll_menu(NcMenu *, NcWindow *, enum NcScroll);
 static int32 tag_editor_run_current_action(TagEditorScreen *);
@@ -626,6 +624,282 @@ tag_editor_screen_go_to_parent(TagEditorScreen *screen) {
     screen->directories_update_requested = true;
     screen->observed_dir_valid = false;
     tag_editor_update_titles(screen, true);
+    return 0;
+}
+
+static void
+tag_editor_restore_current_directory(TagEditorScreen *screen,
+                                     StrBuilder *path) {
+    NcMenu *menu;
+
+    ASSERT(screen != NULL);
+    ASSERT(path != NULL);
+    if (path->len <= 0) {
+        return;
+    }
+    menu = nc_editor_pair_menu_base(&screen->directories);
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        NcMenuStringPair *pair;
+
+        if (((pair = nc_menu_active_item_at(menu, i)) == NULL)
+            || (pair->second == NULL)) {
+            continue;
+        }
+        if (STREQUAL(pair->second, pair->second_len,
+                     path->data, path->len)) {
+            (void)nc_menu_goto_selectable(menu, i);
+            return;
+        }
+    }
+    return;
+}
+
+static int32
+tag_editor_reload_directories_from_mpd(TagEditorScreen *screen,
+                                       NcmMpdClient *client,
+                                       NcmError *ncm_error) {
+    NcmDirectoryArray directories = {0};
+    StrBuilder preserved = {0};
+    char *dir;
+    int32 status;
+
+    {
+        char *data;
+        int32 data_len;
+
+        if (tag_editor_current_directory_path(screen, &data, &data_len)) {
+            sb_set(&preserved, data, data_len);
+        }
+    }
+    if ((preserved.len <= 0) && (screen->highlighted_dir.len > 0)) {
+        sb_set(&preserved, screen->highlighted_dir.data,
+               screen->highlighted_dir.len);
+    }
+    dir = screen->current_dir.data;
+    if (dir == NULL) {
+        dir = "/";
+    }
+
+    status = ncm_mpd_client_get_directory_list(client, dir, &directories,
+                                               ncm_error);
+    if (status < 0) {
+        sb_free(&preserved);
+        ncm_directory_array_destroy(&directories);
+        return status;
+    }
+
+    for (int32 i = 1; i < directories.len; i += 1) {
+        NcmDirectory current = {0};
+        int32 j = i;
+
+        ncm_directory_move(&current, &directories.items[i]);
+        while (j > 0) {
+            NcmDirectory *left = &directories.items[j - 1];
+            int32 comparison;
+
+            if (left->path == NULL) {
+                comparison = current.path == NULL ? 0 : -1;
+            } else if (current.path == NULL) {
+                comparison = 1;
+            } else {
+                int32 left_start;
+                int32 right_start;
+
+                left_start = ncm_string_basename_start(
+                    left->path, left->path_len);
+                right_start = ncm_string_basename_start(
+                    current.path, current.path_len);
+                comparison = ncm_compare_locale_strings(
+                    left->path + left_start, left->path_len - left_start,
+                    current.path + right_start,
+                    current.path_len - right_start,
+                    Config.ignore_leading_the);
+            }
+            if (comparison <= 0) {
+                break;
+            }
+            ncm_directory_move(&directories.items[j],
+                               &directories.items[j - 1]);
+            j -= 1;
+        }
+        ncm_directory_move(&directories.items[j], &current);
+        ncm_directory_destroy(&current);
+    }
+
+    nc_menu_show_all_items(nc_editor_pair_menu_base(
+        &screen->directories));
+    nc_menu_clear_items(nc_editor_pair_menu_base(
+        &screen->directories));
+    {
+        char *control_dir = screen->current_dir.data;
+        int32 control_dir_len = screen->current_dir.len;
+
+        if ((control_dir == NULL) || (control_dir_len <= 0)
+            || STREQUAL(control_dir, control_dir_len, "/")) {
+            status = tag_editor_screen_add_directory(
+                screen, STRLIT("."), STRLIT("/"));
+        } else {
+            int32 parent_len;
+
+            parent_len = ncm_string_parent_directory_len(
+                control_dir, control_dir_len);
+            if (parent_len <= 0) {
+                status = tag_editor_screen_add_directory(
+                    screen, STRLIT(".."), STRLIT("/"));
+            } else {
+                status = tag_editor_screen_add_directory(
+                    screen, STRLIT(".."), control_dir, parent_len);
+            }
+        }
+    }
+    if (status < 0) {
+        sb_free(&preserved);
+        ncm_directory_array_destroy(&directories);
+        return status;
+    }
+    for (int32 i = 0; i < directories.len; i += 1) {
+        NcmDirectory *directory;
+        NcmStringView path;
+        int32 basename_start;
+
+        directory = &directories.items[i];
+        if (!ncm_directory_has_path_view(directory, &path)) {
+            continue;
+        }
+        basename_start = ncm_string_basename_start(path.data, path.len);
+        status = tag_editor_screen_add_directory(
+            screen, path.data + basename_start,
+            path.len - basename_start, path.data, path.len);
+        if (status < 0) {
+            sb_free(&preserved);
+            ncm_directory_array_destroy(&directories);
+            return status;
+        }
+    }
+
+    tag_editor_restore_current_directory(screen, &preserved);
+    if (screen->directory_filter_enabled) {
+        nc_menu_apply_filter(nc_editor_pair_menu_base(
+            &screen->directories));
+        tag_editor_restore_current_directory(screen, &preserved);
+    }
+    tag_editor_observe_current_directory(screen);
+    sb_clear(&screen->highlighted_dir);
+    screen->directories_update_requested = false;
+
+    sb_free(&preserved);
+    ncm_directory_array_destroy(&directories);
+    return 0;
+}
+
+static int32
+tag_editor_reload_songs_from_mpd(TagEditorScreen *screen,
+                                 NcmMpdClient *client, NcmError *ncm_error) {
+    NcmMpdSongList list = {0};
+    NcmSongArray songs = {0};
+    StrBuilder preserved_uri = {0};
+    char *path;
+    int32 path_len;
+    int32 status;
+
+    if (!tag_editor_current_directory_path(screen, &path, &path_len)) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing directory"));
+    }
+
+    {
+        NcmMutableSong *current;
+
+        if ((current = nc_tag_row_menu_current(&screen->tags))) {
+            if (current->uri && (current->uri_len > 0)) {
+                sb_set(&preserved_uri, current->uri, current->uri_len);
+            }
+        }
+    }
+
+    status = ncm_mpd_client_get_songs(client, path, &list, ncm_error);
+    if (status < 0) {
+        sb_free(&preserved_uri);
+        ncm_song_array_destroy(&songs);
+        ncm_mpd_song_list_destroy(&list);
+        return status;
+    }
+
+    status = ncm_mpd_song_list_to_song_array(&list, &songs);
+    if (status < 0) {
+        ncm_error_set_status(ncm_error, status,
+                             STRLIT("failed to copy directory songs"));
+        sb_free(&preserved_uri);
+        ncm_song_array_destroy(&songs);
+        ncm_mpd_song_list_destroy(&list);
+        return status;
+    }
+
+    for (int32 i = 1; i < songs.len; i += 1) {
+        NcmSong current = {0};
+        int32 j = i;
+
+        ncm_song_move(&current, &songs.items[i]);
+        while (j > 0) {
+            NcmSong *left = &songs.items[j - 1];
+            NcmStringView left_uri;
+            NcmStringView right_uri;
+            int32 comparison;
+
+            if (!ncm_song_has_uri_view(left, 0, &left_uri)) {
+                comparison = ncm_song_has_uri_view(
+                    &current, 0, &right_uri) ? -1 : 0;
+            } else if (!ncm_song_has_uri_view(
+                           &current, 0, &right_uri)) {
+                comparison = 1;
+            } else {
+                comparison = ncm_compare_locale_strings(
+                    left_uri.data, left_uri.len,
+                    right_uri.data, right_uri.len,
+                    Config.ignore_leading_the);
+            }
+            if (comparison <= 0) {
+                break;
+            }
+            ncm_song_move(&songs.items[j], &songs.items[j - 1]);
+            j -= 1;
+        }
+        ncm_song_move(&songs.items[j], &current);
+        ncm_song_destroy(&current);
+    }
+
+    status = tag_editor_screen_load_songs(screen, &songs);
+    if (status < 0) {
+        sb_free(&preserved_uri);
+        ncm_song_array_destroy(&songs);
+        ncm_mpd_song_list_destroy(&list);
+        return status;
+    }
+
+    if (screen->tag_filter_enabled) {
+        nc_menu_apply_filter(nc_tag_row_menu_base(&screen->tags));
+    }
+    if (preserved_uri.len > 0) {
+        NcMenu *menu = nc_tag_row_menu_base(&screen->tags);
+
+        for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+            NcmMutableSong *item;
+
+            item = nc_menu_active_item_at(menu, i);
+            if ((item != NULL) && (item->uri != NULL)
+                && STREQUAL(item->uri, item->uri_len,
+                            preserved_uri.data, preserved_uri.len)) {
+                (void)nc_menu_goto_selectable(menu, i);
+                break;
+            }
+        }
+    }
+    screen->tags_update_requested = false;
+    tag_editor_update_titles(screen, true);
+
+    sb_free(&preserved_uri);
+    ncm_song_array_destroy(&songs);
+    ncm_mpd_song_list_destroy(&list);
     return 0;
 }
 
@@ -3019,282 +3293,6 @@ tag_editor_current_directory_pair(TagEditorScreen *screen,
     }
     *pair = current;
     return true;
-}
-
-static void
-tag_editor_restore_current_directory(TagEditorScreen *screen,
-                                     StrBuilder *path) {
-    NcMenu *menu;
-
-    ASSERT(screen != NULL);
-    ASSERT(path != NULL);
-    if (path->len <= 0) {
-        return;
-    }
-    menu = nc_editor_pair_menu_base(&screen->directories);
-    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        NcMenuStringPair *pair;
-
-        if (((pair = nc_menu_active_item_at(menu, i)) == NULL)
-            || (pair->second == NULL)) {
-            continue;
-        }
-        if (STREQUAL(pair->second, pair->second_len,
-                     path->data, path->len)) {
-            (void)nc_menu_goto_selectable(menu, i);
-            return;
-        }
-    }
-    return;
-}
-
-static int32
-tag_editor_reload_directories_from_mpd(TagEditorScreen *screen,
-                                       NcmMpdClient *client,
-                                       NcmError *ncm_error) {
-    NcmDirectoryArray directories = {0};
-    StrBuilder preserved = {0};
-    char *dir;
-    int32 status;
-
-    {
-        char *data;
-        int32 data_len;
-
-        if (tag_editor_current_directory_path(screen, &data, &data_len)) {
-            sb_set(&preserved, data, data_len);
-        }
-    }
-    if ((preserved.len <= 0) && (screen->highlighted_dir.len > 0)) {
-        sb_set(&preserved, screen->highlighted_dir.data,
-               screen->highlighted_dir.len);
-    }
-    dir = screen->current_dir.data;
-    if (dir == NULL) {
-        dir = "/";
-    }
-
-    status = ncm_mpd_client_get_directory_list(client, dir, &directories,
-                                               ncm_error);
-    if (status < 0) {
-        sb_free(&preserved);
-        ncm_directory_array_destroy(&directories);
-        return status;
-    }
-
-    for (int32 i = 1; i < directories.len; i += 1) {
-        NcmDirectory current = {0};
-        int32 j = i;
-
-        ncm_directory_move(&current, &directories.items[i]);
-        while (j > 0) {
-            NcmDirectory *left = &directories.items[j - 1];
-            int32 comparison;
-
-            if (left->path == NULL) {
-                comparison = current.path == NULL ? 0 : -1;
-            } else if (current.path == NULL) {
-                comparison = 1;
-            } else {
-                int32 left_start;
-                int32 right_start;
-
-                left_start = ncm_string_basename_start(
-                    left->path, left->path_len);
-                right_start = ncm_string_basename_start(
-                    current.path, current.path_len);
-                comparison = ncm_compare_locale_strings(
-                    left->path + left_start, left->path_len - left_start,
-                    current.path + right_start,
-                    current.path_len - right_start,
-                    Config.ignore_leading_the);
-            }
-            if (comparison <= 0) {
-                break;
-            }
-            ncm_directory_move(&directories.items[j],
-                               &directories.items[j - 1]);
-            j -= 1;
-        }
-        ncm_directory_move(&directories.items[j], &current);
-        ncm_directory_destroy(&current);
-    }
-
-    nc_menu_show_all_items(nc_editor_pair_menu_base(
-        &screen->directories));
-    nc_menu_clear_items(nc_editor_pair_menu_base(
-        &screen->directories));
-    {
-        char *control_dir = screen->current_dir.data;
-        int32 control_dir_len = screen->current_dir.len;
-
-        if ((control_dir == NULL) || (control_dir_len <= 0)
-            || STREQUAL(control_dir, control_dir_len, "/")) {
-            status = tag_editor_screen_add_directory(
-                screen, STRLIT("."), STRLIT("/"));
-        } else {
-            int32 parent_len;
-
-            parent_len = ncm_string_parent_directory_len(
-                control_dir, control_dir_len);
-            if (parent_len <= 0) {
-                status = tag_editor_screen_add_directory(
-                    screen, STRLIT(".."), STRLIT("/"));
-            } else {
-                status = tag_editor_screen_add_directory(
-                    screen, STRLIT(".."), control_dir, parent_len);
-            }
-        }
-    }
-    if (status < 0) {
-        sb_free(&preserved);
-        ncm_directory_array_destroy(&directories);
-        return status;
-    }
-    for (int32 i = 0; i < directories.len; i += 1) {
-        NcmDirectory *directory;
-        NcmStringView path;
-        int32 basename_start;
-
-        directory = &directories.items[i];
-        if (!ncm_directory_has_path_view(directory, &path)) {
-            continue;
-        }
-        basename_start = ncm_string_basename_start(path.data, path.len);
-        status = tag_editor_screen_add_directory(
-            screen, path.data + basename_start,
-            path.len - basename_start, path.data, path.len);
-        if (status < 0) {
-            sb_free(&preserved);
-            ncm_directory_array_destroy(&directories);
-            return status;
-        }
-    }
-
-    tag_editor_restore_current_directory(screen, &preserved);
-    if (screen->directory_filter_enabled) {
-        nc_menu_apply_filter(nc_editor_pair_menu_base(
-            &screen->directories));
-        tag_editor_restore_current_directory(screen, &preserved);
-    }
-    tag_editor_observe_current_directory(screen);
-    sb_clear(&screen->highlighted_dir);
-    screen->directories_update_requested = false;
-
-    sb_free(&preserved);
-    ncm_directory_array_destroy(&directories);
-    return 0;
-}
-
-static int32
-tag_editor_reload_songs_from_mpd(TagEditorScreen *screen,
-                                 NcmMpdClient *client, NcmError *ncm_error) {
-    NcmMpdSongList list = {0};
-    NcmSongArray songs = {0};
-    StrBuilder preserved_uri = {0};
-    char *path;
-    int32 path_len;
-    int32 status;
-
-    if (!tag_editor_current_directory_path(screen, &path, &path_len)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing directory"));
-    }
-
-    {
-        NcmMutableSong *current;
-
-        if ((current = nc_tag_row_menu_current(&screen->tags))) {
-            if (current->uri && (current->uri_len > 0)) {
-                sb_set(&preserved_uri, current->uri, current->uri_len);
-            }
-        }
-    }
-
-    status = ncm_mpd_client_get_songs(client, path, &list, ncm_error);
-    if (status < 0) {
-        sb_free(&preserved_uri);
-        ncm_song_array_destroy(&songs);
-        ncm_mpd_song_list_destroy(&list);
-        return status;
-    }
-
-    status = ncm_mpd_song_list_to_song_array(&list, &songs);
-    if (status < 0) {
-        ncm_error_set_status(ncm_error, status,
-                             STRLIT("failed to copy directory songs"));
-        sb_free(&preserved_uri);
-        ncm_song_array_destroy(&songs);
-        ncm_mpd_song_list_destroy(&list);
-        return status;
-    }
-
-    for (int32 i = 1; i < songs.len; i += 1) {
-        NcmSong current = {0};
-        int32 j = i;
-
-        ncm_song_move(&current, &songs.items[i]);
-        while (j > 0) {
-            NcmSong *left = &songs.items[j - 1];
-            NcmStringView left_uri;
-            NcmStringView right_uri;
-            int32 comparison;
-
-            if (!ncm_song_has_uri_view(left, 0, &left_uri)) {
-                comparison = ncm_song_has_uri_view(
-                    &current, 0, &right_uri) ? -1 : 0;
-            } else if (!ncm_song_has_uri_view(
-                           &current, 0, &right_uri)) {
-                comparison = 1;
-            } else {
-                comparison = ncm_compare_locale_strings(
-                    left_uri.data, left_uri.len,
-                    right_uri.data, right_uri.len,
-                    Config.ignore_leading_the);
-            }
-            if (comparison <= 0) {
-                break;
-            }
-            ncm_song_move(&songs.items[j], &songs.items[j - 1]);
-            j -= 1;
-        }
-        ncm_song_move(&songs.items[j], &current);
-        ncm_song_destroy(&current);
-    }
-
-    status = tag_editor_screen_load_songs(screen, &songs);
-    if (status < 0) {
-        sb_free(&preserved_uri);
-        ncm_song_array_destroy(&songs);
-        ncm_mpd_song_list_destroy(&list);
-        return status;
-    }
-
-    if (screen->tag_filter_enabled) {
-        nc_menu_apply_filter(nc_tag_row_menu_base(&screen->tags));
-    }
-    if (preserved_uri.len > 0) {
-        NcMenu *menu = nc_tag_row_menu_base(&screen->tags);
-
-        for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-            NcmMutableSong *item;
-
-            item = nc_menu_active_item_at(menu, i);
-            if ((item != NULL) && (item->uri != NULL)
-                && STREQUAL(item->uri, item->uri_len,
-                            preserved_uri.data, preserved_uri.len)) {
-                (void)nc_menu_goto_selectable(menu, i);
-                break;
-            }
-        }
-    }
-    screen->tags_update_requested = false;
-    tag_editor_update_titles(screen, true);
-
-    sb_free(&preserved_uri);
-    ncm_song_array_destroy(&songs);
-    ncm_mpd_song_list_destroy(&list);
-    return 0;
 }
 
 static void
