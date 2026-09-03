@@ -21,7 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static int32 browser_current_directory_item_path(BrowserScreen *, NcmStringView *, NcmError *);
 static int32 browser_current_playlist_item_path(BrowserScreen *, NcmStringView *, NcmError *);
 static int32 browser_set_parent_of_directory(BrowserScreen *, char *, int32 );
 static int32 browser_load_mpd_items(BrowserScreen *, NcmMpdItemArray *);
@@ -1151,6 +1150,41 @@ browser_screen_delete_items(BrowserScreen *screen,
     return ncm_error_ok(ncm_error);
 }
 
+int32
+browser_current_directory_item_path(BrowserScreen *screen,
+                                    NcmStringView *path,
+                                    NcmError *ncm_error) {
+    NcmMpdItem *item;
+
+    if (path == NULL) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing path output"));
+    }
+    ncm_string_view_clear(path);
+    if (screen == NULL) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing browser state"));
+    }
+
+    if ((item = browser_screen_current_item(screen)) == NULL) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing browser item"));
+    }
+    if (browser_screen_item_is_parent(item)) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("cannot rename parent directory"));
+    }
+    if (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_DIRECTORY) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("browser item is not a directory"));
+    }
+    if (!ncm_directory_has_path_view(ncm_mpd_item_directory(item), path)) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing directory path"));
+    }
+    return ncm_error_ok(ncm_error);
+}
+
 bool
 browser_screen_has_current_directory_path(BrowserScreen *screen,
                                           NcmStringView *path) {
@@ -2185,41 +2219,6 @@ browser_collect_item_songs(BrowserScreen *screen,
     default:
         return -EINVAL;
     }
-}
-
-int32
-browser_current_directory_item_path(BrowserScreen *screen,
-                                    NcmStringView *path,
-                                    NcmError *ncm_error) {
-    NcmMpdItem *item;
-
-    if (path == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing path output"));
-    }
-    ncm_string_view_clear(path);
-    if (screen == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing browser state"));
-    }
-
-    if ((item = browser_screen_current_item(screen)) == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing browser item"));
-    }
-    if (browser_screen_item_is_parent(item)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("cannot rename parent directory"));
-    }
-    if (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_DIRECTORY) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("browser item is not a directory"));
-    }
-    if (!ncm_directory_has_path_view(ncm_mpd_item_directory(item), path)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing directory path"));
-    }
-    return ncm_error_ok(ncm_error);
 }
 
 static int32
