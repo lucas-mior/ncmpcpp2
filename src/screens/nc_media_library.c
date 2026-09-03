@@ -3480,10 +3480,9 @@ library_destroy_callback(NcScreen *screen) {
 
 static bool
 library_tag_filter(NcMenu *menu, void *item, void *user) {
-    MediaLibraryScreen *screen;
+    MediaLibraryScreen *screen = user;
 
     (void)menu;
-    screen = user;
     return library_tag_matches(
         screen, item,
         &screen->column_state[MEDIA_LIBRARY_COLUMN_TAGS].filter_regex);
