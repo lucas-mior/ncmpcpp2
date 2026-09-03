@@ -29,14 +29,14 @@ typedef struct SettingsOption {
     bool used;
 } SettingsOption;
 
-#define SETTINGS_OPTION(NAME, DEFAULT_VALUE, APPLY) \
-    { \
-        .name = (char *)NAME, \
-        .default_value = (char *)DEFAULT_VALUE, \
-        .name_len = STRLIT_LEN(NAME), \
-        .default_value_len = STRLIT_LEN(DEFAULT_VALUE), \
-        .apply = APPLY, \
-        .used = false, \
+#define SETTINGS_OPTION(NAME, DEFAULT_VALUE, APPLY)              \
+    {                                                            \
+        .name = (char *)NAME,                                    \
+        .default_value = (char *)DEFAULT_VALUE,                  \
+        .name_len = STRLIT_LEN(NAME),                            \
+        .default_value_len = STRLIT_LEN(DEFAULT_VALUE),          \
+        .apply = APPLY,                                          \
+        .used = false,                                           \
     }
 
 static int32
