@@ -624,8 +624,7 @@ playlist_screen_now_playing_song(PlaylistScreen *screen,
 
 
 int32
-playlist_screen_locate_position(PlaylistScreen *screen,
-                                int32 position) {
+playlist_screen_locate_position(PlaylistScreen *screen, int32 position) {
     NcMenu *menu;
     NcmSong *song;
     int32 height;
