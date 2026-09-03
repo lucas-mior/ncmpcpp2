@@ -26,7 +26,6 @@
 #include "c/ncm_sample_buffer.c"
 #include "c/ncm_song.c"
 #include "c/ncm_string.c"
-#include "c/ncm_string_format.c"
 #include "c/ncm_taglib.c"
 #include "c/ncm_tags.c"
 #include "c/ncm_type_conversions.c"

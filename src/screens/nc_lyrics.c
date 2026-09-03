@@ -1365,7 +1365,7 @@ lyrics_report_sidecar_status(StrBuilder *lrc_filename,
                              bool lrc_found,
                              StrBuilder *txt_filename,
                              bool txt_found) {
-    NcmStringFormatArg args[4];
+    StrBuilder message = {0};
     char *lrc_status;
     char *txt_status;
     int32 lrc_start;
@@ -1393,50 +1393,52 @@ lyrics_report_sidecar_status(StrBuilder *lrc_filename,
                                           lrc_filename->len);
     txt_start = ncm_string_basename_start(txt_filename->data,
                                           txt_filename->len);
-    args[0] = ncm_string_format_arg_string(
-        lrc_filename->data + lrc_start, lrc_filename->len - lrc_start);
-    args[1] = ncm_string_format_arg_cstring(lrc_status);
-    args[2] = ncm_string_format_arg_string(
-        txt_filename->data + txt_start, txt_filename->len - txt_start);
-    args[3] = ncm_string_format_arg_cstring(txt_status);
-
-    ncm_statusbar_format(Config.message_delay_time,
-                         STRLIT("%1% %2%; %3% %4%"),
-                         args, LENGTH(args));
+    SB_APPEND(&message, lrc_filename->data + lrc_start,
+              lrc_filename->len - lrc_start);
+    SB_APPEND(&message, " ");
+    SB_APPEND(&message, lrc_status, optional_strlen32(lrc_status));
+    SB_APPEND(&message, "; ");
+    SB_APPEND(&message, txt_filename->data + txt_start,
+              txt_filename->len - txt_start);
+    SB_APPEND(&message, " ");
+    SB_APPEND(&message, txt_status, optional_strlen32(txt_status));
+    ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
+    sb_free(&message);
     return;
 }
 
 static void
 lyrics_report_save_error(StrBuilder *filename, NcmError *ncm_error) {
-    NcmStringFormatArg args[2];
+    StrBuilder output = {0};
     char *message = "unknown error";
 
     if (ncm_error && (ncm_error->code != 0)) {
         message = strerror(ncm_error->code);
     }
 
-    args[0] = ncm_string_format_arg_string(filename->data, filename->len);
-    args[1] = ncm_string_format_arg_cstring(message);
-    ncm_statusbar_format(Config.message_delay_time,
-                         STRLIT("Couldn't save lyrics as \"%1%\": %2%"),
-                         args, LENGTH(args));
-
+    SB_APPEND(&output, "Couldn't save lyrics as \"");
+    SB_APPEND(&output, filename->data, filename->len);
+    SB_APPEND(&output, "\": ");
+    SB_APPEND(&output, message, optional_strlen32(message));
+    ncm_statusbar_print(Config.message_delay_time, output.data, output.len);
+    sb_free(&output);
     return;
 }
 
 static void
 lyrics_report_unlink_error(StrBuilder *filename, NcmError *ncm_error) {
-    NcmStringFormatArg args[2];
+    StrBuilder output = {0};
     char *message = "unknown error";
 
     if (ncm_error && (ncm_error->code != 0)) {
         message = strerror(ncm_error->code);
     }
-    args[0] = ncm_string_format_arg_string(filename->data, filename->len);
-    args[1] = ncm_string_format_arg_cstring(message);
-    ncm_statusbar_format(Config.message_delay_time,
-                         STRLIT("Couldn't remove \"%1%\": %2%"),
-                         args, LENGTH(args));
+    SB_APPEND(&output, "Couldn't remove \"");
+    SB_APPEND(&output, filename->data, filename->len);
+    SB_APPEND(&output, "\": ");
+    SB_APPEND(&output, message, optional_strlen32(message));
+    ncm_statusbar_print(Config.message_delay_time, output.data, output.len);
+    sb_free(&output);
     return;
 }
 

@@ -133,36 +133,33 @@ status_refresh_footer(NcmStatusHooks *hooks) {
 }
 
 static void
+status_print_value(char *prefix, int32 prefix_len,
+                   char *value, int32 value_len) {
+    StrBuilder message = {0};
+
+    if (value == NULL) {
+        value = "";
+        value_len = 0;
+    } else if (value_len < 0) {
+        value_len = optional_strlen32(value);
+    }
+
+    SB_APPEND(&message, prefix, prefix_len);
+    SB_APPEND(&message, value, value_len);
+    ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
+    sb_free(&message);
+    return;
+}
+
+static void
 status_print_client_error(char *message, int32 message_len) {
-    NcmStringFormatArg arg;
-
-    if (message == NULL) {
-        message = "";
-    }
-    if (message_len < 0) {
-        message_len = optional_strlen32(message);
-    }
-
-    arg = ncm_string_format_arg_string(message, message_len);
-    ncm_statusbar_format(Config.message_delay_time,
-                         STRLIT("ncmpcpp: %1%"), &arg, 1);
+    status_print_value(STRLIT("ncmpcpp: "), message, message_len);
     return;
 }
 
 static void
 status_print_server_error(char *message, int32 message_len) {
-    NcmStringFormatArg arg;
-
-    if (message == NULL) {
-        message = "";
-    }
-    if (message_len < 0) {
-        message_len = optional_strlen32(message);
-    }
-
-    arg = ncm_string_format_arg_string(message, message_len);
-    ncm_statusbar_format(Config.message_delay_time,
-                         STRLIT("MPD: %1%"), &arg, 1);
+    status_print_value(STRLIT("MPD: "), message, message_len);
     return;
 }
 
@@ -354,11 +351,9 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
                 if (init_hooks && init_hooks->show_connected_message) {
                     init_hooks->show_connected_message(init_hooks->user);
                 } else if (Config.connected_message_on_startup) {
-                    NcmStringFormatArg arg = ncm_string_format_arg_cstring(
-                        ncm_mpd_client_hostname(&global_mpd));
-                    ncm_statusbar_format(Config.message_delay_time,
-                                         STRLIT("Connected to %1%"),
-                                         &arg, 1);
+                    status_print_value(
+                        STRLIT("Connected to "),
+                        ncm_mpd_client_hostname(&global_mpd), -1);
                 }
             }
             hooks = status_active_hooks(NULL);
@@ -401,12 +396,9 @@ status_notify_statusbar(void) {
 }
 
 static void
-statusbar_format_cstring(char *format, int32 format_len, char *value) {
-    NcmStringFormatArg arg = ncm_string_format_arg_cstring(value);
-
+statusbar_print_cstring_value(char *prefix, int32 prefix_len, char *value) {
     status_notify_statusbar();
-    ncm_statusbar_format(Config.message_delay_time,
-                         format, format_len, &arg, 1);
+    status_print_value(prefix, prefix_len, value, -1);
     return;
 }
 
@@ -458,7 +450,6 @@ status_rebase_elapsed_time(int32 elapsed_time, int64 elapsed_time_ms) {
 int32
 ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                             NcmStatusHooks *hooks, NcmError *ncm_error) {
-    NcmStringFormatArg arg;
     int32 previous_playlist_version;
     char new_consume;
     char new_crossfade;
@@ -704,11 +695,11 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
 
         if (status_initialized) {
             if (status_db_updating) {
-                statusbar_format_cstring(STRLIT("Database update %1%"),
-                                         "started");
+                statusbar_print_cstring_value(STRLIT("Database update "),
+                                              "started");
             } else {
-                statusbar_format_cstring(STRLIT("Database update %1%"),
-                                         "finished");
+                statusbar_print_cstring_value(STRLIT("Database update "),
+                                              "finished");
             }
         }
     }
@@ -721,8 +712,8 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         if (new_repeat != status_repeat) {
             status_repeat = new_repeat;
             if (status_initialized) {
-                statusbar_format_cstring(STRLIT("Repeat mode is %1%"),
-                                         status_on_off(status_repeat));
+                statusbar_print_cstring_value(STRLIT("Repeat mode is "),
+                                              status_on_off(status_repeat));
             }
         }
 
@@ -733,8 +724,8 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         if (new_random != status_random) {
             status_random = new_random;
             if (status_initialized) {
-                statusbar_format_cstring(STRLIT("Random mode is %1%"),
-                                         status_on_off(status_random));
+                statusbar_print_cstring_value(STRLIT("Random mode is "),
+                                              status_on_off(status_random));
             }
         }
 
@@ -745,8 +736,8 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         if (new_single != status_single) {
             status_single = new_single;
             if (status_initialized) {
-                statusbar_format_cstring(STRLIT("Single mode is %1%"),
-                                         status_on_off(status_single));
+                statusbar_print_cstring_value(STRLIT("Single mode is "),
+                                              status_on_off(status_single));
             }
         }
 
@@ -757,8 +748,8 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         if (new_consume != status_consume) {
             status_consume = new_consume;
             if (status_initialized) {
-                statusbar_format_cstring(STRLIT("Consume mode is %1%"),
-                                         status_on_off(status_consume));
+                statusbar_print_cstring_value(STRLIT("Consume mode is "),
+                                              status_on_off(status_consume));
             }
         }
 
@@ -769,11 +760,14 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         if (new_crossfade != status_crossfade) {
             status_crossfade = new_crossfade;
             if (status_initialized) {
+                StrBuilder message = {0};
+
                 status_notify_statusbar();
-                arg = ncm_string_format_arg_u64((uint64)mpd_status->crossfade);
-                ncm_statusbar_format(
-                    Config.message_delay_time,
-                    STRLIT("Crossfade set to %1% seconds"), &arg, 1);
+                sb_printf(&message, "Crossfade set to %u seconds",
+                          (uint32)mpd_status->crossfade);
+                ncm_statusbar_print(Config.message_delay_time,
+                                    message.data, message.len);
+                sb_free(&message);
             }
         }
     }
