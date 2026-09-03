@@ -1485,8 +1485,7 @@ playlist_append_selected(NcMenu *menu, NcmSongArray *songs) {
 
 
 static int32
-playlist_append_position(NcMenu *menu, int32 pos,
-                         NcmSongArray *songs) {
+playlist_append_position(NcMenu *menu, int32 pos, NcmSongArray *songs) {
     NcmSong *song;
     int32 status;
 
