@@ -3956,8 +3956,7 @@ library_scroll(NcScreen *screen, enum NcScroll where) {
 
 static void
 library_finish_list_change(NcScreen *screen) {
-    media_library_screen_finish_list_change(
-        library_from_screen(screen));
+    media_library_screen_finish_list_change(library_from_screen(screen));
     return;
 }
 
@@ -4018,8 +4017,7 @@ library_mouse_select(
         library_restart_update_timer(screen);
         nc_screen_request_update(&screen->screen);
     } else if (column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
-        nc_menu_clear_items(
-            nc_media_library_song_menu_base(&screen->songs));
+        nc_menu_clear_items(nc_media_library_song_menu_base(&screen->songs));
         screen->songs_update_request = true;
         library_restart_update_timer(screen);
         nc_screen_request_update(&screen->screen);
