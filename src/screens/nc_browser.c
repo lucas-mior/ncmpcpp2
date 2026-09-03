@@ -21,7 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static void browser_mouse_scroll(BrowserScreen *screen, enum NcScroll where);
 static bool browser_item_matches_filter(NcMenu *menu, void *item, void *user);
 static void browser_activate_item(NcMenu *menu, void *item, int32 pos, void *user);
 static void browser_set_item_selected(void *item, bool selected, void *user);
@@ -1512,6 +1511,15 @@ browser_update(NcScreen *screen) {
 }
 
 static void
+browser_mouse_scroll(BrowserScreen *screen, enum NcScroll where) {
+    for (int32 i = 0; i < screen->lines_scrolled; i += 1) {
+        nc_menu_scroll_selectable(browser_screen_menu(screen),
+                                  screen->main_height, where);
+    }
+    return;
+}
+
+static void
 browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     BrowserScreen *browser = browser_from_screen(screen);
     NcMenu *menu = browser_screen_menu(browser);
@@ -1551,15 +1559,6 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
         } else {
             browser_mouse_scroll(browser, NC_SCROLL_UP);
         }
-    }
-    return;
-}
-
-static void
-browser_mouse_scroll(BrowserScreen *screen, enum NcScroll where) {
-    for (int32 i = 0; i < screen->lines_scrolled; i += 1) {
-        nc_menu_scroll_selectable(browser_screen_menu(screen),
-                                  screen->main_height, where);
     }
     return;
 }
