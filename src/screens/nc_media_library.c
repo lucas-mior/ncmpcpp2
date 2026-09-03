@@ -1410,8 +1410,7 @@ library_compare_songs(NcmSong *left, NcmSong *right) {
     int32 result;
 
     for (int32 i = 0; i < LENGTH(getters); i += 1) {
-        result = library_compare_song_getter(
-            left, right, getters[i]);
+        result = library_compare_song_getter(left, right, getters[i]);
         if (result != 0) {
             return result;
         }
