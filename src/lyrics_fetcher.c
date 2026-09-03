@@ -1739,11 +1739,9 @@ lyrics_url_query_has_key(char *url, int32 url_len, char *key,
 
     query += 1;
     while (query < url_len) {
-        int32 equal;
-        int32 end;
+        int32 equal = lyrics_find_char(url, url_len, '=', query);
+        int32 end = lyrics_find_char(url, url_len, '&', query);
 
-        equal = lyrics_find_char(url, url_len, '=', query);
-        end = lyrics_find_char(url, url_len, '&', query);
         if (end < 0) {
             end = lyrics_find_char(url, url_len, '#', query);
         }
