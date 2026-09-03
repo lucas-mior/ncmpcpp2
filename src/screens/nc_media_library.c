@@ -4016,13 +4016,11 @@ static bool
 library_active_item_matches(MediaLibraryScreen *screen,
                             NcMenu *menu, int32 pos,
                             NcmRegex *regex) {
-    void *item;
+    void *item = nc_menu_active_item_at(menu, pos);
 
-    item = nc_menu_active_item_at(menu, pos);
     if (screen->active_column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
-        NcMediaLibraryAlbumRow *album;
+        NcMediaLibraryAlbumRow *album = item;
 
-        album = item;
         if (nc_menu_position_is_separator(menu, pos)
             || (album && album->all_tracks_entry)) {
             return false;
