@@ -2413,8 +2413,7 @@ media_library_screen_clear_filter(MediaLibraryScreen *screen) {
 }
 
 static bool
-library_search_position(NcMenu *menu, int32 pos,
-                        void *user) {
+library_search_position(NcMenu *menu, int32 pos, void *user) {
     MediaLibrarySearchContext *context;
 
     context = user;
@@ -2487,9 +2486,7 @@ media_library_screen_clear_search(MediaLibraryScreen *screen) {
 }
 
 void
-media_library_screen_request_tags_update(
-    MediaLibraryScreen *screen
-) {
+media_library_screen_request_tags_update(MediaLibraryScreen *screen) {
     if (screen == NULL) {
         return;
     }
@@ -2504,9 +2501,7 @@ media_library_screen_request_tags_update(
 }
 
 void
-media_library_screen_request_albums_update(
-    MediaLibraryScreen *screen
-) {
+media_library_screen_request_albums_update(MediaLibraryScreen *screen) {
     if (screen == NULL) {
         return;
     }
@@ -2516,9 +2511,7 @@ media_library_screen_request_albums_update(
 }
 
 void
-media_library_screen_request_songs_update(
-    MediaLibraryScreen *screen
-) {
+media_library_screen_request_songs_update(MediaLibraryScreen *screen) {
     if (screen == NULL) {
         return;
     }
@@ -2529,7 +2522,7 @@ media_library_screen_request_songs_update(
 
 static bool
 library_album_identity_is_equal(NcMediaLibraryAlbumRow *left,
-                             NcMediaLibraryAlbumRow *right) {
+                                NcMediaLibraryAlbumRow *right) {
     if ((left == NULL) || (right == NULL)) {
         return left == right;
     }
@@ -2582,20 +2575,18 @@ media_library_screen_finish_list_change(
 
     tag_changed = screen->observed_tag_valid != tag_valid;
     if (!tag_changed && tag_valid) {
-        tag_changed = !library_tag_identity_is_equal(
-            &screen->observed_tag, tag);
+        tag_changed = !library_tag_identity_is_equal(&screen->observed_tag,
+                                                     tag);
     }
     album_changed = screen->observed_album_valid != album_valid;
     if (!album_changed && album_valid) {
-        album_changed = !library_album_identity_is_equal(
-            &screen->observed_album, album);
+        album_changed
+            = !library_album_identity_is_equal(&screen->observed_album, album);
     }
 
     if (tag_changed) {
-        nc_menu_clear_items(
-            nc_media_library_album_menu_base(&screen->albums));
-        nc_menu_clear_items(
-            nc_media_library_song_menu_base(&screen->songs));
+        nc_menu_clear_items(nc_media_library_album_menu_base(&screen->albums));
+        nc_menu_clear_items(nc_media_library_song_menu_base(&screen->songs));
         library_restart_update_timer(screen);
         library_set_observed_tag(screen, tag);
         library_set_observed_album(screen, NULL);
@@ -2604,8 +2595,7 @@ media_library_screen_finish_list_change(
     }
 
     if (album_changed) {
-        nc_menu_clear_items(
-            nc_media_library_song_menu_base(&screen->songs));
+        nc_menu_clear_items(nc_media_library_song_menu_base(&screen->songs));
         library_restart_update_timer(screen);
         library_set_observed_album(screen, album);
         nc_screen_request_update(&screen->screen);
@@ -2634,10 +2624,9 @@ library_has_pending_albums(MediaLibraryScreen *screen) {
 }
 
 static void
-library_apply_column_filter(
-    MediaLibraryScreen *screen,
-    enum MediaLibraryColumn column, NcMenu *menu
-) {
+library_apply_column_filter(MediaLibraryScreen *screen,
+                            enum MediaLibraryColumn column,
+                            NcMenu *menu) {
     MediaLibraryColumnState *state;
     NcMenuDisplayCallbacks callbacks;
 
@@ -2645,8 +2634,8 @@ library_apply_column_filter(
     ASSERT(state != NULL);
     ASSERT(menu != NULL);
 
-    callbacks = library_display_callbacks(
-        screen, column, state->filter_enabled);
+    callbacks = library_display_callbacks(screen, column,
+                                          state->filter_enabled);
     nc_menu_set_display_callbacks(menu, callbacks);
     if (state->filter_enabled) {
         nc_menu_apply_filter(menu);
