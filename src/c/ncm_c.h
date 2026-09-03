@@ -60,26 +60,26 @@ struct mpd_song;
 #define ENUM_NAME NcmTagsField
 #define ENUM_PREFIX_ NCM_TAGS_FIELD_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NCM_TAGS_FIELD_TITLE) \
-    XX(NCM_TAGS_FIELD_ARTIST) \
-    XX(NCM_TAGS_FIELD_ALBUM_ARTIST) \
-    XX(NCM_TAGS_FIELD_ALBUM) \
-    XX(NCM_TAGS_FIELD_DATE) \
-    XX(NCM_TAGS_FIELD_TRACK) \
-    XX(NCM_TAGS_FIELD_GENRE) \
-    XX(NCM_TAGS_FIELD_COMPOSER) \
-    XX(NCM_TAGS_FIELD_PERFORMER) \
-    XX(NCM_TAGS_FIELD_DISC) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_TAGS_FIELD_TITLE)                                                   \
+    XX(NCM_TAGS_FIELD_ARTIST)                                                  \
+    XX(NCM_TAGS_FIELD_ALBUM_ARTIST)                                            \
+    XX(NCM_TAGS_FIELD_ALBUM)                                                   \
+    XX(NCM_TAGS_FIELD_DATE)                                                    \
+    XX(NCM_TAGS_FIELD_TRACK)                                                   \
+    XX(NCM_TAGS_FIELD_GENRE)                                                   \
+    XX(NCM_TAGS_FIELD_COMPOSER)                                                \
+    XX(NCM_TAGS_FIELD_PERFORMER)                                               \
+    XX(NCM_TAGS_FIELD_DISC)                                                    \
     XX(NCM_TAGS_FIELD_COMMENT)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcmTagsReadResult
 #define ENUM_PREFIX_ NCM_TAGS_READ_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NCM_TAGS_READ_OK) \
-    XX(NCM_TAGS_READ_OPEN_FAILED) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_TAGS_READ_OK)                                                       \
+    XX(NCM_TAGS_READ_OPEN_FAILED)                                              \
     XX(NCM_TAGS_READ_NOT_FOUND)
 #include "cbase/xenums.c"
 
@@ -111,33 +111,33 @@ int32 ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
 #define ENUM_NAME NcmItemType
 #define ENUM_PREFIX_ NCM_ITEM_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NCM_ITEM_DIRECTORY) \
-    XX(NCM_ITEM_SONG) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_ITEM_DIRECTORY)                                                     \
+    XX(NCM_ITEM_SONG)                                                          \
     XX(NCM_ITEM_PLAYLIST)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcmSongGetter
 #define ENUM_PREFIX_ NCM_SONG_GETTER_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NCM_SONG_GETTER_NONE) \
-    XX(NCM_SONG_GETTER_LENGTH) \
-    XX(NCM_SONG_GETTER_DIRECTORY) \
-    XX(NCM_SONG_GETTER_NAME) \
-    XX(NCM_SONG_GETTER_URI) \
-    XX(NCM_SONG_GETTER_ARTIST) \
-    XX(NCM_SONG_GETTER_ALBUM_ARTIST) \
-    XX(NCM_SONG_GETTER_TITLE) \
-    XX(NCM_SONG_GETTER_ALBUM) \
-    XX(NCM_SONG_GETTER_DATE) \
-    XX(NCM_SONG_GETTER_TRACK_NUMBER) \
-    XX(NCM_SONG_GETTER_TRACK) \
-    XX(NCM_SONG_GETTER_GENRE) \
-    XX(NCM_SONG_GETTER_COMPOSER) \
-    XX(NCM_SONG_GETTER_PERFORMER) \
-    XX(NCM_SONG_GETTER_DISC) \
-    XX(NCM_SONG_GETTER_COMMENT) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_SONG_GETTER_NONE)                                                   \
+    XX(NCM_SONG_GETTER_LENGTH)                                                 \
+    XX(NCM_SONG_GETTER_DIRECTORY)                                              \
+    XX(NCM_SONG_GETTER_NAME)                                                   \
+    XX(NCM_SONG_GETTER_URI)                                                    \
+    XX(NCM_SONG_GETTER_ARTIST)                                                 \
+    XX(NCM_SONG_GETTER_ALBUM_ARTIST)                                           \
+    XX(NCM_SONG_GETTER_TITLE)                                                  \
+    XX(NCM_SONG_GETTER_ALBUM)                                                  \
+    XX(NCM_SONG_GETTER_DATE)                                                   \
+    XX(NCM_SONG_GETTER_TRACK_NUMBER)                                           \
+    XX(NCM_SONG_GETTER_TRACK)                                                  \
+    XX(NCM_SONG_GETTER_GENRE)                                                  \
+    XX(NCM_SONG_GETTER_COMPOSER)                                               \
+    XX(NCM_SONG_GETTER_PERFORMER)                                              \
+    XX(NCM_SONG_GETTER_DISC)                                                   \
+    XX(NCM_SONG_GETTER_COMMENT)                                                \
     XX(NCM_SONG_GETTER_PRIORITY)
 #include "cbase/xenums.c"
 
@@ -162,8 +162,8 @@ struct mpd_song;
 #define ENUM_NAME NcmSongOwnership
 #define ENUM_PREFIX_ NCM_SONG_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NCM_SONG_BORROWED) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_SONG_BORROWED)                                                      \
     XX(NCM_SONG_OWNED)
 #include "cbase/xenums.c"
 
@@ -352,9 +352,9 @@ struct mpd_entity;
 #define ENUM_NAME NcmMpdItemKind
 #define ENUM_PREFIX_ NCM_MPD_ITEM_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NCM_MPD_ITEM_SONG) \
-    XX(NCM_MPD_ITEM_DIRECTORY) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_MPD_ITEM_SONG)                                                      \
+    XX(NCM_MPD_ITEM_DIRECTORY)                                                 \
     XX(NCM_MPD_ITEM_PLAYLIST)
 #include "cbase/xenums.c"
 
@@ -395,328 +395,328 @@ typedef struct NcmArrayItemCallbacks {
     NcmArrayItemMoveCallback *move;
 } NcmArrayItemCallbacks;
 
-#define NCM_ARRAY_DECLARE_TYPE(ARRAY_TYPE, ITEM_TYPE) \
-    typedef struct ARRAY_TYPE {                       \
-        ITEM_TYPE *items;                             \
-        int32 len;                                    \
-        int32 cap;                                    \
+#define NCM_ARRAY_DECLARE_TYPE(ARRAY_TYPE, ITEM_TYPE)                          \
+    typedef struct ARRAY_TYPE {                                                \
+        ITEM_TYPE *items;                                                      \
+        int32 len;                                                             \
+        int32 cap;                                                             \
     } ARRAY_TYPE;
 
-#define NCM_ARRAY_DECLARE_CLEAR(PREFIX, ARRAY_TYPE) \
+#define NCM_ARRAY_DECLARE_CLEAR(PREFIX, ARRAY_TYPE)                            \
     void PREFIX##_clear(ARRAY_TYPE *array);
 
-#define NCM_ARRAY_DECLARE_DESTROY(PREFIX, ARRAY_TYPE) \
+#define NCM_ARRAY_DECLARE_DESTROY(PREFIX, ARRAY_TYPE)                          \
     void PREFIX##_destroy(ARRAY_TYPE *array);
 
-#define NCM_ARRAY_DECLARE_COPY(PREFIX, ARRAY_TYPE) \
+#define NCM_ARRAY_DECLARE_COPY(PREFIX, ARRAY_TYPE)                             \
     int32 PREFIX##_copy(ARRAY_TYPE *dest, ARRAY_TYPE *source);
 
-#define NCM_ARRAY_DECLARE_MOVE(PREFIX, ARRAY_TYPE) \
+#define NCM_ARRAY_DECLARE_MOVE(PREFIX, ARRAY_TYPE)                             \
     void PREFIX##_move(ARRAY_TYPE *dest, ARRAY_TYPE *source);
 
-#define NCM_ARRAY_DECLARE_SWAP(PREFIX, ARRAY_TYPE) \
+#define NCM_ARRAY_DECLARE_SWAP(PREFIX, ARRAY_TYPE)                             \
     void PREFIX##_swap(ARRAY_TYPE *left, ARRAY_TYPE *right);
 
-#define NCM_ARRAY_DECLARE_RESERVE(PREFIX, ARRAY_TYPE) \
+#define NCM_ARRAY_DECLARE_RESERVE(PREFIX, ARRAY_TYPE)                          \
     int32 PREFIX##_reserve(ARRAY_TYPE *array, int32 extra);
 
-#define NCM_ARRAY_DECLARE_APPEND(PREFIX, ARRAY_TYPE, ITEM_TYPE) \
+#define NCM_ARRAY_DECLARE_APPEND(PREFIX, ARRAY_TYPE, ITEM_TYPE)                \
     ITEM_TYPE *PREFIX##_append(ARRAY_TYPE *array);
 
-#define NCM_ARRAY_DECLARE_APPEND_COPY(PREFIX, ARRAY_TYPE, ITEM_TYPE) \
+#define NCM_ARRAY_DECLARE_APPEND_COPY(PREFIX, ARRAY_TYPE, ITEM_TYPE)           \
     int32 PREFIX##_append_copy(ARRAY_TYPE *array, ITEM_TYPE *item);
 
-#define NCM_ARRAY_DECLARE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE) \
+#define NCM_ARRAY_DECLARE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE)           \
     void PREFIX##_append_move(ARRAY_TYPE *array, ITEM_TYPE *item);
 
-#define NCM_ARRAY_DECLARE_REMOVE_ORDERED(PREFIX, ARRAY_TYPE) \
+#define NCM_ARRAY_DECLARE_REMOVE_ORDERED(PREFIX, ARRAY_TYPE)                   \
     void PREFIX##_remove_ordered(ARRAY_TYPE *array, int32 idx);
 
-#define NCM_ARRAY_DEFINE_CLEAR(PREFIX, ARRAY_TYPE, CALLBACKS)       \
-    void                                                            \
-    PREFIX##_clear(ARRAY_TYPE *array) {                              \
-        NcmArrayItemCallbacks *callbacks;                            \
-                                                                    \
-        if (array == NULL) {                                         \
-            return;                                                  \
-        }                                                           \
-        callbacks = CALLBACKS;                                       \
-        if (callbacks && callbacks->destroy) {                       \
-            for (int32 i = 0; i < array->len; i += 1) {             \
-                callbacks->destroy(&array->items[i]);               \
-            }                                                       \
-        }                                                           \
-        array->len = 0;                                              \
-        return;                                                      \
+#define NCM_ARRAY_DEFINE_CLEAR(PREFIX, ARRAY_TYPE, CALLBACKS)                  \
+    void                                                                       \
+    PREFIX##_clear(ARRAY_TYPE *array) {                                        \
+        NcmArrayItemCallbacks *callbacks;                                      \
+                                                                               \
+        if (array == NULL) {                                                   \
+            return;                                                            \
+        }                                                                      \
+        callbacks = CALLBACKS;                                                 \
+        if (callbacks && callbacks->destroy) {                                 \
+            for (int32 i = 0; i < array->len; i += 1) {                        \
+                callbacks->destroy(&array->items[i]);                          \
+            }                                                                  \
+        }                                                                      \
+        array->len = 0;                                                        \
+        return;                                                                \
     }
 
-#define NCM_ARRAY_DEFINE_DESTROY(PREFIX, ARRAY_TYPE)        \
-    void                                                     \
-    PREFIX##_destroy(ARRAY_TYPE *array) {                    \
-        if (array == NULL) {                                 \
-            return;                                          \
-        }                                                   \
-        PREFIX##_clear(array);                               \
-        if (array->items) {                                  \
-            free2(array->items,                              \
-                  array->cap*SIZEOF(*array->items));         \
-        }                                                   \
-        *array = (ARRAY_TYPE){0};                            \
-        return;                                              \
+#define NCM_ARRAY_DEFINE_DESTROY(PREFIX, ARRAY_TYPE)                           \
+    void                                                                       \
+    PREFIX##_destroy(ARRAY_TYPE *array) {                                      \
+        if (array == NULL) {                                                   \
+            return;                                                            \
+        }                                                                      \
+        PREFIX##_clear(array);                                                 \
+        if (array->items) {                                                    \
+            free2(array->items,                                                \
+                  array->cap*SIZEOF(*array->items));                           \
+        }                                                                      \
+        *array = (ARRAY_TYPE){0};                                              \
+        return;                                                                \
     }
 
-#define NCM_ARRAY_DEFINE_COPY(PREFIX, ARRAY_TYPE)                 \
-    int32                                                         \
-    PREFIX##_copy(ARRAY_TYPE *dest, ARRAY_TYPE *source) {         \
-        ARRAY_TYPE replacement;                                   \
-        int32 err;                                                \
-                                                                  \
-        if (dest == NULL) {                                       \
-            return -EINVAL;                                       \
-        }                                                         \
-        if (dest == source) {                                     \
-            return dest->len;                                     \
-        }                                                         \
-                                                                  \
-        replacement = (ARRAY_TYPE){0};                            \
-        if (source) {                                             \
-            if ((err = PREFIX##_reserve(                          \
-                     &replacement, source->len)) < 0) {           \
-                PREFIX##_destroy(&replacement);                   \
-                return err;                                       \
-            }                                                     \
-            for (int32 i = 0; i < source->len; i += 1) {          \
-                if ((err = PREFIX##_append_copy(                  \
-                         &replacement, &source->items[i])) < 0) { \
-                    PREFIX##_destroy(&replacement);               \
-                    return err;                                   \
-                }                                                 \
-            }                                                     \
-        }                                                         \
-                                                                  \
-        PREFIX##_destroy(dest);                                   \
-        *dest = replacement;                                      \
-        return dest->len;                                         \
+#define NCM_ARRAY_DEFINE_COPY(PREFIX, ARRAY_TYPE)                              \
+    int32                                                                      \
+    PREFIX##_copy(ARRAY_TYPE *dest, ARRAY_TYPE *source) {                      \
+        ARRAY_TYPE replacement;                                                \
+        int32 err;                                                             \
+                                                                               \
+        if (dest == NULL) {                                                    \
+            return -EINVAL;                                                    \
+        }                                                                      \
+        if (dest == source) {                                                  \
+            return dest->len;                                                  \
+        }                                                                      \
+                                                                               \
+        replacement = (ARRAY_TYPE){0};                                         \
+        if (source) {                                                          \
+            if ((err = PREFIX##_reserve(                                       \
+                     &replacement, source->len)) < 0) {                        \
+                PREFIX##_destroy(&replacement);                                \
+                return err;                                                    \
+            }                                                                  \
+            for (int32 i = 0; i < source->len; i += 1) {                       \
+                if ((err = PREFIX##_append_copy(                               \
+                         &replacement, &source->items[i])) < 0) {              \
+                    PREFIX##_destroy(&replacement);                            \
+                    return err;                                                \
+                }                                                              \
+            }                                                                  \
+        }                                                                      \
+                                                                               \
+        PREFIX##_destroy(dest);                                                \
+        *dest = replacement;                                                   \
+        return dest->len;                                                      \
     }
 
-#define NCM_ARRAY_DEFINE_MOVE(PREFIX, ARRAY_TYPE)          \
-    void                                                    \
-    PREFIX##_move(ARRAY_TYPE *dest, ARRAY_TYPE *source) {  \
-        if (dest == NULL) {                                 \
-            return;                                         \
-        }                                                   \
-        if (dest == source) {                               \
-            return;                                         \
-        }                                                   \
-                                                            \
-        PREFIX##_destroy(dest);                             \
-        if (source == NULL) {                               \
-            *dest = (ARRAY_TYPE){0};                       \
-            return;                                         \
-        }                                                   \
-        *dest = *source;                                    \
-        *source = (ARRAY_TYPE){0};                          \
-        return;                                             \
+#define NCM_ARRAY_DEFINE_MOVE(PREFIX, ARRAY_TYPE)                              \
+    void                                                                       \
+    PREFIX##_move(ARRAY_TYPE *dest, ARRAY_TYPE *source) {                      \
+        if (dest == NULL) {                                                    \
+            return;                                                            \
+        }                                                                      \
+        if (dest == source) {                                                  \
+            return;                                                            \
+        }                                                                      \
+                                                                               \
+        PREFIX##_destroy(dest);                                                \
+        if (source == NULL) {                                                  \
+            *dest = (ARRAY_TYPE){0};                                           \
+            return;                                                            \
+        }                                                                      \
+        *dest = *source;                                                       \
+        *source = (ARRAY_TYPE){0};                                             \
+        return;                                                                \
     }
 
-#define NCM_ARRAY_DEFINE_SWAP(PREFIX, ARRAY_TYPE)         \
-    void                                                   \
-    PREFIX##_swap(ARRAY_TYPE *left, ARRAY_TYPE *right) {  \
-        ARRAY_TYPE temp;                                    \
-                                                           \
-        if (left == NULL) {                                \
-            return;                                        \
-        }                                                  \
-        if (right == NULL) {                               \
-            return;                                        \
-        }                                                  \
-        temp = *left;                                      \
-        *left = *right;                                    \
-        *right = temp;                                     \
-        return;                                            \
+#define NCM_ARRAY_DEFINE_SWAP(PREFIX, ARRAY_TYPE)                              \
+    void                                                                       \
+    PREFIX##_swap(ARRAY_TYPE *left, ARRAY_TYPE *right) {                       \
+        ARRAY_TYPE temp;                                                       \
+                                                                               \
+        if (left == NULL) {                                                    \
+            return;                                                            \
+        }                                                                      \
+        if (right == NULL) {                                                   \
+            return;                                                            \
+        }                                                                      \
+        temp = *left;                                                          \
+        *left = *right;                                                        \
+        *right = temp;                                                         \
+        return;                                                                \
     }
 
-#define NCM_ARRAY_DEFINE_RESERVE(PREFIX, ARRAY_TYPE)                  \
-    int32                                                             \
-    PREFIX##_reserve(ARRAY_TYPE *array, int32 extra) {                \
-        int64 needed;                                                 \
-        int32 old_cap;                                                \
-        int32 new_cap;                                                \
-                                                                      \
-        if (array == NULL) {                                          \
-            return -EINVAL;                                           \
-        }                                                             \
-        if (extra < 0) {                                              \
-            return -EINVAL;                                           \
-        }                                                             \
-        if (extra == 0) {                                             \
-            return array->cap;                                        \
-        }                                                             \
-                                                                      \
-        needed = (int64)array->len + extra;                           \
-        if (needed <= array->cap) {                                   \
-            return array->cap;                                        \
-        }                                                             \
-        if (needed >= MAXOF(array->cap)) {                            \
-            error("Array only supports fewer than 2GB items.\n");    \
-            fatal(EXIT_FAILURE);                                      \
-        }                                                             \
-                                                                      \
-        old_cap = array->cap;                                         \
-        new_cap = array->cap;                                         \
-        if (new_cap <= 0) {                                           \
-            new_cap = 8;                                              \
-        }                                                             \
-        if (needed >= (MAXOF(new_cap)/2)) {                           \
-            new_cap = (int32)needed;                                  \
-        } else {                                                      \
-            while (new_cap < needed) {                                \
-                new_cap *= 2;                                         \
-            }                                                         \
-        }                                                             \
-                                                                      \
-        array->items = realloc2(                                      \
-            array->items, old_cap, new_cap, SIZEOF(*array->items));   \
-        array->cap = new_cap;                                         \
-        return array->cap;                                            \
+#define NCM_ARRAY_DEFINE_RESERVE(PREFIX, ARRAY_TYPE)                           \
+    int32                                                                      \
+    PREFIX##_reserve(ARRAY_TYPE *array, int32 extra) {                         \
+        int64 needed;                                                          \
+        int32 old_cap;                                                         \
+        int32 new_cap;                                                         \
+                                                                               \
+        if (array == NULL) {                                                   \
+            return -EINVAL;                                                    \
+        }                                                                      \
+        if (extra < 0) {                                                       \
+            return -EINVAL;                                                    \
+        }                                                                      \
+        if (extra == 0) {                                                      \
+            return array->cap;                                                 \
+        }                                                                      \
+                                                                               \
+        needed = (int64)array->len + extra;                                    \
+        if (needed <= array->cap) {                                            \
+            return array->cap;                                                 \
+        }                                                                      \
+        if (needed >= MAXOF(array->cap)) {                                     \
+            error("Array only supports fewer than 2GB items.\n");              \
+            fatal(EXIT_FAILURE);                                               \
+        }                                                                      \
+                                                                               \
+        old_cap = array->cap;                                                  \
+        new_cap = array->cap;                                                  \
+        if (new_cap <= 0) {                                                    \
+            new_cap = 8;                                                       \
+        }                                                                      \
+        if (needed >= (MAXOF(new_cap)/2)) {                                    \
+            new_cap = (int32)needed;                                           \
+        } else {                                                               \
+            while (new_cap < needed) {                                         \
+                new_cap *= 2;                                                  \
+            }                                                                  \
+        }                                                                      \
+                                                                               \
+        array->items = realloc2(                                               \
+            array->items, old_cap, new_cap, SIZEOF(*array->items));            \
+        array->cap = new_cap;                                                  \
+        return array->cap;                                                     \
     }
 
-#define NCM_ARRAY_DEFINE_APPEND(PREFIX, ARRAY_TYPE, ITEM_TYPE,       \
-                                CALLBACKS)                           \
-    ITEM_TYPE *                                                     \
-    PREFIX##_append(ARRAY_TYPE *array) {                            \
-        ITEM_TYPE *item;                                            \
-        NcmArrayItemCallbacks *callbacks;                           \
-                                                                    \
-        if (PREFIX##_reserve(array, 1) < 0) {                       \
-            return NULL;                                            \
-        }                                                           \
-        callbacks = CALLBACKS;                                      \
-        item = &array->items[array->len];                           \
-        array->len += 1;                                            \
-        if (callbacks && callbacks->init) {                         \
-            callbacks->init(item);                                  \
-        } else {                                                    \
-            char *bytes = (char *)item;                             \
-            for (int32 i = 0; i < (int32)SIZEOF(*item); i += 1) {  \
-                bytes[i] = 0;                                       \
-            }                                                       \
-        }                                                           \
-        return item;                                                \
+#define NCM_ARRAY_DEFINE_APPEND(PREFIX, ARRAY_TYPE, ITEM_TYPE,                 \
+                                CALLBACKS)                                     \
+    ITEM_TYPE *                                                                \
+    PREFIX##_append(ARRAY_TYPE *array) {                                       \
+        ITEM_TYPE *item;                                                       \
+        NcmArrayItemCallbacks *callbacks;                                      \
+                                                                               \
+        if (PREFIX##_reserve(array, 1) < 0) {                                  \
+            return NULL;                                                       \
+        }                                                                      \
+        callbacks = CALLBACKS;                                                 \
+        item = &array->items[array->len];                                      \
+        array->len += 1;                                                       \
+        if (callbacks && callbacks->init) {                                    \
+            callbacks->init(item);                                             \
+        } else {                                                               \
+            char *bytes = (char *)item;                                        \
+            for (int32 i = 0; i < (int32)SIZEOF(*item); i += 1) {              \
+                bytes[i] = 0;                                                  \
+            }                                                                  \
+        }                                                                      \
+        return item;                                                           \
     }
 
-#define NCM_ARRAY_DEFINE_APPEND_COPY(PREFIX, ARRAY_TYPE, ITEM_TYPE,  \
-                                     CALLBACKS)                      \
-    int32                                                            \
-    PREFIX##_append_copy(ARRAY_TYPE *array, ITEM_TYPE *item) {       \
-        ITEM_TYPE *dest;                                             \
-        NcmArrayItemCallbacks *callbacks;                            \
-        int32 err;                                                   \
-        int32 index;                                                 \
-                                                                     \
-        if ((array == NULL) || (item == NULL)) {                     \
-            return -EINVAL;                                          \
-        }                                                            \
-        if ((err = PREFIX##_reserve(array, 1)) < 0) {                \
-            return err;                                              \
-        }                                                            \
-        index = array->len;                                          \
-        dest = &array->items[index];                                 \
-        array->len += 1;                                             \
-        callbacks = CALLBACKS;                                       \
-        if (callbacks && callbacks->init) {                          \
-            callbacks->init(dest);                                   \
-        } else {                                                     \
-            *dest = (ITEM_TYPE){0};                                  \
-        }                                                            \
-        if (callbacks && callbacks->copy) {                          \
-            if ((err = callbacks->copy(dest, item)) < 0) {           \
-                array->len -= 1;                                     \
-                if (callbacks->destroy) {                            \
-                    callbacks->destroy(dest);                        \
-                }                                                    \
-                return err;                                          \
-            }                                                        \
-        } else {                                                     \
-            *dest = *item;                                           \
-        }                                                            \
-        return index;                                                \
+#define NCM_ARRAY_DEFINE_APPEND_COPY(PREFIX, ARRAY_TYPE, ITEM_TYPE,            \
+                                     CALLBACKS)                                \
+    int32                                                                      \
+    PREFIX##_append_copy(ARRAY_TYPE *array, ITEM_TYPE *item) {                 \
+        ITEM_TYPE *dest;                                                       \
+        NcmArrayItemCallbacks *callbacks;                                      \
+        int32 err;                                                             \
+        int32 index;                                                           \
+                                                                               \
+        if ((array == NULL) || (item == NULL)) {                               \
+            return -EINVAL;                                                    \
+        }                                                                      \
+        if ((err = PREFIX##_reserve(array, 1)) < 0) {                          \
+            return err;                                                        \
+        }                                                                      \
+        index = array->len;                                                    \
+        dest = &array->items[index];                                           \
+        array->len += 1;                                                       \
+        callbacks = CALLBACKS;                                                 \
+        if (callbacks && callbacks->init) {                                    \
+            callbacks->init(dest);                                             \
+        } else {                                                               \
+            *dest = (ITEM_TYPE){0};                                            \
+        }                                                                      \
+        if (callbacks && callbacks->copy) {                                    \
+            if ((err = callbacks->copy(dest, item)) < 0) {                     \
+                array->len -= 1;                                               \
+                if (callbacks->destroy) {                                      \
+                    callbacks->destroy(dest);                                  \
+                }                                                              \
+                return err;                                                    \
+            }                                                                  \
+        } else {                                                               \
+            *dest = *item;                                                     \
+        }                                                                      \
+        return index;                                                          \
     }
 
-#define NCM_ARRAY_DEFINE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE,  \
-                                     CALLBACKS)                      \
-    void                                                             \
-    PREFIX##_append_move(ARRAY_TYPE *array, ITEM_TYPE *item) {       \
-        ITEM_TYPE *dest;                                             \
-        NcmArrayItemCallbacks *callbacks;                            \
-                                                                     \
-        if (item == NULL) {                                          \
-            return;                                                  \
-        }                                                            \
-        dest = PREFIX##_append(array);                               \
-        if (dest == NULL) {                                          \
-            return;                                                  \
-        }                                                            \
-        callbacks = CALLBACKS;                                       \
-        if (callbacks && callbacks->move) {                          \
-            callbacks->move(dest, item);                             \
-        } else {                                                     \
-            *dest = *item;                                           \
-        }                                                            \
-        return;                                                      \
+#define NCM_ARRAY_DEFINE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE,            \
+                                     CALLBACKS)                                \
+    void                                                                       \
+    PREFIX##_append_move(ARRAY_TYPE *array, ITEM_TYPE *item) {                 \
+        ITEM_TYPE *dest;                                                       \
+        NcmArrayItemCallbacks *callbacks;                                      \
+                                                                               \
+        if (item == NULL) {                                                    \
+            return;                                                            \
+        }                                                                      \
+        dest = PREFIX##_append(array);                                         \
+        if (dest == NULL) {                                                    \
+            return;                                                            \
+        }                                                                      \
+        callbacks = CALLBACKS;                                                 \
+        if (callbacks && callbacks->move) {                                    \
+            callbacks->move(dest, item);                                       \
+        } else {                                                               \
+            *dest = *item;                                                     \
+        }                                                                      \
+        return;                                                                \
     }
 
-#define NCM_ARRAY_DEFINE_REMOVE_ORDERED(PREFIX, ARRAY_TYPE, CALLBACKS) \
-    void                                                               \
-    PREFIX##_remove_ordered(ARRAY_TYPE *array, int32 idx) {            \
-        NcmArrayItemCallbacks *callbacks;                              \
-                                                                       \
-        if (array == NULL) {                                           \
-            return;                                                    \
-        }                                                              \
-        if ((idx < 0) || (idx >= array->len)) {                        \
-            return;                                                    \
-        }                                                              \
-                                                                       \
-        callbacks = CALLBACKS;                                         \
-        if (callbacks && callbacks->destroy) {                         \
-            callbacks->destroy(&array->items[idx]);                    \
-        }                                                              \
-        if (idx + 1 < array->len) {                                    \
-            memmove64(                                                 \
-                &array->items[idx],                                    \
-                &array->items[idx + 1],                                \
-                (array->len - idx - 1)*SIZEOF(*array->items));         \
-        }                                                              \
-        array->len -= 1;                                               \
-        return;                                                        \
+#define NCM_ARRAY_DEFINE_REMOVE_ORDERED(PREFIX, ARRAY_TYPE, CALLBACKS)         \
+    void                                                                       \
+    PREFIX##_remove_ordered(ARRAY_TYPE *array, int32 idx) {                    \
+        NcmArrayItemCallbacks *callbacks;                                      \
+                                                                               \
+        if (array == NULL) {                                                   \
+            return;                                                            \
+        }                                                                      \
+        if ((idx < 0) || (idx >= array->len)) {                                \
+            return;                                                            \
+        }                                                                      \
+                                                                               \
+        callbacks = CALLBACKS;                                                 \
+        if (callbacks && callbacks->destroy) {                                 \
+            callbacks->destroy(&array->items[idx]);                            \
+        }                                                                      \
+        if (idx + 1 < array->len) {                                            \
+            memmove64(                                                         \
+                &array->items[idx],                                            \
+                &array->items[idx + 1],                                        \
+                (array->len - idx - 1)*SIZEOF(*array->items));                 \
+        }                                                                      \
+        array->len -= 1;                                                       \
+        return;                                                                \
     }
 
-#define NCM_ARRAY_DECLARE(PREFIX, ARRAY_TYPE, ITEM_TYPE)          \
-    NCM_ARRAY_DECLARE_TYPE(ARRAY_TYPE, ITEM_TYPE)                 \
-    NCM_ARRAY_DECLARE_CLEAR(PREFIX, ARRAY_TYPE)                   \
-    NCM_ARRAY_DECLARE_DESTROY(PREFIX, ARRAY_TYPE)                 \
-    NCM_ARRAY_DECLARE_COPY(PREFIX, ARRAY_TYPE)                    \
-    NCM_ARRAY_DECLARE_MOVE(PREFIX, ARRAY_TYPE)                    \
-    NCM_ARRAY_DECLARE_SWAP(PREFIX, ARRAY_TYPE)                    \
-    NCM_ARRAY_DECLARE_RESERVE(PREFIX, ARRAY_TYPE)                 \
-    NCM_ARRAY_DECLARE_APPEND(PREFIX, ARRAY_TYPE, ITEM_TYPE)       \
-    NCM_ARRAY_DECLARE_APPEND_COPY(PREFIX, ARRAY_TYPE, ITEM_TYPE)  \
-    NCM_ARRAY_DECLARE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE)  \
+#define NCM_ARRAY_DECLARE(PREFIX, ARRAY_TYPE, ITEM_TYPE)                       \
+    NCM_ARRAY_DECLARE_TYPE(ARRAY_TYPE, ITEM_TYPE)                              \
+    NCM_ARRAY_DECLARE_CLEAR(PREFIX, ARRAY_TYPE)                                \
+    NCM_ARRAY_DECLARE_DESTROY(PREFIX, ARRAY_TYPE)                              \
+    NCM_ARRAY_DECLARE_COPY(PREFIX, ARRAY_TYPE)                                 \
+    NCM_ARRAY_DECLARE_MOVE(PREFIX, ARRAY_TYPE)                                 \
+    NCM_ARRAY_DECLARE_SWAP(PREFIX, ARRAY_TYPE)                                 \
+    NCM_ARRAY_DECLARE_RESERVE(PREFIX, ARRAY_TYPE)                              \
+    NCM_ARRAY_DECLARE_APPEND(PREFIX, ARRAY_TYPE, ITEM_TYPE)                    \
+    NCM_ARRAY_DECLARE_APPEND_COPY(PREFIX, ARRAY_TYPE, ITEM_TYPE)               \
+    NCM_ARRAY_DECLARE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE)               \
     NCM_ARRAY_DECLARE_REMOVE_ORDERED(PREFIX, ARRAY_TYPE)
 
-#define NCM_ARRAY_DEFINE(PREFIX, ARRAY_TYPE, ITEM_TYPE, CALLBACKS)       \
-    NCM_ARRAY_DEFINE_CLEAR(PREFIX, ARRAY_TYPE, CALLBACKS)                \
-    NCM_ARRAY_DEFINE_DESTROY(PREFIX, ARRAY_TYPE)                         \
-    NCM_ARRAY_DEFINE_COPY(PREFIX, ARRAY_TYPE)                            \
-    NCM_ARRAY_DEFINE_MOVE(PREFIX, ARRAY_TYPE)                            \
-    NCM_ARRAY_DEFINE_SWAP(PREFIX, ARRAY_TYPE)                            \
-    NCM_ARRAY_DEFINE_RESERVE(PREFIX, ARRAY_TYPE)                         \
-    NCM_ARRAY_DEFINE_APPEND(PREFIX, ARRAY_TYPE, ITEM_TYPE, CALLBACKS)    \
-    NCM_ARRAY_DEFINE_APPEND_COPY(PREFIX, ARRAY_TYPE, ITEM_TYPE,          \
-                                 CALLBACKS)                              \
-    NCM_ARRAY_DEFINE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE,          \
-                                 CALLBACKS)                              \
+#define NCM_ARRAY_DEFINE(PREFIX, ARRAY_TYPE, ITEM_TYPE, CALLBACKS)             \
+    NCM_ARRAY_DEFINE_CLEAR(PREFIX, ARRAY_TYPE, CALLBACKS)                      \
+    NCM_ARRAY_DEFINE_DESTROY(PREFIX, ARRAY_TYPE)                               \
+    NCM_ARRAY_DEFINE_COPY(PREFIX, ARRAY_TYPE)                                  \
+    NCM_ARRAY_DEFINE_MOVE(PREFIX, ARRAY_TYPE)                                  \
+    NCM_ARRAY_DEFINE_SWAP(PREFIX, ARRAY_TYPE)                                  \
+    NCM_ARRAY_DEFINE_RESERVE(PREFIX, ARRAY_TYPE)                               \
+    NCM_ARRAY_DEFINE_APPEND(PREFIX, ARRAY_TYPE, ITEM_TYPE, CALLBACKS)          \
+    NCM_ARRAY_DEFINE_APPEND_COPY(PREFIX, ARRAY_TYPE, ITEM_TYPE,                \
+                                 CALLBACKS)                                    \
+    NCM_ARRAY_DEFINE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE,                \
+                                 CALLBACKS)                                    \
     NCM_ARRAY_DEFINE_REMOVE_ORDERED(PREFIX, ARRAY_TYPE, CALLBACKS)
 
 /* c/ncm_sample_buffer.h */
@@ -801,9 +801,9 @@ NCM_ARRAY_DECLARE_APPEND_COPY(ncm_mpd_item_array,
 #define NCM_REGEX_NOSUB    0x08u
 
 #define NCM_REGEX_BASIC_CASE_INSENSITIVE NCM_REGEX_ICASE
-#define NCM_REGEX_EXTENDED_CASE_INSENSITIVE \
+#define NCM_REGEX_EXTENDED_CASE_INSENSITIVE                                    \
     (NCM_REGEX_EXTENDED | NCM_REGEX_ICASE)
-#define NCM_REGEX_LITERAL_CASE_INSENSITIVE \
+#define NCM_REGEX_LITERAL_CASE_INSENSITIVE                                     \
     (NCM_REGEX_LITERAL | NCM_REGEX_EXTENDED | NCM_REGEX_ICASE)
 
 typedef bool NcmRegexMatchCallback(int32 start, int32 len, void *user);
@@ -888,9 +888,9 @@ typedef struct NcmMpdPlaylistList {
 #define ENUM_NAME NcmMpdReplayGainMode
 #define ENUM_PREFIX_ NCM_MPD_REPLAY_GAIN_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NCM_MPD_REPLAY_GAIN_OFF) \
-    XX(NCM_MPD_REPLAY_GAIN_TRACK) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_MPD_REPLAY_GAIN_OFF)                                                \
+    XX(NCM_MPD_REPLAY_GAIN_TRACK)                                              \
     XX(NCM_MPD_REPLAY_GAIN_ALBUM)
 #include "cbase/xenums.c"
 
@@ -1342,43 +1342,43 @@ int32 ncm_mpd_client_get_tag_types(NcmMpdClient *client,
 #define ENUM_NAME SearchDirection
 #define ENUM_PREFIX_ NCM_SEARCH_DIRECTION_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NCM_SEARCH_DIRECTION_BACKWARD) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_SEARCH_DIRECTION_BACKWARD)                                          \
     XX(NCM_SEARCH_DIRECTION_FORWARD)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME SpaceAddMode
 #define ENUM_PREFIX_ NCM_SPACE_ADD_MODE_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NCM_SPACE_ADD_MODE_ADD_REMOVE) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_SPACE_ADD_MODE_ADD_REMOVE)                                          \
     XX(NCM_SPACE_ADD_MODE_ALWAYS_ADD)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME SortMode
 #define ENUM_PREFIX_ NCM_SORT_MODE_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NCM_SORT_MODE_TYPE) \
-    XX(NCM_SORT_MODE_NAME) \
-    XX(NCM_SORT_MODE_MODIFICATION_TIME) \
-    XX(NCM_SORT_MODE_CUSTOM_FORMAT) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_SORT_MODE_TYPE)                                                     \
+    XX(NCM_SORT_MODE_NAME)                                                     \
+    XX(NCM_SORT_MODE_MODIFICATION_TIME)                                        \
+    XX(NCM_SORT_MODE_CUSTOM_FORMAT)                                            \
     XX(NCM_SORT_MODE_NONE)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME DisplayMode
 #define ENUM_PREFIX_ NCM_DISPLAY_MODE_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NCM_DISPLAY_MODE_CLASSIC) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_DISPLAY_MODE_CLASSIC)                                               \
     XX(NCM_DISPLAY_MODE_COLUMNS)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME Design
 #define ENUM_PREFIX_ NCM_DESIGN_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NCM_DESIGN_CLASSIC) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_DESIGN_CLASSIC)                                                     \
     XX(NCM_DESIGN_ALTERNATIVE)
 #include "cbase/xenums.c"
 
@@ -1386,15 +1386,15 @@ int32 ncm_mpd_client_get_tag_types(NcmMpdClient *client,
 #define ENUM_PREFIX_ NCM_VISUALIZER_TYPE_
 #define ENUM_BITFLAGS 0
 #if defined(HAVE_FFTW3_H)
-#define ENUM_FIELDS \
-    XX(NCM_VISUALIZER_TYPE_WAVE) \
-    XX(NCM_VISUALIZER_TYPE_WAVE_FILLED) \
-    XX(NCM_VISUALIZER_TYPE_SPECTRUM) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_VISUALIZER_TYPE_WAVE)                                               \
+    XX(NCM_VISUALIZER_TYPE_WAVE_FILLED)                                        \
+    XX(NCM_VISUALIZER_TYPE_SPECTRUM)                                           \
     XX(NCM_VISUALIZER_TYPE_ELLIPSE)
 #else
-#define ENUM_FIELDS \
-    XX(NCM_VISUALIZER_TYPE_WAVE) \
-    XX(NCM_VISUALIZER_TYPE_WAVE_FILLED) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_VISUALIZER_TYPE_WAVE)                                               \
+    XX(NCM_VISUALIZER_TYPE_WAVE_FILLED)                                        \
     XX(NCM_VISUALIZER_TYPE_ELLIPSE)
 #endif
 #include "cbase/xenums.c"
@@ -1437,9 +1437,9 @@ int32 ncm_lower_bound_check_f64(double value, double lbound,
 #define ENUM_NAME NcmFsEntryType
 #define ENUM_PREFIX_ NCM_FS_ENTRY_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NCM_FS_ENTRY_FILE) \
-    XX(NCM_FS_ENTRY_DIRECTORY) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_FS_ENTRY_FILE)                                                      \
+    XX(NCM_FS_ENTRY_DIRECTORY)                                                 \
     XX(NCM_FS_ENTRY_SYMLINK)
 #include "cbase/xenums.c"
 
@@ -1699,38 +1699,38 @@ void ncm_taglib_clear_strings(void);
 #define ENUM_NAME NcmFormatFlags
 #define ENUM_PREFIX_ NCM_FORMAT_FLAG_
 #define ENUM_BITFLAGS 1
-#define ENUM_FIELDS \
-    XX(NCM_FORMAT_FLAG_COLOR) \
-    XX(NCM_FORMAT_FLAG_FORMAT) \
-    XX(NCM_FORMAT_FLAG_OUTPUT_SWITCH) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_FORMAT_FLAG_COLOR)                                                  \
+    XX(NCM_FORMAT_FLAG_FORMAT)                                                 \
+    XX(NCM_FORMAT_FLAG_OUTPUT_SWITCH)                                          \
     XX(NCM_FORMAT_FLAG_TAG)
 #include "cbase/xenums.c"
 
-#define NCM_FORMAT_FLAG_ALL \
-    (NCM_FORMAT_FLAG_COLOR \
-     |NCM_FORMAT_FLAG_FORMAT \
-     |NCM_FORMAT_FLAG_OUTPUT_SWITCH \
+#define NCM_FORMAT_FLAG_ALL                                                    \
+    (NCM_FORMAT_FLAG_COLOR                                                     \
+     |NCM_FORMAT_FLAG_FORMAT                                                   \
+     |NCM_FORMAT_FLAG_OUTPUT_SWITCH                                            \
      |NCM_FORMAT_FLAG_TAG)
 
 #define ENUM_NAME NcmFormatExprType
 #define ENUM_PREFIX_ NCM_FORMAT_EXPR_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NCM_FORMAT_EXPR_TEXT) \
-    XX(NCM_FORMAT_EXPR_COLOR) \
-    XX(NCM_FORMAT_EXPR_FORMAT) \
-    XX(NCM_FORMAT_EXPR_OUTPUT_SWITCH) \
-    XX(NCM_FORMAT_EXPR_SONG_TAG) \
-    XX(NCM_FORMAT_EXPR_GROUP) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_FORMAT_EXPR_TEXT)                                                   \
+    XX(NCM_FORMAT_EXPR_COLOR)                                                  \
+    XX(NCM_FORMAT_EXPR_FORMAT)                                                 \
+    XX(NCM_FORMAT_EXPR_OUTPUT_SWITCH)                                          \
+    XX(NCM_FORMAT_EXPR_SONG_TAG)                                               \
+    XX(NCM_FORMAT_EXPR_GROUP)                                                  \
     XX(NCM_FORMAT_EXPR_FIRST_OF)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcmFormatResult
 #define ENUM_PREFIX_ NCM_FORMAT_RESULT_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NCM_FORMAT_RESULT_EMPTY) \
-    XX(NCM_FORMAT_RESULT_MISSING) \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_FORMAT_RESULT_EMPTY)                                                \
+    XX(NCM_FORMAT_RESULT_MISSING)                                              \
     XX(NCM_FORMAT_RESULT_OK)
 #include "cbase/xenums.c"
 
