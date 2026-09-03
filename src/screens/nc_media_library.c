@@ -3000,7 +3000,7 @@ static int32
 library_replace_albums(MediaLibraryScreen *screen,
                        MediaLibraryAlbumArray *albums) {
     NcMediaLibraryAlbumMenu replacement;
-    NcMediaLibraryAlbumRow identity;
+    NcMediaLibraryAlbumRow identity = {0};
     NcMediaLibraryAlbumRow *current;
     NcMenu *menu;
     NcMenu *replacement_menu;
@@ -3014,7 +3014,7 @@ library_replace_albums(MediaLibraryScreen *screen,
     current = nc_media_library_album_menu_current(&screen->albums);
     highlight = nc_menu_highlight(menu);
     identity_valid = false;
-    identity = (NcMediaLibraryAlbumRow){0};
+
     if (current) {
         identity_valid = nc_media_library_album_row_copy(
             &identity, current) >= 0;
