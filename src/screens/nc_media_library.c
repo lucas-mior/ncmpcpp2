@@ -3244,9 +3244,8 @@ library_refresh_window(NcScreen *screen) {
 
 static void
 library_scroll(NcScreen *screen, enum NcScroll where) {
-    MediaLibraryScreen *library;
+    MediaLibraryScreen *library = library_from_screen(screen);
 
-    library = library_from_screen(screen);
     nc_menu_scroll_selectable(media_library_screen_active_menu(library),
                               library->main_height, where);
     return;
