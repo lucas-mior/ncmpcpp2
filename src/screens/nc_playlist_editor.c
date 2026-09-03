@@ -959,9 +959,8 @@ playlist_editor_find_song_in_content_range(
 }
 
 static int32
-playlist_editor_highlight_content_position(
-    PlaylistEditorScreen *screen, int32 pos
-) {
+playlist_editor_highlight_content_position(PlaylistEditorScreen *screen,
+                                           int32 pos) {
     NcMenu *menu;
 
     if (screen == NULL) {
