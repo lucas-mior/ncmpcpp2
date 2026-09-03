@@ -1887,8 +1887,7 @@ browser_load_mpd_items(BrowserScreen *screen,
 }
 
 static int32
-browser_reload_from_local(BrowserScreen *screen,
-                          NcmError *ncm_error) {
+browser_reload_from_local(BrowserScreen *screen, NcmError *ncm_error) {
     NcmFsDirectory directory = {0};
     NcmFsEntry entry = {0};
     NcMenu *menu;
