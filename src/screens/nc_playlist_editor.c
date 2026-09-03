@@ -438,10 +438,9 @@ playlist_editor_screen_reload_playlists_from_mpd(PlaylistEditorScreen *screen,
     if (status == 0) {
         for (int32 i = 1; i < playlists.count; i += 1) {
             NcmPlaylist current = {0};
-            int32 j;
+            int32 j = i;
 
             ncm_playlist_move(&current, &playlists.items[i]);
-            j = i;
             while (j > 0) {
                 NcmPlaylist *left;
                 NcmPlaylist *right;
