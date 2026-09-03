@@ -28,31 +28,31 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static int32 library_mpd_add_songs(void *user, NcmSongArray *songs, bool play, NcmError *ncm_error);
-static void library_tag_array_item_destroy(void *item);
-static void library_album_array_item_init(void *item);
-static void library_album_array_item_destroy(void *item);
-static int32 library_update_tags(MediaLibraryScreen *screen, NcmError *ncm_error);
-static int32 library_update_albums(MediaLibraryScreen *screen, NcmError *ncm_error);
-static int32 library_update_songs(MediaLibraryScreen *screen, NcmError *ncm_error);
-static int32 library_replace_tags(MediaLibraryScreen *screen, MediaLibraryTagArray *tags);
-static int32 library_replace_albums(MediaLibraryScreen *screen, MediaLibraryAlbumArray *albums);
-static int32 library_replace_songs(MediaLibraryScreen *screen, NcmSongArray *songs);
 static void library_apply_column_filter(MediaLibraryScreen *screen, enum MediaLibraryColumn column, NcMenu *menu);
-static void library_restore_tag_identity(NcMediaLibraryTagMenu *menu, NcMediaLibraryTagRow *identity, bool identity_valid, int32 fallback);
-static void library_restore_album_identity(NcMediaLibraryAlbumMenu *menu, NcMediaLibraryAlbumRow *identity, bool identity_valid, int32 fallback);
-static void library_restore_song_identity(NcMediaLibrarySongMenu *menu, NcmSong *identity, bool identity_valid, int32 fallback);
-static bool library_tag_identity_is_equal(NcMediaLibraryTagRow *left, NcMediaLibraryTagRow *right);
-static bool library_album_identity_is_equal(NcMediaLibraryAlbumRow *left, NcMediaLibraryAlbumRow *right);
-static void library_set_observed_tag(MediaLibraryScreen *screen, NcMediaLibraryTagRow *tag);
-static void library_set_observed_album(MediaLibraryScreen *screen, NcMediaLibraryAlbumRow *album);
-static void library_reset_observed_highlights(MediaLibraryScreen *screen);
-static void library_restart_update_timer(MediaLibraryScreen *screen);
-static bool library_has_pending_tags(MediaLibraryScreen *screen);
-static bool library_has_pending_albums(MediaLibraryScreen *screen);
-static bool library_has_pending_songs(MediaLibraryScreen *screen);
-static bool library_has_fetch_delay_elapsed(MediaLibraryScreen *screen);
 static bool library_search_position(NcMenu *menu, int32 pos, void *user);
+static int32 library_mpd_add_songs(void *user, NcmSongArray *songs, bool play, NcmError *ncm_error);
+static int32 library_replace_albums(MediaLibraryScreen *screen, MediaLibraryAlbumArray *albums);
+static void library_restore_song_identity(NcMediaLibrarySongMenu *menu, NcmSong *identity, bool identity_valid, int32 fallback);
+static bool library_has_pending_albums(MediaLibraryScreen *screen);
+static void library_reset_observed_highlights(MediaLibraryScreen *screen);
+static void library_set_observed_album(MediaLibraryScreen *screen, NcMediaLibraryAlbumRow *album);
+static void library_album_array_item_destroy(void *item);
+static int32 library_replace_songs(MediaLibraryScreen *screen, NcmSongArray *songs);
+static bool library_album_identity_is_equal(NcMediaLibraryAlbumRow *left, NcMediaLibraryAlbumRow *right);
+static int32 library_update_songs(MediaLibraryScreen *screen, NcmError *ncm_error);
+static bool library_has_pending_songs(MediaLibraryScreen *screen);
+static int32 library_replace_tags(MediaLibraryScreen *screen, MediaLibraryTagArray *tags);
+static void library_restore_tag_identity(NcMediaLibraryTagMenu *menu, NcMediaLibraryTagRow *identity, bool identity_valid, int32 fallback);
+static void library_tag_array_item_destroy(void *item);
+static void library_set_observed_tag(MediaLibraryScreen *screen, NcMediaLibraryTagRow *tag);
+static void library_restore_album_identity(NcMediaLibraryAlbumMenu *menu, NcMediaLibraryAlbumRow *identity, bool identity_valid, int32 fallback);
+static bool library_has_pending_tags(MediaLibraryScreen *screen);
+static bool library_has_fetch_delay_elapsed(MediaLibraryScreen *screen);
+static int32 library_update_tags(MediaLibraryScreen *screen, NcmError *ncm_error);
+static void library_album_array_item_init(void *item);
+static int32 library_update_albums(MediaLibraryScreen *screen, NcmError *ncm_error);
+static void library_restart_update_timer(MediaLibraryScreen *screen);
+static bool library_tag_identity_is_equal(NcMediaLibraryTagRow *left, NcMediaLibraryTagRow *right);
 
 static char *
 library_query_cstring(StrBuilder *buffer, char *string, int32 string_len) {
