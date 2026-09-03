@@ -6,3 +6,4 @@ CompileFlags:
   Add:
     - "-w"
     - "-Wimplicit-function-declaration"
+    - "-fno-spell-checking"
