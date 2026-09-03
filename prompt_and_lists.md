@@ -22,7 +22,6 @@ list below, and go straight to the next file without asking me.
 - src/c/ncm_mutable_song.c
 - src/c/ncm_format.c
 - src/c/ncm_error.c
-- src/c/ncm_string_format.c
 - src/screens/nc_screen_switcher.c
 - src/screens/screen_type.c
 - src/screens/nc_screens.c
@@ -122,7 +121,6 @@ the external API of the module has already validated it.
 - src/c/ncm_mutable_song.c
 - src/c/ncm_format.c
 - src/c/ncm_error.c
-- src/c/ncm_string_format.c
 
 ## Functions that are never called (dead code)
 ## Excessive error checking
@@ -153,5 +151,4 @@ status = ncm_fs_rename(old_real_path.data, old_real_path.len,
 ## Strings unecessary conversion to and from StrBuilder
 Investigate:
 - ncm_conversion_copy_source()
-- NcmStringFormatArg
 - there are multiple confusing string types

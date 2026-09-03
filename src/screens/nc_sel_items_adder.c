@@ -280,13 +280,15 @@ selected_items_adder_screen_open(
         ncm_error_clear(&playlist_error);
         if (ncm_mpd_client_get_playlists(client, &playlists,
                                          &playlist_error) < 0) {
-            NcmStringFormatArg arg;
+            StrBuilder message = {0};
 
             ncm_mpd_playlist_list_clear(&playlists);
-            arg = ncm_string_format_arg_cstring(playlist_error.message);
-            ncm_statusbar_format(
-                Config.message_delay_time,
-                STRLIT("Could not fetch playlists: %1"), &arg, 1);
+            SB_APPEND(&message, "Could not fetch playlists: ");
+            SB_APPEND(&message, playlist_error.message,
+                      optional_strlen32(playlist_error.message));
+            ncm_statusbar_print(Config.message_delay_time,
+                                message.data, message.len);
+            sb_free(&message);
         }
     }
     {
@@ -652,7 +654,7 @@ adder_add_to_stored_playlist(
     SelectedItemsAdderScreen *screen, char *playlist,
     int32 playlist_len
 ) {
-    NcmStringFormatArg arg;
+    StrBuilder message = {0};
     NcmError ncm_error;
     int32 status;
 
@@ -696,11 +698,11 @@ adder_add_to_stored_playlist(
         return status;
     }
 
-    arg = ncm_string_format_arg_string(playlist, playlist_len);
-    ncm_statusbar_format(
-        Config.message_delay_time,
-        STRLIT("Selected item(s) added to playlist \"%1\""),
-        &arg, 1);
+    SB_APPEND(&message, "Selected item(s) added to playlist \"");
+    SB_APPEND(&message, playlist, playlist_len);
+    SB_APPEND(&message, "\"");
+    ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
+    sb_free(&message);
     adder_finish(screen);
     return 0;
 }

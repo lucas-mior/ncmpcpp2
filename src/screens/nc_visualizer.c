@@ -547,13 +547,14 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
     status = screen->data_source_hooks.get_outputs(
         screen->data_source_hooks.user, &outputs, &ncm_error);
     if (status < 0) {
-        NcmStringFormatArg arg =
-            ncm_string_format_arg_cstring(ncm_error.message);
+        StrBuilder message = {0};
 
-        ncm_statusbar_format(ncm_statusbar_message_delay_time(),
-                             STRLIT("Could not fetch outputs: %1"),
-                             &arg,
-                             1);
+        SB_APPEND(&message, "Could not fetch outputs: ");
+        SB_APPEND(&message, ncm_error.message,
+                  optional_strlen32(ncm_error.message));
+        ncm_statusbar_print(ncm_statusbar_message_delay_time(),
+                            message.data, message.len);
+        sb_free(&message);
         ncm_mpd_output_list_destroy(&outputs);
         return status;
     }
@@ -571,14 +572,14 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
     ncm_mpd_output_list_destroy(&outputs);
 
     if (!found) {
-        NcmStringFormatArg arg =
-            ncm_string_format_arg_string(screen->output_name.data,
-                                         screen->output_name.len);
+        StrBuilder message = {0};
 
-        ncm_statusbar_format(ncm_statusbar_message_delay_time(),
-                             STRLIT("There is no output named \"%1\""),
-                             &arg,
-                             1);
+        SB_APPEND(&message, "There is no output named \"");
+        SB_APPEND(&message, screen->output_name.data, screen->output_name.len);
+        SB_APPEND(&message, "\"");
+        ncm_statusbar_print(ncm_statusbar_message_delay_time(),
+                            message.data, message.len);
+        sb_free(&message);
     }
     if (!found) {
         return -NCM_ERROR_NOT_FOUND;
@@ -1801,19 +1802,21 @@ visualizer_system_open_fifo(void *user, char *location, int32 location_len) {
 
     (void)user;
     if ((fd = open(location, O_RDONLY | O_NONBLOCK)) < 0) {
-        NcmStringFormatArg args[2];
+        StrBuilder message = {0};
+        char *error_message;
 
         error_code = errno;
         if (error_code == 0) {
             error_code = EIO;
         }
-        args[0] = ncm_string_format_arg_string(location, location_len);
-        args[1] = ncm_string_format_arg_cstring(strerror(error_code));
-        ncm_statusbar_format(
-            ncm_statusbar_message_delay_time(),
-            STRLIT("Couldn't open \"%1\" for reading PCM data: %2"),
-            args,
-            2);
+        error_message = strerror(error_code);
+        SB_APPEND(&message, "Couldn't open \"");
+        SB_APPEND(&message, location, location_len);
+        SB_APPEND(&message, "\" for reading PCM data: ");
+        SB_APPEND(&message, error_message, optional_strlen32(error_message));
+        ncm_statusbar_print(ncm_statusbar_message_delay_time(),
+                            message.data, message.len);
+        sb_free(&message);
         return -error_code;
     }
     return fd;
@@ -1836,16 +1839,19 @@ visualizer_system_open_udp(void *user, char *location, int32 location_len,
 
     addresses = NULL;
     if ((error_code = getaddrinfo(location, port, &hints, &addresses)) != 0) {
-        NcmStringFormatArg args[3];
+        StrBuilder message = {0};
+        char *error_message;
 
-        args[0] = ncm_string_format_arg_string(location, location_len);
-        args[1] = ncm_string_format_arg_string(port, port_len);
-        args[2] = ncm_string_format_arg_cstring(
-            (char *)gai_strerror(error_code));
-        ncm_statusbar_format(ncm_statusbar_message_delay_time(),
-                             STRLIT("Couldn't resolve \"%1:%2\": %3"),
-                             args,
-                             3);
+        error_message = (char *)gai_strerror(error_code);
+        SB_APPEND(&message, "Couldn't resolve \"");
+        SB_APPEND(&message, location, location_len);
+        SB_APPEND(&message, ":");
+        SB_APPEND(&message, port, port_len);
+        SB_APPEND(&message, "\": ");
+        SB_APPEND(&message, error_message, optional_strlen32(error_message));
+        ncm_statusbar_print(ncm_statusbar_message_delay_time(),
+                            message.data, message.len);
+        sb_free(&message);
         return -NCM_ERROR_NETWORK;
     }
 
@@ -1976,13 +1982,14 @@ visualizer_reset_output(VisualizerScreen *screen) {
         screen->output_id,
         &ncm_error);
     if (status < 0) {
-        NcmStringFormatArg arg;
+        StrBuilder message = {0};
 
-        arg = ncm_string_format_arg_cstring(ncm_error.message);
-        ncm_statusbar_format(ncm_statusbar_message_delay_time(),
-                             STRLIT("Could not disable visualizer output: %1"),
-                             &arg,
-                             1);
+        SB_APPEND(&message, "Could not disable visualizer output: ");
+        SB_APPEND(&message, ncm_error.message,
+                  optional_strlen32(ncm_error.message));
+        ncm_statusbar_print(ncm_statusbar_message_delay_time(),
+                            message.data, message.len);
+        sb_free(&message);
         return status;
     }
     if (screen->data_source_hooks.sleep_microseconds) {
@@ -1994,13 +2001,14 @@ visualizer_reset_output(VisualizerScreen *screen) {
     status = screen->data_source_hooks.enable_output(
         screen->data_source_hooks.user, screen->output_id, &ncm_error);
     if (status < 0) {
-        NcmStringFormatArg arg;
+        StrBuilder message = {0};
 
-        arg = ncm_string_format_arg_cstring(ncm_error.message);
-        ncm_statusbar_format(ncm_statusbar_message_delay_time(),
-                             STRLIT("Could not enable visualizer output: %1"),
-                             &arg,
-                             1);
+        SB_APPEND(&message, "Could not enable visualizer output: ");
+        SB_APPEND(&message, ncm_error.message,
+                  optional_strlen32(ncm_error.message));
+        ncm_statusbar_print(ncm_statusbar_message_delay_time(),
+                            message.data, message.len);
+        sb_free(&message);
         return status;
     }
 

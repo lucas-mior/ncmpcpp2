@@ -1454,13 +1454,13 @@ outputs_fetch(void *user, NcOutputsScreen *screen) {
     ncm_error_clear(&ncm_error);
     outputs = (NcmMpdOutputList){0};
     if (ncm_mpd_client_get_outputs(&global_mpd, &outputs, &ncm_error) < 0) {
-        NcmStringFormatArg arg;
+        StrBuilder message = {0};
 
-        arg = ncm_string_format_arg_cstring(ncm_error.message);
-        ncm_statusbar_format(5,
-                             STRLIT("Could not fetch outputs: %1"),
-                             &arg,
-                             1);
+        SB_APPEND(&message, "Could not fetch outputs: ");
+        SB_APPEND(&message, ncm_error.message,
+                  optional_strlen32(ncm_error.message));
+        ncm_statusbar_print(5, message.data, message.len);
+        sb_free(&message);
         ncm_mpd_output_list_destroy(&outputs);
         return;
     }
@@ -1498,33 +1498,30 @@ outputs_toggle(void *user, int32 id, bool enabled,
         status = ncm_mpd_client_enable_output(&global_mpd, id, &ncm_error);
     }
     if (status < 0) {
-        NcmStringFormatArg args[2];
+        StrBuilder message = {0};
 
-        args[0] = ncm_string_format_arg_string(name, name_len);
-        args[1] = ncm_string_format_arg_cstring(ncm_error.message);
-        ncm_statusbar_format(5,
-                             STRLIT("Could not toggle output %1: %2"),
-                             args,
-                             2);
+        SB_APPEND(&message, "Could not toggle output ");
+        SB_APPEND(&message, name, name_len);
+        SB_APPEND(&message, ": ");
+        SB_APPEND(&message, ncm_error.message,
+                  optional_strlen32(ncm_error.message));
+        ncm_statusbar_print(5, message.data, message.len);
+        sb_free(&message);
         return status;
     }
 
-    if (enabled) {
-        NcmStringFormatArg arg;
+    {
+        StrBuilder message = {0};
 
-        arg = ncm_string_format_arg_string(name, name_len);
-        ncm_statusbar_format(3,
-                             STRLIT("Output %1 disabled"),
-                             &arg,
-                             1);
-    } else {
-        NcmStringFormatArg arg;
-
-        arg = ncm_string_format_arg_string(name, name_len);
-        ncm_statusbar_format(3,
-                             STRLIT("Output %1 enabled"),
-                             &arg,
-                             1);
+        SB_APPEND(&message, "Output ");
+        SB_APPEND(&message, name, name_len);
+        if (enabled) {
+            SB_APPEND(&message, " disabled");
+        } else {
+            SB_APPEND(&message, " enabled");
+        }
+        ncm_statusbar_print(3, message.data, message.len);
+        sb_free(&message);
     }
     return 0;
 #else
@@ -1837,13 +1834,13 @@ song_info_switch_to(void *user, NcSongInfoScreen *screen) {
                                                       &owner->song,
                                                       &ncm_error) == 0;
     if (!owner->has_song) {
-        NcmStringFormatArg arg;
+        StrBuilder message = {0};
 
-        arg = ncm_string_format_arg_cstring(ncm_error.message);
-        ncm_statusbar_format(5,
-                             STRLIT("Could not fetch current song: %1"),
-                             &arg,
-                             1);
+        SB_APPEND(&message, "Could not fetch current song: ");
+        SB_APPEND(&message, ncm_error.message,
+                  optional_strlen32(ncm_error.message));
+        ncm_statusbar_print(5, message.data, message.len);
+        sb_free(&message);
         return;
     }
 

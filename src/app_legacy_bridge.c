@@ -65,7 +65,7 @@ app_bridge_noidle_status_update(int32 flags, void *user) {
 
 static void
 app_bridge_report_mpd_error(NcmError *ncm_error) {
-    NcmStringFormatArg arg;
+    StrBuilder output = {0};
     char *message;
 
     if (ncm_error && (ncm_error->message[0] != '\0')) {
@@ -76,16 +76,16 @@ app_bridge_report_mpd_error(NcmError *ncm_error) {
             message = "MPD command failed";
         }
     }
-    arg = ncm_string_format_arg_cstring(message);
 
     if ((ncm_mpd_client_error_code(&global_mpd) == MPD_ERROR_SERVER)
         || (ncm_error && (ncm_error->code == MPD_ERROR_SERVER))) {
-        ncm_statusbar_format(Config.message_delay_time,
-                             STRLIT("MPD: %1%"), &arg, 1);
+        SB_APPEND(&output, "MPD: ");
     } else {
-        ncm_statusbar_format(Config.message_delay_time,
-                             STRLIT("ncmpcpp: %1%"), &arg, 1);
+        SB_APPEND(&output, "ncmpcpp: ");
     }
+    SB_APPEND(&output, message, optional_strlen32(message));
+    ncm_statusbar_print(Config.message_delay_time, output.data, output.len);
+    sb_free(&output);
     return;
 }
 

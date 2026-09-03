@@ -832,12 +832,18 @@ action_runtime_menu_has_selection(void) {
 }
 
 static void
-action_runtime_print_format_string(char *format, int32 format_len, char *text,
-                                   int32 text_len) {
-    NcmStringFormatArg arg = ncm_string_format_arg_string(text, text_len);
+action_runtime_print_message(char *prefix, int32 prefix_len,
+                             char *text, int32 text_len,
+                             char *suffix, int32 suffix_len) {
+    StrBuilder message = {0};
 
-    ncm_statusbar_format(Config.message_delay_time, format, format_len,
-                         &arg, 1);
+    SB_APPEND(&message, prefix, prefix_len);
+    if ((text != NULL) && (text_len > 0)) {
+        SB_APPEND(&message, text, text_len);
+    }
+    SB_APPEND(&message, suffix, suffix_len);
+    ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
+    sb_free(&message);
     return;
 }
 
@@ -1139,8 +1145,8 @@ action_runtime_set_crossfade(void) {
 
 static int32
 action_runtime_set_volume(void) {
-    NcmStringFormatArg arg;
     StrBuilder input = {0};
+    StrBuilder message = {0};
     NcmError ncm_error;
     int32 volume;
     bool prompted;
@@ -1171,18 +1177,18 @@ action_runtime_set_volume(void) {
     if (ncm_mpd_client_set_volume(&global_mpd, volume, &ncm_error) < 0) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
-    arg = ncm_string_format_arg_u64((uint64)volume);
-    ncm_statusbar_format(Config.message_delay_time,
-                         STRLIT("Volume set to %1%%%"), &arg, 1);
+    sb_printf(&message, "Volume set to %d%%", volume);
+    ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
+    sb_free(&message);
     return 0;
 }
 
 static int32
 action_runtime_add_random_items(void) {
     NcmStatusbarScopedLock scoped_lock;
-    NcmStringFormatArg args[3];
     StrBuilder input = {0};
-    StrBuilder prompt;
+    StrBuilder message = {0};
+    StrBuilder prompt = {0};
     NcmError ncm_error;
     NcWindow *window;
     char values[] = {
@@ -1192,7 +1198,6 @@ action_runtime_add_random_items(void) {
         'b',
     };
     char tag_name[32];
-    char *plural;
     char *source_name;
     int32 count;
     int32 source_name_len;
@@ -1239,9 +1244,9 @@ action_runtime_add_random_items(void) {
         source_name = tag_name;
     }
 
-    args[0] = ncm_string_format_arg_string(source_name, source_name_len);
-    prompt = ncm_string_format_make(STRLIT("Number of random %1%s: "),
-                                    args, 1);
+    SB_APPEND(&prompt, "Number of random ");
+    SB_APPEND(&prompt, source_name, source_name_len);
+    SB_APPEND(&prompt, "s: ");
     prompted = action_runtime_prompt_string(prompt.data, prompt.len, "", false,
                                             NULL, NULL, &input);
     sb_free(&prompt);
@@ -1277,26 +1282,21 @@ action_runtime_add_random_items(void) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
 
-    if (count == 1) {
-        plural = "";
-    } else {
-        plural = "s";
+    sb_printf(&message, "%d random ", count);
+    SB_APPEND(&message, source_name, source_name_len);
+    if (count != 1) {
+        SB_APPEND(&message, "s");
     }
-    args[0] = ncm_string_format_arg_i64(count);
-    args[1] = ncm_string_format_arg_string(source_name, source_name_len);
-    args[2] = ncm_string_format_arg_cstring(plural);
-    ncm_statusbar_format(Config.message_delay_time,
-                         STRLIT("%1% random %2%%3% added to playlist"),
-                         args, LENGTH(args));
+    SB_APPEND(&message, " added to playlist");
+    ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
+    sb_free(&message);
     return 0;
 }
 
 static void
-action_runtime_print_toggle(char *format, int32 format_len, char *value) {
-    NcmStringFormatArg arg = ncm_string_format_arg_cstring(value);
-
-    ncm_statusbar_format(Config.message_delay_time, format, format_len,
-                         &arg, 1);
+action_runtime_print_toggle(char *prefix, int32 prefix_len, char *value) {
+    action_runtime_print_message(prefix, prefix_len, value,
+                                 optional_strlen32(value), STRLIT(""));
     return;
 }
 
@@ -1325,7 +1325,7 @@ action_runtime_toggle_interface(void) {
     ncm_progressbar_scoped_lock_destroy(&scoped_lock);
     ncm_status_changes_mixer();
     ncm_status_changes_elapsed_time(false);
-    action_runtime_print_toggle(STRLIT("User interface: %1%"),
+    action_runtime_print_toggle(STRLIT("User interface: "),
                                 ncm_design_str(Config.design));
     return 0;
 }
@@ -1336,10 +1336,10 @@ action_runtime_toggle_separators_between_albums(void) {
     app_controller_request_current_screen_resize();
     if (Config.playlist_separate_albums) {
         action_runtime_print_toggle(
-            STRLIT("Separators between albums: %1%"), "on");
+            STRLIT("Separators between albums: "), "on");
     } else {
         action_runtime_print_toggle(
-            STRLIT("Separators between albums: %1%"), "off");
+            STRLIT("Separators between albums: "), "off");
     }
     return 0;
 }
@@ -1352,10 +1352,10 @@ action_runtime_toggle_lyrics_update_on_song_change(void) {
     Config.now_playing_lyrics = !Config.now_playing_lyrics;
     if (Config.now_playing_lyrics) {
         action_runtime_print_toggle(
-            STRLIT("Update lyrics if song changes: %1%"), "on");
+            STRLIT("Update lyrics if song changes: "), "on");
     } else {
         action_runtime_print_toggle(
-            STRLIT("Update lyrics if song changes: %1%"), "off");
+            STRLIT("Update lyrics if song changes: "), "off");
     }
     return 0;
 }
@@ -1365,11 +1365,11 @@ action_runtime_toggle_fetching_lyrics_in_background(void) {
     Config.fetch_lyrics_in_background = !Config.fetch_lyrics_in_background;
     if (Config.fetch_lyrics_in_background) {
         action_runtime_print_toggle(
-            STRLIT("Fetching lyrics for playing songs in background: %1%"),
+            STRLIT("Fetching lyrics for playing songs in background: "),
             "on");
     } else {
         action_runtime_print_toggle(
-            STRLIT("Fetching lyrics for playing songs in background: %1%"),
+            STRLIT("Fetching lyrics for playing songs in background: "),
             "off");
     }
     return 0;
@@ -1392,7 +1392,7 @@ action_runtime_toggle_add_mode(void) {
     default:
         return -NCM_ERROR_UNAVAILABLE;
     }
-    action_runtime_print_toggle(STRLIT("Add mode: %1%"), mode_desc);
+    action_runtime_print_toggle(STRLIT("Add mode: "), mode_desc);
     return 0;
 }
 
@@ -1401,11 +1401,11 @@ action_runtime_toggle_mouse(void) {
     Config.mouse_support = !Config.mouse_support;
     if (Config.mouse_support) {
         nc_mouse_enable();
-        action_runtime_print_toggle(STRLIT("Mouse support %1%"),
+        action_runtime_print_toggle(STRLIT("Mouse support "),
                                     "enabled");
     } else {
         nc_mouse_disable();
-        action_runtime_print_toggle(STRLIT("Mouse support %1%"),
+        action_runtime_print_toggle(STRLIT("Mouse support "),
                                     "disabled");
     }
     return 0;
@@ -1415,10 +1415,10 @@ static int32
 action_runtime_toggle_bitrate_visibility(void) {
     Config.display_bitrate = !Config.display_bitrate;
     if (Config.display_bitrate) {
-        action_runtime_print_toggle(STRLIT("Bitrate visibility %1%"),
+        action_runtime_print_toggle(STRLIT("Bitrate visibility "),
                                     "enabled");
     } else {
-        action_runtime_print_toggle(STRLIT("Bitrate visibility %1%"),
+        action_runtime_print_toggle(STRLIT("Bitrate visibility "),
                                     "disabled");
     }
     return 0;
@@ -1545,24 +1545,25 @@ action_runtime_execute_command(void) {
     command = ncm_bindings_configuration_find_command(
         &Bindings, command_name.data, command_name.len);
     if (command == NULL) {
-        action_runtime_print_format_string(
-            STRLIT("No command named \"%1%\""), command_name.data,
-            command_name.len);
+        action_runtime_print_message(STRLIT("No command named \""),
+                                     command_name.data, command_name.len,
+                                     STRLIT("\""));
         sb_free(&command_name);
         return 0;
     }
 
-    action_runtime_print_format_string(STRLIT("Executing %1%..."),
-                                       command_name.data, command_name.len);
+    action_runtime_print_message(STRLIT("Executing "),
+                                 command_name.data, command_name.len,
+                                 STRLIT("..."));
     status = ncmpcpp_execute_binding(&command->binding);
     if (status == 0) {
-        action_runtime_print_format_string(
-            STRLIT("Execution of command \"%1%\" successful."),
-            command_name.data, command_name.len);
+        action_runtime_print_message(STRLIT("Execution of command \""),
+                                     command_name.data, command_name.len,
+                                     STRLIT("\" successful."));
     } else {
-        action_runtime_print_format_string(
-            STRLIT("Execution of command \"%1%\" unsuccessful."),
-            command_name.data, command_name.len);
+        action_runtime_print_message(STRLIT("Execution of command \""),
+                                     command_name.data, command_name.len,
+                                     STRLIT("\" unsuccessful."));
     }
 
     sb_free(&command_name);
@@ -1623,8 +1624,8 @@ action_runtime_save_playlist(void) {
                                         "Playlist overwritten");
         }
     } else if (success) {
-        action_runtime_print_format_string(
-            STRLIT("Playlist saved as \"%1%\""), name.data, name.len);
+        action_runtime_print_message(STRLIT("Playlist saved as \""),
+                                     name.data, name.len, STRLIT("\""));
     }
 
     sb_free(&name);
@@ -1685,8 +1686,8 @@ action_runtime_apply_filter(void) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Filtering disabled");
     } else {
-        action_runtime_print_format_string(STRLIT("Using filter \"%1%\""),
-                                           filter.data, filter.len);
+        action_runtime_print_message(STRLIT("Using filter \""),
+                                     filter.data, filter.len, STRLIT("\""));
     }
 
     sb_free(&previous_filter);
@@ -1815,9 +1816,9 @@ action_runtime_find_item(enum SearchDirection direction) {
                 return -NCM_ERROR_UNAVAILABLE;
             }
         }
-        action_runtime_print_format_string(
-            STRLIT("Using constraint \"%1%\""), constraint.data,
-            constraint.len);
+        action_runtime_print_message(STRLIT("Using constraint \""),
+                                     constraint.data, constraint.len,
+                                     STRLIT("\""));
     }
 
     action_runtime_search_prompt_destroy(&state);
@@ -4330,14 +4331,11 @@ action_runtime_toggle_display_mode(void) {
 
     if (screen_type == NCM_SCREEN_TYPE_SEARCH_ENGINE) {
         SearchEngineScreen *screen = app_screen_search_engine();
-        NcmStringFormatArg arg;
         enum DisplayMode search_mode;
 
         search_mode = search_engine_screen_toggle_display_mode(screen);
-        arg = ncm_string_format_arg_cstring(ncm_display_mode_str(search_mode));
-        ncm_statusbar_format(Config.message_delay_time,
-                             STRLIT("Search engine display mode: %1%"),
-                             &arg, 1);
+        action_runtime_print_toggle(STRLIT("Search engine display mode: "),
+                                    ncm_display_mode_str(search_mode));
         app_controller_request_current_screen_resize();
         app_controller_refresh_current_screen();
         return 0;
@@ -4355,8 +4353,6 @@ action_runtime_toggle_display_mode(void) {
         app_controller_request_current_screen_resize();
         return 0;
     case NCM_SCREEN_TYPE_PLAYLIST: {
-        NcmStringFormatArg arg;
-
         if (Config.playlist_display_mode == NCM_DISPLAY_MODE_CLASSIC) {
             Config.playlist_display_mode = NCM_DISPLAY_MODE_COLUMNS;
         } else {
@@ -4365,11 +4361,9 @@ action_runtime_toggle_display_mode(void) {
         playlist_screen_update_column_title(app_screen_playlist());
         app_controller_request_current_screen_resize();
         app_controller_refresh_current_screen();
-        arg = ncm_string_format_arg_cstring(ncm_display_mode_str(
-            Config.playlist_display_mode));
-        ncm_statusbar_format(Config.message_delay_time,
-                             STRLIT("Playlist display mode: %1%"), &arg,
-                             1);
+        action_runtime_print_toggle(
+            STRLIT("Playlist display mode: "),
+            ncm_display_mode_str(Config.playlist_display_mode));
         return 0;
     }
     case NCM_SCREEN_TYPE_PLAYLIST_EDITOR:
@@ -4612,7 +4606,7 @@ action_runtime_toggle_replay_gain_mode(void) {
                                             &ncm_error) < 0) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
-    action_runtime_print_toggle(STRLIT("Replay gain mode: %1%"),
+    action_runtime_print_toggle(STRLIT("Replay gain mode: "),
                                 action_runtime_replay_gain_mode_name(mode));
     return 0;
 }
@@ -4640,7 +4634,6 @@ int32
 ncm_action_edit_song(NcmSong *song) {
 #if defined(HAVE_TAGLIB_H)
     enum TinyTagEditorOpenResult open_result;
-    NcmStringFormatArg arg;
     StrBuilder path = {0};
     int32 path_len;
     int32 path_width;
@@ -4677,15 +4670,13 @@ ncm_action_edit_song(NcmSong *song) {
             "configuration file");
         break;
     case TINY_TAG_EDITOR_OPEN_UNREADABLE_FILE:
-        path_width = COLS - STRLIT_LEN("Couldn't read file \"%1%\"");
+        path_width = COLS - STRLIT_LEN("Couldn't read file \"\"");
         if (path_width < 0) {
             path_width = 0;
         }
         path_len = utf8_cut_width(path.data, path.len, path_width);
-        arg = ncm_string_format_arg_string(path.data, path_len);
-        ncm_statusbar_format(Config.message_delay_time,
-                             STRLIT("Couldn't read file \"%1%\""), &arg,
-                             1);
+        action_runtime_print_message(STRLIT("Couldn't read file \""),
+                                     path.data, path_len, STRLIT("\""));
         break;
     case TINY_TAG_EDITOR_OPEN_INVALID_ARGUMENT:
     case TINY_TAG_EDITOR_OPEN_PREPARE_FAILED:
@@ -4738,8 +4729,8 @@ action_runtime_media_library_current_artist_tag(char **artist,
 
 static int32
 action_runtime_toggle_screen_lock(void) {
-    NcmStringFormatArg args[3];
     StrBuilder input = {0};
+    StrBuilder message = {0};
     NcmError ncm_error;
     NcScreen *current;
     char initial[16];
@@ -4778,9 +4769,8 @@ action_runtime_toggle_screen_lock(void) {
 
         ncm_error_clear(&ncm_error);
         if (ncm_parse_int32(input.data, input.len, &part, &ncm_error) < 0) {
-            args[0] = ncm_string_format_arg_string(input.data, input.len);
-            ncm_statusbar_format(Config.message_delay_time,
-                                 STRLIT("Invalid value: %1%"), args, 1);
+            action_runtime_print_message(STRLIT("Invalid value: "),
+                                         input.data, input.len, STRLIT(""));
             sb_free(&input);
             return 0;
         }
@@ -4788,22 +4778,21 @@ action_runtime_toggle_screen_lock(void) {
     }
 
     if ((part < 20) || (part > 80)) {
-        args[0] = ncm_string_format_arg_u64(20);
-        args[1] = ncm_string_format_arg_u64(80);
-        args[2] = ncm_string_format_arg_u64((uint64)part);
-        ncm_statusbar_format(Config.message_delay_time,
-                             STRLIT("Error: value is out of bounds "
-                                         "([%1%, %2%] expected, %3% given)"),
-                             args, LENGTH(args));
+        sb_printf(&message,
+                  "Error: value is out of bounds "
+                  "([20, 80] expected, %d given)", part);
+        ncm_statusbar_print(Config.message_delay_time,
+                            message.data, message.len);
+        sb_free(&message);
         return 0;
     }
 
     Config.locked_screen_width_part = part / 100.0;
     if (app_controller_lock_current_screen() == 0) {
-        args[0] = ncm_string_format_arg_u64((uint32)part);
-        ncm_statusbar_format(Config.message_delay_time,
-                             STRLIT("Screen locked (with %1%%% width)"),
-                             args, 1);
+        sb_printf(&message, "Screen locked (with %d%% width)", part);
+        ncm_statusbar_print(Config.message_delay_time,
+                            message.data, message.len);
+        sb_free(&message);
     } else {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Current screen can't be locked");
@@ -4917,23 +4906,24 @@ action_runtime_shared_directory_update(StrBuilder *shared_directory,
 static void
 action_runtime_print_updating_song(NcmSong *song) {
     NcmStringView name;
-    NcmStringFormatArg arg;
+    StrBuilder message = {0};
 
     if (!action_runtime_song_name_or_uri_view(song, &name)) {
         return;
     }
 
-    arg = ncm_string_format_arg_string(name.data, name.len);
-    ncm_statusbar_format(0, STRLIT("Updating tags in \"%1%\"..."), &arg,
-                         1);
+    SB_APPEND(&message, "Updating tags in \"");
+    SB_APPEND(&message, name.data, name.len);
+    SB_APPEND(&message, "\"...");
+    ncm_statusbar_print(0, message.data, message.len);
+    sb_free(&message);
     return;
 }
 
 static void
-action_runtime_print_album_file_error(char *format, int32 format_len,
+action_runtime_print_album_file_error(char *prefix, int32 prefix_len,
                                       NcmSong *song) {
     NcmStringView uri;
-    NcmStringFormatArg arg;
     int32 width;
     int32 uri_len;
 
@@ -4941,14 +4931,13 @@ action_runtime_print_album_file_error(char *format, int32 format_len,
         return;
     }
 
-    width = COLS - format_len;
+    width = COLS - prefix_len - STRLIT_LEN("\"");
     if (width < 0) {
         width = 0;
     }
     uri_len = utf8_cut_width(uri.data, uri.len, width);
-    arg = ncm_string_format_arg_string(uri.data, uri_len);
-    ncm_statusbar_format(Config.message_delay_time, format, format_len,
-                         &arg, 1);
+    action_runtime_print_message(prefix, prefix_len, uri.data, uri_len,
+                                 STRLIT("\""));
     return;
 }
 
@@ -5062,15 +5051,19 @@ action_runtime_edit_library_tag(void) {
         status = ncm_mutable_song_write(&mutable_song, Config.mpd_music_dir);
         if (status < 0) {
             NcmStringView name;
-            NcmStringFormatArg args[2];
 
             if (action_runtime_song_name_or_uri_view(song, &name)) {
-                args[0] = ncm_string_format_arg_string(name.data, name.len);
-                args[1] = ncm_string_format_arg_cstring(strerror(errno));
-                ncm_statusbar_format(
-                    Config.message_delay_time,
-                    STRLIT("Error while writing tags to \"%1%\": %2%"),
-                    args, LENGTH(args));
+                StrBuilder message = {0};
+                char *error_message = strerror(errno);
+
+                SB_APPEND(&message, "Error while writing tags to \"");
+                SB_APPEND(&message, name.data, name.len);
+                SB_APPEND(&message, "\": ");
+                SB_APPEND(&message, error_message,
+                          optional_strlen32(error_message));
+                ncm_statusbar_print(Config.message_delay_time,
+                                    message.data, message.len);
+                sb_free(&message);
             }
             ncm_mutable_song_destroy(&mutable_song);
             break;
@@ -5177,7 +5170,7 @@ action_runtime_edit_library_album(void) {
         status = ncm_taglib_file_open(&file, path.data);
         if (status < 0) {
             action_runtime_print_album_file_error(
-                STRLIT("Error while opening file \"%1%\""), song);
+                STRLIT("Error while opening file \""), song);
             break;
         }
         status = ncm_taglib_clear_property(&file, "ALBUM");
@@ -5191,7 +5184,7 @@ action_runtime_edit_library_album(void) {
         ncm_taglib_file_close(&file);
         if (status < 0) {
             action_runtime_print_album_file_error(
-                STRLIT("Error while writing tags in \"%1%\""), song);
+                STRLIT("Error while writing tags in \""), song);
             break;
         }
     }
@@ -5259,7 +5252,6 @@ action_runtime_edit_current_song(void) {
 static int32
 action_runtime_toggle_lyrics_fetcher(void) {
     NcmLyricsFetcherDef *fetcher;
-    NcmStringFormatArg arg;
 
     fetcher = lyrics_screen_toggle_fetcher(app_screen_lyrics(),
                                            &Config.lyrics_fetchers);
@@ -5269,10 +5261,9 @@ action_runtime_toggle_lyrics_fetcher(void) {
         return 0;
     }
 
-    arg = ncm_string_format_arg_string(ncm_lyrics_fetcher_name(fetcher),
-                                       ncm_lyrics_fetcher_name_len(fetcher));
-    ncm_statusbar_format(Config.message_delay_time,
-                         STRLIT("Using lyrics fetcher: %1%"), &arg, 1);
+    action_runtime_print_message(
+        STRLIT("Using lyrics fetcher: "), ncm_lyrics_fetcher_name(fetcher),
+        ncm_lyrics_fetcher_name_len(fetcher), STRLIT(""));
     return 0;
 }
 
