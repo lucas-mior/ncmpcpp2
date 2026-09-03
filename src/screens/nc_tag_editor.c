@@ -51,11 +51,11 @@ static void tag_editor_resize(NcScreen *screen);
 static char *tag_editor_title(NcScreen *screen);
 static void tag_editor_update(NcScreen *screen);
 static void tag_editor_destroy_callback(NcScreen *screen);
+static void tag_editor_mouse_callback(NcScreen *, MEVENT);
 
 // declarations to delete
 static int32 tag_editor_reload_directories_from_mpd(TagEditorScreen *, NcmMpdClient *, NcmError *);
 static int32 tag_editor_reload_songs_from_mpd(TagEditorScreen *, NcmMpdClient *, NcmError *);
-static void tag_editor_mouse_callback(NcScreen *, MEVENT);
 static void tag_editor_mouse_scroll(TagEditorScreen *, enum NcScroll);
 static void tag_editor_mouse_scroll_menu(NcMenu *, NcWindow *, enum NcScroll);
 static int32 tag_editor_run_current_action(TagEditorScreen *);
