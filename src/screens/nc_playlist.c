@@ -545,7 +545,7 @@ playlist_screen_current_song(PlaylistScreen *screen,
 int32
 playlist_screen_update_current_mutable_song(PlaylistScreen *screen,
                                             NcmMutableSong *song) {
-    NcmSong replacement;
+    NcmSong replacement = {0};
     NcmSong *current;
     NcMenu *menu;
     bool was_filtered;
@@ -560,7 +560,6 @@ playlist_screen_update_current_mutable_song(PlaylistScreen *screen,
         return -ENOENT;
     }
 
-    replacement = (NcmSong){0};
     status = playlist_build_mutable_song(&replacement, current, song);
     if (status < 0) {
         ncm_song_destroy(&replacement);
