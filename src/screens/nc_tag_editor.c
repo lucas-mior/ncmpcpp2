@@ -4040,6 +4040,7 @@ tag_editor_mouse_scroll(TagEditorScreen *screen,
     NcWindow *window;
 
     ASSERT(screen != NULL);
+
     menu = tag_editor_screen_active_menu(screen);
     window = tag_editor_screen_active_window(screen);
     tag_editor_mouse_scroll_menu(menu, window, where);

@@ -3027,8 +3027,7 @@ action_runtime_crop_playlist(bool main_playlist) {
     playlist = (NcmPlaylist){0};
     success = playlist_editor_screen_current_playlist(editor, &playlist) > 0;
     if (success && Config.ask_before_clearing_playlists) {
-        SB_APPEND(
-            &question, "Do you really want to crop playlist \"");
+        SB_APPEND(&question, "Do you really want to crop playlist \"");
         SB_APPEND(&question, playlist.path, playlist.path_len);
         SB_APPEND(&question, "\"?");
         success = action_runtime_confirm(question.data, question.len);
@@ -5006,8 +5005,7 @@ action_runtime_edit_library_tag(void) {
     if (status < 0) {
         goto cleanup;
     }
-    SB_APPEND(
-        &prompt, ncm_tag_type_name(Config.media_lib_primary_tag),
+    SB_APPEND(&prompt, ncm_tag_type_name(Config.media_lib_primary_tag),
         optional_strlen32(ncm_tag_type_name(Config.media_lib_primary_tag)));
     SB_APPEND(&prompt, ": ");
     prompted = action_runtime_prompt_string(
