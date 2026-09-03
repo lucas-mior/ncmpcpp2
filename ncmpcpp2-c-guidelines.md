@@ -11,13 +11,13 @@ function(void *arg) {
     s = (MyStruct){0};
 }
 
-// good
+// good for most cases
 void
 function(void *arg) {
     MyStruct s = {0};
 }
 
-// good
+// good when initialization is not to zero
 void
 function(void *arg) {
     MyStruct s = init_function(arg);
