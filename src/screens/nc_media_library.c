@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static void library_layout(MediaLibraryScreen *screen);
 static int32 library_ratio_value(NcmInt32Array *ratios, int32 idx, int32 fallback);
 static int32 library_set_owned_string(char **dest, int32 *dest_len, int32 *dest_cap, char *source, int32 source_len);
 static void library_free_owned_string(char **data, int32 *len, int32 *cap);
@@ -60,6 +59,85 @@ static bool library_has_pending_albums(MediaLibraryScreen *screen);
 static bool library_has_pending_songs(MediaLibraryScreen *screen);
 static bool library_has_fetch_delay_elapsed(MediaLibraryScreen *screen);
 static bool library_search_position(NcMenu *menu, int32 pos, void *user);
+
+static void
+library_layout(MediaLibraryScreen *screen) {
+    int32 left_width;
+    int32 middle_width;
+    int32 right_width;
+    int32 middle_x;
+    int32 right_x;
+    int32 left_ratio;
+    int32 middle_ratio;
+    int32 right_ratio;
+    int32 ratio_sum;
+
+    if ((screen == NULL) || (screen->width <= 0)) {
+        return;
+    }
+
+    if (screen->mode == MEDIA_LIBRARY_MODE_THREE_COLUMNS) {
+        left_ratio = library_ratio_value(
+            &Config.media_library_column_width_ratio_three, 0, 1);
+        middle_ratio = library_ratio_value(
+            &Config.media_library_column_width_ratio_three, 1, 1);
+        right_ratio = library_ratio_value(
+            &Config.media_library_column_width_ratio_three, 2, 1);
+        ratio_sum = left_ratio + middle_ratio + right_ratio;
+
+        left_width = screen->width*left_ratio/ratio_sum - 1;
+        middle_width = screen->width*middle_ratio/ratio_sum;
+        right_width = screen->width - left_width - middle_width - 2;
+        if (left_width <= 0) {
+            left_width = 1;
+        }
+        if (middle_width <= 0) {
+            middle_width = 1;
+        }
+        if (right_width <= 0) {
+            right_width = 1;
+        }
+        middle_x = screen->start_x + left_width + 1;
+        right_x = middle_x + middle_width + 1;
+
+        nc_window_move_to(&screen->tags_window, screen->start_x,
+                          screen->main_start_y);
+        nc_window_resize(&screen->tags_window, left_width,
+                         screen->main_height);
+        nc_window_move_to(&screen->albums_window, middle_x,
+                          screen->main_start_y);
+        nc_window_resize(&screen->albums_window, middle_width,
+                         screen->main_height);
+        nc_window_move_to(&screen->songs_window, right_x,
+                          screen->main_start_y);
+        nc_window_resize(&screen->songs_window, right_width,
+                         screen->main_height);
+        return;
+    }
+
+    left_ratio = library_ratio_value(
+        &Config.media_library_column_width_ratio_two, 0, 1);
+    right_ratio = library_ratio_value(
+        &Config.media_library_column_width_ratio_two, 1, 1);
+    ratio_sum = left_ratio + right_ratio;
+    middle_width = screen->width*left_ratio/ratio_sum;
+    right_width = screen->width - middle_width - 1;
+    if (middle_width <= 0) {
+        middle_width = 1;
+    }
+    if (right_width <= 0) {
+        right_width = 1;
+    }
+    middle_x = screen->start_x;
+    right_x = middle_x + middle_width + 1;
+
+    nc_window_move_to(&screen->albums_window, middle_x, screen->main_start_y);
+    nc_window_resize(&screen->albums_window, middle_width, screen->main_height);
+    nc_window_move_to(&screen->songs_window, right_x, screen->main_start_y);
+    nc_window_resize(&screen->songs_window, right_width, screen->main_height);
+
+    return;
+}
 
 static bool
 library_album_matches(MediaLibraryScreen *screen,
@@ -3948,85 +4026,6 @@ library_update(NcScreen *screen) {
 static void
 library_destroy_callback(NcScreen *screen) {
     media_library_screen_destroy(library_from_screen(screen));
-    return;
-}
-
-static void
-library_layout(MediaLibraryScreen *screen) {
-    int32 left_width;
-    int32 middle_width;
-    int32 right_width;
-    int32 middle_x;
-    int32 right_x;
-    int32 left_ratio;
-    int32 middle_ratio;
-    int32 right_ratio;
-    int32 ratio_sum;
-
-    if ((screen == NULL) || (screen->width <= 0)) {
-        return;
-    }
-
-    if (screen->mode == MEDIA_LIBRARY_MODE_THREE_COLUMNS) {
-        left_ratio = library_ratio_value(
-            &Config.media_library_column_width_ratio_three, 0, 1);
-        middle_ratio = library_ratio_value(
-            &Config.media_library_column_width_ratio_three, 1, 1);
-        right_ratio = library_ratio_value(
-            &Config.media_library_column_width_ratio_three, 2, 1);
-        ratio_sum = left_ratio + middle_ratio + right_ratio;
-
-        left_width = screen->width*left_ratio/ratio_sum - 1;
-        middle_width = screen->width*middle_ratio/ratio_sum;
-        right_width = screen->width - left_width - middle_width - 2;
-        if (left_width <= 0) {
-            left_width = 1;
-        }
-        if (middle_width <= 0) {
-            middle_width = 1;
-        }
-        if (right_width <= 0) {
-            right_width = 1;
-        }
-        middle_x = screen->start_x + left_width + 1;
-        right_x = middle_x + middle_width + 1;
-
-        nc_window_move_to(&screen->tags_window, screen->start_x,
-                          screen->main_start_y);
-        nc_window_resize(&screen->tags_window, left_width,
-                         screen->main_height);
-        nc_window_move_to(&screen->albums_window, middle_x,
-                          screen->main_start_y);
-        nc_window_resize(&screen->albums_window, middle_width,
-                         screen->main_height);
-        nc_window_move_to(&screen->songs_window, right_x,
-                          screen->main_start_y);
-        nc_window_resize(&screen->songs_window, right_width,
-                         screen->main_height);
-        return;
-    }
-
-    left_ratio = library_ratio_value(
-        &Config.media_library_column_width_ratio_two, 0, 1);
-    right_ratio = library_ratio_value(
-        &Config.media_library_column_width_ratio_two, 1, 1);
-    ratio_sum = left_ratio + right_ratio;
-    middle_width = screen->width*left_ratio/ratio_sum;
-    right_width = screen->width - middle_width - 1;
-    if (middle_width <= 0) {
-        middle_width = 1;
-    }
-    if (right_width <= 0) {
-        right_width = 1;
-    }
-    middle_x = screen->start_x;
-    right_x = middle_x + middle_width + 1;
-
-    nc_window_move_to(&screen->albums_window, middle_x, screen->main_start_y);
-    nc_window_resize(&screen->albums_window, middle_width, screen->main_height);
-    nc_window_move_to(&screen->songs_window, right_x, screen->main_start_y);
-    nc_window_resize(&screen->songs_window, right_width, screen->main_height);
-
     return;
 }
 
