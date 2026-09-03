@@ -4323,11 +4323,10 @@ library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
     ASSERT(songs != NULL);
 
     for (int32 i = 0; i < songs->len; i += 1) {
-        status = ncm_mpd_song_list_append_copy(
-            &additions, &songs->items[i]);
+        status = ncm_mpd_song_list_append_copy(&additions, &songs->items[i]);
         if (status < 0) {
-            status = ncm_error_set_status(
-                ncm_error, status, STRLIT("cannot copy songs for MPD"));
+            status = ncm_error_set_status(ncm_error, status,
+                                          STRLIT("cannot copy songs for MPD"));
             break;
         }
     }
