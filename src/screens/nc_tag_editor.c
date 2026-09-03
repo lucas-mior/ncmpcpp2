@@ -100,8 +100,8 @@ tag_editor_draw_tag(NcMenu *menu, NcWindow *window, void *item,
         if (tag.len <= 0) {
             tag_editor_append_formatted_color(
                 &buffer, &Config.empty_tags_color);
-            nc_buffer_append_data(&buffer, Config.empty_tag,
-                                  Config.empty_tag_len);
+            nc_buffer_append_data(&buffer,
+                                  Config.empty_tag, Config.empty_tag_len);
             tag_editor_append_formatted_color_end(
                 &buffer, &Config.empty_tags_color);
         } else {
@@ -114,8 +114,7 @@ tag_editor_draw_tag(NcMenu *menu, NcWindow *window, void *item,
             tag_editor_append_formatted_color(&buffer, &Config.color2);
             nc_buffer_append_data(&buffer, STRLIT(" -> "));
             tag_editor_append_formatted_color_end(&buffer, &Config.color2);
-            nc_buffer_append_data(&buffer, song->new_name,
-                                     song->new_name_len);
+            nc_buffer_append_data(&buffer, song->new_name, song->new_name_len);
         }
     }
 
