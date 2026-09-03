@@ -58,33 +58,6 @@ menu_position_is_selected(NcMenu *menu, enum NcMenuItemSource source,
                                                menu->display_callbacks.user);
 }
 
-static int32
-menu_set_position_selected(NcMenu *menu, enum NcMenuItemSource source,
-                           int32 pos, bool selected) {
-    uint32 flags;
-    void *item;
-
-    ASSERT(menu != NULL);
-
-    if ((item = nc_menu_item_at(menu, source, pos)) == NULL) {
-        return -NCM_ERROR_NOT_FOUND;
-    }
-
-    if (menu->action_callbacks.set_selected) {
-        menu->action_callbacks.set_selected(item, selected,
-                                            menu->action_callbacks.user);
-    }
-
-    flags = nc_menu_item_flags_at(menu, source, pos);
-    if (selected) {
-        flags |= NC_MENU_ITEM_SELECTED;
-    } else {
-        flags &= ~NC_MENU_ITEM_SELECTED;
-    }
-
-    return nc_menu_set_item_flags_at(menu, source, pos, flags);
-}
-
 void
 ncm_menu_reverse_selection(NcMenu *menu, enum NcMenuItemSource source) {
     bool selected;
@@ -96,8 +69,26 @@ ncm_menu_reverse_selection(NcMenu *menu, enum NcMenuItemSource source) {
 
     count = menu_item_count(menu, source);
     for (int32 i = 0; i < count; i += 1) {
+        uint32 flags;
+        void *item;
+
         selected = menu_position_is_selected(menu, source, i);
-        menu_set_position_selected(menu, source, i, !selected);
+        if ((item = nc_menu_item_at(menu, source, i)) == NULL) {
+            continue;
+        }
+
+        if (menu->action_callbacks.set_selected) {
+            menu->action_callbacks.set_selected(item, !selected,
+                                                menu->action_callbacks.user);
+        }
+
+        flags = nc_menu_item_flags_at(menu, source, i);
+        if (!selected) {
+            flags |= NC_MENU_ITEM_SELECTED;
+        } else {
+            flags &= ~NC_MENU_ITEM_SELECTED;
+        }
+        nc_menu_set_item_flags_at(menu, source, i, flags);
     }
     return;
 }
