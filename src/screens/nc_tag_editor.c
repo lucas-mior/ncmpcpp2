@@ -908,8 +908,8 @@ tag_editor_screen_load_songs(TagEditorScreen *screen,
     for (int32 i = 0; i < songs->len; i += 1) {
         NcmMutableSong mutable_song = {0};
 
-        status = ncm_mutable_song_load_originals_from_song(
-            &mutable_song, &songs->items[i]);
+        status = ncm_mutable_song_load_originals_from_song(&mutable_song,
+                                                           &songs->items[i]);
         if (status == 0) {
             status = tag_editor_screen_add_mutable_song(screen,
                                                         &mutable_song);
