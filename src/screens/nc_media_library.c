@@ -3206,10 +3206,9 @@ library_active_window(NcScreen *screen) {
 
 static void
 library_refresh(NcScreen *screen) {
-    MediaLibraryScreen *library;
+    MediaLibraryScreen *library = library_from_screen(screen);
     NcMenu *albums;
 
-    library = library_from_screen(screen);
     library_update_menu_highlights(library);
     if (media_library_screen_column_is_visible(
         library, MEDIA_LIBRARY_COLUMN_TAGS)) {
