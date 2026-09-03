@@ -89,8 +89,6 @@ if they are called only once: inline their body and then delete them.
 - src/c/ncm_error.c
 - src/c/ncm_string_format.c
 
-## Functions that are never called (dead code)
-
 ## Excessive NULL checking
 The source code in src/ is at paranoia levels of NULL pointer checking.  For
 instance, lots of functions check if (screen == NULL), but they are called
@@ -183,6 +181,7 @@ the external API of the module has already validated it.
 - src/c/ncm_error.c
 - src/c/ncm_string_format.c
 
+## Functions that are never called (dead code)
 ## Excessive error checking
 ## Function creep: functions that do the same thing are redefined in different
 ## modules
