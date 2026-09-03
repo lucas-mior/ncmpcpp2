@@ -173,6 +173,18 @@ Functions that do the same thing are redefined in different
 ## Style: checking return value after the call (call should be inside if().
 
 ## Style: breaking function calls before the first argument and not alining
+This is bad:
+```c
+status = ncm_fs_rename(
+    old_real_path.data, old_real_path.len,
+    new_real_path.data, new_real_path.len, ncm_error);
+```
+Replace with:
+```c
+status = ncm_fs_rename(old_real_path.data, old_real_path.len,
+                       new_real_path.data, new_real_path.len,
+                       ncm_error);
+```
 
 ## Strings unecessary conversion to and from StrBuilder
 Investigate:
