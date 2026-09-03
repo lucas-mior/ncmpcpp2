@@ -21,7 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static void browser_set_item_selected(void *item, bool selected, void *user);
 static int32 browser_enter_item(BrowserScreen *screen, NcmMpdItem *item);
 static void browser_sync_display_mode(BrowserScreen *screen);
 static bool browser_item_matches(BrowserScreen *screen, NcmMpdItem *item, NcmRegex *regex, bool filter);
@@ -204,6 +203,14 @@ browser_activate_item(NcMenu *menu, void *item, int32 pos, void *user) {
     if (browser_enter_item(screen, item) == 0) {
         browser_screen_request_update(screen);
     }
+    return;
+}
+
+static void
+browser_set_item_selected(void *item, bool selected, void *user) {
+    (void)item;
+    (void)selected;
+    (void)user;
     return;
 }
 
@@ -1586,14 +1593,6 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
             browser_mouse_scroll(browser, NC_SCROLL_UP);
         }
     }
-    return;
-}
-
-static void
-browser_set_item_selected(void *item, bool selected, void *user) {
-    (void)item;
-    (void)selected;
-    (void)user;
     return;
 }
 
