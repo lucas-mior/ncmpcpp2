@@ -751,8 +751,7 @@ playlist_screen_find_sort_range(
                 STRLIT("missing playlist range song"));
         }
         expected_position = range_start + i - first;
-        if ((expected_position > INT32_MAX)
-            || (ncm_song_position(song) != expected_position)) {
+        if (ncm_song_position(song) != expected_position) {
             return ncm_error_set_status(
                 ncm_error, -EINVAL,
                 STRLIT("playlist range positions are not contiguous"));
