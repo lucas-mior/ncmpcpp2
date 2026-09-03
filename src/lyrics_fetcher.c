@@ -1417,31 +1417,38 @@ lyrics_find_char(char *data, int32 data_len, char needle, int32 start) {
     return -1;
 }
 
-static bool
+static int32
 lyrics_extract_after_until(StrBuilder *out, char *data, int32 data_len,
                            char *start, int32 start_len, char *after,
                            int32 after_len, char *end, int32 end_len) {
     int32 a;
     int32 b;
 
+    if ((out == NULL) || (data == NULL) || (data_len < 0)
+        || (start == NULL) || (start_len <= 0)
+        || (after == NULL) || (after_len <= 0)
+        || (end == NULL) || (end_len <= 0)) {
+        return -EINVAL;
+    }
+
     sb_clear(out);
 
     if ((a = lyrics_find(data, data_len, start, start_len, 0)) < 0) {
-        return false;
+        return -NCM_ERROR_NOT_FOUND;
     }
 
     if ((a = lyrics_find(data, data_len,
                          after, after_len, a + start_len)) < 0) {
-        return false;
+        return -NCM_ERROR_NOT_FOUND;
     }
 
     a += after_len;
-    
+
     if ((b = lyrics_find(data, data_len, end, end_len, a)) < 0) {
-        return false;
+        return -NCM_ERROR_NOT_FOUND;
     }
     SB_APPEND(out, data + a, b - a);
-    return true;
+    return 0;
 }
 
 static int32
@@ -2185,12 +2192,16 @@ lyrics_collect_search_urls(NcmLyricsFetcherDef *fetcher, StrBuilderArray *out,
     return ok && (out->len > 0);
 }
 
-static bool
+static int32
 lyrics_parse_hex4(char *data, int32 data_len, int32 start, uint32 *value) {
     uint32 result;
 
-    if ((start < 0) || (start + 4 > data_len)) {
-        return false;
+    if ((data == NULL) || (data_len < 0) || (value == NULL)
+        || (start < 0)) {
+        return -EINVAL;
+    }
+    if ((data_len - start) < 4) {
+        return -NCM_ERROR_PARSE;
     }
 
     result = 0;
@@ -2199,12 +2210,12 @@ lyrics_parse_hex4(char *data, int32 data_len, int32 start, uint32 *value) {
 
         digit = lyrics_hex_value(data[start + i]);
         if (digit < 0) {
-            return false;
+            return -NCM_ERROR_PARSE;
         }
         result = (result << 4) | (uint32)digit;
     }
     *value = result;
-    return true;
+    return 0;
 }
 
 static void
@@ -2219,10 +2230,15 @@ lyrics_append_rune(StrBuilder *out, uint32 rune) {
     return;
 }
 
-static bool
+static int32
 lyrics_decode_quoted(StrBuilder *out, char *data, int32 data_len,
                      int32 start, char quote, int32 *end) {
     int32 i;
+
+    if ((out == NULL) || (data == NULL) || (data_len < 0)
+        || (start < 0) || (end == NULL)) {
+        return -EINVAL;
+    }
 
     sb_clear(out);
     i = start;
@@ -2231,7 +2247,7 @@ lyrics_decode_quoted(StrBuilder *out, char *data, int32 data_len,
 
         if (data[i] == quote) {
             *end = i + 1;
-            return true;
+            return 0;
         }
         if (data[i] != '\\') {
             sb_append_byte(out, data[i]);
@@ -2241,7 +2257,7 @@ lyrics_decode_quoted(StrBuilder *out, char *data, int32 data_len,
 
         i += 1;
         if (i >= data_len) {
-            return false;
+            return -NCM_ERROR_PARSE;
         }
         escaped = data[i];
         i += 1;
@@ -2265,8 +2281,8 @@ lyrics_decode_quoted(StrBuilder *out, char *data, int32 data_len,
             uint32 first;
             uint32 rune;
 
-            if (!lyrics_parse_hex4(data, data_len, i, &first)) {
-                return false;
+            if (lyrics_parse_hex4(data, data_len, i, &first) < 0) {
+                return -NCM_ERROR_PARSE;
             }
             i += 4;
             rune = first;
@@ -2275,7 +2291,7 @@ lyrics_decode_quoted(StrBuilder *out, char *data, int32 data_len,
                 && (data[i + 1] == 'u')) {
                 uint32 second;
 
-                if (lyrics_parse_hex4(data, data_len, i + 2, &second)
+                if ((lyrics_parse_hex4(data, data_len, i + 2, &second) == 0)
                     && (second >= 0xdc00) && (second <= 0xdfff)) {
                     rune = 0x10000 + ((first - 0xd800) << 10)
                            + (second - 0xdc00);
@@ -2297,10 +2313,10 @@ lyrics_decode_quoted(StrBuilder *out, char *data, int32 data_len,
             break;
         }
     }
-    return false;
+    return -NCM_ERROR_PARSE;
 }
 
-static bool
+static int32
 lyrics_json_value_start(char *data, int32 data_len, char *key,
                         int32 key_len, int32 start, int32 *value_start) {
     StrBuilder pattern = {0};
@@ -2308,10 +2324,13 @@ lyrics_json_value_start(char *data, int32 data_len, char *key,
     int32 pos;
 
     if ((data == NULL) || (key == NULL) || (value_start == NULL)) {
-        return false;
+        return -EINVAL;
     }
-    if ((data_len <= 0) || (key_len <= 0) || (start < 0)) {
-        return false;
+    if ((data_len < 0) || (key_len <= 0) || (start < 0)) {
+        return -EINVAL;
+    }
+    if (data_len == 0) {
+        return -NCM_ERROR_NOT_FOUND;
     }
 
     sb_append_byte(&pattern, '"');
@@ -2320,7 +2339,7 @@ lyrics_json_value_start(char *data, int32 data_len, char *key,
     key_pos = lyrics_find(data, data_len, pattern.data, pattern.len, start);
     sb_free(&pattern);
     if (key_pos < 0) {
-        return false;
+        return -NCM_ERROR_NOT_FOUND;
     }
 
     pos = key_pos + key_len + 2;
@@ -2330,7 +2349,7 @@ lyrics_json_value_start(char *data, int32 data_len, char *key,
         pos += 1;
     }
     if ((pos >= data_len) || (data[pos] != ':')) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
     pos += 1;
     while ((pos < data_len)
@@ -2339,10 +2358,10 @@ lyrics_json_value_start(char *data, int32 data_len, char *key,
         pos += 1;
     }
     if ((pos >= data_len) || (data[pos] != '"')) {
-        return false;
+        return -NCM_ERROR_PARSE;
     }
     *value_start = pos + 1;
-    return true;
+    return 0;
 }
 
 static bool
@@ -2363,15 +2382,15 @@ lyrics_extract_genius(StrBuilder *out, char *data, int32 data_len) {
     if (marker >= 0) {
         marker += STRLIT_LEN("window.__PRELOADED_STATE__ = JSON.parse('");
         if (lyrics_decode_quoted(&json, data, data_len, marker, '\'',
-                                 &json_end)) {
+                                 &json_end) == 0) {
             lyrics_data = lyrics_find(json.data, json.len,
                                       STRLIT("\"lyricsData\""), 0);
             if ((lyrics_data >= 0)
-                && lyrics_json_value_start(json.data, json.len,
-                                           STRLIT("html"), lyrics_data,
-                                           &value_start)
-                && lyrics_decode_quoted(&html, json.data, json.len,
-                                        value_start, '"', &value_end)) {
+                && (lyrics_json_value_start(json.data, json.len,
+                                            STRLIT("html"), lyrics_data,
+                                            &value_start) == 0)
+                && (lyrics_decode_quoted(&html, json.data, json.len,
+                                         value_start, '"', &value_end) == 0)) {
                 sb_clear(out);
                 SB_APPEND(out, html.data, html.len);
                 ok = out->len > 0;
@@ -2405,12 +2424,12 @@ lyrics_extract_musixmatch(StrBuilder *out, char *data, int32 data_len) {
         return false;
     }
 
-    if (!lyrics_json_value_start(data, data_len, STRLIT("body"), lyrics,
-                                 &value_start)) {
+    if (lyrics_json_value_start(data, data_len, STRLIT("body"), lyrics,
+                                &value_start) < 0) {
         return false;
     }
     return lyrics_decode_quoted(out, data, data_len, value_start, '"',
-                                &value_end);
+                                &value_end) == 0;
 }
 
 static void
@@ -2716,7 +2735,7 @@ lyrics_extract_content(NcmLyricsFetcherDef *fetcher, StrBuilder *out,
     case NCM_LYRICS_FETCHER_AZLYRICS:
         return lyrics_extract_after_until(
             out, data, data_len, STRLIT("Usage of azlyrics.com"),
-            STRLIT("-->"), STRLIT("</div>"));
+            STRLIT("-->"), STRLIT("</div>")) == 0;
     case NCM_LYRICS_FETCHER_GENIUS:
         return lyrics_extract_genius(out, data, data_len);
     case NCM_LYRICS_FETCHER_LETRASMUS:
