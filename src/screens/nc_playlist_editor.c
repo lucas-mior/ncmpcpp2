@@ -1445,8 +1445,7 @@ playlist_editor_content_matches_regex(PlaylistEditorScreen *screen,
 }
 
 static bool
-playlist_editor_search_position(NcMenu *menu, int32 pos,
-                                void *user) {
+playlist_editor_search_position(NcMenu *menu, int32 pos, void *user) {
     PlaylistEditorSearchContext *context;
     void *item;
 
