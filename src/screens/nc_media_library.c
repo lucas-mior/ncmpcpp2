@@ -3050,12 +3050,9 @@ library_update_albums(MediaLibraryScreen *screen,
     MediaLibrarySongQuery query = {0};
     NcMediaLibraryTagRow *tag;
     NcmMpdSongList songs = {0};
-    char *selected_tag;
-    int32 selected_tag_len;
+    char *selected_tag = NULL;
+    int32 selected_tag_len = 0;
     int32 status;
-
-    selected_tag = NULL;
-    selected_tag_len = 0;
 
     if (screen->mode == MEDIA_LIBRARY_MODE_THREE_COLUMNS) {
         if ((tag = media_library_screen_current_tag(screen)) == NULL) {
