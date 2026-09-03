@@ -147,13 +147,11 @@ current_screen_clear_current_search_constraint(void) {
         return;
     }
     if (current_screen_is(NC_SCREEN_TYPE_LASTFM)) {
-        (void)lastfm_screen_find(app_screen_lastfm(), NULL, 0,
-                                 NULL);
+        (void)lastfm_screen_find(app_screen_lastfm(), NULL, 0, NULL);
         return;
     }
     if (current_screen_is(NC_SCREEN_TYPE_LYRICS)) {
-        (void)lyrics_screen_find(app_screen_lyrics(), NULL, 0,
-                                 NULL);
+        (void)lyrics_screen_find(app_screen_lyrics(), NULL, 0, NULL);
         return;
     }
     if (current_screen_is(NC_SCREEN_TYPE_MEDIA_LIBRARY)) {
