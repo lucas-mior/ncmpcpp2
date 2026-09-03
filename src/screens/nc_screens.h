@@ -2128,7 +2128,7 @@ int32 tag_editor_screen_locate_song(TagEditorScreen *screen,
                                     NcmSong *song);
 bool tag_editor_screen_rename_directory_available(
     TagEditorScreen *screen, char *music_dir, int32 music_dir_len);
-bool tag_editor_screen_rename_current_directory(
+int32 tag_editor_screen_rename_current_directory(
     TagEditorScreen *screen, char *music_dir, int32 music_dir_len);
 int32 tag_editor_screen_add_directory(TagEditorScreen *screen,
                                       char *label, int32 label_len,
@@ -2145,18 +2145,18 @@ bool tag_editor_screen_next_column_available(
     TagEditorScreen *screen);
 void tag_editor_screen_previous_column(TagEditorScreen *screen);
 void tag_editor_screen_next_column(TagEditorScreen *screen);
-bool tag_editor_screen_apply_tag_to_selection(
+int32 tag_editor_screen_apply_tag_to_selection(
     TagEditorScreen *screen, enum NcmTagsField field, char *value,
     int32 value_len, char *separator, int32 separator_len);
-bool tag_editor_screen_number_tracks(TagEditorScreen *screen,
-                                     bool extended);
+int32 tag_editor_screen_number_tracks(TagEditorScreen *screen,
+                                      bool extended);
 void tag_editor_screen_capitalize_first_letters(
     TagEditorScreen *screen);
 void tag_editor_screen_lower_all_letters(TagEditorScreen *screen);
 void tag_editor_screen_clear_modifications(
     TagEditorScreen *screen);
-bool tag_editor_screen_save_modified(TagEditorScreen *screen,
-                                     char *music_dir);
+int32 tag_editor_screen_save_modified(TagEditorScreen *screen,
+                                      char *music_dir);
 bool tag_editor_screen_save_action_available(
     TagEditorScreen *screen);
 int32 tag_editor_screen_apply_directory_filter(
@@ -2181,12 +2181,12 @@ void tag_editor_screen_show_parser_preview(
     TagEditorScreen *screen);
 void tag_editor_screen_close_parser(
     TagEditorScreen *screen);
-bool tag_editor_parse_filename(NcmMutableSong *song, char *mask,
-                               int32 mask_len, bool preview,
-                               StrBuilder *preview_buffer);
-bool tag_editor_generate_filename(NcmMutableSong *song,
-                                  char *pattern, int32 pattern_len,
-                                  StrBuilder *filename);
+int32 tag_editor_parse_filename(NcmMutableSong *song, char *mask,
+                                int32 mask_len, bool preview,
+                                StrBuilder *preview_buffer);
+int32 tag_editor_generate_filename(NcmMutableSong *song,
+                                   char *pattern, int32 pattern_len,
+                                   StrBuilder *filename);
 bool tag_editor_song_display_value(NcmMutableSong *song,
                                    enum NcmTagsField field,
                                    StrBuilder *buffer);
