@@ -523,8 +523,7 @@ playlist_screen_is_empty(PlaylistScreen *screen) {
 
 
 int32
-playlist_screen_current_song(PlaylistScreen *screen,
-                             NcmSong *song) {
+playlist_screen_current_song(PlaylistScreen *screen, NcmSong *song) {
     NcmSong *current;
 
     if (screen == NULL) {
@@ -1057,8 +1056,7 @@ playlist_song_matches_filter(NcMenu *menu, void *item, void *user) {
 }
 
 static bool
-playlist_song_matches(PlaylistScreen *screen,
-                      NcmSong *song, NcmRegex *regex) {
+playlist_song_matches(PlaylistScreen *screen, NcmSong *song, NcmRegex *regex) {
     StrBuilder buffer;
     bool result;
 
@@ -1355,8 +1353,7 @@ playlist_refresh_stats(PlaylistScreen *screen) {
 
 
 static int32
-playlist_truncate_storage(PlaylistScreen *screen,
-                          int32 playlist_length) {
+playlist_truncate_storage(PlaylistScreen *screen, int32 playlist_length) {
     NcMenu *menu;
     int32 new_count;
     int32 old_count;
@@ -1378,8 +1375,7 @@ playlist_truncate_storage(PlaylistScreen *screen,
 
 
 static int32
-playlist_apply_changed_song_to_storage(PlaylistScreen *screen,
-                                       NcmSong *song) {
+playlist_apply_changed_song_to_storage(PlaylistScreen *screen, NcmSong *song) {
     NcMenu *menu;
     int32 position;
 
@@ -1399,9 +1395,9 @@ playlist_apply_changed_song_to_storage(PlaylistScreen *screen,
 
 static bool
 playlist_full_reload_is_required(PlaylistScreen *screen,
-                            int32 version,
-                            int32 playlist_length,
-                            NcmMpdSongList *changes) {
+                                 int32 version,
+                                 int32 playlist_length,
+                                 NcmMpdSongList *changes) {
     int32 count;
     int32 next_append_position;
 
