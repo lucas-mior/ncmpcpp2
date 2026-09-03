@@ -647,8 +647,7 @@ playlist_screen_locate_position(PlaylistScreen *screen, int32 position) {
 
 
 int32
-playlist_screen_selected_songs(PlaylistScreen *screen,
-                               NcmSongArray *songs) {
+playlist_screen_selected_songs(PlaylistScreen *screen, NcmSongArray *songs) {
     NcMenu *menu;
     int32 status;
 
