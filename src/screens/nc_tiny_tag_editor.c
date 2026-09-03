@@ -21,18 +21,18 @@ static void tiny_editor_mouse_callback(NcScreen *screen, MEVENT event);
 static void tiny_editor_draw_row(NcMenu *menu, NcWindow *window,
                                  void *item, int32 pos, void *user);
 static void tiny_editor_print_buffer(NcWindow *window, NcBuffer *buffer);
-static bool tiny_editor_add_row(TinyTagEditorScreen *screen,
-                                NcBuffer *buffer, uint32 flags);
+static int32 tiny_editor_add_row(TinyTagEditorScreen *screen,
+                                 NcBuffer *buffer, uint32 flags);
 static int32 tiny_editor_current_row(TinyTagEditorScreen *screen);
 static void tiny_editor_status_message(TinyTagEditorScreen *screen,
                                        char *message, int32 message_len);
-static bool tiny_editor_replace_tag_row(TinyTagEditorScreen *screen,
-                                        enum NcmTagsField field);
-static bool tiny_editor_replace_filename_row(TinyTagEditorScreen *screen);
-static bool tiny_editor_write_song(TinyTagEditorScreen *screen,
-                                   char *music_dir);
+static int32 tiny_editor_replace_tag_row(TinyTagEditorScreen *screen,
+                                         enum NcmTagsField field);
+static int32 tiny_editor_replace_filename_row(TinyTagEditorScreen *screen);
+static int32 tiny_editor_write_song(TinyTagEditorScreen *screen,
+                                    char *music_dir);
 static void tiny_editor_complete_save(TinyTagEditorScreen *screen);
-static bool tiny_editor_finish(TinyTagEditorScreen *screen);
+static int32 tiny_editor_finish(TinyTagEditorScreen *screen);
 static void tiny_editor_buffer_key_value(NcBuffer *buffer, char *key,
                                          int32 key_len, char *value,
                                          int32 value_len);
@@ -173,29 +173,31 @@ tiny_tag_editor_screen_set_geometry(
     return;
 }
 
-bool
+int32
 tiny_tag_editor_screen_set_edited_song(
     TinyTagEditorScreen *screen, NcmSong *song
 ) {
     NcmMutableSong edited;
+    int32 status;
 
     if ((screen == NULL) || (song == NULL)) {
-        return false;
+        return -EINVAL;
     }
     if (ncm_song_is_stream(song)) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
 
     edited = (NcmMutableSong){0};
-    if (ncm_mutable_song_load_originals_from_song(&edited, song) < 0) {
+    status = ncm_mutable_song_load_originals_from_song(&edited, song);
+    if (status < 0) {
         ncm_mutable_song_destroy(&edited);
-        return false;
+        return status;
     }
     ncm_mutable_song_set_duration(&edited, ncm_song_duration(song));
     ncm_mutable_song_set_mtime(&edited, (int32)ncm_song_mtime(song));
     ncm_mutable_song_move(&screen->edited, &edited);
     screen->has_edited = true;
-    return true;
+    return 0;
 }
 
 enum TinyTagEditorOpenResult
@@ -207,7 +209,6 @@ tiny_tag_editor_screen_open_song(
     NcmTaglibAudioProperties properties = {0};
     NcmTaglibFile file;
     bool extended_tags_supported;
-    bool rows_loaded;
     int32 status;
 
     if (path) {
@@ -231,7 +232,8 @@ tiny_tag_editor_screen_open_song(
         return TINY_TAG_EDITOR_OPEN_PREPARE_FAILED;
     }
     screen->show_duplicate_tags = show_duplicate_tags;
-    if (!tiny_tag_editor_screen_set_edited_song(screen, song)) {
+    status = tiny_tag_editor_screen_set_edited_song(screen, song);
+    if (status < 0) {
         return TINY_TAG_EDITOR_OPEN_PREPARE_FAILED;
     }
 
@@ -272,7 +274,7 @@ tiny_tag_editor_screen_open_song(
         extended_tags_supported = ncm_taglib_file_can_set_extended_tags(&file);
     }
 
-    rows_loaded = tiny_tag_editor_screen_reload_rows(
+    status = tiny_tag_editor_screen_reload_rows(
         screen, &properties, extended_tags_supported, tag_separator,
         tag_separator_len, show_duplicate_tags);
     if (screen->hooks.taglib_close) {
@@ -280,7 +282,7 @@ tiny_tag_editor_screen_open_song(
     } else {
         ncm_taglib_file_close(&file);
     }
-    if (!rows_loaded) {
+    if (status < 0) {
         screen->has_edited = false;
         nc_menu_clear_items(nc_editor_buffer_menu_base(&screen->rows));
         return TINY_TAG_EDITOR_OPEN_PREPARE_FAILED;
@@ -288,7 +290,7 @@ tiny_tag_editor_screen_open_song(
     return TINY_TAG_EDITOR_OPEN_SUCCESS;
 }
 
-bool
+int32
 tiny_tag_editor_screen_reload_rows(
     TinyTagEditorScreen *screen,
     NcmTaglibAudioProperties *properties,
@@ -300,40 +302,52 @@ tiny_tag_editor_screen_reload_rows(
     char duration_buffer[32];
     int32 channel_len;
     int32 duration_len;
+    int32 status;
 
-    if ((screen == NULL) || !screen->has_edited
-        || (tag_separator_len < 0)
+    if ((screen == NULL) || (tag_separator_len < 0)
         || ((tag_separator == NULL) && (tag_separator_len > 0))) {
-        return false;
+        return -EINVAL;
     }
-    if (sb_set(&screen->tag_separator, tag_separator,
-               tag_separator_len) < 0) {
-        return false;
+    if (!screen->has_edited) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+
+    status = sb_set(&screen->tag_separator, tag_separator,
+                    tag_separator_len);
+    if (status < 0) {
+        return status;
     }
     screen->show_duplicate_tags = show_duplicate_tags;
     nc_menu_clear_items(nc_editor_buffer_menu_base(&screen->rows));
+
     row = (NcBuffer){0};
     tiny_editor_buffer_key_value(&row, STRLIT("Filename"),
                                  screen->edited.name,
                                  screen->edited.name_len);
-    if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE)) {
+    status = tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
+    if (status < 0) {
         nc_buffer_destroy(&row);
-        return false;
+        return status;
     }
     nc_buffer_clear(&row);
+
     tiny_editor_buffer_key_value(&row, STRLIT("Directory"),
                                  screen->edited.directory,
                                  screen->edited.directory_len);
-    if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE)) {
+    status = tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
+    if (status < 0) {
         nc_buffer_destroy(&row);
-        return false;
+        return status;
     }
     nc_buffer_clear(&row);
-    if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE)) {
+
+    status = tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
+    if (status < 0) {
         nc_buffer_destroy(&row);
-        return false;
+        return status;
     }
     nc_buffer_clear(&row);
+
     if (ncm_mutable_song_duration(&screen->edited) > 0) {
         duration_len = ncm_song_show_time(
             ncm_mutable_song_duration(&screen->edited), duration_buffer,
@@ -347,31 +361,37 @@ tiny_tag_editor_screen_reload_rows(
     }
     tiny_editor_buffer_key_value(&row, STRLIT("Length"),
                                  duration_buffer, duration_len);
-    if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE)) {
+    status = tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
+    if (status < 0) {
         nc_buffer_destroy(&row);
-        return false;
+        return status;
     }
     nc_buffer_clear(&row);
+
     if (properties) {
         tiny_editor_buffer_key_uint(
             &row, STRLIT("Bitrate"), (uint32)properties->bitrate,
             STRLIT(" kbps"));
     }
-    if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE)) {
+    status = tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
+    if (status < 0) {
         nc_buffer_destroy(&row);
-        return false;
+        return status;
     }
     nc_buffer_clear(&row);
+
     if (properties) {
         tiny_editor_buffer_key_uint(
             &row, STRLIT("Sample rate"),
             (uint32)properties->sample_rate, STRLIT(" Hz"));
     }
-    if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE)) {
+    status = tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
+    if (status < 0) {
         nc_buffer_destroy(&row);
-        return false;
+        return status;
     }
     nc_buffer_clear(&row);
+
     channel_len = 0;
     if (properties) {
         channel_len = tiny_editor_channels_to_string(properties->channels,
@@ -380,9 +400,10 @@ tiny_tag_editor_screen_reload_rows(
     }
     tiny_editor_buffer_key_value(&row, STRLIT("Channels"),
                                  channel_buffer, channel_len);
-    if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE)) {
+    status = tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
+    if (status < 0) {
         nc_buffer_destroy(&row);
-        return false;
+        return status;
     }
     nc_buffer_destroy(&row);
     nc_editor_buffer_menu_add_separator(&screen->rows);
@@ -400,15 +421,15 @@ tiny_tag_editor_screen_reload_rows(
                        || (field == NCM_TAGS_FIELD_PERFORMER)
                        || (field == NCM_TAGS_FIELD_DISC));
         if (inactive) {
-            if (!tiny_editor_add_row(screen, &row,
-                                     NC_MENU_ITEM_INACTIVE)) {
-                nc_buffer_destroy(&row);
-                return false;
-            }
-        } else if (!tiny_editor_add_row(screen, &row,
-                                        NC_MENU_ITEM_SELECTABLE)) {
+            status = tiny_editor_add_row(
+                screen, &row, NC_MENU_ITEM_INACTIVE);
+        } else {
+            status = tiny_editor_add_row(
+                screen, &row, NC_MENU_ITEM_SELECTABLE);
+        }
+        if (status < 0) {
             nc_buffer_destroy(&row);
-            return false;
+            return status;
         }
         nc_buffer_destroy(&row);
     }
@@ -418,67 +439,79 @@ tiny_tag_editor_screen_reload_rows(
     tiny_editor_buffer_key_value(&row, STRLIT("Filename"),
                                  screen->edited.name,
                                  screen->edited.name_len);
-    if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_SELECTABLE)) {
+    status = tiny_editor_add_row(screen, &row, NC_MENU_ITEM_SELECTABLE);
+    if (status < 0) {
         nc_buffer_destroy(&row);
-        return false;
+        return status;
     }
     nc_buffer_destroy(&row);
+
     nc_editor_buffer_menu_add_separator(&screen->rows);
     row = (NcBuffer){0};
     nc_buffer_append_data(&row, STRLIT("Save"));
-    if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_SELECTABLE)) {
+    status = tiny_editor_add_row(screen, &row, NC_MENU_ITEM_SELECTABLE);
+    if (status < 0) {
         nc_buffer_destroy(&row);
-        return false;
+        return status;
     }
     nc_buffer_clear(&row);
+
     nc_buffer_append_data(&row, STRLIT("Cancel"));
-    if (!tiny_editor_add_row(screen, &row, NC_MENU_ITEM_SELECTABLE)) {
+    status = tiny_editor_add_row(screen, &row, NC_MENU_ITEM_SELECTABLE);
+    if (status < 0) {
         nc_buffer_destroy(&row);
-        return false;
+        return status;
     }
     nc_buffer_destroy(&row);
+
     nc_menu_highlight_position(nc_editor_buffer_menu_base(&screen->rows),
                                TINY_TAG_EDITOR_FIRST_TAG_ROW,
                                screen->main_height);
-    return true;
+    return 0;
 }
 
-bool
+int32
 tiny_tag_editor_screen_set_tag_value(
     TinyTagEditorScreen *screen, enum NcmTagsField field,
     char *value, int32 value_len, char *separator, int32 separator_len
 ) {
-    if ((screen == NULL) || !screen->has_edited) {
-        return false;
+    if (screen == NULL) {
+        return -EINVAL;
+    }
+    if (!screen->has_edited) {
+        return -NCM_ERROR_UNAVAILABLE;
     }
     return ncm_mutable_song_set_tags(&screen->edited, field, value,
-                                     value_len, separator,
-                                     separator_len) == 0;
+                                     value_len, separator, separator_len);
 }
 
-bool
+int32
 tiny_tag_editor_screen_set_filename(
     TinyTagEditorScreen *screen, char *name, int32 name_len
 ) {
-    if ((screen == NULL) || !screen->has_edited) {
-        return false;
+    if (screen == NULL) {
+        return -EINVAL;
     }
-    return ncm_mutable_song_set_new_name(&screen->edited, name,
-                                         name_len) == 0;
+    if (!screen->has_edited) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    return ncm_mutable_song_set_new_name(&screen->edited, name, name_len);
 }
 
-bool
+int32
 tiny_tag_editor_screen_set_filename_stem(
     TinyTagEditorScreen *screen, char *stem, int32 stem_len
 ) {
     NcmStringView current_name;
     StrBuilder new_name = {0};
     int32 dot;
-    bool result;
+    int32 status;
 
-    if ((screen == NULL) || !screen->has_edited || (stem == NULL)
-        || (stem_len <= 0)) {
-        return false;
+    if ((screen == NULL) || (stem == NULL) || (stem_len <= 0)) {
+        return -EINVAL;
+    }
+    if (!screen->has_edited) {
+        return -NCM_ERROR_UNAVAILABLE;
     }
 
     if (!ncm_mutable_song_has_new_name_view(&screen->edited, &current_name)) {
@@ -498,13 +531,13 @@ tiny_tag_editor_screen_set_filename_stem(
         SB_APPEND(&new_name, &current_name.data[dot],
                   current_name.len - dot);
     }
-    result = tiny_tag_editor_screen_set_filename(
+    status = tiny_tag_editor_screen_set_filename(
         screen, new_name.data, new_name.len);
     sb_free(&new_name);
-    return result;
+    return status;
 }
 
-bool
+int32
 tiny_tag_editor_screen_run_row(
     TinyTagEditorScreen *screen, int32 row
 ) {
@@ -518,16 +551,20 @@ tiny_tag_editor_screen_run_row(
     NcMenu *menu;
     char error_buffer[256];
     int32 error_len;
+    int32 status;
+    int32 finish_status;
     int32 dot;
-    bool result;
 
-    if ((screen == NULL) || !screen->has_edited) {
-        return false;
+    if (screen == NULL) {
+        return -EINVAL;
+    }
+    if (!screen->has_edited) {
+        return -NCM_ERROR_UNAVAILABLE;
     }
     menu = nc_editor_buffer_menu_base(&screen->rows);
     if ((row < 0) || (row >= nc_menu_all_item_count(menu))
         || !nc_menu_position_is_selectable(menu, row)) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
 
     if ((row >= (int32)TINY_TAG_EDITOR_FIRST_TAG_ROW)
@@ -552,25 +589,26 @@ tiny_tag_editor_screen_run_row(
             tiny_editor_status_message(
                 screen, STRLIT("Action aborted"));
             sb_free(&input);
-            return false;
+            return -NCM_ERROR_CANCELLED;
         }
         if (prompt_result != TINY_TAG_EDITOR_PROMPT_ACCEPTED) {
             sb_free(&input);
-            return false;
+            return -NCM_ERROR_UNAVAILABLE;
         }
-        result = tiny_tag_editor_screen_set_tag_value(
+
+        status = tiny_tag_editor_screen_set_tag_value(
             screen, field, input.data, input.len,
             screen->tag_separator.data, screen->tag_separator.len);
         sb_free(&input);
-        if (!result || !tiny_editor_replace_tag_row(screen, field)) {
-            return false;
+        if (status < 0) {
+            return status;
         }
-        return true;
+        return tiny_editor_replace_tag_row(screen, field);
     }
 
     if (row == TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW) {
         if (!ncm_mutable_song_has_new_name_view(&screen->edited,
-                                           &current_name)) {
+                                                &current_name)) {
             current_name.data = screen->edited.name;
             current_name.len = screen->edited.name_len;
         }
@@ -596,29 +634,31 @@ tiny_tag_editor_screen_run_row(
             tiny_editor_status_message(
                 screen, STRLIT("Action aborted"));
             sb_free(&input);
-            return false;
+            return -NCM_ERROR_CANCELLED;
         }
         if (prompt_result != TINY_TAG_EDITOR_PROMPT_ACCEPTED) {
             sb_free(&input);
-            return false;
+            return -NCM_ERROR_UNAVAILABLE;
         }
         if (input.len <= 0) {
             sb_free(&input);
-            return true;
+            return 0;
         }
-        result = tiny_tag_editor_screen_set_filename_stem(
+
+        status = tiny_tag_editor_screen_set_filename_stem(
             screen, input.data, input.len);
         sb_free(&input);
-        if (!result || !tiny_editor_replace_filename_row(screen)) {
-            return false;
+        if (status < 0) {
+            return status;
         }
-        return true;
+        return tiny_editor_replace_filename_row(screen);
     }
 
     if (row == TINY_TAG_EDITOR_SAVE_ROW) {
         tiny_editor_status_message(
             screen, STRLIT("Updating tags..."));
-        if (tiny_editor_write_song(screen, screen->music_dir.data)) {
+        status = tiny_editor_write_song(screen, screen->music_dir.data);
+        if (status == 0) {
             tiny_editor_status_message(
                 screen, STRLIT("Tags updated"));
             tiny_editor_complete_save(screen);
@@ -632,15 +672,17 @@ tiny_tag_editor_screen_run_row(
             }
             tiny_editor_status_message(screen, error_buffer, error_len);
         }
-        (void)tiny_editor_finish(screen);
-        return true;
+        finish_status = tiny_editor_finish(screen);
+        if (status < 0) {
+            return status;
+        }
+        return finish_status;
     }
 
     if (row == TINY_TAG_EDITOR_CANCEL_ROW) {
-        (void)tiny_editor_finish(screen);
-        return true;
+        return tiny_editor_finish(screen);
     }
-    return false;
+    return -NCM_ERROR_UNAVAILABLE;
 }
 
 int32
@@ -653,11 +695,8 @@ tiny_tag_editor_screen_run_current(
     if (!tiny_tag_editor_screen_action_runnable(screen)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    if (!tiny_tag_editor_screen_run_row(
-        screen, tiny_editor_current_row(screen))) {
-        return -NCM_ERROR_UNAVAILABLE;
-    }
-    return 0;
+    return tiny_tag_editor_screen_run_row(
+        screen, tiny_editor_current_row(screen));
 }
 
 bool
@@ -830,16 +869,14 @@ tiny_editor_print_buffer(NcWindow *window, NcBuffer *buffer) {
     return;
 }
 
-
-
-static bool
+static int32
 tiny_editor_add_row(TinyTagEditorScreen *screen, NcBuffer *buffer,
                     uint32 flags) {
     if ((screen == NULL) || (buffer == NULL)) {
-        return false;
+        return -EINVAL;
     }
     nc_editor_buffer_menu_add_with_flags(&screen->rows, buffer, flags);
-    return true;
+    return 0;
 }
 
 static int32
@@ -859,14 +896,14 @@ tiny_editor_status_message(
     return;
 }
 
-static bool
+static int32
 tiny_editor_replace_tag_row(
     TinyTagEditorScreen *screen, enum NcmTagsField field
 ) {
     NcBuffer row;
     NcMenu *menu;
     int32 row_index;
-    bool result;
+    int32 status;
 
     row_index = TINY_TAG_EDITOR_TAG_ROW(field);
     menu = nc_editor_buffer_menu_base(&screen->rows);
@@ -874,20 +911,19 @@ tiny_editor_replace_tag_row(
     tiny_editor_buffer_mutable_tag(
         &row, &screen->edited, field, screen->tag_separator.data,
         screen->tag_separator.len, screen->show_duplicate_tags);
-    result = nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL, row_index,
-                                  &row) == 0;
+    status = nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL, row_index, &row);
     nc_buffer_destroy(&row);
-    return result;
+    return status;
 }
 
-static bool
+static int32
 tiny_editor_replace_filename_row(
     TinyTagEditorScreen *screen
 ) {
     NcmStringView name;
     NcBuffer row;
     NcMenu *menu;
-    bool result;
+    int32 status;
 
     if (!ncm_mutable_song_has_new_name_view(&screen->edited, &name)) {
         name.data = screen->edited.name;
@@ -897,25 +933,24 @@ tiny_editor_replace_filename_row(
     row = (NcBuffer){0};
     tiny_editor_buffer_key_value(&row, STRLIT("Filename"),
                                  name.data, name.len);
-    result = nc_menu_replace_item(
+    status = nc_menu_replace_item(
         menu, NC_MENU_ITEMS_ALL, TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW,
-        &row) == 0;
+        &row);
     nc_buffer_destroy(&row);
-    return result;
+    return status;
 }
 
-static bool
-tiny_editor_write_song(TinyTagEditorScreen *screen,
-                       char *music_dir) {
+static int32
+tiny_editor_write_song(TinyTagEditorScreen *screen, char *music_dir) {
     ASSERT(screen != NULL);
     if (!screen->has_edited) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
     if (screen->hooks.write_song) {
         return screen->hooks.write_song(
-            screen->hooks.user, &screen->edited, music_dir) == 0;
+            screen->hooks.user, &screen->edited, music_dir);
     }
-    return ncm_mutable_song_write(&screen->edited, music_dir) == 0;
+    return ncm_mutable_song_write(&screen->edited, music_dir);
 }
 
 static void
@@ -944,20 +979,20 @@ tiny_editor_complete_save(TinyTagEditorScreen *screen) {
     return;
 }
 
-static bool
+static int32
 tiny_editor_finish(TinyTagEditorScreen *screen) {
     NcScreen *previous;
 
     previous = screen->previous_screen;
     if (previous == NULL) {
-        return true;
+        return 0;
     }
     if (screen->hooks.switch_to_screen) {
         screen->hooks.switch_to_screen(screen->hooks.user, previous);
-        return true;
+        return 0;
     }
     return nc_screen_switcher_switch_to(
-        previous, nc_screen_has_to_be_resized(previous)) == 0;
+        previous, nc_screen_has_to_be_resized(previous));
 }
 
 static void

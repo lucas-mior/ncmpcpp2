@@ -4640,7 +4640,7 @@ action_runtime_save_tag_changes(void) {
     }
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
         return tiny_tag_editor_screen_run_row(
-            app_screen_tiny_tag_editor(), TINY_TAG_EDITOR_SAVE_ROW);
+            app_screen_tiny_tag_editor(), TINY_TAG_EDITOR_SAVE_ROW) == 0;
     }
 #endif
     return false;
