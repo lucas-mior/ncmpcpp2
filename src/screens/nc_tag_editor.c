@@ -3023,7 +3023,7 @@ static void
 tag_editor_status_directory_rename_error(TagEditorScreen *screen,
                                          char *name, int32 name_len,
                                          NcmError *ncm_error) {
-    StrBuilder message;
+    StrBuilder message = {0};
     int32 error_len;
 
     SB_APPEND(&message, "Couldn't rename \"");
