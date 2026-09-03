@@ -32,95 +32,6 @@ static HtmlEntity html_entities[] = {
 
 #undef HTML_ENTITY
 
-static int32
-hex_value(char c) {
-    int32 result;
-
-    if ((c >= '0') && (c <= '9')) {
-        result = c - '0';
-    } else if ((c >= 'a') && (c <= 'f')) {
-        result = c - 'a' + 10;
-    } else if ((c >= 'A') && (c <= 'F')) {
-        result = c - 'A' + 10;
-    } else {
-        result = -1;
-    }
-
-    return result;
-}
-
-static int32
-parse_entity_number(char *data, int32 data_len, uint32 *rune) {
-    uint32 value;
-    int32 base;
-    int32 start;
-
-    if ((data == NULL) || (data_len < 0) || (rune == NULL)) {
-        return -EINVAL;
-    }
-    if (data_len == 0) {
-        return -NCM_ERROR_PARSE;
-    }
-
-    start = 0;
-    base = 10;
-    if ((data_len >= 2) && ((data[0] == 'x') || (data[0] == 'X'))) {
-        start = 1;
-        base = 16;
-    }
-    if (start >= data_len) {
-        return -NCM_ERROR_PARSE;
-    }
-
-    value = 0;
-    for (int32 i = start; i < data_len; i += 1) {
-        int32 digit;
-
-        if (base == 16) {
-            digit = hex_value(data[i]);
-        } else if ((data[i] >= '0') && (data[i] <= '9')) {
-            digit = data[i] - '0';
-        } else {
-            digit = -1;
-        }
-
-        if (digit < 0) {
-            return -NCM_ERROR_PARSE;
-        }
-        if (value > ((0x10ffffu - (uint32)digit) / (uint32)base)) {
-            return -NCM_ERROR_PARSE;
-        }
-        value = value*(uint32)base + (uint32)digit;
-    }
-
-    *rune = value;
-    return 0;
-}
-
-static bool
-is_newline_tag(char *tag, int32 tag_len) {
-    if (BEGINS_WITH(tag, tag_len, "<p ")) {
-        return true;
-    }
-    if (STREQUAL(tag, tag_len, "<p>")) {
-        return true;
-    }
-    if (STREQUAL(tag, tag_len, "</p>")) {
-        return true;
-    }
-    if (STREQUAL(tag, tag_len, "<br>")) {
-        return true;
-    }
-    if (STREQUAL(tag, tag_len, "<br/>")) {
-        return true;
-    }
-    if (BEGINS_WITH(tag, tag_len, "<br ")) {
-        return true;
-    }
-
-    return false;
-}
-
 StrBuilder
 ncm_html_unescape_utf8(char *data, int32 data_len) {
     StrBuilder out = {0};
@@ -147,9 +58,58 @@ ncm_html_unescape_utf8(char *data, int32 data_len) {
             }
 
             if (entity_end < data_len) {
+                uint32 value;
+                int32 base;
+                int32 start;
+                bool valid_number;
+
                 entity_len = entity_end - entity_start;
-                if (parse_entity_number(data + entity_start,
-                                        entity_len, &rune) == 0) {
+                start = 0;
+                base = 10;
+                valid_number = entity_len > 0;
+                if ((entity_len >= 2)
+                    && ((data[entity_start] == 'x')
+                        || (data[entity_start] == 'X'))) {
+                    start = 1;
+                    base = 16;
+                }
+                if (start >= entity_len) {
+                    valid_number = false;
+                }
+
+                value = 0;
+                for (int32 j = start;
+                     valid_number && (j < entity_len); j += 1) {
+                    int32 digit;
+                    char c = data[entity_start + j];
+
+                    if (base == 16) {
+                        if ((c >= '0') && (c <= '9')) {
+                            digit = c - '0';
+                        } else if ((c >= 'a') && (c <= 'f')) {
+                            digit = c - 'a' + 10;
+                        } else if ((c >= 'A') && (c <= 'F')) {
+                            digit = c - 'A' + 10;
+                        } else {
+                            digit = -1;
+                        }
+                    } else if ((c >= '0') && (c <= '9')) {
+                        digit = c - '0';
+                    } else {
+                        digit = -1;
+                    }
+
+                    if ((digit < 0)
+                        || (value > ((0x10ffffu - (uint32)digit)
+                                     / (uint32)base))) {
+                        valid_number = false;
+                    } else {
+                        value = value*(uint32)base + (uint32)digit;
+                    }
+                }
+
+                if (valid_number) {
+                    rune = value;
                     encoded_len = utf8_encode(rune, encoded,
                                               SIZEOF(encoded));
                     if (encoded_len > 0) {
@@ -231,7 +191,12 @@ ncm_html_strip_tags(char *data, int32 data_len) {
                 }
             } else {
                 tag_len = tag_end - i + 1;
-                if (is_newline_tag(data + i, tag_len)) {
+                if (BEGINS_WITH(data + i, tag_len, "<p ")
+                    || STREQUAL(data + i, tag_len, "<p>")
+                    || STREQUAL(data + i, tag_len, "</p>")
+                    || STREQUAL(data + i, tag_len, "<br>")
+                    || STREQUAL(data + i, tag_len, "<br/>")
+                    || BEGINS_WITH(data + i, tag_len, "<br ")) {
                     sb_append_byte(&stripped, '\n');
                 }
                 i = tag_end + 1;

@@ -52,9 +52,6 @@ typedef struct NcmStatusInitHooks {
     void (*show_connected_message)(void *user);
 } NcmStatusInitHooks;
 
-void ncm_status_handle_client_error(NcmMpdClient *client);
-void ncm_status_handle_client_error_value(NcmMpdClient *client, char *message,
-                                          int32 message_len, bool clearable);
 void ncm_status_handle_server_error_value(NcmMpdClient *client, int32 code,
                                           char *message, int32 message_len);
 void ncm_status_trace(NcmMpdClient *client, bool update_timer,
@@ -68,11 +65,6 @@ int32 ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                                   NcmError *ncm_error);
 int32 ncm_status_update(NcmMpdClient *client, int32 event,
                         NcmError *ncm_error);
-int32 ncm_status_init_from_mpd_status(NcmMpdStatus *mpd_status,
-                                      NcmStatusHooks *hooks,
-                                      NcmError *ncm_error);
-int32 ncm_status_init_connection(NcmMpdClient *client,
-                                 NcmError *ncm_error);
 int32 ncm_status_update_full(NcmMpdClient *client, NcmStatusHooks *hooks,
                              NcmError *ncm_error);
 int32 ncm_status_update_from_noidle(NcmMpdClient *client,
@@ -93,15 +85,9 @@ enum NcmStatusPlayerState ncm_status_state_player(void);
 int32 ncm_status_state_total_time(void);
 int32 ncm_status_state_volume(void);
 
-void ncm_status_changes_playlist(int32 previous_version);
-void ncm_status_changes_stored_playlists(void);
-void ncm_status_changes_database(void);
 void ncm_status_changes_player_state(void);
-void ncm_status_changes_song_id(int32 song_id);
-void ncm_status_changes_reset_song_scroll(void);
 void ncm_status_changes_elapsed_time(bool update_elapsed);
 void ncm_status_changes_flags(void);
 void ncm_status_changes_mixer(void);
-void ncm_status_changes_outputs(void);
 
 #endif /* NCMPCPP_STATUS_H */

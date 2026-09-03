@@ -32,75 +32,6 @@ statusbar_set_active_footer_line_locked(bool locked) {
 }
 
 static void
-statusbar_redraw_after_stop_unlock(void) {
-    NcWindow *window;
-
-    if (ncm_status_state_player() != NCM_STATUS_PLAYER_STOP) {
-        return;
-    }
-
-    if ((window = statusbar_footer_window()) == NULL) {
-        return;
-    }
-
-    switch (Config.design) {
-    case NCM_DESIGN_CLASSIC:
-        (void)ncm_statusbar_put();
-        break;
-    case NCM_DESIGN_ALTERNATIVE:
-        ncm_progressbar_draw(ncm_status_state_elapsed_time(),
-                             ncm_status_state_total_time());
-        break;
-    case NCM_DESIGN_COUNT:
-        break;
-    default:
-        break;
-    }
-    nc_window_refresh(window);
-    return;
-}
-
-static void
-statusbar_redraw_after_unlock(void) {
-    NcWindow *window;
-
-    if (statusbar_block_update || progressbar_block_update) {
-        return;
-    }
-
-    if ((window = statusbar_footer_window()) == NULL) {
-        return;
-    }
-
-    switch (Config.design) {
-    case NCM_DESIGN_CLASSIC:
-        switch (ncm_status_state_player()) {
-        case NCM_STATUS_PLAYER_UNKNOWN:
-        case NCM_STATUS_PLAYER_STOP:
-            (void)ncm_statusbar_put();
-            break;
-        case NCM_STATUS_PLAYER_PLAY:
-        case NCM_STATUS_PLAYER_PAUSE:
-            ncm_status_changes_elapsed_time(false);
-            break;
-        default:
-            break;
-        }
-        break;
-    case NCM_DESIGN_ALTERNATIVE:
-        ncm_progressbar_draw(ncm_status_state_elapsed_time(),
-                             ncm_status_state_total_time());
-        break;
-    case NCM_DESIGN_COUNT:
-        break;
-    default:
-        break;
-    }
-    nc_window_refresh(window);
-    return;
-}
-
-static void
 statusbar_apply_formatted_color(NcWindow *window, NcFormattedColor *color) {
     enum NcFormat *formats;
     int32 count;
@@ -134,28 +65,6 @@ statusbar_apply_formatted_color_end(NcWindow *window, NcFormattedColor *color) {
     count = nc_formatted_color_format_count(color);
     for (int32 i = count - 1; i >= 0; i -= 1) {
         nc_window_apply_format(window, nc_format_reverse(formats[i]));
-    }
-    return;
-}
-
-static void
-statusbar_progressbar_split(NcmStringView items[3]) {
-    int32 byte = 0;
-
-    for (int32 i = 0; i < 3; i += 1) {
-        int32 next;
-
-        items[i].data = "";
-        items[i].len = 0;
-        if (byte >= Config.progressbar.len) {
-            continue;
-        }
-
-        next = utf8_next_position(Config.progressbar.data,
-                                  Config.progressbar.len, byte);
-        items[i].data = Config.progressbar.data + byte;
-        items[i].len = next - byte;
-        byte = next;
     }
     return;
 }
@@ -209,7 +118,25 @@ ncm_progressbar_draw(int32 elapsed, int32 time) {
         filled = (int32)howlong;
     }
 
-    statusbar_progressbar_split(progressbar);
+    {
+        int32 byte = 0;
+
+        for (int32 i = 0; i < 3; i += 1) {
+            int32 next;
+
+            progressbar[i].data = "";
+            progressbar[i].len = 0;
+            if (byte >= Config.progressbar.len) {
+                continue;
+            }
+
+            next = utf8_next_position(Config.progressbar.data,
+                                      Config.progressbar.len, byte);
+            progressbar[i].data = Config.progressbar.data + byte;
+            progressbar[i].len = next - byte;
+            byte = next;
+        }
+    }
     nc_window_go_to_xy(window, 0, 0);
     statusbar_apply_formatted_color(window, &Config.progressbar_color);
     if ((progressbar[2].len > 0) && (progressbar[2].data[0] != '\0')) {
@@ -265,7 +192,32 @@ ncm_statusbar_scoped_lock_destroy(NcmStatusbarScopedLock *scoped_lock) {
     if (statusbar_lock_delay_seconds < 0) {
         statusbar_set_active_footer_line_locked(false);
     }
-    statusbar_redraw_after_stop_unlock();
+    {
+        NcWindow *window;
+
+        if (ncm_status_state_player() != NCM_STATUS_PLAYER_STOP) {
+            return;
+        }
+
+        if ((window = statusbar_footer_window()) == NULL) {
+            return;
+        }
+
+        switch (Config.design) {
+        case NCM_DESIGN_CLASSIC:
+            (void)ncm_statusbar_put();
+            break;
+        case NCM_DESIGN_ALTERNATIVE:
+            ncm_progressbar_draw(ncm_status_state_elapsed_time(),
+                                 ncm_status_state_total_time());
+            break;
+        case NCM_DESIGN_COUNT:
+            break;
+        default:
+            break;
+        }
+        nc_window_refresh(window);
+    }
     return;
 }
 
@@ -281,7 +233,43 @@ ncm_statusbar_try_redraw(void) {
             > statusbar_lock_delay_seconds)) {
         statusbar_lock_delay_seconds = -1;
         statusbar_set_active_footer_line_locked(!statusbar_allow_unlock);
-        statusbar_redraw_after_unlock();
+        {
+            NcWindow *window;
+
+            if (statusbar_block_update || progressbar_block_update) {
+                return;
+            }
+
+            if ((window = statusbar_footer_window()) == NULL) {
+                return;
+            }
+
+            switch (Config.design) {
+            case NCM_DESIGN_CLASSIC:
+                switch (ncm_status_state_player()) {
+                case NCM_STATUS_PLAYER_UNKNOWN:
+                case NCM_STATUS_PLAYER_STOP:
+                    (void)ncm_statusbar_put();
+                    break;
+                case NCM_STATUS_PLAYER_PLAY:
+                case NCM_STATUS_PLAYER_PAUSE:
+                    ncm_status_changes_elapsed_time(false);
+                    break;
+                default:
+                    break;
+                }
+                break;
+            case NCM_DESIGN_ALTERNATIVE:
+                ncm_progressbar_draw(ncm_status_state_elapsed_time(),
+                                     ncm_status_state_total_time());
+                break;
+            case NCM_DESIGN_COUNT:
+                break;
+            default:
+                break;
+            }
+            nc_window_refresh(window);
+        }
     }
     return;
 }

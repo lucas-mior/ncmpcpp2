@@ -6,11 +6,8 @@
 #include "c/ncm_c.h"
 #include "settings.h"
 
-static StrBuilder ncm_display_column_value(NcmSong *song, Column *column);
 static int32 ncm_display_column_width(Column *column, int32 list_width,
                                       int32 remained_width);
-static void ncm_display_append_column_name(StrBuilder *buffer,
-                                           Column *column);
 static void ncm_display_append_spaces(StrBuilder *buffer, int32 count);
 static void ncm_display_append_nc_spaces(NcBuffer *buffer, int32 count);
 
@@ -47,7 +44,7 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
     remained_width = list_width;
     last = &columns[column_count - 1];
     for (int32 i = 0; i < column_count; i += 1) {
-        StrBuilder value;
+        StrBuilder value = {0};
         Column *column;
         int32 cut_len;
         int32 padding;
@@ -67,7 +64,27 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
             break;
         }
 
-        value = ncm_display_column_value(song, column);
+        for (int32 j = 0; j < column->type_len; j += 1) {
+            enum NcmSongGetter getter =
+                ncm_song_getter_from_char(column->type[j]);
+
+            if (getter != NCM_SONG_GETTER_NONE) {
+                StrBuilder tag_value = ncm_song_tags_buffer(
+                    song, getter, Config.tags_separator,
+                    Config.tags_separator_len, Config.show_duplicate_tags);
+
+                if (tag_value.len > 0) {
+                    sb_move(&value, &tag_value);
+                    sb_free(&tag_value);
+                    break;
+                }
+                sb_free(&tag_value);
+            }
+        }
+        if ((value.len == 0) && column->display_empty_tag && Config.empty_tag
+            && (Config.empty_tag_len > 0)) {
+            SB_APPEND(&value, Config.empty_tag, Config.empty_tag_len);
+        }
         cut_len = utf8_cut_width(value.data, value.len, width);
         value_width = utf8_width(value.data, cut_len);
         padding = width - value_width;
@@ -137,7 +154,69 @@ ncm_display_column_title(StrBuilder *buffer, struct Column *columns,
         }
 
         sb_clear(&name);
-        ncm_display_append_column_name(&name, column);
+        if (column->name && (column->name_len > 0)) {
+            SB_APPEND(&name, column->name, column->name_len);
+        } else {
+            for (int32 j = 0; j < column->type_len; j += 1) {
+                if (j > 0) {
+                    sb_append_byte(&name, '/');
+                }
+                switch (column->type[j]) {
+                case 'l':
+                    SB_APPEND(&name, STRLIT("Time"));
+                    break;
+                case 'f':
+                    SB_APPEND(&name, STRLIT("Filename"));
+                    break;
+                case 'D':
+                    SB_APPEND(&name, STRLIT("Directory"));
+                    break;
+                case 'F':
+                    SB_APPEND(&name, STRLIT("Filepath"));
+                    break;
+                case 'a':
+                    SB_APPEND(&name, STRLIT("Artist"));
+                    break;
+                case 'A':
+                    SB_APPEND(&name, STRLIT("Album Artist"));
+                    break;
+                case 't':
+                    SB_APPEND(&name, STRLIT("Title"));
+                    break;
+                case 'b':
+                    SB_APPEND(&name, STRLIT("Album"));
+                    break;
+                case 'y':
+                    SB_APPEND(&name, STRLIT("Date"));
+                    break;
+                case 'n':
+                case 'N':
+                    SB_APPEND(&name, STRLIT("Track"));
+                    break;
+                case 'g':
+                    SB_APPEND(&name, STRLIT("Genre"));
+                    break;
+                case 'c':
+                    SB_APPEND(&name, STRLIT("Composer"));
+                    break;
+                case 'p':
+                    SB_APPEND(&name, STRLIT("Performer"));
+                    break;
+                case 'd':
+                    SB_APPEND(&name, STRLIT("Disc"));
+                    break;
+                case 'C':
+                    SB_APPEND(&name, STRLIT("Comment"));
+                    break;
+                case 'P':
+                    SB_APPEND(&name, STRLIT("Priority"));
+                    break;
+                default:
+                    SB_APPEND(&name, STRLIT("?"));
+                    break;
+                }
+            }
+        }
         cut_len = utf8_cut_width(name.data, name.len, width);
         name_width = utf8_width(name.data, cut_len);
         padding = width - name_width;
@@ -190,41 +269,6 @@ ncm_display_playlist_row(NcBuffer *buffer, NcmPlaylist *playlist,
     return;
 }
 
-static StrBuilder
-ncm_display_column_value(NcmSong *song, Column *column) {
-    StrBuilder result = {0};
-
-    if ((song == NULL) || (column == NULL)) {
-        return result;
-    }
-
-    for (int32 i = 0; i < column->type_len; i += 1) {
-        StrBuilder value;
-        enum NcmSongGetter getter;
-
-        getter = ncm_song_getter_from_char(column->type[i]);
-        if (getter == NCM_SONG_GETTER_NONE) {
-            continue;
-        }
-        value = ncm_song_tags_buffer(
-            song, getter, Config.tags_separator,
-            Config.tags_separator_len, Config.show_duplicate_tags);
-        if (value.len > 0) {
-            sb_move(&result, &value);
-            sb_free(&value);
-            return result;
-        }
-        sb_free(&value);
-    }
-
-    if (column->display_empty_tag && Config.empty_tag
-        && (Config.empty_tag_len > 0)) {
-        SB_APPEND(&result, Config.empty_tag,
-                  Config.empty_tag_len);
-    }
-    return result;
-}
-
 static int32
 ncm_display_column_width(Column *column,
                          int32 list_width, int32 remained_width) {
@@ -239,66 +283,6 @@ ncm_display_column_width(Column *column,
     }
 
     return width;
-}
-
-static NcmStringView
-ncm_display_column_type_name(char type) {
-    switch (type) {
-    case 'l':
-        return ncm_string_view_make(STRLIT("Time"));
-    case 'f':
-        return ncm_string_view_make(STRLIT("Filename"));
-    case 'D':
-        return ncm_string_view_make(STRLIT("Directory"));
-    case 'F':
-        return ncm_string_view_make(STRLIT("Filepath"));
-    case 'a':
-        return ncm_string_view_make(STRLIT("Artist"));
-    case 'A':
-        return ncm_string_view_make(STRLIT("Album Artist"));
-    case 't':
-        return ncm_string_view_make(STRLIT("Title"));
-    case 'b':
-        return ncm_string_view_make(STRLIT("Album"));
-    case 'y':
-        return ncm_string_view_make(STRLIT("Date"));
-    case 'n':
-    case 'N':
-        return ncm_string_view_make(STRLIT("Track"));
-    case 'g':
-        return ncm_string_view_make(STRLIT("Genre"));
-    case 'c':
-        return ncm_string_view_make(STRLIT("Composer"));
-    case 'p':
-        return ncm_string_view_make(STRLIT("Performer"));
-    case 'd':
-        return ncm_string_view_make(STRLIT("Disc"));
-    case 'C':
-        return ncm_string_view_make(STRLIT("Comment"));
-    case 'P':
-        return ncm_string_view_make(STRLIT("Priority"));
-    default:
-        return ncm_string_view_make(STRLIT("?"));
-    }
-}
-
-static void
-ncm_display_append_column_name(StrBuilder *buffer, Column *column) {
-    NcmStringView name;
-
-    if (column->name && (column->name_len > 0)) {
-        SB_APPEND(buffer, column->name, column->name_len);
-        return;
-    }
-
-    for (int32 i = 0; i < column->type_len; i += 1) {
-        if (i > 0) {
-            sb_append_byte(buffer, '/');
-        }
-        name = ncm_display_column_type_name(column->type[i]);
-        SB_APPEND(buffer, name.data, name.len);
-    }
-    return;
 }
 
 static void

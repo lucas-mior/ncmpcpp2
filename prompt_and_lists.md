@@ -10,23 +10,6 @@ if they are called only once: inline their body and then delete them. If there
 aren't any functions that fit this pattern, simply delete the file from the
 list below, and go straight to the next file without asking me.
 
-- src/statusbar.c
-- src/c/ncm_string.c
-- src/c/ncm_time.c
-- src/curses/nc_formatted_color.c
-- src/c/ncm_path.c
-- src/c/ncm_mpd_item.c
-- src/c/ncm_playlist_sort.c
-- src/app_legacy_bridge.c
-- src/settings_types.c
-- src/c/ncm_html.c
-- src/screens/nc_song_info.c
-- src/c/ncm_display.c
-- src/screens/nc_scrollpad_screen.c
-- src/c/ncm_macro_utilities.c
-- src/c/ncm_enums.c
-- src/status.c
-- src/configuration.c
 - src/c/ncm_app_arrays.c
 - src/main.c
 - src/title.c

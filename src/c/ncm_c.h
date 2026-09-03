@@ -1624,14 +1624,6 @@ typedef struct NcmPlaylistSortPlan {
     int32 cap;
 } NcmPlaylistSortPlan;
 
-void ncm_playlist_sort_plan_destroy(NcmPlaylistSortPlan *plan);
-int32 ncm_playlist_sort_plan_build(
-    NcmPlaylistSortPlan *plan, NcmSongArray *songs,
-    int32 start_position, enum NcmSongGetter *getters,
-    int32 getters_len, bool ignore_leading_the, NcmError *ncm_error);
-int32 ncm_playlist_sort_plan_execute(NcmPlaylistSortPlan *plan,
-                                     NcmMpdClient *client,
-                                     NcmError *ncm_error);
 int32 ncm_playlist_sort_range(
     NcmSongArray *songs, int32 start_position,
     enum NcmSongGetter *getters, int32 getters_len,
