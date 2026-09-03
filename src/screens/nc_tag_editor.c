@@ -657,7 +657,7 @@ tag_editor_screen_init(TagEditorScreen *screen,
     screen->observed_dir_valid = false;
     screen->registered = false;
 
-    (void)tag_editor_screen_set_current_dir(screen, STRLIT("/"));
+    tag_editor_screen_set_current_dir(screen, STRLIT("/"));
     {
         NcEditorStringMenu *menu = &screen->tag_types;
         int32 status = 0;
@@ -706,8 +706,8 @@ tag_editor_screen_init(TagEditorScreen *screen,
                 menu, STRLIT("Reset"), NC_MENU_ITEM_SELECTABLE);
         }
         if (status >= 0) {
-            (void)tag_editor_append_string_row(
-                menu, STRLIT("Save"), NC_MENU_ITEM_SELECTABLE);
+            tag_editor_append_string_row(menu, STRLIT("Save"),
+                                         NC_MENU_ITEM_SELECTABLE);
         }
     }
     tag_editor_layout(screen);
@@ -715,8 +715,8 @@ tag_editor_screen_init(TagEditorScreen *screen,
     tag_editor_observe_current_directory(screen);
     nc_screen_init_ops(&screen->screen, tag_editor_callbacks, screen,
                        NC_SCREEN_TYPE_TAG_EDITOR);
-    (void)tag_editor_screen_prepare_parser_rows(
-        screen, TAG_EDITOR_PARSER_NONE, NULL, 0);
+    tag_editor_screen_prepare_parser_rows(screen,
+                                          TAG_EDITOR_PARSER_NONE, NULL, 0);
     return;
 }
 
