@@ -4876,8 +4876,7 @@ tag_editor_build_parser_preview(TagEditorScreen *screen,
             if (!apply) {
                 sb_append_byte(&screen->parser_preview, '\n');
             }
-        } else if (screen->parser_mode
-                   == TAG_EDITOR_PARSER_RENAME_FILES) {
+        } else if (screen->parser_mode == TAG_EDITOR_PARSER_RENAME_FILES) {
             StrBuilder stem = {0};
             StrBuilder new_name = {0};
             int32 extension_start;
