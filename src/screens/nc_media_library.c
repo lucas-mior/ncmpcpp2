@@ -1451,9 +1451,8 @@ library_sort_tags(MediaLibraryTagArray *tags) {
 static void
 library_sort_albums(MediaLibraryAlbumArray *albums) {
     for (int32 i = 1; i < albums->len; i += 1) {
-        int32 j;
+        int32 j = i;
 
-        j = i;
         while ((j > 0)
                && (library_compare_album_items(
                    &albums->items[j],
