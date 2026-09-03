@@ -8,14 +8,6 @@ instances and remove the file from the list.
 For functions that are defined inside a file and only used inside the same file,
 if they are called only once: inline their body and then delete them.
 
-- src/screens/nc_server_info.c
-- src/screens/nc_outputs.c
-- src/curses/nc_window.c
-- src/c/ncm_taglib.c
-- src/screens/nc_playlist_editor.c
-- src/global.c
-- src/lastfm_service.c
-- src/screens/nc_screen.c
 - src/c/ncm_song.c
 - src/screens/nc_browser.c
 - src/helpers.c

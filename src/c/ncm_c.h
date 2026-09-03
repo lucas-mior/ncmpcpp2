@@ -1757,7 +1757,6 @@ typedef struct NcmTaglibAudioProperties {
 typedef void NcmTaglibPairCallback(char *name, char *value, void *user);
 typedef void NcmTaglibValueCallback(char *value, void *user);
 
-void ncm_taglib_init(void);
 int32 ncm_taglib_file_open(NcmTaglibFile *file, char *path);
 void ncm_taglib_file_close(NcmTaglibFile *file);
 int32 ncm_taglib_file_save(NcmTaglibFile *file);

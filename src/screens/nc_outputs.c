@@ -5,8 +5,6 @@
 
 #include "screens/nc_screens.h"
 
-static NcMenuItemCallbacks nc_outputs_item_callbacks(void);
-static NcMenuDisplayCallbacks nc_outputs_display_callbacks(void);
 static void nc_outputs_switch_to(NcScreen *screen);
 static void nc_outputs_resize(NcScreen *screen);
 static void nc_outputs_mouse_button_pressed(NcScreen *screen,
@@ -17,9 +15,6 @@ static void nc_outputs_item_copy(void *dest, void *source, void *user);
 static void nc_outputs_item_destroy(void *item, void *user);
 static void nc_outputs_draw_item(NcMenu *menu, NcWindow *window,
                                  void *item, int32 pos, void *user);
-static void nc_outputs_display(NcOutputsScreen *outputs);
-static bool nc_outputs_mouse_scroll(NcOutputsScreen *outputs,
-                                    MEVENT event);
 
 #define NC_SCREEN_IMPL_TYPE NcOutputsScreen
 #define NC_SCREEN_IMPL_PREFIX nc_outputs
@@ -28,7 +23,17 @@ static bool nc_outputs_mouse_scroll(NcOutputsScreen *outputs,
 #define NC_SCREEN_IMPL_WINDOW_FIELD window
 #define NC_SCREEN_IMPL_SCROLLPAD_BASE menu_screen
 #define NC_SCREEN_IMPL_MENU(screen) (&(screen)->menu)
-#define NC_SCREEN_IMPL_REFRESH_CALLBACK nc_outputs_display
+#define NC_SCREEN_IMPL_REFRESH_CALLBACK(outputs) do { \
+    nc_window_refresh_border(&(outputs)->window); \
+    nc_menu_refresh(&(outputs)->menu, \
+                    &(outputs)->window, \
+                    nc_window_width(&(outputs)->window), \
+                    nc_window_height(&(outputs)->window)); \
+    nc_menu_refresh(&(outputs)->menu, \
+                    &(outputs)->window, \
+                    nc_window_width(&(outputs)->window), \
+                    nc_window_height(&(outputs)->window)); \
+} while (0)
 #define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK nc_outputs_switch_to
 #define NC_SCREEN_IMPL_RESIZE_CALLBACK nc_outputs_resize
 #define NC_SCREEN_IMPL_TITLE_LITERAL "Outputs"
@@ -71,10 +76,17 @@ nc_outputs_screen_init(NcOutputsScreen *screen,
                    color,
                    border);
     screen->menu = (NcMenu){0};
-    nc_menu_set_item_callbacks(&screen->menu,
-                               nc_outputs_item_callbacks());
-    nc_menu_set_display_callbacks(&screen->menu,
-                                  nc_outputs_display_callbacks());
+    nc_menu_set_item_callbacks(&screen->menu, (NcMenuItemCallbacks){
+        .item_size = SIZEOF(NcOutputsItem),
+        .construct = nc_outputs_item_construct,
+        .copy = nc_outputs_item_copy,
+        .destroy = nc_outputs_item_destroy,
+        .user = NULL,
+    });
+    nc_menu_set_display_callbacks(&screen->menu, (NcMenuDisplayCallbacks){
+        .draw = nc_outputs_draw_item,
+        .user = NULL,
+    });
     nc_menu_set_cyclic_scrolling(&screen->menu, false);
     nc_menu_set_centered_cursor(&screen->menu, false);
     return;
@@ -168,27 +180,6 @@ nc_outputs_screen_toggle_current(NcOutputsScreen *screen) {
     return 0;
 }
 
-static NcMenuItemCallbacks
-nc_outputs_item_callbacks(void) {
-    NcMenuItemCallbacks callbacks = {0};
-
-    callbacks.item_size = SIZEOF(NcOutputsItem);
-    callbacks.construct = nc_outputs_item_construct;
-    callbacks.copy = nc_outputs_item_copy;
-    callbacks.destroy = nc_outputs_item_destroy;
-    callbacks.user = NULL;
-    return callbacks;
-}
-
-static NcMenuDisplayCallbacks
-nc_outputs_display_callbacks(void) {
-    NcMenuDisplayCallbacks callbacks = {0};
-
-    callbacks.draw = nc_outputs_draw_item;
-    callbacks.user = NULL;
-    return callbacks;
-}
-
 static void
 nc_outputs_switch_to(NcScreen *screen) {
     NcOutputsScreen *outputs;
@@ -228,7 +219,33 @@ nc_outputs_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     int32 y;
 
     outputs = nc_outputs_from_screen(screen);
-    if (nc_outputs_mouse_scroll(outputs, event)) {
+    if ((event.bstate & BUTTON5_PRESSED)
+        || (event.bstate & BUTTON4_PRESSED)) {
+        enum NcScroll scroll;
+        int32 count;
+
+        if (event.bstate & BUTTON5_PRESSED) {
+            scroll = NC_SCROLL_DOWN;
+        } else {
+            scroll = NC_SCROLL_UP;
+        }
+
+        if (outputs->mouse_scroll_whole_page) {
+            if (scroll == NC_SCROLL_DOWN) {
+                scroll = NC_SCROLL_PAGE_DOWN;
+            } else {
+                scroll = NC_SCROLL_PAGE_UP;
+            }
+            count = 1;
+        } else {
+            count = outputs->lines_scrolled;
+        }
+
+        for (int32 i = 0; i < count; i += 1) {
+            nc_menu_scroll_selectable(&outputs->menu,
+                                      nc_window_height(&outputs->window),
+                                      scroll);
+        }
         return;
     }
 
@@ -324,50 +341,5 @@ nc_outputs_draw_item(NcMenu *menu, NcWindow *window,
     return;
 }
 
-static void
-nc_outputs_display(NcOutputsScreen *outputs) {
-    nc_window_refresh_border(&outputs->window);
-    nc_menu_refresh(&outputs->menu,
-                    &outputs->window,
-                    nc_window_width(&outputs->window),
-                    nc_window_height(&outputs->window));
-    nc_menu_refresh(&outputs->menu,
-                    &outputs->window,
-                    nc_window_width(&outputs->window),
-                    nc_window_height(&outputs->window));
-    return;
-}
-
-static bool
-nc_outputs_mouse_scroll(NcOutputsScreen *outputs, MEVENT event) {
-    enum NcScroll scroll;
-    int32 count;
-
-    if (event.bstate & BUTTON5_PRESSED) {
-        scroll = NC_SCROLL_DOWN;
-    } else if (event.bstate & BUTTON4_PRESSED) {
-        scroll = NC_SCROLL_UP;
-    } else {
-        return false;
-    }
-
-    if (outputs->mouse_scroll_whole_page) {
-        if (scroll == NC_SCROLL_DOWN) {
-            scroll = NC_SCROLL_PAGE_DOWN;
-        } else {
-            scroll = NC_SCROLL_PAGE_UP;
-        }
-        count = 1;
-    } else {
-        count = outputs->lines_scrolled;
-    }
-
-    for (int32 i = 0; i < count; i += 1) {
-        nc_menu_scroll_selectable(&outputs->menu,
-                                  nc_window_height(&outputs->window),
-                                  scroll);
-    }
-    return true;
-}
 
 #endif /* NCMPCPP_NC_OUTPUTS_C */

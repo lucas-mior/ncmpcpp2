@@ -66,16 +66,12 @@ static void nc_window_decrease_format(NcWindow *window, int32 *counter,
                                       void (*set)(NcWindow *, bool));
 
 static int32 nc_prompt_abort(int32 count, int32 key);
-static bool nc_prompt_escape_is_standalone(NcWindow *window);
 static int32 nc_prompt_add_initial_text(void);
 static char **nc_prompt_attempt_completion(const char *text,
                                            int32 start, int32 end);
 static int32 nc_prompt_read_key(FILE *file);
 static void nc_prompt_display_string(void);
 static void nc_prompt_print_data(char *string, int32 string_len);
-static void nc_prompt_print_mask(char *string, int32 string_len);
-static void nc_prompt_print_visible_suffix(char *string, int32 string_len);
-static bool nc_prompt_should_continue(char *line);
 
 NcColor
 nc_color_make(int16 foreground, int16 background,
@@ -1135,36 +1131,6 @@ nc_prompt_abort(int32 count, int32 key) {
     return 0;
 }
 
-static bool
-nc_prompt_escape_is_standalone(NcWindow *window) {
-    int32 key;
-
-    if (window == NULL) {
-        return true;
-    }
-
-    if (window->input_queue_start < ARRAY_LEN(window->input_queue)) {
-        return false;
-    }
-
-    if (window->window == NULL) {
-        return true;
-    }
-
-    wtimeout(window->window, NC_PROMPT_ESCAPE_DELAY_MS);
-    key = wgetch(window->window);
-    wtimeout(window->window, 0);
-    if (key == ERR) {
-        return true;
-    }
-
-    while (key != ERR) {
-        ARRAY_PUSH(window->input_queue, (NcKey)key);
-        key = wgetch(window->window);
-    }
-    return false;
-}
-
 static int32
 nc_prompt_add_initial_text(void) {
     if (nc_readline_state.initial_text) {
@@ -1195,8 +1161,15 @@ nc_prompt_read_key(FILE *file) {
     }
 
     do {
+        char *line = rl_line_buffer;
+
         x = nc_window_get_x(window);
-        if (!nc_prompt_should_continue(rl_line_buffer)) {
+        if (line == NULL) {
+            line = "";
+        }
+        if ((nc_readline_state.should_continue != NULL)
+            && !nc_readline_state.should_continue(
+                line, nc_readline_state.should_continue_user_data)) {
             if (!RL_ISSTATE(RL_STATE_DISPATCHING)) {
                 rl_done = 1;
                 return EOF;
@@ -1205,10 +1178,37 @@ nc_prompt_read_key(FILE *file) {
         nc_window_go_to_xy(window, x, nc_readline_state.start_y);
         nc_window_refresh(window);
         key = nc_window_read_key(window);
-        if ((key == NC_KEY_ESCAPE) && nc_prompt_escape_is_standalone(window)) {
-            nc_readline_state.aborted = true;
-            rl_done = 1;
-            return EOF;
+        if (key == NC_KEY_ESCAPE) {
+            bool escape_is_standalone;
+            int32 escape_key;
+
+            if (window == NULL) {
+                escape_is_standalone = true;
+            } else if (window->input_queue_start
+                       < ARRAY_LEN(window->input_queue)) {
+                escape_is_standalone = false;
+            } else if (window->window == NULL) {
+                escape_is_standalone = true;
+            } else {
+                wtimeout(window->window, NC_PROMPT_ESCAPE_DELAY_MS);
+                escape_key = wgetch(window->window);
+                wtimeout(window->window, 0);
+                if (escape_key == ERR) {
+                    escape_is_standalone = true;
+                } else {
+                    while (escape_key != ERR) {
+                        ARRAY_PUSH(window->input_queue, (NcKey)escape_key);
+                        escape_key = wgetch(window->window);
+                    }
+                    escape_is_standalone = false;
+                }
+            }
+
+            if (escape_is_standalone) {
+                nc_readline_state.aborted = true;
+                rl_done = 1;
+                return EOF;
+            }
         }
         if (!nc_window_fd_callbacks_is_empty(window)) {
             nc_window_go_to_xy(window, x, nc_readline_state.start_y);
@@ -1273,8 +1273,8 @@ nc_prompt_display_string(void) {
             before_cursor, before_len, nc_readline_state.width);
         cursor_pos = utf8_width(before_cursor + suffix_position,
                                 before_len - suffix_position);
-        nc_prompt_print_visible_suffix(before_cursor + suffix_position,
-                                       before_len - suffix_position);
+        nc_prompt_print_data(before_cursor + suffix_position,
+                             before_len - suffix_position);
     }
     nc_window_go_to_xy(window, x + cursor_pos, y);
     return;
@@ -1283,40 +1283,15 @@ nc_prompt_display_string(void) {
 static void
 nc_prompt_print_data(char *string, int32 string_len) {
     if (nc_readline_state.encrypted) {
-        nc_prompt_print_mask(string, string_len);
+        int32 characters = utf8_characters(string, string_len);
+
+        for (int32 i = 0; i < characters; i += 1) {
+            nc_window_print_char(nc_readline_state.window, '*');
+        }
     } else {
         nc_window_print_data(nc_readline_state.window, string, string_len);
     }
     return;
-}
-
-static void
-nc_prompt_print_mask(char *string, int32 string_len) {
-    int32 characters;
-
-    characters = utf8_characters(string, string_len);
-    for (int32 i = 0; i < characters; i += 1) {
-        nc_window_print_char(nc_readline_state.window, '*');
-    }
-    return;
-}
-
-static void
-nc_prompt_print_visible_suffix(char *string, int32 string_len) {
-    nc_prompt_print_data(string, string_len);
-    return;
-}
-
-static bool
-nc_prompt_should_continue(char *line) {
-    if (line == NULL) {
-        line = "";
-    }
-    if (nc_readline_state.should_continue == NULL) {
-        return true;
-    }
-    return nc_readline_state.should_continue(
-        line, nc_readline_state.should_continue_user_data);
 }
 
 static void

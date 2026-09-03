@@ -26,13 +26,8 @@ static bool nc_screen_callbacks_is_lockable(NcScreen *screen);
 static bool nc_screen_callbacks_is_mergable(NcScreen *screen);
 static void nc_screen_callbacks_destroy(NcScreen *screen);
 static bool nc_screen_run_current_is_available(NcScreen *screen);
-static void nc_screen_ops_apply_defaults(NcScreenOps *ops);
 static int32 nc_screen_registry_index_of(NcScreenRegistry *registry,
                                          NcScreen *screen);
-static bool nc_screen_registry_has_type(NcScreenRegistry *registry,
-                                        int32 type);
-static void nc_screen_registry_clear_refs(NcScreenRegistry *registry,
-                                          NcScreen *screen);
 static void nc_screen_registry_update_one(NcScreen *screen, void *user);
 static void nc_screen_registry_resize_one(NcScreen *screen, void *user);
 
@@ -167,7 +162,52 @@ nc_screen_init_ops(NcScreen *screen, NcScreenOps ops,
                    void *user, int32 type) {
     NcScreenCallbacks callbacks = {0};
 
-    nc_screen_ops_apply_defaults(&ops);
+    if (ops.active_window == NULL) {
+        ops.active_window = nc_screen_default_ops.active_window;
+    }
+    if (ops.refresh == NULL) {
+        ops.refresh = nc_screen_default_ops.refresh;
+    }
+    if (ops.refresh_window == NULL) {
+        ops.refresh_window = nc_screen_default_ops.refresh_window;
+    }
+    if (ops.scroll == NULL) {
+        ops.scroll = nc_screen_default_ops.scroll;
+    }
+    if (ops.list_change_finished == NULL) {
+        ops.list_change_finished = nc_screen_default_ops.list_change_finished;
+    }
+    if ((ops.can_run_current == NULL) && (ops.run_current != NULL)) {
+        ops.can_run_current = nc_screen_run_current_is_available;
+    }
+    if (ops.can_run_current == NULL) {
+        ops.can_run_current = nc_screen_default_ops.can_run_current;
+    }
+    if (ops.run_current == NULL) {
+        ops.run_current = nc_screen_default_ops.run_current;
+    }
+    if (ops.switch_to == NULL) {
+        ops.switch_to = nc_screen_default_ops.switch_to;
+    }
+    if (ops.resize == NULL) {
+        ops.resize = nc_screen_default_ops.resize;
+    }
+    if (ops.title == NULL) {
+        ops.title = nc_screen_default_ops.title;
+    }
+    if (ops.update == NULL) {
+        ops.update = nc_screen_default_ops.update;
+    }
+    if (ops.mouse_button_pressed == NULL) {
+        ops.mouse_button_pressed = nc_screen_default_ops.mouse_button_pressed;
+    }
+    if (ops.destroy == NULL) {
+        ops.destroy = nc_screen_default_ops.destroy;
+    }
+    if (ops.window_timeout <= 0) {
+        ops.window_timeout = nc_screen_default_ops.window_timeout;
+    }
+
     screen->callbacks = callbacks;
     screen->ops_storage = ops;
     screen->ops = &screen->ops_storage;
@@ -257,13 +297,6 @@ nc_screen_title(NcScreen *screen) {
 int32
 nc_screen_type(NcScreen *screen) {
     return screen->type;
-}
-
-void
-nc_screen_update(NcScreen *screen) {
-    screen->ops->update(screen);
-    screen->has_to_be_updated = false;
-    return;
 }
 
 void
@@ -377,7 +410,8 @@ nc_screen_registry_register(NcScreenRegistry *registry, NcScreen *screen) {
     if (nc_screen_registry_is_registered(registry, screen)) {
         return -EEXIST;
     }
-    if (nc_screen_registry_has_type(registry, screen->type)) {
+    if ((screen->type != NC_SCREEN_TYPE_UNKNOWN)
+        && nc_screen_registry_find(registry, screen->type)) {
         return -EEXIST;
     }
     if (registry->screens_len >= NC_SCREEN_REGISTRY_MAX_SCREENS) {
@@ -406,7 +440,19 @@ nc_screen_registry_unregister(NcScreenRegistry *registry,
     }
     registry->screens_len -= 1;
     registry->screens[registry->screens_len] = NULL;
-    nc_screen_registry_clear_refs(registry, screen);
+
+    if (registry->current_screen == screen) {
+        registry->current_screen = NULL;
+    }
+    if (registry->previous_screen == screen) {
+        registry->previous_screen = NULL;
+    }
+    if (registry->locked_screen == screen) {
+        registry->locked_screen = NULL;
+    }
+    if (registry->inactive_screen == screen) {
+        registry->inactive_screen = NULL;
+    }
     return 0;
 }
 
@@ -808,56 +854,6 @@ nc_screen_run_current_is_available(NcScreen *screen) {
     return screen->ops->run_current != nc_screen_default_run_current;
 }
 
-static void
-nc_screen_ops_apply_defaults(NcScreenOps *ops) {
-    if (ops->active_window == NULL) {
-        ops->active_window = nc_screen_default_ops.active_window;
-    }
-    if (ops->refresh == NULL) {
-        ops->refresh = nc_screen_default_ops.refresh;
-    }
-    if (ops->refresh_window == NULL) {
-        ops->refresh_window = nc_screen_default_ops.refresh_window;
-    }
-    if (ops->scroll == NULL) {
-        ops->scroll = nc_screen_default_ops.scroll;
-    }
-    if (ops->list_change_finished == NULL) {
-        ops->list_change_finished = nc_screen_default_ops.list_change_finished;
-    }
-    if ((ops->can_run_current == NULL) && (ops->run_current != NULL)) {
-        ops->can_run_current = nc_screen_run_current_is_available;
-    }
-    if (ops->can_run_current == NULL) {
-        ops->can_run_current = nc_screen_default_ops.can_run_current;
-    }
-    if (ops->run_current == NULL) {
-        ops->run_current = nc_screen_default_ops.run_current;
-    }
-    if (ops->switch_to == NULL) {
-        ops->switch_to = nc_screen_default_ops.switch_to;
-    }
-    if (ops->resize == NULL) {
-        ops->resize = nc_screen_default_ops.resize;
-    }
-    if (ops->title == NULL) {
-        ops->title = nc_screen_default_ops.title;
-    }
-    if (ops->update == NULL) {
-        ops->update = nc_screen_default_ops.update;
-    }
-    if (ops->mouse_button_pressed == NULL) {
-        ops->mouse_button_pressed = nc_screen_default_ops.mouse_button_pressed;
-    }
-    if (ops->destroy == NULL) {
-        ops->destroy = nc_screen_default_ops.destroy;
-    }
-    if (ops->window_timeout <= 0) {
-        ops->window_timeout = nc_screen_default_ops.window_timeout;
-    }
-    return;
-}
-
 static int32
 nc_screen_registry_index_of(NcScreenRegistry *registry,
                             NcScreen *screen) {
@@ -870,36 +866,11 @@ nc_screen_registry_index_of(NcScreenRegistry *registry,
     return -1;
 }
 
-static bool
-nc_screen_registry_has_type(NcScreenRegistry *registry, int32 type) {
-    if (type == NC_SCREEN_TYPE_UNKNOWN) {
-        return false;
-    }
-    return nc_screen_registry_find(registry, type);
-}
-
-static void
-nc_screen_registry_clear_refs(NcScreenRegistry *registry,
-                              NcScreen *screen) {
-    if (registry->current_screen == screen) {
-        registry->current_screen = NULL;
-    }
-    if (registry->previous_screen == screen) {
-        registry->previous_screen = NULL;
-    }
-    if (registry->locked_screen == screen) {
-        registry->locked_screen = NULL;
-    }
-    if (registry->inactive_screen == screen) {
-        registry->inactive_screen = NULL;
-    }
-    return;
-}
-
 static void
 nc_screen_registry_update_one(NcScreen *screen, void *user) {
     (void)user;
-    nc_screen_update(screen);
+    screen->ops->update(screen);
+    screen->has_to_be_updated = false;
     return;
 }
 
