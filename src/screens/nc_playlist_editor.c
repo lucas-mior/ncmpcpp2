@@ -30,11 +30,6 @@ static void playlist_draw_callback(NcMenu *menu, NcWindow *window, void *item, i
 static void content_draw_callback(NcMenu *menu, NcWindow *window, void *item, int32 pos, void *user);
 
 // declarations to delete
-static int32 playlist_editor_store_current_song(PlaylistEditorScreen *, NcmSong *);
-static void playlist_editor_mouse_scroll(PlaylistEditorScreen *, enum NcScroll);
-static bool playlist_editor_playlist_matches_regex(NcmRegex *, NcmPlaylist *);
-static bool playlist_editor_search_text_matches(NcmRegex *, char *, int32);
-static bool playlist_editor_displayed_playlist_is_current(PlaylistEditorScreen *);
 static void playlist_editor_observe_current_playlist(PlaylistEditorScreen *);
 static void playlist_editor_finish_playlist_change( PlaylistEditorScreen *);
 static void playlist_editor_update_menu_highlights(PlaylistEditorScreen *);
@@ -460,6 +455,24 @@ playlist_editor_restore_playlist_path(PlaylistEditorScreen *screen,
     return 0;
 }
 
+static bool
+playlist_editor_displayed_playlist_is_current(
+    PlaylistEditorScreen *screen
+) {
+    char *path;
+    int32 path_len;
+
+    if ((screen == NULL) || !screen->displayed_playlist_valid) {
+        return false;
+    }
+    if (!playlist_editor_has_current_playlist_path(screen, &path, &path_len)) {
+        return false;
+    }
+    return STREQUAL(screen->displayed_playlist_path.data,
+                    screen->displayed_playlist_path.len,
+                    path, path_len);
+}
+
 int32
 playlist_editor_screen_load_playlists(PlaylistEditorScreen *screen,
                                       NcmMpdPlaylistList *playlists) {
@@ -586,6 +599,26 @@ playlist_editor_restore_content_song(PlaylistEditorScreen *screen,
         }
     }
     return 0;
+}
+
+static int32
+playlist_editor_store_current_song(PlaylistEditorScreen *screen,
+                                   NcmSong *song) {
+    NcmSong *current;
+    int32 status;
+
+    ASSERT(song != NULL);
+
+    if (screen == NULL) {
+        return 0;
+    }
+    if ((current = nc_song_menu_current(&screen->content)) == NULL) {
+        return 0;
+    }
+    if ((status = ncm_song_copy(song, current)) < 0) {
+        return status;
+    }
+    return 1;
 }
 
 int32
@@ -1480,6 +1513,40 @@ update_finished:
 }
 
 static void
+playlist_editor_mouse_scroll(PlaylistEditorScreen *screen,
+                             enum NcScroll where) {
+    enum NcScroll effective;
+    NcMenu *menu;
+    int32 count;
+
+    if (screen == NULL) {
+        return;
+    }
+    if ((menu = playlist_editor_screen_active_menu(screen)) == NULL) {
+        return;
+    }
+
+    effective = where;
+    count = Config.lines_scrolled;
+    if (Config.mouse_list_scroll_whole_page) {
+        count = 1;
+        if (where == NC_SCROLL_DOWN) {
+            effective = NC_SCROLL_PAGE_DOWN;
+        } else if (where == NC_SCROLL_UP) {
+            effective = NC_SCROLL_PAGE_UP;
+        }
+    }
+    if (count < 1) {
+        count = 1;
+    }
+    for (int32 i = 0; i < count; i += 1) {
+        nc_menu_scroll_selectable(menu, screen->main_height, effective);
+    }
+    playlist_editor_finish_playlist_change(screen);
+    return;
+}
+
+static void
 playlist_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     PlaylistEditorScreen *editor;
     int32 x;
@@ -1591,6 +1658,26 @@ static void
 playlist_editor_destroy_callback(NcScreen *screen) {
     playlist_editor_screen_destroy(playlist_editor_from_screen(screen));
     return;
+}
+
+static bool
+playlist_editor_search_text_matches(NcmRegex *regex, char *data,
+                                    int32 len) {
+    if (data == NULL) {
+        data = "";
+        len = 0;
+    }
+    return ncm_regex_matches(regex, data, len);
+}
+
+static bool
+playlist_editor_playlist_matches_regex(NcmRegex *regex,
+                                       NcmPlaylist *playlist) {
+    if ((playlist == NULL) || (playlist->path == NULL)) {
+        return false;
+    }
+    return playlist_editor_search_text_matches(regex, playlist->path,
+                                               playlist->path_len);
 }
 
 static bool
@@ -1731,26 +1818,6 @@ content_draw_callback(NcMenu *menu, NcWindow *window, void *item,
 }
 
 
-static bool
-playlist_editor_playlist_matches_regex(NcmRegex *regex,
-                                       NcmPlaylist *playlist) {
-    if ((playlist == NULL) || (playlist->path == NULL)) {
-        return false;
-    }
-    return playlist_editor_search_text_matches(regex, playlist->path,
-                                               playlist->path_len);
-}
-
-
-static bool
-playlist_editor_search_text_matches(NcmRegex *regex, char *data,
-                                    int32 len) {
-    if (data == NULL) {
-        data = "";
-        len = 0;
-    }
-    return ncm_regex_matches(regex, data, len);
-}
 
 
 static void
@@ -1919,26 +1986,6 @@ playlist_editor_show_screen(PlaylistEditorScreen *screen) {
         &screen->screen, nc_screen_has_to_be_resized(&screen->screen));
 }
 
-static int32
-playlist_editor_store_current_song(PlaylistEditorScreen *screen,
-                                   NcmSong *song) {
-    NcmSong *current;
-    int32 status;
-
-    ASSERT(song != NULL);
-
-    if (screen == NULL) {
-        return 0;
-    }
-    if ((current = nc_song_menu_current(&screen->content)) == NULL) {
-        return 0;
-    }
-    if ((status = ncm_song_copy(song, current)) < 0) {
-        return status;
-    }
-    return 1;
-}
-
 
 
 static void
@@ -1963,24 +2010,6 @@ playlist_editor_observe_current_playlist(PlaylistEditorScreen *screen) {
     sb_set(&screen->observed_playlist_path, path, path_len);
     screen->observed_playlist_valid = true;
     return;
-}
-
-static bool
-playlist_editor_displayed_playlist_is_current(
-    PlaylistEditorScreen *screen
-) {
-    char *path;
-    int32 path_len;
-
-    if ((screen == NULL) || !screen->displayed_playlist_valid) {
-        return false;
-    }
-    if (!playlist_editor_has_current_playlist_path(screen, &path, &path_len)) {
-        return false;
-    }
-    return STREQUAL(screen->displayed_playlist_path.data,
-                    screen->displayed_playlist_path.len,
-                    path, path_len);
 }
 
 
@@ -2027,40 +2056,6 @@ playlist_editor_finish_playlist_change(PlaylistEditorScreen *screen) {
     if (changed) {
         playlist_editor_clear_stale_content(screen);
     }
-    return;
-}
-
-static void
-playlist_editor_mouse_scroll(PlaylistEditorScreen *screen,
-                             enum NcScroll where) {
-    enum NcScroll effective;
-    NcMenu *menu;
-    int32 count;
-
-    if (screen == NULL) {
-        return;
-    }
-    if ((menu = playlist_editor_screen_active_menu(screen)) == NULL) {
-        return;
-    }
-
-    effective = where;
-    count = Config.lines_scrolled;
-    if (Config.mouse_list_scroll_whole_page) {
-        count = 1;
-        if (where == NC_SCROLL_DOWN) {
-            effective = NC_SCROLL_PAGE_DOWN;
-        } else if (where == NC_SCROLL_UP) {
-            effective = NC_SCROLL_PAGE_UP;
-        }
-    }
-    if (count < 1) {
-        count = 1;
-    }
-    for (int32 i = 0; i < count; i += 1) {
-        nc_menu_scroll_selectable(menu, screen->main_height, effective);
-    }
-    playlist_editor_finish_playlist_change(screen);
     return;
 }
 
