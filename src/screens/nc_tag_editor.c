@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_TAG_EDITOR_C)
-#define NCMPCPP_NC_TAG_EDITOR_C
+#if !defined(NC_TAG_EDITOR_C)
+#define NC_TAG_EDITOR_C
 
 #include "cbase.h"
 
@@ -5194,4 +5194,4 @@ tag_editor_next_mask_tag(char *mask, int32 mask_len, int32 start,
     return false;
 }
 
-#endif /* NCMPCPP_NC_TAG_EDITOR_C */
+#endif /* NC_TAG_EDITOR_C */
