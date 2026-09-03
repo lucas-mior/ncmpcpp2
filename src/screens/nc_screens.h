@@ -1746,18 +1746,9 @@ void search_engine_screen_destroy(SearchEngineScreen *screen);
 NcScreen *search_engine_screen_base(SearchEngineScreen *screen);
 NcMenu *search_engine_screen_menu(SearchEngineScreen *screen);
 NcWindow *search_engine_screen_window(SearchEngineScreen *screen);
-void search_engine_screen_set_geometry(
-    SearchEngineScreen *screen, int32 start_x, int32 width,
-    int32 main_start_y, int32 main_height);
 void search_engine_screen_set_mouse_config(
     SearchEngineScreen *screen, int32 lines_scrolled,
     bool whole_page);
-void search_engine_screen_set_display_mode(
-    SearchEngineScreen *screen, enum DisplayMode mode);
-void search_engine_screen_clear(SearchEngineScreen *screen);
-char *search_engine_constraint_name(int32 idx);
-char *search_engine_search_mode_name(
-    enum SearchEngineSearchMode mode);
 bool search_engine_screen_has_locked_constraints(
     SearchEngineScreen *screen);
 int32 search_engine_screen_format_song_text(
@@ -1766,27 +1757,11 @@ void search_engine_screen_update_column_title(
     SearchEngineScreen *screen);
 void search_engine_screen_prepare_static_rows(
     SearchEngineScreen *screen);
-int32 search_engine_screen_update_constraint_row(
-    SearchEngineScreen *screen, int32 idx);
 int32 search_engine_screen_update_search_source_row(
     SearchEngineScreen *screen);
-int32 search_engine_screen_update_search_mode_row(
-    SearchEngineScreen *screen);
-int32 search_engine_screen_add_result_summary(
-    SearchEngineScreen *screen, int32 song_count);
-void search_engine_screen_set_constraints_locked(
-    SearchEngineScreen *screen, bool locked);
 void search_engine_screen_reset(SearchEngineScreen *screen);
-int32 search_engine_screen_add_song_copy(
-    SearchEngineScreen *screen, NcmSong *song);
-int32 search_engine_screen_add_song_copy_with_flags(
-    SearchEngineScreen *screen, NcmSong *song, uint32 flags);
 int32 search_engine_screen_add_buffer_with_flags(
     SearchEngineScreen *screen, NcBuffer *buffer, uint32 flags);
-int32 search_engine_screen_set_constraint(
-    SearchEngineScreen *screen, int32 idx, char *data, int32 data_len);
-void search_engine_screen_clear_find_constraint(
-    SearchEngineScreen *screen);
 int32 search_engine_screen_set_search_mode(
     SearchEngineScreen *screen,
     enum SearchEngineSearchMode mode);
@@ -1794,26 +1769,9 @@ void search_engine_screen_set_search_source(
     SearchEngineScreen *screen, bool search_in_database);
 void search_engine_screen_set_hooks(
     SearchEngineScreen *screen, SearchEngineHooks hooks);
-int32 search_engine_screen_list_database_songs(
-    SearchEngineScreen *screen, NcmSongArray *songs,
-    NcmError *ncm_error);
-int32 search_engine_screen_snapshot_playlist(
-    SearchEngineScreen *screen, NcmSongArray *songs,
-    NcmError *ncm_error);
-enum SearchEnginePromptResult
-search_engine_screen_prompt_constraint(
-    SearchEngineScreen *screen, int32 idx, StrBuilder *result);
 void search_engine_screen_status_message(
     SearchEngineScreen *screen, char *message, int32 message_len);
-int32 search_engine_screen_add_song(
-    SearchEngineScreen *screen, NcmSong *song, bool play,
-    NcmError *ncm_error);
-int32 search_engine_screen_execute_search(
-    SearchEngineScreen *screen, NcmMpdClient *client,
-    NcmError *ncm_error);
 bool search_engine_screen_can_run_current(
-    SearchEngineScreen *screen);
-int32 search_engine_screen_run_current(
     SearchEngineScreen *screen);
 int32 search_engine_screen_start_searching(
     SearchEngineScreen *screen, NcmMpdClient *client,
@@ -2271,28 +2229,11 @@ void tiny_tag_editor_screen_set_hooks(
     TinyTagEditorScreen *screen, TinyTagEditorHooks hooks);
 NcEditorBufferMenu *tiny_tag_editor_screen_rows(
     TinyTagEditorScreen *screen);
-void tiny_tag_editor_screen_set_geometry(
-    TinyTagEditorScreen *screen, int32 start_x, int32 width,
-    int32 main_start_y, int32 main_height);
-int32 tiny_tag_editor_screen_set_edited_song(
-    TinyTagEditorScreen *screen, NcmSong *song);
 enum TinyTagEditorOpenResult
 tiny_tag_editor_screen_open_song(
     TinyTagEditorScreen *screen, NcmSong *song,
     char *music_dir, int32 music_dir_len, char *tag_separator,
     int32 tag_separator_len, bool show_duplicate_tags, StrBuilder *path);
-int32 tiny_tag_editor_screen_reload_rows(
-    TinyTagEditorScreen *screen,
-    NcmTaglibAudioProperties *properties,
-    bool extended_tags_supported, char *tag_separator,
-    int32 tag_separator_len, bool show_duplicate_tags);
-int32 tiny_tag_editor_screen_set_tag_value(
-    TinyTagEditorScreen *screen, enum NcmTagsField field,
-    char *value, int32 value_len, char *separator, int32 separator_len);
-int32 tiny_tag_editor_screen_set_filename(
-    TinyTagEditorScreen *screen, char *name, int32 name_len);
-int32 tiny_tag_editor_screen_set_filename_stem(
-    TinyTagEditorScreen *screen, char *stem, int32 stem_len);
 int32 tiny_tag_editor_screen_run_row(
     TinyTagEditorScreen *screen, int32 row);
 int32 tiny_tag_editor_screen_run_current(
