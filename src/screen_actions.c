@@ -134,7 +134,7 @@ current_screen_set_search_constraint(char *pattern, int32 pattern_len,
 }
 
 static bool
-current_screen_search_direction_forward(enum SearchDirection direction) {
+current_screen_search_direction_is_forward(enum SearchDirection direction) {
     if (direction == NCM_SEARCH_DIRECTION_FORWARD) {
         return true;
     }
@@ -322,7 +322,7 @@ current_screen_search(enum SearchDirection direction, char *pattern,
     }
 
     attempted = false;
-    forward = current_screen_search_direction_forward(direction);
+    forward = current_screen_search_direction_is_forward(direction);
     status = -NCM_ERROR_UNAVAILABLE;
 
     if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST)) {

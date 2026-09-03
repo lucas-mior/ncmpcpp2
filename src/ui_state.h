@@ -22,6 +22,6 @@ int32 ui_state_footer_height(void);
 void ui_state_set_footer_start_y(int32 value);
 int32 ui_state_footer_start_y(void);
 void ui_state_set_statusbar_visibility_baseline(bool value);
-bool ui_state_statusbar_visibility_baseline(void);
+bool ui_state_statusbar_visibility_is_baseline(void);
 
 #endif /* NCMPCPP_UI_STATE_H */

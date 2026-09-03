@@ -514,8 +514,8 @@ int32 screen_type_to_nc_type(enum ScreenType screen_type);
 enum ScreenType screen_type_from_nc_type(int32 nc_type);
 int32 screen_type_parse_startup(char *string, int32 string_len,
                                 enum ScreenType *screen_type);
-bool screen_type_parse(char *string, int32 string_len,
-                       enum ScreenType *screen_type);
+int32 screen_type_parse(char *string, int32 string_len,
+                        enum ScreenType *screen_type);
 
 /* screens/screen_switcher.h */
 NcScreen *nc_screen_switcher_current(void);
@@ -2520,7 +2520,7 @@ int32 app_screen_selected_items_adder_open(
     NcmSongArray *songs,
     NcmError *ncm_error
 );
-bool app_screen_sort_playlist_dialog_switch_to(void);
+int32 app_screen_sort_playlist_dialog_switch_to(void);
 void app_screen_outputs_toggle(void);
 void app_screen_outputs_fetch_list(void);
 void app_screen_outputs_refresh_if_visible(void);

@@ -79,7 +79,7 @@ app_destroy_state(void) {
     return;
 }
 
-static bool
+static int32
 app_redirect_stderr(void) {
     StrBuilder path = {0};
 
@@ -87,13 +87,18 @@ app_redirect_stderr(void) {
     SB_APPEND(&path, "error.log");
 
     if ((app_saved_stderr_fd = dup(STDERR_FILENO)) < 0) {
+        int32 status = -errno;
+
         sb_free(&path);
-        return false;
+        return status;
     }
 
     app_error_log = freopen(path.data, "a", stderr);
     sb_free(&path);
-    return app_error_log;
+    if (app_error_log == NULL) {
+        return -errno;
+    }
+    return 0;
 }
 
 static void
@@ -212,7 +217,7 @@ app_execute_key(NcKey input) {
 }
 
 static bool
-app_exit_requested(void) {
+app_exit_is_requested(void) {
     return ncmpcpp_has_exit_request()
            || ncm_action_runtime_exit_requested(NULL);
 }
@@ -221,6 +226,7 @@ int
 main(int32 argc, char **argv) {
     bool key_pressed;
     NcmTimePoint connect_attempt;
+    int32 redirect_status;
 
     program = argv[0];
 
@@ -234,8 +240,10 @@ main(int32 argc, char **argv) {
 #if CC_GCC || CC_CLANG
     atexit(app_at_exit);
 #endif
-    if (!app_redirect_stderr()) {
-        error2("warning: could not redirect stderr: %s\n", strerror(errno));
+    redirect_status = app_redirect_stderr();
+    if (redirect_status < 0) {
+        error2("warning: could not redirect stderr: %s\n",
+               strerror(-redirect_status));
     }
 
     signal(SIGPIPE, SIG_IGN);
@@ -252,7 +260,7 @@ main(int32 argc, char **argv) {
     key_pressed = false;
     connect_attempt.ns = 0;
 
-    while (!app_exit_requested()) {
+    while (!app_exit_is_requested()) {
         NcKey input;
 
         app_connect_if_due(&connect_attempt);

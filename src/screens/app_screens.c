@@ -505,7 +505,7 @@ app_screen_sort_playlist_dialog_init(void) {
     return;
 }
 
-bool
+int32
 app_screen_sort_playlist_dialog_switch_to(void) {
     NcmError ncm_error;
     int32 status;
@@ -519,7 +519,7 @@ app_screen_sort_playlist_dialog_switch_to(void) {
         ncm_statusbar_print_cstring(
             Config.message_delay_time, ncm_error.message);
     }
-    return status == 0;
+    return status;
 }
 
 static int32
