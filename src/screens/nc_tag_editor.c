@@ -39,6 +39,7 @@ enum TagEditorParserActionRow {
 
 typedef struct SaveContext SaveContext;
 
+// callbacks
 static NcWindow *tag_editor_active_window(NcScreen *screen);
 static void tag_editor_refresh(NcScreen *screen);
 static void tag_editor_refresh_window(NcScreen *screen);
@@ -49,6 +50,8 @@ static void tag_editor_switch_to(NcScreen *screen);
 static void tag_editor_resize(NcScreen *screen);
 static char *tag_editor_title(NcScreen *screen);
 static void tag_editor_update(NcScreen *screen);
+static void tag_editor_destroy_callback(NcScreen *screen);
+
 static int32 tag_editor_reload_directories_from_mpd(TagEditorScreen *screen,
                                                     NcmMpdClient *client,
                                                     NcmError *ncm_error);
@@ -56,7 +59,6 @@ static int32 tag_editor_reload_songs_from_mpd(TagEditorScreen *screen,
                                               NcmMpdClient *client,
                                               NcmError *ncm_error);
 static void tag_editor_mouse_callback(NcScreen *screen, MEVENT event);
-static void tag_editor_destroy_callback(NcScreen *screen);
 static void tag_editor_mouse_scroll(TagEditorScreen *screen,
                                     enum NcScroll where);
 static void tag_editor_mouse_scroll_menu(NcMenu *menu, NcWindow *window,
