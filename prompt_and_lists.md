@@ -10,22 +10,15 @@ if they are called only once: inline their body and then delete them. If there
 aren't any functions that fit this pattern, simply delete the file from the
 list below, and go straight to the next file without asking me.
 
-- src/screens/nc_screen_switcher.c
 - src/statusbar.c
 - src/c/ncm_string.c
 - src/c/ncm_time.c
 - src/curses/nc_formatted_color.c
 - src/c/ncm_path.c
 - src/c/ncm_mpd_item.c
-- src/screens/screen_type.c
-- src/screens/nc_screens.c
 - src/c/ncm_playlist_sort.c
 - src/app_legacy_bridge.c
-- src/screens/nc_sort_playlist.c
 - src/settings_types.c
-- src/screens/nc_playlist.c
-- src/screens/nc_lyrics.c
-- src/screens/nc_lastfm.c
 - src/c/ncm_html.c
 - src/screens/nc_song_info.c
 - src/c/ncm_display.c
@@ -41,15 +34,21 @@ list below, and go straight to the next file without asking me.
 - src/c/ncm_mpd_client.c
 - src/c/ncm_c.c
 - src/c/ncm_option_parser.c
-- src/screens/nc_visualizer.c
 - src/curses/nc_curses.c
 - src/curses/nc_app_menus.c
-- src/actions.c
-- src/screens/nc_media_library.c
 - src/c/ncm_mutable_song.c
 - src/c/ncm_format.c
 - src/c/ncm_error.c
 - src/c/ncm_string_format.c
+- src/screens/nc_screen_switcher.c
+- src/screens/screen_type.c
+- src/screens/nc_screens.c
+- src/screens/nc_sort_playlist.c
+- src/screens/nc_playlist.c
+- src/screens/nc_lyrics.c
+- src/screens/nc_lastfm.c
+- src/screens/nc_visualizer.c
+- src/screens/nc_media_library.c
 
 ## Excessive NULL checking
 The source code in src/ is at paranoia levels of NULL pointer checking.  For
