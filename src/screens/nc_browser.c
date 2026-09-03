@@ -20,15 +20,6 @@ static char *browser_title(NcScreen *screen);
 static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
-// declarations to delete
-static int32 browser_delete_path_recursive(char *, int32, NcmError *);
-static int32 browser_item_sort_rank(NcmMpdItem *);
-static int32 browser_compare_views(NcmStringView, NcmStringView );
-static int32 browser_compare_times(time_t, time_t );
-static NcmStringView browser_directory_sort_view(NcmMpdItem *);
-static NcmStringView browser_playlist_sort_view(NcmMpdItem *);
-static NcmStringView browser_song_name_sort_view(NcmMpdItem *);
-
 #define NC_SCREEN_IMPL_TYPE BrowserScreen
 #define NC_SCREEN_IMPL_PREFIX browser
 #define NC_SCREEN_IMPL_PUBLIC_PREFIX browser_screen
@@ -487,6 +478,68 @@ browser_screen_add_item_move(BrowserScreen *screen,
     nc_browser_entry_menu_add(browser_screen_entries(screen), &copy);
     ncm_mpd_item_destroy(&copy);
     return;
+}
+
+static int32
+browser_item_sort_rank(NcmMpdItem *item) {
+    switch (ncm_mpd_item_kind(item)) {
+    case NCM_MPD_ITEM_DIRECTORY:
+        return 0;
+    case NCM_MPD_ITEM_SONG:
+        return 1;
+    case NCM_MPD_ITEM_PLAYLIST:
+        return 2;
+    case NCM_MPD_ITEM_COUNT:
+        return 3;
+    default:
+        break;
+    }
+    return 3;
+}
+
+static int32
+browser_compare_views(NcmStringView left, NcmStringView right) {
+    return ncm_compare_locale_strings(left.data, left.len, right.data,
+                                      right.len,
+                                      Config.ignore_leading_the);
+}
+
+static int32
+browser_compare_times(time_t left, time_t right) {
+    if (left > right) {
+        return -1;
+    }
+    if (left < right) {
+        return 1;
+    }
+    return 0;
+}
+
+static NcmStringView
+browser_directory_sort_view(NcmMpdItem *item) {
+    NcmStringView view;
+
+    ncm_string_view_clear(&view);
+    (void)ncm_directory_has_path_view(ncm_mpd_item_directory(item), &view);
+    return view;
+}
+
+static NcmStringView
+browser_playlist_sort_view(NcmMpdItem *item) {
+    NcmStringView view;
+
+    ncm_string_view_clear(&view);
+    (void)ncm_playlist_has_path_view(ncm_mpd_item_playlist(item), &view);
+    return view;
+}
+
+static NcmStringView
+browser_song_name_sort_view(NcmMpdItem *item) {
+    NcmStringView view;
+
+    ncm_string_view_clear(&view);
+    (void)ncm_song_has_name_view(ncm_mpd_item_song(item), 0, &view);
+    return view;
 }
 
 int32
@@ -1315,6 +1368,97 @@ browser_real_path(BrowserScreen *screen, NcmStringView path,
     if (status < 0) {
         return ncm_error_set_status(ncm_error, status,
                                     STRLIT("failed to build path"));
+    }
+    return ncm_error_ok(ncm_error);
+}
+
+static int32
+browser_delete_path_recursive(char *path, int32 path_len,
+                              NcmError *ncm_error) {
+    NcmFsDirectory directory = {0};
+    NcmFsEntry entry = {0};
+    NcmFsStat stat = {0};
+    int32 read_status;
+    int32 status;
+
+    status = ncm_fs_stat(path, path_len, &stat, ncm_error);
+    if (status < 0) {
+        return status;
+    }
+    if (!stat.exists) {
+        return ncm_error_ok(ncm_error);
+    }
+    if (stat.type != NCM_FS_ENTRY_DIRECTORY) {
+        return ncm_fs_unlink(path, path_len, ncm_error);
+    }
+
+    status = ncm_fs_directory_open(&directory, path, path_len, ncm_error);
+    if (status < 0) {
+        return status;
+    }
+
+    ncm_fs_entry_init(&entry);
+    while (true) {
+        StrBuilder child = {0};
+
+        read_status = ncm_fs_directory_read(&directory, &entry, ncm_error);
+        if (read_status < 0) {
+            status = read_status;
+            break;
+        }
+        if (read_status == 0) {
+            status = 0;
+            break;
+        }
+
+        status = ncm_fs_join(&child, directory.path, directory.path_len,
+                             entry.name, entry.name_len);
+        if (status < 0) {
+            status = ncm_error_set_status(ncm_error, status,
+                                          STRLIT("failed to build path"));
+        } else {
+            status = browser_delete_path_recursive(
+                child.data, child.len, ncm_error);
+        }
+        sb_free(&child);
+        if (status < 0) {
+            break;
+        }
+    }
+    ncm_fs_entry_destroy(&entry);
+    ncm_fs_directory_close(&directory);
+
+    if (status < 0) {
+        return status;
+    }
+    if ((path == NULL) || (path_len < 0)) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("invalid directory path"));
+    }
+
+    {
+        char message[256];
+        char *copy;
+        int32 message_len;
+        int32 code;
+
+        copy = malloc2(path_len + 1);
+        memcpy64(copy, path, path_len);
+        copy[path_len] = '\0';
+        if (rmdir(copy) != 0) {
+            code = errno;
+            if (code == ENOENT) {
+                free2(copy, path_len + 1);
+                return ncm_error_ok(ncm_error);
+            }
+            message_len = SNPRINTF(message, "rmdir '%.*s': %s",
+                                   path_len, path, strerror(code));
+            status = ncm_error_set_status(
+                ncm_error, -code, message, message_len);
+            free2(copy, path_len + 1);
+            return status;
+        }
+        free2(copy, path_len + 1);
     }
     return ncm_error_ok(ncm_error);
 }
@@ -2313,97 +2457,6 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 }
 
 static int32
-browser_delete_path_recursive(char *path, int32 path_len,
-                              NcmError *ncm_error) {
-    NcmFsDirectory directory = {0};
-    NcmFsEntry entry = {0};
-    NcmFsStat stat = {0};
-    int32 read_status;
-    int32 status;
-
-    status = ncm_fs_stat(path, path_len, &stat, ncm_error);
-    if (status < 0) {
-        return status;
-    }
-    if (!stat.exists) {
-        return ncm_error_ok(ncm_error);
-    }
-    if (stat.type != NCM_FS_ENTRY_DIRECTORY) {
-        return ncm_fs_unlink(path, path_len, ncm_error);
-    }
-
-    status = ncm_fs_directory_open(&directory, path, path_len, ncm_error);
-    if (status < 0) {
-        return status;
-    }
-
-    ncm_fs_entry_init(&entry);
-    while (true) {
-        StrBuilder child = {0};
-
-        read_status = ncm_fs_directory_read(&directory, &entry, ncm_error);
-        if (read_status < 0) {
-            status = read_status;
-            break;
-        }
-        if (read_status == 0) {
-            status = 0;
-            break;
-        }
-
-        status = ncm_fs_join(&child, directory.path, directory.path_len,
-                             entry.name, entry.name_len);
-        if (status < 0) {
-            status = ncm_error_set_status(ncm_error, status,
-                                          STRLIT("failed to build path"));
-        } else {
-            status = browser_delete_path_recursive(
-                child.data, child.len, ncm_error);
-        }
-        sb_free(&child);
-        if (status < 0) {
-            break;
-        }
-    }
-    ncm_fs_entry_destroy(&entry);
-    ncm_fs_directory_close(&directory);
-
-    if (status < 0) {
-        return status;
-    }
-    if ((path == NULL) || (path_len < 0)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("invalid directory path"));
-    }
-
-    {
-        char message[256];
-        char *copy;
-        int32 message_len;
-        int32 code;
-
-        copy = malloc2(path_len + 1);
-        memcpy64(copy, path, path_len);
-        copy[path_len] = '\0';
-        if (rmdir(copy) != 0) {
-            code = errno;
-            if (code == ENOENT) {
-                free2(copy, path_len + 1);
-                return ncm_error_ok(ncm_error);
-            }
-            message_len = SNPRINTF(message, "rmdir '%.*s': %s",
-                                   path_len, path, strerror(code));
-            status = ncm_error_set_status(
-                ncm_error, -code, message, message_len);
-            free2(copy, path_len + 1);
-            return status;
-        }
-        free2(copy, path_len + 1);
-    }
-    return ncm_error_ok(ncm_error);
-}
-
-static int32
 browser_locate_last_directory(
     BrowserScreen *screen
 ) {
@@ -2442,68 +2495,6 @@ browser_locate_last_directory(
         }
     }
     return 0;
-}
-
-static int32
-browser_item_sort_rank(NcmMpdItem *item) {
-    switch (ncm_mpd_item_kind(item)) {
-    case NCM_MPD_ITEM_DIRECTORY:
-        return 0;
-    case NCM_MPD_ITEM_SONG:
-        return 1;
-    case NCM_MPD_ITEM_PLAYLIST:
-        return 2;
-    case NCM_MPD_ITEM_COUNT:
-        return 3;
-    default:
-        break;
-    }
-    return 3;
-}
-
-static int32
-browser_compare_views(NcmStringView left, NcmStringView right) {
-    return ncm_compare_locale_strings(left.data, left.len, right.data,
-                                      right.len,
-                                      Config.ignore_leading_the);
-}
-
-static int32
-browser_compare_times(time_t left, time_t right) {
-    if (left > right) {
-        return -1;
-    }
-    if (left < right) {
-        return 1;
-    }
-    return 0;
-}
-
-static NcmStringView
-browser_directory_sort_view(NcmMpdItem *item) {
-    NcmStringView view;
-
-    ncm_string_view_clear(&view);
-    (void)ncm_directory_has_path_view(ncm_mpd_item_directory(item), &view);
-    return view;
-}
-
-static NcmStringView
-browser_playlist_sort_view(NcmMpdItem *item) {
-    NcmStringView view;
-
-    ncm_string_view_clear(&view);
-    (void)ncm_playlist_has_path_view(ncm_mpd_item_playlist(item), &view);
-    return view;
-}
-
-static NcmStringView
-browser_song_name_sort_view(NcmMpdItem *item) {
-    NcmStringView view;
-
-    ncm_string_view_clear(&view);
-    (void)ncm_song_has_name_view(ncm_mpd_item_song(item), 0, &view);
-    return view;
 }
 
 static bool
