@@ -2554,7 +2554,7 @@ library_restart_update_timer(MediaLibraryScreen *screen) {
 
 static bool
 library_tag_identity_is_equal(NcMediaLibraryTagRow *left,
-                           NcMediaLibraryTagRow *right) {
+                              NcMediaLibraryTagRow *right) {
     if ((left == NULL) || (right == NULL)) {
         return left == right;
     }
