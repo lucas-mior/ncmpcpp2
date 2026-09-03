@@ -1431,9 +1431,8 @@ library_compare_songs(NcmSong *left, NcmSong *right) {
 static void
 library_sort_tags(MediaLibraryTagArray *tags) {
     for (int32 i = 1; i < tags->len; i += 1) {
-        int32 j;
+        int32 j = i;
 
-        j = i;
         while ((j > 0)
                && (library_compare_tag_rows(
                    &tags->items[j], &tags->items[j - 1]) < 0)) {
