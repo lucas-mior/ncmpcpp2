@@ -72,33 +72,33 @@ static bool lyrics_fold_latin_rune(uint32 rune, char *folded,
                                    int32 *folded_len);
 static bool lyrics_skip_slug_rune(uint32 rune);
 static bool lyrics_slug_separator_rune(uint32 rune);
-static bool lyrics_append_slug_profile(StrBuilder *buffer,
-                                       LyricsSlugProfile profile, char *string,
-                                       int32 string_len);
-static bool lyrics_append_slug(StrBuilder *buffer,
-                               enum NcmLyricsFetcherType type, char *string,
-                               int32 string_len);
+static int32 lyrics_append_slug_profile(StrBuilder *buffer,
+                                        LyricsSlugProfile profile, char *string,
+                                        int32 string_len);
+static int32 lyrics_append_slug(StrBuilder *buffer,
+                                enum NcmLyricsFetcherType type, char *string,
+                                int32 string_len);
 static void lyrics_append_query(StrBuilder *buffer,
                                 char *string, int32 string_len);
 static int32 lyrics_hex_value(char ch);
 static bool lyrics_url_collected(StrBuilderArray *urls, char *url,
                                  int32 url_len);
-static bool lyrics_append_url_if_new(StrBuilderArray *urls, char *url,
-                                     int32 url_len);
-static bool lyrics_build_direct_url_profiles(
+static int32 lyrics_append_url_if_new(StrBuilderArray *urls, char *url,
+                                      int32 url_len);
+static int32 lyrics_build_direct_url_profiles(
     NcmLyricsFetcherDef *fetcher, StrBuilder *url, char *artist,
     int32 artist_len, char *title, int32 title_len,
     LyricsSlugProfile artist_profile, LyricsSlugProfile title_profile
 );
-static bool lyrics_build_amalgama_direct_url(
+static int32 lyrics_build_amalgama_direct_url(
     StrBuilder *url, char *artist, int32 artist_len, char *title,
     int32 title_len, LyricsSlugProfile artist_profile,
     LyricsSlugProfile title_profile
 );
-static bool lyrics_collect_direct_urls(NcmLyricsFetcherDef *fetcher,
-                                       StrBuilderArray *urls, char *artist,
-                                       int32 artist_len, char *title,
-                                       int32 title_len);
+static int32 lyrics_collect_direct_urls(NcmLyricsFetcherDef *fetcher,
+                                        StrBuilderArray *urls, char *artist,
+                                        int32 artist_len, char *title,
+                                        int32 title_len);
 static int32 lyrics_fetch_page(NcmLyricsFetcherDef *fetcher,
                                NcmLyricsResult *result, StrBuilder *url,
                                char *referer, int32 referer_len,
@@ -107,11 +107,11 @@ static int32 lyrics_fetch_search(NcmLyricsFetcherDef *fetcher,
                                  NcmLyricsResult *result, char *artist,
                                  int32 artist_len, char *title,
                                  int32 title_len);
-static bool lyrics_collect_search_urls(NcmLyricsFetcherDef *fetcher,
-                                       StrBuilderArray *out, char *data,
-                                       int32 data_len, char *artist,
-                                       int32 artist_len, char *title,
-                                       int32 title_len);
+static int32 lyrics_collect_search_urls(NcmLyricsFetcherDef *fetcher,
+                                        StrBuilderArray *out, char *data,
+                                        int32 data_len, char *artist,
+                                        int32 artist_len, char *title,
+                                        int32 title_len);
 static int32 lyrics_fetch_internet(NcmLyricsFetcherDef *fetcher,
                                    NcmLyricsResult *result, char *artist,
                                    int32 artist_len, char *title,
@@ -403,26 +403,26 @@ lyrics_url_collected(StrBuilderArray *urls, char *url, int32 url_len) {
     return false;
 }
 
-static bool
+static int32
 lyrics_append_url_if_new(StrBuilderArray *urls, char *url, int32 url_len) {
     StrBuilder *item;
 
     ASSERT(urls != NULL);
     if ((url == NULL) || (url_len <= 0)) {
-        return false;
+        return -EINVAL;
     }
     if (lyrics_url_collected(urls, url, url_len)) {
-        return true;
+        return 0;
     }
 
     if ((item = str_builder_array_append(urls)) == NULL) {
-        return false;
+        return -NCM_ERROR_INVALID_STATE;
     }
     SB_APPEND(item, url, url_len);
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 lyrics_build_amalgama_direct_url(
     StrBuilder *url, char *artist, int32 artist_len, char *title,
     int32 title_len, LyricsSlugProfile artist_profile,
@@ -430,34 +430,40 @@ lyrics_build_amalgama_direct_url(
 ) {
     StrBuilder artist_slug = {0};
     StrBuilder title_slug = {0};
-    bool valid;
+    int32 status;
 
-    valid = lyrics_append_slug_profile(&artist_slug, artist_profile,
-                                       artist, artist_len)
-            && lyrics_append_slug_profile(&title_slug, title_profile,
-                                          title, title_len);
-    if (valid) {
-        SB_APPEND(url, "https://www.amalgama-lab.com/songs/");
-        sb_append_byte(url, artist_slug.data[0]);
-        sb_append_byte(url, '/');
-        SB_APPEND(url, artist_slug.data, artist_slug.len);
-        sb_append_byte(url, '/');
-        SB_APPEND(url, title_slug.data, title_slug.len);
-        SB_APPEND(url, ".html");
+    status = lyrics_append_slug_profile(&artist_slug, artist_profile,
+                                        artist, artist_len);
+    if (status < 0) {
+        goto cleanup;
+    }
+    status = lyrics_append_slug_profile(&title_slug, title_profile,
+                                        title, title_len);
+    if (status < 0) {
+        goto cleanup;
     }
 
+    SB_APPEND(url, "https://www.amalgama-lab.com/songs/");
+    sb_append_byte(url, artist_slug.data[0]);
+    sb_append_byte(url, '/');
+    SB_APPEND(url, artist_slug.data, artist_slug.len);
+    sb_append_byte(url, '/');
+    SB_APPEND(url, title_slug.data, title_slug.len);
+    SB_APPEND(url, ".html");
+
+cleanup:
     sb_free(&title_slug);
     sb_free(&artist_slug);
-    return valid;
+    return status;
 }
 
-static bool
+static int32
 lyrics_build_direct_url_profiles(
     NcmLyricsFetcherDef *fetcher, StrBuilder *url, char *artist,
     int32 artist_len, char *title, int32 title_len,
     LyricsSlugProfile artist_profile, LyricsSlugProfile title_profile
 ) {
-    bool valid;
+    int32 status;
 
     ASSERT(fetcher != NULL);
     ASSERT(url != NULL);
@@ -468,98 +474,120 @@ lyrics_build_direct_url_profiles(
     ASSERT(title_len > 0);
 
     sb_clear(url);
+    status = 0;
     switch (fetcher->type) {
     case NCM_LYRICS_FETCHER_AMALGAMA:
-        valid = lyrics_build_amalgama_direct_url(
+        status = lyrics_build_amalgama_direct_url(
             url, artist, artist_len, title, title_len, artist_profile,
             title_profile);
         break;
     case NCM_LYRICS_FETCHER_AZLYRICS:
         SB_APPEND(url, "https://www.azlyrics.com/lyrics/");
-        valid = lyrics_append_slug_profile(url, artist_profile,
-                                           artist, artist_len);
+        if ((status = lyrics_append_slug_profile(url, artist_profile,
+                                                 artist, artist_len)) < 0) {
+            break;
+        }
         sb_append_byte(url, '/');
-        valid = valid
-                && lyrics_append_slug_profile(url, title_profile,
-                                              title, title_len);
+        if ((status = lyrics_append_slug_profile(url, title_profile,
+                                                 title, title_len)) < 0) {
+            break;
+        }
         SB_APPEND(url, ".html");
         break;
     case NCM_LYRICS_FETCHER_GENIUS:
         SB_APPEND(url, "https://genius.com/");
-        valid = lyrics_append_slug_profile(url, artist_profile,
-                                           artist, artist_len);
+        if ((status = lyrics_append_slug_profile(url, artist_profile,
+                                                 artist, artist_len)) < 0) {
+            break;
+        }
         sb_append_byte(url, '-');
-        valid = valid
-                && lyrics_append_slug_profile(url, title_profile,
-                                              title, title_len);
+        if ((status = lyrics_append_slug_profile(url, title_profile,
+                                                 title, title_len)) < 0) {
+            break;
+        }
         SB_APPEND(url, "-lyrics");
         break;
     case NCM_LYRICS_FETCHER_LETRASMUS:
         SB_APPEND(url, "https://www.letras.mus.br/");
-        valid = lyrics_append_slug_profile(url, artist_profile,
-                                           artist, artist_len);
+        if ((status = lyrics_append_slug_profile(url, artist_profile,
+                                                 artist, artist_len)) < 0) {
+            break;
+        }
         sb_append_byte(url, '/');
-        valid = valid
-                && lyrics_append_slug_profile(url, title_profile,
-                                              title, title_len);
+        if ((status = lyrics_append_slug_profile(url, title_profile,
+                                                 title, title_len)) < 0) {
+            break;
+        }
         sb_append_byte(url, '/');
         break;
     case NCM_LYRICS_FETCHER_LACOCCINELLE:
     case NCM_LYRICS_FETCHER_MUSICA:
-        valid = false;
+        status = -NCM_ERROR_UNAVAILABLE;
         break;
     case NCM_LYRICS_FETCHER_PAROLES:
         SB_APPEND(url, "https://www.paroles.net/");
-        valid = lyrics_append_slug_profile(url, artist_profile,
-                                           artist, artist_len);
+        if ((status = lyrics_append_slug_profile(url, artist_profile,
+                                                 artist, artist_len)) < 0) {
+            break;
+        }
         SB_APPEND(url, "/paroles-");
-        valid = valid
-                && lyrics_append_slug_profile(url, title_profile,
-                                              title, title_len);
+        if ((status = lyrics_append_slug_profile(url, title_profile,
+                                                 title, title_len)) < 0) {
+            break;
+        }
         break;
     case NCM_LYRICS_FETCHER_MUSIXMATCH:
         SB_APPEND(url, "https://www.musixmatch.com/lyrics/");
-        valid = lyrics_append_slug_profile(url, artist_profile,
-                                           artist, artist_len);
+        if ((status = lyrics_append_slug_profile(url, artist_profile,
+                                                 artist, artist_len)) < 0) {
+            break;
+        }
         sb_append_byte(url, '/');
-        valid = valid
-                && lyrics_append_slug_profile(url, title_profile,
-                                              title, title_len);
+        if ((status = lyrics_append_slug_profile(url, title_profile,
+                                                 title, title_len)) < 0) {
+            break;
+        }
         break;
     case NCM_LYRICS_FETCHER_TEKSTOWO:
         SB_APPEND(url, "https://www.tekstowo.pl/");
-        valid = lyrics_append_slug_profile(url, artist_profile,
-                                           artist, artist_len);
+        if ((status = lyrics_append_slug_profile(url, artist_profile,
+                                                 artist, artist_len)) < 0) {
+            break;
+        }
         sb_append_byte(url, '/');
-        valid = valid
-                && lyrics_append_slug_profile(url, title_profile,
-                                              title, title_len);
+        if ((status = lyrics_append_slug_profile(url, title_profile,
+                                                 title, title_len)) < 0) {
+            break;
+        }
         break;
     case NCM_LYRICS_FETCHER_VAGALUME:
         SB_APPEND(url, "https://www.vagalume.com.br/");
-        valid = lyrics_append_slug_profile(url, artist_profile,
-                                           artist, artist_len);
+        if ((status = lyrics_append_slug_profile(url, artist_profile,
+                                                 artist, artist_len)) < 0) {
+            break;
+        }
         sb_append_byte(url, '/');
-        valid = valid
-                && lyrics_append_slug_profile(url, title_profile,
-                                              title, title_len);
+        if ((status = lyrics_append_slug_profile(url, title_profile,
+                                                 title, title_len)) < 0) {
+            break;
+        }
         SB_APPEND(url, ".html");
         break;
     case NCM_LYRICS_FETCHER_UNKNOWN:
     case NCM_LYRICS_FETCHER_INTERNET:
     case NCM_LYRICS_FETCHER_LAST:
     default:
-        valid = false;
+        status = -NCM_ERROR_UNAVAILABLE;
         break;
     }
 
-    if (!valid) {
+    if (status < 0) {
         sb_clear(url);
     }
-    return valid;
+    return status;
 }
 
-static bool
+static int32
 lyrics_collect_direct_urls(NcmLyricsFetcherDef *fetcher,
                            StrBuilderArray *urls, char *artist,
                            int32 artist_len, char *title, int32 title_len) {
@@ -567,24 +595,27 @@ lyrics_collect_direct_urls(NcmLyricsFetcherDef *fetcher,
     LyricsSlugProfile legacy_profile;
     LyricsDirectSlugPair pairs[4];
     StrBuilder candidate = {0};
-    bool ok;
+    int32 status;
 
     ASSERT(fetcher != NULL);
     ASSERT(urls != NULL);
-    if (!fetcher->enabled || (artist == NULL) || (artist_len <= 0)
+    if (!fetcher->enabled) {
+        return -NCM_ERROR_INVALID_STATE;
+    }
+    if ((artist == NULL) || (artist_len <= 0)
         || (title == NULL) || (title_len <= 0)) {
-        return false;
+        return -EINVAL;
     }
 
     str_builder_array_clear(urls);
     if (!lyrics_provider_has_flag(fetcher->type,
                                   LYRICS_PROVIDER_DIRECT_URLS)) {
-        return true;
+        return 0;
     }
 
     profile = lyrics_slug_profile(fetcher->type);
     if (profile == LYRICS_SLUG_PROFILE_NONE) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
     legacy_profile = lyrics_legacy_slug_profile(profile);
     pairs[0] = (LyricsDirectSlugPair){profile, profile};
@@ -592,21 +623,22 @@ lyrics_collect_direct_urls(NcmLyricsFetcherDef *fetcher,
     pairs[2] = (LyricsDirectSlugPair){profile, legacy_profile};
     pairs[3] = (LyricsDirectSlugPair){legacy_profile, profile};
 
-    ok = true;
+    status = 0;
     for (int32 i = 0; i < LENGTH(pairs); i += 1) {
-        if (!lyrics_build_direct_url_profiles(
+        status = lyrics_build_direct_url_profiles(
             fetcher, &candidate, artist, artist_len, title, title_len,
-            pairs[i].artist, pairs[i].title)) {
-            ok = false;
+            pairs[i].artist, pairs[i].title);
+        if (status < 0) {
             break;
         }
-        if (!lyrics_append_url_if_new(urls, candidate.data, candidate.len)) {
-            ok = false;
+        status = lyrics_append_url_if_new(urls, candidate.data,
+                                          candidate.len);
+        if (status < 0) {
             break;
         }
     }
     sb_free(&candidate);
-    return ok;
+    return status;
 }
 
 int32
@@ -673,11 +705,11 @@ ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
                                      title, title_len);
     }
 
-    status = 0;
     retry = false;
     str_builder_array_init(&direct_urls);
-    if (lyrics_collect_direct_urls(fetcher, &direct_urls, artist, artist_len,
-                                   title, title_len)) {
+    status = lyrics_collect_direct_urls(fetcher, &direct_urls, artist,
+                                        artist_len, title, title_len);
+    if (status == 0) {
         if (direct_urls.len == 0) {
             retry = true;
         }
@@ -1228,7 +1260,7 @@ lyrics_slug_separator_rune(uint32 rune) {
            || (rune == 0x2212);
 }
 
-static bool
+static int32
 lyrics_append_slug_profile(StrBuilder *buffer, LyricsSlugProfile profile,
                            char *string, int32 string_len) {
     bool compact;
@@ -1237,8 +1269,11 @@ lyrics_append_slug_profile(StrBuilder *buffer, LyricsSlugProfile profile,
     bool wrote;
     char separator;
 
+    if ((buffer == NULL) || (string == NULL) || (string_len <= 0)) {
+        return -EINVAL;
+    }
     if (profile == LYRICS_SLUG_PROFILE_NONE) {
-        return false;
+        return -NCM_ERROR_UNAVAILABLE;
     }
     compact = lyrics_slug_profile_compact(profile);
     separator = lyrics_slug_profile_separator(profile);
@@ -1272,6 +1307,9 @@ lyrics_append_slug_profile(StrBuilder *buffer, LyricsSlugProfile profile,
         }
 
         rune_len = utf8_decode(string + i, string_len - i, &rune);
+        if (rune_len <= 0) {
+            return -NCM_ERROR_PARSE;
+        }
         if (lyrics_skip_slug_rune(rune)) {
             i += rune_len - 1;
             continue;
@@ -1298,10 +1336,13 @@ lyrics_append_slug_profile(StrBuilder *buffer, LyricsSlugProfile profile,
         wrote = true;
         i += rune_len - 1;
     }
-    return wrote;
+    if (!wrote) {
+        return -NCM_ERROR_NOT_FOUND;
+    }
+    return 0;
 }
 
-static bool
+static int32
 lyrics_append_slug(StrBuilder *buffer, enum NcmLyricsFetcherType type,
                    char *string, int32 string_len) {
     return lyrics_append_slug_profile(buffer, lyrics_slug_profile(type),
@@ -1858,7 +1899,8 @@ lyrics_url_segment_slug_score(NcmLyricsFetcherDef *fetcher, char *segment,
     }
 
     lyrics_percent_decode(&decoded, segment, segment_len);
-    if (!lyrics_append_slug(&slug, fetcher->type, decoded.data, decoded.len)) {
+    if (lyrics_append_slug(&slug, fetcher->type, decoded.data,
+                           decoded.len) < 0) {
         score = 0;
     } else {
         score = lyrics_slug_match_score(wanted->data, wanted->len,
@@ -1946,9 +1988,10 @@ lyrics_search_candidate_score(NcmLyricsFetcherDef *fetcher, char *url,
         || !lyrics_url_looks_like_song_page(fetcher, url, url_len)) {
         return 0;
     }
-    if (!lyrics_append_slug(&wanted_artist, fetcher->type, artist, artist_len)
-        || !lyrics_append_slug(&wanted_title, fetcher->type, title,
-                               title_len)) {
+    if ((lyrics_append_slug(&wanted_artist, fetcher->type, artist,
+                            artist_len) < 0)
+        || (lyrics_append_slug(&wanted_title, fetcher->type, title,
+                               title_len) < 0)) {
         if (lyrics_provider_has_flag(fetcher->type,
                                      LYRICS_PROVIDER_NUMERIC_PAGE_IDS)) {
             score = 1;
@@ -2049,7 +2092,7 @@ lyrics_unwrap_search_url(StrBuilder *out, char *url, int32 url_len) {
     return false;
 }
 
-static bool
+static int32
 lyrics_insert_search_url(StrBuilderArray *urls, int32 *scores, char *url,
                          int32 url_len, int32 score) {
     StrBuilder *item;
@@ -2057,7 +2100,7 @@ lyrics_insert_search_url(StrBuilderArray *urls, int32 *scores, char *url,
 
     if ((urls->len >= LYRICS_SEARCH_MAX_CANDIDATES)
         && (score <= scores[LYRICS_SEARCH_MAX_CANDIDATES - 1])) {
-        return true;
+        return 0;
     }
 
     if (urls->len >= LYRICS_SEARCH_MAX_CANDIDATES) {
@@ -2066,7 +2109,7 @@ lyrics_insert_search_url(StrBuilderArray *urls, int32 *scores, char *url,
         sb_clear(item);
     } else {
         if ((item = str_builder_array_append(urls)) == NULL) {
-            return false;
+            return -NCM_ERROR_INVALID_STATE;
         }
         pos = urls->len - 1;
     }
@@ -2086,10 +2129,10 @@ lyrics_insert_search_url(StrBuilderArray *urls, int32 *scores, char *url,
         scores[pos] = temp_score;
         pos -= 1;
     }
-    return true;
+    return 0;
 }
 
-static bool
+static int32
 lyrics_collect_search_urls(NcmLyricsFetcherDef *fetcher, StrBuilderArray *out,
                            char *data, int32 data_len, char *artist,
                            int32 artist_len, char *title, int32 title_len) {
@@ -2098,7 +2141,7 @@ lyrics_collect_search_urls(NcmLyricsFetcherDef *fetcher, StrBuilderArray *out,
     StrBuilder candidate = {0};
     int32 scores[LYRICS_SEARCH_MAX_CANDIDATES] = {0};
     int32 pos;
-    bool ok;
+    int32 status;
 
     numeric_unescaped = ncm_html_unescape_utf8(data, data_len);
     unescaped = ncm_html_unescape_entities(numeric_unescaped.data,
@@ -2106,7 +2149,7 @@ lyrics_collect_search_urls(NcmLyricsFetcherDef *fetcher, StrBuilderArray *out,
     sb_free(&numeric_unescaped);
     str_builder_array_clear(out);
     pos = 0;
-    ok = true;
+    status = 0;
     while (pos < unescaped.len) {
         int32 href;
         int32 value_start;
@@ -2178,9 +2221,9 @@ lyrics_collect_search_urls(NcmLyricsFetcherDef *fetcher, StrBuilderArray *out,
                 pos = value_end + 1;
                 continue;
             }
-            if (!lyrics_insert_search_url(out, scores, candidate.data,
-                                          candidate.len, score)) {
-                ok = false;
+            status = lyrics_insert_search_url(out, scores, candidate.data,
+                                              candidate.len, score);
+            if (status < 0) {
                 break;
             }
         }
@@ -2189,7 +2232,13 @@ lyrics_collect_search_urls(NcmLyricsFetcherDef *fetcher, StrBuilderArray *out,
 
     sb_free(&candidate);
     sb_free(&unescaped);
-    return ok && (out->len > 0);
+    if (status < 0) {
+        return status;
+    }
+    if (out->len <= 0) {
+        return -NCM_ERROR_NOT_FOUND;
+    }
+    return 0;
 }
 
 static int32
@@ -2882,11 +2931,12 @@ lyrics_fetch_search(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
         (void)ncm_lyrics_result_set(result, false, message, message_len);
         goto cleanup;
     }
-    if (!lyrics_collect_search_urls(fetcher, &page_urls, data.data,
-                                    data.len, artist, artist_len, title,
-                                    title_len)) {
-        status = ncm_lyrics_result_set(result, false,
-                                       STRLIT(LYRICS_MSG_NOT_FOUND));
+    status = lyrics_collect_search_urls(fetcher, &page_urls, data.data,
+                                        data.len, artist, artist_len, title,
+                                        title_len);
+    if (status < 0) {
+        (void)ncm_lyrics_result_set(result, false,
+                                    STRLIT(LYRICS_MSG_NOT_FOUND));
         goto cleanup;
     }
 
