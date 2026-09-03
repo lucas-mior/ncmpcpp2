@@ -2257,8 +2257,7 @@ static int32
 lyrics_parse_hex4(char *data, int32 data_len, int32 start, uint32 *value) {
     uint32 result;
 
-    if ((data == NULL) || (data_len < 0) || (value == NULL)
-        || (start < 0)) {
+    if ((data == NULL) || (data_len < 0) || (value == NULL) || (start < 0)) {
         return -EINVAL;
     }
     if ((data_len - start) < 4) {
