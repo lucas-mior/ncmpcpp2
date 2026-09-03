@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static int32 library_replace_songs(MediaLibraryScreen *screen, NcmSongArray *songs);
 static bool library_album_identity_is_equal(NcMediaLibraryAlbumRow *left, NcMediaLibraryAlbumRow *right);
 static int32 library_update_songs(MediaLibraryScreen *screen, NcmError *ncm_error);
 static bool library_has_pending_songs(MediaLibraryScreen *screen);
@@ -2866,6 +2865,46 @@ library_update_albums(MediaLibraryScreen *screen,
 }
 
 static int32
+library_replace_songs(MediaLibraryScreen *screen,
+                      NcmSongArray *songs) {
+    NcMediaLibrarySongMenu replacement;
+    NcmSong identity;
+    NcmSong *current;
+    NcMenu *menu;
+    NcMenu *replacement_menu;
+    int32 highlight;
+    bool identity_valid;
+
+    ASSERT(screen != NULL);
+    ASSERT(songs != NULL);
+
+    menu = nc_media_library_song_menu_base(&screen->songs);
+    current = nc_media_library_song_menu_current(&screen->songs);
+    highlight = nc_menu_highlight(menu);
+    identity_valid = false;
+    identity = (NcmSong){0};
+    if (current != NULL) {
+        identity_valid = ncm_song_copy(&identity, current) == 0;
+    }
+
+    nc_media_library_song_menu_init(&replacement);
+    replacement_menu = nc_media_library_song_menu_base(&replacement);
+    nc_menu_copy(replacement_menu, menu);
+    for (int32 i = 0; i < songs->len; i += 1) {
+        nc_media_library_song_menu_add(&replacement, &songs->items[i]);
+    }
+    library_apply_column_filter(
+        screen, MEDIA_LIBRARY_COLUMN_SONGS, replacement_menu);
+    library_restore_song_identity(
+        &replacement, &identity, identity_valid, highlight);
+
+    nc_menu_swap(menu, replacement_menu);
+    nc_media_library_song_menu_destroy(&replacement);
+    ncm_song_destroy(&identity);
+    return 0;
+}
+
+static int32
 library_update_songs(MediaLibraryScreen *screen,
                      NcmError *ncm_error) {
     MediaLibrarySongQuery query = {0};
@@ -3013,46 +3052,6 @@ library_restore_song_identity(
     }
     library_restore_highlight(base, fallback);
     return;
-}
-
-static int32
-library_replace_songs(MediaLibraryScreen *screen,
-                      NcmSongArray *songs) {
-    NcMediaLibrarySongMenu replacement;
-    NcmSong identity;
-    NcmSong *current;
-    NcMenu *menu;
-    NcMenu *replacement_menu;
-    int32 highlight;
-    bool identity_valid;
-
-    ASSERT(screen != NULL);
-    ASSERT(songs != NULL);
-
-    menu = nc_media_library_song_menu_base(&screen->songs);
-    current = nc_media_library_song_menu_current(&screen->songs);
-    highlight = nc_menu_highlight(menu);
-    identity_valid = false;
-    identity = (NcmSong){0};
-    if (current != NULL) {
-        identity_valid = ncm_song_copy(&identity, current) == 0;
-    }
-
-    nc_media_library_song_menu_init(&replacement);
-    replacement_menu = nc_media_library_song_menu_base(&replacement);
-    nc_menu_copy(replacement_menu, menu);
-    for (int32 i = 0; i < songs->len; i += 1) {
-        nc_media_library_song_menu_add(&replacement, &songs->items[i]);
-    }
-    library_apply_column_filter(
-        screen, MEDIA_LIBRARY_COLUMN_SONGS, replacement_menu);
-    library_restore_song_identity(
-        &replacement, &identity, identity_valid, highlight);
-
-    nc_menu_swap(menu, replacement_menu);
-    nc_media_library_song_menu_destroy(&replacement);
-    ncm_song_destroy(&identity);
-    return 0;
 }
 
 static void
