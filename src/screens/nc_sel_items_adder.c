@@ -526,7 +526,7 @@ adder_draw_row(NcMenu *menu, NcWindow *window, void *item,
         return;
     }
 
-    converted = ncm_charset_utf8_to_locale(row->label, row->label_len);
+    converted = ncm_charset_copy(row->label, row->label_len);
     nc_window_print_data(window, converted.data, converted.len);
     sb_free(&converted);
     return;

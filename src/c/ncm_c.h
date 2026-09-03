@@ -1446,7 +1446,7 @@ int32 ncm_visualizer_type_parse(char *string, int32 string_len,
                                 enum VisualizerType *value);
 
 /* c/ncm_charset.h */
-StrBuilder ncm_charset_utf8_to_locale(char *string, int32 string_len);
+StrBuilder ncm_charset_copy(char *string, int32 string_len);
 
 /* c/ncm_comparators.h */
 int32 ncm_compare_locale_strings(char *left, int32 left_len,

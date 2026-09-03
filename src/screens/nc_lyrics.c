@@ -1315,7 +1315,7 @@ lyrics_replace_search_separators(StrBuilder *buffer) {
 
 static void
 lyrics_append_locale(NcBuffer *buffer, char *data, int32 data_len) {
-    StrBuilder converted = ncm_charset_utf8_to_locale(data, data_len);
+    StrBuilder converted = ncm_charset_copy(data, data_len);
     nc_buffer_append_data(buffer, converted.data, converted.len);
     sb_free(&converted);
     return;

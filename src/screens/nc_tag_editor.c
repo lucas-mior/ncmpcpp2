@@ -3801,7 +3801,7 @@ tag_editor_draw_directory(NcMenu *menu, NcWindow *window, void *item,
     ASSERT(window != NULL);
     ASSERT(pair != NULL);
     ASSERT(pair->first != NULL);
-    converted = ncm_charset_utf8_to_locale(pair->first, pair->first_len);
+    converted = ncm_charset_copy(pair->first, pair->first_len);
     nc_window_print_data(window, converted.data, converted.len);
     sb_free(&converted);
     return;
@@ -3819,7 +3819,7 @@ tag_editor_draw_string(NcMenu *menu, NcWindow *window, void *item,
     ASSERT(window != NULL);
     ASSERT(string != NULL);
     ASSERT(string->data != NULL);
-    converted = ncm_charset_utf8_to_locale(string->data, string->len);
+    converted = ncm_charset_copy(string->data, string->len);
     nc_window_print_data(window, converted.data, converted.len);
     sb_free(&converted);
     return;
@@ -3920,7 +3920,7 @@ tag_editor_append_locale(NcBuffer *buffer, char *data, int32 data_len) {
     if ((data == NULL) || (data_len <= 0)) {
         return;
     }
-    converted = ncm_charset_utf8_to_locale(data, data_len);
+    converted = ncm_charset_copy(data, data_len);
     nc_buffer_append_data(buffer, converted.data, converted.len);
     sb_free(&converted);
     return;
