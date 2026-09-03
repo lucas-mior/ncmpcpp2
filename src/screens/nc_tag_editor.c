@@ -67,15 +67,6 @@ tag_editor_append_formatted_color(NcBuffer *buffer, NcFormattedColor *color) {
 }
 
 static void
-tag_editor_append_locale(NcBuffer *buffer, char *data, int32 data_len) {
-    if ((data == NULL) || (data_len <= 0)) {
-        return;
-    }
-    nc_buffer_append_data(buffer, data, data_len);
-    return;
-}
-
-static void
 tag_editor_draw_tag(NcMenu *menu, NcWindow *window, void *item,
                     int32 pos, void *user) {
     TagEditorScreen *screen = user;
@@ -114,16 +105,16 @@ tag_editor_draw_tag(NcMenu *menu, NcWindow *window, void *item,
             tag_editor_append_formatted_color_end(
                 &buffer, &Config.empty_tags_color);
         } else {
-            tag_editor_append_locale(&buffer, tag.data, tag.len);
+            nc_buffer_append_data(&buffer, tag.data, tag.len);
         }
         sb_free(&tag);
     } else if (choice == 12) {
-        tag_editor_append_locale(&buffer, song->name, song->name_len);
+        nc_buffer_append_data(&buffer, song->name, song->name_len);
         if (song->new_name && (song->new_name_len > 0)) {
             tag_editor_append_formatted_color(&buffer, &Config.color2);
             nc_buffer_append_data(&buffer, STRLIT(" -> "));
             tag_editor_append_formatted_color_end(&buffer, &Config.color2);
-            tag_editor_append_locale(&buffer, song->new_name,
+            nc_buffer_append_data(&buffer, song->new_name,
                                      song->new_name_len);
         }
     }
