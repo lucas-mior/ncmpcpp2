@@ -230,8 +230,8 @@ sort_playlist_dialog_open(
     }
 
     songs = (NcmSongArray){0};
-    if (!playlist_screen_copy_sort_range(
-        playlist, &songs, &start_position, ncm_error)) {
+    if (playlist_screen_copy_sort_range(
+        playlist, &songs, &start_position, ncm_error) < 0) {
         ncm_song_array_destroy(&songs);
         return false;
     }

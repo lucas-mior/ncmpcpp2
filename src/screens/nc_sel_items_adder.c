@@ -994,8 +994,8 @@ adder_action_position_current_album(void *user) {
     }
 
     current = (NcmSong){0};
-    if (!playlist_screen_now_playing_song(
-        screen->playlist, position, &current)) {
+    if (playlist_screen_now_playing_song(
+        screen->playlist, position, &current) < 0) {
         ncm_song_destroy(&current);
         return;
     }
@@ -1004,8 +1004,8 @@ adder_action_position_current_album(void *user) {
 
     while (true) {
         next = (NcmSong){0};
-        if (!playlist_screen_now_playing_song(
-            screen->playlist, position, &next)) {
+        if (playlist_screen_now_playing_song(
+            screen->playlist, position, &next) < 0) {
             ncm_song_destroy(&next);
             break;
         }
@@ -1035,7 +1035,7 @@ adder_action_position_highlighted(void *user) {
     int32 song_position;
 
     song = (NcmSong){0};
-    if (!playlist_screen_current_song(screen->playlist, &song)) {
+    if (playlist_screen_current_song(screen->playlist, &song) < 0) {
         ncm_song_destroy(&song);
         return;
     }
