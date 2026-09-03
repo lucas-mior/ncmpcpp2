@@ -100,9 +100,6 @@ ncm_random_range_i32(NcmRandom *random, int32 upper_bound) {
 void
 ncm_random_shuffle(NcmRandom *random, void *items,
                    int32 item_count, int32 item_size) {
-    char *bytes;
-    int32 j;
-
     if (items == NULL) {
         return;
     }
@@ -110,13 +107,15 @@ ncm_random_shuffle(NcmRandom *random, void *items,
         return;
     }
 
-    bytes = items;
-    for (int32 i = item_count - 1; i > 0; i -= 1) {
-        j = ncm_random_range_i32(random, i + 1);
-        if (j != i) {
-            ncm_random_swap_bytes(bytes + i*item_size,
-                                  bytes + j*item_size,
-                                  item_size);
+    {
+        char *bytes = items;
+        for (int32 i = item_count - 1; i > 0; i -= 1) {
+            int32 j = ncm_random_range_i32(random, i + 1);
+            if (j != i) {
+                ncm_random_swap_bytes(bytes + i*item_size,
+                                      bytes + j*item_size,
+                                      item_size);
+            }
         }
     }
     return;
