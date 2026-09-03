@@ -933,8 +933,8 @@ tag_editor_screen_current_dir(TagEditorScreen *screen,
     if ((screen == NULL) || (view == NULL)) {
         return -EINVAL;
     }
-    ncm_string_view_set(view, screen->current_dir.data,
-                        screen->current_dir.len);
+    ncm_string_view_set(view,
+                        screen->current_dir.data, screen->current_dir.len);
     if (screen->current_dir.data == NULL) {
         return -NCM_ERROR_NOT_FOUND;
     }
