@@ -1288,8 +1288,7 @@ playlist_build_mutable_song(NcmSong *replacement,
             if (value.len <= 0) {
                 continue;
             }
-            status = ncm_song_add_tag(replacement, type,
-                                      value.data, value.len);
+            status = ncm_song_add_tag(replacement, type, value.data, value.len);
             if (status < 0) {
                 return status;
             }
