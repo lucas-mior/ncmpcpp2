@@ -54,7 +54,6 @@ static void tag_editor_destroy_callback(NcScreen *screen);
 static void tag_editor_mouse_callback(NcScreen *, MEVENT);
 
 // declarations to delete
-static bool tag_editor_next_mask_tag(char *, int32, int32, int32 *, char *);
 static void tag_editor_append_parser_filename(StrBuilder *, char *, int32);
 static int32 tag_editor_capitalize_song_callback(NcmMutableSong *, void *);
 static void tag_editor_set_focus(TagEditorScreen *, enum TagEditorFocus);
@@ -2274,6 +2273,19 @@ tag_editor_screen_close_parser(TagEditorScreen *screen) {
     return;
 }
 
+static bool
+tag_editor_next_mask_tag(char *mask, int32 mask_len, int32 start,
+                         int32 *percent_pos, char *tag_char) {
+    for (int32 i = start; i + 1 < mask_len; i += 1) {
+        if (mask[i] == '%') {
+            *percent_pos = i;
+            *tag_char = mask[i + 1];
+            return true;
+        }
+    }
+    return false;
+}
+
 int32
 tag_editor_parse_filename(NcmMutableSong *song, char *mask,
                           int32 mask_len, bool preview,
@@ -4417,19 +4429,6 @@ tag_editor_append_parser_filename(StrBuilder *buffer, char *name,
     }
     SB_APPEND(buffer, name, name_len);
     return;
-}
-
-static bool
-tag_editor_next_mask_tag(char *mask, int32 mask_len, int32 start,
-                         int32 *percent_pos, char *tag_char) {
-    for (int32 i = start; i + 1 < mask_len; i += 1) {
-        if (mask[i] == '%') {
-            *percent_pos = i;
-            *tag_char = mask[i + 1];
-            return true;
-        }
-    }
-    return false;
 }
 
 #endif /* NC_TAG_EDITOR_C */
