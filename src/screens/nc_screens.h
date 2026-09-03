@@ -1691,17 +1691,17 @@ void playlist_screen_reload_remaining(PlaylistScreen *screen);
 
 typedef struct SearchEngineHooks {
     NcmMpdClient *client;
-    bool (*list_database_songs)(void *user, NcmSongArray *songs,
-                                NcmError *ncm_error);
-    bool (*snapshot_playlist)(void *user, NcmSongArray *songs,
-                              NcmError *ncm_error);
+    int32 (*list_database_songs)(void *user, NcmSongArray *songs,
+                                 NcmError *ncm_error);
+    int32 (*snapshot_playlist)(void *user, NcmSongArray *songs,
+                               NcmError *ncm_error);
     enum SearchEnginePromptResult (*prompt_constraint)(
         void *user, char *label, int32 label_len, StrBuilder *initial,
         StrBuilder *result);
     void (*status_message)(void *user, char *message, int32 message_len);
-    bool (*add_song)(void *user, NcmSong *song, bool play,
-                     NcmError *ncm_error);
-    bool (*format_song)(void *user, NcmSong *song, StrBuilder *text);
+    int32 (*add_song)(void *user, NcmSong *song, bool play,
+                      NcmError *ncm_error);
+    int32 (*format_song)(void *user, NcmSong *song, StrBuilder *text);
     void *user;
 } SearchEngineHooks;
 
@@ -1757,21 +1757,21 @@ void search_engine_screen_clear(SearchEngineScreen *screen);
 char *search_engine_constraint_name(int32 idx);
 char *search_engine_search_mode_name(
     enum SearchEngineSearchMode mode);
-bool search_engine_screen_constraints_locked(
+bool search_engine_screen_has_locked_constraints(
     SearchEngineScreen *screen);
-bool search_engine_screen_format_song_text(
+int32 search_engine_screen_format_song_text(
     SearchEngineScreen *screen, NcmSong *song, StrBuilder *text);
 void search_engine_screen_update_column_title(
     SearchEngineScreen *screen);
 void search_engine_screen_prepare_static_rows(
     SearchEngineScreen *screen);
-bool search_engine_screen_update_constraint_row(
+int32 search_engine_screen_update_constraint_row(
     SearchEngineScreen *screen, int32 idx);
-bool search_engine_screen_update_search_source_row(
+int32 search_engine_screen_update_search_source_row(
     SearchEngineScreen *screen);
-bool search_engine_screen_update_search_mode_row(
+int32 search_engine_screen_update_search_mode_row(
     SearchEngineScreen *screen);
-bool search_engine_screen_add_result_summary(
+int32 search_engine_screen_add_result_summary(
     SearchEngineScreen *screen, int32 song_count);
 void search_engine_screen_set_constraints_locked(
     SearchEngineScreen *screen, bool locked);
@@ -1780,23 +1780,23 @@ int32 search_engine_screen_add_song_copy(
     SearchEngineScreen *screen, NcmSong *song);
 int32 search_engine_screen_add_song_copy_with_flags(
     SearchEngineScreen *screen, NcmSong *song, uint32 flags);
-bool search_engine_screen_add_buffer_with_flags(
+int32 search_engine_screen_add_buffer_with_flags(
     SearchEngineScreen *screen, NcBuffer *buffer, uint32 flags);
-bool search_engine_screen_set_constraint(
+int32 search_engine_screen_set_constraint(
     SearchEngineScreen *screen, int32 idx, char *data, int32 data_len);
 void search_engine_screen_clear_find_constraint(
     SearchEngineScreen *screen);
-bool search_engine_screen_set_search_mode(
+int32 search_engine_screen_set_search_mode(
     SearchEngineScreen *screen,
     enum SearchEngineSearchMode mode);
 void search_engine_screen_set_search_source(
     SearchEngineScreen *screen, bool search_in_database);
 void search_engine_screen_set_hooks(
     SearchEngineScreen *screen, SearchEngineHooks hooks);
-bool search_engine_screen_list_database_songs(
+int32 search_engine_screen_list_database_songs(
     SearchEngineScreen *screen, NcmSongArray *songs,
     NcmError *ncm_error);
-bool search_engine_screen_snapshot_playlist(
+int32 search_engine_screen_snapshot_playlist(
     SearchEngineScreen *screen, NcmSongArray *songs,
     NcmError *ncm_error);
 enum SearchEnginePromptResult
@@ -1804,26 +1804,26 @@ search_engine_screen_prompt_constraint(
     SearchEngineScreen *screen, int32 idx, StrBuilder *result);
 void search_engine_screen_status_message(
     SearchEngineScreen *screen, char *message, int32 message_len);
-bool search_engine_screen_add_song(
+int32 search_engine_screen_add_song(
     SearchEngineScreen *screen, NcmSong *song, bool play,
     NcmError *ncm_error);
-bool search_engine_screen_execute_search(
+int32 search_engine_screen_execute_search(
     SearchEngineScreen *screen, NcmMpdClient *client,
     NcmError *ncm_error);
 bool search_engine_screen_can_run_current(
     SearchEngineScreen *screen);
 int32 search_engine_screen_run_current(
     SearchEngineScreen *screen);
-bool search_engine_screen_start_searching(
+int32 search_engine_screen_start_searching(
     SearchEngineScreen *screen, NcmMpdClient *client,
     NcmError *ncm_error);
 enum DisplayMode search_engine_screen_toggle_display_mode(
     SearchEngineScreen *screen);
 bool search_engine_screen_can_search(
     SearchEngineScreen *screen);
-bool search_engine_screen_current_song(
+int32 search_engine_screen_current_song(
     SearchEngineScreen *screen, NcmSong *song);
-bool search_engine_screen_selected_songs(
+int32 search_engine_screen_selected_songs(
     SearchEngineScreen *screen, NcmSongArray *songs);
 int32 search_engine_screen_apply_filter(
     SearchEngineScreen *screen, char *pattern, int32 pattern_len,
@@ -1883,7 +1883,7 @@ NcMenu *selected_items_adder_screen_active_menu(
     SelectedItemsAdderScreen *screen);
 NcWindow *selected_items_adder_screen_active_window(
     SelectedItemsAdderScreen *screen);
-bool selected_items_adder_screen_open(
+int32 selected_items_adder_screen_open(
     SelectedItemsAdderScreen *screen, NcmSongArray *songs,
     PlaylistScreen *playlist, NcmMpdClient *client, NcmError *ncm_error);
 void selected_items_adder_screen_populate_playlist_selector(
@@ -1893,11 +1893,11 @@ void selected_items_adder_screen_populate_position_selector(
     SelectedItemsAdderScreen *screen);
 int32 selected_items_adder_screen_run_current(
     SelectedItemsAdderScreen *screen);
-bool selected_items_adder_screen_return_to_previous(
+int32 selected_items_adder_screen_return_to_previous(
     SelectedItemsAdderScreen *screen);
 void selected_items_adder_screen_choose_current_playlist(
     SelectedItemsAdderScreen *screen);
-bool selected_items_adder_screen_add_to_existing_playlist(
+int32 selected_items_adder_screen_add_to_existing_playlist(
     SelectedItemsAdderScreen *screen, NcmMpdClient *client,
     char *playlist, NcmError *ncm_error);
 int32 selected_items_adder_screen_search(
@@ -2516,7 +2516,7 @@ VisualizerScreen *app_screen_visualizer(void);
 void app_screen_lyrics_set_resize(void);
 void app_screen_lyrics_switch_to(void);
 void app_screen_browser_fetch_supported_extensions(void);
-bool app_screen_selected_items_adder_open(
+int32 app_screen_selected_items_adder_open(
     NcmSongArray *songs,
     NcmError *ncm_error
 );
