@@ -268,8 +268,8 @@ app_screen_browser_fetch_supported_extensions(void) {
     NcmError ncm_error;
 
     ncm_error_clear(&ncm_error);
-    if (!browser_screen_fetch_supported_extensions(
-        app_screen_browser(), &global_mpd, &ncm_error)
+    if ((browser_screen_fetch_supported_extensions(
+        app_screen_browser(), &global_mpd, &ncm_error) < 0)
         && ncm_error_is_set(&ncm_error)) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     ncm_error.message);

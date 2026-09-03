@@ -410,7 +410,7 @@ status_run_init_jump_to_now_playing(NcmStatusInitHooks *hooks) {
     }
 
     highlighted = playlist_screen_locate_position(app_screen_playlist(),
-                                                  position);
+                                                  position) > 0;
     if (!highlighted) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Song is filtered out");
@@ -1006,7 +1006,7 @@ ncm_status_changes_player_state(void) {
     case NCM_STATUS_PLAYER_PLAY:
         song = (NcmSong){0};
         if (playlist_screen_now_playing_song(
-            app_screen_playlist(), status_current_song_pos, &song)) {
+            app_screen_playlist(), status_current_song_pos, &song) == 0) {
             status_draw_song_title(&song);
         }
         ncm_song_destroy(&song);
@@ -1191,9 +1191,9 @@ status_request_playlist_update(int32 previous_version) {
     NcmError ncm_error;
 
     ncm_error_clear(&ncm_error);
-    if (!playlist_screen_reload_from_mpd(
+    if (playlist_screen_reload_from_mpd(
         app_screen_playlist(), &global_mpd, previous_version,
-        status_playlist_length, &ncm_error)) {
+        status_playlist_length, &ncm_error) < 0) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     ncm_error.message);
     } else if (status_playlist_update_observer) {
@@ -1231,7 +1231,7 @@ status_request_stored_playlists_update(void) {
 
     if ((browser = app_screen_browser())
         && !browser_screen_is_local(browser)
-        && browser_screen_in_root_directory(browser)) {
+        && browser_screen_is_in_root_directory(browser)) {
         browser_screen_request_update(browser);
     }
     return;
@@ -1484,7 +1484,7 @@ status_has_current_song_for_change(NcmSong *song) {
     }
 
     if (playlist_screen_now_playing_song(
-        app_screen_playlist(), status_current_song_pos, song)) {
+        app_screen_playlist(), status_current_song_pos, song) == 0) {
         return true;
     }
 
@@ -1751,8 +1751,8 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
     }
 
     song = (NcmSong){0};
-    if (!playlist_screen_now_playing_song(
-        app_screen_playlist(), status_current_song_pos, &song)) {
+    if (playlist_screen_now_playing_song(
+        app_screen_playlist(), status_current_song_pos, &song) < 0) {
         ncm_song_destroy(&song);
         if ((footer = ui_state_footer_window()) && ncm_statusbar_is_unlocked()
             && Config.statusbar_visibility) {
