@@ -565,16 +565,12 @@ browser_screen_sort(BrowserScreen *screen) {
 
     for (int32 i = begin + 1; i < count; i += 1) {
         for (int32 j = i; j > begin; j -= 1) {
-            NcmMpdItem *left;
-            NcmMpdItem *right;
-            int32 left_rank;
-            int32 right_rank;
+            NcmMpdItem *left = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, j - 1);
+            NcmMpdItem *right = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, j);
+            int32 left_rank = browser_item_sort_rank(right);
+            int32 right_rank = browser_item_sort_rank(left);
             int32 comparison;
 
-            left = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, j - 1);
-            right = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, j);
-            left_rank = browser_item_sort_rank(right);
-            right_rank = browser_item_sort_rank(left);
             if (left_rank < right_rank) {
                 comparison = -1;
             } else if (left_rank > right_rank) {
