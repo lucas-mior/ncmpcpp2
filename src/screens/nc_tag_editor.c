@@ -1607,10 +1607,10 @@ int32
 tag_editor_generate_filename(NcmMutableSong *song, char *pattern,
                              int32 pattern_len,
                              StrBuilder *filename) {
-    NcmFormatAst ast;
-    NcmSong format_song;
-    StrBuilder rendered;
-    NcmError ncm_error;
+    NcmFormatAst ast = {0};
+    NcmSong format_song = {0};
+    StrBuilder rendered = {0};
+    NcmError ncm_error = {0};
     int32 status;
 
     if ((song == NULL) || (filename == NULL) || (pattern_len < 0)) {
@@ -1620,8 +1620,6 @@ tag_editor_generate_filename(NcmMutableSong *song, char *pattern,
         return -EINVAL;
     }
 
-    ast = (NcmFormatAst){0};
-    format_song = (NcmSong){0};
     ncm_error_clear(&ncm_error);
     status = ncm_format_parse(&ast, pattern, pattern_len,
                               NCM_FORMAT_FLAG_TAG, &ncm_error);
