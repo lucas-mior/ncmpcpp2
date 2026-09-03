@@ -761,7 +761,7 @@ void lyrics_screen_set_geometry(LyricsScreen *screen,
                                 int32 start_x, int32 width,
                                 int32 main_start_y,
                                 int32 main_height);
-bool lyrics_screen_build_filename(LyricsScreen *screen,
+int32 lyrics_screen_build_filename(LyricsScreen *screen,
                                   NcmSong *song,
                                   char *music_dir,
                                   int32 music_dir_len,
@@ -769,18 +769,18 @@ bool lyrics_screen_build_filename(LyricsScreen *screen,
                                   int32 lyrics_dir_len,
                                   bool store_in_song_dir,
                                   bool win32_filename);
-bool lyrics_screen_load_file(LyricsScreen *screen,
+int32 lyrics_screen_load_file(LyricsScreen *screen,
                              char *filename, int32 filename_len,
                              NcmError *ncm_error);
-bool lyrics_screen_save_file(LyricsScreen *screen,
+int32 lyrics_screen_save_file(LyricsScreen *screen,
                              char *filename, int32 filename_len,
                              char *lyrics, int32 lyrics_len,
                              NcmError *ncm_error);
-bool lyrics_screen_fetch(LyricsScreen *screen,
+int32 lyrics_screen_fetch(LyricsScreen *screen,
                          NcmSong *song,
                          NcmLyricsFetcherDef *fetcher,
                          NcmError *ncm_error);
-bool lyrics_screen_fetch_in_background(LyricsScreen *screen,
+int32 lyrics_screen_fetch_in_background(LyricsScreen *screen,
                                        NcmSong *song,
                                        bool notify,
                                        NcmError *ncm_error);

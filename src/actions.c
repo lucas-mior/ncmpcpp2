@@ -5306,6 +5306,7 @@ action_runtime_edit_lyrics(void) {
     StrBuilder escaped = {0};
     StrBuilder command = {0};
     NcmError ncm_error;
+    int32 status;
     bool success;
 
     if (Config.external_editor_len <= 0) {
@@ -5319,11 +5320,12 @@ action_runtime_edit_lyrics(void) {
         return false;
     }
 
-    if (!lyrics_screen_build_filename(
+    status = lyrics_screen_build_filename(
         lyrics, song, Config.mpd_music_dir, Config.mpd_music_dir_len,
         Config.lyrics_directory, Config.lyrics_directory_len,
         Config.store_lyrics_in_song_dir,
-        Config.generate_win32_compatible_filenames)) {
+        Config.generate_win32_compatible_filenames);
+    if (status < 0) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "failed to build lyrics "
                                     "filename");
@@ -5354,10 +5356,12 @@ action_runtime_edit_lyrics(void) {
             return action_runtime_mpd_error(&ncm_error);
         }
 
-        if (!lyrics_screen_load_file(lyrics, filename->data,
-                                     filename->len, &ncm_error)) {
+        status = lyrics_screen_load_file(lyrics, filename->data,
+                                         filename->len, &ncm_error);
+        if (status < 0) {
             lyrics->has_song = false;
-            success = lyrics_screen_fetch(lyrics, song, NULL, &ncm_error);
+            status = lyrics_screen_fetch(lyrics, song, NULL, &ncm_error);
+            success = status >= 0;
         }
     } else {
         success = ncm_macro_run_external_command(command.data, command.len,
@@ -5377,6 +5381,7 @@ static bool
 action_runtime_fetch_lyrics_background(void) {
     NcmSongArray songs;
     NcmError ncm_error;
+    int32 status;
 
     songs = (NcmSongArray){0};
     if (!action_runtime_selected_songs(&songs) || (songs.len <= 0)) {
@@ -5386,8 +5391,9 @@ action_runtime_fetch_lyrics_background(void) {
 
     ncm_error_clear(&ncm_error);
     for (int32 i = 0; i < songs.len; i += 1) {
-        if (!lyrics_screen_fetch_in_background(
-            app_screen_lyrics(), &songs.items[i], true, &ncm_error)) {
+        status = lyrics_screen_fetch_in_background(
+            app_screen_lyrics(), &songs.items[i], true, &ncm_error);
+        if (status < 0) {
             ncm_song_array_destroy(&songs);
             return action_runtime_mpd_error(&ncm_error);
         }
@@ -5413,6 +5419,7 @@ action_runtime_show_lyrics(void) {
     NcmSong song;
     NcmSong *lyrics_song;
     NcmError ncm_error;
+    int32 status;
     bool success;
 
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_LYRICS)) {
@@ -5424,8 +5431,9 @@ action_runtime_show_lyrics(void) {
         if (((lyrics_song = lyrics_screen_song(app_screen_lyrics())) == NULL)
             || !ncm_song_is_equal(lyrics_song, &song)) {
             ncm_error_clear(&ncm_error);
-            success = lyrics_screen_fetch(app_screen_lyrics(), &song, NULL,
-                                          &ncm_error);
+            status = lyrics_screen_fetch(app_screen_lyrics(), &song, NULL,
+                                         &ncm_error);
+            success = status >= 0;
         }
     }
     ncm_song_destroy(&song);
