@@ -482,7 +482,7 @@ app_screen_selected_items_adder_init(void) {
     return;
 }
 
-bool
+int32
 app_screen_selected_items_adder_open(NcmSongArray *songs,
                                      NcmError *ncm_error) {
     app_screen_selected_items_adder_register();
@@ -522,33 +522,31 @@ app_screen_sort_playlist_dialog_switch_to(void) {
     return success;
 }
 
-static bool
+static int32
 search_list_database_songs(
     void *user, NcmSongArray *songs, NcmError *ncm_error
 ) {
     NcmMpdSongList source;
-    int32 err;
-    bool result;
+    int32 status;
 
     (void)user;
     ASSERT(songs != NULL);
 
     ncm_song_array_clear(songs);
     source = (NcmMpdSongList){0};
-    result = ncm_mpd_client_get_directory_recursive(
-        &global_mpd, "/", &source, ncm_error) == 0;
-    if (result) {
-        if ((err = ncm_mpd_song_list_to_song_array(&source, songs)) < 0) {
-            ncm_error_set_status(ncm_error, err,
-                                 STRLIT("failed to copy database songs"));
-            result = false;
-        }
+    status = ncm_mpd_client_get_directory_recursive(
+        &global_mpd, "/", &source, ncm_error);
+    if ((status == 0)
+        && ((status = ncm_mpd_song_list_to_song_array(
+                 &source, songs)) < 0)) {
+        ncm_error_set_status(ncm_error, status,
+                             STRLIT("failed to copy database songs"));
     }
     ncm_mpd_song_list_destroy(&source);
-    return result;
+    return status;
 }
 
-static bool
+static int32
 search_snapshot_playlist(
     void *user, NcmSongArray *songs, NcmError *ncm_error
 ) {
@@ -575,10 +573,10 @@ search_snapshot_playlist(
         if ((err = ncm_song_array_append_copy(songs, song)) < 0) {
             ncm_error_set_status(ncm_error, err,
                                  STRLIT("failed to copy playlist songs"));
-            return false;
+            return err;
         }
     }
-    return true;
+    return 0;
 }
 
 static bool
@@ -657,16 +655,16 @@ search_status_message(
     return;
 }
 
-static bool
+static int32
 search_add_song(
     void *user, NcmSong *song, bool play, NcmError *ncm_error
 ) {
     (void)user;
     (void)ncm_error;
-    return ncm_action_add_song_to_playlist(song, play, -1) == 0;
+    return ncm_action_add_song_to_playlist(song, play, -1);
 }
 
-static bool
+static int32
 search_format_song(
     void *user, NcmSong *song, StrBuilder *text
 ) {

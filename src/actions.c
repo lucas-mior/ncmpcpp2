@@ -334,8 +334,8 @@ action_runtime_switch_to_screen(enum ScreenType type) {
     if ((type != NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER)
         && action_runtime_current_screen_is(
             NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER)
-        && !selected_items_adder_screen_return_to_previous(
-            app_screen_selected_items_adder())) {
+        && (selected_items_adder_screen_return_to_previous(
+            app_screen_selected_items_adder()) < 0)) {
         return false;
     }
 
@@ -450,7 +450,7 @@ action_runtime_switch_to_next_screen(bool reverse) {
 
     if (selected_items_adder && Config.screen_switcher_previous) {
         return selected_items_adder_screen_return_to_previous(
-            app_screen_selected_items_adder());
+            app_screen_selected_items_adder()) == 0;
     }
     if (Config.screen_switcher_previous) {
         if ((current = app_controller_previous_screen()) == NULL) {
@@ -2221,7 +2221,7 @@ action_runtime_selected_songs(NcmSongArray *songs) {
             app_screen_playlist_editor(), songs) == 0;
     case NCM_SCREEN_TYPE_SEARCH_ENGINE:
         return search_engine_screen_selected_songs(
-            app_screen_search_engine(), songs);
+            app_screen_search_engine(), songs) == 0;
     case NCM_SCREEN_TYPE_MEDIA_LIBRARY:
         return media_library_screen_selected_songs(
             app_screen_media_library(), songs) == 0;
@@ -2281,7 +2281,7 @@ action_runtime_current_song(NcmSong *song) {
             app_screen_playlist_editor(), song) > 0;
     case NCM_SCREEN_TYPE_SEARCH_ENGINE:
         return search_engine_screen_current_song(
-            app_screen_search_engine(), song);
+            app_screen_search_engine(), song) > 0;
     case NCM_SCREEN_TYPE_MEDIA_LIBRARY:
         return media_library_screen_current_song(
             app_screen_media_library(), song) > 0;
@@ -5978,7 +5978,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         return true;
     case NCM_ACTION_START_SEARCHING:
         return action_runtime_current_screen_is(NCM_SCREEN_TYPE_SEARCH_ENGINE)
-               && !search_engine_screen_constraints_locked(
+               && !search_engine_screen_has_locked_constraints(
                    app_screen_search_engine());
     case NCM_ACTION_SAVE_PLAYLIST:
         return ncm_mpd_client_is_connected(&global_mpd);
@@ -6296,7 +6296,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
     case NCM_ACTION_ADD_SELECTED_ITEMS: {
         NcmSongArray songs;
         NcmError ncm_error;
-        bool success;
+        int32 status;
 
         songs = (NcmSongArray){0};
         if (!action_runtime_selected_songs(&songs)
@@ -6306,9 +6306,9 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
         }
 
         ncm_error_clear(&ncm_error);
-        success = app_screen_selected_items_adder_open(&songs, &ncm_error);
+        status = app_screen_selected_items_adder_open(&songs, &ncm_error);
         ncm_song_array_destroy(&songs);
-        if (!success) {
+        if (status < 0) {
             return action_runtime_mpd_error(&ncm_error);
         }
         return true;
@@ -6446,7 +6446,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
 
         ncm_error_clear(&ncm_error);
         return search_engine_screen_start_searching(
-            app_screen_search_engine(), &global_mpd, &ncm_error);
+            app_screen_search_engine(), &global_mpd, &ncm_error) == 0;
     }
     case NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY:
         return action_runtime_set_selected_items_priority();
