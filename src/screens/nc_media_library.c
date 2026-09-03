@@ -2413,8 +2413,7 @@ media_library_screen_clear_filter(MediaLibraryScreen *screen) {
 }
 
 static bool
-library_search_position(NcMenu *menu, int32 pos,
-                        void *user) {
+library_search_position(NcMenu *menu, int32 pos, void *user) {
     MediaLibrarySearchContext *context;
 
     context = user;
