@@ -5,35 +5,6 @@
 
 #include "c/ncm_c.h"
 
-static bool
-ncm_option_is_word_char(char c) {
-    uint8 u = (uint8)c;
-
-    if (isalnum(u)) {
-        return true;
-    }
-    if (c == '_') {
-        return true;
-    }
-    return false;
-}
-
-static int32
-ncm_option_trim_start(char *string, int32 string_len) {
-    int32 result = 0;
-
-    while (result < string_len) {
-        char c = string[result];
-
-        if ((c != ' ') && (c != '\t')) {
-            break;
-        }
-        result += 1;
-    }
-
-    return result;
-}
-
 static int32
 ncm_option_trim_end(char *string, int32 string_len) {
     while (string_len > 0) {
@@ -46,23 +17,6 @@ ncm_option_trim_end(char *string, int32 string_len) {
     }
 
     return string_len;
-}
-
-static int32
-ncm_option_comment_start(char *line, int32 line_len) {
-    bool quoted = false;
-
-    for (int32 i = 0; i < line_len; i += 1) {
-        if (line[i] == '"') {
-            quoted = !quoted;
-            continue;
-        }
-        if (!quoted && (line[i] == '#')) {
-            return i;
-        }
-    }
-
-    return line_len;
 }
 
 int32
@@ -91,17 +45,43 @@ ncm_option_parser_parse_line(char *line, int32 line_len,
         return 0;
     }
 
-    line_len = ncm_option_comment_start(line, line_len);
+    {
+        bool quoted = false;
+
+        for (int32 i = 0; i < line_len; i += 1) {
+            if (line[i] == '"') {
+                quoted = !quoted;
+                continue;
+            }
+            if (!quoted && (line[i] == '#')) {
+                line_len = i;
+                break;
+            }
+        }
+    }
+
     line_len = ncm_option_trim_end(line, line_len);
-    line_start = ncm_option_trim_start(line, line_len);
+    line_start = 0;
+    while (line_start < line_len) {
+        char c = line[line_start];
+
+        if ((c != ' ') && (c != '\t')) {
+            break;
+        }
+        line_start += 1;
+    }
     if (line_start >= line_len) {
         return 0;
     }
 
     option_start = line_start;
     option_len = 0;
-    while ((option_start + option_len < line_len)
-           && ncm_option_is_word_char(line[option_start + option_len])) {
+    while (option_start + option_len < line_len) {
+        char c = line[option_start + option_len];
+
+        if (!isalnum((uint8)c) && (c != '_')) {
+            break;
+        }
         option_len += 1;
     }
     if (option_len <= 0) {
