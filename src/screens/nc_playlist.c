@@ -925,7 +925,7 @@ playlist_screen_set_selected_priority(PlaylistScreen *screen,
                                       int32 priority,
                                       NcmError *ncm_error) {
     PlaylistPriorityContext context;
-    NcmSongArray songs;
+    NcmSongArray songs = {0};
     int32 status;
 
     if (screen == NULL) {
@@ -937,7 +937,6 @@ playlist_screen_set_selected_priority(PlaylistScreen *screen,
                                     STRLIT("missing MPD client"));
     }
 
-    songs = (NcmSongArray){0};
     status = playlist_screen_selected_songs(screen, &songs);
     if (status < 0) {
         ncm_song_array_destroy(&songs);
