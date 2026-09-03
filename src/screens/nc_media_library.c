@@ -3711,7 +3711,7 @@ int32
 media_library_screen_add_item_to_playlist(
     MediaLibraryScreen *screen, bool play, NcmError *ncm_error
 ) {
-    NcmSongArray songs;
+    NcmSongArray songs = {0};
     int32 status;
 
     if (screen == NULL) {
@@ -3719,7 +3719,6 @@ media_library_screen_add_item_to_playlist(
                                     STRLIT("missing media library"));
     }
 
-    songs = (NcmSongArray){0};
     status = library_collect_current_item_songs(screen, &songs, ncm_error);
     if ((status == 0) && (songs.len <= 0)) {
         status = ncm_error_set_status(ncm_error, -ENOENT,
