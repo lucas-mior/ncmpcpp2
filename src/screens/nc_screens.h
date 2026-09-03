@@ -2155,8 +2155,7 @@ int32 tag_editor_screen_number_tracks(TagEditorScreen *screen,
 void tag_editor_screen_capitalize_first_letters(
     TagEditorScreen *screen);
 void tag_editor_screen_lower_all_letters(TagEditorScreen *screen);
-void tag_editor_screen_clear_modifications(
-    TagEditorScreen *screen);
+void tag_editor_screen_clear_modifications(TagEditorScreen *screen);
 int32 tag_editor_screen_save_modified(TagEditorScreen *screen,
                                       char *music_dir);
 bool tag_editor_screen_save_action_available(TagEditorScreen *screen);
