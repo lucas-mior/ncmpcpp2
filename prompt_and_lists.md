@@ -12,14 +12,6 @@ list below, and go straight to the next file without asking me. If the next file
 also doesn't have any function that fit this pattern, continue deleting the file
 form the list below and searching on the next until you find.
 
-- src/curses/nc_app_menus.c
-- src/curses/nc_buffer.c
-- src/curses/nc_curses.c
-- src/curses/nc_cyclic_buffer.c
-- src/curses/nc_formatted_color.c
-- src/curses/nc_scrollpad.c
-- src/curses/nc_window.c
-- src/curses/nc_menu.c
 - src/screens/app_screens.c
 - src/screens/nc_lastfm.c
 - src/screens/nc_outputs.c
@@ -42,6 +34,14 @@ form the list below and searching on the next until you find.
 - src/screens/nc_tag_editor.c
 - src/screens/nc_playlist_editor.c
 - src/screens/nc_playlist.c
+- src/curses/nc_app_menus.c
+- src/curses/nc_buffer.c
+- src/curses/nc_curses.c
+- src/curses/nc_cyclic_buffer.c
+- src/curses/nc_formatted_color.c
+- src/curses/nc_scrollpad.c
+- src/curses/nc_window.c
+- src/curses/nc_menu.c
 - src/c/ncm_comparators.c
 - src/c/ncm_directory.c
 - src/c/ncm_display.c
