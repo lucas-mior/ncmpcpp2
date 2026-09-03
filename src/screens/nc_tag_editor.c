@@ -210,10 +210,9 @@ struct SaveContext {
 static int32
 tag_editor_append_string_row(NcEditorStringMenu *menu,
                              char *data, int32 data_len, uint32 flags) {
-    NcMenuString string;
+    NcMenuString string = {0};
     int32 status;
 
-    string = (NcMenuString){0};
     status = nc_menu_string_set(&string, data, data_len);
     if (status >= 0) {
         nc_editor_string_menu_add_with_flags(menu, &string, flags);
