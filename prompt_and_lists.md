@@ -173,3 +173,4 @@ status = ncm_fs_rename(old_real_path.data, old_real_path.len,
 Investigate:
 - ncm_conversion_copy_source()
 - NcmStringFormatArg
+- there are multiple confusing string types
