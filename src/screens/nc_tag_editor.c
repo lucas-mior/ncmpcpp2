@@ -95,7 +95,6 @@ static void tag_editor_refresh_menu(NcWindow *, NcMenu *);
 static void tag_editor_configure_menus(TagEditorScreen *);
 static bool tag_editor_focus_is_main(enum TagEditorFocus);
 static void tag_editor_layout(TagEditorScreen *);
-static int32 tag_editor_min_int64(int32, int32);
 
 static NcScreenOps tag_editor_callbacks = {
     .active_window = tag_editor_active_window,
@@ -3575,9 +3574,7 @@ tag_editor_layout(TagEditorScreen *screen) {
     }
 
     separator_width = tag_editor_separator_width(screen);
-    screen->middle_width = tag_editor_min_int64(26,
-                                                screen->width
-                                                - 2*separator_width);
+    screen->middle_width = MIN(26, screen->width - 2*separator_width);
     if (screen->middle_width < 1) {
         screen->middle_width = 1;
     }
@@ -3603,9 +3600,8 @@ tag_editor_layout(TagEditorScreen *screen) {
         screen->right_width = 1;
     }
 
-    screen->parser_dialog_width = tag_editor_min_int64(30, screen->width);
-    screen->parser_dialog_height = tag_editor_min_int64(5,
-                                                        screen->main_height);
+    screen->parser_dialog_width = MIN(30, screen->width);
+    screen->parser_dialog_height = MIN(5, screen->main_height);
     if (screen->parser_dialog_width < 1) {
         screen->parser_dialog_width = 1;
     }
@@ -3618,8 +3614,7 @@ tag_editor_layout(TagEditorScreen *screen) {
         screen->parser_width = 1;
     }
     screen_height = ui_state_screen_height();
-    screen->parser_height = tag_editor_min_int64(screen_height*8/10,
-                                                 screen->main_height);
+    screen->parser_height = MIN(screen_height*8/10, screen->main_height);
     if (screen->parser_height < 1) {
         screen->parser_height = 1;
     }
@@ -3689,14 +3684,6 @@ tag_editor_layout(TagEditorScreen *screen) {
     nc_window_resize(&screen->parser_helper_window,
                      screen->parser_width_two, screen->parser_height);
     return;
-}
-
-static int32
-tag_editor_min_int64(int32 left, int32 right) {
-    if (left < right) {
-        return left;
-    }
-    return right;
 }
 
 static int32
