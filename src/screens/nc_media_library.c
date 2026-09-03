@@ -3790,8 +3790,7 @@ library_collect_album_songs(
         }
 
         library_query_from_album(screen, row, &query);
-        status = library_append_query_songs(
-            screen, &query, songs, ncm_error);
+        status = library_append_query_songs(screen, &query, songs, ncm_error);
         if (status < 0) {
             return status;
         }
