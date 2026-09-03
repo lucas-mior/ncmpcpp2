@@ -2141,8 +2141,7 @@ int32 tag_editor_screen_add_mutable_song(
     TagEditorScreen *screen, NcmMutableSong *song);
 int32 tag_editor_screen_selected_songs(TagEditorScreen *screen,
                                        NcmSongArray *songs);
-bool tag_editor_screen_previous_column_available(
-    TagEditorScreen *screen);
+bool tag_editor_screen_previous_column_available(TagEditorScreen *screen);
 bool tag_editor_screen_next_column_available(TagEditorScreen *screen);
 void tag_editor_screen_previous_column(TagEditorScreen *screen);
 void tag_editor_screen_next_column(TagEditorScreen *screen);
