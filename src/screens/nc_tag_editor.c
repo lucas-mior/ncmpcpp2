@@ -53,125 +53,66 @@ static void tag_editor_update(NcScreen *screen);
 static void tag_editor_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static int32 tag_editor_reload_directories_from_mpd(TagEditorScreen *screen,
-                                                    NcmMpdClient *client,
-                                                    NcmError *ncm_error);
-static int32 tag_editor_reload_songs_from_mpd(TagEditorScreen *screen,
-                                              NcmMpdClient *client,
-                                              NcmError *ncm_error);
+static int32 tag_editor_reload_directories_from_mpd(TagEditorScreen *screen, NcmMpdClient *client, NcmError *ncm_error);
+static int32 tag_editor_reload_songs_from_mpd(TagEditorScreen *screen, NcmMpdClient *client, NcmError *ncm_error);
 static void tag_editor_mouse_callback(NcScreen *screen, MEVENT event);
-static void tag_editor_mouse_scroll(TagEditorScreen *screen,
-                                    enum NcScroll where);
-static void tag_editor_mouse_scroll_menu(NcMenu *menu, NcWindow *window,
-                                         enum NcScroll where);
+static void tag_editor_mouse_scroll(TagEditorScreen *screen, enum NcScroll where);
+static void tag_editor_mouse_scroll_menu(NcMenu *menu, NcWindow *window, enum NcScroll where);
 static int32 tag_editor_run_current_action(TagEditorScreen *screen);
-static bool tag_editor_mouse_move_to_column(TagEditorScreen *screen,
-                                            enum TagEditorColumn column);
-static bool tag_editor_mouse_move_to_parser_focus(TagEditorScreen *screen,
-                                                  enum TagEditorFocus focus);
-static void tag_editor_finish_tag_type_change(TagEditorScreen *screen,
-                                              bool refresh_tags);
+static bool tag_editor_mouse_move_to_column(TagEditorScreen *screen, enum TagEditorColumn column);
+static bool tag_editor_mouse_move_to_parser_focus(TagEditorScreen *screen, enum TagEditorFocus focus);
+static void tag_editor_finish_tag_type_change(TagEditorScreen *screen, bool refresh_tags);
 static void tag_editor_layout(TagEditorScreen *screen);
 static int32 tag_editor_min_int64(int32 left, int32 right);
 static int32 tag_editor_separator_width(TagEditorScreen *screen);
 static void tag_editor_configure_menus(TagEditorScreen *screen);
-static int32 tag_editor_append_string_row(NcEditorStringMenu *menu,
-                                          char *data, int32 data_len,
-                                          uint32 flags);
+static int32 tag_editor_append_string_row(NcEditorStringMenu *menu, char *data, int32 data_len, uint32 flags);
 static void tag_editor_update_menu_highlights(TagEditorScreen *screen);
 static void tag_editor_refresh_active_helper(TagEditorScreen *screen);
 static void tag_editor_refresh_menu(NcWindow *window, NcMenu *menu);
-static NcMenuDisplayCallbacks tag_editor_directory_display_callbacks(
-    TagEditorScreen *screen);
-static NcMenuDisplayCallbacks tag_editor_tag_type_display_callbacks(
-    TagEditorScreen *screen);
-static NcMenuDisplayCallbacks tag_editor_tag_display_callbacks(
-    TagEditorScreen *screen);
-static void tag_editor_draw_directory(NcMenu *menu, NcWindow *window,
-                                      void *item, int32 pos,
-                                      void *user);
-static void tag_editor_draw_string(NcMenu *menu, NcWindow *window,
-                                   void *item, int32 pos, void *user);
-static void tag_editor_draw_tag(NcMenu *menu, NcWindow *window,
-                                void *item, int32 pos, void *user);
-static void tag_editor_append_formatted_color(NcBuffer *buffer,
-                                              NcFormattedColor *color);
-static void tag_editor_append_formatted_color_end(NcBuffer *buffer,
-                                                  NcFormattedColor *color);
-static void tag_editor_append_locale(NcBuffer *buffer, char *data,
-                                     int32 data_len);
-static int32 tag_editor_set_buffer(StrBuilder *buffer, char *data,
-                                   int32 data_len);
-static int32 tag_editor_compile_constraint(NcmRegex *regex, char *pattern,
-                                           int32 pattern_len,
-                                           uint32 regex_flags,
-                                           NcmError *ncm_error);
-static void tag_editor_update_titles(TagEditorScreen *screen,
-                                     bool update_windows);
+static NcMenuDisplayCallbacks tag_editor_directory_display_callbacks( TagEditorScreen *screen);
+static NcMenuDisplayCallbacks tag_editor_tag_type_display_callbacks( TagEditorScreen *screen);
+static NcMenuDisplayCallbacks tag_editor_tag_display_callbacks( TagEditorScreen *screen);
+static void tag_editor_draw_directory(NcMenu *menu, NcWindow *window, void *item, int32 pos, void *user);
+static void tag_editor_draw_string(NcMenu *menu, NcWindow *window, void *item, int32 pos, void *user);
+static void tag_editor_draw_tag(NcMenu *menu, NcWindow *window, void *item, int32 pos, void *user);
+static void tag_editor_append_formatted_color(NcBuffer *buffer, NcFormattedColor *color);
+static void tag_editor_append_formatted_color_end(NcBuffer *buffer, NcFormattedColor *color);
+static void tag_editor_append_locale(NcBuffer *buffer, char *data, int32 data_len);
+static int32 tag_editor_set_buffer(StrBuilder *buffer, char *data, int32 data_len);
+static int32 tag_editor_compile_constraint(NcmRegex *regex, char *pattern, int32 pattern_len, uint32 regex_flags, NcmError *ncm_error);
+static void tag_editor_update_titles(TagEditorScreen *screen, bool update_windows);
 static void tag_editor_observe_current_directory(TagEditorScreen *screen);
 static bool tag_editor_focus_is_main(enum TagEditorFocus focus);
 static bool tag_editor_focus_is_parser_helper(enum TagEditorFocus focus);
-static void tag_editor_set_focus(TagEditorScreen *screen,
-                                 enum TagEditorFocus focus);
-static enum TagEditorFocus tag_editor_current_helper_focus(
-    TagEditorScreen *screen);
-static bool tag_editor_current_directory_path(TagEditorScreen *screen,
-                                              char **path,
-                                              int32 *path_len);
-static bool tag_editor_current_directory_pair(TagEditorScreen *screen,
-                                              NcMenuStringPair **pair);
-static bool tag_editor_directory_filter(NcMenu *menu, void *item,
-                                        void *user);
+static void tag_editor_set_focus(TagEditorScreen *screen, enum TagEditorFocus focus);
+static enum TagEditorFocus tag_editor_current_helper_focus(TagEditorScreen *screen);
+static bool tag_editor_current_directory_path(TagEditorScreen *screen, char **path, int32 *path_len);
+static bool tag_editor_current_directory_pair(TagEditorScreen *screen, NcMenuStringPair **pair);
+static bool tag_editor_directory_filter(NcMenu *menu, void *item, void *user);
 static bool tag_editor_tag_filter(NcMenu *menu, void *item, void *user);
-static int32 tag_editor_copy_selected_song_at(
-    TagEditorScreen *screen, NcmSongArray *songs, int32 pos);
-static int32 tag_editor_for_each_target(TagEditorScreen *screen,
-                                        int32 (*cb)(NcmMutableSong *song,
-                                                    void *user),
-                                        void *user);
-static int32 tag_editor_set_song_tag_callback(NcmMutableSong *song,
-                                              void *user);
-static int32 tag_editor_number_song_callback(NcmMutableSong *song,
-                                             void *user);
-static int32 tag_editor_capitalize_song_callback(NcmMutableSong *song,
-                                                 void *user);
-static int32 tag_editor_lower_song_callback(NcmMutableSong *song,
-                                            void *user);
+static int32 tag_editor_copy_selected_song_at(TagEditorScreen *screen, NcmSongArray *songs, int32 pos);
+static int32 tag_editor_for_each_target(TagEditorScreen *screen, int32 (*cb)(NcmMutableSong *song, void *user), void *user);
+static int32 tag_editor_set_song_tag_callback(NcmMutableSong *song, void *user);
+static int32 tag_editor_number_song_callback(NcmMutableSong *song, void *user);
+static int32 tag_editor_capitalize_song_callback(NcmMutableSong *song, void *user);
+static int32 tag_editor_lower_song_callback(NcmMutableSong *song, void *user);
 static int32 tag_editor_save_song_callback(NcmMutableSong *song, void *user);
-static bool tag_editor_tag_matches_regex(TagEditorScreen *screen,
-                                         NcmMutableSong *song,
-                                         NcmRegex *regex);
-static bool tag_editor_directory_matches_regex(NcMenuStringPair *pair,
-                                               NcmRegex *regex,
-                                               bool filter);
-static bool tag_editor_search_position(NcMenu *menu, int32 pos,
-                                       void *user);
-static int32 tag_editor_append_parser_row(NcEditorStringMenu *menu,
-                                          char *data, int32 data_len,
-                                          uint32 flags);
+static bool tag_editor_tag_matches_regex(TagEditorScreen *screen, NcmMutableSong *song, NcmRegex *regex);
+static bool tag_editor_directory_matches_regex(NcMenuStringPair *pair, NcmRegex *regex, bool filter);
+static bool tag_editor_search_position(NcMenu *menu, int32 pos, void *user);
+static int32 tag_editor_append_parser_row(NcEditorStringMenu *menu, char *data, int32 data_len, uint32 flags);
 static int32 tag_editor_build_parser_legend(TagEditorScreen *screen);
-static int32 tag_editor_build_parser_preview(TagEditorScreen *screen,
-                                             bool apply, bool *success);
-static int32 tag_editor_save_recent_patterns(TagEditorScreen *screen);
-static int32 tag_editor_history_path(StrBuilder *path);
-static int32 tag_editor_set_pattern(TagEditorScreen *screen,
-                                    char *pattern, int32 pattern_len);
-static void tag_editor_append_parser_filename(StrBuilder *buffer,
-                                              char *name, int32 name_len);
-static bool tag_editor_next_mask_tag(char *mask, int32 mask_len,
-                                     int32 start, int32 *percent_pos,
-                                     char *tag_char);
-static enum TagEditorTagTypeAction tag_editor_current_tag_type_action(
-    TagEditorScreen *screen, enum NcmTagsField *field);
-static bool tag_editor_prompt_tag_value(TagEditorScreen *screen,
-                                        enum NcmTagsField field,
-                                        bool all_targets);
-static void tag_editor_status_message(TagEditorScreen *screen,
-                                      char *message, int32 message_len);
-static bool tag_editor_confirm(TagEditorScreen *screen,
-                               char *message, int32 message_len);
-static bool tag_editor_strings_equal(char *left, int32 left_len,
-                                     char *right, int32 right_len);
+static int32 tag_editor_build_parser_preview(TagEditorScreen *screen, bool apply, bool *success);
+static int32 tag_editor_save_recent_patterns(TagEditorScreen *screen); static int32 tag_editor_history_path(StrBuilder *path);
+static int32 tag_editor_set_pattern(TagEditorScreen *screen, char *pattern, int32 pattern_len);
+static void tag_editor_append_parser_filename(StrBuilder *buffer, char *name, int32 name_len);
+static bool tag_editor_next_mask_tag(char *mask, int32 mask_len, int32 start, int32 *percent_pos, char *tag_char);
+static enum TagEditorTagTypeAction tag_editor_current_tag_type_action( TagEditorScreen *screen, enum NcmTagsField *field);
+static bool tag_editor_prompt_tag_value(TagEditorScreen *screen, enum NcmTagsField field, bool all_targets);
+static void tag_editor_status_message(TagEditorScreen *screen, char *message, int32 message_len);
+static bool tag_editor_confirm(TagEditorScreen *screen, char *message, int32 message_len);
+static bool tag_editor_strings_equal(char *left, int32 left_len, char *right, int32 right_len);
 
 static NcScreenOps tag_editor_callbacks = {
     .active_window = tag_editor_active_window,
