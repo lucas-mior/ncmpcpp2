@@ -2,7 +2,8 @@
 
 For the first of the problems below (functions that are called only once),
 identify instances of it in the first file in the list below it. Then fix those
-instances and remove the file from the list.
+instances and remove the file from the list. If you don't identify any instance
+in the first file, go straight to the next file without returning to me.
 
 ## Functions that are called only once
 For functions that are defined inside a file and only used inside the same file,
