@@ -76,8 +76,7 @@ static void tag_editor_configure_menus(TagEditorScreen *);
 static void
 tag_editor_append_formatted_color_end(NcBuffer *buffer,
                                       NcFormattedColor *color) {
-    nc_buffer_add_formatted_color_end(buffer, nc_buffer_len(buffer), color,
-                                      0);
+    nc_buffer_add_formatted_color_end(buffer, nc_buffer_len(buffer), color, 0);
     return;
 }
 
