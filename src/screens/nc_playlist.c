@@ -1041,9 +1041,7 @@ playlist_update(NcScreen *screen) {
 
 static void
 playlist_mouse_button_pressed(NcScreen *screen, MEVENT event) {
-    PlaylistScreen *playlist;
-
-    playlist = playlist_from_screen(screen);
+    PlaylistScreen *playlist = playlist_from_screen(screen);
     nc_playlist_screen_mouse_button_pressed(&playlist->screen, event);
     return;
 }
