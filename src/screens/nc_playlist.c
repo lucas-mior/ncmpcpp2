@@ -1434,8 +1434,7 @@ playlist_full_reload_is_required(PlaylistScreen *screen,
 
 static int32
 playlist_apply_changed_songs(PlaylistScreen *screen,
-                             NcmMpdSongList *songs,
-                             int32 playlist_length) {
+                             NcmMpdSongList *songs, int32 playlist_length) {
     NcMenu *menu;
     bool was_filtered;
     int32 status;
