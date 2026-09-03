@@ -386,13 +386,12 @@ ncm_statusbar_message_delay_time(void) {
 int32
 ncm_statusbar_prompt_return_one_of(NcWindow *window, char *values,
                                    int32 values_len, char *result) {
-    NcKey key;
-
     if ((window == NULL) || (values_len <= 0) || (result == NULL)) {
         return -EINVAL;
     }
 
     while (true) {
+        NcKey key;
         if (nc_window_raw(window)) {
             nc_window_refresh(window);
         }
