@@ -902,7 +902,7 @@ visualizer_screen_toggle_type(VisualizerScreen *screen) {
 
 static void
 visualizer_reset_sample_clock(VisualizerScreen *screen) {
-    screen->sample_clock.ns = 0;
+    screen->sample_clock = 0;
     screen->sample_clock_frame_remainder = 0;
     screen->sample_clock_initialized = false;
     return;
@@ -910,7 +910,7 @@ visualizer_reset_sample_clock(VisualizerScreen *screen) {
 
 int32
 visualizer_screen_requested_samples(VisualizerScreen *screen) {
-    NcmTimePoint now;
+    int64 now;
     int64 elapsed_ns;
     int64 frames;
     int64 max_elapsed_ns;
@@ -921,16 +921,14 @@ visualizer_screen_requested_samples(VisualizerScreen *screen) {
     if ((screen == NULL) || (screen->sample_rate <= 0)) {
         return 0;
     }
-    if (ncm_time_monotonic_now(&now, NULL) < 0) {
-        return 0;
-    }
+    now = time_monotonic_now();
     if (!screen->sample_clock_initialized) {
         screen->sample_clock = now;
         screen->sample_clock_initialized = true;
         return 0;
     }
 
-    elapsed_ns = ncm_time_elapsed_ns(screen->sample_clock, now);
+    elapsed_ns = time_elapsed_ns(screen->sample_clock, now);
     screen->sample_clock = now;
     if (elapsed_ns <= 0) {
         return 0;

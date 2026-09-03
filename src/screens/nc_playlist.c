@@ -255,7 +255,7 @@ playlist_screen_init(PlaylistScreen *screen, int32 start_x,
     screen->total_length = 0;
     screen->remaining_time = 0;
     screen->scroll_begin = 0;
-    screen->highlight_timer.ns = 0;
+    screen->highlight_timer = 0;
     screen->reload_total_length = true;
     screen->reload_remaining = true;
     screen->registered = false;
@@ -428,7 +428,7 @@ playlist_screen_set_highlighting(PlaylistScreen *screen, bool enabled) {
     if (enabled && !was_enabled) {
         screen->highlight_timer = global_timer;
     } else if (!enabled) {
-        screen->highlight_timer.ns = 0;
+        screen->highlight_timer = 0;
     }
     return;
 }

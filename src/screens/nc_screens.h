@@ -1076,7 +1076,7 @@ typedef struct VisualizerScreen {
     int32 output_id;
     int32 fps;
     int32 sample_rate;
-    NcmTimePoint sample_clock;
+    int64 sample_clock;
     int64 sample_clock_frame_remainder;
     int32 visualizer_colors_len;
     int32 visualizer_colors_cap;
@@ -1239,7 +1239,7 @@ typedef struct MediaLibraryScreen {
     StrBuilder tags_title;
     StrBuilder albums_title;
     StrBuilder songs_title;
-    NcmTimePoint update_timer;
+    int64 update_timer;
     NcMediaLibraryTagRow observed_tag;
     NcMediaLibraryAlbumRow observed_album;
 
@@ -1444,7 +1444,7 @@ typedef struct PlaylistEditorScreen {
     NcmRegex playlist_search_regex;
     NcmRegex content_search_regex;
 
-    NcmTimePoint timer;
+    int64 timer;
 
     int32 start_x;
     int32 width;
@@ -1567,7 +1567,7 @@ typedef struct PlaylistScreen {
     uint64 total_length;
     uint64 remaining_time;
     int32 scroll_begin;
-    NcmTimePoint highlight_timer;
+    int64 highlight_timer;
 
     bool reload_total_length;
     bool reload_remaining;

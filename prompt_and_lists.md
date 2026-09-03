@@ -86,7 +86,6 @@ the external API of the module has already validated it.
 - src/screens/nc_screen_switcher.c
 - src/statusbar.c
 - src/c/ncm_string.c
-- src/c/ncm_time.c
 - src/curses/nc_formatted_color.c
 - src/c/ncm_path.c
 - src/c/ncm_mpd_item.c

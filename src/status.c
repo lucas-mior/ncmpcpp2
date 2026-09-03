@@ -56,8 +56,8 @@ static void (*status_database_update_observer)(void *user);
 static void *status_database_update_observer_user;
 static void (*status_playlist_update_observer)(void *user);
 static void *status_playlist_update_observer_user;
-static NcmTimePoint status_past;
-static NcmTimePoint status_elapsed_time_updated_at;
+static int64 status_past;
+static int64 status_elapsed_time_updated_at;
 static int32 status_playing_song_scroll_begin;
 static int32 status_first_line_scroll_begin;
 static int32 status_second_line_scroll_begin;
@@ -244,7 +244,7 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
     hooks = status_active_hooks(NULL);
 
     if (update_timer) {
-        (void)global_timer_update(ncm_error);
+        global_timer_update();
     }
 
     if (client && ncm_mpd_client_is_connected(client)) {

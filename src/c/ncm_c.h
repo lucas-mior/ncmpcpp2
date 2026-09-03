@@ -796,15 +796,6 @@ NCM_ARRAY_DECLARE_APPEND_COPY(ncm_mpd_item_array,
                               NcmMpdItemArray,
                               NcmMpdItem)
 
-/* c/ncm_time.h */
-typedef struct NcmTimePoint {
-    int64 ns;
-} NcmTimePoint;
-
-int32 ncm_time_monotonic_now(NcmTimePoint *point, NcmError *ncm_error);
-int64 ncm_time_elapsed_ns(NcmTimePoint start, NcmTimePoint end);
-int64 ncm_time_elapsed_ms(NcmTimePoint start, NcmTimePoint end);
-
 /* c/ncm_regex.h */
 #include <regex.h>
 

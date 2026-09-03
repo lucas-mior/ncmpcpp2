@@ -28,7 +28,7 @@ struct ServerInfoScreen {
     NcServerInfoScreen screen;
     NcmMpdStringList url_handlers;
     NcmMpdStringList tag_types;
-    NcmTimePoint timer;
+    int64 timer;
     bool initialized;
 };
 

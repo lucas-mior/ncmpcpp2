@@ -709,7 +709,7 @@ media_library_screen_init(MediaLibraryScreen *screen,
     screen->observed_tag = (NcMediaLibraryTagRow){0};
     screen->observed_album = (NcMediaLibraryAlbumRow){0};
 
-    screen->update_timer.ns = 0;
+    screen->update_timer = 0;
     screen->start_x = start_x;
     screen->width = width;
     screen->main_start_y = main_start_y;

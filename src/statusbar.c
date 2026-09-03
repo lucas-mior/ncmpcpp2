@@ -13,7 +13,7 @@
 static bool progressbar_block_update;
 static bool statusbar_block_update;
 static bool statusbar_allow_unlock = true;
-static NcmTimePoint statusbar_lock_time;
+static int64 statusbar_lock_time;
 static int32 statusbar_lock_delay_seconds = -1;
 
 static NcWindow *
