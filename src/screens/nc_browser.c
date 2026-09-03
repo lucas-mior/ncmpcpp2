@@ -21,7 +21,6 @@ static void browser_update(NcScreen *screen);
 static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 
 // declarations to delete
-static bool browser_directory_is_root(char *, int32 );
 static bool browser_path_is_parent_directory(char *, int32 );
 static int32 browser_set_normalized_directory(BrowserScreen *, char *, int32 );
 static int32 browser_set_parent_of_directory(BrowserScreen *, char *, int32 );
@@ -814,6 +813,14 @@ browser_screen_clear_update_request(BrowserScreen *screen) {
     return;
 }
 
+static bool
+browser_directory_is_root(char *directory, int32 directory_len) {
+    if (directory_len <= 0) {
+        return true;
+    }
+    return STREQUAL(directory, directory_len, "/");
+}
+
 bool
 browser_screen_is_in_root_directory(BrowserScreen *screen) {
     if (screen == NULL) {
@@ -1432,6 +1439,15 @@ browser_screen_clear_filter(BrowserScreen *screen) {
     return;
 }
 
+static bool
+browser_position_matches_search(NcMenu *menu, int32 pos, void *user) {
+    BrowserSearchContext *context = user;
+
+    return browser_item_matches(context->screen,
+                                nc_menu_active_item_at(menu, pos),
+                                context->regex, false);
+}
+
 int32
 browser_screen_search(BrowserScreen *screen,
                       char *pattern, int32 pattern_len,
@@ -1481,15 +1497,6 @@ browser_screen_search(BrowserScreen *screen,
         return 0;
     }
     return status;
-}
-
-static bool
-browser_position_matches_search(NcMenu *menu, int32 pos, void *user) {
-    BrowserSearchContext *context = user;
-
-    return browser_item_matches(context->screen,
-                                nc_menu_active_item_at(menu, pos),
-                                context->regex, false);
 }
 
 bool
@@ -1673,14 +1680,6 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
         }
     }
     return;
-}
-
-static bool
-browser_directory_is_root(char *directory, int32 directory_len) {
-    if (directory_len <= 0) {
-        return true;
-    }
-    return STREQUAL(directory, directory_len, "/");
 }
 
 static bool
