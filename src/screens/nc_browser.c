@@ -371,8 +371,9 @@ browser_screen_init(BrowserScreen *screen,
                     int32 main_start_y, int32 main_height,
                     NcColor color, NcBorder border) {
     nc_browser_entry_menu_init(&screen->entries);
-    nc_window_init(&screen->window, start_x, main_start_y, width,
-                   main_height, NULL, 0, color, border);
+    nc_window_init(&screen->window,
+                   start_x, main_start_y, width, main_height,
+                   NULL, 0, color, border);
 
     screen->current_directory = (StrBuilder){0};
     screen->last_highlighted_directory = (StrBuilder){0};
