@@ -1422,7 +1422,7 @@ playlist_editor_playlist_matches_regex(NcmRegex *regex,
 static bool
 playlist_editor_content_matches_regex(PlaylistEditorScreen *screen,
                                       NcmRegex *regex, NcmSong *song) {
-    NcBuffer buffer;
+    NcBuffer buffer = {0};
     bool result;
 
     (void)screen;
@@ -1430,7 +1430,6 @@ playlist_editor_content_matches_regex(PlaylistEditorScreen *screen,
         return false;
     }
 
-    buffer = (NcBuffer){0};
     if (Config.playlist_editor_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
         ncm_display_song_row(&buffer, &Config.song_columns_mode_format,
                              song, NCM_FORMAT_FLAG_ALL);
