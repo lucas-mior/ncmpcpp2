@@ -61,25 +61,22 @@ ncm_sample_buffer_put(NcmSampleBuffer *buffer,
 }
 
 int32
-ncm_sample_buffer_get(NcmSampleBuffer *buffer,
-                      int32 samples_len, int16 *dest, int32 dest_len) {
+ncm_sample_buffer_get_clamped(NcmSampleBuffer *buffer,
+                              int32 samples_len,
+                              int16 *dest, int32 dest_len) {
     int32 result;
     int32 samples_lost;
     int32 dest_move_len;
     int32 remove_len;
 
-    if (buffer->len <= 0) {
-        return 0;
+    if (samples_len > buffer->len) {
+        samples_len = buffer->len;
     }
     if (samples_len <= 0) {
         return 0;
     }
 
     result = samples_len;
-    if (result > buffer->len) {
-        result = buffer->len;
-    }
-
     if (result >= dest_len) {
         samples_lost = result - dest_len;
         if (dest_len > 0) {
@@ -91,10 +88,8 @@ ncm_sample_buffer_get(NcmSampleBuffer *buffer,
         if (dest_move_len > 0) {
             memmove64(dest, dest + result, dest_move_len*SIZEOF(*dest));
         }
-        if (result > 0) {
-            memcpy64(dest + dest_move_len, buffer->data,
-                     result*SIZEOF(*dest));
-        }
+        memcpy64(dest + dest_move_len, buffer->data,
+                 result*SIZEOF(*dest));
     }
 
     remove_len = buffer->len - result;
@@ -105,20 +100,6 @@ ncm_sample_buffer_get(NcmSampleBuffer *buffer,
     buffer->len -= result;
 
     return result;
-}
-
-int32
-ncm_sample_buffer_get_clamped(NcmSampleBuffer *buffer,
-                              int32 samples_len,
-                              int16 *dest, int32 dest_len) {
-    if (samples_len > buffer->len) {
-        samples_len = buffer->len;
-    }
-    if (samples_len <= 0) {
-        return 0;
-    }
-
-    return ncm_sample_buffer_get(buffer, samples_len, dest, dest_len);
 }
 
 void
@@ -143,11 +124,6 @@ void
 ncm_sample_buffer_clear(NcmSampleBuffer *buffer) {
     buffer->len = 0;
     return;
-}
-
-int32
-ncm_sample_buffer_size(NcmSampleBuffer *buffer) {
-    return buffer->len;
 }
 
 int32
