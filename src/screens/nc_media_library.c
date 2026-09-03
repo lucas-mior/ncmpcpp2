@@ -3320,20 +3320,17 @@ library_move_to_album(MediaLibraryScreen *screen,
         tag_matches = (screen->mode == MEDIA_LIBRARY_MODE_ALBUM_ONLY)
                       || (screen->mode
                           == MEDIA_LIBRARY_MODE_THREE_COLUMNS)
-                      || STREQUAL(row->tag, row->tag_len,
-                                  tag, tag_len);
+                      || STREQUAL(row->tag, row->tag_len, tag, tag_len);
         if (!tag_matches) {
             continue;
         }
-        if (!STREQUAL(row->album, row->album_len,
-                      album, album_len)) {
+        if (!STREQUAL(row->album, row->album_len, album, album_len)) {
             continue;
         }
 
         date_matches = !consider_date
                        || !Config.media_library_albums_split_by_date
-                       || STREQUAL(row->date, row->date_len,
-                                   date, date_len);
+                       || STREQUAL(row->date, row->date_len, date, date_len);
         if (date_matches) {
             status = nc_menu_goto_selectable(menu, i);
             if (status < 0) {
