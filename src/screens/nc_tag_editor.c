@@ -3140,10 +3140,9 @@ tag_editor_reload_directories_from_mpd(TagEditorScreen *screen,
 
     for (int32 i = 1; i < directories.len; i += 1) {
         NcmDirectory current = {0};
-        int32 j;
+        int32 j = i;
 
         ncm_directory_move(&current, &directories.items[i]);
-        j = i;
         while (j > 0) {
             NcmDirectory *left = &directories.items[j - 1];
             int32 comparison;
