@@ -1243,11 +1243,9 @@ append_content_item_from_source(PlaylistEditorScreen *screen,
 static int32
 append_content_item(PlaylistEditorScreen *screen, int32 pos,
                     NcmSongArray *songs) {
-    enum NcMenuItemSource source;
-    NcMenu *menu;
+    enum NcMenuItemSource source = NC_MENU_ITEMS_ALL;
+    NcMenu *menu = nc_song_menu_base(&screen->content);
 
-    menu = nc_song_menu_base(&screen->content);
-    source = NC_MENU_ITEMS_ALL;
     if (nc_menu_is_filtered(menu)) {
         source = NC_MENU_ITEMS_FILTERED;
     }
