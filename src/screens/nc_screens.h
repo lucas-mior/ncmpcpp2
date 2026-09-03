@@ -2518,10 +2518,8 @@ VisualizerScreen *app_screen_visualizer(void);
 void app_screen_lyrics_set_resize(void);
 void app_screen_lyrics_switch_to(void);
 void app_screen_browser_fetch_supported_extensions(void);
-int32 app_screen_selected_items_adder_open(
-    NcmSongArray *songs,
-    NcmError *ncm_error
-);
+int32 app_screen_selected_items_adder_open(NcmSongArray *songs,
+                                           NcmError *ncm_error);
 int32 app_screen_sort_playlist_dialog_switch_to(void);
 void app_screen_outputs_toggle(void);
 void app_screen_outputs_fetch_list(void);
