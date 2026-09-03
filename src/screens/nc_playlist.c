@@ -799,8 +799,9 @@ playlist_screen_copy_sort_range(PlaylistScreen *screen,
             ncm_error, -EINVAL,
             STRLIT("missing playlist range position"));
     }
-    status = playlist_screen_find_sort_range(
-        screen, &first, &last, &range_start, ncm_error);
+    status = playlist_screen_find_sort_range(screen,
+                                             &first, &last, &range_start,
+                                             ncm_error);
     if (status < 0) {
         return status;
     }
