@@ -3545,11 +3545,11 @@ library_draw_album(NcMenu *menu, NcWindow *window,
 static void
 library_draw_song(NcMenu *menu, NcWindow *window,
                   void *item, int32 pos, void *user) {
-    NcBuffer text;
+    NcBuffer text = {0};
 
     (void)menu;
     (void)pos;
-    text = (NcBuffer){0};
+
     media_library_screen_format_song_row(user, item, &text);
     library_print_buffer(window, &text);
     nc_buffer_destroy(&text);
