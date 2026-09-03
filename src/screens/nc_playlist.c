@@ -782,7 +782,7 @@ playlist_screen_copy_sort_range(PlaylistScreen *screen,
                                 NcmSongArray *songs,
                                 int32 *start_position,
                                 NcmError *ncm_error) {
-    NcmSongArray replacement;
+    NcmSongArray replacement = {0};
     NcMenu *menu;
     NcmSong *song;
     int32 first;
@@ -806,7 +806,7 @@ playlist_screen_copy_sort_range(PlaylistScreen *screen,
     }
 
     menu = playlist_storage_menu(screen);
-    replacement = (NcmSongArray){0};
+
     for (int32 i = first; i < last; i += 1) {
         if ((song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i)) == NULL) {
             ncm_song_array_destroy(&replacement);
