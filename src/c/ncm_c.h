@@ -162,8 +162,8 @@ struct mpd_song;
 #define ENUM_NAME NcmSongOwnership
 #define ENUM_PREFIX_ NCM_SONG_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NCM_SONG_BORROWED)                                                      \
+#define ENUM_FIELDS                             \
+    XX(NCM_SONG_BORROWED)                       \
     XX(NCM_SONG_OWNED)
 #include "cbase/xenums.c"
 
