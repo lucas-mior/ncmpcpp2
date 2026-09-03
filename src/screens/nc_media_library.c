@@ -3622,10 +3622,8 @@ library_column_menu(
 }
 
 static bool
-library_column_has_visible_items(
-    MediaLibraryScreen *screen,
-    enum MediaLibraryColumn column
-) {
+library_column_has_visible_items(MediaLibraryScreen *screen,
+                                 enum MediaLibraryColumn column) {
     NcMenu *menu;
 
     if (!media_library_screen_column_is_visible(screen, column)) {
