@@ -486,8 +486,7 @@ tag_editor_update_titles(TagEditorScreen *screen,
         SB_APPEND(&screen->tags_title, "Tags");
         if (screen->parser_mode == TAG_EDITOR_PARSER_TAGS_FROM_FILENAME) {
             SB_APPEND(&screen->parser_title, "Get tags from filename");
-        } else if (screen->parser_mode
-                   == TAG_EDITOR_PARSER_RENAME_FILES) {
+        } else if (screen->parser_mode == TAG_EDITOR_PARSER_RENAME_FILES) {
             SB_APPEND(&screen->parser_title, "Rename files");
         } else {
             SB_APPEND(&screen->parser_title, "Pattern");
