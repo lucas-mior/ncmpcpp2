@@ -2444,9 +2444,7 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 }
 
 static int32
-browser_locate_last_directory(
-    BrowserScreen *screen
-) {
+browser_locate_last_directory(BrowserScreen *screen) {
     NcmStringView target;
     NcmStringView path;
     NcMenu *menu;
