@@ -298,10 +298,9 @@ ncm_playlist_sort_range(
     bool ignore_leading_the, NcmMpdClient *client,
     NcmError *ncm_error
 ) {
-    NcmPlaylistSortPlan plan;
+    NcmPlaylistSortPlan plan = {0};
     int32 status;
 
-    plan = (NcmPlaylistSortPlan){0};
     status = ncm_playlist_sort_plan_build(
         &plan, songs, start_position, getters, getters_len,
         ignore_leading_the, ncm_error);
