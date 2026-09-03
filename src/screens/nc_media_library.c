@@ -56,7 +56,8 @@ library_mpd_search_songs(void *user,
 
     status = ncm_mpd_client_start_search(client, true, ncm_error);
     if ((status == 0) && query->match_primary_tag) {
-        char *value = library_query_cstring(query->primary_value, query->primary_value_len);
+        char *value = library_query_cstring(query->primary_value,
+                                            query->primary_value_len);
         if (value == NULL) {
             status = ncm_error_set_status(
                 ncm_error, -EINVAL, STRLIT("missing primary tag value"));
@@ -499,6 +500,7 @@ media_library_mpd_hooks(NcmMpdClient *client) {
     hooks.search_songs = library_mpd_search_songs;
     hooks.add_songs = library_mpd_add_songs;
     hooks.user = client;
+
     return hooks;
 }
 
