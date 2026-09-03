@@ -2751,8 +2751,8 @@ lyrics_paroles_content_start(char *data, int32 data_len) {
     int32 second_marker;
     int32 content_start;
 
-    marker = lyrics_find_ignore_case(
-        data, data_len, STRLIT("Paroles de la chanson"), 0);
+    marker = lyrics_find_ignore_case(data, data_len,
+                                     STRLIT("Paroles de la chanson"), 0);
     if (marker < 0) {
         return -1;
     }
