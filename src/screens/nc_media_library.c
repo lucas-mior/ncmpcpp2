@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static int32 library_replace_albums(MediaLibraryScreen *screen, MediaLibraryAlbumArray *albums);
 static void library_restore_song_identity(NcMediaLibrarySongMenu *menu, NcmSong *identity, bool identity_valid, int32 fallback);
 static bool library_has_pending_albums(MediaLibraryScreen *screen);
 static void library_reset_observed_highlights(MediaLibraryScreen *screen);
@@ -2680,6 +2679,76 @@ library_update_tags(MediaLibraryScreen *screen,
     return status;
 }
 
+static void
+library_apply_column_filter(
+    MediaLibraryScreen *screen,
+    enum MediaLibraryColumn column, NcMenu *menu
+) {
+    MediaLibraryColumnState *state;
+    NcMenuDisplayCallbacks callbacks;
+
+    state = media_library_screen_column_state(screen, column);
+    ASSERT(state != NULL);
+    ASSERT(menu != NULL);
+
+    callbacks = library_display_callbacks(
+        screen, column, state->filter_enabled);
+    nc_menu_set_display_callbacks(menu, callbacks);
+    if (state->filter_enabled) {
+        nc_menu_apply_filter(menu);
+    } else {
+        nc_menu_show_all_items(menu);
+    }
+    return;
+}
+
+static int32
+library_replace_albums(MediaLibraryScreen *screen,
+                       MediaLibraryAlbumArray *albums) {
+    NcMediaLibraryAlbumMenu replacement;
+    NcMediaLibraryAlbumRow identity;
+    NcMediaLibraryAlbumRow *current;
+    NcMenu *menu;
+    NcMenu *replacement_menu;
+    int32 highlight;
+    bool identity_valid;
+
+    ASSERT(screen != NULL);
+    ASSERT(albums != NULL);
+
+    menu = nc_media_library_album_menu_base(&screen->albums);
+    current = nc_media_library_album_menu_current(&screen->albums);
+    highlight = nc_menu_highlight(menu);
+    identity_valid = false;
+    identity = (NcMediaLibraryAlbumRow){0};
+    if (current) {
+        identity_valid = nc_media_library_album_row_copy(
+            &identity, current) >= 0;
+        library_set_observed_album(screen, current);
+    } else {
+        library_set_observed_album(screen, NULL);
+    }
+
+    nc_media_library_album_menu_init(&replacement);
+    replacement_menu = nc_media_library_album_menu_base(&replacement);
+    nc_menu_copy(replacement_menu, menu);
+    for (int32 i = 0; i < albums->len; i += 1) {
+        nc_media_library_album_menu_add_with_flags(
+            &replacement, &albums->items[i].row,
+            albums->items[i].menu_flags);
+    }
+    library_apply_column_filter(
+        screen, MEDIA_LIBRARY_COLUMN_ALBUMS, replacement_menu);
+    library_restore_album_identity(
+        &replacement, &identity, identity_valid, highlight);
+
+    nc_menu_swap(menu, replacement_menu);
+    nc_media_library_album_menu_destroy(&replacement);
+    nc_media_library_album_row_destroy(&identity);
+    nc_screen_finish_list_change(&screen->screen);
+    return 0;
+}
+
 static int32
 library_update_albums(MediaLibraryScreen *screen,
                       NcmError *ncm_error) {
@@ -2814,29 +2883,6 @@ library_update_songs(MediaLibraryScreen *screen,
     return status;
 }
 
-static void
-library_apply_column_filter(
-    MediaLibraryScreen *screen,
-    enum MediaLibraryColumn column, NcMenu *menu
-) {
-    MediaLibraryColumnState *state;
-    NcMenuDisplayCallbacks callbacks;
-
-    state = media_library_screen_column_state(screen, column);
-    ASSERT(state != NULL);
-    ASSERT(menu != NULL);
-
-    callbacks = library_display_callbacks(
-        screen, column, state->filter_enabled);
-    nc_menu_set_display_callbacks(menu, callbacks);
-    if (state->filter_enabled) {
-        nc_menu_apply_filter(menu);
-    } else {
-        nc_menu_show_all_items(menu);
-    }
-    return;
-}
-
 static int32
 library_replace_tags(MediaLibraryScreen *screen,
                      MediaLibraryTagArray *tags) {
@@ -2878,53 +2924,6 @@ library_replace_tags(MediaLibraryScreen *screen,
     nc_menu_swap(menu, replacement_menu);
     nc_media_library_tag_menu_destroy(&replacement);
     nc_media_library_tag_row_destroy(&identity);
-    nc_screen_finish_list_change(&screen->screen);
-    return 0;
-}
-
-static int32
-library_replace_albums(MediaLibraryScreen *screen,
-                       MediaLibraryAlbumArray *albums) {
-    NcMediaLibraryAlbumMenu replacement;
-    NcMediaLibraryAlbumRow identity;
-    NcMediaLibraryAlbumRow *current;
-    NcMenu *menu;
-    NcMenu *replacement_menu;
-    int32 highlight;
-    bool identity_valid;
-
-    ASSERT(screen != NULL);
-    ASSERT(albums != NULL);
-
-    menu = nc_media_library_album_menu_base(&screen->albums);
-    current = nc_media_library_album_menu_current(&screen->albums);
-    highlight = nc_menu_highlight(menu);
-    identity_valid = false;
-    identity = (NcMediaLibraryAlbumRow){0};
-    if (current) {
-        identity_valid = nc_media_library_album_row_copy(
-            &identity, current) >= 0;
-        library_set_observed_album(screen, current);
-    } else {
-        library_set_observed_album(screen, NULL);
-    }
-
-    nc_media_library_album_menu_init(&replacement);
-    replacement_menu = nc_media_library_album_menu_base(&replacement);
-    nc_menu_copy(replacement_menu, menu);
-    for (int32 i = 0; i < albums->len; i += 1) {
-        nc_media_library_album_menu_add_with_flags(
-            &replacement, &albums->items[i].row,
-            albums->items[i].menu_flags);
-    }
-    library_apply_column_filter(
-        screen, MEDIA_LIBRARY_COLUMN_ALBUMS, replacement_menu);
-    library_restore_album_identity(
-        &replacement, &identity, identity_valid, highlight);
-
-    nc_menu_swap(menu, replacement_menu);
-    nc_media_library_album_menu_destroy(&replacement);
-    nc_media_library_album_row_destroy(&identity);
     nc_screen_finish_list_change(&screen->screen);
     return 0;
 }
