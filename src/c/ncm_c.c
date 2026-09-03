@@ -1,7 +1,6 @@
 #include "c/ncm_c.h"
 
 #include "c/ncm_app_arrays.c"
-#include "c/ncm_charset.c"
 #include "c/ncm_comparators.c"
 #include "c/ncm_conversion.c"
 #include "c/ncm_directory.c"
