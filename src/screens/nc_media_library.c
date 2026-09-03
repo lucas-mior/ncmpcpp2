@@ -665,9 +665,8 @@ media_library_screen_format_tag_row(
     MediaLibraryScreen *screen, NcMediaLibraryTagRow *row,
     StrBuilder *output
 ) {
-    StrBuilder converted;
-
     (void)screen;
+
     if (output == NULL) {
         return;
     }
@@ -683,9 +682,7 @@ media_library_screen_format_tag_row(
         return;
     }
 
-    converted = ncm_charset_copy(row->tag, row->tag_len);
-    SB_APPEND(output, converted.data, converted.len);
-    sb_free(&converted);
+    SB_APPEND(output, row->tag, row->tag_len);
     return;
 }
 
