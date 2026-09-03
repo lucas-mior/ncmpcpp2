@@ -315,7 +315,7 @@ int64 fwrite64(void *, int64, int64, FILE *);
 
 #if OS_UNIX
 #define XSIGNAL(NAME) [NAME] = #NAME
-static char *signal_names[] = {
+static char UNUSED *signal_names[] = {
     XSIGNAL(SIGABRT),
     XSIGNAL(SIGALRM),
     XSIGNAL(SIGVTALRM),
