@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static void library_tag_array_item_destroy(void *item);
 static void library_set_observed_tag(MediaLibraryScreen *screen, NcMediaLibraryTagRow *tag);
 static void library_restore_album_identity(NcMediaLibraryAlbumMenu *menu, NcMediaLibraryAlbumRow *identity, bool identity_valid, int32 fallback);
 static bool library_has_pending_tags(MediaLibraryScreen *screen);
