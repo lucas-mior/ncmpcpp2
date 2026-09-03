@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static MediaLibraryColumnState *library_active_column_state( MediaLibraryScreen *screen);
 static NcMenuDisplayCallbacks library_display_callbacks( MediaLibraryScreen *screen, enum MediaLibraryColumn column, bool filter_enabled);
 static void library_update_menu_highlights(MediaLibraryScreen *screen);
 static void library_update_titles(MediaLibraryScreen *screen, bool update_windows);
@@ -492,6 +491,12 @@ media_library_screen_column_state(
         return NULL;
     }
     return &screen->column_state[column];
+}
+
+static MediaLibraryColumnState *
+library_active_column_state(MediaLibraryScreen *screen) {
+    ASSERT(screen != NULL);
+    return media_library_screen_column_state(screen, screen->active_column);
 }
 
 StrBuilder *
@@ -3803,12 +3808,6 @@ library_draw_song(NcMenu *menu, NcWindow *window,
     library_print_buffer(window, &text);
     nc_buffer_destroy(&text);
     return;
-}
-
-static MediaLibraryColumnState *
-library_active_column_state(MediaLibraryScreen *screen) {
-    ASSERT(screen != NULL);
-    return media_library_screen_column_state(screen, screen->active_column);
 }
 
 static NcMenuDisplayCallbacks
