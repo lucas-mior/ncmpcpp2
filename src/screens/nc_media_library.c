@@ -1933,9 +1933,7 @@ media_library_screen_set_primary_tag_type(
 }
 
 void
-media_library_screen_request_database_update(
-    MediaLibraryScreen *screen
-) {
+media_library_screen_request_database_update(MediaLibraryScreen *screen) {
     library_request_all_updates(screen);
     return;
 }
