@@ -1877,17 +1877,15 @@ typedef struct SelectedItemsAdderScreen {
 void selected_items_adder_screen_init(
     SelectedItemsAdderScreen *screen, int32 start_x, int32 start_y,
     int32 width, int32 height, NcColor color, NcBorder border);
-void selected_items_adder_screen_destroy(
-    SelectedItemsAdderScreen *screen);
-NcScreen *selected_items_adder_screen_base(
-    SelectedItemsAdderScreen *screen);
-NcMenu *selected_items_adder_screen_active_menu(
-    SelectedItemsAdderScreen *screen);
-NcWindow *selected_items_adder_screen_active_window(
-    SelectedItemsAdderScreen *screen);
-int32 selected_items_adder_screen_open(
-    SelectedItemsAdderScreen *screen, NcmSongArray *songs,
-    PlaylistScreen *playlist, NcmMpdClient *client, NcmError *ncm_error);
+void selected_items_adder_screen_destroy(SelectedItemsAdderScreen *screen);
+NcScreen *selected_items_adder_screen_base(SelectedItemsAdderScreen *screen);
+NcMenu *selected_items_adder_screen_active_menu(SelectedItemsAdderScreen *);
+NcWindow *selected_items_adder_screen_active_window(SelectedItemsAdderScreen *);
+int32 selected_items_adder_screen_open(SelectedItemsAdderScreen *screen,
+                                       NcmSongArray *songs,
+                                       PlaylistScreen *playlist,
+                                       NcmMpdClient *client,
+                                       NcmError *ncm_error);
 void selected_items_adder_screen_populate_playlist_selector(
     SelectedItemsAdderScreen *screen, NcmMpdPlaylistList *playlists,
     bool local_browser);
