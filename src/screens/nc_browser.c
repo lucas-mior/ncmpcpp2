@@ -1816,9 +1816,7 @@ browser_screen_rename_current_playlist(
 }
 
 static int32
-browser_add_parent_directory_item(
-    BrowserScreen *screen
-) {
+browser_add_parent_directory_item(BrowserScreen *screen) {
     NcmDirectory directory;
     NcmMpdItem item;
     int32 status;
