@@ -886,7 +886,8 @@ tag_editor_screen_finish_directory_change(TagEditorScreen *screen) {
     } else {
         changed = !screen->observed_dir_valid
                   || !STREQUAL(screen->observed_dir.data,
-                               screen->observed_dir.len, path, path_len)
+                               screen->observed_dir.len,
+                               path, path_len)
                   || (screen->last_directory_highlight
                       != nc_menu_highlight(menu));
         if (changed) {
