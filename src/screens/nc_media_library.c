@@ -28,7 +28,6 @@ static void library_update(NcScreen *screen);
 static void library_destroy_callback(NcScreen *screen);
 
 // declarations to delete
-static void library_restore_song_identity(NcMediaLibrarySongMenu *menu, NcmSong *identity, bool identity_valid, int32 fallback);
 static bool library_has_pending_albums(MediaLibraryScreen *screen);
 static void library_reset_observed_highlights(MediaLibraryScreen *screen);
 static void library_set_observed_album(MediaLibraryScreen *screen, NcMediaLibraryAlbumRow *album);
@@ -2928,6 +2927,48 @@ library_replace_tags(MediaLibraryScreen *screen,
     return 0;
 }
 
+static void
+library_restore_highlight(NcMenu *menu, int32 highlight) {
+    int32 count;
+
+    count = nc_menu_item_count(menu);
+    if (count <= 0) {
+        return;
+    }
+    if (highlight < 0) {
+        highlight = 0;
+    }
+    if (highlight >= count) {
+        highlight = count - 1;
+    }
+    (void)nc_menu_goto_selectable(menu, highlight);
+    return;
+}
+
+static void
+library_restore_song_identity(
+    NcMediaLibrarySongMenu *menu, NcmSong *identity,
+    bool identity_valid, int32 fallback
+) {
+    NcMenu *base;
+
+    base = nc_media_library_song_menu_base(menu);
+    if (identity_valid) {
+        for (int32 i = 0; i < nc_menu_item_count(base); i += 1) {
+            NcmSong *candidate;
+
+            candidate = nc_media_library_song_menu_item_at(
+                menu, base->active_items, i);
+            if (candidate && ncm_song_is_equal(candidate, identity)
+                && (nc_menu_goto_selectable(base, i) == 0)) {
+                return;
+            }
+        }
+    }
+    library_restore_highlight(base, fallback);
+    return;
+}
+
 static int32
 library_replace_songs(MediaLibraryScreen *screen,
                       NcmSongArray *songs) {
@@ -2966,24 +3007,6 @@ library_replace_songs(MediaLibraryScreen *screen,
     nc_media_library_song_menu_destroy(&replacement);
     ncm_song_destroy(&identity);
     return 0;
-}
-
-static void
-library_restore_highlight(NcMenu *menu, int32 highlight) {
-    int32 count;
-
-    count = nc_menu_item_count(menu);
-    if (count <= 0) {
-        return;
-    }
-    if (highlight < 0) {
-        highlight = 0;
-    }
-    if (highlight >= count) {
-        highlight = count - 1;
-    }
-    (void)nc_menu_goto_selectable(menu, highlight);
-    return;
 }
 
 static void
@@ -3027,30 +3050,6 @@ library_restore_album_identity(
                 menu, base->active_items, i);
             if (candidate
                 && library_album_identity_is_equal(candidate, identity)
-                && (nc_menu_goto_selectable(base, i) == 0)) {
-                return;
-            }
-        }
-    }
-    library_restore_highlight(base, fallback);
-    return;
-}
-
-static void
-library_restore_song_identity(
-    NcMediaLibrarySongMenu *menu, NcmSong *identity,
-    bool identity_valid, int32 fallback
-) {
-    NcMenu *base;
-
-    base = nc_media_library_song_menu_base(menu);
-    if (identity_valid) {
-        for (int32 i = 0; i < nc_menu_item_count(base); i += 1) {
-            NcmSong *candidate;
-
-            candidate = nc_media_library_song_menu_item_at(
-                menu, base->active_items, i);
-            if (candidate && ncm_song_is_equal(candidate, identity)
                 && (nc_menu_goto_selectable(base, i) == 0)) {
                 return;
             }
