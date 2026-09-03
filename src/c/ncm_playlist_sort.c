@@ -14,13 +14,8 @@ typedef struct NcmPlaylistSortContext {
 
 void
 ncm_playlist_sort_plan_destroy(NcmPlaylistSortPlan *plan) {
-    if (plan == NULL) {
-        return;
-    }
-
     free2(plan->items, plan->cap*SIZEOF(*plan->items));
     *plan = (NcmPlaylistSortPlan){0};
-
     return;
 }
 
