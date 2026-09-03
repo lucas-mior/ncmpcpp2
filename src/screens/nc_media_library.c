@@ -2403,8 +2403,7 @@ media_library_screen_clear_filter(MediaLibraryScreen *screen) {
     state->filter_regex = (NcmRegex){0};
     sb_clear(&state->filter_constraint);
     menu = media_library_screen_active_menu(screen);
-    callbacks = library_display_callbacks(
-        screen, screen->active_column, false);
+    callbacks = library_display_callbacks(screen, screen->active_column, false);
     nc_menu_set_display_callbacks(menu, callbacks);
     nc_menu_show_all_items(menu);
     state->filter_enabled = false;
