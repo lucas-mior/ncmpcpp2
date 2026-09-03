@@ -2414,11 +2414,10 @@ media_library_screen_clear_filter(MediaLibraryScreen *screen) {
 
 static bool
 library_search_position(NcMenu *menu, int32 pos, void *user) {
-    MediaLibrarySearchContext *context;
+    MediaLibrarySearchContext *context = user;
 
-    context = user;
-    return library_active_item_matches(
-        context->screen, menu, pos, context->regex);
+    return library_active_item_matches(context->screen, menu, pos,
+                                       context->regex);
 }
 
 int32
