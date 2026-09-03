@@ -7,16 +7,6 @@
 
 #define NCM_LRC_MAX_LINE_TIMESTAMPS 64
 
-static bool ncm_lrc_char_is_digit(char c);
-static bool ncm_lrc_char_is_space(char c);
-static int32 ncm_lrc_parse_uint(char *data, int32 data_len,
-                                int64 *value);
-static int32 ncm_lrc_trim_line_end(char *data, int32 data_len);
-static int32 ncm_lrc_raw_line_len(char *data, int32 data_len,
-                                  int32 start);
-static void ncm_lrc_document_clear_buffer_positions(NcmLrcDocument *document);
-static int ncm_lrc_entry_compare(void *left_ptr, void *right_ptr);
-
 void
 ncm_lrc_document_clear(NcmLrcDocument *document) {
     if (document == NULL) {
@@ -40,6 +30,81 @@ ncm_lrc_document_destroy(NcmLrcDocument *document) {
     free2(document->entries, document->entries_cap*SIZEOF(*document->entries));
     *document = (NcmLrcDocument){0};
     return;
+}
+
+static int32
+ncm_lrc_raw_line_len(char *data, int32 data_len, int32 start) {
+    int32 len;
+
+    len = 0;
+    while (((start + len) < data_len) && (data[start + len] != '\n')) {
+        len += 1;
+    }
+    return len;
+}
+
+static int32
+ncm_lrc_trim_line_end(char *data, int32 data_len) {
+    while ((data_len > 0) && (data[data_len - 1] == '\r')) {
+        data_len -= 1;
+    }
+    return data_len;
+}
+
+static bool
+ncm_lrc_char_is_space(char c) {
+    return (c == ' ') || (c == '\t');
+}
+
+static bool
+ncm_lrc_char_is_digit(char c) {
+    return (c >= '0') && (c <= '9');
+}
+
+static int32
+ncm_lrc_parse_uint(char *data, int32 data_len, int64 *value) {
+    int64 result;
+
+    if ((data == NULL) || (data_len <= 0) || (value == NULL)) {
+        return -NCM_ERROR_PARSE;
+    }
+
+    result = 0;
+    for (int32 i = 0; i < data_len; i += 1) {
+        int32 digit;
+
+        if (!ncm_lrc_char_is_digit(data[i])) {
+            return -NCM_ERROR_PARSE;
+        }
+        digit = data[i] - '0';
+        if (result > (MAXOF(result) - digit)/10) {
+            return -NCM_ERROR_PARSE;
+        }
+        result = result*10 + digit;
+    }
+
+    *value = result;
+    return 0;
+}
+
+static int
+ncm_lrc_entry_compare(void *left_ptr, void *right_ptr) {
+    NcmLrcEntry *left = left_ptr;
+    NcmLrcEntry *right = right_ptr;
+
+    if (left->time_ms < right->time_ms) {
+        return -1;
+    }
+    if (left->time_ms > right->time_ms) {
+        return 1;
+    }
+    if (left->source_order < right->source_order) {
+        return -1;
+    }
+    if (left->source_order > right->source_order) {
+        return 1;
+    }
+    return 0;
 }
 
 int32
@@ -443,6 +508,18 @@ ncm_lrc_entry_text(NcmLrcDocument *document, NcmLrcEntry *entry) {
     return view;
 }
 
+static void
+ncm_lrc_document_clear_buffer_positions(NcmLrcDocument *document) {
+    ASSERT(document != NULL);
+
+    for (int32 i = 0; i < document->entries_len; i += 1) {
+        document->entries[i].buffer_start = NCM_LRC_NO_BUFFER_POSITION;
+        document->entries[i].buffer_end = NCM_LRC_NO_BUFFER_POSITION;
+    }
+
+    return;
+}
+
 int32
 ncm_lrc_document_render_plain(NcmLrcDocument *document,
                               NcmLrcRenderTarget *target) {
@@ -529,93 +606,6 @@ ncm_lrc_document_next_entry_after_time(NcmLrcDocument *document,
         return -1;
     }
     return left;
-}
-
-static bool
-ncm_lrc_char_is_digit(char c) {
-    return (c >= '0') && (c <= '9');
-}
-
-static bool
-ncm_lrc_char_is_space(char c) {
-    return (c == ' ') || (c == '\t');
-}
-
-static int32
-ncm_lrc_parse_uint(char *data, int32 data_len, int64 *value) {
-    int64 result;
-
-    if ((data == NULL) || (data_len <= 0) || (value == NULL)) {
-        return -NCM_ERROR_PARSE;
-    }
-
-    result = 0;
-    for (int32 i = 0; i < data_len; i += 1) {
-        int32 digit;
-
-        if (!ncm_lrc_char_is_digit(data[i])) {
-            return -NCM_ERROR_PARSE;
-        }
-        digit = data[i] - '0';
-        if (result > (MAXOF(result) - digit)/10) {
-            return -NCM_ERROR_PARSE;
-        }
-        result = result*10 + digit;
-    }
-
-    *value = result;
-    return 0;
-}
-
-static int32
-ncm_lrc_trim_line_end(char *data, int32 data_len) {
-    while ((data_len > 0) && (data[data_len - 1] == '\r')) {
-        data_len -= 1;
-    }
-    return data_len;
-}
-
-static int32
-ncm_lrc_raw_line_len(char *data, int32 data_len, int32 start) {
-    int32 len;
-
-    len = 0;
-    while (((start + len) < data_len) && (data[start + len] != '\n')) {
-        len += 1;
-    }
-    return len;
-}
-
-static void
-ncm_lrc_document_clear_buffer_positions(NcmLrcDocument *document) {
-    ASSERT(document != NULL);
-
-    for (int32 i = 0; i < document->entries_len; i += 1) {
-        document->entries[i].buffer_start = NCM_LRC_NO_BUFFER_POSITION;
-        document->entries[i].buffer_end = NCM_LRC_NO_BUFFER_POSITION;
-    }
-
-    return;
-}
-
-static int
-ncm_lrc_entry_compare(void *left_ptr, void *right_ptr) {
-    NcmLrcEntry *left = left_ptr;
-    NcmLrcEntry *right = right_ptr;
-
-    if (left->time_ms < right->time_ms) {
-        return -1;
-    }
-    if (left->time_ms > right->time_ms) {
-        return 1;
-    }
-    if (left->source_order < right->source_order) {
-        return -1;
-    }
-    if (left->source_order > right->source_order) {
-        return 1;
-    }
-    return 0;
 }
 
 #endif /* NCM_LRC_C */
