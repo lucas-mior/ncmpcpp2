@@ -2047,19 +2047,4 @@ content_draw_callback(NcMenu *menu, NcWindow *window, void *item,
     return;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #endif /* NCMPCPP_NC_PLAYLIST_EDITOR_C */
