@@ -3847,9 +3847,8 @@ library_refresh(NcScreen *screen) {
     library_update_menu_highlights(library);
     if (media_library_screen_column_is_visible(
         library, MEDIA_LIBRARY_COLUMN_TAGS)) {
-        library_refresh_menu(
-            nc_media_library_tag_menu_base(&library->tags),
-            &library->tags_window);
+        library_refresh_menu(nc_media_library_tag_menu_base(&library->tags),
+                             &library->tags_window);
         nc_screen_draw_vertical_separator(
             nc_window_start_x(&library->albums_window) - 1);
     }
@@ -4012,8 +4011,8 @@ library_mouse_button_pressed(NcScreen *screen,
     x = event.x;
     y = event.y;
     if (nc_window_has_coords(&library->songs_window, &x, &y)) {
-        media_library_screen_set_active_column(
-            library, MEDIA_LIBRARY_COLUMN_SONGS);
+        media_library_screen_set_active_column(library,
+                                               MEDIA_LIBRARY_COLUMN_SONGS);
         if (!(((event.bstate
                 & (BUTTON1_PRESSED | BUTTON3_PRESSED)) != 0)
               && (library_mouse_select(
