@@ -728,12 +728,15 @@ tag_editor_screen_destroy(TagEditorScreen *screen) {
     ncm_regex_destroy(&screen->directory_search_regex);
     ncm_regex_destroy(&screen->tag_filter_regex);
     ncm_regex_destroy(&screen->directory_filter_regex);
+
     sb_free(&screen->pattern);
     sb_free(&screen->tag_search_constraint);
     sb_free(&screen->directory_search_constraint);
     sb_free(&screen->tag_filter_constraint);
     sb_free(&screen->directory_filter_constraint);
+
     str_builder_array_destroy(&screen->recent_patterns);
+
     sb_free(&screen->parser_preview);
     sb_free(&screen->parser_legend);
     sb_free(&screen->parser_helper_title);
@@ -746,18 +749,21 @@ tag_editor_screen_destroy(TagEditorScreen *screen) {
     sb_free(&screen->observed_dir);
     sb_free(&screen->displayed_dir);
     sb_free(&screen->current_dir);
+
     nc_window_destroy(&screen->parser_helper_window);
     nc_window_destroy(&screen->parser_window);
     nc_window_destroy(&screen->parser_dialog_window);
     nc_window_destroy(&screen->tags_window);
     nc_window_destroy(&screen->tag_types_window);
     nc_window_destroy(&screen->directories_window);
+
     nc_editor_string_menu_destroy(&screen->parser_actions);
     nc_editor_string_menu_destroy(&screen->parser_rows);
     nc_editor_string_menu_destroy(&screen->parser_dialog);
     nc_tag_row_menu_destroy(&screen->tags);
     nc_editor_string_menu_destroy(&screen->tag_types);
     nc_editor_pair_menu_destroy(&screen->directories);
+
     screen->registered = false;
     return;
 }
