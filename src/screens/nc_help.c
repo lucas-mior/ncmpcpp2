@@ -11,7 +11,6 @@ static void nc_help_switch_to(NcScreen *screen);
 static void nc_help_resize(NcScreen *screen);
 static void nc_help_mouse_button_pressed(NcScreen *screen, MEVENT event);
 static void nc_help_destroy_callback(NcScreen *screen);
-static void nc_help_display(NcHelpScreen *help);
 
 #define NC_SCREEN_IMPL_TYPE NcHelpScreen
 #define NC_SCREEN_IMPL_PREFIX nc_help
@@ -19,7 +18,8 @@ static void nc_help_display(NcHelpScreen *help);
 #define NC_SCREEN_IMPL_BASE_FIELD scrollpad_screen
 #define NC_SCREEN_IMPL_WINDOW_FIELD window
 #define NC_SCREEN_IMPL_SCROLLPAD_FIELD scrollpad
-#define NC_SCREEN_IMPL_REFRESH_CALLBACK nc_help_display
+#define NC_SCREEN_IMPL_REFRESH_CALLBACK(help) \
+    nc_scrollpad_refresh(&(help)->scrollpad, &(help)->window)
 #define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK nc_help_switch_to
 #define NC_SCREEN_IMPL_RESIZE_CALLBACK nc_help_resize
 #define NC_SCREEN_IMPL_TITLE_LITERAL "Help"
@@ -226,12 +226,6 @@ nc_help_destroy_callback(NcScreen *screen) {
     if (help->hooks.destroy) {
         help->hooks.destroy(help->hooks.user);
     }
-    return;
-}
-
-static void
-nc_help_display(NcHelpScreen *help) {
-    nc_scrollpad_refresh(&help->scrollpad, &help->window);
     return;
 }
 
