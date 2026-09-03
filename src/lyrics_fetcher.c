@@ -2436,7 +2436,6 @@ ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
                     char *candidate_url;
                     char *match;
                     int32 candidate_url_len;
-                    int32 query;
                     int32 unwrap_status;
                     bool is_wrapper;
 
@@ -2475,18 +2474,18 @@ ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
                     } else {
                         match = memchr64(candidate_url, '?', candidate_url_len);
                         if (match != NULL) {
-                            query = (int32)(match - candidate_url) + 1;
-                            while (query < candidate_url_len) {
+                            int32 query2 = (int32)(match - candidate_url) + 1;
+                            while (query2 < candidate_url_len) {
                                 char *equal_match;
                                 char *end_match;
                                 int32 equal;
                                 int32 end;
 
                                 equal_match = memchr64(
-                                    candidate_url + query, '=',
-                                    candidate_url_len - query);
-                                end_match = memchr64(candidate_url + query, '&',
-                                                    candidate_url_len - query);
+                                    candidate_url + query2, '=',
+                                    candidate_url_len - query2);
+                                end_match = memchr64(candidate_url + query2, '&',
+                                                    candidate_url_len - query2);
                                 if (equal_match == NULL) {
                                     equal = -1;
                                 } else {
@@ -2499,13 +2498,13 @@ ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
                                     end = (int32)(end_match - candidate_url);
                                 }
 
-                                if ((equal > query) && (equal < end)
-                                    && (STREQUAL(candidate_url + query,
-                                                 equal - query, "q")
-                                        || STREQUAL(candidate_url + query,
-                                                    equal - query, "url")
-                                        || STREQUAL(candidate_url + query,
-                                                    equal - query, "uddg"))) {
+                                if ((equal > query2) && (equal < end)
+                                    && (STREQUAL(candidate_url + query2,
+                                                 equal - query2, "q")
+                                        || STREQUAL(candidate_url + query2,
+                                                    equal - query2, "url")
+                                        || STREQUAL(candidate_url + query2,
+                                                    equal - query2, "uddg"))) {
                                     lyrics_percent_decode(
                                         &candidate, candidate_url + equal + 1,
                                         end - equal - 1);
@@ -2522,7 +2521,7 @@ ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
                                     }
                                     sb_clear(&candidate);
                                 }
-                                query = end + 1;
+                                query2 = end + 1;
                             }
                         }
                     }
@@ -2638,14 +2637,14 @@ ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
                                                 STRLIT(".html"));
                                 break;
                             case NCM_LYRICS_FETCHER_MUSICA: {
-                                char *match;
+                                char *match2;
                                 int32 query;
                                 bool have_letra;
 
                                 have_letra = false;
-                                match = memchr64(url, '?', url_len);
-                                if (match != NULL) {
-                                    query = (int32)(match - url) + 1;
+                                match2 = memchr64(url, '?', url_len);
+                                if (match2 != NULL) {
+                                    query = (int32)(match2 - url) + 1;
                                     while (query < url_len) {
                                         char *equal_match;
                                         char *end_match;
@@ -2786,7 +2785,7 @@ ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
 
                         if (score > 0) {
                             StrBuilder *item;
-                            int32 insert_pos;
+                            int32 insert_pos = 0;
 
                             if ((out->len >= LYRICS_SEARCH_MAX_CANDIDATES)
                                 && (score
