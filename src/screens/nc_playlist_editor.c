@@ -30,10 +30,6 @@ static void playlist_draw_callback(NcMenu *menu, NcWindow *window, void *item, i
 static void content_draw_callback(NcMenu *menu, NcWindow *window, void *item, int32 pos, void *user);
 
 // declarations to delete
-static int32 playlist_editor_locate_song_in_playlist_range(PlaylistEditorScreen *, NcmMpdClient *, NcmSong *, int32 , int32 , NcmError *);
-static int32 append_content_item_from_source(PlaylistEditorScreen *, enum NcMenuItemSource , int32 , NcmSongArray *);
-static int32 playlist_editor_find_song_in_content_range(PlaylistEditorScreen *, NcmSong *, int32 , int32);
-static bool playlist_editor_has_current_playlist_path(PlaylistEditorScreen *, char **, int32 *);
 static bool playlist_editor_content_matches_regex(PlaylistEditorScreen *, NcmRegex *, NcmSong *);
 static int32 playlist_editor_store_current_playlist_path(PlaylistEditorScreen *, StrBuilder *);
 static void playlist_editor_refresh_window(PlaylistEditorScreen *, NcWindow *, NcMenu *);
@@ -453,6 +449,26 @@ playlist_editor_screen_reload_playlists_from_mpd(PlaylistEditorScreen *screen,
     }
     ncm_mpd_playlist_list_destroy(&playlists);
     return status;
+}
+
+static bool
+playlist_editor_has_current_playlist_path(PlaylistEditorScreen *screen,
+                                      char **path, int32 *path_len) {
+    NcmPlaylist *playlist;
+
+    ASSERT(path != NULL);
+    ASSERT(path_len != NULL);
+
+    if (screen == NULL) {
+        return false;
+    }
+    if ((playlist = nc_playlist_entry_menu_current(&screen->playlists)) == NULL
+        || (playlist->path == NULL)) {
+        return false;
+    }
+    *path = playlist->path;
+    *path_len = playlist->path_len;
+    return true;
 }
 
 int32
@@ -1590,26 +1606,6 @@ playlist_editor_reset_content_timer(PlaylistEditorScreen *screen) {
     ASSERT(screen != NULL);
     screen->timer = global_timer;
     return;
-}
-
-static bool
-playlist_editor_has_current_playlist_path(PlaylistEditorScreen *screen,
-                                      char **path, int32 *path_len) {
-    NcmPlaylist *playlist;
-
-    ASSERT(path != NULL);
-    ASSERT(path_len != NULL);
-
-    if (screen == NULL) {
-        return false;
-    }
-    if ((playlist = nc_playlist_entry_menu_current(&screen->playlists)) == NULL
-        || (playlist->path == NULL)) {
-        return false;
-    }
-    *path = playlist->path;
-    *path_len = playlist->path_len;
-    return true;
 }
 
 static void
