@@ -998,11 +998,10 @@ playlist_switch_to(NcScreen *screen) {
 
 static void
 playlist_resize(NcScreen *screen) {
-    PlaylistScreen *playlist;
-    NcScreenResizeParams params;
+    PlaylistScreen *playlist = playlist_from_screen(screen);
+    NcScreenResizeParams params = app_controller_screen_resize_params(screen,
+                                                                      true);
 
-    playlist = playlist_from_screen(screen);
-    params = app_controller_screen_resize_params(screen, true);
     playlist_screen_set_geometry(playlist, params.x_offset,
                                  params.width,
                                  ui_state_main_start_y(),
