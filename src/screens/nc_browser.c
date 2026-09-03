@@ -189,8 +189,7 @@ browser_set_parent_of_directory(BrowserScreen *screen,
 
 static int32
 browser_set_normalized_directory(BrowserScreen *screen,
-                                 char *directory,
-                                 int32 directory_len) {
+                                 char *directory, int32 directory_len) {
     ASSERT(screen != NULL);
     if (directory_len < 0) {
         return -EINVAL;
