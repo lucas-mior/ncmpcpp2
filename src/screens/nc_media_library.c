@@ -31,7 +31,6 @@ static NcMenu *library_column_menu(
 static bool library_column_has_visible_items(
     MediaLibraryScreen *screen,
     enum MediaLibraryColumn column);
-static bool library_menu_item_is_separator(NcMenu *menu, void *item);
 static bool library_album_matches(MediaLibraryScreen *screen,
                                   NcMediaLibraryAlbumRow *row,
                                   NcmRegex *regex);
@@ -3507,6 +3506,20 @@ library_tag_filter(NcMenu *menu, void *item, void *user) {
 }
 
 static bool
+library_menu_item_is_separator(NcMenu *menu, void *item) {
+    ASSERT(menu != NULL);
+    ASSERT(item != NULL);
+    for (int32 i = 0; i < nc_menu_all_item_count(menu); i += 1) {
+        if ((nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i) == item)
+            && (nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i)
+                & NC_MENU_ITEM_SEPARATOR)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool
 library_album_filter(NcMenu *menu, void *item, void *user) {
     MediaLibraryScreen *screen = user;
     NcMediaLibraryAlbumRow *row = item;
@@ -3624,20 +3637,6 @@ library_column_has_visible_items(MediaLibraryScreen *screen,
         return false;
     }
     return nc_menu_all_item_count(menu) > 0;
-}
-
-static bool
-library_menu_item_is_separator(NcMenu *menu, void *item) {
-    ASSERT(menu != NULL);
-    ASSERT(item != NULL);
-    for (int32 i = 0; i < nc_menu_all_item_count(menu); i += 1) {
-        if ((nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i) == item)
-            && (nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i)
-                & NC_MENU_ITEM_SEPARATOR)) {
-            return true;
-        }
-    }
-    return false;
 }
 
 static void
