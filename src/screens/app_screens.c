@@ -133,7 +133,7 @@ static bool app_screen_is_current(NcScreen *screen);
 static void app_screen_switch_to(NcScreen *screen);
 static void app_screen_toggle_or_switch_to(NcScreen *screen);
 static NcBorder no_border(void);
-static int32 app_register_screen(NcScreen *screen);
+static void app_register_screen(NcScreen *screen);
 static void show_long_time(NcBuffer *buffer, int32 seconds);
 
 #define NCM_APP_SCREEN_DEFINE_DIRECT_ACCESSOR( \
@@ -505,19 +505,13 @@ search_list_database_songs(
     int32 status;
 
     (void)user;
-    ASSERT(songs != NULL);
 
     ncm_song_array_clear(songs);
     source = (NcmMpdSongList){0};
     status = ncm_mpd_client_get_directory_recursive(
         &global_mpd, "/", &source, ncm_error);
-    if ((status == 0)
-        && ((status = ncm_mpd_song_list_to_song_array(
-                 &source, songs)) < 0)) {
-        ncm_error_set_status(ncm_error, status,
-                             STRLIT("failed to copy database songs"));
-    }
-    if (status > 0) {
+    if (status >= 0) {
+        ncm_mpd_song_list_to_song_array(&source, songs);
         status = 0;
     }
     ncm_mpd_song_list_destroy(&source);
@@ -533,10 +527,9 @@ search_snapshot_playlist(
     NcMenu *menu;
     NcmSong *song;
     int32 count;
-    int32 err;
 
     (void)user;
-    ASSERT(songs != NULL);
+    (void)ncm_error;
 
     ncm_song_array_clear(songs);
     playlist = app_screen_playlist();
@@ -545,14 +538,7 @@ search_snapshot_playlist(
     count = nc_menu_all_item_count(menu);
     for (int32 i = 0; i < count; i += 1) {
         song = nc_song_menu_item_at(song_menu, NC_MENU_ITEMS_ALL, i);
-        if (song == NULL) {
-            continue;
-        }
-        if ((err = ncm_song_array_append_copy(songs, song)) < 0) {
-            ncm_error_set_status(ncm_error, err,
-                                 STRLIT("failed to copy playlist songs"));
-            return err;
-        }
+        ncm_song_array_append_copy(songs, song);
     }
     return 0;
 }
@@ -575,14 +561,8 @@ search_prompt_constraint(
     char *input;
     char *initial_text;
     int32 input_len;
-    int32 copied;
 
     (void)user;
-    if ((label == NULL) || (label_len < 0) || (initial == NULL)
-        || (result == NULL)) {
-        return SEARCH_ENGINE_PROMPT_ERROR;
-    }
-
     input = NULL;
     initial_text = initial->data;
     if (initial_text == NULL) {
@@ -590,10 +570,7 @@ search_prompt_constraint(
     }
 
     ncm_statusbar_scoped_lock_init(&scoped_lock);
-    if ((window = ncm_statusbar_put()) == NULL) {
-        ncm_statusbar_scoped_lock_destroy(&scoped_lock);
-        return SEARCH_ENGINE_PROMPT_ERROR;
-    }
+    window = ncm_statusbar_put();
     nc_window_print_data(window, label, label_len);
     nc_window_print_data(window, STRLIT(": "));
 
@@ -615,11 +592,8 @@ search_prompt_constraint(
     }
 
     input_len = optional_strlen32(input);
-    copied = sb_set(result, input, input_len);
+    sb_set(result, input, input_len);
     nc_window_prompt_result_destroy(input);
-    if (copied < 0) {
-        return SEARCH_ENGINE_PROMPT_ERROR;
-    }
     return SEARCH_ENGINE_PROMPT_ACCEPTED;
 }
 
@@ -649,11 +623,8 @@ search_format_song(
     SearchEngineScreen *screen;
 
     screen = user;
-    ASSERT(screen != NULL);
-    ASSERT(song != NULL);
-    ASSERT(text != NULL);
-    return search_engine_screen_format_song_text(
-        screen, song, text);
+    search_engine_screen_format_song_text(screen, song, text);
+    return 0;
 }
 
 void
@@ -679,8 +650,7 @@ app_screen_search_engine_init(void) {
         mode = (enum SearchEngineSearchMode)
             Config.search_engine_default_search_mode;
     }
-    (void)search_engine_screen_set_search_mode(
-        &search_engine_screen, mode);
+    search_engine_screen_set_search_mode(&search_engine_screen, mode);
     search_engine_screen_set_search_source(
         &search_engine_screen, Config.search_in_db);
 
@@ -738,13 +708,6 @@ prompt_buffer(char *label, int32 label_len,
     char *input;
     char *initial_text;
     int32 input_len;
-    int32 copied;
-
-    if ((label == NULL) || (label_len < 0) || (initial.len < 0)
-        || (result == NULL)
-        || ((initial.data == NULL) && (initial.len > 0))) {
-        return PROMPT_RESULT_ERROR;
-    }
 
     input = NULL;
     initial_text = initial.data;
@@ -753,10 +716,7 @@ prompt_buffer(char *label, int32 label_len,
     }
 
     ncm_statusbar_scoped_lock_init(&scoped_lock);
-    if ((window = ncm_statusbar_put()) == NULL) {
-        ncm_statusbar_scoped_lock_destroy(&scoped_lock);
-        return PROMPT_RESULT_ERROR;
-    }
+    window = ncm_statusbar_put();
     if (bold_label) {
         nc_window_apply_format(window, NC_FORMAT_BOLD);
     }
@@ -784,11 +744,8 @@ prompt_buffer(char *label, int32 label_len,
     }
 
     input_len = optional_strlen32(input);
-    copied = sb_set(result, input, input_len);
+    sb_set(result, input, input_len);
     nc_window_prompt_result_destroy(input);
-    if (copied < 0) {
-        return PROMPT_RESULT_ERROR;
-    }
     return PROMPT_RESULT_ACCEPTED;
 }
 
@@ -822,25 +779,19 @@ tag_editor_hook_confirm(
     int32 status;
 
     (void)user;
-    if ((message == NULL) || (message_len < 0)) {
-        return false;
-    }
-
     values[0] = 'y';
     values[1] = 'n';
     answer = 'n';
-    status = 0;
 
     ncm_statusbar_scoped_lock_init(&scoped_lock);
-    if ((window = ncm_statusbar_put())) {
-        nc_window_print_data(window, message, message_len);
-        nc_window_print_data(window, STRLIT(" [y/n] "));
-        status = ncm_statusbar_prompt_return_one_of(
-            window, values, LENGTH(values), &answer);
-    }
+    window = ncm_statusbar_put();
+    nc_window_print_data(window, message, message_len);
+    nc_window_print_data(window, STRLIT(" [y/n] "));
+    status = ncm_statusbar_prompt_return_one_of(
+        window, values, LENGTH(values), &answer);
     ncm_statusbar_scoped_lock_destroy(&scoped_lock);
 
-    if ((status <= 0) || (answer != 'y')) {
+    if ((status == 0) || (answer != 'y')) {
         ncm_statusbar_print_cstring(
             Config.message_delay_time, "Action cancelled");
         return false;
@@ -947,8 +898,7 @@ tiny_tag_editor_update_playlist_song(
     void *user, NcmMutableSong *song
 ) {
     (void)user;
-    (void)playlist_screen_update_current_mutable_song(
-        app_screen_playlist(), song);
+    playlist_screen_update_current_mutable_song(app_screen_playlist(), song);
     return;
 }
 
@@ -989,7 +939,7 @@ app_screen_tiny_tag_editor_init(void) {
 void
 app_screen_outputs_toggle(void) {
 #if defined(ENABLE_OUTPUTS)
-    (void)nc_outputs_screen_toggle_current(&outputs_screen.screen);
+    nc_outputs_screen_toggle_current(&outputs_screen.screen);
 #endif
     return;
 }
@@ -1105,47 +1055,30 @@ app_request_registered_resize(int32 type) {
 
 static void
 app_screen_register_once(NcScreen *screen) {
-    int32 status;
-
-    ASSERT(screen != NULL);
-    status = app_register_screen(screen);
-    ASSERT(status == 0);
-    (void)status;
+    app_register_screen(screen);
     return;
 }
 
 static void
 app_screen_register_replacing(NcScreen *screen, int32 type) {
     NcScreen *registered;
-    int32 status;
-
-    ASSERT(screen != NULL);
 
     registered = app_controller_find_screen_type(type);
     if (registered && (registered != screen)) {
-        status = app_controller_unregister_screen(registered);
-        ASSERT(status == 0);
-        if (status < 0) {
-            return;
-        }
+        ASSERT(app_controller_unregister_screen(registered) == 0);
     }
-    status = app_register_screen(screen);
-    ASSERT(status == 0);
-    (void)status;
+    app_register_screen(screen);
     return;
 }
 
 static bool
 app_screen_is_current(NcScreen *screen) {
-    ASSERT(screen != NULL);
     return nc_screen_switcher_is_current(screen);
 }
 
 static void
 app_screen_switch_to(NcScreen *screen) {
-    ASSERT(screen != NULL);
-    (void)nc_screen_switcher_switch_to(screen,
-                                       nc_screen_has_to_be_resized(screen));
+    nc_screen_switcher_switch_to(screen, nc_screen_has_to_be_resized(screen));
     return;
 }
 
@@ -1153,7 +1086,6 @@ static void
 app_screen_toggle_or_switch_to(NcScreen *screen) {
     NcScreen *previous;
 
-    ASSERT(screen != NULL);
     if (nc_screen_switcher_is_current(screen)) {
         previous = nc_screen_switcher_previous();
         if (previous && app_controller_is_screen_registered(previous)) {
@@ -1181,12 +1113,12 @@ draw_screen_header(NcScreen *screen) {
     return;
 }
 
-static int32
+static void
 app_register_screen(NcScreen *screen) {
-    if (app_controller_is_screen_registered(screen)) {
-        return 0;
+    if (!app_controller_is_screen_registered(screen)) {
+        ASSERT(app_controller_register_screen(screen) == 0);
     }
-    return app_controller_register_screen(screen);
+    return;
 }
 
 static void
@@ -1203,7 +1135,7 @@ append_cstring(NcBuffer *buffer, char *string) {
 
 static void
 append_data(NcBuffer *buffer, char *string, int32 len) {
-    if (string && (len > 0)) {
+    if (len > 0) {
         nc_buffer_append_data(buffer, string, len);
     }
     return;
@@ -1239,7 +1171,7 @@ append_bold_label(NcBuffer *buffer, char *label) {
 
 static void
 append_song_tag(NcBuffer *buffer, StrBuilder *tag) {
-    if ((tag == NULL) || (tag->len <= 0)) {
+    if (tag->len <= 0) {
         append_formatted_color(buffer, &Config.empty_tags_color);
         append_data(buffer, Config.empty_tag, Config.empty_tag_len);
         append_formatted_color_end(buffer, &Config.empty_tags_color);
@@ -1263,7 +1195,7 @@ append_song_key_value(NcBuffer *buffer, char *key,
     append_formatted_color(buffer, &Config.color2);
     if (empty_as_missing) {
         append_song_tag(buffer, value);
-    } else if (value) {
+    } else {
         append_data(buffer, value->data, value->len);
     }
     append_formatted_color_end(buffer, &Config.color2);
@@ -1388,7 +1320,7 @@ help_render(void *user, NcBuffer *buffer) {
 static void
 help_switch_to(void *user) {
     (void)user;
-    (void)nc_screen_switcher_finish_switch(app_screen_help_base());
+    nc_screen_switcher_finish_switch(app_screen_help_base());
     draw_screen_header(app_screen_help_base());
     return;
 }
@@ -1440,7 +1372,7 @@ app_screen_help_init(void) {
                         no_border(),
                         Config.lines_scrolled);
     help_screen.initialized = true;
-    (void)nc_help_screen_reload(&help_screen.screen);
+    nc_help_screen_reload(&help_screen.screen);
     return;
 }
 
@@ -1537,7 +1469,7 @@ outputs_toggle(void *user, int32 id, bool enabled,
 static void
 outputs_switch_to(void *user) {
     (void)user;
-    (void)nc_screen_switcher_finish_switch(app_screen_outputs_base());
+    nc_screen_switcher_finish_switch(app_screen_outputs_base());
     draw_screen_header(app_screen_outputs_base());
     return;
 }
@@ -1617,13 +1549,13 @@ server_info_load_lists(void *user) {
 
     owner = user;
     ncm_error_clear(&ncm_error);
-    (void)ncm_mpd_client_get_url_handlers(&global_mpd,
-                                          &owner->url_handlers,
-                                          &ncm_error);
+    ncm_mpd_client_get_url_handlers(&global_mpd,
+                                    &owner->url_handlers,
+                                    &ncm_error);
     ncm_error_clear(&ncm_error);
-    (void)ncm_mpd_client_get_tag_types(&global_mpd,
-                                       &owner->tag_types,
-                                       &ncm_error);
+    ncm_mpd_client_get_tag_types(&global_mpd,
+                                 &owner->tag_types,
+                                 &ncm_error);
     return;
 }
 
@@ -1709,7 +1641,7 @@ server_info_render(void *user, NcBuffer *buffer) {
 static void
 server_info_switch_to(void *user) {
     (void)user;
-    (void)nc_screen_switcher_finish_switch(
+    nc_screen_switcher_finish_switch(
         app_screen_server_info_base());
     draw_screen_header(app_screen_server_info_base());
     return;
@@ -1844,8 +1776,8 @@ song_info_switch_to(void *user, NcSongInfoScreen *screen) {
         return;
     }
 
-    (void)nc_screen_switcher_finish_switch(app_screen_song_info_base());
-    (void)nc_song_info_screen_prepare_current(screen);
+    nc_screen_switcher_finish_switch(app_screen_song_info_base());
+    nc_song_info_screen_prepare_current(screen);
     draw_screen_header(app_screen_song_info_base());
     return;
 }
