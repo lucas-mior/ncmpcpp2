@@ -1758,8 +1758,7 @@ typedef struct NcmFormatAst {
 } NcmFormatAst;
 
 typedef struct NcmFormatCallbacks {
-    void (*text)(void *user, char *data, int32 data_len,
-                 NcmFormatSongTag *tag);
+    void (*text)(void *user, char *data, int32 data_len, NcmFormatSongTag *tag);
     void (*color)(void *user, NcColor color);
     void (*format)(void *user, enum NcFormat format);
 } NcmFormatCallbacks;
