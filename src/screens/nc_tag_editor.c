@@ -3243,8 +3243,7 @@ tag_editor_build_parser_preview(TagEditorScreen *screen,
             } else {
                 tag_editor_append_parser_filename(
                     &screen->parser_preview, song->name, song->name_len);
-                SB_APPEND(&screen->parser_preview,
-                          " -> ");
+                SB_APPEND(&screen->parser_preview, " -> ");
                 if (new_name.len > 0) {
                     SB_APPEND(&screen->parser_preview,
                               new_name.data, new_name.len);
@@ -3601,8 +3600,7 @@ tag_editor_report_error(char *context, int32 context_len,
     SB_APPEND(&message, context, context_len);
     if (ncm_error && (ncm_error->message[0] != 0)) {
         SB_APPEND(&message, ": ");
-        SB_APPEND(&message, ncm_error->message,
-                  strlen32(ncm_error->message));
+        SB_APPEND(&message, ncm_error->message, strlen32(ncm_error->message));
     }
     ncm_statusbar_print_cstring(Config.message_delay_time,
                                 message.data);
