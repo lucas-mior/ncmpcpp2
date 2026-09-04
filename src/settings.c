@@ -54,15 +54,12 @@ settings_invalid_value(NcmError *ncm_error, char *value, int32 value_len) {
     return settings_error(ncm_error, message, len);
 }
 
-static int32
+static void
 settings_string_set(char **data, int32 *len, int32 *cap, char *value,
                     int32 value_len) {
     char *new_data;
     int32 new_cap;
 
-    if (value_len < 0) {
-        value_len = 0;
-    }
     new_cap = value_len + 1;
     new_data = malloc2(new_cap);
     if (value_len > 0) {
@@ -75,10 +72,10 @@ settings_string_set(char **data, int32 *len, int32 *cap, char *value,
     *data = new_data;
     *len = value_len;
     *cap = new_cap;
-    return 0;
+    return;
 }
 
-static int32
+static void
 settings_expand_home(StrBuilder *buffer, char *value, int32 value_len) {
     char *home;
     int32 home_len;
@@ -86,17 +83,17 @@ settings_expand_home(StrBuilder *buffer, char *value, int32 value_len) {
     sb_clear(buffer);
     if ((value_len <= 0) || (value[0] != '~')) {
         SB_APPEND(buffer, value, value_len);
-        return 0;
+        return;
     }
 
     if ((home = getenv("HOME")) == NULL) {
         SB_APPEND(buffer, value, value_len);
-        return 0;
+        return;
     }
     home_len = strlen32(home);
     SB_APPEND(buffer, home, home_len);
     if (value_len == 1) {
-        return 0;
+        return;
     }
     sb_append_byte(buffer, '/');
     if (value[1] == '/') {
@@ -106,36 +103,30 @@ settings_expand_home(StrBuilder *buffer, char *value, int32 value_len) {
     } else {
         SB_APPEND(buffer, value + 1, value_len - 1);
     }
-    return 0;
+    return;
 }
 
-static int32
+static void
 settings_string_set_expanded(char **data, int32 *len, int32 *cap, char *value,
                              int32 value_len) {
     StrBuilder buffer = {0};
-    int32 status;
 
-    status = settings_expand_home(&buffer, value, value_len);
-    if (status == 0) {
-        status = settings_string_set(data, len, cap, buffer.data, buffer.len);
-    }
+    settings_expand_home(&buffer, value, value_len);
+    settings_string_set(data, len, cap, buffer.data, buffer.len);
     sb_free(&buffer);
-    return status;
+    return;
 }
 
-static int32
+static void
 settings_string_set_directory(char **data, int32 *len, int32 *cap, char *value,
                               int32 value_len) {
     StrBuilder buffer = {0};
-    int32 status;
 
-    status = settings_expand_home(&buffer, value, value_len);
-    if (status == 0) {
-        sb_append_byte_if_not(&buffer, '/');
-        status = settings_string_set(data, len, cap, buffer.data, buffer.len);
-    }
+    settings_expand_home(&buffer, value, value_len);
+    sb_append_byte_if_not(&buffer, '/');
+    settings_string_set(data, len, cap, buffer.data, buffer.len);
     sb_free(&buffer);
-    return status;
+    return;
 }
 
 static int32
@@ -345,7 +336,7 @@ settings_parse_formatted_color(char *value, int32 value_len,
     return 0;
 }
 
-static int32
+static void
 settings_next_list_item(char *value, int32 value_len, int32 *pos, char **item,
                         int32 *item_len, bool *found) {
     int32 start;
@@ -354,7 +345,7 @@ settings_next_list_item(char *value, int32 value_len, int32 *pos, char **item,
 
     if (*pos > value_len) {
         *found = false;
-        return 0;
+        return;
     }
     start = *pos;
     end = start;
@@ -399,7 +390,7 @@ settings_next_list_item(char *value, int32 value_len, int32 *pos, char **item,
         *pos = value_len + 1;
     }
     *found = true;
-    return 0;
+    return;
 }
 
 static int32
@@ -427,9 +418,6 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
             return status;
         }
         slot = ncm_int32_array_append(array);
-        if (slot == NULL) {
-            return settings_error(ncm_error, STRLIT("failed to append ratio"));
-        }
         *slot = parsed;
         total += parsed;
         if (end >= value_len) {
@@ -448,10 +436,11 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
     FUNC(Configuration *config, char *value, int32 value_len,                  \
          NcmError *ncm_error) {                                                \
         (void)ncm_error;                                                       \
-        return settings_string_set_directory(&config->FIELD,                   \
-                                             &config->FIELD##_len,             \
-                                             &config->FIELD##_cap,             \
-                                             value, value_len);                \
+        settings_string_set_directory(&config->FIELD,                          \
+                                      &config->FIELD##_len,                    \
+                                      &config->FIELD##_cap,                    \
+                                      value, value_len);                       \
+        return 0;                                                              \
     }
 
 #define APPLY_STRING_PATH(FUNC, FIELD)                                         \
@@ -459,10 +448,11 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
     FUNC(Configuration *config, char *value, int32 value_len,                  \
          NcmError *ncm_error) {                                                \
         (void)ncm_error;                                                       \
-        return settings_string_set_expanded(&config->FIELD,                    \
-                                            &config->FIELD##_len,              \
-                                            &config->FIELD##_cap,              \
-                                            value, value_len);                 \
+        settings_string_set_expanded(&config->FIELD,                           \
+                                     &config->FIELD##_len,                     \
+                                     &config->FIELD##_cap,                     \
+                                     value, value_len);                        \
+        return 0;                                                              \
     }
 
 #define APPLY_STRING(FUNC, FIELD)                                              \
@@ -470,8 +460,9 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
     FUNC(Configuration *config, char *value, int32 value_len,                  \
          NcmError *ncm_error) {                                                \
         (void)ncm_error;                                                       \
-        return settings_string_set(&config->FIELD, &config->FIELD##_len,       \
-                                   &config->FIELD##_cap, value, value_len);    \
+        settings_string_set(&config->FIELD, &config->FIELD##_len,              \
+                            &config->FIELD##_cap, value, value_len);           \
+        return 0;                                                              \
     }
 
 #define APPLY_BOOL(FUNC, FIELD)                                                \
@@ -571,16 +562,12 @@ static int32
 apply_mpd_host(Configuration *config, char *value, int32 value_len,
                NcmError *ncm_error) {
     StrBuilder host = {0};
-    int32 status;
 
     (void)config;
-    status = settings_expand_home(&host, value, value_len);
-    if (status == 0) {
-        status = ncm_mpd_client_set_hostname(&global_mpd, host.data, host.len,
-                                             ncm_error);
-    }
+    settings_expand_home(&host, value, value_len);
+    ncm_mpd_client_set_hostname(&global_mpd, host.data, host.len, ncm_error);
     sb_free(&host);
-    return status;
+    return 0;
 }
 
 static int32
@@ -608,8 +595,8 @@ apply_mpd_password(Configuration *config, char *value, int32 value_len,
     if (value_len <= 0) {
         return 0;
     }
-    return ncm_mpd_client_set_password(&global_mpd, value, value_len,
-                                       ncm_error);
+    ncm_mpd_client_set_password(&global_mpd, value, value_len, ncm_error);
+    return 0;
 }
 
 static int32
@@ -622,8 +609,10 @@ apply_mpd_connection_timeout(Configuration *config, char *value,
     if (status < 0) {
         return status;
     }
-    return ncm_mpd_client_set_timeout_ms(
-        &global_mpd, config->mpd_connection_timeout * 1000, ncm_error);
+    ncm_mpd_client_set_timeout_ms(&global_mpd,
+                                  config->mpd_connection_timeout * 1000,
+                                  ncm_error);
+    return 0;
 }
 
 static int32
@@ -749,11 +738,8 @@ apply_visualizer_color(Configuration *config, char *value, int32 value_len,
         bool found;
         NcFormattedColor *dest;
 
-        status = settings_next_list_item(value, value_len, &pos, &item,
-                                         &item_len, &found);
-        if (status < 0) {
-            return status;
-        }
+        settings_next_list_item(value, value_len, &pos, &item,
+                                &item_len, &found);
         if (!found) {
             break;
         }
@@ -761,9 +747,6 @@ apply_visualizer_color(Configuration *config, char *value, int32 value_len,
             continue;
         }
         dest = ncm_formatted_color_array_append(array);
-        if (dest == NULL) {
-            return settings_error(ncm_error, STRLIT("failed to append color"));
-        }
         status = settings_parse_formatted_color(item, item_len, dest,
                                                 ncm_error);
         if (status < 0) {
@@ -793,9 +776,10 @@ apply_system_encoding(Configuration *config, char *value, int32 value_len,
     (void)value;
     (void)value_len;
     (void)ncm_error;
-    return settings_string_set(&config->system_encoding,
-                               &config->system_encoding_len,
-                               &config->system_encoding_cap, "", 0);
+    settings_string_set(&config->system_encoding,
+                        &config->system_encoding_len,
+                        &config->system_encoding_cap, "", 0);
+    return 0;
 }
 
 static int32
@@ -994,14 +978,6 @@ apply_song_columns_list_format(Configuration *config,
         tag = ncm_string_get_enclosed(value, value_len, '{', '}', pos, &next);
         pos = next;
         column = column_array_append(&config->columns);
-        if (column == NULL) {
-            status = settings_error(ncm_error,
-                                    STRLIT("failed to append column"));
-            sb_free(&width);
-            sb_free(&color);
-            sb_free(&tag);
-            return status;
-        }
         if ((width.len > 0) && (width.data[width.len - 1] == 'f')) {
             column->fixed = true;
             width.len -= 1;
@@ -1033,16 +1009,9 @@ apply_song_columns_list_format(Configuration *config,
             colon = ncm_string_find_char(tag.data, tag.len, ':');
             type_len = tag.len;
             if (colon >= 0) {
-                status = settings_string_set(&column->name, &column->name_len,
-                                             &column->name_cap,
-                                             tag.data + colon + 1,
-                                             tag.len - colon - 1);
-                if (status < 0) {
-                    sb_free(&width);
-                    sb_free(&color);
-                    sb_free(&tag);
-                    return status;
-                }
+                settings_string_set(&column->name, &column->name_len,
+                                    &column->name_cap, tag.data + colon + 1,
+                                    tag.len - colon - 1);
                 type_len = colon;
             }
             for (int32 i = 0; i < type_len; i += 1) {
@@ -1108,13 +1077,8 @@ apply_song_columns_list_format(Configuration *config,
     for (int32 i = 0; i < config->columns.len; i += 1) {
         Column *column = &config->columns.items[i];
 
-        status = ncm_format_ast_append_column_types(
-            &config->song_columns_mode_format, column->type,
-            column->type_len);
-        if (status < 0) {
-            return settings_error(ncm_error,
-                                  STRLIT("failed to build column format"));
-        }
+        ncm_format_ast_append_column_types(&config->song_columns_mode_format,
+                                           column->type, column->type_len);
     }
     return 0;
 }
@@ -1264,11 +1228,8 @@ apply_lyrics_fetchers(Configuration *config, char *value, int32 value_len,
         int32 item_len;
         bool found;
 
-        status = settings_next_list_item(value, value_len, &pos, &item,
-                                         &item_len, &found);
-        if (status < 0) {
-            return status;
-        }
+        settings_next_list_item(value, value_len, &pos, &item,
+                                &item_len, &found);
         if (!found) {
             break;
         }
@@ -1324,11 +1285,8 @@ apply_screen_switcher_mode(Configuration *config, char *value, int32 value_len,
         enum ScreenType *slot;
         enum ScreenType screen;
 
-        status = settings_next_list_item(value, value_len, &pos, &item,
-                                         &item_len, &found);
-        if (status < 0) {
-            return status;
-        }
+        settings_next_list_item(value, value_len, &pos, &item,
+                                &item_len, &found);
         if (!found) {
             break;
         }
@@ -1340,9 +1298,6 @@ apply_screen_switcher_mode(Configuration *config, char *value, int32 value_len,
             return settings_invalid_value(ncm_error, item, item_len);
         }
         slot = screen_type_array_append(&config->screen_sequence);
-        if (slot == NULL) {
-            return settings_error(ncm_error, STRLIT("failed to append screen"));
-        }
         *slot = screen;
         added = true;
     }
@@ -1621,17 +1576,10 @@ apply_active_window_border(Configuration *config, char *value, int32 value_len,
 
 static int32
 settings_report_or_ignore(NcmError *ncm_error, bool ignore_errors) {
-    int32 status;
-
-    if (ncm_error_is_set(ncm_error)) {
-        error2("%s\n", ncm_error->message);
-    }
+    ASSERT(ncm_error_is_set(ncm_error));
+    error2("%s\n", ncm_error->message);
     if (!ignore_errors) {
-        status = ncm_error_status(ncm_error);
-        if (status == 0) {
-            status = -EINVAL;
-        }
-        return status;
+        return ncm_error_status(ncm_error);
     }
     ncm_error_clear(ncm_error);
     return 0;
