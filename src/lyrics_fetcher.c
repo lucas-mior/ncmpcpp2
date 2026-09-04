@@ -167,7 +167,7 @@ lyrics_string_set(char **data, int32 *len, int32 *cap,
     char *new_data;
     int32 new_cap;
 
-    lyrics_string_destroy(data, len, cap);
+    stupid_string_free(data, len, cap);
     if ((source == NULL) || (source_len <= 0)) {
         return;
     }
@@ -186,7 +186,7 @@ lyrics_string_set(char **data, int32 *len, int32 *cap,
 
 static void
 lyrics_result_clear(NcmLyricsResult *result) {
-    lyrics_string_destroy(&result->text, &result->text_len, &result->text_cap);
+    stupid_string_free(&result->text, &result->text_len, &result->text_cap);
     result->success = false;
     return;
 }
@@ -230,7 +230,7 @@ ncm_lyrics_result_set(NcmLyricsResult *result, bool success,
 
 static void
 lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher) {
-    lyrics_string_destroy(&fetcher->name, &fetcher->name_len,
+    stupid_string_free(&fetcher->name, &fetcher->name_len,
                           &fetcher->name_cap);
     fetcher->type = NCM_LYRICS_FETCHER_UNKNOWN;
     fetcher->enabled = false;
