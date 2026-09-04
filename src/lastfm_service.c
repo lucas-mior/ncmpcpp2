@@ -16,7 +16,6 @@ static NcmLastfmCurlPerformFn lastfm_test_perform;
 static NcmLastfmCurlEscapeFn lastfm_test_escape;
 static void *lastfm_test_user;
 
-static void stupid_string_free(char **data, int32 *len, int32 *cap);
 static void
 lastfm_string_set(char **data, int32 *len, int32 *cap, char *source,
                   int32 source_len) {
