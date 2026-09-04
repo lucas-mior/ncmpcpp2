@@ -162,18 +162,18 @@ library_layout(MediaLibraryScreen *screen) {
         middle_x = screen->start_x + left_width + 1;
         right_x = middle_x + middle_width + 1;
 
-        nc_window_move_to(&screen->tags_window, screen->start_x,
-                          screen->main_start_y);
-        nc_window_resize(&screen->tags_window, left_width,
-                         screen->main_height);
-        nc_window_move_to(&screen->albums_window, middle_x,
-                          screen->main_start_y);
-        nc_window_resize(&screen->albums_window, middle_width,
-                         screen->main_height);
-        nc_window_move_to(&screen->songs_window, right_x,
-                          screen->main_start_y);
-        nc_window_resize(&screen->songs_window, right_width,
-                         screen->main_height);
+        nc_window_move_to(&screen->tags_window,
+                          screen->start_x, screen->main_start_y);
+        nc_window_resize(&screen->tags_window,
+                         left_width, screen->main_height);
+        nc_window_move_to(&screen->albums_window,
+                          middle_x, screen->main_start_y);
+        nc_window_resize(&screen->albums_window,
+                         middle_width, screen->main_height);
+        nc_window_move_to(&screen->songs_window,
+                          right_x, screen->main_start_y);
+        nc_window_resize(&screen->songs_window,
+                         right_width, screen->main_height);
         return;
     }
 
