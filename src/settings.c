@@ -74,29 +74,6 @@ settings_expand_home(StrBuilder *buffer, char *value, int32 value_len) {
     return;
 }
 
-static void
-settings_string_set_expanded(char **data, int32 *len, int32 *cap, char *value,
-                             int32 value_len) {
-    StrBuilder buffer = {0};
-
-    settings_expand_home(&buffer, value, value_len);
-    stupid_string_set(data, len, cap, buffer.data, buffer.len);
-    sb_free(&buffer);
-    return;
-}
-
-static void
-settings_string_set_directory(char **data, int32 *len, int32 *cap, char *value,
-                              int32 value_len) {
-    StrBuilder buffer = {0};
-
-    settings_expand_home(&buffer, value, value_len);
-    sb_append_byte_if_not(&buffer, '/');
-    stupid_string_set(data, len, cap, buffer.data, buffer.len);
-    sb_free(&buffer);
-    return;
-}
-
 static int32
 settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
                         int32 *width, bool keep_existing,
@@ -615,9 +592,10 @@ apply_system_encoding(Configuration *config, char *value, int32 value_len,
     (void)value;
     (void)value_len;
     (void)ncm_error;
-    stupid_string_set(&config->system_encoding,
-                        &config->system_encoding_len,
-                        &config->system_encoding_cap, "", 0);
+
+    free2(config->system_encoding, config->system_encoding_len + 1);
+    config->system_encoding = NULL;
+    config->system_encoding_len = 0;
     return 0;
 }
 
@@ -1479,11 +1457,18 @@ settings_apply_option(Configuration *config, SettingsOption *option,
     static int32                                                               \
     FUNC(Configuration *config, char *value, int32 value_len,                  \
          NcmError *ncm_error) {                                                \
+        StrBuilder buffer = {0};                                               \
+                                                                               \
         (void)ncm_error;                                                       \
-        settings_string_set_directory(&config->FIELD,                          \
-                                      &config->FIELD##_len,                    \
-                                      &config->FIELD##_cap,                    \
-                                      value, value_len);                       \
+        settings_expand_home(&buffer, value, value_len);                       \
+        sb_append_byte_if_not(&buffer, '/');                                   \
+        free2(config->FIELD, config->FIELD##_len + 1);                         \
+        config->FIELD = NULL;                                                  \
+        config->FIELD##_len = 0;                                               \
+        if (buffer.len > 0) {                                                  \
+            config->FIELD = sb_steal_exact(&buffer, &config->FIELD##_len);     \
+        }                                                                      \
+        sb_free(&buffer);                                                      \
         return 0;                                                              \
     }
 
@@ -1491,11 +1476,17 @@ settings_apply_option(Configuration *config, SettingsOption *option,
     static int32                                                               \
     FUNC(Configuration *config, char *value, int32 value_len,                  \
          NcmError *ncm_error) {                                                \
+        StrBuilder buffer = {0};                                               \
+                                                                               \
         (void)ncm_error;                                                       \
-        settings_string_set_expanded(&config->FIELD,                           \
-                                     &config->FIELD##_len,                     \
-                                     &config->FIELD##_cap,                     \
-                                     value, value_len);                        \
+        settings_expand_home(&buffer, value, value_len);                       \
+        free2(config->FIELD, config->FIELD##_len + 1);                         \
+        config->FIELD = NULL;                                                  \
+        config->FIELD##_len = 0;                                               \
+        if (buffer.len > 0) {                                                  \
+            config->FIELD = sb_steal_exact(&buffer, &config->FIELD##_len);     \
+        }                                                                      \
+        sb_free(&buffer);                                                      \
         return 0;                                                              \
     }
 
@@ -1504,8 +1495,13 @@ settings_apply_option(Configuration *config, SettingsOption *option,
     FUNC(Configuration *config, char *value, int32 value_len,                  \
          NcmError *ncm_error) {                                                \
         (void)ncm_error;                                                       \
-        stupid_string_set(&config->FIELD, &config->FIELD##_len,              \
-                            &config->FIELD##_cap, value, value_len);           \
+        free2(config->FIELD, config->FIELD##_len + 1);                         \
+        config->FIELD = NULL;                                                  \
+        config->FIELD##_len = 0;                                               \
+        if (value_len > 0) {                                                   \
+            config->FIELD = xstrndup(value, value_len);                        \
+            config->FIELD##_len = value_len;                                   \
+        }                                                                      \
         return 0;                                                              \
     }
 
