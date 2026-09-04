@@ -271,7 +271,25 @@ In general, we must always know the lengths of our strings:
 In general, pass `char *string` and `int32 string_len` around. Also use this
 convention in struct definitions.
 
-If the string is expected to grow later, use StrBuilder directly.
+If the string is expected to grow later, use StrBuilder directly:
+```c
+// bad
+typedef struct MyStruct {
+    char *string;
+    int32 string_len;
+    int32 string_cap;
+
+    char *other;
+    int32 other_len;
+    int32 other_cap;
+} MyStruct;
+
+// good
+typedef struct MyStruct {
+    StrBuilder string;
+    StrBuilder other;
+} MyStruct;
+```
 
 That means to also avoid calling `strlen32`:
 
