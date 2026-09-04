@@ -880,9 +880,7 @@ media_library_screen_active_column(MediaLibraryScreen *screen) {
 }
 
 bool
-media_library_screen_has_available_item(
-    MediaLibraryScreen *screen
-) {
+media_library_screen_has_available_item(MediaLibraryScreen *screen) {
     NcMenu *menu;
 
     if ((menu = media_library_screen_active_menu(screen)) == NULL) {
