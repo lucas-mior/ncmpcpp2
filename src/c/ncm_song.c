@@ -9,9 +9,8 @@
 
 static bool
 ncm_song_needs_numeric_zero(char *tag, int32 tag_len) {
-    if (tag == NULL) {
-        return false;
-    }
+    ASSERT((tag != NULL) && (tag_len >= 0));
+
     if ((tag_len == 1) && (tag[0] != '0')) {
         return true;
     }
@@ -28,41 +27,30 @@ ncm_song_format_numeric_tag_prefix(char *buffer, int32 buffer_cap,
                                    int32 copy_len) {
     int32 out;
 
-    if ((tag == NULL) || (tag_len < 0)) {
-        if (buffer && (buffer_cap > 0)) {
-            buffer[0] = '\0';
-        }
-        return 0;
-    }
-    if (copy_len > tag_len) {
-        copy_len = tag_len;
-    }
-    if (copy_len < 0) {
-        copy_len = 0;
-    }
+    ASSERT((buffer != NULL) && (buffer_cap > 0));
+    ASSERT((tag != NULL) && (tag_len >= 0));
+    ASSERT((copy_len >= 0) && (copy_len <= tag_len));
 
     out = 0;
     if (ncm_song_needs_numeric_zero(tag, tag_len)) {
-        if (buffer && (out + 1 < buffer_cap)) {
+        if (out + 1 < buffer_cap) {
             buffer[out] = '0';
         }
         out += 1;
     }
 
     for (int32 i = 0; i < copy_len; i += 1) {
-        if (buffer && (out + 1 < buffer_cap)) {
+        if (out + 1 < buffer_cap) {
             buffer[out] = tag[i];
         }
         out += 1;
     }
 
-    if (buffer && (buffer_cap > 0)) {
-        if (out < buffer_cap) {
-            buffer[out] = '\0';
-        } else {
-            buffer[buffer_cap - 1] = '\0';
-            out = buffer_cap - 1;
-        }
+    if (out < buffer_cap) {
+        buffer[out] = '\0';
+    } else {
+        buffer[buffer_cap - 1] = '\0';
+        out = buffer_cap - 1;
     }
 
     return out;
@@ -112,12 +100,8 @@ ncm_song_grow_tags(NcmSong *song) {
     return;
 }
 
-void
-ncm_song_destroy(NcmSong *song) {
-    if (song == NULL) {
-        return;
-    }
-
+static void
+ncm_song_destroy_unchecked(NcmSong *song) {
     free2(song->uri, song->uri_len + 1);
     for (int32 i = 0; i < song->tags_len; i += 1) {
         ncm_song_tag_destroy(&song->tags[i]);
@@ -128,17 +112,59 @@ ncm_song_destroy(NcmSong *song) {
     return;
 }
 
+static void
+ncm_song_set_uri_unchecked(NcmSong *song, char *uri, int32 uri_len) {
+    char *copy;
+
+    copy = (char *)malloc2(uri_len + 1);
+    memcpy64(copy, uri, uri_len);
+    copy[uri_len] = '\0';
+
+    free2(song->uri, song->uri_len + 1);
+    song->uri = copy;
+    song->uri_len = uri_len;
+    return;
+}
+
+static void
+ncm_song_add_tag_unchecked(NcmSong *song, enum mpd_tag_type type,
+                           char *value, int32 value_len) {
+    NcmSongTag *tag;
+
+    ncm_song_grow_tags(song);
+
+    tag = &song->tags[song->tags_len];
+    ncm_song_tag_destroy(tag);
+    tag->value = (char *)malloc2(value_len + 1);
+    tag->value_len = value_len;
+    tag->type = type;
+    memcpy64(tag->value, value, value_len);
+    tag->value[value_len] = '\0';
+    song->tags_len += 1;
+    return;
+}
+
+void
+ncm_song_destroy(NcmSong *song) {
+    if (song == NULL) {
+        return;
+    }
+
+    ncm_song_destroy_unchecked(song);
+    return;
+}
+
 void
 ncm_song_move(NcmSong *dest, NcmSong *source) {
     if (dest == NULL) {
         return;
     }
     if (source == NULL) {
-        ncm_song_destroy(dest);
+        ncm_song_destroy_unchecked(dest);
         return;
     }
 
-    ncm_song_destroy(dest);
+    ncm_song_destroy_unchecked(dest);
     *dest = *source;
     *source = (NcmSong){0};
     return;
@@ -156,29 +182,14 @@ ncm_song_copy(NcmSong *dest, NcmSong *source) {
     }
 
     if (source->uri != NULL) {
-        if (ncm_song_set_uri(&replacement, source->uri,
-                             source->uri_len) < 0) {
-            ncm_song_destroy(&replacement);
-            return -EINVAL;
-        }
+        ncm_song_set_uri_unchecked(&replacement, source->uri, source->uri_len);
     }
 
     for (int32 i = 0; i < source->tags_len; i += 1) {
-        NcmSongTag *dest_tag;
-        NcmSongTag *source_tag = &source->tags[i];
+        NcmSongTag *tag = &source->tags[i];
 
-        ncm_song_grow_tags(&replacement);
-        dest_tag = &replacement.tags[replacement.tags_len];
-        ncm_song_tag_destroy(dest_tag);
-        if (source_tag->value != NULL) {
-            dest_tag->value = (char *)malloc2(source_tag->value_len + 1);
-            dest_tag->value_len = source_tag->value_len;
-            dest_tag->type = source_tag->type;
-            memcpy64(dest_tag->value, source_tag->value,
-                     source_tag->value_len);
-            dest_tag->value[source_tag->value_len] = '\0';
-        }
-        replacement.tags_len += 1;
+        ncm_song_add_tag_unchecked(&replacement, tag->type,
+                                   tag->value, tag->value_len);
     }
 
     replacement.duration = source->duration;
@@ -187,7 +198,7 @@ ncm_song_copy(NcmSong *dest, NcmSong *source) {
     replacement.priority = source->priority;
     replacement.last_modified = source->last_modified;
 
-    ncm_song_destroy(dest);
+    ncm_song_destroy_unchecked(dest);
     *dest = replacement;
     return 0;
 }
@@ -216,7 +227,6 @@ ncm_song_from_mpd_song_copy(NcmSong *dest, struct mpd_song *source) {
     };
     char *uri;
     int32 tags_len = (int32)(SIZEOF(tags)/SIZEOF(tags[0]));
-    int32 status;
 
     if (dest == NULL) {
         return -EINVAL;
@@ -229,11 +239,7 @@ ncm_song_from_mpd_song_copy(NcmSong *dest, struct mpd_song *source) {
         return -NCM_ERROR_NOT_FOUND;
     }
 
-    status = ncm_song_set_uri(&replacement, uri, optional_strlen32(uri));
-    if (status < 0) {
-        ncm_song_destroy(&replacement);
-        return status;
-    }
+    ncm_song_set_uri_unchecked(&replacement, uri, optional_strlen32(uri));
 
     for (int32 i = 0; i < tags_len; i += 1) {
         for (uint32 j = 0; ; j += 1) {
@@ -243,11 +249,8 @@ ncm_song_from_mpd_song_copy(NcmSong *dest, struct mpd_song *source) {
             if (value == NULL) {
                 break;
             }
-            if ((status = ncm_song_add_tag(&replacement, tags[i], value,
-                                           strlen32(value))) < 0) {
-                ncm_song_destroy(&replacement);
-                return status;
-            }
+            ncm_song_add_tag_unchecked(&replacement, tags[i], value,
+                                       strlen32(value));
         }
     }
 
@@ -257,15 +260,13 @@ ncm_song_from_mpd_song_copy(NcmSong *dest, struct mpd_song *source) {
     replacement.priority = (int32)mpd_song_get_prio(source);
     replacement.last_modified = mpd_song_get_last_modified(source);
 
-    ncm_song_destroy(dest);
+    ncm_song_destroy_unchecked(dest);
     *dest = replacement;
     return 0;
 }
 
 int32
 ncm_song_set_uri(NcmSong *song, char *uri, int32 uri_len) {
-    char *copy;
-
     if (song == NULL) {
         return -EINVAL;
     }
@@ -276,22 +277,13 @@ ncm_song_set_uri(NcmSong *song, char *uri, int32 uri_len) {
         return -EINVAL;
     }
 
-    copy = (char *)malloc2(uri_len + 1);
-    memcpy64(copy, uri, uri_len);
-    copy[uri_len] = '\0';
-
-    free2(song->uri, song->uri_len + 1);
-
-    song->uri = copy;
-    song->uri_len = uri_len;
+    ncm_song_set_uri_unchecked(song, uri, uri_len);
     return 0;
 }
 
 int32
 ncm_song_add_tag(NcmSong *song, enum mpd_tag_type type,
                  char *value, int32 value_len) {
-    NcmSongTag *tag;
-
     if (song == NULL) {
         return -EINVAL;
     }
@@ -305,17 +297,7 @@ ncm_song_add_tag(NcmSong *song, enum mpd_tag_type type,
         return -EINVAL;
     }
 
-    ncm_song_grow_tags(song);
-
-    tag = &song->tags[song->tags_len];
-    ncm_song_tag_destroy(tag);
-    tag->value = (char *)malloc2(value_len + 1);
-    tag->value_len = value_len;
-    tag->type = type;
-    memcpy64(tag->value, value, value_len);
-    tag->value[value_len] = '\0';
-    song->tags_len += 1;
-
+    ncm_song_add_tag_unchecked(song, type, value, value_len);
     return 0;
 }
 
@@ -408,19 +390,12 @@ ncm_song_is_empty(NcmSong *song) {
     return song->uri == NULL;
 }
 
-bool
-ncm_song_has_tag_view(NcmSong *song, enum mpd_tag_type tag, int32 idx,
-                      NcmStringView *view) {
+static bool
+ncm_song_has_tag_view_unchecked(NcmSong *song, enum mpd_tag_type tag,
+                                int32 idx, NcmStringView *view) {
     int32 seen;
 
     ncm_string_view_clear(view);
-    if (song == NULL) {
-        return false;
-    }
-    if (idx < 0) {
-        return false;
-    }
-
     seen = 0;
     for (int32 i = 0; i < song->tags_len; i += 1) {
         if (song->tags[i].type != tag) {
@@ -437,12 +412,10 @@ ncm_song_has_tag_view(NcmSong *song, enum mpd_tag_type tag, int32 idx,
     return false;
 }
 
-bool
-ncm_song_has_uri_view(NcmSong *song, int32 idx, NcmStringView *view) {
+static bool
+ncm_song_has_uri_view_unchecked(NcmSong *song, int32 idx,
+                                NcmStringView *view) {
     ncm_string_view_clear(view);
-    if (song == NULL) {
-        return false;
-    }
     if (idx != 0) {
         return false;
     }
@@ -454,18 +427,31 @@ ncm_song_has_uri_view(NcmSong *song, int32 idx, NcmStringView *view) {
     return true;
 }
 
-bool
-ncm_song_has_name_view(NcmSong *song, int32 idx, NcmStringView *view) {
+static bool
+ncm_song_is_stream_unchecked(NcmSong *song) {
+    NcmStringView uri;
+
+    if (!ncm_song_has_uri_view_unchecked(song, 0, &uri)) {
+        return false;
+    }
+
+    return BEGINS_WITH(uri.data, uri.len, "http://")
+           || BEGINS_WITH(uri.data, uri.len, "https://");
+}
+
+static bool
+ncm_song_has_name_view_unchecked(NcmSong *song, int32 idx,
+                                 NcmStringView *view) {
     NcmStringView uri;
     int32 basename;
 
-    if (ncm_song_has_tag_view(song, MPD_TAG_NAME, idx, view)) {
+    if (ncm_song_has_tag_view_unchecked(song, MPD_TAG_NAME, idx, view)) {
         return true;
     }
     if (idx != 0) {
         return false;
     }
-    if (!ncm_song_has_uri_view(song, 0, &uri)) {
+    if (!ncm_song_has_uri_view_unchecked(song, 0, &uri)) {
         ncm_string_view_clear(view);
         return false;
     }
@@ -479,8 +465,9 @@ ncm_song_has_name_view(NcmSong *song, int32 idx, NcmStringView *view) {
     return true;
 }
 
-bool
-ncm_song_has_directory_view(NcmSong *song, int32 idx, NcmStringView *view) {
+static bool
+ncm_song_has_directory_view_unchecked(NcmSong *song, int32 idx,
+                                      NcmStringView *view) {
     NcmStringView uri;
     int32 basename;
 
@@ -488,10 +475,10 @@ ncm_song_has_directory_view(NcmSong *song, int32 idx, NcmStringView *view) {
     if (idx != 0) {
         return false;
     }
-    if (ncm_song_is_stream(song)) {
+    if (ncm_song_is_stream_unchecked(song)) {
         return false;
     }
-    if (!ncm_song_has_uri_view(song, 0, &uri)) {
+    if (!ncm_song_has_uri_view_unchecked(song, 0, &uri)) {
         return false;
     }
     if (view == NULL) {
@@ -508,11 +495,11 @@ ncm_song_has_directory_view(NcmSong *song, int32 idx, NcmStringView *view) {
     return true;
 }
 
-bool
-ncm_song_is_from_database(NcmSong *song) {
+static bool
+ncm_song_is_from_database_unchecked(NcmSong *song) {
     NcmStringView uri;
 
-    if (!ncm_song_has_uri_view(song, 0, &uri)) {
+    if (!ncm_song_has_uri_view_unchecked(song, 0, &uri)) {
         return false;
     }
     if (uri.len <= 0) {
@@ -526,22 +513,66 @@ ncm_song_is_from_database(NcmSong *song) {
 }
 
 bool
-ncm_song_is_stream(NcmSong *song) {
-    NcmStringView uri;
-
-    if (!ncm_song_has_uri_view(song, 0, &uri)) {
+ncm_song_has_tag_view(NcmSong *song, enum mpd_tag_type tag, int32 idx,
+                      NcmStringView *view) {
+    if ((song == NULL) || (idx < 0)) {
+        ncm_string_view_clear(view);
         return false;
     }
 
-    return BEGINS_WITH(uri.data, uri.len, "http://")
-           || BEGINS_WITH(uri.data, uri.len, "https://");
+    return ncm_song_has_tag_view_unchecked(song, tag, idx, view);
 }
 
-int32
-ncm_song_numeric_tag_len(char *tag, int32 tag_len) {
-    if ((tag == NULL) || (tag_len < 0)) {
-        return 0;
+bool
+ncm_song_has_uri_view(NcmSong *song, int32 idx, NcmStringView *view) {
+    if (song == NULL) {
+        ncm_string_view_clear(view);
+        return false;
     }
+
+    return ncm_song_has_uri_view_unchecked(song, idx, view);
+}
+
+bool
+ncm_song_has_name_view(NcmSong *song, int32 idx, NcmStringView *view) {
+    if ((song == NULL) || (idx < 0)) {
+        ncm_string_view_clear(view);
+        return false;
+    }
+
+    return ncm_song_has_name_view_unchecked(song, idx, view);
+}
+
+bool
+ncm_song_has_directory_view(NcmSong *song, int32 idx, NcmStringView *view) {
+    if (song == NULL) {
+        ncm_string_view_clear(view);
+        return false;
+    }
+
+    return ncm_song_has_directory_view_unchecked(song, idx, view);
+}
+
+bool
+ncm_song_is_from_database(NcmSong *song) {
+    if (song == NULL) {
+        return false;
+    }
+
+    return ncm_song_is_from_database_unchecked(song);
+}
+
+bool
+ncm_song_is_stream(NcmSong *song) {
+    if (song == NULL) {
+        return false;
+    }
+
+    return ncm_song_is_stream_unchecked(song);
+}
+
+static int32
+ncm_song_numeric_tag_len_unchecked(char *tag, int32 tag_len) {
     if (ncm_song_needs_numeric_zero(tag, tag_len)) {
         return tag_len + 1;
     }
@@ -550,22 +581,43 @@ ncm_song_numeric_tag_len(char *tag, int32 tag_len) {
 }
 
 int32
-ncm_song_format_numeric_tag(char *buffer, int32 buffer_cap,
-                            char *tag, int32 tag_len) {
+ncm_song_numeric_tag_len(char *tag, int32 tag_len) {
+    if ((tag == NULL) || (tag_len < 0)) {
+        return 0;
+    }
+
+    return ncm_song_numeric_tag_len_unchecked(tag, tag_len);
+}
+
+static int32
+ncm_song_format_numeric_tag_unchecked(char *buffer, int32 buffer_cap,
+                                      char *tag, int32 tag_len) {
     return ncm_song_format_numeric_tag_prefix(buffer, buffer_cap,
                                               tag, tag_len, tag_len);
 }
 
 int32
-ncm_song_show_time(int32 length, char *buffer, int32 buffer_cap) {
+ncm_song_format_numeric_tag(char *buffer, int32 buffer_cap,
+                            char *tag, int32 tag_len) {
+    if ((tag == NULL) || (tag_len < 0)) {
+        if ((buffer != NULL) && (buffer_cap > 0)) {
+            buffer[0] = '\0';
+        }
+        return 0;
+    }
+    if ((buffer == NULL) || (buffer_cap <= 0)) {
+        return ncm_song_numeric_tag_len_unchecked(tag, tag_len);
+    }
+
+    return ncm_song_format_numeric_tag_unchecked(buffer, buffer_cap,
+                                                 tag, tag_len);
+}
+
+static int32
+ncm_song_show_time_unchecked(int32 length, char *buffer, int32 buffer_cap) {
     int32 hours;
     int32 minutes;
     int32 seconds;
-    int32 result;
-
-    if ((buffer == NULL) || (buffer_cap <= 0)) {
-        return 0;
-    }
 
     hours = length/3600;
     length -= hours*3600;
@@ -574,26 +626,25 @@ ncm_song_show_time(int32 length, char *buffer, int32 buffer_cap) {
     seconds = length;
 
     if (hours > 0) {
-        result = snprintf2(buffer, buffer_cap,
-                           "%d:%02d:%02d", hours, minutes, seconds);
-    } else {
-        result = snprintf2(buffer, buffer_cap,
-                           "%d:%02d", minutes, seconds);
+        return snprintf2(buffer, buffer_cap,
+                         "%d:%02d:%02d", hours, minutes, seconds);
     }
 
-    if (result < 0) {
-        buffer[0] = '\0';
-        return 0;
-    }
-    if (result >= buffer_cap) {
-        result = buffer_cap - 1;
-    }
-
-    return result;
+    return snprintf2(buffer, buffer_cap, "%d:%02d", minutes, seconds);
 }
 
-StrBuilder
-ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
+int32
+ncm_song_show_time(int32 length, char *buffer, int32 buffer_cap) {
+    if ((buffer == NULL) || (buffer_cap <= 0)) {
+        return 0;
+    }
+
+    return ncm_song_show_time_unchecked(length, buffer, buffer_cap);
+}
+
+static StrBuilder
+ncm_song_getter_buffer_unchecked(NcmSong *song, enum NcmSongGetter getter,
+                                 int32 idx) {
     StrBuilder buffer = {0};
     NcmStringView view;
     char number_buffer[32];
@@ -602,49 +653,44 @@ ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
     int32 slash;
     enum mpd_tag_type tag;
 
-    if (song == NULL) {
-        return buffer;
-    }
-
     switch (getter) {
     case NCM_SONG_GETTER_LENGTH:
         if (idx > 0) {
             return buffer;
         }
         if (song->duration > 0) {
-            len = ncm_song_show_time(song->duration, number_buffer,
-                                     LENGTH(number_buffer));
+            len = ncm_song_show_time_unchecked(song->duration, number_buffer,
+                                               LENGTH(number_buffer));
             SB_APPEND(&buffer, number_buffer, len);
         } else {
             SB_APPEND(&buffer, "-:--");
         }
         return buffer;
     case NCM_SONG_GETTER_DIRECTORY:
-        if (ncm_song_has_directory_view(song, idx, &view)) {
+        if (ncm_song_has_directory_view_unchecked(song, idx, &view)) {
             SB_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
     case NCM_SONG_GETTER_NAME:
-        if (ncm_song_has_name_view(song, idx, &view)) {
+        if (ncm_song_has_name_view_unchecked(song, idx, &view)) {
             SB_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
     case NCM_SONG_GETTER_URI:
-        if (ncm_song_has_uri_view(song, idx, &view)) {
+        if (ncm_song_has_uri_view_unchecked(song, idx, &view)) {
             SB_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
     case NCM_SONG_GETTER_TRACK:
-        if (ncm_song_has_tag_view(song, MPD_TAG_TRACK, idx, &view)) {
-            len = ncm_song_numeric_tag_len(view.data, view.len);
+        if (ncm_song_has_tag_view_unchecked(song, MPD_TAG_TRACK, idx, &view)) {
+            len = ncm_song_numeric_tag_len_unchecked(view.data, view.len);
             sb_reserve(&buffer, len);
-            buffer.len = ncm_song_format_numeric_tag(buffer.data,
-                                                     buffer.cap,
-                                                     view.data, view.len);
+            buffer.len = ncm_song_format_numeric_tag_unchecked(
+                buffer.data, buffer.cap, view.data, view.len);
         }
         return buffer;
     case NCM_SONG_GETTER_TRACK_NUMBER:
-        if (ncm_song_has_tag_view(song, MPD_TAG_TRACK, idx, &view)) {
+        if (ncm_song_has_tag_view_unchecked(song, MPD_TAG_TRACK, idx, &view)) {
             slash = ncm_string_find_char(view.data, view.len, '/');
             if (ncm_song_needs_numeric_zero(view.data, view.len)) {
                 len = 1;
@@ -663,12 +709,11 @@ ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
         }
         return buffer;
     case NCM_SONG_GETTER_DISC:
-        if (ncm_song_has_tag_view(song, MPD_TAG_DISC, idx, &view)) {
-            len = ncm_song_numeric_tag_len(view.data, view.len);
+        if (ncm_song_has_tag_view_unchecked(song, MPD_TAG_DISC, idx, &view)) {
+            len = ncm_song_numeric_tag_len_unchecked(view.data, view.len);
             sb_reserve(&buffer, len);
-            buffer.len = ncm_song_format_numeric_tag(buffer.data,
-                                                     buffer.cap,
-                                                     view.data, view.len);
+            buffer.len = ncm_song_format_numeric_tag_unchecked(
+                buffer.data, buffer.cap, view.data, view.len);
         }
         return buffer;
     case NCM_SONG_GETTER_PRIORITY:
@@ -687,7 +732,7 @@ ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
     case NCM_SONG_GETTER_PERFORMER:
     case NCM_SONG_GETTER_COMMENT:
         tag = ncm_song_getter_to_tag_type(getter);
-        if (ncm_song_has_tag_view(song, tag, idx, &view)) {
+        if (ncm_song_has_tag_view_unchecked(song, tag, idx, &view)) {
             SB_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
@@ -696,6 +741,17 @@ ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
     default:
         return buffer;
     }
+}
+
+StrBuilder
+ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
+    StrBuilder buffer = {0};
+
+    if ((song == NULL) || (idx < 0)) {
+        return buffer;
+    }
+
+    return ncm_song_getter_buffer_unchecked(song, getter, idx);
 }
 
 StrBuilder
@@ -716,7 +772,7 @@ ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
     }
 
     for (int32 i = 0; ; i += 1) {
-        StrBuilder tag = ncm_song_getter_buffer(song, getter, i);
+        StrBuilder tag = ncm_song_getter_buffer_unchecked(song, getter, i);
         bool already_present;
 
         if (tag.len <= 0) {
@@ -727,7 +783,8 @@ ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
         already_present = false;
         if (!show_duplicates) {
             for (int32 j = 0; j < i; j += 1) {
-                StrBuilder previous = ncm_song_getter_buffer(song, getter, j);
+                StrBuilder previous
+                    = ncm_song_getter_buffer_unchecked(song, getter, j);
 
                 if (STREQUAL(previous.data, previous.len, tag.data, tag.len)) {
                     already_present = true;
@@ -759,10 +816,10 @@ ncm_song_is_equal(NcmSong *a, NcmSong *b) {
     if ((a == NULL) || (b == NULL)) {
         return a == b;
     }
-    if (!ncm_song_has_uri_view(a, 0, &a_uri)) {
-        return !ncm_song_has_uri_view(b, 0, &b_uri);
+    if (!ncm_song_has_uri_view_unchecked(a, 0, &a_uri)) {
+        return !ncm_song_has_uri_view_unchecked(b, 0, &b_uri);
     }
-    if (!ncm_song_has_uri_view(b, 0, &b_uri)) {
+    if (!ncm_song_has_uri_view_unchecked(b, 0, &b_uri)) {
         return false;
     }
 
