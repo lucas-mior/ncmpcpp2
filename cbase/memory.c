@@ -850,7 +850,7 @@ xstrdup(char *string) {
 
     if ((p = malloc2(length)) == NULL) {
         error("Error allocating %lld bytes to duplicate '%.*s ...': %s\n",
-              length, MIN(length, 50), string, strerror(errno));
+              length, (int)MIN(length, 50), string, strerror(errno));
         fatal(EXIT_FAILURE);
     }
 
