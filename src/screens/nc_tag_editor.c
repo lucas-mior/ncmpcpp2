@@ -4050,10 +4050,12 @@ tag_editor_layout(TagEditorScreen *screen) {
                       screen->start_x, screen->main_start_y);
     nc_window_resize(&screen->directories_window,
                      screen->left_width, screen->main_height);
+
     nc_window_move_to(&screen->tag_types_window,
                      screen->middle_start_x, screen->main_start_y);
     nc_window_resize(&screen->tag_types_window,
                      screen->middle_width, screen->main_height);
+
     nc_window_move_to(&screen->tags_window,
                       screen->right_start_x, screen->main_start_y);
     nc_window_resize(&screen->tags_window,
@@ -4065,10 +4067,12 @@ tag_editor_layout(TagEditorScreen *screen) {
     nc_window_resize(&screen->parser_dialog_window,
                      screen->parser_dialog_width,
                      screen->parser_dialog_height);
+
     nc_window_move_to(&screen->parser_window, screen->parser_start_x,
                       screen->parser_start_y);
     nc_window_resize(&screen->parser_window, screen->parser_width_one,
                      screen->parser_height);
+
     nc_window_move_to(&screen->parser_helper_window,
                       screen->parser_helper_start_x,
                       screen->parser_start_y);
