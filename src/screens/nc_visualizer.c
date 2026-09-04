@@ -82,24 +82,15 @@ static void visualizer_switch_to_callback(NcScreen *screen);
 static void visualizer_resize_callback(NcScreen *screen);
 static int32 visualizer_window_timeout_callback(NcScreen *screen);
 static void visualizer_update_callback(NcScreen *screen);
-static enum VisualizerScreenType visualizer_next_type(
-    enum VisualizerScreenType type);
-static int32 visualizer_system_open_fifo(void *user,
-                                         char *location, int32 location_len);
-static int32 visualizer_system_open_udp(void *user,
-                                        char *location, int32 location_len,
-                                        char *port, int32 port_len);
-static int32 visualizer_system_read_source(void *user, int32 fd,
-                                           void *buffer, int32 buffer_size);
+static enum VisualizerScreenType visualizer_next_type(enum VisualizerScreenType type);
+static int32 visualizer_system_open_fifo(void *user, char *location, int32 location_len);
+static int32 visualizer_system_open_udp(void *user, char *location, int32 location_len, char *port, int32 port_len);
+static int32 visualizer_system_read_source(void *user, int32 fd, void *buffer, int32 buffer_size);
 static void visualizer_system_close_source(void *user, int32 fd);
-static int32 visualizer_system_get_outputs(
-    void *user, NcmMpdOutputList *outputs, NcmError *ncm_error);
-static int32 visualizer_system_disable_output(void *user, int32 id,
-                                              NcmError *ncm_error);
-static int32 visualizer_system_enable_output(void *user, int32 id,
-                                             NcmError *ncm_error);
-static void visualizer_system_sleep_microseconds(void *user,
-                                                 int32 microseconds);
+static int32 visualizer_system_get_outputs(void *user, NcmMpdOutputList *outputs, NcmError *ncm_error);
+static int32 visualizer_system_disable_output(void *user, int32 id, NcmError *ncm_error);
+static int32 visualizer_system_enable_output(void *user, int32 id, NcmError *ncm_error);
+static void visualizer_system_sleep_microseconds(void *user, int32 microseconds);
 static void visualizer_reset_sample_clock(VisualizerScreen *screen);
 #if defined(HAVE_FFTW3_H)
 static void visualizer_fft_destroy(VisualizerScreen *screen);
