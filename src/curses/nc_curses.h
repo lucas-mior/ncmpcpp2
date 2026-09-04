@@ -769,10 +769,6 @@ NC_TYPED_MENU_DECLARE_ITEM_AT(NcEditorBufferMenu,
 #undef NC_TYPED_MENU_DECLARE_CURRENT
 #undef NC_TYPED_MENU_DECLARE_COMMON
 
-void nc_menu_string_destroy(StrBuilder *string);
-int32 nc_menu_string_copy(StrBuilder *dest, StrBuilder *source);
-int32 nc_menu_string_set(StrBuilder *string, char *data, int32 data_len);
-
 void nc_menu_string_pair_destroy(StrBuilderPair *pair);
 int32 nc_menu_string_pair_copy(
     StrBuilderPair *dest, StrBuilderPair *source);

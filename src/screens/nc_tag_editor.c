@@ -196,9 +196,9 @@ tag_editor_append_string_row(NcEditorStringMenu *menu,
                              char *data, int32 data_len, uint32 flags) {
     StrBuilder string = {0};
 
-    nc_menu_string_set(&string, data, data_len);
+    sb_set(&string, data, data_len);
     nc_editor_string_menu_add_with_flags(menu, &string, flags);
-    nc_menu_string_destroy(&string);
+    sb_free(&string);
     return;
 }
 
@@ -2299,9 +2299,9 @@ tag_editor_append_parser_row(NcEditorStringMenu *menu, char *data,
                              int32 data_len, uint32 flags) {
     StrBuilder string = {0};
 
-    nc_menu_string_set(&string, data, data_len);
+    sb_set(&string, data, data_len);
     nc_editor_string_menu_add_with_flags(menu, &string, flags);
-    nc_menu_string_destroy(&string);
+    sb_free(&string);
     return;
 }
 

@@ -39,44 +39,6 @@ nc_menu_owned_string_copy(char **dest_data, int32 *dest_len,
 }
 
 void
-nc_menu_string_destroy(StrBuilder *string) {
-    if (string == NULL) {
-        return;
-    }
-    nc_menu_owned_string_destroy(&string->data, &string->len, &string->cap);
-    return;
-}
-
-int32
-nc_menu_string_copy(StrBuilder *dest, StrBuilder *source) {
-    StrBuilder tmp = {0};
-
-    if ((dest == NULL) || (source == NULL)) {
-        return -EINVAL;
-    }
-
-    nc_menu_owned_string_copy(&tmp.data, &tmp.len, &tmp.cap,
-                              source->data, source->len);
-    nc_menu_string_destroy(dest);
-    *dest = tmp;
-    return 0;
-}
-
-int32
-nc_menu_string_set(StrBuilder *string, char *data, int32 data_len) {
-    StrBuilder tmp = {0};
-
-    if (string == NULL) {
-        return -EINVAL;
-    }
-
-    nc_menu_owned_string_copy(&tmp.data, &tmp.len, &tmp.cap, data, data_len);
-    nc_menu_string_destroy(string);
-    *string = tmp;
-    return 0;
-}
-
-void
 nc_menu_string_pair_destroy(StrBuilderPair *pair) {
     if (pair == NULL) {
         return;
@@ -366,14 +328,14 @@ nc_media_library_album_menu_item_destroy(void *item, void *user) {
 static void
 nc_menu_string_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    ASSERT(nc_menu_string_copy(dest, source) >= 0);
+    ASSERT(sb_copy(dest, source) >= 0);
     return;
 }
 
 static void
 nc_menu_string_item_destroy(void *item, void *user) {
     (void)user;
-    nc_menu_string_destroy(item);
+    sb_free(item);
     return;
 }
 
