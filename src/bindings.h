@@ -94,8 +94,8 @@ void ncm_binding_action_destroy(NcmBindingAction *action);
 
 void ncm_binding_destroy(NcmBinding *binding);
 void ncm_binding_clear(NcmBinding *binding);
-int32 ncm_binding_append_action(NcmBinding *binding, NcmBindingAction *action);
-int32 ncm_binding_copy(NcmBinding *dest, NcmBinding *source);
+void ncm_binding_append_action(NcmBinding *binding, NcmBindingAction *action);
+void ncm_binding_copy(NcmBinding *dest, NcmBinding *source);
 bool ncm_binding_action_can_run(NcmBindingAction *action,
                                 NcmBindingRuntime *runtime);
 bool ncm_binding_runtime_can_run_action(enum NcmActionType type, void *user);
