@@ -28,6 +28,12 @@ static void nc_screen_callbacks_destroy(NcScreen *screen);
 static bool nc_screen_run_current_is_available(NcScreen *screen);
 static int32 nc_screen_registry_index_of(NcScreenRegistry *registry,
                                          NcScreen *screen);
+static bool nc_screen_registry_is_registered_unchecked(
+    NcScreenRegistry *registry, NcScreen *screen
+);
+static void nc_screen_registry_each_visible_unchecked(
+    NcScreenRegistry *registry, NcScreenEachCallback *callback, void *user
+);
 static void nc_screen_registry_update_one(NcScreen *screen, void *user);
 static void nc_screen_registry_resize_one(NcScreen *screen, void *user);
 
@@ -262,7 +268,7 @@ nc_screen_run_current(NcScreen *screen) {
     if (screen == NULL) {
         return -EINVAL;
     }
-    if (!nc_screen_can_run_current(screen)) {
+    if (!screen->ops->can_run_current(screen)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     return screen->ops->run_current(screen);
@@ -407,7 +413,7 @@ nc_screen_registry_register(NcScreenRegistry *registry, NcScreen *screen) {
     if ((registry == NULL) || (screen == NULL)) {
         return -EINVAL;
     }
-    if (nc_screen_registry_is_registered(registry, screen)) {
+    if (nc_screen_registry_is_registered_unchecked(registry, screen)) {
         return -EEXIST;
     }
     if ((screen->type != NC_SCREEN_TYPE_UNKNOWN)
@@ -487,7 +493,7 @@ nc_screen_registry_is_registered(NcScreenRegistry *registry,
     if (screen == NULL) {
         return false;
     }
-    return nc_screen_registry_index_of(registry, screen) >= 0;
+    return nc_screen_registry_is_registered_unchecked(registry, screen);
 }
 
 bool
@@ -566,7 +572,7 @@ nc_screen_registry_switch_to(NcScreenRegistry *registry,
     if ((registry == NULL) || (screen == NULL)) {
         return -EINVAL;
     }
-    if (!nc_screen_registry_is_registered(registry, screen)) {
+    if (!nc_screen_registry_is_registered_unchecked(registry, screen)) {
         return -ENOENT;
     }
     if (registry->current_screen == screen) {
@@ -638,7 +644,10 @@ nc_screen_registry_unlock(NcScreenRegistry *registry) {
 bool
 nc_screen_registry_is_visible(NcScreenRegistry *registry,
                               NcScreen *screen) {
-    if (!nc_screen_registry_is_registered(registry, screen)) {
+    if (screen == NULL) {
+        return false;
+    }
+    if (!nc_screen_registry_is_registered_unchecked(registry, screen)) {
         return false;
     }
     if (registry->locked_screen
@@ -658,28 +667,15 @@ nc_screen_registry_each_visible(NcScreenRegistry *registry,
     if (callback == NULL) {
         return;
     }
-    if (registry->locked_screen
-        && registry->current_screen
-        && (nc_screen_is_mergable(registry->current_screen))) {
-        if (registry->current_screen == registry->locked_screen) {
-            if (registry->inactive_screen) {
-                callback(registry->inactive_screen, user);
-            }
-        } else if (registry->locked_screen) {
-            callback(registry->locked_screen, user);
-        }
-    }
-    if (registry->current_screen) {
-        callback(registry->current_screen, user);
-    }
+    nc_screen_registry_each_visible_unchecked(registry, callback, user);
     return;
 }
 
 void
 nc_screen_registry_update_visible(NcScreenRegistry *registry) {
-    nc_screen_registry_each_visible(registry,
-                                    nc_screen_registry_update_one,
-                                    NULL);
+    nc_screen_registry_each_visible_unchecked(
+        registry, nc_screen_registry_update_one, NULL
+    );
     return;
 }
 
@@ -693,9 +689,9 @@ nc_screen_registry_resize_current(NcScreenRegistry *registry) {
 
 void
 nc_screen_registry_resize_visible(NcScreenRegistry *registry) {
-    nc_screen_registry_each_visible(registry,
-                                    nc_screen_registry_resize_one,
-                                    NULL);
+    nc_screen_registry_each_visible_unchecked(
+        registry, nc_screen_registry_resize_one, NULL
+    );
     return;
 }
 
@@ -864,6 +860,35 @@ nc_screen_registry_index_of(NcScreenRegistry *registry,
         }
     }
     return -1;
+}
+
+static bool
+nc_screen_registry_is_registered_unchecked(NcScreenRegistry *registry,
+                                           NcScreen *screen) {
+    return nc_screen_registry_index_of(registry, screen) >= 0;
+}
+
+static void
+nc_screen_registry_each_visible_unchecked(
+    NcScreenRegistry *registry, NcScreenEachCallback *callback, void *user
+) {
+    ASSERT(callback != NULL);
+
+    if (registry->locked_screen
+        && registry->current_screen
+        && nc_screen_is_mergable(registry->current_screen)) {
+        if (registry->current_screen == registry->locked_screen) {
+            if (registry->inactive_screen) {
+                callback(registry->inactive_screen, user);
+            }
+        } else {
+            callback(registry->locked_screen, user);
+        }
+    }
+    if (registry->current_screen) {
+        callback(registry->current_screen, user);
+    }
+    return;
 }
 
 static void
