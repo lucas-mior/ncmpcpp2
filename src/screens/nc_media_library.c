@@ -1245,7 +1245,7 @@ library_append_tag(MediaLibraryTagArray *tags,
     NcMediaLibraryTagRow *row;
 
     row = media_library_tag_array_append(tags);
-    library_set_owned_string(&row->tag, &row->tag_len, &row->tag_cap,
+    stupid_string_set(&row->tag, &row->tag_len, &row->tag_cap,
                              tag, tag_len);
     row->mtime = mtime;
     return;
@@ -1263,11 +1263,11 @@ library_append_album(MediaLibraryAlbumArray *albums,
 
     item = media_library_album_array_append(albums);
     row = &item->row;
-    library_set_owned_string(&row->tag, &row->tag_len, &row->tag_cap,
+    stupid_string_set(&row->tag, &row->tag_len, &row->tag_cap,
                              tag, tag_len);
-    library_set_owned_string(&row->album, &row->album_len, &row->album_cap,
+    stupid_string_set(&row->album, &row->album_len, &row->album_cap,
                              album, album_len);
-    library_set_owned_string(&row->date, &row->date_len, &row->date_cap,
+    stupid_string_set(&row->date, &row->date_len, &row->date_cap,
                              date, date_len);
     row->mtime = mtime;
     row->all_tracks_entry = all_tracks_entry;
@@ -3055,7 +3055,7 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
             NcMediaLibraryTagRow row = {0};
             NcMenu *base;
 
-            library_set_owned_string(
+            stupid_string_set(
                 &row.tag, &row.tag_len, &row.tag_cap,
                 primary_value.data, primary_value.len);
             row.mtime = song->last_modified;
@@ -3126,13 +3126,13 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
         NcMediaLibraryAlbumRow row = {0};
         NcMenu *base;
 
-        library_set_owned_string(
+        stupid_string_set(
             &row.tag, &row.tag_len, &row.tag_cap,
             album_tag, album_tag_len);
-        library_set_owned_string(
+        stupid_string_set(
             &row.album, &row.album_len, &row.album_cap,
             album.data, album.len);
-        library_set_owned_string(
+        stupid_string_set(
             &row.date, &row.date_len, &row.date_cap,
             album_date, album_date_len);
         row.mtime = song->last_modified;
