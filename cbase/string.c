@@ -405,6 +405,16 @@ sb_itoa(StrBuilder *str_builder, llong num) {
 }
 
 void
+sb_bytes_pretty(StrBuilder *str_builder, llong size) {
+    int32 len;
+
+    sb_reserve(str_builder, 16);
+    len = bytes_pretty(str_builder->data, size);
+    str_builder->len += len;
+    return;
+}
+
+void
 sb_printf(StrBuilder *str_builder, char *fmt, ...) {
     va_list ap;
     va_list ap2;
@@ -735,6 +745,12 @@ main(void) {
         sb_itoa(&builder, 9223372036854775807LL);
         ASSERT_EQUAL(builder.data,
                      "x0 -9223372036854775808 9223372036854775807");
+        sb_free(&builder);
+    }
+    {
+        StrBuilder builder = {0};
+        sb_bytes_pretty(&builder, UINT32_MAX);
+        ASSERT_EQUAL(builder.data, "4.0000GB");
         sb_free(&builder);
     }
 
