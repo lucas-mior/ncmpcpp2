@@ -7,12 +7,7 @@
 
 static void
 ncm_mutable_song_free_string(char **string, int32 *string_len) {
-    if (string == NULL) {
-        return;
-    }
-    if (string_len == NULL) {
-        return;
-    }
+    ASSERT((string != NULL) && (string_len != NULL));
 
     free2(*string, *string_len + 1);
     *string = NULL;
@@ -20,23 +15,14 @@ ncm_mutable_song_free_string(char **string, int32 *string_len) {
     return;
 }
 
-static int32
+static void
 ncm_mutable_song_set_string(char **dest, int32 *dest_len,
                             char *source, int32 source_len) {
     char *copy;
 
-    if (dest == NULL) {
-        return -EINVAL;
-    }
-    if (dest_len == NULL) {
-        return -EINVAL;
-    }
-    if (source_len < 0) {
-        return -EINVAL;
-    }
-    if ((source == NULL) && (source_len > 0)) {
-        return -EINVAL;
-    }
+    ASSERT((dest != NULL) && (dest_len != NULL));
+    ASSERT(source_len >= 0);
+    ASSERT((source != NULL) || (source_len == 0));
 
     copy = NULL;
     if (source != NULL) {
@@ -52,16 +38,13 @@ ncm_mutable_song_set_string(char **dest, int32 *dest_len,
     if (copy != NULL) {
         *dest_len = source_len;
     }
-    return 0;
+    return;
 }
 
 static NcmMutableSongTag *
 ncm_mutable_song_find_tag(NcmMutableSong *song, enum NcmTagsField field,
                           int32 idx) {
-    ASSERT(song != NULL);
-    if (idx < 0) {
-        return NULL;
-    }
+    ASSERT((song != NULL) && (idx >= 0));
 
     for (int32 i = 0; i < song->tags_len; i += 1) {
         NcmMutableSongTag *tag = &song->tags[i];
@@ -79,10 +62,7 @@ ncm_mutable_song_add_tag(NcmMutableSong *song, enum NcmTagsField field,
                          int32 idx) {
     NcmMutableSongTag *tag;
 
-    ASSERT(song != NULL);
-    if (idx < 0) {
-        return NULL;
-    }
+    ASSERT((song != NULL) && (idx >= 0));
     if (song->tags_len >= song->tags_cap) {
         int32 new_cap;
 
@@ -98,7 +78,6 @@ ncm_mutable_song_add_tag(NcmMutableSong *song, enum NcmTagsField field,
             NcmMutableSongTag *new_tag;
 
             new_tag = &song->tags[i];
-            ASSERT(new_tag != NULL);
             new_tag->original = NULL;
             new_tag->value = NULL;
             new_tag->original_len = 0;
@@ -118,6 +97,47 @@ ncm_mutable_song_add_tag(NcmMutableSong *song, enum NcmTagsField field,
 }
 
 static void
+ncm_mutable_song_set_original_tag_unchecked(NcmMutableSong *song,
+                                            enum NcmTagsField field,
+                                            int32 idx,
+                                            char *value, int32 value_len) {
+    NcmMutableSongTag *tag;
+
+    if ((tag = ncm_mutable_song_find_tag(song, field, idx)) == NULL) {
+        tag = ncm_mutable_song_add_tag(song, field, idx);
+    }
+    ncm_mutable_song_set_string(&tag->original, &tag->original_len,
+                                value, value_len);
+    return;
+}
+
+static void
+ncm_mutable_song_set_tag_unchecked(NcmMutableSong *song,
+                                   enum NcmTagsField field, int32 idx,
+                                   char *value, int32 value_len) {
+    NcmMutableSongTag *tag;
+
+    if ((tag = ncm_mutable_song_find_tag(song, field, idx)) == NULL) {
+        if (value_len <= 0) {
+            return;
+        }
+        tag = ncm_mutable_song_add_tag(song, field, idx);
+    }
+
+    if (optional_strequal(tag->original, tag->original_len,
+                          value, value_len)) {
+        ncm_mutable_song_free_string(&tag->value, &tag->value_len);
+        tag->modified = false;
+        return;
+    }
+
+    ncm_mutable_song_set_string(&tag->value, &tag->value_len,
+                                value, value_len);
+    tag->modified = true;
+    return;
+}
+
+static void
 ncm_mutable_song_tag_destroy(NcmMutableSongTag *tag) {
     ASSERT(tag != NULL);
 
@@ -129,21 +149,8 @@ ncm_mutable_song_tag_destroy(NcmMutableSongTag *tag) {
     return;
 }
 
-static bool
-ncm_mutable_song_write_callback(enum NcmTagsField field, int32 idx,
-                                NcmStringView *value, void *user) {
-    NcmMutableSong *song;
-
-    song = (NcmMutableSong *)user;
-    return ncm_mutable_song_has_tag_view(song, field, idx, value);
-}
-
-void
-ncm_mutable_song_destroy(NcmMutableSong *song) {
-    if (song == NULL) {
-        return;
-    }
-
+static void
+ncm_mutable_song_destroy_unchecked(NcmMutableSong *song) {
     ncm_mutable_song_free_string(&song->uri, &song->uri_len);
     ncm_mutable_song_free_string(&song->directory, &song->directory_len);
     ncm_mutable_song_free_string(&song->name, &song->name_len);
@@ -158,39 +165,63 @@ ncm_mutable_song_destroy(NcmMutableSong *song) {
     return;
 }
 
+static bool
+ncm_mutable_song_has_tag_view_unchecked(NcmMutableSong *song,
+                                        enum NcmTagsField field, int32 idx,
+                                        NcmStringView *view) {
+    NcmMutableSongTag *tag;
+
+    if ((tag = ncm_mutable_song_find_tag(song, field, idx)) == NULL) {
+        return false;
+    }
+    if (tag->modified) {
+        ncm_string_view_set(view, tag->value, tag->value_len);
+        return true;
+    }
+
+    ncm_string_view_set(view, tag->original, tag->original_len);
+    return true;
+}
+
+static bool
+ncm_mutable_song_write_callback(enum NcmTagsField field, int32 idx,
+                                NcmStringView *value, void *user) {
+    NcmMutableSong *song;
+
+    song = (NcmMutableSong *)user;
+    return ncm_mutable_song_has_tag_view_unchecked(song, field, idx, value);
+}
+
+void
+ncm_mutable_song_destroy(NcmMutableSong *song) {
+    if (song == NULL) {
+        return;
+    }
+
+    ncm_mutable_song_destroy_unchecked(song);
+    return;
+}
+
 int32
 ncm_mutable_song_copy(NcmMutableSong *dest, NcmMutableSong *source) {
-    NcmMutableSong copy;
+    NcmMutableSong copy = {0};
 
     if (dest == NULL) {
         return -EINVAL;
     }
     if (source == NULL) {
-        ncm_mutable_song_destroy(dest);
+        ncm_mutable_song_destroy_unchecked(dest);
         return 0;
     }
 
-    copy = (NcmMutableSong){0};
-    if (ncm_mutable_song_set_uri(&copy, source->uri, source->uri_len) < 0) {
-        ncm_mutable_song_destroy(&copy);
-        return -EINVAL;
-    }
-    if (ncm_mutable_song_set_directory(&copy, source->directory,
-                                       source->directory_len) < 0) {
-        ncm_mutable_song_destroy(&copy);
-        return -EINVAL;
-    }
-    if (ncm_mutable_song_set_name(&copy, source->name,
-                                  source->name_len) < 0) {
-        ncm_mutable_song_destroy(&copy);
-        return -EINVAL;
-    }
-    if (ncm_mutable_song_set_string(&copy.new_name, &copy.new_name_len,
-                                    source->new_name,
-                                    source->new_name_len) < 0) {
-        ncm_mutable_song_destroy(&copy);
-        return -EINVAL;
-    }
+    ncm_mutable_song_set_string(&copy.uri, &copy.uri_len,
+                                source->uri, source->uri_len);
+    ncm_mutable_song_set_string(&copy.directory, &copy.directory_len,
+                                source->directory, source->directory_len);
+    ncm_mutable_song_set_string(&copy.name, &copy.name_len,
+                                source->name, source->name_len);
+    ncm_mutable_song_set_string(&copy.new_name, &copy.new_name_len,
+                                source->new_name, source->new_name_len);
     copy.mtime = source->mtime;
     copy.duration = source->duration;
     copy.is_from_database = source->is_from_database;
@@ -202,32 +233,19 @@ ncm_mutable_song_copy(NcmMutableSong *dest, NcmMutableSong *source) {
         source_tag = &source->tags[i];
         tag = ncm_mutable_song_add_tag(&copy, source_tag->field,
                                        source_tag->idx);
-        if (tag == NULL) {
-            ncm_mutable_song_destroy(&copy);
-            return -EINVAL;
-        }
-
-        ASSERT(tag != NULL);
-        ASSERT(source_tag != NULL);
         ncm_mutable_song_tag_destroy(tag);
         tag->field = source_tag->field;
         tag->idx = source_tag->idx;
         tag->modified = source_tag->modified;
-        if (ncm_mutable_song_set_string(&tag->original, &tag->original_len,
-                                        source_tag->original,
-                                        source_tag->original_len) < 0) {
-            ncm_mutable_song_destroy(&copy);
-            return -EINVAL;
-        }
-        if (ncm_mutable_song_set_string(&tag->value, &tag->value_len,
-                                        source_tag->value,
-                                        source_tag->value_len) < 0) {
-            ncm_mutable_song_destroy(&copy);
-            return -EINVAL;
-        }
+        ncm_mutable_song_set_string(&tag->original, &tag->original_len,
+                                    source_tag->original,
+                                    source_tag->original_len);
+        ncm_mutable_song_set_string(&tag->value, &tag->value_len,
+                                    source_tag->value,
+                                    source_tag->value_len);
     }
 
-    ncm_mutable_song_destroy(dest);
+    ncm_mutable_song_destroy_unchecked(dest);
     *dest = copy;
     return 0;
 }
@@ -241,7 +259,7 @@ ncm_mutable_song_move(NcmMutableSong *dest, NcmMutableSong *source) {
         return;
     }
 
-    ncm_mutable_song_destroy(dest);
+    ncm_mutable_song_destroy_unchecked(dest);
     if (source == NULL) {
         *dest = (NcmMutableSong){0};
         return;
@@ -257,9 +275,15 @@ ncm_mutable_song_set_uri(NcmMutableSong *song, char *uri, int32 uri_len) {
     if (song == NULL) {
         return -EINVAL;
     }
+    if (uri_len < 0) {
+        return -EINVAL;
+    }
+    if ((uri == NULL) && (uri_len > 0)) {
+        return -EINVAL;
+    }
 
-    return ncm_mutable_song_set_string(&song->uri, &song->uri_len, uri,
-                                       uri_len);
+    ncm_mutable_song_set_string(&song->uri, &song->uri_len, uri, uri_len);
+    return 0;
 }
 
 int32
@@ -268,9 +292,16 @@ ncm_mutable_song_set_directory(NcmMutableSong *song, char *directory,
     if (song == NULL) {
         return -EINVAL;
     }
+    if (directory_len < 0) {
+        return -EINVAL;
+    }
+    if ((directory == NULL) && (directory_len > 0)) {
+        return -EINVAL;
+    }
 
-    return ncm_mutable_song_set_string(&song->directory, &song->directory_len,
-                                       directory, directory_len);
+    ncm_mutable_song_set_string(&song->directory, &song->directory_len,
+                                directory, directory_len);
+    return 0;
 }
 
 int32
@@ -278,9 +309,15 @@ ncm_mutable_song_set_name(NcmMutableSong *song, char *name, int32 name_len) {
     if (song == NULL) {
         return -EINVAL;
     }
+    if (name_len < 0) {
+        return -EINVAL;
+    }
+    if ((name == NULL) && (name_len > 0)) {
+        return -EINVAL;
+    }
 
-    return ncm_mutable_song_set_string(&song->name, &song->name_len, name,
-                                       name_len);
+    ncm_mutable_song_set_string(&song->name, &song->name_len, name, name_len);
+    return 0;
 }
 
 void
@@ -298,34 +335,6 @@ int32
 ncm_mutable_song_set_original_tag(NcmMutableSong *song,
                                   enum NcmTagsField field, int32 idx,
                                   char *value, int32 value_len) {
-    NcmMutableSongTag *tag;
-
-    if (song == NULL) {
-        return -EINVAL;
-    }
-    if (idx < 0) {
-        return -EINVAL;
-    }
-    if (field >= NCM_TAGS_FIELD_COUNT) {
-        return -EINVAL;
-    }
-
-    if ((tag = ncm_mutable_song_find_tag(song, field, idx)) == NULL) {
-        tag = ncm_mutable_song_add_tag(song, field, idx);
-    }
-    if (tag == NULL) {
-        return -EINVAL;
-    }
-
-    return ncm_mutable_song_set_string(&tag->original, &tag->original_len,
-                                       value, value_len);
-}
-
-int32
-ncm_mutable_song_set_tag(NcmMutableSong *song, enum NcmTagsField field,
-                         int32 idx, char *value, int32 value_len) {
-    NcmMutableSongTag *tag;
-
     if (song == NULL) {
         return -EINVAL;
     }
@@ -338,29 +347,35 @@ ncm_mutable_song_set_tag(NcmMutableSong *song, enum NcmTagsField field,
     if (value_len < 0) {
         return -EINVAL;
     }
-
-    if ((tag = ncm_mutable_song_find_tag(song, field, idx)) == NULL) {
-        if (value_len <= 0) {
-            return 0;
-        }
-        tag = ncm_mutable_song_add_tag(song, field, idx);
-    }
-    if (tag == NULL) {
+    if ((value == NULL) && (value_len > 0)) {
         return -EINVAL;
     }
 
-    if (optional_strequal(tag->original, tag->original_len,
-                          value, value_len)) {
-        ncm_mutable_song_free_string(&tag->value, &tag->value_len);
-        tag->modified = false;
-        return 0;
-    }
+    ncm_mutable_song_set_original_tag_unchecked(song, field, idx,
+                                                value, value_len);
+    return 0;
+}
 
-    if (ncm_mutable_song_set_string(&tag->value, &tag->value_len, value,
-                                    value_len) < 0) {
+int32
+ncm_mutable_song_set_tag(NcmMutableSong *song, enum NcmTagsField field,
+                         int32 idx, char *value, int32 value_len) {
+    if (song == NULL) {
         return -EINVAL;
     }
-    tag->modified = true;
+    if (idx < 0) {
+        return -EINVAL;
+    }
+    if (field >= NCM_TAGS_FIELD_COUNT) {
+        return -EINVAL;
+    }
+    if (value_len < 0) {
+        return -EINVAL;
+    }
+    if ((value == NULL) && (value_len > 0)) {
+        return -EINVAL;
+    }
+
+    ncm_mutable_song_set_tag_unchecked(song, field, idx, value, value_len);
     return 0;
 }
 
@@ -385,10 +400,9 @@ ncm_mutable_song_set_tags(NcmMutableSong *song, enum NcmTagsField field,
     }
 
     if ((separator == NULL) || (separator_len <= 0)) {
-        if (ncm_mutable_song_set_tag(song, field, 0, value, value_len) < 0) {
-            return -EINVAL;
-        }
-        return ncm_mutable_song_set_tag(song, field, 1, "", 0);
+        ncm_mutable_song_set_tag_unchecked(song, field, 0, value, value_len);
+        ncm_mutable_song_set_tag_unchecked(song, field, 1, "", 0);
+        return 0;
     }
 
     begin = 0;
@@ -405,10 +419,8 @@ ncm_mutable_song_set_tags(NcmMutableSong *song, enum NcmTagsField field,
         }
 
         if (at_end || at_separator) {
-            if (ncm_mutable_song_set_tag(song, field, idx, value + begin,
-                                         i - begin) < 0) {
-                return -EINVAL;
-            }
+            ncm_mutable_song_set_tag_unchecked(song, field, idx,
+                                               value + begin, i - begin);
             idx += 1;
             if (at_separator) {
                 i += separator_len - 1;
@@ -417,15 +429,17 @@ ncm_mutable_song_set_tags(NcmMutableSong *song, enum NcmTagsField field,
         }
     }
 
-    return ncm_mutable_song_set_tag(song, field, idx, "", 0);
+    ncm_mutable_song_set_tag_unchecked(song, field, idx, "", 0);
+    return 0;
 }
 
 bool
 ncm_mutable_song_has_tag_view(NcmMutableSong *song,
                               enum NcmTagsField field, int32 idx,
                               NcmStringView *view) {
-    NcmMutableSongTag *tag;
-
+    if (view == NULL) {
+        return false;
+    }
     ncm_string_view_clear(view);
     if (song == NULL) {
         return false;
@@ -437,31 +451,19 @@ ncm_mutable_song_has_tag_view(NcmMutableSong *song,
         return false;
     }
 
-    if ((tag = ncm_mutable_song_find_tag(song, field, idx)) == NULL) {
-        return false;
-    }
-    if (tag->modified) {
-        ncm_string_view_set(view, tag->value, tag->value_len);
-        return true;
-    }
-
-    ncm_string_view_set(view, tag->original, tag->original_len);
-    return true;
+    return ncm_mutable_song_has_tag_view_unchecked(song, field, idx, view);
 }
 
-void
-ncm_mutable_song_get_tag_buffer(NcmMutableSong *song,
-                                enum NcmTagsField field, int32 idx,
-                                StrBuilder *buffer) {
+static void
+ncm_mutable_song_get_tag_buffer_unchecked(NcmMutableSong *song,
+                                          enum NcmTagsField field, int32 idx,
+                                          StrBuilder *buffer) {
     NcmStringView view;
     int32 len;
 
-    if (buffer == NULL) {
-        return;
-    }
     sb_clear(buffer);
     if (field == NCM_TAGS_FIELD_TRACK) {
-        if (!ncm_mutable_song_has_tag_view(song, field, idx, &view)) {
+        if (!ncm_mutable_song_has_tag_view_unchecked(song, field, idx, &view)) {
             return;
         }
 
@@ -471,11 +473,35 @@ ncm_mutable_song_get_tag_buffer(NcmMutableSong *song,
                                                   view.data, view.len);
         return;
     }
-    if (!ncm_mutable_song_has_tag_view(song, field, idx, &view)) {
+    if (!ncm_mutable_song_has_tag_view_unchecked(song, field, idx, &view)) {
         return;
     }
 
     SB_APPEND(buffer, view.data, view.len);
+    return;
+}
+
+void
+ncm_mutable_song_get_tag_buffer(NcmMutableSong *song,
+                                enum NcmTagsField field, int32 idx,
+                                StrBuilder *buffer) {
+    if (buffer == NULL) {
+        return;
+    }
+    if (song == NULL) {
+        sb_clear(buffer);
+        return;
+    }
+    if (idx < 0) {
+        sb_clear(buffer);
+        return;
+    }
+    if (field >= NCM_TAGS_FIELD_COUNT) {
+        sb_clear(buffer);
+        return;
+    }
+
+    ncm_mutable_song_get_tag_buffer_unchecked(song, field, idx, buffer);
     return;
 }
 
@@ -501,7 +527,7 @@ ncm_mutable_song_tags_buffer(NcmMutableSong *song,
         StrBuilder tag = {0};
         bool already_present;
 
-        ncm_mutable_song_get_tag_buffer(song, field, i, &tag);
+        ncm_mutable_song_get_tag_buffer_unchecked(song, field, i, &tag);
         if (tag.len <= 0) {
             sb_free(&tag);
             break;
@@ -512,7 +538,8 @@ ncm_mutable_song_tags_buffer(NcmMutableSong *song,
             for (int32 j = 0; j < i; j += 1) {
                 StrBuilder previous = {0};
 
-                ncm_mutable_song_get_tag_buffer(song, field, j, &previous);
+                ncm_mutable_song_get_tag_buffer_unchecked(
+                    song, field, j, &previous);
                 if (optional_strequal(previous.data, previous.len,
                                       tag.data, tag.len)) {
                     already_present = true;
@@ -551,25 +578,22 @@ ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
     if (!ncm_song_has_uri_view(source, 0, &view)) {
         return -NCM_ERROR_NOT_FOUND;
     }
-    if (ncm_mutable_song_set_uri(dest, view.data, view.len) < 0) {
-        return -EINVAL;
-    }
+    ncm_mutable_song_set_string(&dest->uri, &dest->uri_len,
+                                view.data, view.len);
     if (ncm_song_has_directory_view(source, 0, &view)) {
-        if (ncm_mutable_song_set_directory(dest, view.data, view.len) < 0) {
-            return -EINVAL;
-        }
-    } else if (ncm_mutable_song_set_directory(dest, "", 0) < 0) {
-        return -EINVAL;
+        ncm_mutable_song_set_string(&dest->directory, &dest->directory_len,
+                                    view.data, view.len);
+    } else {
+        ncm_mutable_song_set_string(&dest->directory, &dest->directory_len,
+                                    "", 0);
     }
     if (ncm_song_has_name_view(source, 0, &view)) {
-        if (ncm_mutable_song_set_name(dest, view.data, view.len) < 0) {
-            return -EINVAL;
-        }
-    } else if (ncm_mutable_song_set_name(dest, "", 0) < 0) {
-        return -EINVAL;
+        ncm_mutable_song_set_string(&dest->name, &dest->name_len,
+                                    view.data, view.len);
+    } else {
+        ncm_mutable_song_set_string(&dest->name, &dest->name_len, "", 0);
     }
-    ncm_mutable_song_set_from_database(dest,
-                                       ncm_song_is_from_database(source));
+    dest->is_from_database = ncm_song_is_from_database(source);
 
     for (uint32 field = 0; field < NCM_TAGS_FIELD_COUNT; field += 1) {
         enum NcmSongGetter getter = ncm_tags_field_to_song_getter(field);
@@ -584,12 +608,8 @@ ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
                 sb_free(&buffer);
                 break;
             }
-            if (ncm_mutable_song_set_original_tag(
-                dest, (enum NcmTagsField)field, i,
-                buffer.data, buffer.len) < 0) {
-                sb_free(&buffer);
-                return -EINVAL;
-            }
+            ncm_mutable_song_set_original_tag_unchecked(
+                dest, (enum NcmTagsField)field, i, buffer.data, buffer.len);
             sb_free(&buffer);
         }
     }
@@ -606,6 +626,9 @@ ncm_mutable_song_set_new_name(NcmMutableSong *song, char *new_name,
     if (new_name_len < 0) {
         return -EINVAL;
     }
+    if ((new_name == NULL) && (new_name_len > 0)) {
+        return -EINVAL;
+    }
 
     if (new_name_len <= 0) {
         ncm_mutable_song_free_string(&song->new_name, &song->new_name_len);
@@ -617,13 +640,17 @@ ncm_mutable_song_set_new_name(NcmMutableSong *song, char *new_name,
         return 0;
     }
 
-    return ncm_mutable_song_set_string(&song->new_name, &song->new_name_len,
-                                       new_name, new_name_len);
+    ncm_mutable_song_set_string(&song->new_name, &song->new_name_len,
+                                new_name, new_name_len);
+    return 0;
 }
 
 bool
 ncm_mutable_song_has_new_name_view(NcmMutableSong *song,
                                    NcmStringView *view) {
+    if (view == NULL) {
+        return false;
+    }
     ncm_string_view_clear(view);
     if (song == NULL) {
         return false;
