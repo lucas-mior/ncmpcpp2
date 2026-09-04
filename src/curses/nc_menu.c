@@ -1106,8 +1106,8 @@ menu_is_inactive(NcMenu *menu, void *item) {
     if (menu->display_callbacks.is_inactive == NULL) {
         return false;
     }
-    return menu->display_callbacks.is_inactive(
-        item, menu->display_callbacks.user);
+    return menu->display_callbacks.is_inactive(item,
+                                               menu->display_callbacks.user);
 }
 
 static uint32
