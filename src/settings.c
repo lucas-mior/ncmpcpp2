@@ -55,27 +55,6 @@ settings_invalid_value(NcmError *ncm_error, char *value, int32 value_len) {
 }
 
 static void
-settings_string_set(char **data, int32 *len, int32 *cap, char *value,
-                    int32 value_len) {
-    char *new_data;
-    int32 new_cap;
-
-    new_cap = value_len + 1;
-    new_data = malloc2(new_cap);
-    if (value_len > 0) {
-        memcpy64(new_data, value, value_len);
-    }
-    new_data[value_len] = '\0';
-
-    free2(*data, *cap);
-
-    *data = new_data;
-    *len = value_len;
-    *cap = new_cap;
-    return;
-}
-
-static void
 settings_expand_home(StrBuilder *buffer, char *value, int32 value_len) {
     char *home;
     int32 home_len;
