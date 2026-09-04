@@ -450,6 +450,9 @@ void
 nc_window_init(NcWindow *window, int32 start_x, int32 start_y,
                int32 width, int32 height, char *title,
                int32 title_len, NcColor color, NcBorder border) {
+    if ((title == NULL) || (title_len < 0)) {
+        title_len = 0;
+    }
     nc_window_init_empty(window);
 
     window->start_x = start_x;
@@ -1156,17 +1159,12 @@ nc_prompt_read_key(FILE *file) {
 
     (void)file;
     window = nc_readline_state.window;
-    if (window == NULL) {
-        return EOF;
-    }
+    ASSERT(window != NULL);
 
     do {
         char *line = rl_line_buffer;
 
         x = nc_window_get_x(window);
-        if (line == NULL) {
-            line = "";
-        }
         if ((nc_readline_state.should_continue != NULL)
             && !nc_readline_state.should_continue(
                 line, nc_readline_state.should_continue_user_data)) {
@@ -1182,13 +1180,8 @@ nc_prompt_read_key(FILE *file) {
             bool escape_is_standalone;
             int32 escape_key;
 
-            if (window == NULL) {
-                escape_is_standalone = true;
-            } else if (window->input_queue_start
-                       < ARRAY_LEN(window->input_queue)) {
+            if (window->input_queue_start < ARRAY_LEN(window->input_queue)) {
                 escape_is_standalone = false;
-            } else if (window->window == NULL) {
-                escape_is_standalone = true;
             } else {
                 wtimeout(window->window, NC_PROMPT_ESCAPE_DELAY_MS);
                 escape_key = wgetch(window->window);
@@ -1231,10 +1224,6 @@ nc_prompt_display_string(void) {
     int32 y;
 
     window = nc_readline_state.window;
-    if (window == NULL) {
-        return;
-    }
-
     before_cursor = rl_line_buffer;
     before_len = rl_point;
     after_cursor = rl_line_buffer + rl_point;
@@ -1296,9 +1285,6 @@ nc_prompt_print_data(char *string, int32 string_len) {
 
 static void
 nc_window_assign_title(NcWindow *window, char *title, int32 title_len) {
-    if ((title == NULL) || (title_len < 0)) {
-        title_len = 0;
-    }
     if (title_len >= MAXOF(window->title_cap)) {
         error("Window title is too long: %d bytes.\n", title_len);
         fatal(EXIT_FAILURE);
