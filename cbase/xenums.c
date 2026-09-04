@@ -77,6 +77,7 @@
 #endif
 
 #if XENUMS_FUNCTIONS_ONLY == 0
+
 #if ENUM_BITFLAGS
 enum CAT(ENUM_NAME, _BitIndices) ENUM_UNDERLYING_TYPE_SPEC {
     #define X_INDEX_1(e)    CAT(e, _BIT_INDEX),
@@ -110,6 +111,10 @@ _Static_assert((ENUM_UNDERLYING_TYPE)-1 > 0,
 //
 // Passing multiple ENUM names for the same value will break compilation.
 enum ENUM_NAME ENUM_UNDERLYING_TYPE_SPEC {
+#if ENUM_BITFLAGS
+    CAT(ENUM_PREFIX_, NONE) = 0,
+#endif
+
 #if ENUM_BITFLAGS == 0
     #define XENUM_1(e)        e,
     #define XENUM_2(e, alias) e,
@@ -119,20 +124,19 @@ enum ENUM_NAME ENUM_UNDERLYING_TYPE_SPEC {
 #endif
     #define XX(...) SELECT_ON_NUM_ARGS(XENUM_, __VA_ARGS__)
 
-#if ENUM_BITFLAGS
-    CAT(ENUM_PREFIX_, NONE) = 0,
-#endif
     ENUM_FIELDS
 
     #undef XX
     #undef XENUM_1
     #undef XENUM_2
+
 #if ENUM_BITFLAGS
     CAT(ENUM_PREFIX_, LAST)
 #else
     CAT(ENUM_PREFIX_, COUNT)
 #endif
 };
+
 #endif
 
 XENUMS_LINKAGE void CAT(ENUM_PREFIX_, str_free)(char *);
