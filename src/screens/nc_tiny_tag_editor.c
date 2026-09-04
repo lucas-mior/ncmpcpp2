@@ -711,10 +711,8 @@ tiny_editor_resize(NcScreen *screen) {
     editor->main_start_y = ui_state_main_start_y();
     editor->main_height = ui_state_main_height();
 
-    nc_window_move_to(&editor->window, editor->start_x,
-                      editor->main_start_y);
-    nc_window_resize(&editor->window, editor->width,
-                     editor->main_height);
+    nc_window_move_to(&editor->window, editor->start_x, editor->main_start_y);
+    nc_window_resize(&editor->window, editor->width, editor->main_height);
     nc_screen_clear_resize_request(screen);
 
     return;
