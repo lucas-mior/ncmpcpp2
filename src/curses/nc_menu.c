@@ -683,7 +683,7 @@ nc_menu_highlight_position(NcMenu *menu, int32 pos, int32 height) {
 
     nc_menu_sync_item_count(menu);
     ASSERT_NON_NEGATIVE(pos);
-    ASSERT(pos < menu->item_count);
+    ASSERT_LESS(pos, menu->item_count);
 
     menu->highlight = pos;
     if (height <= 0) {
@@ -1005,7 +1005,7 @@ nc_menu_item_flags_at(NcMenu *menu, enum NcMenuItemSource source,
     flags = menu_flags_array(menu, source);
     count = menu_array_count(menu, source);
     ASSERT_NON_NEGATIVE(pos);
-    ASSERT(pos < count);
+    ASSERT_LESS(pos, count);
     return flags[pos];
 }
 
@@ -1030,7 +1030,7 @@ nc_menu_item_at(NcMenu *menu, enum NcMenuItemSource source, int32 pos) {
     items = menu_array(menu, source);
     count = menu_array_count(menu, source);
     ASSERT_NON_NEGATIVE(pos);
-    ASSERT(pos < count);
+    ASSERT_LESS(pos, count);
     return items[pos];
 }
 
