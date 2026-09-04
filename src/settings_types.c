@@ -165,7 +165,7 @@ configuration_init_unchecked(Configuration *config) {
     NCM_CONFIG_STRING_INIT(execute_on_song_change);
     NCM_CONFIG_STRING_INIT(execute_on_player_state_change);
     NCM_CONFIG_STRING_INIT(lastfm_preferred_language);
-    NCM_CONFIG_STRING_INIT(pattern);
+    NCM_CONFIG_STRING_INIT(default_tag_editor_pattern);
     NCM_CONFIG_STRING_INIT(random_exclude_pattern);
     NCM_CONFIG_STRING_INIT(tags_separator);
 
@@ -347,7 +347,7 @@ configuration_destroy(Configuration *config) {
     NCM_CONFIG_STRING_DESTROY(execute_on_song_change);
     NCM_CONFIG_STRING_DESTROY(execute_on_player_state_change);
     NCM_CONFIG_STRING_DESTROY(lastfm_preferred_language);
-    NCM_CONFIG_STRING_DESTROY(pattern);
+    NCM_CONFIG_STRING_DESTROY(default_tag_editor_pattern);
     NCM_CONFIG_STRING_DESTROY(random_exclude_pattern);
     NCM_CONFIG_STRING_DESTROY(tags_separator);
 

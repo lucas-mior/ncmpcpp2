@@ -63,7 +63,7 @@ typedef struct Configuration {
     char *execute_on_song_change;
     char *execute_on_player_state_change;
     char *lastfm_preferred_language;
-    char *pattern;
+    char *default_tag_editor_pattern;
     char *random_exclude_pattern;
     char *tags_separator;
 
@@ -79,7 +79,7 @@ typedef struct Configuration {
     int32 execute_on_song_change_len;
     int32 execute_on_player_state_change_len;
     int32 lastfm_preferred_language_len;
-    int32 pattern_len;
+    int32 default_tag_editor_pattern_len;
     int32 random_exclude_pattern_len;
     int32 tags_separator_len;
 
@@ -95,7 +95,7 @@ typedef struct Configuration {
     int32 execute_on_song_change_cap;
     int32 execute_on_player_state_change_cap;
     int32 lastfm_preferred_language_cap;
-    int32 pattern_cap;
+    int32 default_tag_editor_pattern_cap;
     int32 random_exclude_pattern_cap;
     int32 tags_separator_cap;
 

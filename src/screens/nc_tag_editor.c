@@ -2319,37 +2319,10 @@ tag_editor_append_parser_action_label(TagEditorScreen *screen,
 }
 
 static void
-tag_editor_set_config_pattern(char *pattern, int32 pattern_len) {
-    char *copy;
-    int32 cap;
-
-    ASSERT(pattern_len >= 0);
-    cap = pattern_len + 1;
-    copy = malloc2(cap);
-    if (pattern && (pattern_len > 0)) {
-        memcpy64(copy, pattern, pattern_len);
-    }
-    copy[pattern_len] = '\0';
-    if (Config.pattern && (Config.pattern_cap > 0)) {
-        free2(Config.pattern, Config.pattern_cap);
-    }
-    Config.pattern = copy;
-    Config.pattern_len = pattern_len;
-    Config.pattern_cap = cap;
-    return;
-}
-
-static void
 tag_editor_set_pattern(TagEditorScreen *screen,
                        char *pattern, int32 pattern_len) {
     ASSERT(screen != NULL);
-    if (pattern == screen->pattern.data) {
-        tag_editor_set_config_pattern(screen->pattern.data,
-                                      screen->pattern.len);
-        return;
-    }
     sb_set(&screen->pattern, pattern, pattern_len);
-    tag_editor_set_config_pattern(screen->pattern.data, screen->pattern.len);
     return;
 }
 
@@ -2398,8 +2371,10 @@ tag_editor_screen_prepare_parser_rows(TagEditorScreen *screen,
         tag_editor_set_pattern(screen, pattern, pattern_len);
     } else if ((mode != TAG_EDITOR_PARSER_NONE)
                && (screen->pattern.len <= 0)
-               && Config.pattern) {
-        tag_editor_set_pattern(screen, Config.pattern, Config.pattern_len);
+               && Config.default_tag_editor_pattern) {
+        tag_editor_set_pattern(
+            screen, Config.default_tag_editor_pattern,
+            Config.default_tag_editor_pattern_len);
     }
 
     nc_menu_clear_items(nc_editor_string_menu_base(&screen->parser_dialog));
