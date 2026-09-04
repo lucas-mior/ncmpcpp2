@@ -49,7 +49,6 @@ static NcReadlineState nc_readline_state;
 
 static void nc_window_assign_title(NcWindow *window,
                                    char *title, int32 title_len);
-static int32 nc_i32(int32 value);
 static bool nc_window_has_title(NcWindow *window);
 static NcKey nc_window_get_input_char(NcWindow *window, int32 key);
 static NcKey nc_window_define_mouse_event(NcWindow *window, int32 type);
@@ -457,8 +456,8 @@ nc_window_init(NcWindow *window, int32 start_x, int32 start_y,
 
     window->start_x = start_x;
     window->start_y = start_y;
-    window->width = nc_i32(width);
-    window->height = nc_i32(height);
+    window->width = width;
+    window->height = height;
     window->border = border;
     nc_window_assign_title(window, title, title_len);
 
@@ -473,7 +472,7 @@ nc_window_init(NcWindow *window, int32 start_x, int32 start_y,
         window->height -= 2;
     }
 
-    window->window = newpad(nc_i32(window->height), nc_i32(window->width));
+    window->window = newpad(window->height, window->width);
     wtimeout(window->window, 0);
 
     nc_window_set_base_color(window, color);
@@ -650,10 +649,10 @@ nc_window_refresh_border(NcWindow *window) {
     int32 height;
 
     if (window->border.enabled) {
-        start_x = nc_i32(nc_window_start_x(window));
-        start_y = nc_i32(nc_window_start_y(window));
-        width = nc_i32(nc_window_width(window));
-        height = nc_i32(nc_window_height(window));
+        start_x = nc_window_start_x(window);
+        start_y = nc_window_start_y(window);
+        width = nc_window_width(window);
+        height = nc_window_height(window);
         color_set((int16)nc_color_pair_number(window->border.color), NULL);
         attron(A_ALTCHARSET);
         mvaddch(start_y, start_x, 'l');
@@ -673,14 +672,14 @@ nc_window_refresh_border(NcWindow *window) {
         color_set((int16)nc_color_pair_number(window->base_color), NULL);
     }
     if (nc_window_has_title(window)) {
-        mvhline(nc_i32(window->start_y - 2), nc_i32(window->start_x),
-                ' ', nc_i32(window->width));
+        mvhline(window->start_y - 2, window->start_x,
+                ' ', window->width);
         attron(A_BOLD);
-        mvaddnstr(nc_i32(window->start_y - 2), nc_i32(window->start_x),
+        mvaddnstr(window->start_y - 2, window->start_x,
                   window->title, window->title_len);
         attroff(A_BOLD);
-        mvhline(nc_i32(window->start_y - 1), nc_i32(window->start_x),
-                0, nc_i32(window->width));
+        mvhline(window->start_y - 1, window->start_x,
+                0, window->width);
     }
     standend();
     refresh();
@@ -690,9 +689,9 @@ nc_window_refresh_border(NcWindow *window) {
 void
 nc_window_refresh(NcWindow *window) {
     prefresh(window->window, 0, 0,
-             nc_i32(window->start_y), nc_i32(window->start_x),
-             nc_i32(window->start_y + window->height - 1),
-             nc_i32(window->start_x + window->width - 1));
+             window->start_y, window->start_x,
+             window->start_y + window->height - 1,
+             window->start_x + window->width - 1);
     return;
 }
 
@@ -726,8 +725,8 @@ nc_window_adjust_dimensions(NcWindow *window,
             height -= 2;
         }
     }
-    window->height = nc_i32(height);
-    window->width = nc_i32(width);
+    window->height = height;
+    window->width = width;
     return;
 }
 
@@ -743,7 +742,7 @@ nc_window_recreate(NcWindow *window, int32 width, int32 height) {
     if (window->window) {
         delwin(window->window);
     }
-    window->window = newpad(nc_i32(height), nc_i32(width));
+    window->window = newpad(height, width);
     wtimeout(window->window, 0);
     nc_window_set_color(window, window->color);
     return;
@@ -901,7 +900,7 @@ nc_window_prompt(NcWindow *window, NcPrompt *prompt, char **result) {
             prompt_width = available_width;
         }
     }
-    nc_readline_state.width = nc_i32(prompt_width);
+    nc_readline_state.width = prompt_width;
 
     curs_set(1);
     nc_mouse_disable();
@@ -962,10 +961,10 @@ nc_window_scroll(NcWindow *window, enum NcScroll where) {
         wscrl(window->window, -1);
         break;
     case NC_SCROLL_PAGE_UP:
-        wscrl(window->window, nc_i32(window->width));
+        wscrl(window->window, window->width);
         break;
     case NC_SCROLL_PAGE_DOWN:
-        wscrl(window->window, -nc_i32(window->width));
+        wscrl(window->window, -window->width);
         break;
     case NC_SCROLL_HOME:
     case NC_SCROLL_END:
@@ -988,7 +987,7 @@ nc_window_apply_term_manip(NcWindow *window, enum NcTermManip tm) {
     case NC_TERM_CLEAR_TO_EOL:
         x = nc_window_get_x(window);
         y = nc_window_get_y(window);
-        mvwhline(window->window, y, x, ' ', nc_i32(window->width) - x);
+        mvwhline(window->window, y, x, ' ', window->width - x);
         nc_window_go_to_xy(window, x, y);
         break;
     case NC_TERM_COUNT:
@@ -1300,11 +1299,6 @@ nc_window_assign_title(NcWindow *window, char *title, int32 title_len) {
     window->title[title_len] = '\0';
     window->title_len = title_len;
     return;
-}
-
-static int32
-nc_i32(int32 value) {
-    return value;
 }
 
 static bool
