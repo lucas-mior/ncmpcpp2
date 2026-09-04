@@ -47,31 +47,6 @@ typedef struct NcReadlineState {
 
 static NcReadlineState nc_readline_state;
 
-static void nc_window_assign_title(NcWindow *window,
-                                   char *title, int32 title_len);
-static bool nc_window_has_title(NcWindow *window);
-static NcKey nc_window_get_input_char(NcWindow *window, int32 key);
-static NcKey nc_window_define_mouse_event(NcWindow *window, int32 type);
-static NcKey nc_xterm_modifier_key(int32 ch);
-static int32 nc_window_parse_number(NcWindow *window, int32 *result);
-static void nc_window_bold(NcWindow *window, bool state);
-static void nc_window_underline(NcWindow *window, bool state);
-static void nc_window_reverse(NcWindow *window, bool state);
-static void nc_window_alt_charset(NcWindow *window, bool state);
-static void nc_window_italic(NcWindow *window, bool state);
-static void nc_window_increase_format(NcWindow *window, int32 *counter,
-                                      void (*set)(NcWindow *, bool));
-static void nc_window_decrease_format(NcWindow *window, int32 *counter,
-                                      void (*set)(NcWindow *, bool));
-
-static int32 nc_prompt_abort(int32 count, int32 key);
-static int32 nc_prompt_add_initial_text(void);
-static char **nc_prompt_attempt_completion(const char *text,
-                                           int32 start, int32 end);
-static int32 nc_prompt_read_key(FILE *file);
-static void nc_prompt_display_string(void);
-static void nc_prompt_print_data(char *string, int32 string_len);
-
 NcColor
 nc_color_make(int16 foreground, int16 background,
               bool is_default, bool is_end) {
@@ -338,6 +313,164 @@ nc_mouse_disable(void) {
     return;
 }
 
+static char **
+nc_prompt_attempt_completion(const char *text, int32 start, int32 end) {
+    (void)text;
+    (void)start;
+    (void)end;
+    rl_attempted_completion_over = 1;
+    return NULL;
+}
+
+static int32
+nc_prompt_abort(int32 count, int32 key) {
+    (void)count;
+    (void)key;
+    nc_readline_state.aborted = true;
+    rl_done = 1;
+    return 0;
+}
+
+static int32
+nc_prompt_read_key(FILE *file) {
+    NcWindow *window;
+    NcKey key;
+    int32 x;
+
+    (void)file;
+    window = nc_readline_state.window;
+    ASSERT(window != NULL);
+
+    do {
+        char *line = rl_line_buffer;
+
+        x = nc_window_get_x(window);
+        if ((nc_readline_state.should_continue != NULL)
+            && !nc_readline_state.should_continue(
+                line, nc_readline_state.should_continue_user_data)) {
+            if (!RL_ISSTATE(RL_STATE_DISPATCHING)) {
+                rl_done = 1;
+                return EOF;
+            }
+        }
+        nc_window_go_to_xy(window, x, nc_readline_state.start_y);
+        nc_window_refresh(window);
+        key = nc_window_read_key(window);
+        if (key == NC_KEY_ESCAPE) {
+            bool escape_is_standalone;
+            int32 escape_key;
+
+            if (window->input_queue_start < ARRAY_LEN(window->input_queue)) {
+                escape_is_standalone = false;
+            } else {
+                wtimeout(window->window, NC_PROMPT_ESCAPE_DELAY_MS);
+                escape_key = wgetch(window->window);
+                wtimeout(window->window, 0);
+                if (escape_key == ERR) {
+                    escape_is_standalone = true;
+                } else {
+                    while (escape_key != ERR) {
+                        ARRAY_PUSH(window->input_queue, (NcKey)escape_key);
+                        escape_key = wgetch(window->window);
+                    }
+                    escape_is_standalone = false;
+                }
+            }
+
+            if (escape_is_standalone) {
+                nc_readline_state.aborted = true;
+                rl_done = 1;
+                return EOF;
+            }
+        }
+        if (!nc_window_fd_callbacks_is_empty(window)) {
+            nc_window_go_to_xy(window, x, nc_readline_state.start_y);
+            nc_window_refresh(window);
+        }
+    } while (key == NC_KEY_NONE);
+
+    return (int32)key;
+}
+
+static void
+nc_prompt_print_data(char *string, int32 string_len) {
+    if (nc_readline_state.encrypted) {
+        int32 characters = utf8_characters(string, string_len);
+
+        for (int32 i = 0; i < characters; i += 1) {
+            nc_window_print_char(nc_readline_state.window, '*');
+        }
+    } else {
+        nc_window_print_data(nc_readline_state.window, string, string_len);
+    }
+    return;
+}
+
+static void
+nc_prompt_display_string(void) {
+    NcWindow *window;
+    char *before_cursor;
+    char *after_cursor;
+    int32 before_len;
+    int32 after_len;
+    int32 cursor_pos;
+    int32 x;
+    int32 y;
+
+    window = nc_readline_state.window;
+    before_cursor = rl_line_buffer;
+    before_len = rl_point;
+    after_cursor = rl_line_buffer + rl_point;
+    after_len = rl_end - rl_point;
+    cursor_pos = utf8_width(before_cursor, before_len);
+    x = nc_readline_state.start_x;
+    y = nc_readline_state.start_y;
+
+    mvwhline(window->window, y, x, ' ', nc_readline_state.width + 1);
+    nc_window_go_to_xy(window, x, y);
+    if (cursor_pos <= nc_readline_state.width) {
+        int32 printed_width;
+        int32 byte;
+
+        nc_prompt_print_data(before_cursor, before_len);
+        printed_width = cursor_pos;
+        byte = 0;
+        while (byte < after_len) {
+            int32 next_byte;
+            int32 char_width;
+
+            next_byte = utf8_next_position(after_cursor, after_len, byte);
+            char_width = utf8_width(after_cursor + byte,
+                                    next_byte - byte);
+            if (printed_width + char_width > nc_readline_state.width) {
+                break;
+            }
+            printed_width += char_width;
+            nc_prompt_print_data(after_cursor + byte, next_byte - byte);
+            byte = next_byte;
+        }
+    } else {
+        int32 suffix_position;
+
+        suffix_position = utf8_suffix_width_position(
+            before_cursor, before_len, nc_readline_state.width);
+        cursor_pos = utf8_width(before_cursor + suffix_position,
+                                before_len - suffix_position);
+        nc_prompt_print_data(before_cursor + suffix_position,
+                             before_len - suffix_position);
+    }
+    nc_window_go_to_xy(window, x + cursor_pos, y);
+    return;
+}
+
+static int32
+nc_prompt_add_initial_text(void) {
+    if (nc_readline_state.initial_text) {
+        rl_insert_text(nc_readline_state.initial_text);
+    }
+    return 0;
+}
+
 void
 nc_init_readline(void) {
     if (nc_readline_state.initialized) {
@@ -443,6 +576,30 @@ nc_window_init_empty(NcWindow *window) {
     window->base_color = nc_color_default();
     window->escape_terminal_sequences = true;
     return;
+}
+
+static void
+nc_window_assign_title(NcWindow *window, char *title, int32 title_len) {
+    if (title_len >= MAXOF(window->title_cap)) {
+        error("Window title is too long: %d bytes.\n", title_len);
+        fatal(EXIT_FAILURE);
+    }
+    if (title_len >= window->title_cap) {
+        free2(window->title, window->title_cap);
+        window->title_cap = title_len + 1;
+        window->title = malloc2(window->title_cap);
+    }
+    if (title_len > 0) {
+        memcpy64(window->title, title, title_len);
+    }
+    window->title[title_len] = '\0';
+    window->title_len = title_len;
+    return;
+}
+
+static bool
+nc_window_has_title(NcWindow *window) {
+    return window->title_len > 0;
 }
 
 void
@@ -731,13 +888,6 @@ nc_window_adjust_dimensions(NcWindow *window,
 }
 
 void
-nc_window_resize(NcWindow *window, int32 new_width, int32 new_height) {
-    nc_window_adjust_dimensions(window, new_width, new_height);
-    nc_window_recreate(window, window->width, window->height);
-    return;
-}
-
-void
 nc_window_recreate(NcWindow *window, int32 width, int32 height) {
     if (window->window) {
         delwin(window->window);
@@ -777,533 +927,79 @@ nc_window_fd_callbacks_is_empty(NcWindow *window) {
     return ARRAY_LEN(window->fd_callbacks) <= 0;
 }
 
-NcKey
-nc_window_read_key(NcWindow *window) {
-    NcKey result;
-    fd_set fds_read;
-    struct timeval timeout;
-    struct timeval *tv_addr;
-    int32 fd_max;
-    int32 res;
-
-    if (window->input_queue_start < ARRAY_LEN(window->input_queue)) {
-        result = window->input_queue[window->input_queue_start];
-        window->input_queue_start += 1;
-        if (window->input_queue_start >= ARRAY_LEN(window->input_queue)) {
-            ARRAY_CLEAR(window->input_queue);
-            window->input_queue_start = 0;
-        }
-        return result;
-    }
-
-    FD_ZERO(&fds_read);
-    FD_SET(STDIN_FILENO, &fds_read);
-    timeout.tv_sec = window->window_timeout / 1000;
-    timeout.tv_usec = (window->window_timeout % 1000)*1000;
-
-    fd_max = STDIN_FILENO;
-    for (int32 i = 0; i < ARRAY_LEN(window->fd_callbacks); i += 1) {
-        if (window->fd_callbacks[i].fd > fd_max) {
-            fd_max = window->fd_callbacks[i].fd;
-        }
-        FD_SET(window->fd_callbacks[i].fd, &fds_read);
-    }
-
-    if (window->window_timeout < 0) {
-        tv_addr = NULL;
-    } else {
-        tv_addr = &timeout;
-    }
-
-    res = select(fd_max + 1, &fds_read, NULL, NULL, tv_addr);
-    if (res > 0) {
-        if (FD_ISSET(STDIN_FILENO, &fds_read)) {
-            int32 key;
-
-            key = wgetch(window->window);
-            if (key == EOF) {
-                result = NC_KEY_EOF;
-            } else {
-                result = nc_window_get_input_char(window, key);
-            }
-        } else {
-            result = NC_KEY_NONE;
-        }
-
-        for (int32 i = 0; i < ARRAY_LEN(window->fd_callbacks); i += 1) {
-            if (FD_ISSET(window->fd_callbacks[i].fd, &fds_read)) {
-                window->fd_callbacks[i].callback();
-            }
-        }
-    } else {
-        result = NC_KEY_NONE;
-    }
-
-    return result;
-}
-
-void
-nc_window_push_key(NcWindow *window, NcKey ch) {
-    ARRAY_PUSH(window->input_queue, ch);
-    return;
-}
-
-enum NcPromptStatus
-nc_window_prompt(NcWindow *window, NcPrompt *prompt, char **result) {
-    enum NcPromptStatus status;
-    char *input;
-    int32 requested_width;
-    int32 available_width;
-    int32 prompt_width;
-
-    if (result == NULL) {
-        return NC_PROMPT_ABORTED;
-    }
-    *result = NULL;
-    if (window == NULL) {
-        return NC_PROMPT_ABORTED;
-    }
-
-    nc_init_readline();
-
-    nc_readline_state.window = window;
-    nc_readline_state.initial_text = "";
-    nc_readline_state.should_continue = NULL;
-    nc_readline_state.should_continue_user_data = NULL;
-    nc_readline_state.encrypted = false;
-    nc_readline_state.aborted = false;
-
-    if (prompt) {
-        if (prompt->initial_text) {
-            nc_readline_state.initial_text = prompt->initial_text;
-        }
-        nc_readline_state.should_continue = prompt->should_continue;
-        nc_readline_state.should_continue_user_data =
-            prompt->should_continue_user_data;
-        nc_readline_state.encrypted = prompt->encrypted;
-        requested_width = prompt->width;
-    } else {
-        requested_width = -1;
-    }
-
-    getyx(window->window, nc_readline_state.start_y,
-          nc_readline_state.start_x);
-    available_width = window->width - nc_readline_state.start_x - 1;
-    if (available_width < 0) {
-        available_width = 0;
-    }
-    if (requested_width <= 0) {
-        prompt_width = available_width;
-    } else {
-        prompt_width = requested_width - 1;
-        if (prompt_width > available_width) {
-            prompt_width = available_width;
-        }
-    }
-    nc_readline_state.width = prompt_width;
-
-    curs_set(1);
-    nc_mouse_disable();
-    nc_window_set_escape_terminal_sequences(window, false);
-    input = readline(NULL);
-    nc_window_set_escape_terminal_sequences(window, true);
-    nc_mouse_enable();
-    curs_set(0);
-
-    if (nc_readline_state.aborted) {
-        status = NC_PROMPT_ABORTED;
-    } else {
-        status = NC_PROMPT_ACCEPTED;
-    }
-
-    if ((status == NC_PROMPT_ACCEPTED) && input) {
-        bool remember;
-
-        remember = true;
-        if (prompt) {
-            remember = prompt->remember;
-        }
-#if defined(HAVE_READLINE_HISTORY_H)
-        if (remember && !nc_readline_state.encrypted && (input[0] != '\0')) {
-            add_history(input);
-        }
-#endif
-        *result = input;
-    } else {
-        nc_window_prompt_result_destroy(input);
-    }
-
-    nc_readline_state.window = NULL;
-    nc_readline_state.initial_text = NULL;
-    nc_readline_state.should_continue = NULL;
-    nc_readline_state.should_continue_user_data = NULL;
-    nc_readline_state.encrypted = false;
-    nc_readline_state.aborted = false;
-
-    return status;
-}
-
-void
-nc_window_prompt_result_destroy(char *result) {
-    free(result);
-    return;
-}
-
-void
-nc_window_scroll(NcWindow *window, enum NcScroll where) {
-    idlok(window->window, 1);
-    scrollok(window->window, 1);
-    switch (where) {
-    case NC_SCROLL_UP:
-        wscrl(window->window, 1);
+static NcKey
+nc_window_define_mouse_event(NcWindow *window, int32 type) {
+    switch (type & ~28) {
+    case 32:
+        window->mouse_event.bstate = BUTTON1_PRESSED;
         break;
-    case NC_SCROLL_DOWN:
-        wscrl(window->window, -1);
+    case 33:
+        window->mouse_event.bstate = BUTTON2_PRESSED;
         break;
-    case NC_SCROLL_PAGE_UP:
-        wscrl(window->window, window->width);
+    case 34:
+        window->mouse_event.bstate = BUTTON3_PRESSED;
         break;
-    case NC_SCROLL_PAGE_DOWN:
-        wscrl(window->window, -window->width);
+    case 96:
+        window->mouse_event.bstate = BUTTON4_PRESSED;
         break;
-    case NC_SCROLL_HOME:
-    case NC_SCROLL_END:
+    case 97:
+        window->mouse_event.bstate = BUTTON5_PRESSED;
         break;
-    case NC_SCROLL_COUNT:
     default:
-        break;
+        return NC_KEY_NONE;
     }
-    idlok(window->window, 0);
-    scrollok(window->window, 0);
-    return;
-}
-
-void
-nc_window_apply_term_manip(NcWindow *window, enum NcTermManip tm) {
-    int32 x;
-    int32 y;
-
-    switch (tm) {
-    case NC_TERM_CLEAR_TO_EOL:
-        x = nc_window_get_x(window);
-        y = nc_window_get_y(window);
-        mvwhline(window->window, y, x, ' ', window->width - x);
-        nc_window_go_to_xy(window, x, y);
-        break;
-    case NC_TERM_COUNT:
-    default:
-        break;
+    if (type & 4) {
+        window->mouse_event.bstate |= BUTTON_SHIFT;
     }
-    return;
-}
-
-void
-nc_window_apply_format(NcWindow *window, enum NcFormat format) {
-    switch (format) {
-    case NC_FORMAT_BOLD:
-        nc_window_increase_format(window, &window->bold_counter,
-                                  nc_window_bold);
-        break;
-    case NC_FORMAT_NO_BOLD:
-        nc_window_decrease_format(window, &window->bold_counter,
-                                  nc_window_bold);
-        break;
-    case NC_FORMAT_UNDERLINE:
-        nc_window_increase_format(window, &window->underline_counter,
-                                  nc_window_underline);
-        break;
-    case NC_FORMAT_NO_UNDERLINE:
-        nc_window_decrease_format(window, &window->underline_counter,
-                                  nc_window_underline);
-        break;
-    case NC_FORMAT_REVERSE:
-        nc_window_increase_format(window, &window->reverse_counter,
-                                  nc_window_reverse);
-        break;
-    case NC_FORMAT_NO_REVERSE:
-        nc_window_decrease_format(window, &window->reverse_counter,
-                                  nc_window_reverse);
-        break;
-    case NC_FORMAT_ALT_CHARSET:
-        nc_window_increase_format(window, &window->alt_charset_counter,
-                                  nc_window_alt_charset);
-        break;
-    case NC_FORMAT_NO_ALT_CHARSET:
-        nc_window_decrease_format(window, &window->alt_charset_counter,
-                                  nc_window_alt_charset);
-        break;
-    case NC_FORMAT_ITALIC:
-        nc_window_increase_format(window, &window->italic_counter,
-                                  nc_window_italic);
-        break;
-    case NC_FORMAT_NO_ITALIC:
-        nc_window_decrease_format(window, &window->italic_counter,
-                                  nc_window_italic);
-        break;
-    case NC_FORMAT_COUNT:
-    default:
-        break;
+    if (type & 8) {
+        window->mouse_event.bstate |= BUTTON_ALT;
     }
-    return;
-}
-
-void
-nc_window_push_color(NcWindow *window, NcColor color) {
-    if (nc_color_is_default(color)) {
-        ARRAY_CLEAR(window->color_stack);
-        nc_window_set_color(window, window->base_color);
-    } else if (nc_color_is_end(color)) {
-        if (ARRAY_LEN(window->color_stack) > 0) {
-            ARRAY_HEADER(window->color_stack)->count -= 1;
-        }
-        if (ARRAY_LEN(window->color_stack) > 0) {
-            nc_window_set_color(window,
-                                window->color_stack[
-                                ARRAY_LEN(window->color_stack) - 1]);
-        } else {
-            nc_window_set_color(window, window->base_color);
-        }
-    } else {
-        if (nc_color_has_current_background(color)) {
-            NcColor current_color;
-            int16 background;
-
-            if (nc_color_is_default(window->color)) {
-                background = NC_COLOR_TRANSPARENT;
-            } else {
-                background = window->color.background;
-            }
-            current_color = nc_color_make(color.foreground, background,
-                                          false, false);
-            nc_window_set_color(window, current_color);
-            ARRAY_PUSH(window->color_stack, current_color);
-        } else {
-            nc_window_set_color(window, color);
-            ARRAY_PUSH(window->color_stack, color);
-        }
+    if (type & 16) {
+        window->mouse_event.bstate |= BUTTON_CTRL;
     }
-    return;
-}
+    if ((window->mouse_event.x < 0) || (window->mouse_event.x >= COLS)) {
+        return NC_KEY_NONE;
+    }
+    if ((window->mouse_event.y < 0) || (window->mouse_event.y >= LINES)) {
+        return NC_KEY_NONE;
+    }
 
-void
-nc_window_go_to_xy(NcWindow *window, int32 x, int32 y) {
-    wmove(window->window, y, x);
-    return;
-}
-
-int32
-nc_window_get_x(NcWindow *window) {
-    return getcurx(window->window);
-}
-
-int32
-nc_window_get_y(NcWindow *window) {
-    return getcury(window->window);
-}
-
-bool
-nc_window_has_coords(NcWindow *window, int32 *x, int32 *y) {
-    return wmouse_trafo(window->window, y, x, 0);
-}
-
-void
-nc_window_print_cstring(NcWindow *window, char *string) {
-    waddstr(window->window, string);
-    return;
-}
-
-void
-nc_window_print_data(NcWindow *window, char *string, int32 string_len) {
-    waddnstr(window->window, string, string_len);
-    return;
-}
-
-void
-nc_window_print_char(NcWindow *window, char ch) {
-    waddnstr(window->window, &ch, 1);
-    return;
+    return NC_KEY_MOUSE;
 }
 
 static int32
-nc_prompt_abort(int32 count, int32 key) {
-    (void)count;
-    (void)key;
-    nc_readline_state.aborted = true;
-    rl_done = 1;
-    return 0;
-}
-
-static int32
-nc_prompt_add_initial_text(void) {
-    if (nc_readline_state.initial_text) {
-        rl_insert_text(nc_readline_state.initial_text);
-    }
-    return 0;
-}
-
-static char **
-nc_prompt_attempt_completion(const char *text, int32 start, int32 end) {
-    (void)text;
-    (void)start;
-    (void)end;
-    rl_attempted_completion_over = 1;
-    return NULL;
-}
-
-static int32
-nc_prompt_read_key(FILE *file) {
-    NcWindow *window;
-    NcKey key;
+nc_window_parse_number(NcWindow *window, int32 *result) {
     int32 x;
 
-    (void)file;
-    window = nc_readline_state.window;
-    ASSERT(window != NULL);
-
-    do {
-        char *line = rl_line_buffer;
-
-        x = nc_window_get_x(window);
-        if ((nc_readline_state.should_continue != NULL)
-            && !nc_readline_state.should_continue(
-                line, nc_readline_state.should_continue_user_data)) {
-            if (!RL_ISSTATE(RL_STATE_DISPATCHING)) {
-                rl_done = 1;
-                return EOF;
-            }
+    while (true) {
+        x = wgetch(window->window);
+        if (!isdigit(x)) {
+            return x;
         }
-        nc_window_go_to_xy(window, x, nc_readline_state.start_y);
-        nc_window_refresh(window);
-        key = nc_window_read_key(window);
-        if (key == NC_KEY_ESCAPE) {
-            bool escape_is_standalone;
-            int32 escape_key;
-
-            if (window->input_queue_start < ARRAY_LEN(window->input_queue)) {
-                escape_is_standalone = false;
-            } else {
-                wtimeout(window->window, NC_PROMPT_ESCAPE_DELAY_MS);
-                escape_key = wgetch(window->window);
-                wtimeout(window->window, 0);
-                if (escape_key == ERR) {
-                    escape_is_standalone = true;
-                } else {
-                    while (escape_key != ERR) {
-                        ARRAY_PUSH(window->input_queue, (NcKey)escape_key);
-                        escape_key = wgetch(window->window);
-                    }
-                    escape_is_standalone = false;
-                }
-            }
-
-            if (escape_is_standalone) {
-                nc_readline_state.aborted = true;
-                rl_done = 1;
-                return EOF;
-            }
-        }
-        if (!nc_window_fd_callbacks_is_empty(window)) {
-            nc_window_go_to_xy(window, x, nc_readline_state.start_y);
-            nc_window_refresh(window);
-        }
-    } while (key == NC_KEY_NONE);
-
-    return (int32)key;
+        *result = *result*10 + x - '0';
+    }
 }
 
-static void
-nc_prompt_display_string(void) {
-    NcWindow *window;
-    char *before_cursor;
-    char *after_cursor;
-    int32 before_len;
-    int32 after_len;
-    int32 cursor_pos;
-    int32 x;
-    int32 y;
-
-    window = nc_readline_state.window;
-    before_cursor = rl_line_buffer;
-    before_len = rl_point;
-    after_cursor = rl_line_buffer + rl_point;
-    after_len = rl_end - rl_point;
-    cursor_pos = utf8_width(before_cursor, before_len);
-    x = nc_readline_state.start_x;
-    y = nc_readline_state.start_y;
-
-    mvwhline(window->window, y, x, ' ', nc_readline_state.width + 1);
-    nc_window_go_to_xy(window, x, y);
-    if (cursor_pos <= nc_readline_state.width) {
-        int32 printed_width;
-        int32 byte;
-
-        nc_prompt_print_data(before_cursor, before_len);
-        printed_width = cursor_pos;
-        byte = 0;
-        while (byte < after_len) {
-            int32 next_byte;
-            int32 char_width;
-
-            next_byte = utf8_next_position(after_cursor, after_len, byte);
-            char_width = utf8_width(after_cursor + byte,
-                                    next_byte - byte);
-            if (printed_width + char_width > nc_readline_state.width) {
-                break;
-            }
-            printed_width += char_width;
-            nc_prompt_print_data(after_cursor + byte, next_byte - byte);
-            byte = next_byte;
-        }
-    } else {
-        int32 suffix_position;
-
-        suffix_position = utf8_suffix_width_position(
-            before_cursor, before_len, nc_readline_state.width);
-        cursor_pos = utf8_width(before_cursor + suffix_position,
-                                before_len - suffix_position);
-        nc_prompt_print_data(before_cursor + suffix_position,
-                             before_len - suffix_position);
+static NcKey
+nc_xterm_modifier_key(int32 ch) {
+    switch (ch) {
+    case '2':
+        return NC_KEY_SHIFT;
+    case '3':
+        return NC_KEY_ALT;
+    case '4':
+        return NC_KEY_ALT | NC_KEY_SHIFT;
+    case '5':
+        return NC_KEY_CTRL;
+    case '6':
+        return NC_KEY_CTRL | NC_KEY_SHIFT;
+    case '7':
+        return NC_KEY_ALT | NC_KEY_CTRL;
+    case '8':
+        return NC_KEY_ALT | NC_KEY_CTRL | NC_KEY_SHIFT;
+    default:
+        return NC_KEY_NONE;
     }
-    nc_window_go_to_xy(window, x + cursor_pos, y);
-    return;
-}
-
-static void
-nc_prompt_print_data(char *string, int32 string_len) {
-    if (nc_readline_state.encrypted) {
-        int32 characters = utf8_characters(string, string_len);
-
-        for (int32 i = 0; i < characters; i += 1) {
-            nc_window_print_char(nc_readline_state.window, '*');
-        }
-    } else {
-        nc_window_print_data(nc_readline_state.window, string, string_len);
-    }
-    return;
-}
-
-static void
-nc_window_assign_title(NcWindow *window, char *title, int32 title_len) {
-    if (title_len >= MAXOF(window->title_cap)) {
-        error("Window title is too long: %d bytes.\n", title_len);
-        fatal(EXIT_FAILURE);
-    }
-    if (title_len >= window->title_cap) {
-        free2(window->title, window->title_cap);
-        window->title_cap = title_len + 1;
-        window->title = malloc2(window->title_cap);
-    }
-    if (title_len > 0) {
-        memcpy64(window->title, title, title_len);
-    }
-    window->title[title_len] = '\0';
-    window->title_len = title_len;
-    return;
-}
-
-static bool
-nc_window_has_title(NcWindow *window) {
-    return window->title_len > 0;
 }
 
 static NcKey
@@ -1571,79 +1267,232 @@ nc_window_get_input_char(NcWindow *window, int32 key) {
     }
 }
 
-static NcKey
-nc_window_define_mouse_event(NcWindow *window, int32 type) {
-    switch (type & ~28) {
-    case 32:
-        window->mouse_event.bstate = BUTTON1_PRESSED;
-        break;
-    case 33:
-        window->mouse_event.bstate = BUTTON2_PRESSED;
-        break;
-    case 34:
-        window->mouse_event.bstate = BUTTON3_PRESSED;
-        break;
-    case 96:
-        window->mouse_event.bstate = BUTTON4_PRESSED;
-        break;
-    case 97:
-        window->mouse_event.bstate = BUTTON5_PRESSED;
-        break;
-    default:
-        return NC_KEY_NONE;
-    }
-    if (type & 4) {
-        window->mouse_event.bstate |= BUTTON_SHIFT;
-    }
-    if (type & 8) {
-        window->mouse_event.bstate |= BUTTON_ALT;
-    }
-    if (type & 16) {
-        window->mouse_event.bstate |= BUTTON_CTRL;
-    }
-    if ((window->mouse_event.x < 0) || (window->mouse_event.x >= COLS)) {
-        return NC_KEY_NONE;
-    }
-    if ((window->mouse_event.y < 0) || (window->mouse_event.y >= LINES)) {
-        return NC_KEY_NONE;
-    }
+NcKey
+nc_window_read_key(NcWindow *window) {
+    NcKey result;
+    fd_set fds_read;
+    struct timeval timeout;
+    struct timeval *tv_addr;
+    int32 fd_max;
+    int32 res;
 
-    return NC_KEY_MOUSE;
-}
-
-static NcKey
-nc_xterm_modifier_key(int32 ch) {
-    switch (ch) {
-    case '2':
-        return NC_KEY_SHIFT;
-    case '3':
-        return NC_KEY_ALT;
-    case '4':
-        return NC_KEY_ALT | NC_KEY_SHIFT;
-    case '5':
-        return NC_KEY_CTRL;
-    case '6':
-        return NC_KEY_CTRL | NC_KEY_SHIFT;
-    case '7':
-        return NC_KEY_ALT | NC_KEY_CTRL;
-    case '8':
-        return NC_KEY_ALT | NC_KEY_CTRL | NC_KEY_SHIFT;
-    default:
-        return NC_KEY_NONE;
-    }
-}
-
-static int32
-nc_window_parse_number(NcWindow *window, int32 *result) {
-    int32 x;
-
-    while (true) {
-        x = wgetch(window->window);
-        if (!isdigit(x)) {
-            return x;
+    if (window->input_queue_start < ARRAY_LEN(window->input_queue)) {
+        result = window->input_queue[window->input_queue_start];
+        window->input_queue_start += 1;
+        if (window->input_queue_start >= ARRAY_LEN(window->input_queue)) {
+            ARRAY_CLEAR(window->input_queue);
+            window->input_queue_start = 0;
         }
-        *result = *result*10 + x - '0';
+        return result;
     }
+
+    FD_ZERO(&fds_read);
+    FD_SET(STDIN_FILENO, &fds_read);
+    timeout.tv_sec = window->window_timeout / 1000;
+    timeout.tv_usec = (window->window_timeout % 1000)*1000;
+
+    fd_max = STDIN_FILENO;
+    for (int32 i = 0; i < ARRAY_LEN(window->fd_callbacks); i += 1) {
+        if (window->fd_callbacks[i].fd > fd_max) {
+            fd_max = window->fd_callbacks[i].fd;
+        }
+        FD_SET(window->fd_callbacks[i].fd, &fds_read);
+    }
+
+    if (window->window_timeout < 0) {
+        tv_addr = NULL;
+    } else {
+        tv_addr = &timeout;
+    }
+
+    res = select(fd_max + 1, &fds_read, NULL, NULL, tv_addr);
+    if (res > 0) {
+        if (FD_ISSET(STDIN_FILENO, &fds_read)) {
+            int32 key;
+
+            key = wgetch(window->window);
+            if (key == EOF) {
+                result = NC_KEY_EOF;
+            } else {
+                result = nc_window_get_input_char(window, key);
+            }
+        } else {
+            result = NC_KEY_NONE;
+        }
+
+        for (int32 i = 0; i < ARRAY_LEN(window->fd_callbacks); i += 1) {
+            if (FD_ISSET(window->fd_callbacks[i].fd, &fds_read)) {
+                window->fd_callbacks[i].callback();
+            }
+        }
+    } else {
+        result = NC_KEY_NONE;
+    }
+
+    return result;
+}
+
+void
+nc_window_push_key(NcWindow *window, NcKey ch) {
+    ARRAY_PUSH(window->input_queue, ch);
+    return;
+}
+
+enum NcPromptStatus
+nc_window_prompt(NcWindow *window, NcPrompt *prompt, char **result) {
+    enum NcPromptStatus status;
+    char *input;
+    int32 requested_width;
+    int32 available_width;
+    int32 prompt_width;
+
+    if (result == NULL) {
+        return NC_PROMPT_ABORTED;
+    }
+    *result = NULL;
+    if (window == NULL) {
+        return NC_PROMPT_ABORTED;
+    }
+
+    nc_init_readline();
+
+    nc_readline_state.window = window;
+    nc_readline_state.initial_text = "";
+    nc_readline_state.should_continue = NULL;
+    nc_readline_state.should_continue_user_data = NULL;
+    nc_readline_state.encrypted = false;
+    nc_readline_state.aborted = false;
+
+    if (prompt) {
+        if (prompt->initial_text) {
+            nc_readline_state.initial_text = prompt->initial_text;
+        }
+        nc_readline_state.should_continue = prompt->should_continue;
+        nc_readline_state.should_continue_user_data =
+            prompt->should_continue_user_data;
+        nc_readline_state.encrypted = prompt->encrypted;
+        requested_width = prompt->width;
+    } else {
+        requested_width = -1;
+    }
+
+    getyx(window->window, nc_readline_state.start_y,
+          nc_readline_state.start_x);
+    available_width = window->width - nc_readline_state.start_x - 1;
+    if (available_width < 0) {
+        available_width = 0;
+    }
+    if (requested_width <= 0) {
+        prompt_width = available_width;
+    } else {
+        prompt_width = requested_width - 1;
+        if (prompt_width > available_width) {
+            prompt_width = available_width;
+        }
+    }
+    nc_readline_state.width = prompt_width;
+
+    curs_set(1);
+    nc_mouse_disable();
+    nc_window_set_escape_terminal_sequences(window, false);
+    input = readline(NULL);
+    nc_window_set_escape_terminal_sequences(window, true);
+    nc_mouse_enable();
+    curs_set(0);
+
+    if (nc_readline_state.aborted) {
+        status = NC_PROMPT_ABORTED;
+    } else {
+        status = NC_PROMPT_ACCEPTED;
+    }
+
+    if ((status == NC_PROMPT_ACCEPTED) && input) {
+        bool remember;
+
+        remember = true;
+        if (prompt) {
+            remember = prompt->remember;
+        }
+#if defined(HAVE_READLINE_HISTORY_H)
+        if (remember && !nc_readline_state.encrypted && (input[0] != '\0')) {
+            add_history(input);
+        }
+#endif
+        *result = input;
+    } else {
+        nc_window_prompt_result_destroy(input);
+    }
+
+    nc_readline_state.window = NULL;
+    nc_readline_state.initial_text = NULL;
+    nc_readline_state.should_continue = NULL;
+    nc_readline_state.should_continue_user_data = NULL;
+    nc_readline_state.encrypted = false;
+    nc_readline_state.aborted = false;
+
+    return status;
+}
+
+void
+nc_window_prompt_result_destroy(char *result) {
+    free(result);
+    return;
+}
+
+void
+nc_window_scroll(NcWindow *window, enum NcScroll where) {
+    idlok(window->window, 1);
+    scrollok(window->window, 1);
+    switch (where) {
+    case NC_SCROLL_UP:
+        wscrl(window->window, 1);
+        break;
+    case NC_SCROLL_DOWN:
+        wscrl(window->window, -1);
+        break;
+    case NC_SCROLL_PAGE_UP:
+        wscrl(window->window, window->width);
+        break;
+    case NC_SCROLL_PAGE_DOWN:
+        wscrl(window->window, -window->width);
+        break;
+    case NC_SCROLL_HOME:
+    case NC_SCROLL_END:
+        break;
+    case NC_SCROLL_COUNT:
+    default:
+        break;
+    }
+    idlok(window->window, 0);
+    scrollok(window->window, 0);
+    return;
+}
+
+void
+nc_window_apply_term_manip(NcWindow *window, enum NcTermManip tm) {
+    int32 x;
+    int32 y;
+
+    switch (tm) {
+    case NC_TERM_CLEAR_TO_EOL:
+        x = nc_window_get_x(window);
+        y = nc_window_get_y(window);
+        mvwhline(window->window, y, x, ' ', window->width - x);
+        nc_window_go_to_xy(window, x, y);
+        break;
+    case NC_TERM_COUNT:
+    default:
+        break;
+    }
+    return;
+}
+
+static void
+nc_window_increase_format(NcWindow *window, int32 *counter,
+                          void (*set)(NcWindow *, bool)) {
+    *counter += 1;
+    set(window, true);
+    return;
 }
 
 static void
@@ -1653,6 +1502,152 @@ nc_window_bold(NcWindow *window, bool state) {
     } else {
         wattroff(window->window, A_BOLD);
     }
+    return;
+}
+
+static void
+nc_window_decrease_format(NcWindow *window, int32 *counter,
+                          void (*set)(NcWindow *, bool)) {
+    if (*counter > 0) {
+        *counter -= 1;
+        if (*counter <= 0) {
+            set(window, false);
+        }
+    }
+    return;
+}
+
+void
+nc_window_resize(NcWindow *window, int32 new_width, int32 new_height) {
+    nc_window_adjust_dimensions(window, new_width, new_height);
+    nc_window_recreate(window, window->width, window->height);
+    return;
+}
+
+void
+nc_window_apply_format(NcWindow *window, enum NcFormat format) {
+    switch (format) {
+    case NC_FORMAT_BOLD:
+        nc_window_increase_format(window, &window->bold_counter,
+                                  nc_window_bold);
+        break;
+    case NC_FORMAT_NO_BOLD:
+        nc_window_decrease_format(window, &window->bold_counter,
+                                  nc_window_bold);
+        break;
+    case NC_FORMAT_UNDERLINE:
+        nc_window_increase_format(window, &window->underline_counter,
+                                  nc_window_underline);
+        break;
+    case NC_FORMAT_NO_UNDERLINE:
+        nc_window_decrease_format(window, &window->underline_counter,
+                                  nc_window_underline);
+        break;
+    case NC_FORMAT_REVERSE:
+        nc_window_increase_format(window, &window->reverse_counter,
+                                  nc_window_reverse);
+        break;
+    case NC_FORMAT_NO_REVERSE:
+        nc_window_decrease_format(window, &window->reverse_counter,
+                                  nc_window_reverse);
+        break;
+    case NC_FORMAT_ALT_CHARSET:
+        nc_window_increase_format(window, &window->alt_charset_counter,
+                                  nc_window_alt_charset);
+        break;
+    case NC_FORMAT_NO_ALT_CHARSET:
+        nc_window_decrease_format(window, &window->alt_charset_counter,
+                                  nc_window_alt_charset);
+        break;
+    case NC_FORMAT_ITALIC:
+        nc_window_increase_format(window, &window->italic_counter,
+                                  nc_window_italic);
+        break;
+    case NC_FORMAT_NO_ITALIC:
+        nc_window_decrease_format(window, &window->italic_counter,
+                                  nc_window_italic);
+        break;
+    case NC_FORMAT_COUNT:
+    default:
+        break;
+    }
+    return;
+}
+
+void
+nc_window_push_color(NcWindow *window, NcColor color) {
+    if (nc_color_is_default(color)) {
+        ARRAY_CLEAR(window->color_stack);
+        nc_window_set_color(window, window->base_color);
+    } else if (nc_color_is_end(color)) {
+        if (ARRAY_LEN(window->color_stack) > 0) {
+            ARRAY_HEADER(window->color_stack)->count -= 1;
+        }
+        if (ARRAY_LEN(window->color_stack) > 0) {
+            nc_window_set_color(window,
+                                window->color_stack[
+                                ARRAY_LEN(window->color_stack) - 1]);
+        } else {
+            nc_window_set_color(window, window->base_color);
+        }
+    } else {
+        if (nc_color_has_current_background(color)) {
+            NcColor current_color;
+            int16 background;
+
+            if (nc_color_is_default(window->color)) {
+                background = NC_COLOR_TRANSPARENT;
+            } else {
+                background = window->color.background;
+            }
+            current_color = nc_color_make(color.foreground, background,
+                                          false, false);
+            nc_window_set_color(window, current_color);
+            ARRAY_PUSH(window->color_stack, current_color);
+        } else {
+            nc_window_set_color(window, color);
+            ARRAY_PUSH(window->color_stack, color);
+        }
+    }
+    return;
+}
+
+void
+nc_window_go_to_xy(NcWindow *window, int32 x, int32 y) {
+    wmove(window->window, y, x);
+    return;
+}
+
+int32
+nc_window_get_x(NcWindow *window) {
+    return getcurx(window->window);
+}
+
+int32
+nc_window_get_y(NcWindow *window) {
+    return getcury(window->window);
+}
+
+bool
+nc_window_has_coords(NcWindow *window, int32 *x, int32 *y) {
+    return wmouse_trafo(window->window, y, x, 0);
+}
+
+void
+nc_window_print_cstring(NcWindow *window, char *string) {
+    waddstr(window->window, string);
+    return;
+}
+
+void
+nc_window_print_data(NcWindow *window, char *string, int32 string_len) {
+    waddnstr(window->window, string, string_len);
+    return;
+}
+
+void
+nc_window_print_char(NcWindow *window, char ch) {
+    waddnstr(window->window, &ch, 1);
     return;
 }
 
@@ -1692,26 +1687,6 @@ nc_window_italic(NcWindow *window, bool state) {
         wattron(window->window, (int32)A_ITALIC);
     } else {
         wattroff(window->window, (int32)A_ITALIC);
-    }
-    return;
-}
-
-static void
-nc_window_increase_format(NcWindow *window, int32 *counter,
-                          void (*set)(NcWindow *, bool)) {
-    *counter += 1;
-    set(window, true);
-    return;
-}
-
-static void
-nc_window_decrease_format(NcWindow *window, int32 *counter,
-                          void (*set)(NcWindow *, bool)) {
-    if (*counter > 0) {
-        *counter -= 1;
-        if (*counter <= 0) {
-            set(window, false);
-        }
     }
     return;
 }
