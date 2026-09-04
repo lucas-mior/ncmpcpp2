@@ -54,31 +54,18 @@ typedef struct LyricsDirectSlugPair {
 
 static void lyrics_string_destroy(char **data, int32 *len, int32 *cap);
 static void lyrics_fetcher_array_destroy_item(void *item);
-static LyricsProviderProfile *lyrics_provider_profile(
-    enum NcmLyricsFetcherType type
-);
-static bool lyrics_provider_has_flag(enum NcmLyricsFetcherType type,
-                                     uint32 flag);
+static LyricsProviderProfile *lyrics_provider_profile( enum NcmLyricsFetcherType type);
+static bool lyrics_provider_has_flag(enum NcmLyricsFetcherType type, uint32 flag);
 static char *lyrics_type_domain(enum NcmLyricsFetcherType type, int32 *len);
 static LyricsSlugProfile lyrics_slug_profile(enum NcmLyricsFetcherType type);
 static bool lyrics_slug_rune_should_be_skipped(uint32 rune);
-static int32 lyrics_append_slug_profile(StrBuilder *buffer,
-                                        LyricsSlugProfile profile, char *string,
-                                        int32 string_len);
-static int32 lyrics_append_slug(StrBuilder *buffer,
-                                enum NcmLyricsFetcherType type, char *string,
-                                int32 string_len);
-static void lyrics_append_query(StrBuilder *buffer,
-                                char *string, int32 string_len);
+static int32 lyrics_append_slug_profile(StrBuilder *buffer, LyricsSlugProfile profile, char *string, int32 string_len);
+static int32 lyrics_append_slug(StrBuilder *buffer, enum NcmLyricsFetcherType type, char *string, int32 string_len);
+static void lyrics_append_query(StrBuilder *buffer, char *string, int32 string_len);
 static int32 lyrics_hex_value(char ch);
-static bool lyrics_url_is_collected(StrBuilderArray *urls, char *url,
-                                    int32 url_len);
-static int32 lyrics_fetch_page(NcmLyricsFetcherDef *fetcher,
-                               NcmLyricsResult *result, StrBuilder *url,
-                               char *referer, int32 referer_len,
-                               bool *retry);
-static void lyrics_append_clean_lines(StrBuilder *out, char *data,
-                                      int32 data_len);
+static bool lyrics_url_is_collected(StrBuilderArray *urls, char *url, int32 url_len);
+static int32 lyrics_fetch_page(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result, StrBuilder *url, char *referer, int32 referer_len, bool *retry);
+static void lyrics_append_clean_lines(StrBuilder *out, char *data, int32 data_len);
 
 static NcmArrayItemCallbacks lyrics_fetcher_callbacks = {
     .destroy = lyrics_fetcher_array_destroy_item,
