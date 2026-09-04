@@ -175,8 +175,10 @@ lastfm_find(char *data, int32 data_len, char *needle, int32 needle_len,
 }
 
 static int32
-lastfm_extract_between(StrBuilder *out, char *data, int32 data_len, char *start,
-                       int32 start_len, char *end, int32 end_len) {
+lastfm_extract_between(StrBuilder *out,
+                       char *data, int32 data_len,
+                       char *start, int32 start_len,
+                       char *end, int32 end_len) {
     int32 a;
     int32 b;
 
