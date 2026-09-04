@@ -3327,7 +3327,6 @@ tag_editor_run_current(NcScreen *screen) {
     case TAG_EDITOR_FOCUS_TAGS: {
         enum TagEditorTagTypeAction action;
         enum NcmTagsField field;
-        NcMenu *tags;
         bool result;
 
         action = tag_editor_current_tag_type_action(editor, &field);
@@ -3403,9 +3402,10 @@ tag_editor_run_current(NcScreen *screen) {
         }
 
         if (result) {
-            tags = nc_tag_row_menu_base(&editor->tags);
-            nc_menu_scroll_selectable(
-                tags, nc_window_height(&editor->tags_window), NC_SCROLL_DOWN);
+            NcMenu *tags = nc_tag_row_menu_base(&editor->tags);
+            nc_menu_scroll_selectable(tags,
+                                      nc_window_height(&editor->tags_window),
+                                      NC_SCROLL_DOWN);
             return 0;
         }
         return -NCM_ERROR_UNAVAILABLE;
