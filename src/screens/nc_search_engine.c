@@ -24,8 +24,8 @@ static NcMenuDisplayCallbacks search_display_callbacks(
 static bool search_row_matches(SearchEngineScreen *screen,
                                NcSearchRow *row, NcmRegex *regex);
 static bool search_position_matches(NcMenu *menu, int32 pos, void *user);
-static void search_format_columns(SearchEngineScreen *screen, NcmSong *song,
-                                  NcBuffer *buffer, int32 list_width);
+static void search_format_columns(NcmSong *song, NcBuffer *buffer,
+                                  int32 list_width);
 static int32 search_screen_width(SearchEngineScreen *screen);
 static int32 search_menu_suffix_width(NcMenu *menu, int32 pos);
 static int32 search_buffer_width(NcBuffer *buffer);
@@ -228,7 +228,7 @@ search_engine_screen_format_song_text(SearchEngineScreen *screen,
     }
 
     if (Config.search_engine_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
-        search_format_columns(screen, song, &formatted,
+        search_format_columns(song, &formatted,
                               search_screen_width(screen));
     } else {
         ncm_display_song_row(&formatted, &Config.song_list_format, song,
@@ -1367,7 +1367,7 @@ search_draw_row(NcMenu *menu, NcWindow *window, void *item,
             width = 0;
         }
 
-        search_format_columns(screen, &row->song, &buffer, width);
+        search_format_columns(&row->song, &buffer, width);
         search_print_buffer(window, &buffer);
         nc_buffer_destroy(&buffer);
     } else {
@@ -1401,8 +1401,8 @@ search_draw_row(NcMenu *menu, NcWindow *window, void *item,
 }
 
 static void
-search_format_columns(SearchEngineScreen *screen, NcmSong *song,
-                      NcBuffer *buffer, int32 list_width) {
+search_format_columns(NcmSong *song, NcBuffer *buffer,
+                      int32 list_width) {
     ncm_display_song_columns(buffer, song, Config.columns.items,
                              Config.columns.len, list_width, true);
     return;

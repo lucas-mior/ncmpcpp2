@@ -235,11 +235,12 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
     if (client && ncm_mpd_client_is_connected(client)) {
         if (!status_initialized) {
             NcmMpdStatus mpd_status = {0};
+            NcmStatusInitHooks *init_hooks = NULL;
+
             if (ncm_mpd_client_get_status(client, &mpd_status,
                                           ncm_error) >= 0) {
                 ncm_status_apply_mpd_status(
                     &mpd_status, status_full_event_mask(), NULL, ncm_error);
-                NcmStatusInitHooks *init_hooks = NULL;
 
                 if (status_init_hooks_set) {
                     init_hooks = &status_init_hooks;
