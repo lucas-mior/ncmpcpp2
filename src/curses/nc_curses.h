@@ -7,9 +7,7 @@
 
 #include <curses.h>
 
-/* curses/nc_window.h */
 #define NCURSES_NOMACROS 1
-
 
 #include <curses.h>
 
@@ -268,7 +266,6 @@ void nc_window_print_cstring(NcWindow *window, char *string);
 void nc_window_print_data(NcWindow *window, char *string, int32 string_len);
 void nc_window_print_char(NcWindow *window, char ch);
 
-/* curses/nc_formatted_color.h */
 typedef struct NcFormattedColor {
     enum NcFormat *formats;
     NcColor color;
@@ -287,7 +284,6 @@ void nc_formatted_color_add_format(NcFormattedColor *formatted_color,
 enum NcFormat *nc_formatted_color_formats(NcFormattedColor *formatted_color);
 int32 nc_formatted_color_format_count(NcFormattedColor *formatted_color);
 
-/* curses/nc_buffer.h */
 #define ENUM_NAME NcBufferPropertyType
 #define ENUM_PREFIX_ NC_BUFFER_PROPERTY_
 #define ENUM_BITFLAGS 0
@@ -348,7 +344,6 @@ void nc_buffer_add_formatted_color_end(NcBuffer *buffer, int32 position,
 void nc_buffer_remove_properties(NcBuffer *buffer, int64 id);
 void nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property);
 
-/* curses/nc_menu.h */
 typedef struct NcMenu NcMenu;
 
 typedef bool NcMenuPositionIsHighlightableFunc(int32 pos, void *user);
@@ -498,7 +493,6 @@ void *nc_menu_current_item(NcMenu *menu);
 void nc_menu_swap_item_slots(NcMenu *menu, enum NcMenuItemSource source,
                              int32 left, int32 right);
 
-/* curses/nc_scrollpad.h */
 typedef struct NcScrollpad {
     int32 beginning;
     int32 real_height;
@@ -521,7 +515,6 @@ void nc_scrollpad_center_on_buffer_position(NcScrollpad *scrollpad,
                                             int32 position);
 void nc_scrollpad_reset(NcScrollpad *scrollpad);
 
-/* curses/nc_cyclic_buffer.h */
 void nc_cyclic_text_write(StrBuilder *output, char *string,
                           int32 string_len, int32 *start_pos,
                           int32 width, char *separator,
@@ -532,7 +525,6 @@ void nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
 
 #include "c/ncm_c.h"
 
-/* curses/nc_app_menus.h */
 typedef struct NcMenuString {
     char *data;
     int32 len;
