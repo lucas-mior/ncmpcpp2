@@ -1179,11 +1179,9 @@ menu_set_flags_for_item(NcMenu *menu, void *item, uint32 flags) {
 
 static bool
 menu_is_position_highlightable(int32 pos, void *user) {
-    NcMenu *menu;
-    void *item;
+    NcMenu *menu = user;
+    void *item = nc_menu_active_item_at(menu, pos);
 
-    menu = user;
-    item = nc_menu_active_item_at(menu, pos);
     return !menu_is_separator(menu, item) && !menu_is_inactive(menu, item);
 }
 
