@@ -90,12 +90,9 @@ playlist_editor_update_titles(PlaylistEditorScreen *screen,
 
 static void
 playlist_editor_update_menu_highlights(PlaylistEditorScreen *screen) {
-    NcMenu *playlists;
-    NcMenu *content;
+    NcMenu *playlists = nc_playlist_entry_menu_base(&screen->playlists);
+    NcMenu *content = nc_song_menu_base(&screen->content);
     NcMenu *active;
-
-    playlists = nc_playlist_entry_menu_base(&screen->playlists);
-    content = nc_song_menu_base(&screen->content);
 
     nc_menu_set_highlight_prefix(playlists,
                                  &Config.current_item_inactive_column_prefix);
