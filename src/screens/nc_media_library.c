@@ -976,9 +976,9 @@ media_library_screen_current_album(MediaLibraryScreen *screen) {
 }
 
 bool
-media_library_screen_has_current_primary_tag_value(
-    MediaLibraryScreen *screen, char **value, int32 *value_len
-) {
+media_library_screen_has_current_primary_tag_value(MediaLibraryScreen *screen,
+                                                   char **value,
+                                                   int32 *value_len) {
     NcMediaLibraryTagRow *tag;
     NcMediaLibraryAlbumRow *album;
 
