@@ -1613,25 +1613,20 @@ APPLY_BOOL(apply_colors_enabled, colors_enabled)
     }
 
 static SettingsOption options[] = {
-OPTION_ADD("ncmpcpp_directory", "~/.config/ncmpcpp/",
-                    apply_ncmpcpp_directory),
-OPTION_ADD("lyrics_directory", "~/.lyrics/",
-                    apply_lyrics_directory),
+OPTION_ADD("ncmpcpp_directory", "~/.config/ncmpcpp/", apply_ncmpcpp_directory),
+OPTION_ADD("lyrics_directory", "~/.lyrics/", apply_lyrics_directory),
 OPTION_ADD("mpd_host", "localhost", apply_mpd_host),
 OPTION_ADD("mpd_port", "6600", apply_mpd_port),
 OPTION_ADD("mpd_password", "", apply_mpd_password),
 OPTION_ADD("mpd_music_dir", "~/music", apply_mpd_music_dir),
-OPTION_ADD("mpd_connection_timeout", "5",
-                    apply_mpd_connection_timeout),
+OPTION_ADD("mpd_connection_timeout", "5", apply_mpd_connection_timeout),
 OPTION_ADD("mpd_crossfade_time", "5", apply_mpd_crossfade_time),
-OPTION_ADD("random_exclude_pattern", "",
-                    apply_random_exclude_pattern),
+OPTION_ADD("random_exclude_pattern", "", apply_random_exclude_pattern),
 OPTION_ADD("visualizer_data_source", "/tmp/mpd.fifo",
                     apply_visualizer_data_source),
 OPTION_ADD("visualizer_output_name", "Visualizer feed",
                     apply_visualizer_output_name),
-OPTION_ADD("visualizer_in_stereo", "yes",
-                    apply_visualizer_in_stereo),
+OPTION_ADD("visualizer_in_stereo", "yes", apply_visualizer_in_stereo),
 #if defined(HAVE_FFTW3_H)
 OPTION_ADD("visualizer_type", "spectrum", apply_visualizer_type),
 #else
