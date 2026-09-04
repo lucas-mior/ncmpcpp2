@@ -163,19 +163,19 @@ XENUMS_LINKAGE int32
 CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
 #if ENUM_BITFLAGS == 0
     switch (val) {
-        #define XENUM_ST_1(e)    case e:                                       \
+        #define XENUM_STR_1(e)    case e:                                       \
                                      *out = #e;                                \
                                      return STRLIT_LEN(#e);
-        #define XENUM_ST_2(e, v) case e:                                       \
+        #define XENUM_STR_2(e, v) case e:                                       \
                                      *out = #e;                                \
                                      return STRLIT_LEN(#e);
-        #define XX(...)          SELECT_ON_NUM_ARGS(XENUM_ST_, __VA_ARGS__)
+        #define XX(...)          SELECT_ON_NUM_ARGS(XENUM_STR_, __VA_ARGS__)
 
         ENUM_FIELDS
 
         #undef XX
-        #undef XENUM_ST_1
-        #undef XENUM_ST_2
+        #undef XENUM_STR_1
+        #undef XENUM_STR_2
         case CAT(ENUM_PREFIX_, COUNT):
             *out = QUOTE(ENUM_PREFIX_) "COUNT";
             return STRLIT_LEN(QUOTE(ENUM_PREFIX_) "COUNT");
@@ -267,19 +267,19 @@ XENUMS_LINKAGE int32
 CAT(ENUM_PREFIX_, alias_len)(enum ENUM_NAME val, char **out) {
 #if ENUM_BITFLAGS == 0
     switch (val) {
-        #define XENUM_ALIAS_ST_1(e)        case e:                             \
+        #define XENUM_ALIAS_STR_1(e)        case e:                            \
                                                *out = #e;                      \
                                                return STRLIT_LEN(#e);
-        #define XENUM_ALIAS_ST_2(e, alias) case e:                             \
+        #define XENUM_ALIAS_STR_2(e, alias) case e:                            \
                                                *out = #alias;                  \
                                                return STRLIT_LEN(#alias);
-        #define XX(...) SELECT_ON_NUM_ARGS(XENUM_ALIAS_ST_, __VA_ARGS__)
+        #define XX(...) SELECT_ON_NUM_ARGS(XENUM_ALIAS_STR_, __VA_ARGS__)
 
         ENUM_FIELDS
 
         #undef XX
-        #undef XENUM_ALIAS_ST_1
-        #undef XENUM_ALIAS_ST_2
+        #undef XENUM_ALIAS_STR_1
+        #undef XENUM_ALIAS_STR_2
 
         case CAT(ENUM_PREFIX_, COUNT):
             *out = QUOTE(ENUM_PREFIX_) "COUNT";
