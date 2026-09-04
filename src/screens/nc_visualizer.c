@@ -90,6 +90,7 @@ static int32 visualizer_system_get_outputs(void *user, NcmMpdOutputList *outputs
 static int32 visualizer_system_disable_output(void *user, int32 id, NcmError *ncm_error);
 static int32 visualizer_system_enable_output(void *user, int32 id, NcmError *ncm_error);
 static void visualizer_system_sleep_microseconds(void *user, int32 microseconds);
+
 static void visualizer_reset_sample_clock(VisualizerScreen *screen);
 static enum VisualizerScreenType visualizer_next_type(enum VisualizerScreenType type);
 #if defined(HAVE_FFTW3_H)
