@@ -83,7 +83,6 @@ typedef struct Configuration {
     int32 random_exclude_pattern_len;
     int32 tags_separator_len;
 
-
     StrBuilder progressbar;
     StrBuilder visualizer_chars;
 
