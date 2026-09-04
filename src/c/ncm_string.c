@@ -6,7 +6,7 @@
 #include "c/ncm_c.h"
 
 void
-stupid_string_free(char *data, int32 *len, int32 *cap) {
+stupid_string_free(char **data, int32 *len, int32 *cap) {
     free2(*data, *cap);
     *data = NULL;
     *len = 0;
