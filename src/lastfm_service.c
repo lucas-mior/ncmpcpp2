@@ -115,8 +115,8 @@ ncm_lastfm_service_is_equal(NcmLastfmService *left, NcmLastfmService *right) {
     if (left->type != right->type) {
         return false;
     }
-    if (!STREQUAL(left->artist, left->artist_len, right->artist,
-                  right->artist_len)) {
+    if (!STREQUAL(left->artist, left->artist_len,
+                  right->artist, right->artist_len)) {
         return false;
     }
     return STREQUAL(left->lang, left->lang_len, right->lang, right->lang_len);
@@ -167,8 +167,7 @@ lastfm_find(char *data, int32 data_len, char *needle, int32 needle_len,
         start = 0;
     }
     for (int32 i = start; i + needle_len <= data_len; i += 1) {
-        if (BEGINS_WITH(data + i, data_len - i, needle,
-                        needle_len)) {
+        if (BEGINS_WITH(data + i, data_len - i, needle, needle_len)) {
             return i;
         }
     }
@@ -176,8 +175,10 @@ lastfm_find(char *data, int32 data_len, char *needle, int32 needle_len,
 }
 
 static int32
-lastfm_extract_between(StrBuilder *out, char *data, int32 data_len, char *start,
-                       int32 start_len, char *end, int32 end_len) {
+lastfm_extract_between(StrBuilder *out,
+                       char *data, int32 data_len,
+                       char *start, int32 start_len,
+                       char *end, int32 end_len) {
     int32 a;
     int32 b;
 
