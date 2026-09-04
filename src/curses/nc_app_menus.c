@@ -91,12 +91,10 @@ nc_media_library_album_row_destroy(NcMediaLibraryAlbumRow *row) {
     if (row == NULL) {
         return;
     }
-    stupid_string_free(&row->tag, &row->tag_len, &row->tag_cap);
-    stupid_string_free(&row->album, &row->album_len,
-                                 &row->album_cap);
-    stupid_string_free(&row->date, &row->date_len, &row->date_cap);
-    row->mtime = 0;
-    row->all_tracks_entry = false;
+    free2(row->tag, row->tag_len + 1);
+    free2(row->album, row->album_len + 1);
+    free2(row->date, row->date_len + 1);
+    *row = (NcMediaLibraryAlbumRow){0};
     return;
 }
 
@@ -108,12 +106,22 @@ nc_media_library_album_row_copy(NcMediaLibraryAlbumRow *dest,
     if ((dest == NULL) || (source == NULL)) {
         return -EINVAL;
     }
-    nc_menu_owned_string_copy(&tmp.tag, &tmp.tag_len, &tmp.tag_cap,
-                              source->tag, source->tag_len);
-    nc_menu_owned_string_copy(&tmp.album, &tmp.album_len, &tmp.album_cap,
-                              source->album, source->album_len);
-    nc_menu_owned_string_copy(&tmp.date, &tmp.date_len, &tmp.date_cap,
-                              source->date, source->date_len);
+    ASSERT((source->tag != NULL) || (source->tag_len == 0));
+    ASSERT((source->album != NULL) || (source->album_len == 0));
+    ASSERT((source->date != NULL) || (source->date_len == 0));
+
+    if (source->tag_len > 0) {
+        tmp.tag = xstrndup(source->tag, source->tag_len);
+        tmp.tag_len = source->tag_len;
+    }
+    if (source->album_len > 0) {
+        tmp.album = xstrndup(source->album, source->album_len);
+        tmp.album_len = source->album_len;
+    }
+    if (source->date_len > 0) {
+        tmp.date = xstrndup(source->date, source->date_len);
+        tmp.date_len = source->date_len;
+    }
     tmp.mtime = source->mtime;
     tmp.all_tracks_entry = source->all_tracks_entry;
 
