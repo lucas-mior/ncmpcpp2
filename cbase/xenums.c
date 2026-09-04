@@ -187,7 +187,7 @@ CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
     char *buffer = NULL;
     int32 buffer_len = 0;
     int32 buffer_cap = 0;
-    int32 is_first = 1;
+    bool32 is_first = true;
 
     if (val == 0) {
         *out = xstrndup(STRLIT("NONE"));
@@ -215,18 +215,21 @@ CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
             char *name = #e;                                                   \
             int32 len = STRLIT_LEN(#e);                                        \
             int32 new_cap = buffer_len + len + 1;                              \
-            if (is_first == 0) {                                               \
+                                                                               \
+            if (!is_first) {                                                   \
                 new_cap += 1;                                                  \
             }                                                                  \
+                                                                               \
             buffer = realloc2(buffer, buffer_cap, new_cap, SIZEOF(*buffer));   \
             buffer_cap = new_cap;                                              \
-            if (is_first == 0) {                                               \
+            if (!is_first) {                                                   \
                 buffer[buffer_len] = '|';                                      \
                 buffer_len += 1;                                               \
             }                                                                  \
             memcpy64(buffer + buffer_len, name, len);                          \
             buffer_len += len;                                                 \
-            is_first = 0;                                                      \
+                                                                               \
+            is_first = false;                                                  \
             val &= (ENUM_UNDERLYING_TYPE)~e;                                   \
         }
 
