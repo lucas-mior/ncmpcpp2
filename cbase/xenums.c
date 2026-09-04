@@ -117,7 +117,7 @@ enum ENUM_NAME ENUM_UNDERLYING_TYPE_SPEC {
     #define XENUM_1(e)        e = (ENUM_UNDERLYING_TYPE)1 << CAT(e, _BIT_IDX),
     #define XENUM_2(e, v)     e = v,
 #endif
-    #define XX(...)            SELECT_ON_NUM_ARGS(XENUM_, __VA_ARGS__)
+    #define XX(...)           SELECT_ON_NUM_ARGS(XENUM_, __VA_ARGS__)
 
 #if ENUM_BITFLAGS
     CAT(ENUM_PREFIX_, NONE) = 0,
@@ -169,7 +169,7 @@ CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
         #define XENUM_ST_2(e, v) case e:                                       \
                                      *out = #e;                                \
                                      return STRLIT_LEN(#e);
-        #define XX(...)           SELECT_ON_NUM_ARGS(XENUM_ST_, __VA_ARGS__)
+        #define XX(...)          SELECT_ON_NUM_ARGS(XENUM_ST_, __VA_ARGS__)
 
         ENUM_FIELDS
 
@@ -201,7 +201,7 @@ CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
         }
     #define XENUM_EXACT_1(e)    XENUM_EXACT(e)
     #define XENUM_EXACT_2(e, v) XENUM_EXACT(e)
-    #define XX(...)              SELECT_ON_NUM_ARGS(XENUM_EXACT_, __VA_ARGS__)
+    #define XX(...)             SELECT_ON_NUM_ARGS(XENUM_EXACT_, __VA_ARGS__)
 
     ENUM_FIELDS
 
