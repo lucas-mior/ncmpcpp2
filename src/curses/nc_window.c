@@ -1517,6 +1517,46 @@ nc_window_decrease_format(NcWindow *window, int32 *counter,
     return;
 }
 
+static void
+nc_window_underline(NcWindow *window, bool state) {
+    if (state) {
+        wattron(window->window, A_UNDERLINE);
+    } else {
+        wattroff(window->window, A_UNDERLINE);
+    }
+    return;
+}
+
+static void
+nc_window_reverse(NcWindow *window, bool state) {
+    if (state) {
+        wattron(window->window, A_REVERSE);
+    } else {
+        wattroff(window->window, A_REVERSE);
+    }
+    return;
+}
+
+static void
+nc_window_alt_charset(NcWindow *window, bool state) {
+    if (state) {
+        wattron(window->window, A_ALTCHARSET);
+    } else {
+        wattroff(window->window, A_ALTCHARSET);
+    }
+    return;
+}
+
+static void
+nc_window_italic(NcWindow *window, bool state) {
+    if (state) {
+        wattron(window->window, (int32)A_ITALIC);
+    } else {
+        wattroff(window->window, (int32)A_ITALIC);
+    }
+    return;
+}
+
 void
 nc_window_resize(NcWindow *window, int32 new_width, int32 new_height) {
     nc_window_adjust_dimensions(window, new_width, new_height);
@@ -1648,46 +1688,6 @@ nc_window_print_data(NcWindow *window, char *string, int32 string_len) {
 void
 nc_window_print_char(NcWindow *window, char ch) {
     waddnstr(window->window, &ch, 1);
-    return;
-}
-
-static void
-nc_window_underline(NcWindow *window, bool state) {
-    if (state) {
-        wattron(window->window, A_UNDERLINE);
-    } else {
-        wattroff(window->window, A_UNDERLINE);
-    }
-    return;
-}
-
-static void
-nc_window_reverse(NcWindow *window, bool state) {
-    if (state) {
-        wattron(window->window, A_REVERSE);
-    } else {
-        wattroff(window->window, A_REVERSE);
-    }
-    return;
-}
-
-static void
-nc_window_alt_charset(NcWindow *window, bool state) {
-    if (state) {
-        wattron(window->window, A_ALTCHARSET);
-    } else {
-        wattroff(window->window, A_ALTCHARSET);
-    }
-    return;
-}
-
-static void
-nc_window_italic(NcWindow *window, bool state) {
-    if (state) {
-        wattron(window->window, (int32)A_ITALIC);
-    } else {
-        wattroff(window->window, (int32)A_ITALIC);
-    }
     return;
 }
 
