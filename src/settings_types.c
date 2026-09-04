@@ -99,9 +99,9 @@ column_array_clear(ColumnArray *array) {
     for (int32 i = 0; i < array->len; i += 1) {
         Column *column = &array->items[i];
 
-        settings_string_destroy(&column->name, &column->name_len,
+        stupid_string_free(&column->name, &column->name_len,
                                 &column->name_cap);
-        settings_string_destroy(&column->type, &column->type_len,
+        stupid_string_free(&column->type, &column->type_len,
                                 &column->type_cap);
         column_init(column);
     }
@@ -332,7 +332,7 @@ configuration_destroy(Configuration *config) {
     }
 
 #define NCM_CONFIG_STRING_DESTROY(name)    \
-    settings_string_destroy(&config->name, \
+    stupid_string_free(&config->name, \
                             &config->name##_len, &config->name##_cap)
 
     NCM_CONFIG_STRING_DESTROY(ncmpcpp_directory);
