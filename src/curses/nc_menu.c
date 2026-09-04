@@ -1117,9 +1117,7 @@ menu_default_item_flags(void) {
 
 static uint32
 menu_flags_for_item(NcMenu *menu, void *item) {
-    int32 pos;
-
-    pos = menu_item_index(menu, NC_MENU_ITEMS_ALL, item);
+    int32 pos = menu_item_index(menu, NC_MENU_ITEMS_ALL, item);
     ASSERT_NON_NEGATIVE(pos);
     return menu->all_item_flags[pos];
 }
