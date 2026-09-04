@@ -218,13 +218,8 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
     }
 
     candidate = (NcmLastfmService){0};
-    status = ncm_lastfm_artist_info_init(&candidate, artist, artist_len,
-                                         lang, lang_len);
-    if (status < 0) {
-        ncm_lastfm_service_destroy(&candidate);
-        return ncm_error_set_status(ncm_error, status,
-                                    STRLIT("invalid Last.fm service"));
-    }
+    ncm_lastfm_artist_info_init(&candidate, artist, artist_len,
+                                lang, lang_len);
     if (screen->has_service
         && ncm_lastfm_service_is_equal(&screen->service, &candidate)) {
         ncm_lastfm_service_destroy(&candidate);
@@ -241,14 +236,10 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
     job->screen = screen;
     job->service = (NcmLastfmService){0};
     job->result = (NcmLastfmResult){0};
-    (void)ncm_lastfm_artist_info_init(&job->service,
-                                      candidate.artist, candidate.artist_len,
-                                      candidate.lang, candidate.lang_len);
+    ncm_lastfm_artist_info_init(&job->service,
+                                candidate.artist, candidate.artist_len,
+                                candidate.lang, candidate.lang_len);
     ncm_lastfm_service_destroy(&candidate);
-    if (job == NULL) {
-        return ncm_error_set_status(ncm_error, -NCM_ERROR_INVALID_STATE,
-                                    STRLIT("failed to create job"));
-    }
 
     status = ncm_job_queue_push(&screen->jobs,
                                 (NcmJob){
@@ -265,9 +256,9 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
 
     ncm_lastfm_service_destroy(&screen->service);
     screen->service = (NcmLastfmService){0};
-    (void)ncm_lastfm_artist_info_init(&screen->service,
-                                      artist, artist_len,
-                                      lang, lang_len);
+    ncm_lastfm_artist_info_init(&screen->service,
+                                artist, artist_len,
+                                lang, lang_len);
     screen->has_service = true;
     title = ncm_lastfm_service_name(&screen->service);
     lastfm_set_title(screen, title, strlen32(title));
@@ -283,10 +274,19 @@ lastfm_screen_dispatch_jobs(LastfmScreen *screen) {
     return ncm_job_queue_dispatch_completed(&screen->jobs);
 }
 
+static bool
+lastfm_take_refresh_request(LastfmScreen *screen) {
+    bool result;
+
+    result = screen->refresh_window;
+    screen->refresh_window = false;
+    return result;
+}
+
 void
 lastfm_screen_update(LastfmScreen *screen) {
     lastfm_screen_dispatch_jobs(screen);
-    if (lastfm_screen_take_refresh_request(screen) > 0) {
+    if (lastfm_take_refresh_request(screen)) {
         nc_scrollpad_flush(&screen->scrollpad,
                            &screen->window,
                            &screen->buffer);
@@ -297,41 +297,28 @@ lastfm_screen_update(LastfmScreen *screen) {
 
 char *
 lastfm_screen_title(LastfmScreen *screen) {
-    if (screen->title == NULL) {
-        return (char *)LASTFM_DEFAULT_TITLE;
-    }
     return screen->title;
 }
 
 int32
 lastfm_screen_take_refresh_request(LastfmScreen *screen) {
-    bool result;
-
     if (screen == NULL) {
         return -EINVAL;
     }
-
-    result = screen->refresh_window;
-    screen->refresh_window = false;
-    if (result) {
+    if (lastfm_take_refresh_request(screen)) {
         return 1;
     }
     return 0;
 }
 
-int32
-lastfm_buffer_find(NcBuffer *buffer, char *pattern,
-                   int32 pattern_len, NcmError *ncm_error) {
+static int32
+lastfm_buffer_find_unchecked(NcBuffer *buffer, char *pattern,
+                             int32 pattern_len, NcmError *ncm_error) {
     LastfmFindState state;
     NcmRegex regex;
     char *data;
     int32 match_count;
     int32 status;
-
-    if (buffer == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing Last.fm buffer"));
-    }
 
     nc_buffer_remove_properties(buffer, LASTFM_PROPERTY_ID);
     if ((pattern == NULL) || (pattern_len <= 0)) {
@@ -357,30 +344,37 @@ lastfm_buffer_find(NcBuffer *buffer, char *pattern,
 }
 
 int32
+lastfm_buffer_find(NcBuffer *buffer, char *pattern,
+                   int32 pattern_len, NcmError *ncm_error) {
+    if (buffer == NULL) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing Last.fm buffer"));
+    }
+    return lastfm_buffer_find_unchecked(buffer, pattern,
+                                        pattern_len, ncm_error);
+}
+
+int32
 lastfm_screen_find(LastfmScreen *screen,
                    char *pattern, int32 pattern_len,
                    NcmError *ncm_error) {
     int32 result;
-    int32 status;
 
     if (screen == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing Last.fm screen"));
     }
 
-    result = lastfm_buffer_find(&screen->buffer, pattern,
-                                pattern_len, ncm_error);
+    result = lastfm_buffer_find_unchecked(&screen->buffer, pattern,
+                                          pattern_len, ncm_error);
     if (result < 0) {
         lastfm_flush(screen);
         return result;
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
         sb_clear(&screen->search_constraint);
-    } else if ((status = sb_set(&screen->search_constraint,
-                                pattern, pattern_len)) < 0) {
-        lastfm_flush(screen);
-        return ncm_error_set_status(ncm_error, status,
-                                    STRLIT("failed to save search"));
+    } else {
+        sb_set(&screen->search_constraint, pattern, pattern_len);
     }
     lastfm_flush(screen);
     return result;
@@ -436,13 +430,6 @@ static void
 lastfm_set_title(LastfmScreen *screen, char *title, int32 title_len) {
     int32 cap;
 
-    if (screen == NULL) {
-        return;
-    }
-    if (title == NULL) {
-        title = (char *)LASTFM_DEFAULT_TITLE;
-        title_len = STRLIT_LEN(LASTFM_DEFAULT_TITLE);
-    }
     cap = title_len + 1;
     if (cap > screen->title_cap) {
         screen->title = realloc2(screen->title,
@@ -480,19 +467,15 @@ lastfm_job_complete(int32 status, NcmError *ncm_error, void *user) {
 
     (void)status;
     (void)ncm_error;
-    if (job == NULL) {
-        return;
-    }
-
-    if (((screen = job->screen) == NULL)
-        || !screen->has_service
+    screen = job->screen;
+    if (!screen->has_service
         || !ncm_lastfm_service_is_equal(&job->service, &screen->service)) {
         return;
     }
 
     ncm_lastfm_result_clear(&screen->result);
-    (void)ncm_lastfm_result_set(&screen->result, job->result.success,
-                                 job->result.text, job->result.text_len);
+    ncm_lastfm_result_set(&screen->result, job->result.success,
+                          job->result.text, job->result.text_len);
 
     nc_buffer_clear(&screen->buffer);
     if (screen->result.success) {
@@ -546,9 +529,6 @@ static void
 lastfm_job_destroy(void *user) {
     LastfmJob *job = user;
 
-    if (job == NULL) {
-        return;
-    }
     ncm_lastfm_service_destroy(&job->service);
     ncm_lastfm_result_destroy(&job->result);
     free2(job, SIZEOF(*job));
