@@ -39,7 +39,7 @@ nc_menu_owned_string_copy(char **dest_data, int32 *dest_len,
 }
 
 void
-nc_menu_string_destroy(NcMenuString *string) {
+nc_menu_string_destroy(StrBuilder *string) {
     if (string == NULL) {
         return;
     }
@@ -48,8 +48,8 @@ nc_menu_string_destroy(NcMenuString *string) {
 }
 
 int32
-nc_menu_string_copy(NcMenuString *dest, NcMenuString *source) {
-    NcMenuString tmp = {0};
+nc_menu_string_copy(StrBuilder *dest, StrBuilder *source) {
+    StrBuilder tmp = {0};
 
     if ((dest == NULL) || (source == NULL)) {
         return -EINVAL;
@@ -63,8 +63,8 @@ nc_menu_string_copy(NcMenuString *dest, NcMenuString *source) {
 }
 
 int32
-nc_menu_string_set(NcMenuString *string, char *data, int32 data_len) {
-    NcMenuString tmp = {0};
+nc_menu_string_set(StrBuilder *string, char *data, int32 data_len) {
+    StrBuilder tmp = {0};
 
     if (string == NULL) {
         return -EINVAL;
@@ -77,7 +77,7 @@ nc_menu_string_set(NcMenuString *string, char *data, int32 data_len) {
 }
 
 void
-nc_menu_string_pair_destroy(NcMenuStringPair *pair) {
+nc_menu_string_pair_destroy(StrBuilderPair *pair) {
     if (pair == NULL) {
         return;
     }
@@ -89,8 +89,8 @@ nc_menu_string_pair_destroy(NcMenuStringPair *pair) {
 }
 
 int32
-nc_menu_string_pair_copy(NcMenuStringPair *dest, NcMenuStringPair *source) {
-    NcMenuStringPair tmp = {0};
+nc_menu_string_pair_copy(StrBuilderPair *dest, StrBuilderPair *source) {
+    StrBuilderPair tmp = {0};
 
     if ((dest == NULL) || (source == NULL)) {
         return -EINVAL;
@@ -470,12 +470,12 @@ static const NcMenuItemCallbacks nc_media_library_album_menu_callbacks = {
     .destroy = nc_media_library_album_menu_item_destroy,
 };
 static const NcMenuItemCallbacks nc_menu_string_callbacks = {
-    .item_size = SIZEOF(NcMenuString),
+    .item_size = SIZEOF(StrBuilder),
     .copy = nc_menu_string_item_copy,
     .destroy = nc_menu_string_item_destroy,
 };
 static const NcMenuItemCallbacks nc_menu_string_pair_callbacks = {
-    .item_size = SIZEOF(NcMenuStringPair),
+    .item_size = SIZEOF(StrBuilderPair),
     .copy = nc_menu_string_pair_item_copy,
     .destroy = nc_menu_string_pair_item_destroy,
 };
@@ -655,7 +655,7 @@ NC_TYPED_MENU_DEFINE_COMMON(NcEditorStringMenu,
                             nc_menu_string_callbacks)
 NC_TYPED_MENU_DEFINE_ADD_WITH_FLAGS(NcEditorStringMenu,
                                     nc_editor_string_menu,
-                                    NcMenuString)
+                                    StrBuilder)
 NC_TYPED_MENU_DEFINE_ADD_SEPARATOR(NcEditorStringMenu, nc_editor_string_menu)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcEditorPairMenu,
@@ -663,10 +663,10 @@ NC_TYPED_MENU_DEFINE_COMMON(NcEditorPairMenu,
                             nc_menu_string_pair_callbacks)
 NC_TYPED_MENU_DEFINE_ADD(NcEditorPairMenu,
                          nc_editor_pair_menu,
-                         NcMenuStringPair)
+                         StrBuilderPair)
 NC_TYPED_MENU_DEFINE_CURRENT(NcEditorPairMenu,
                              nc_editor_pair_menu,
-                             NcMenuStringPair)
+                             StrBuilderPair)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcEditorActionMenu,
                             nc_editor_action_menu,
