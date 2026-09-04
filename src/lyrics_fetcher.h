@@ -34,7 +34,6 @@ enum NcmLyricsFetcherType {
 typedef struct NcmLyricsResult {
     char *text;
     int32 text_len;
-    int32 text_cap;
     bool success;
 } NcmLyricsResult;
 

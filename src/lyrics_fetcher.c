@@ -163,16 +163,23 @@ static LyricsProviderProfile lyrics_provider_profiles[] = {
 
 static void
 lyrics_result_clear(NcmLyricsResult *result) {
-    stupid_string_free(&result->text, &result->text_len, &result->text_cap);
-    result->success = false;
+    free2(result->text, result->text_len + 1);
+    *result = (NcmLyricsResult){0};
     return;
 }
 
 static void
 lyrics_result_set(NcmLyricsResult *result, bool success,
                   char *text, int32 text_len) {
-    stupid_string_set(&result->text, &result->text_len, &result->text_cap,
-                      text, text_len);
+    ASSERT(result != NULL);
+    ASSERT_NON_NEGATIVE(text_len);
+    ASSERT((text != NULL) || (text_len == 0));
+
+    lyrics_result_clear(result);
+    if (text_len > 0) {
+        result->text = xstrndup(text, text_len);
+        result->text_len = text_len;
+    }
     result->success = success;
     return;
 }
