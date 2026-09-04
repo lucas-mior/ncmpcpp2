@@ -1758,12 +1758,10 @@ OPT(active_window_border, "red", apply_active_window_border),
 int32
 configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                    bool ignore_errors, bool quiet, NcmError *ncm_error) {
-    int32 option_count;
     int32 status;
 
     configuration_clear(config);
     settings_quiet = quiet;
-    option_count = LENGTH(options);
     if (config_paths) {
         for (int32 i = 0; i < config_paths->len; i += 1) {
             NcmStringView path = config_paths->items[i];
@@ -1840,7 +1838,7 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                 }
 
                 option = NULL;
-                for (int32 j = 0; j < option_count; j += 1) {
+                for (int32 j = 0; j < LENGTH(options); j += 1) {
                     if (STREQUAL(parsed.option, parsed.option_len,
                                  options[j].name, options[j].name_len)) {
                         option = &options[j];
@@ -1907,7 +1905,7 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
         }
     }
 
-    for (int32 i = 0; i < option_count; i += 1) {
+    for (int32 i = 0; i < LENGTH(options); i += 1) {
         if (options[i].used) {
             continue;
         }
