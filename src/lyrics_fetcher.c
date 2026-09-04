@@ -52,9 +52,8 @@ typedef struct LyricsDirectSlugPair {
     LyricsSlugProfile title;
 } LyricsDirectSlugPair;
 
-static void lyrics_string_destroy(char **data, int32 *len, int32 *cap);
 static void lyrics_fetcher_array_destroy_item(void *item);
-static LyricsProviderProfile *lyrics_provider_profile( enum NcmLyricsFetcherType type);
+
 static bool lyrics_provider_has_flag(enum NcmLyricsFetcherType type, uint32 flag);
 static char *lyrics_type_domain(enum NcmLyricsFetcherType type, int32 *len);
 static LyricsSlugProfile lyrics_slug_profile(enum NcmLyricsFetcherType type);
@@ -175,6 +174,15 @@ static LyricsProviderProfile lyrics_provider_profiles[] = {
 };
 
 static void
+lyrics_string_destroy(char **data, int32 *len, int32 *cap) {
+    free2(*data, *cap);
+    *data = NULL;
+    *len = 0;
+    *cap = 0;
+    return;
+}
+
+static void
 lyrics_string_set(char **data, int32 *len, int32 *cap,
                   char *source, int32 source_len) {
     char *new_data;
@@ -194,15 +202,6 @@ lyrics_string_set(char **data, int32 *len, int32 *cap,
     *len = source_len;
     *cap = new_cap;
 
-    return;
-}
-
-static void
-lyrics_string_destroy(char **data, int32 *len, int32 *cap) {
-    free2(*data, *cap);
-    *data = NULL;
-    *len = 0;
-    *cap = 0;
     return;
 }
 
@@ -266,6 +265,13 @@ ncm_lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher) {
     }
     lyrics_fetcher_def_destroy(fetcher);
     return;
+}
+
+static LyricsProviderProfile *
+lyrics_provider_profile(enum NcmLyricsFetcherType type) {
+    ASSERT((type > NCM_LYRICS_FETCHER_UNKNOWN)
+           && (type < NCM_LYRICS_FETCHER_LAST));
+    return &lyrics_provider_profiles[type];
 }
 
 static int32
@@ -478,13 +484,6 @@ lyrics_fetcher_array_destroy_item(void *item) {
     ASSERT(item != NULL);
     lyrics_fetcher_def_destroy(item);
     return;
-}
-
-static LyricsProviderProfile *
-lyrics_provider_profile(enum NcmLyricsFetcherType type) {
-    ASSERT((type > NCM_LYRICS_FETCHER_UNKNOWN)
-           && (type < NCM_LYRICS_FETCHER_LAST));
-    return &lyrics_provider_profiles[type];
 }
 
 static bool
