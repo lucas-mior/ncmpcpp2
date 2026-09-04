@@ -1614,7 +1614,7 @@ APPLY_BOOL(apply_colors_enabled, colors_enabled)
 
 static SettingsOption ncmpcpp_options[] = {
 OPT(ncmpcpp_directory, "~/.config/ncmpcpp/", apply_ncmpcpp_directory),
-OPT(lyrics_directory, "~/.lyrics/", apply_lyrics_directory),
+OPT(lyrics_directory,  "~/.lyrics/",         apply_lyrics_directory),
 
 OPT(mpd_host,               "localhost", apply_mpd_host),
 OPT(mpd_port,               "6600", apply_mpd_port),
