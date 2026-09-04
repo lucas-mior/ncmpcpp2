@@ -849,8 +849,8 @@ xstrdup(char *string) {
     int64 length = strlen32(string) + 1;
 
     if ((p = malloc2(length)) == NULL) {
-        error("Error allocating %lld bytes to duplicate '%s': %s\n",
-              length, string, strerror(errno));
+        error("Error allocating %lld bytes to duplicate '%.*s ...': %s\n",
+              length, MIN(length, 50), string, strerror(errno));
         fatal(EXIT_FAILURE);
     }
 
