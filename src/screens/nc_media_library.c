@@ -890,10 +890,8 @@ media_library_screen_has_available_item(MediaLibraryScreen *screen) {
 }
 
 int32
-media_library_screen_set_active_column(
-    MediaLibraryScreen *screen,
-    enum MediaLibraryColumn column
-) {
+media_library_screen_set_active_column(MediaLibraryScreen *screen,
+                                       enum MediaLibraryColumn column) {
     if (screen == NULL) {
         return -EINVAL;
     }
