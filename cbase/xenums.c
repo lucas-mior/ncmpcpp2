@@ -215,7 +215,7 @@ CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
     #undef XX_2
     #undef XENUM_EXACT
 
-    #define XENUM(e)                                                           \
+    #define XX_BITCHECK(e)                                                     \
         if (val && ((val & e) == e)) {                                         \
             char *name = #e;                                                   \
             int32 len = STRLIT_LEN(#e);                                        \
@@ -238,8 +238,8 @@ CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
             val &= (ENUM_UNDERLYING_TYPE)~e;                                   \
         }
 
-    #define XX_1(e)    XENUM(e)
-    #define XX_2(e, v) XENUM(e)
+    #define XX_1(e)    XX_BITCHECK(e)
+    #define XX_2(e, v) XX_BITCHECK(e)
     #define XX(...) SELECT_ON_NUM_ARGS(XX_, __VA_ARGS__)
 
     ENUM_FIELDS
@@ -247,7 +247,7 @@ CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
     #undef XX
     #undef XX_1
     #undef XX_2
-    #undef XENUM
+    #undef XX_BITCHECK
 
     if (val) {
         error2("Error: bit flags enum contains invalid bit set.\n");
