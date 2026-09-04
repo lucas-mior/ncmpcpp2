@@ -1061,8 +1061,8 @@ nc_menu_swap_item_slots(NcMenu *menu, enum NcMenuItemSource source,
     count = menu_array_count(menu, source);
     ASSERT_NON_NEGATIVE(left);
     ASSERT_NON_NEGATIVE(right);
-    ASSERT(left < count);
-    ASSERT(right < count);
+    ASSERT_LESS(left, count);
+    ASSERT_LESS(right, count);
 
     temp = items[left];
     items[left] = items[right];
