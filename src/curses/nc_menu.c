@@ -733,7 +733,7 @@ nc_menu_insert_item_with_flags(NcMenu *menu, int32 pos, void *item,
 
     count = menu_array_count(menu, NC_MENU_ITEMS_ALL);
     ASSERT_NON_NEGATIVE(pos);
-    ASSERT(pos <= count);
+    ASSERT_LESS_EQUAL(pos, count);
 
     new_item = menu_copy_item(menu, item);
     ARRAY_PUSH(menu->all_items, NULL);
