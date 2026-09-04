@@ -356,9 +356,9 @@ configuration_destroy(Configuration *config) {
         return;
     }
 
-#define NCM_CONFIG_STRING_DESTROY(name) \
-    settings_string_destroy(&config->name, &config->name##_len, \
-                            &config->name##_cap)
+#define NCM_CONFIG_STRING_DESTROY(name)    \
+    settings_string_destroy(&config->name, \
+                            &config->name##_len, &config->name##_cap)
 
     NCM_CONFIG_STRING_DESTROY(ncmpcpp_directory);
     NCM_CONFIG_STRING_DESTROY(lyrics_directory);
