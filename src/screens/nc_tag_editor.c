@@ -3243,18 +3243,15 @@ tag_editor_build_parser_preview(TagEditorScreen *screen,
             } else {
                 tag_editor_append_parser_filename(
                     &screen->parser_preview, song->name, song->name_len);
-                SB_APPEND(&screen->parser_preview,
-                          " -> ");
+                SB_APPEND(&screen->parser_preview, " -> ");
                 if (new_name.len > 0) {
                     SB_APPEND(&screen->parser_preview,
                               new_name.data, new_name.len);
                 } else if (Config.empty_tag) {
                     SB_APPEND(&screen->parser_preview,
-                              Config.empty_tag,
-                              Config.empty_tag_len);
+                              Config.empty_tag, Config.empty_tag_len);
                 }
-                SB_APPEND(&screen->parser_preview,
-                          "\n\n");
+                SB_APPEND(&screen->parser_preview, "\n\n");
             }
             sb_free(&new_name);
             sb_free(&stem);
@@ -3456,8 +3453,9 @@ tag_editor_run_current(NcScreen *screen) {
 
                 initial.data = editor->pattern.data;
                 initial.len = editor->pattern.len;
-                prompt_result = editor->hooks.prompt(
-                    editor->hooks.user, STRLIT("Pattern"), initial, &input);
+                prompt_result = editor->hooks.prompt(editor->hooks.user,
+                                                     STRLIT("Pattern"),
+                                                     initial, &input);
                 if (prompt_result == TAG_EDITOR_PROMPT_ABORTED) {
                     tag_editor_status_message(
                         editor, STRLIT("Action aborted"));
@@ -3602,8 +3600,7 @@ tag_editor_report_error(char *context, int32 context_len,
     SB_APPEND(&message, context, context_len);
     if (ncm_error && (ncm_error->message[0] != 0)) {
         SB_APPEND(&message, ": ");
-        SB_APPEND(&message, ncm_error->message,
-                  strlen32(ncm_error->message));
+        SB_APPEND(&message, ncm_error->message, strlen32(ncm_error->message));
     }
     ncm_statusbar_print_cstring(Config.message_delay_time,
                                 message.data);
