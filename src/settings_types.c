@@ -421,11 +421,11 @@ configuration_destroy(Configuration *config) {
           config->columns.cap*SIZEOF(*config->columns.items));
     config->columns = (ColumnArray){0};
     ncm_formatted_color_array_clear(&config->visualizer_colors);
-    if (config->visualizer_colors.items) {
-        free2(config->visualizer_colors.items,
-              config->visualizer_colors.cap
-                  *SIZEOF(*config->visualizer_colors.items));
-    }
+
+    free2(config->visualizer_colors.items,
+          config->visualizer_colors.cap
+              *SIZEOF(*config->visualizer_colors.items));
+
     config->visualizer_colors = (NcmFormattedColorArray){0};
     free2(config->screen_sequence.items,
           config->screen_sequence.cap*SIZEOF(*config->screen_sequence.items));
