@@ -215,11 +215,8 @@ playlist_editor_screen_init(PlaylistEditorScreen *screen,
     nc_screen_init_ops(&screen->screen, callbacks, screen,
                        NC_SCREEN_TYPE_PLAYLIST_EDITOR);
     {
-        NcMenu *playlists;
-        NcMenu *content;
-
-        playlists = nc_playlist_entry_menu_base(&screen->playlists);
-        content = nc_song_menu_base(&screen->content);
+        NcMenu *playlists = nc_playlist_entry_menu_base(&screen->playlists);
+        NcMenu *content = nc_song_menu_base(&screen->content);
 
         nc_menu_set_selected_prefix(playlists, &Config.selected_item_prefix);
         nc_menu_set_selected_suffix(playlists, &Config.selected_item_suffix);
