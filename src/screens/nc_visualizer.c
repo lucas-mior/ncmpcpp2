@@ -77,19 +77,33 @@ static int32 visualizer_smooth_flipped_char_lens[
 };
 #endif
 
-static void visualizer_refresh_screen(VisualizerScreen *);
-static void visualizer_switch_to_callback(NcScreen *);
-static void visualizer_resize_callback(NcScreen *);
-static int32 visualizer_window_timeout_callback(NcScreen *);
-static void visualizer_update_callback(NcScreen *);
-static int32 visualizer_system_open_fifo(void *user, char *location, int32 location_len);
-static int32 visualizer_system_open_udp(void *user, char *location, int32 location_len, char *port, int32 port_len);
-static int32 visualizer_system_read_source(void *user, int32 fd, void *buffer, int32 buffer_size);
+static void visualizer_refresh_screen(VisualizerScreen *screen);
+static void visualizer_switch_to_callback(NcScreen *screen);
+static void visualizer_resize_callback(NcScreen *screen);
+static int32 visualizer_window_timeout_callback(NcScreen *screen);
+static void visualizer_update_callback(NcScreen *screen);
+static enum VisualizerScreenType visualizer_next_type(
+    enum VisualizerScreenType type);
+static int32 visualizer_system_open_fifo(void *user,
+                                         char *location, int32 location_len);
+static int32 visualizer_system_open_udp(void *user,
+                                        char *location, int32 location_len,
+                                        char *port, int32 port_len);
+static int32 visualizer_system_read_source(void *user, int32 fd,
+                                           void *buffer, int32 buffer_size);
 static void visualizer_system_close_source(void *user, int32 fd);
-static int32 visualizer_system_get_outputs(void *user, NcmMpdOutputList *outputs, NcmError *ncm_error);
-static int32 visualizer_system_disable_output(void *user, int32 id, NcmError *ncm_error);
-static int32 visualizer_system_enable_output(void *user, int32 id, NcmError *ncm_error);
-static void visualizer_system_sleep_microseconds(void *user, int32 microseconds);
+static int32 visualizer_system_get_outputs(
+    void *user, NcmMpdOutputList *outputs, NcmError *ncm_error);
+static int32 visualizer_system_disable_output(void *user, int32 id,
+                                              NcmError *ncm_error);
+static int32 visualizer_system_enable_output(void *user, int32 id,
+                                             NcmError *ncm_error);
+static void visualizer_system_sleep_microseconds(void *user,
+                                                 int32 microseconds);
+static void visualizer_reset_sample_clock(VisualizerScreen *screen);
+#if defined(HAVE_FFTW3_H)
+static void visualizer_fft_destroy(VisualizerScreen *screen);
+#endif
 
 #define NC_SCREEN_IMPL_TYPE VisualizerScreen
 #define NC_SCREEN_IMPL_PREFIX visualizer
@@ -108,7 +122,6 @@ static void visualizer_system_sleep_microseconds(void *user, int32 microseconds)
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
-
 VisualizerDataSourceHooks
 visualizer_data_source_system_hooks(NcmMpdClient *client) {
     VisualizerDataSourceHooks hooks = {0};
@@ -422,14 +435,6 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
         return -NCM_ERROR_NOT_FOUND;
     }
     return 0;
-}
-
-static void
-visualizer_reset_sample_clock(VisualizerScreen *screen) {
-    screen->sample_clock = 0;
-    screen->sample_clock_frame_remainder = 0;
-    screen->sample_clock_initialized = false;
-    return;
 }
 
 void
@@ -793,30 +798,19 @@ visualizer_screen_reset_auto_scale_multiplier(VisualizerScreen *screen) {
     return;
 }
 
-static enum VisualizerScreenType
-visualizer_next_type(enum VisualizerScreenType type) {
-    switch (type) {
-    case VISUALIZER_WAVE:
-        return VISUALIZER_WAVE_FILLED;
-    case VISUALIZER_WAVE_FILLED:
-#if defined(HAVE_FFTW3_H)
-        return VISUALIZER_FREQUENCY;
-    case VISUALIZER_FREQUENCY:
-#endif
-        return VISUALIZER_ELLIPSE;
-    case VISUALIZER_ELLIPSE:
-    case VISUALIZER_TYPE_COUNT:
-        return VISUALIZER_WAVE;
-    default:
-        return VISUALIZER_WAVE;
-    }
-}
-
 void
 visualizer_screen_toggle_type(VisualizerScreen *screen) {
     screen->visualization_type = visualizer_next_type(
         screen->visualization_type);
     visualizer_screen_init_visualization(screen);
+    return;
+}
+
+static void
+visualizer_reset_sample_clock(VisualizerScreen *screen) {
+    screen->sample_clock = 0;
+    screen->sample_clock_frame_remainder = 0;
+    screen->sample_clock_initialized = false;
     return;
 }
 
@@ -1958,6 +1952,25 @@ visualizer_update_callback(NcScreen *screen) {
                            visualizer->rendered_samples.cap);
     nc_window_refresh(&visualizer->window);
     return;
+}
+
+static enum VisualizerScreenType
+visualizer_next_type(enum VisualizerScreenType type) {
+    switch (type) {
+    case VISUALIZER_WAVE:
+        return VISUALIZER_WAVE_FILLED;
+    case VISUALIZER_WAVE_FILLED:
+#if defined(HAVE_FFTW3_H)
+        return VISUALIZER_FREQUENCY;
+    case VISUALIZER_FREQUENCY:
+#endif
+        return VISUALIZER_ELLIPSE;
+    case VISUALIZER_ELLIPSE:
+    case VISUALIZER_TYPE_COUNT:
+        return VISUALIZER_WAVE;
+    default:
+        return VISUALIZER_WAVE;
+    }
 }
 
 #endif /* NCMPCPP_NC_VISUALIZER_C */
