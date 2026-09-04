@@ -167,12 +167,12 @@ XENUMS_LINKAGE int32
 CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
 #if ENUM_BITFLAGS == 0
     switch (val) {
-        #define XX_1(e)           case e:                                      \
-                                     *out = #e;                                \
-                                     return STRLIT_LEN(#e);
-        #define XX_2(e, v)        case e:                                      \
-                                     *out = #e;                                \
-                                     return STRLIT_LEN(#e);
+        #define XX_1(e)    case e:                                      \
+                               *out = #e;                                \
+                               return STRLIT_LEN(#e);
+        #define XX_2(e, v) case e:                                      \
+                               *out = #e;                                \
+                               return STRLIT_LEN(#e);
         #define XX(...) SELECT_ON_NUM_ARGS(XX_, __VA_ARGS__)
 
         ENUM_FIELDS
@@ -180,6 +180,7 @@ CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
         #undef XX
         #undef XX_1
         #undef XX_2
+
         case CAT(ENUM_PREFIX_, COUNT):
             *out = QUOTE(ENUM_PREFIX_) "COUNT";
             return STRLIT_LEN(QUOTE(ENUM_PREFIX_) "COUNT");
@@ -271,12 +272,12 @@ XENUMS_LINKAGE int32
 CAT(ENUM_PREFIX_, alias_len)(enum ENUM_NAME val, char **out) {
 #if ENUM_BITFLAGS == 0
     switch (val) {
-        #define XX_1(e)                 case e:                                \
-                                               *out = #e;                      \
-                                               return STRLIT_LEN(#e);
-        #define XX_2(e, alias)          case e:                                \
-                                               *out = #alias;                  \
-                                               return STRLIT_LEN(#alias);
+        #define XX_1(e)        case e:                                \
+                                   *out = #e;                      \
+                                   return STRLIT_LEN(#e);
+        #define XX_2(e, alias) case e:                                \
+                                   *out = #alias;                  \
+                                   return STRLIT_LEN(#alias);
         #define XX(...) SELECT_ON_NUM_ARGS(XX_, __VA_ARGS__)
 
         ENUM_FIELDS
