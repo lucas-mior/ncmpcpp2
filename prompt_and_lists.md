@@ -36,7 +36,6 @@ list and try the next and so on. When you end up changing a .c file, send me the
 result as a tar ball (but include all the changes of the previous prompts as
 well).
 
-- src/screens/nc_playlist.c
 - src/c/ncm_mpd_client.c
 - src/screens/nc_sel_items_adder.c
 - src/curses/nc_menu.c
