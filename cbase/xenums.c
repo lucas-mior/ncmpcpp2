@@ -81,7 +81,7 @@
 enum CAT(ENUM_NAME, _BitIndices) ENUM_UNDERLYING_TYPE_SPEC {
     #define X_INDEX_1(e)    CAT(e, _BIT_INDEX),
     #define X_INDEX_2(e, v)
-    #define XX(...)         SELECT_ON_NUM_ARGS(X_INDEX_, __VA_ARGS__)
+    #define XX(...) SELECT_ON_NUM_ARGS(X_INDEX_, __VA_ARGS__)
 
     ENUM_FIELDS
 
@@ -117,7 +117,7 @@ enum ENUM_NAME ENUM_UNDERLYING_TYPE_SPEC {
     #define XENUM_1(e)        e = (ENUM_UNDERLYING_TYPE)1 << CAT(e, _BIT_INDEX),
     #define XENUM_2(e, v)     e = v,
 #endif
-    #define XX(...)           SELECT_ON_NUM_ARGS(XENUM_, __VA_ARGS__)
+    #define XX(...) SELECT_ON_NUM_ARGS(XENUM_, __VA_ARGS__)
 
 #if ENUM_BITFLAGS
     CAT(ENUM_PREFIX_, NONE) = 0,
@@ -169,7 +169,7 @@ CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
         #define XENUM_STR_2(e, v) case e:                                      \
                                      *out = #e;                                \
                                      return STRLIT_LEN(#e);
-        #define XX(...)           SELECT_ON_NUM_ARGS(XENUM_STR_, __VA_ARGS__)
+        #define XX(...) SELECT_ON_NUM_ARGS(XENUM_STR_, __VA_ARGS__)
 
         ENUM_FIELDS
 
@@ -201,7 +201,7 @@ CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
         }
     #define XENUM_EXACT_1(e)    XENUM_EXACT(e)
     #define XENUM_EXACT_2(e, v) XENUM_EXACT(e)
-    #define XX(...)             SELECT_ON_NUM_ARGS(XENUM_EXACT_, __VA_ARGS__)
+    #define XX(...) SELECT_ON_NUM_ARGS(XENUM_EXACT_, __VA_ARGS__)
 
     ENUM_FIELDS
 
@@ -235,7 +235,7 @@ CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
 
     #define XENUM_FL_1(e)    XENUM(e)
     #define XENUM_FL_2(e, v) XENUM(e)
-    #define XX(...)          SELECT_ON_NUM_ARGS(XENUM_FL_, __VA_ARGS__)
+    #define XX(...) SELECT_ON_NUM_ARGS(XENUM_FL_, __VA_ARGS__)
 
     ENUM_FIELDS
 
@@ -386,8 +386,7 @@ CAT(ENUM_PREFIX_, parse)(char *string) {
         #define XENUM_PARSE_1(e)        XENUM_PARSE_ONE(e)
         #define XENUM_PARSE_2(e, alias) XENUM_PARSE_ALIAS(e, alias)
 #endif
-        #define XX(...)                 SELECT_ON_NUM_ARGS(XENUM_PARSE_,       \
-                                                           __VA_ARGS__)
+        #define XX(...) SELECT_ON_NUM_ARGS(XENUM_PARSE_, __VA_ARGS__)
 
         ENUM_FIELDS
 
