@@ -3105,8 +3105,7 @@ tag_editor_prompt_tag_value(TagEditorScreen *screen,
     song = nc_tag_row_menu_current(&screen->tags);
     ASSERT(song != NULL);
 
-    label = ncm_tags_field_name(field);
-    label_len = strlen32(label);
+    label_len = NCM_TAGS_FIELD_alias_len(field, &label);
     initial = ncm_mutable_song_tags_buffer(
         song, field, Config.tags_separator, Config.tags_separator_len,
         Config.show_duplicate_tags);

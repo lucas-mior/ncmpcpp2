@@ -431,14 +431,6 @@ ncm_song_getter_to_tags_field(enum NcmSongGetter getter) {
     }
 }
 
-char *
-ncm_tags_field_name(enum NcmTagsField field) {
-    if (field >= NCM_TAGS_FIELD_COUNT) {
-        return "";
-    }
-
-    return NCM_TAGS_FIELD_alias(field);
-}
 
 #undef NCM_LIBMPDCLIENT_CHECK_VERSION
 

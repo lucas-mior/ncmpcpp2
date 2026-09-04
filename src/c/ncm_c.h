@@ -152,7 +152,6 @@ enum NcmTagsField ncm_tags_field_from_tag_type(enum mpd_tag_type tag);
 enum mpd_tag_type ncm_tags_field_to_tag_type(enum NcmTagsField field);
 enum NcmSongGetter ncm_tags_field_to_song_getter(enum NcmTagsField field);
 enum NcmTagsField ncm_song_getter_to_tags_field(enum NcmSongGetter getter);
-char *ncm_tags_field_name(enum NcmTagsField field);
 
 /* c/ncm_song.h */
 #include <mpd/tag.h>
