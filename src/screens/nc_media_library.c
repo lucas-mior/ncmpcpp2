@@ -1100,9 +1100,8 @@ media_library_screen_format_album_row(MediaLibraryScreen *screen,
 }
 
 void
-media_library_screen_format_song_row(
-    MediaLibraryScreen *screen, NcmSong *song, NcBuffer *output
-) {
+media_library_screen_format_song_row(MediaLibraryScreen *screen,
+                                     NcmSong *song, NcBuffer *output) {
     (void)screen;
     if (output == NULL) {
         return;
