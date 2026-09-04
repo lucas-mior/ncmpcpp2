@@ -81,7 +81,7 @@
 enum CAT(ENUM_NAME, _BitIndices) ENUM_UNDERLYING_TYPE_SPEC {
     #define X_IDX_1(e)    CAT(e, _BIT_IDX),
     #define X_IDX_2(e, v)
-    #define XX(...)        SELECT_ON_NUM_ARGS(X_IDX_, __VA_ARGS__)
+    #define XX(...)       SELECT_ON_NUM_ARGS(X_IDX_, __VA_ARGS__)
 
     ENUM_FIELDS
 
