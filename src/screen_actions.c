@@ -122,11 +122,11 @@ current_screen_clear_current_search_constraint(void) {
         return;
     }
     if (current_screen_is(NC_SCREEN_TYPE_LASTFM)) {
-        (void)lastfm_screen_find(app_screen_lastfm(), NULL, 0, NULL);
+        lastfm_screen_find(app_screen_lastfm(), NULL, 0, NULL);
         return;
     }
     if (current_screen_is(NC_SCREEN_TYPE_LYRICS)) {
-        (void)lyrics_screen_find(app_screen_lyrics(), NULL, 0, NULL);
+        lyrics_screen_find(app_screen_lyrics(), NULL, 0, NULL);
         return;
     }
     if (current_screen_is(NC_SCREEN_TYPE_MEDIA_LIBRARY)) {
@@ -167,12 +167,10 @@ current_screen_clear_current_search_constraint(void) {
 
 static void
 current_screen_finish_immediate_change(void) {
-    NcScreen *screen;
+    NcScreen *screen = current_screen();
 
-    if ((screen = current_screen()) == NULL) {
-        return;
-    }
-    if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST)) {
+    ASSERT(screen != NULL);
+    if (nc_screen_type(screen) == NC_SCREEN_TYPE_PLAYLIST) {
         playlist_screen_request_highlighting(app_screen_playlist());
     }
     nc_screen_refresh_window(screen);
@@ -273,7 +271,7 @@ int32
 current_screen_search(enum SearchDirection direction, char *pattern,
                       int32 pattern_len, bool wrap, bool skip_current,
                       NcmError *ncm_error) {
-    bool attempted;
+    StrBuilder *buffer;
     bool forward;
     int32 status;
 
@@ -285,55 +283,44 @@ current_screen_search(enum SearchDirection direction, char *pattern,
         return ncm_error_ok(ncm_error);
     }
 
-    attempted = false;
     forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
     status = -NCM_ERROR_UNAVAILABLE;
 
     if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST)) {
-        attempted = true;
         status = playlist_screen_search(app_screen_playlist(),
                                         pattern, pattern_len, forward,
                                         wrap, skip_current, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_BROWSER)) {
-        attempted = true;
         status = browser_screen_search(app_screen_browser(), pattern,
                                        pattern_len, forward, wrap,
                                        skip_current, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)) {
-        attempted = true;
         status = playlist_editor_screen_search_active(
             app_screen_playlist_editor(), pattern, pattern_len,
             Config.regex_flags, forward, wrap, skip_current, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)) {
-        attempted = true;
         status = search_engine_screen_search(
             app_screen_search_engine(), pattern, pattern_len, forward,
             wrap, skip_current, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_HELP)) {
-        attempted = true;
         status = nc_help_screen_find(app_screen_help(), pattern,
                                      pattern_len, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_LASTFM)) {
-        attempted = true;
         status = lastfm_screen_find(app_screen_lastfm(), pattern,
                                     pattern_len, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_LYRICS)) {
-        attempted = true;
         status = lyrics_screen_find(app_screen_lyrics(), pattern,
                                     pattern_len, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_MEDIA_LIBRARY)) {
-        attempted = true;
         status = media_library_screen_search(
             app_screen_media_library(), pattern, pattern_len, forward,
             wrap, skip_current, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER)) {
-        attempted = true;
         status = selected_items_adder_screen_search(
             app_screen_selected_items_adder(), pattern, pattern_len,
             Config.regex_flags, forward, wrap, skip_current, ncm_error);
 #if defined(HAVE_TAGLIB_H)
     } else if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
-        attempted = true;
         status = tag_editor_screen_search(app_screen_tag_editor(),
                                           pattern, pattern_len, forward,
                                           wrap, skip_current, ncm_error);
@@ -348,21 +335,11 @@ current_screen_search(enum SearchDirection direction, char *pattern,
         return status;
     }
 
-    if (attempted) {
-        StrBuilder *buffer;
-
-        if ((buffer = current_screen_search_buffer()) == NULL) {
-            return ncm_error_set_code(ncm_error, NCM_ERROR_UNAVAILABLE,
-                                      STRLIT("screen cannot search"));
-        }
-        if ((status = sb_set(buffer, pattern, pattern_len)) < 0) {
-            return ncm_error_set_status(ncm_error, status,
-                                        STRLIT("failed to save search"));
-        }
-        status = ncm_error_ok(ncm_error);
-        current_screen_finish_immediate_change();
-    }
-    return status;
+    buffer = current_screen_search_buffer();
+    ASSERT(buffer != NULL);
+    sb_set(buffer, pattern, pattern_len);
+    current_screen_finish_immediate_change();
+    return ncm_error_ok(ncm_error);
 }
 
 void
