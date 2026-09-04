@@ -29,13 +29,13 @@ static void search_format_columns(SearchEngineScreen *screen, NcmSong *song,
 static int32 search_screen_width(SearchEngineScreen *screen);
 static int32 search_menu_suffix_width(NcMenu *menu, int32 pos);
 static int32 search_buffer_width(NcBuffer *buffer);
-static int32 search_copy_song_at(SearchEngineScreen *screen,
-                                  NcmSongArray *songs, int32 pos);
-static int32 search_insert_buffer_with_flags(SearchEngineScreen *screen,
-                                              int32 pos, NcBuffer *buffer,
-                                              uint32 flags);
-static int32 search_set_buffer_row(SearchEngineScreen *screen, int32 pos,
-                                    NcBuffer *buffer);
+static void search_copy_song_at(SearchEngineScreen *screen,
+                                NcmSongArray *songs, int32 pos);
+static void search_insert_buffer_with_flags(SearchEngineScreen *screen,
+                                            int32 pos, NcBuffer *buffer,
+                                            uint32 flags);
+static void search_set_buffer_row(SearchEngineScreen *screen, int32 pos,
+                                  NcBuffer *buffer);
 static void search_build_constraint_row(SearchEngineScreen *screen, int32 idx,
                                         NcBuffer *buffer);
 static void search_build_search_source_row(SearchEngineScreen *screen,
@@ -221,31 +221,22 @@ search_engine_screen_has_locked_constraints(SearchEngineScreen *screen) {
 int32
 search_engine_screen_format_song_text(SearchEngineScreen *screen,
                                       NcmSong *song, StrBuilder *text) {
-    NcBuffer formatted;
-    int32 status;
+    NcBuffer formatted = {0};
 
     if ((screen == NULL) || (song == NULL) || (text == NULL)) {
         return -EINVAL;
     }
 
-    formatted = (NcBuffer){0};
     if (Config.search_engine_display_mode == NCM_DISPLAY_MODE_COLUMNS) {
         search_format_columns(screen, song, &formatted,
                               search_screen_width(screen));
-        status = 0;
     } else {
         ncm_display_song_row(&formatted, &Config.song_list_format, song,
                              NCM_FORMAT_FLAG_ALL);
-        status = 0;
     }
-    if (status == 0) {
-        status = sb_set(text, formatted.data, formatted.len);
-        if (status > 0) {
-            status = 0;
-        }
-    }
+    sb_set(text, formatted.data, formatted.len);
     nc_buffer_destroy(&formatted);
-    return status;
+    return 0;
 }
 
 void
@@ -295,30 +286,30 @@ search_engine_screen_prepare_static_rows(SearchEngineScreen *screen) {
         NcBuffer constraint_buffer = {0};
 
         search_build_constraint_row(screen, i, &constraint_buffer);
-        (void)search_engine_screen_add_buffer_with_flags(
+        search_engine_screen_add_buffer_with_flags(
             screen, &constraint_buffer, 0);
         nc_buffer_destroy(&constraint_buffer);
     }
 
-    (void)search_engine_screen_add_buffer_with_flags(
+    search_engine_screen_add_buffer_with_flags(
         screen, &buffer, NC_MENU_ITEM_SEPARATOR);
 
     search_build_search_source_row(screen, &buffer);
-    (void)search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
+    search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
 
     search_build_search_mode_row(screen, &buffer);
-    (void)search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
+    search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
 
     nc_buffer_clear(&buffer);
-    (void)search_engine_screen_add_buffer_with_flags(
+    search_engine_screen_add_buffer_with_flags(
         screen, &buffer, NC_MENU_ITEM_SEPARATOR);
 
     nc_buffer_append_data(&buffer, STRLIT("Search"));
-    (void)search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
+    search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
 
     nc_buffer_clear(&buffer);
     nc_buffer_append_data(&buffer, STRLIT("Reset"));
-    (void)search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
+    search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
     nc_buffer_destroy(&buffer);
 
     nc_menu_reset(search_engine_screen_menu(screen));
@@ -332,7 +323,6 @@ search_engine_screen_prepare_static_rows(SearchEngineScreen *screen) {
 int32
 search_engine_screen_update_search_source_row(SearchEngineScreen *screen) {
     NcBuffer buffer;
-    int32 status;
 
     if (screen == NULL) {
         return -EINVAL;
@@ -343,10 +333,9 @@ search_engine_screen_update_search_source_row(SearchEngineScreen *screen) {
 
     buffer = (NcBuffer){0};
     search_build_search_source_row(screen, &buffer);
-    status = search_set_buffer_row(
-        screen, SEARCH_ENGINE_SEARCH_SOURCE_ROW, &buffer);
+    search_set_buffer_row(screen, SEARCH_ENGINE_SEARCH_SOURCE_ROW, &buffer);
     nc_buffer_destroy(&buffer);
-    return status;
+    return 0;
 }
 
 void
@@ -384,8 +373,6 @@ search_engine_screen_add_buffer_with_flags(SearchEngineScreen *screen,
 int32
 search_engine_screen_set_search_mode(SearchEngineScreen *screen,
                                      enum SearchEngineSearchMode mode) {
-    int32 status;
-
     if ((screen == NULL) || (mode < SEARCH_ENGINE_SEARCH_MODE_LITERAL)
         || (mode >= SEARCH_ENGINE_SEARCH_MODE_COUNT)) {
         return -EINVAL;
@@ -395,10 +382,8 @@ search_engine_screen_set_search_mode(SearchEngineScreen *screen,
         NcBuffer buffer = {0};
 
         search_build_search_mode_row(screen, &buffer);
-        status = search_set_buffer_row(
-            screen, SEARCH_ENGINE_SEARCH_MODE_ROW, &buffer);
+        search_set_buffer_row(screen, SEARCH_ENGINE_SEARCH_MODE_ROW, &buffer);
         nc_buffer_destroy(&buffer);
-        return status;
     }
     return 0;
 }
@@ -411,7 +396,7 @@ search_engine_screen_set_search_source(SearchEngineScreen *screen,
     }
     screen->search_in_database = search_in_database;
     if (screen->prepared) {
-        (void)search_engine_screen_update_search_source_row(screen);
+        search_engine_screen_update_search_source_row(screen);
     }
     return;
 }
@@ -525,9 +510,6 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
             if (constraint->len > 0) {
                 constraint_status = ncm_mpd_client_add_search_any(
                     client, constraint->data, ncm_error);
-                if (constraint_status > 0) {
-                    constraint_status = 0;
-                }
             }
 
             for (int32 i = 1;
@@ -543,9 +525,6 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                 if (i == 5) {
                     constraint_status = ncm_mpd_client_add_search_uri(
                         client, constraint->data, ncm_error);
-                    if (constraint_status > 0) {
-                        constraint_status = 0;
-                    }
                     continue;
                 }
 
@@ -578,17 +557,12 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                     tag = MPD_TAG_COMMENT;
                     break;
                 default:
-                    constraint_status = ncm_error_set_status(
-                        ncm_error, -EINVAL,
-                        STRLIT("invalid search constraint"));
+                    ASSERT(false);
                     continue;
                 }
 
                 constraint_status = ncm_mpd_client_add_search_tag(
                     client, tag, constraint->data, ncm_error);
-                if (constraint_status > 0) {
-                    constraint_status = 0;
-                }
             }
             status = constraint_status;
         }
@@ -596,14 +570,8 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
             status = ncm_mpd_client_commit_search_songs(
                 client, &result, ncm_error);
         }
-        if ((status == 0)
-            && ((status = ncm_mpd_song_list_to_song_array(
-                     &result, &songs)) < 0)) {
-            ncm_error_set_status(ncm_error, status,
-                                 STRLIT("failed to copy search results"));
-        }
-        if (status > 0) {
-            status = 0;
+        if (status == 0) {
+            ncm_mpd_song_list_to_song_array(&result, &songs);
         }
         ncm_mpd_song_list_destroy(&result);
     } else {
@@ -737,13 +705,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                     if (!matches) {
                         continue;
                     }
-                    if ((status = ncm_song_array_append_copy(
-                         &songs, song)) < 0) {
-                        ncm_error_set_status(
-                            ncm_error, status,
-                            STRLIT("failed to copy matching song"));
-                        break;
-                    }
+                    ncm_song_array_append_copy(&songs, song);
                 }
             }
 
@@ -772,54 +734,36 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
         NcSearchRow row = {0};
 
         row.is_song = true;
-        if ((status = ncm_song_copy(&row.song, &songs.items[i])) < 0) {
-            nc_search_row_destroy(&row);
-            break;
-        }
+        ncm_song_copy(&row.song, &songs.items[i]);
         nc_search_row_menu_add_with_flags(
             &screen->rows, &row, NC_MENU_ITEM_SELECTABLE);
         nc_search_row_destroy(&row);
-        status = 0;
     }
 
-    if (status == 0) {
+    {
         NcBuffer buffer = {0};
 
-        status = search_insert_buffer_with_flags(
+        search_insert_buffer_with_flags(
             screen, SEARCH_ENGINE_RESULT_SEPARATOR_ROW, &buffer,
             NC_MENU_ITEM_SEPARATOR);
-        if (status == 0) {
-            nc_buffer_append_cstring(&buffer, "Search results: Found ");
-            nc_buffer_append_int32(&buffer, songs.len);
-            if (songs.len == 1) {
-                nc_buffer_append_cstring(&buffer, " song");
-            } else {
-                nc_buffer_append_cstring(&buffer, " songs");
-            }
-            status = search_insert_buffer_with_flags(
-                screen, SEARCH_ENGINE_RESULT_SUMMARY_ROW, &buffer,
-                NC_MENU_ITEM_INACTIVE);
+        nc_buffer_append_cstring(&buffer, "Search results: Found ");
+        nc_buffer_append_int32(&buffer, songs.len);
+        if (songs.len == 1) {
+            nc_buffer_append_cstring(&buffer, " song");
+        } else {
+            nc_buffer_append_cstring(&buffer, " songs");
         }
-        if (status == 0) {
-            nc_buffer_clear(&buffer);
-            status = search_insert_buffer_with_flags(
-                screen, SEARCH_ENGINE_RESULT_END_SEPARATOR_ROW,
-                &buffer, NC_MENU_ITEM_SEPARATOR);
-        }
+        search_insert_buffer_with_flags(
+            screen, SEARCH_ENGINE_RESULT_SUMMARY_ROW, &buffer,
+            NC_MENU_ITEM_INACTIVE);
+        nc_buffer_clear(&buffer);
+        search_insert_buffer_with_flags(
+            screen, SEARCH_ENGINE_RESULT_END_SEPARATOR_ROW, &buffer,
+            NC_MENU_ITEM_SEPARATOR);
         nc_buffer_destroy(&buffer);
-        if (status == 0) {
-            screen->result_rows_present = true;
-            screen->result_count = songs.len;
-        }
     }
-
-    if (status < 0) {
-        ncm_error_set_status(ncm_error, status,
-                             STRLIT("failed to build search results"));
-        search_engine_screen_prepare_static_rows(screen);
-        search_print_error(screen, ncm_error);
-        goto cleanup;
-    }
+    screen->result_rows_present = true;
+    screen->result_count = songs.len;
 
     screen->constraints_locked = Config.block_search_constraints_change;
     menu = search_engine_screen_menu(screen);
@@ -885,9 +829,7 @@ search_engine_screen_can_search(SearchEngineScreen *screen) {
     if (count <= 0) {
         return false;
     }
-    if ((row = nc_menu_active_item_at(menu, count - 1)) == NULL) {
-        return false;
-    }
+    row = nc_menu_active_item_at(menu, count - 1);
     return row->is_song;
 }
 
@@ -895,7 +837,6 @@ int32
 search_engine_screen_current_song(SearchEngineScreen *screen,
                                   NcmSong *song) {
     NcSearchRow *row;
-    int32 status;
 
     if ((screen == NULL) || (song == NULL)) {
         return -EINVAL;
@@ -904,9 +845,7 @@ search_engine_screen_current_song(SearchEngineScreen *screen,
         || !row->is_song) {
         return 0;
     }
-    if ((status = ncm_song_copy(song, &row->song)) < 0) {
-        return status;
-    }
+    ncm_song_copy(song, &row->song);
     return 1;
 }
 
@@ -914,22 +853,20 @@ int32
 search_engine_screen_selected_songs(SearchEngineScreen *screen,
                                     NcmSongArray *songs) {
     NcMenu *menu;
-    int32 status;
 
     if ((screen == NULL) || (songs == NULL)) {
         return -EINVAL;
     }
     menu = search_engine_screen_menu(screen);
     if (!nc_menu_has_selected(menu)) {
-        return search_copy_song_at(screen, songs, nc_menu_highlight(menu));
+        search_copy_song_at(screen, songs, nc_menu_highlight(menu));
+        return 0;
     }
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         if (!nc_menu_position_is_selected(menu, i)) {
             continue;
         }
-        if ((status = search_copy_song_at(screen, songs, i)) < 0) {
-            return status;
-        }
+        search_copy_song_at(screen, songs, i);
     }
     return 0;
 }
@@ -958,11 +895,7 @@ search_engine_screen_apply_filter(SearchEngineScreen *screen,
         NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error)) < 0) {
         return status;
     }
-    if ((status = sb_set(&screen->filter_constraint,
-                         pattern, pattern_len)) < 0) {
-        return ncm_error_set_status(ncm_error, status,
-                                    STRLIT("failed to save filter"));
-    }
+    sb_set(&screen->filter_constraint, pattern, pattern_len);
     callbacks = search_display_callbacks(screen, true);
     nc_menu_set_display_callbacks(search_engine_screen_menu(screen),
                                   callbacks);
@@ -1138,12 +1071,11 @@ search_mouse_button_pressed(NcScreen *screen, MEVENT event) {
         if (nc_menu_goto_selectable(menu, y) < 0) {
             return;
         }
-        if ((row = nc_search_row_menu_current(&search->rows)) == NULL) {
-            return;
-        }
+        row = nc_search_row_menu_current(&search->rows);
+        ASSERT(row != NULL);
         if (!row->is_song) {
             if (event.bstate & BUTTON3_PRESSED) {
-                (void)nc_screen_run_current(screen);
+                nc_screen_run_current(screen);
             }
             return;
         }
@@ -1151,9 +1083,8 @@ search_mouse_button_pressed(NcScreen *screen, MEVENT event) {
         play = (event.bstate & BUTTON3_PRESSED) != 0;
         ncm_error_clear(&ncm_error);
         if (search->hooks.add_song == NULL) {
-            (void)ncm_error_set_status(
-                &ncm_error, -NCM_ERROR_UNAVAILABLE,
-                STRLIT("song add hook unavailable"));
+            ncm_error_set_status(&ncm_error, -NCM_ERROR_UNAVAILABLE,
+                                 STRLIT("song add hook unavailable"));
             search_print_error(search, &ncm_error);
         } else if (search->hooks.add_song(
                        search->hooks.user, &row->song,
@@ -1188,9 +1119,6 @@ search_run_current(NcScreen *base_screen) {
     int32 status;
     uint32 next_mode;
 
-    if (screen == NULL) {
-        return -EINVAL;
-    }
     if (!search_engine_screen_can_run_current(screen)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
@@ -1209,19 +1137,15 @@ search_run_current(NcScreen *base_screen) {
         }
 
         if (prompt_status == SEARCH_ENGINE_PROMPT_ACCEPTED) {
-            status = sb_set(
-                &screen->constraints[pos], value.data, value.len);
-            if ((status >= 0) && screen->prepared) {
+            sb_set(&screen->constraints[pos], value.data, value.len);
+            if (screen->prepared) {
                 NcBuffer buffer = {0};
 
                 search_build_constraint_row(screen, pos, &buffer);
-                status = search_set_buffer_row(screen, pos, &buffer);
+                search_set_buffer_row(screen, pos, &buffer);
                 nc_buffer_destroy(&buffer);
             }
             sb_free(&value);
-            if (status < 0) {
-                return status;
-            }
             return 0;
         }
         sb_free(&value);
@@ -1238,10 +1162,7 @@ search_run_current(NcScreen *base_screen) {
     if (pos == SEARCH_ENGINE_SEARCH_SOURCE_ROW) {
         screen->search_in_database = !screen->search_in_database;
         Config.search_in_db = screen->search_in_database;
-        if ((status = search_engine_screen_update_search_source_row(
-                 screen)) < 0) {
-            return status;
-        }
+        search_engine_screen_update_search_source_row(screen);
         return 0;
     }
     if (pos == SEARCH_ENGINE_SEARCH_MODE_ROW) {
@@ -1250,10 +1171,7 @@ search_run_current(NcScreen *base_screen) {
             next_mode = SEARCH_ENGINE_SEARCH_MODE_LITERAL;
         }
         mode = (enum SearchEngineSearchMode)next_mode;
-        if ((status = search_engine_screen_set_search_mode(
-                 screen, mode)) < 0) {
-            return status;
-        }
+        search_engine_screen_set_search_mode(screen, mode);
         return 0;
     }
     if (pos == SEARCH_ENGINE_SEARCH_BUTTON_ROW) {
@@ -1277,7 +1195,7 @@ search_row_matches_filter(NcMenu *menu, void *item, void *user) {
     NcSearchRow *row = item;
 
     (void)menu;
-    if ((row == NULL) || !row->is_song) {
+    if (!row->is_song) {
         return true;
     }
     return search_row_matches(screen, row, &screen->filter_regex);
@@ -1288,11 +1206,10 @@ search_row_matches(SearchEngineScreen *screen,
                    NcSearchRow *row, NcmRegex *regex) {
     NcmStringView view;
 
-    if ((row == NULL) || !row->is_song) {
+    if (!row->is_song) {
         return false;
     }
 
-    ASSERT(screen != NULL);
     if (screen->hooks.format_song) {
         sb_clear(&screen->row_text);
         if (screen->hooks.format_song(
@@ -1302,44 +1219,38 @@ search_row_matches(SearchEngineScreen *screen,
         view = ncm_string_view_make(screen->row_text.data,
                                     screen->row_text.len);
     } else {
-        if (search_engine_screen_format_song_text(
-            screen, &row->song, &screen->row_text) < 0) {
-            return false;
-        }
+        search_engine_screen_format_song_text(
+            screen, &row->song, &screen->row_text);
         view = ncm_string_view_make(screen->row_text.data,
                                     screen->row_text.len);
     }
     return ncm_regex_matches(regex, view.data, view.len);
 }
 
-static int32
+static void
 search_insert_buffer_with_flags(SearchEngineScreen *screen,
                                 int32 pos, NcBuffer *buffer,
                                 uint32 flags) {
-    NcSearchRow row;
+    NcSearchRow row = {0};
 
-    ASSERT(screen != NULL);
-    ASSERT(buffer != NULL);
-    row = (NcSearchRow){0};
     nc_buffer_copy(&row.buffer, buffer);
     nc_search_row_menu_insert_with_flags(&screen->rows, pos, &row, flags);
     nc_search_row_destroy(&row);
-    return 0;
+    return;
 }
 
-static int32
+static void
 search_set_buffer_row(SearchEngineScreen *screen, int32 pos,
                       NcBuffer *buffer) {
     NcSearchRow *row;
 
-    row = nc_search_row_menu_item_at(
-        &screen->rows, NC_MENU_ITEMS_ALL, pos);
-    if ((row == NULL) || row->is_song) {
-        return -NCM_ERROR_UNAVAILABLE;
-    }
+    row = nc_search_row_menu_item_at(&screen->rows, NC_MENU_ITEMS_ALL, pos);
+    ASSERT(row != NULL);
+    ASSERT(!row->is_song);
+
     nc_buffer_destroy(&row->buffer);
     nc_buffer_copy(&row->buffer, buffer);
-    return 0;
+    return;
 }
 
 static void
@@ -1431,10 +1342,6 @@ search_draw_row(NcMenu *menu, NcWindow *window, void *item,
     SearchEngineScreen *screen = user;
     NcSearchRow *row = item;
 
-    ASSERT(screen != NULL);
-    ASSERT(window != NULL);
-    ASSERT(row != NULL);
-
     if (!row->is_song) {
         search_print_buffer(window, &row->buffer);
         return;
@@ -1496,10 +1403,6 @@ search_draw_row(NcMenu *menu, NcWindow *window, void *item,
 static void
 search_format_columns(SearchEngineScreen *screen, NcmSong *song,
                       NcBuffer *buffer, int32 list_width) {
-    ASSERT(screen != NULL);
-    ASSERT(song != NULL);
-    ASSERT(buffer != NULL);
-
     ncm_display_song_columns(buffer, song, Config.columns.items,
                              Config.columns.len, list_width, true);
     return;
@@ -1507,12 +1410,8 @@ search_format_columns(SearchEngineScreen *screen, NcmSong *song,
 
 static int32
 search_screen_width(SearchEngineScreen *screen) {
-    ASSERT(screen != NULL);
     if (screen->width <= 0) {
         return 0;
-    }
-    if (screen->width > INT32_MAX) {
-        return INT32_MAX;
     }
     return screen->width;
 }
@@ -1520,10 +1419,6 @@ search_screen_width(SearchEngineScreen *screen) {
 static int32
 search_menu_suffix_width(NcMenu *menu, int32 pos) {
     int32 width;
-
-    if (menu == NULL) {
-        return 0;
-    }
 
     width = 0;
     if (nc_menu_position_is_selected(menu, pos)) {
@@ -1537,7 +1432,7 @@ search_menu_suffix_width(NcMenu *menu, int32 pos) {
 
 static int32
 search_buffer_width(NcBuffer *buffer) {
-    if ((buffer == NULL) || (buffer->len <= 0)) {
+    if (buffer->len <= 0) {
         return 0;
     }
     return utf8_width(buffer->data, buffer->len);
@@ -1595,8 +1490,6 @@ search_song_has_field_view(NcmSong *song, int32 field,
                        NcmStringView *view) {
     enum mpd_tag_type tag;
 
-    ASSERT(song != NULL);
-    ASSERT(view != NULL);
     if (field == 5) {
         return ncm_song_has_name_view(song, 0, view);
     }
@@ -1639,8 +1532,7 @@ static void
 search_print_error(SearchEngineScreen *screen, NcmError *ncm_error) {
     int32 len;
 
-    if ((screen == NULL) || (screen->hooks.status_message == NULL)
-        || (ncm_error == NULL)) {
+    if (screen->hooks.status_message == NULL) {
         return;
     }
     len = optional_strlen32(ncm_error->message);
@@ -1651,22 +1543,17 @@ search_print_error(SearchEngineScreen *screen, NcmError *ncm_error) {
     return;
 }
 
-static int32
+static void
 search_copy_song_at(SearchEngineScreen *screen,
                     NcmSongArray *songs, int32 pos) {
     NcSearchRow *row;
-    int32 status;
 
-    row = nc_menu_active_item_at(search_engine_screen_menu(screen),
-                                 pos);
-    if ((row == NULL) || !row->is_song) {
-        return 0;
+    row = nc_menu_active_item_at(search_engine_screen_menu(screen), pos);
+    if (!row->is_song) {
+        return;
     }
-    status = ncm_song_array_append_copy(songs, &row->song);
-    if (status < 0) {
-        return status;
-    }
-    return 0;
+    ncm_song_array_append_copy(songs, &row->song);
+    return;
 }
 
 #endif /* NCMPCPP_NC_SEARCH_ENGINE_C */
