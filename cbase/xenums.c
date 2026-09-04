@@ -235,7 +235,7 @@ CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
 
     #define XENUM_FL_1(e)    XENUM(e)
     #define XENUM_FL_2(e, v) XENUM(e)
-    #define XX(...)           SELECT_ON_NUM_ARGS(XENUM_FL_, __VA_ARGS__)
+    #define XX(...)          SELECT_ON_NUM_ARGS(XENUM_FL_, __VA_ARGS__)
 
     ENUM_FIELDS
 
@@ -386,8 +386,8 @@ CAT(ENUM_PREFIX_, parse)(char *string) {
         #define XENUM_PARSE_1(e)        XENUM_PARSE_ONE(e)
         #define XENUM_PARSE_2(e, alias) XENUM_PARSE_ALIAS(e, alias)
 #endif
-        #define XX(...)                                                        \
-            SELECT_ON_NUM_ARGS(XENUM_PARSE_, __VA_ARGS__)
+        #define XX(...)                 SELECT_ON_NUM_ARGS(XENUM_PARSE_,       \
+                                                           __VA_ARGS__)
 
         ENUM_FIELDS
 
