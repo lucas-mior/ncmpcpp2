@@ -3361,9 +3361,9 @@ tag_editor_run_current(NcScreen *screen) {
             if (editor->hooks.prompt == NULL) {
                 prompt_result = TAG_EDITOR_PROMPT_ERROR;
             } else {
-                prompt_result = editor->hooks.prompt(
-                    editor->hooks.user, STRLIT("New filename"), initial,
-                    &input);
+                prompt_result = editor->hooks.prompt(editor->hooks.user,
+                                                     STRLIT("New filename"),
+                                                     initial, &input);
             }
             if (prompt_result == TAG_EDITOR_PROMPT_ABORTED) {
                 tag_editor_status_message(editor, STRLIT("Action aborted"));
@@ -3388,7 +3388,8 @@ tag_editor_run_current(NcScreen *screen) {
                 }
                 SB_APPEND(&new_name, input.data, input.len);
                 if (stem_dot >= 0) {
-                    SB_APPEND(&new_name, stem_name.data + stem_dot,
+                    SB_APPEND(&new_name,
+                              stem_name.data + stem_dot,
                               stem_name.len - stem_dot);
                 }
                 ncm_mutable_song_set_new_name(song, new_name.data,
