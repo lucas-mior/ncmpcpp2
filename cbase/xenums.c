@@ -199,7 +199,7 @@ CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
         return STRLIT_LEN("NONE");
     }
 
-    #define XX_EXACT(e)                                                     \
+    #define XX_EXACT(e)                                                        \
         if (val == e) {                                                        \
             *out = xstrndup(#e, STRLIT_LEN(#e));                               \
             return STRLIT_LEN(#e);                                             \
@@ -345,8 +345,8 @@ CAT(ENUM_PREFIX_, parse)(char *string) {
         }
         token_len = (int32)(p - token);
         if (token_len <= 0) {
-            error2("Error: invalid enum parse character '%c' in %s.\n", *p,
-                   string);
+            error2("Error: invalid enum parse character '%c' in %s.\n",
+                   *p, string);
             TRAP();
         }
 
