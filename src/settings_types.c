@@ -54,10 +54,6 @@ int32 *
 ncm_int32_array_append(NcmInt32Array *array) {
     int32 *item;
 
-    if (array == NULL) {
-        return NULL;
-    }
-
     array->items = settings_array_reserve_append(
         array->items, array->len, &array->cap, SIZEOF(*array->items));
     item = &array->items[array->len];
@@ -72,10 +68,6 @@ NCM_ARRAY_DEFINE_CLEAR(ncm_formatted_color_array, NcmFormattedColorArray,
 NcFormattedColor *
 ncm_formatted_color_array_append(NcmFormattedColorArray *array) {
     NcFormattedColor *item;
-
-    if (array == NULL) {
-        return NULL;
-    }
 
     array->items = settings_array_reserve_append(
         array->items, array->len, &array->cap, SIZEOF(*array->items));
@@ -113,9 +105,6 @@ column_init(Column *column) {
 
 void
 column_array_clear(ColumnArray *array) {
-    if (array == NULL) {
-        return;
-    }
     for (int32 i = 0; i < array->len; i += 1) {
         Column *column = &array->items[i];
 
@@ -133,10 +122,6 @@ Column *
 column_array_append(ColumnArray *array) {
     Column *column;
 
-    if (array == NULL) {
-        return NULL;
-    }
-
     array->items = settings_array_reserve_append(
         array->items, array->len, &array->cap, SIZEOF(*array->items));
     column = &array->items[array->len];
@@ -147,9 +132,6 @@ column_array_append(ColumnArray *array) {
 
 void
 screen_type_array_clear(ScreenTypeArray *array) {
-    if (array == NULL) {
-        return;
-    }
     array->len = 0;
     return;
 }
@@ -157,10 +139,6 @@ screen_type_array_clear(ScreenTypeArray *array) {
 enum ScreenType *
 screen_type_array_append(ScreenTypeArray *array) {
     enum ScreenType *screen_type;
-
-    if (array == NULL) {
-        return NULL;
-    }
 
     array->items = settings_array_reserve_append(
         array->items, array->len, &array->cap, SIZEOF(*array->items));
@@ -177,12 +155,8 @@ settings_formatted_color_array_destroy_item(void *item) {
     return;
 }
 
-void
-configuration_init(Configuration *config) {
-    if (config == NULL) {
-        return;
-    }
-
+static void
+configuration_init_unchecked(Configuration *config) {
 #define NCM_CONFIG_STRING_INIT(name) \
     config->name = NULL; \
     config->name##_len = 0; \
@@ -351,6 +325,16 @@ configuration_init(Configuration *config) {
 }
 
 void
+configuration_init(Configuration *config) {
+    if (config == NULL) {
+        return;
+    }
+
+    configuration_init_unchecked(config);
+    return;
+}
+
+void
 configuration_destroy(Configuration *config) {
     if (config == NULL) {
         return;
@@ -432,7 +416,7 @@ configuration_destroy(Configuration *config) {
     config->screen_sequence = (ScreenTypeArray){0};
     ncm_lyrics_fetcher_registry_destroy(&config->lyrics_fetchers);
 
-    configuration_init(config);
+    configuration_init_unchecked(config);
 
     return;
 }
