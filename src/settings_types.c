@@ -150,8 +150,7 @@ static void
 configuration_init_unchecked(Configuration *config) {
 #define NCM_CONFIG_STRING_INIT(name) \
     config->name = NULL; \
-    config->name##_len = 0; \
-    config->name##_cap = 0
+    config->name##_len = 0
 
     NCM_CONFIG_STRING_INIT(ncmpcpp_directory);
     NCM_CONFIG_STRING_INIT(lyrics_directory);
@@ -331,9 +330,10 @@ configuration_destroy(Configuration *config) {
         return;
     }
 
-#define NCM_CONFIG_STRING_DESTROY(name)    \
-    stupid_string_free(&config->name, \
-                            &config->name##_len, &config->name##_cap)
+#define NCM_CONFIG_STRING_DESTROY(name)          \
+    free2(config->name, config->name##_len + 1); \
+    config->name = NULL;                         \
+    config->name##_len = 0
 
     NCM_CONFIG_STRING_DESTROY(ncmpcpp_directory);
     NCM_CONFIG_STRING_DESTROY(lyrics_directory);

@@ -83,21 +83,6 @@ typedef struct Configuration {
     int32 random_exclude_pattern_len;
     int32 tags_separator_len;
 
-    int32 ncmpcpp_directory_cap;
-    int32 lyrics_directory_cap;
-    int32 mpd_music_dir_cap;
-    int32 visualizer_fifo_path_cap;
-    int32 visualizer_data_source_cap;
-    int32 visualizer_output_name_cap;
-    int32 empty_tag_cap;
-    int32 external_editor_cap;
-    int32 system_encoding_cap;
-    int32 execute_on_song_change_cap;
-    int32 execute_on_player_state_change_cap;
-    int32 lastfm_preferred_language_cap;
-    int32 default_tag_editor_pattern_cap;
-    int32 random_exclude_pattern_cap;
-    int32 tags_separator_cap;
 
     StrBuilder progressbar;
     StrBuilder visualizer_chars;
