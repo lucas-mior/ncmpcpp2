@@ -91,7 +91,7 @@ settings_string_set_expanded(char **data, int32 *len, int32 *cap, char *value,
     StrBuilder buffer = {0};
 
     settings_expand_home(&buffer, value, value_len);
-    settings_string_set(data, len, cap, buffer.data, buffer.len);
+    stupid_string_set(data, len, cap, buffer.data, buffer.len);
     sb_free(&buffer);
     return;
 }
@@ -103,7 +103,7 @@ settings_string_set_directory(char **data, int32 *len, int32 *cap, char *value,
 
     settings_expand_home(&buffer, value, value_len);
     sb_append_byte_if_not(&buffer, '/');
-    settings_string_set(data, len, cap, buffer.data, buffer.len);
+    stupid_string_set(data, len, cap, buffer.data, buffer.len);
     sb_free(&buffer);
     return;
 }
@@ -439,7 +439,7 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
     FUNC(Configuration *config, char *value, int32 value_len,                  \
          NcmError *ncm_error) {                                                \
         (void)ncm_error;                                                       \
-        settings_string_set(&config->FIELD, &config->FIELD##_len,              \
+        stupid_string_set(&config->FIELD, &config->FIELD##_len,              \
                             &config->FIELD##_cap, value, value_len);           \
         return 0;                                                              \
     }
@@ -755,7 +755,7 @@ apply_system_encoding(Configuration *config, char *value, int32 value_len,
     (void)value;
     (void)value_len;
     (void)ncm_error;
-    settings_string_set(&config->system_encoding,
+    stupid_string_set(&config->system_encoding,
                         &config->system_encoding_len,
                         &config->system_encoding_cap, "", 0);
     return 0;
@@ -988,7 +988,7 @@ apply_song_columns_list_format(Configuration *config,
             colon = ncm_string_find_char(tag.data, tag.len, ':');
             type_len = tag.len;
             if (colon >= 0) {
-                settings_string_set(&column->name, &column->name_len,
+                stupid_string_set(&column->name, &column->name_len,
                                     &column->name_cap, tag.data + colon + 1,
                                     tag.len - colon - 1);
                 type_len = colon;
