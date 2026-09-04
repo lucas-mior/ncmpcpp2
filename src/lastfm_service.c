@@ -26,7 +26,7 @@ lastfm_result_clear_unchecked(NcmLastfmResult *result) {
 static void
 lastfm_result_set_unchecked(NcmLastfmResult *result, bool success, char *text,
                             int32 text_len) {
-    lastfm_string_set(&result->text, &result->text_len, &result->text_cap,
+    stupid_string_set(&result->text, &result->text_len, &result->text_cap,
                       text, text_len);
     result->success = success;
     return;
@@ -90,9 +90,9 @@ ncm_lastfm_artist_info_init(NcmLastfmService *service, char *artist,
     lastfm_service_destroy_unchecked(service);
     *service = (NcmLastfmService){0};
     service->type = NCM_LASTFM_SERVICE_ARTIST_INFO;
-    lastfm_string_set(&service->artist, &service->artist_len,
+    stupid_string_set(&service->artist, &service->artist_len,
                       &service->artist_cap, artist, artist_len);
-    lastfm_string_set(&service->lang, &service->lang_len,
+    stupid_string_set(&service->lang, &service->lang_len,
                       &service->lang_cap, lang, lang_len);
     return 0;
 }
