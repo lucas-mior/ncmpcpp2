@@ -1561,7 +1561,8 @@ APPLY_BOOL(apply_data_fetching_delay, data_fetching_delay)
 APPLY_BOOL(apply_media_library_hide_album_dates, media_lib_hide_album_dates)
 APPLY_BOOL(apply_media_library_albums_split_by_date,
            media_library_albums_split_by_date)
-APPLY_STRING(apply_default_tag_editor_pattern, pattern)
+APPLY_STRING(apply_default_tag_editor_pattern,
+             default_tag_editor_pattern)
 APPLY_BOOL(apply_header_visibility, header_visibility)
 APPLY_BOOL(apply_statusbar_visibility, statusbar_visibility)
 APPLY_BOOL(apply_connected_message_on_startup, connected_message_on_startup)
