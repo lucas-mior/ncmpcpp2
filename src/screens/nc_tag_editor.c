@@ -3252,8 +3252,7 @@ tag_editor_build_parser_preview(TagEditorScreen *screen,
                     SB_APPEND(&screen->parser_preview,
                               Config.empty_tag, Config.empty_tag_len);
                 }
-                SB_APPEND(&screen->parser_preview,
-                          "\n\n");
+                SB_APPEND(&screen->parser_preview, "\n\n");
             }
             sb_free(&new_name);
             sb_free(&stem);
