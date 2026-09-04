@@ -17,28 +17,6 @@ static NcmLastfmCurlEscapeFn lastfm_test_escape;
 static void *lastfm_test_user;
 
 static void
-lastfm_string_set(char **data, int32 *len, int32 *cap, char *source,
-                  int32 source_len) {
-    char *new_data;
-    int32 new_cap;
-
-    ASSERT((source_len >= 0)
-           && ((source != NULL) || (source_len == 0)));
-    stupid_string_free(data, len, cap);
-    if (source_len == 0) {
-        return;
-    }
-    new_cap = source_len + 1;
-    new_data = malloc2(new_cap);
-    memcpy64(new_data, source, source_len);
-    new_data[source_len] = '\0';
-    *data = new_data;
-    *len = source_len;
-    *cap = new_cap;
-    return;
-}
-
-static void
 lastfm_result_clear_unchecked(NcmLastfmResult *result) {
     stupid_string_free(&result->text, &result->text_len, &result->text_cap);
     result->success = false;
