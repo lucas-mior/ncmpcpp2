@@ -9,13 +9,11 @@
 #include <mpd/tag.h>
 #include <regex.h>
 
-/* c/ncm_defs.h */
 typedef struct NcmStringView {
     char *data;
     int32 len;
 } NcmStringView;
 
-/* c/ncm_error.h */
 typedef struct NcmError {
     char message[256];
     int32 code;
@@ -55,7 +53,6 @@ void stupid_string_free(char **data, int32 *len, int32 *cap);
 void stupid_string_set(char **dest, int32 *dest_len, int32 *dest_cap,
                        char *source, int32 source_len);
 
-/* c/ncm_tags.h */
 #include <mpd/tag.h>
 
 struct mpd_song;
@@ -108,7 +105,6 @@ int32 ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
                      char *directory, char *new_name,
                      NcmTagsGetFieldCallback *callback, void *user);
 
-/* c/ncm_type_conversions.h */
 #include <mpd/tag.h>
 
 #define ENUM_NAME NcmItemType
@@ -156,7 +152,6 @@ enum mpd_tag_type ncm_tags_field_to_tag_type(enum NcmTagsField field);
 enum NcmSongGetter ncm_tags_field_to_song_getter(enum NcmTagsField field);
 enum NcmTagsField ncm_song_getter_to_tags_field(enum NcmSongGetter getter);
 
-/* c/ncm_song.h */
 #include <mpd/tag.h>
 
 struct mpd_song;
@@ -230,7 +225,6 @@ StrBuilder ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
                                 bool show_duplicates);
 bool ncm_song_is_equal(NcmSong *a, NcmSong *b);
 
-/* c/ncm_mutable_song.h */
 typedef struct NcmMutableSongTag {
     char *original;
     char *value;
@@ -310,7 +304,6 @@ bool ncm_mutable_song_is_modified(NcmMutableSong *song);
 void ncm_mutable_song_clear_modifications(NcmMutableSong *song);
 int32 ncm_mutable_song_write(NcmMutableSong *song, char *music_dir);
 
-/* c/ncm_directory.h */
 struct mpd_directory;
 
 typedef struct NcmDirectory {
@@ -329,7 +322,6 @@ time_t ncm_directory_last_modified(NcmDirectory *directory);
 int32 ncm_directory_from_mpd_directory(NcmDirectory *dest,
                                        struct mpd_directory *source);
 
-/* c/ncm_playlist.h */
 struct mpd_playlist;
 
 typedef struct NcmPlaylist {
@@ -348,7 +340,6 @@ time_t ncm_playlist_last_modified(NcmPlaylist *playlist);
 int32 ncm_playlist_from_mpd_playlist(NcmPlaylist *dest,
                                      struct mpd_playlist *source);
 
-/* c/ncm_mpd_item.h */
 struct mpd_entity;
 
 #define ENUM_NAME NcmMpdItemKind
@@ -384,7 +375,6 @@ NcmSong *ncm_mpd_item_song(NcmMpdItem *item);
 NcmDirectory *ncm_mpd_item_directory(NcmMpdItem *item);
 NcmPlaylist *ncm_mpd_item_playlist(NcmMpdItem *item);
 
-/* c/ncm_array.h */
 typedef void NcmArrayItemInitCallback(void *item);
 typedef void NcmArrayItemDestroyCallback(void *item);
 typedef int32 NcmArrayItemCopyCallback(void *dest, void *source);
@@ -721,7 +711,6 @@ typedef struct NcmArrayItemCallbacks {
                                  CALLBACKS)                                    \
     NCM_ARRAY_DEFINE_REMOVE_ORDERED(PREFIX, ARRAY_TYPE, CALLBACKS)
 
-/* c/ncm_sample_buffer.h */
 typedef struct NcmSampleBuffer {
     int16 *data;
     int32 len;
@@ -738,7 +727,6 @@ void ncm_sample_buffer_resize(NcmSampleBuffer *buffer, int32 cap);
 void ncm_sample_buffer_clear(NcmSampleBuffer *buffer);
 int32 ncm_sample_buffer_capacity(NcmSampleBuffer *buffer);
 
-/* c/ncm_app_arrays.h */
 NCM_ARRAY_DECLARE_TYPE(NcmStringViewArray, NcmStringView)
 NCM_ARRAY_DECLARE_CLEAR(ncm_string_view_array, NcmStringViewArray)
 NCM_ARRAY_DECLARE_DESTROY(ncm_string_view_array, NcmStringViewArray)
@@ -794,7 +782,6 @@ NCM_ARRAY_DECLARE_APPEND_COPY(ncm_mpd_item_array,
                               NcmMpdItemArray,
                               NcmMpdItem)
 
-/* c/ncm_regex.h */
 #include <regex.h>
 
 #define NCM_REGEX_EXTENDED 0x01u
@@ -824,7 +811,6 @@ int32 ncm_regex_for_each_match(NcmRegex *regex,
                                char *string, int32 string_len,
                                NcmRegexMatchCallback *callback, void *user);
 
-/* c/ncm_mpd_connection.h */
 #include <mpd/client.h>
 
 typedef struct NcmMpdConnection {
@@ -1118,7 +1104,6 @@ int32 ncm_mpd_connection_load_playlist(NcmMpdConnection *connection,
 int32 ncm_mpd_connection_save_playlist(NcmMpdConnection *connection,
                                       char *playlist);
 
-/* c/ncm_mpd_client.h */
 typedef void NcmMpdNoidleCallback(int32 flags, void *user);
 
 typedef struct NcmMpdClient {
@@ -1333,7 +1318,6 @@ int32 ncm_mpd_client_get_tag_types(NcmMpdClient *client,
                                   NcmStringViewList *strings,
                                   NcmError *ncm_error);
 
-/* c/ncm_enums.h */
 #include "config.h"
 
 #define ENUM_NAME SearchDirection
@@ -1409,12 +1393,10 @@ int32 ncm_design_parse(char *string, int32 string_len, enum Design *value);
 int32 ncm_visualizer_type_parse(char *string, int32 string_len,
                                 enum VisualizerType *value);
 
-/* c/ncm_comparators.h */
 int32 ncm_compare_locale_strings(char *left, int32 left_len,
                                  char *right, int32 right_len,
                                  bool ignore_the);
 
-/* c/ncm_conversion.h */
 int32 ncm_parse_int32(char *source, int32 source_len, int32 *out,
                       NcmError *ncm_error);
 int32 ncm_parse_int64(char *source, int32 source_len, int32 *out,
@@ -1430,7 +1412,6 @@ int32 ncm_bounds_check_f64(double value, double lbound, double ubound,
 int32 ncm_lower_bound_check_f64(double value, double lbound,
                                 NcmError *ncm_error);
 
-/* c/ncm_fs.h */
 #define ENUM_NAME NcmFsEntryType
 #define ENUM_PREFIX_ NCM_FS_ENTRY_
 #define ENUM_BITFLAGS 0
@@ -1477,12 +1458,10 @@ void ncm_fs_directory_close(NcmFsDirectory *directory);
 int32 ncm_fs_join(StrBuilder *buffer, char *left, int32 left_len,
                   char *right, int32 right_len);
 
-/* c/ncm_html.h */
 StrBuilder ncm_html_unescape_utf8(char *data, int32 data_len);
 StrBuilder ncm_html_unescape_entities(char *data, int32 data_len);
 StrBuilder ncm_html_strip_tags(char *data, int32 data_len);
 
-/* c/ncm_job.h */
 typedef int32 NcmJobRunCallback(void *user, NcmError *ncm_error);
 typedef void NcmJobCompleteCallback(int32 status, NcmError *ncm_error,
                                     void *user);
@@ -1522,7 +1501,6 @@ void ncm_job_queue_destroy(NcmJobQueue *queue);
 int32 ncm_job_queue_pending_count(NcmJobQueue *queue);
 int32 ncm_job_queue_completed_count(NcmJobQueue *queue);
 
-/* c/ncm_lrc.h */
 #define NCM_LRC_NO_BUFFER_POSITION (-1)
 
 typedef struct NcmLrcEntry {
@@ -1565,13 +1543,11 @@ int32 ncm_lrc_document_entry_at_time(NcmLrcDocument *document,
 int32 ncm_lrc_document_next_entry_after_time(NcmLrcDocument *document,
                                              int64 elapsed_ms);
 
-/* c/ncm_macro_utilities.h */
 int32 ncm_macro_run_external_command(char *command, int32 command_len,
                                      bool block, NcmError *ncm_error);
 int32 ncm_macro_run_external_console_command(char *command, int32 command_len,
                                              NcmError *ncm_error);
 
-/* c/ncm_option_parser.h */
 typedef struct NcmOptionLine {
     char *option;
     char *value;
@@ -1583,13 +1559,11 @@ int32 ncm_option_parser_parse_line(char *line, int32 line_len,
                                    NcmOptionLine *result, bool *parsed);
 int32 ncm_option_parser_yes_no(char *value, int32 value_len, bool *result);
 
-/* c/ncm_path.h */
 int32 ncm_path_expand_home(StrBuilder *path, NcmError *ncm_error);
 int32 ncm_path_basename_start(char *path, int32 path_len);
 int32 ncm_path_parent_directory_len(char *path, int32 path_len);
 int32 ncm_path_extension_start(char *path, int32 path_len);
 
-/* c/ncm_playlist_sort.h */
 typedef struct NcmMpdClient NcmMpdClient;
 typedef struct NcmSongArray NcmSongArray;
 
@@ -1610,7 +1584,6 @@ int32 ncm_playlist_sort_range(
     bool ignore_leading_the, NcmMpdClient *client,
     NcmError *ncm_error);
 
-/* c/ncm_search_prompt.h */
 typedef struct NcmSearchPromptState {
     enum SearchDirection direction;
     StrBuilder last_text;
@@ -1633,7 +1606,6 @@ int32 ncm_search_prompt_state_finish_result(NcmSearchPromptState *state,
                                             char *text, int32 text_len,
                                             bool search_ok, bool found);
 
-/* c/ncm_string.h */
 NcmStringView ncm_string_view_make(char *data, int32 len);
 void ncm_string_view_set(NcmStringView *view, char *data, int32 len);
 void ncm_string_view_clear(NcmStringView *view);
@@ -1657,7 +1629,6 @@ void ncm_string_append_shell_escaped_single_quotes(StrBuilder *buffer,
 int32 ncm_string_basename_start(char *path, int32 path_len);
 int32 ncm_string_parent_directory_len(char *path, int32 path_len);
 
-/* c/ncm_taglib.h */
 typedef struct NcmTaglibFile {
     void *handle;
 } NcmTaglibFile;
@@ -1690,7 +1661,6 @@ void ncm_taglib_clear_strings(void);
 
 #include "curses/nc_curses.h"
 
-/* c/ncm_format.h */
 #define ENUM_NAME NcmFormatFlags
 #define ENUM_PREFIX_ NCM_FORMAT_FLAG_
 #define ENUM_BITFLAGS 1
@@ -1787,7 +1757,6 @@ void ncm_format_render_buffer(NcmFormatAst *ast, NcmSong *song,
 StrBuilder ncm_format_render_string(NcmFormatAst *ast, NcmSong *song);
 StrBuilder ncm_format_render_tag(NcmSong *song, NcmFormatSongTag *tag);
 
-/* c/ncm_display.h */
 struct Column;
 
 void ncm_display_song_row(NcBuffer *buffer, NcmFormatAst *format,
