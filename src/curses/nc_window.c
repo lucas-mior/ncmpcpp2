@@ -268,7 +268,7 @@ nc_color_pair_number(NcColor color) {
         result *= NC_COLOR_COMPONENT_COUNT;
         result += color.foreground % nc_color_count();
 
-        ASSERT(result < ARRAY_LEN(color_pair_map));
+        ASSERT_LESS(result, ARRAY_LEN(color_pair_map));
 
         if (color_pair_map[result] == 0) {
             if (color_pair_counter >= COLOR_PAIRS) {
