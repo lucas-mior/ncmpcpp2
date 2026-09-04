@@ -199,13 +199,13 @@ CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
         return STRLIT_LEN("NONE");
     }
 
-    #define XENUM_EXACT(e)                                                     \
+    #define XX_EXACT(e)                                                     \
         if (val == e) {                                                        \
             *out = xstrndup(#e, STRLIT_LEN(#e));                               \
             return STRLIT_LEN(#e);                                             \
         }
-    #define XX_1(e)    XENUM_EXACT(e)
-    #define XX_2(e, v) XENUM_EXACT(e)
+    #define XX_1(e)    XX_EXACT(e)
+    #define XX_2(e, v) XX_EXACT(e)
     #define XX(...) SELECT_ON_NUM_ARGS(XX_, __VA_ARGS__)
 
     ENUM_FIELDS
@@ -213,7 +213,7 @@ CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
     #undef XX
     #undef XX_1
     #undef XX_2
-    #undef XENUM_EXACT
+    #undef XX_EXACT
 
     #define XX_BITCHECK(e)                                                     \
         if (val && ((val & e) == e)) {                                         \
