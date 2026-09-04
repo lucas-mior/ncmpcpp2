@@ -117,7 +117,7 @@ enum ENUM_NAME ENUM_UNDERLYING_TYPE_SPEC {
     #define XENUM_1(e)        e = (ENUM_UNDERLYING_TYPE)1 << CAT(e, _BIT_IDX),
     #define XENUM_2(e, v)     e = v,
 #endif
-    #define XX(...)            SELECT_ON_NUM_ARGS(XENUM_, __VA_ARGS__)
+    #define XX(...)           SELECT_ON_NUM_ARGS(XENUM_, __VA_ARGS__)
 
 #if ENUM_BITFLAGS
     CAT(ENUM_PREFIX_, NONE) = 0,
