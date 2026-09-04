@@ -162,15 +162,6 @@ static LyricsProviderProfile lyrics_provider_profiles[] = {
 };
 
 static void
-lyrics_string_destroy(char **data, int32 *len, int32 *cap) {
-    free2(*data, *cap);
-    *data = NULL;
-    *len = 0;
-    *cap = 0;
-    return;
-}
-
-static void
 lyrics_string_set(char **data, int32 *len, int32 *cap,
                   char *source, int32 source_len) {
     char *new_data;
