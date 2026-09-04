@@ -371,6 +371,13 @@ choice once you have the habit of always knowing the length of your strings.
 Prefer `memcpy64`, `memmem64`, or custom functions that operate on string with
 known length.
 
+Also, never create stupid string helpers like
+`<module>_string_copy`,
+`<module>_string_equal`,
+`<module>_string_destroy`,
+`<module>_string_free`, etc. Use StrBuilder, memcpy64, xstrndup, whatever,
+but NEVER create helper like those.
+
 ## Comparing strings:
 In general, avoid `strcmp()`, use the alternatives below instead:
 - For strings that are both null terminated and we don't know the length of
