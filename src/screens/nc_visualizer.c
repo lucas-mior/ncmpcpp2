@@ -82,7 +82,6 @@ static void visualizer_switch_to_callback(NcScreen *screen);
 static void visualizer_resize_callback(NcScreen *screen);
 static int32 visualizer_window_timeout_callback(NcScreen *screen);
 static void visualizer_update_callback(NcScreen *screen);
-static enum VisualizerScreenType visualizer_next_type(enum VisualizerScreenType type);
 static int32 visualizer_system_open_fifo(void *user, char *location, int32 location_len);
 static int32 visualizer_system_open_udp(void *user, char *location, int32 location_len, char *port, int32 port_len);
 static int32 visualizer_system_read_source(void *user, int32 fd, void *buffer, int32 buffer_size);
@@ -92,6 +91,7 @@ static int32 visualizer_system_disable_output(void *user, int32 id, NcmError *nc
 static int32 visualizer_system_enable_output(void *user, int32 id, NcmError *ncm_error);
 static void visualizer_system_sleep_microseconds(void *user, int32 microseconds);
 static void visualizer_reset_sample_clock(VisualizerScreen *screen);
+static enum VisualizerScreenType visualizer_next_type(enum VisualizerScreenType type);
 #if defined(HAVE_FFTW3_H)
 static void visualizer_fft_destroy(VisualizerScreen *screen);
 #endif
@@ -113,6 +113,7 @@ static void visualizer_fft_destroy(VisualizerScreen *screen);
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
+
 VisualizerDataSourceHooks
 visualizer_data_source_system_hooks(NcmMpdClient *client) {
     VisualizerDataSourceHooks hooks = {0};
