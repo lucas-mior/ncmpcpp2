@@ -526,13 +526,8 @@ void nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
 #include "c/ncm_c.h"
 
 typedef struct StrBuilderPair {
-    char *first;
-    char *second;
-
-    int32 first_len;
-    int32 first_cap;
-    int32 second_len;
-    int32 second_cap;
+    StrBuilder first;
+    StrBuilder second;
 } StrBuilderPair;
 
 typedef struct NcSearchRow {
@@ -768,10 +763,6 @@ NC_TYPED_MENU_DECLARE_ITEM_AT(NcEditorBufferMenu,
 #undef NC_TYPED_MENU_DECLARE_ITEM_AT
 #undef NC_TYPED_MENU_DECLARE_CURRENT
 #undef NC_TYPED_MENU_DECLARE_COMMON
-
-void nc_menu_string_pair_destroy(StrBuilderPair *pair);
-int32 nc_menu_string_pair_copy(
-    StrBuilderPair *dest, StrBuilderPair *source);
 
 void nc_search_row_destroy(NcSearchRow *row);
 int32 nc_search_row_copy(NcSearchRow *dest, NcSearchRow *source);
