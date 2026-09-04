@@ -77,11 +77,11 @@ static int32 visualizer_smooth_flipped_char_lens[
 };
 #endif
 
-static void visualizer_refresh_screen(VisualizerScreen *screen);
-static void visualizer_switch_to_callback(NcScreen *screen);
-static void visualizer_resize_callback(NcScreen *screen);
-static int32 visualizer_window_timeout_callback(NcScreen *screen);
-static void visualizer_update_callback(NcScreen *screen);
+static void visualizer_refresh_screen(VisualizerScreen *);
+static void visualizer_switch_to_callback(NcScreen *);
+static void visualizer_resize_callback(NcScreen *);
+static int32 visualizer_window_timeout_callback(NcScreen *);
+static void visualizer_update_callback(NcScreen *);
 static int32 visualizer_system_open_fifo(void *user, char *location, int32 location_len);
 static int32 visualizer_system_open_udp(void *user, char *location, int32 location_len, char *port, int32 port_len);
 static int32 visualizer_system_read_source(void *user, int32 fd, void *buffer, int32 buffer_size);
