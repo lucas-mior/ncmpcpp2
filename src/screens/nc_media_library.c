@@ -3379,10 +3379,9 @@ library_mouse_scroll(MediaLibraryScreen *screen, enum NcScroll where) {
 }
 
 static int32
-library_mouse_select(
-    MediaLibraryScreen *screen, enum MediaLibraryColumn column,
-    NcMenu *menu, int32 y, bool right_click
-) {
+library_mouse_select(MediaLibraryScreen *screen,
+                     enum MediaLibraryColumn column, NcMenu *menu,
+                     int32 y, bool right_click) {
     NcmError ncm_error;
     bool play;
 
