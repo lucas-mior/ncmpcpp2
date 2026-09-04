@@ -682,7 +682,7 @@ nc_menu_highlight_position(NcMenu *menu, int32 pos, int32 height) {
     int32 half_height;
 
     nc_menu_sync_item_count(menu);
-    ASSERT(pos >= 0);
+    ASSERT_NON_NEGATIVE(pos);
     ASSERT(pos < menu->item_count);
 
     menu->highlight = pos;
@@ -732,7 +732,7 @@ nc_menu_insert_item_with_flags(NcMenu *menu, int32 pos, void *item,
     void *new_item;
 
     count = menu_array_count(menu, NC_MENU_ITEMS_ALL);
-    ASSERT(pos >= 0);
+    ASSERT_NON_NEGATIVE(pos);
     ASSERT(pos <= count);
 
     new_item = menu_copy_item(menu, item);
@@ -798,7 +798,7 @@ nc_menu_replace_item(NcMenu *menu, enum NcMenuItemSource source,
     old_item = menu_array(menu, source)[pos];
     new_item = menu_copy_item(menu, item);
     all_pos = menu_item_index(menu, NC_MENU_ITEMS_ALL, old_item);
-    ASSERT(all_pos >= 0);
+    ASSERT_NON_NEGATIVE(all_pos);
     menu->all_items[all_pos] = new_item;
     for (int32 i = 0; i < menu_array_count(menu, NC_MENU_ITEMS_FILTERED);
          i += 1) {
@@ -1004,7 +1004,7 @@ nc_menu_item_flags_at(NcMenu *menu, enum NcMenuItemSource source,
 
     flags = menu_flags_array(menu, source);
     count = menu_array_count(menu, source);
-    ASSERT(pos >= 0);
+    ASSERT_NON_NEGATIVE(pos);
     ASSERT(pos < count);
     return flags[pos];
 }
@@ -1029,7 +1029,7 @@ nc_menu_item_at(NcMenu *menu, enum NcMenuItemSource source, int32 pos) {
 
     items = menu_array(menu, source);
     count = menu_array_count(menu, source);
-    ASSERT(pos >= 0);
+    ASSERT_NON_NEGATIVE(pos);
     ASSERT(pos < count);
     return items[pos];
 }
@@ -1059,8 +1059,8 @@ nc_menu_swap_item_slots(NcMenu *menu, enum NcMenuItemSource source,
     items = menu_array(menu, source);
     flags = menu_flags_array(menu, source);
     count = menu_array_count(menu, source);
-    ASSERT(left >= 0);
-    ASSERT(right >= 0);
+    ASSERT_NON_NEGATIVE(left);
+    ASSERT_NON_NEGATIVE(right);
     ASSERT(left < count);
     ASSERT(right < count);
 
@@ -1120,7 +1120,7 @@ menu_flags_for_item(NcMenu *menu, void *item) {
     int32 pos;
 
     pos = menu_item_index(menu, NC_MENU_ITEMS_ALL, item);
-    ASSERT(pos >= 0);
+    ASSERT_NON_NEGATIVE(pos);
     return menu->all_item_flags[pos];
 }
 
@@ -1167,7 +1167,7 @@ menu_set_flags_for_item(NcMenu *menu, void *item, uint32 flags) {
     int32 pos;
 
     pos = menu_item_index(menu, NC_MENU_ITEMS_ALL, item);
-    ASSERT(pos >= 0);
+    ASSERT_NON_NEGATIVE(pos);
     menu->all_item_flags[pos] = flags;
 
     pos = menu_item_index(menu, NC_MENU_ITEMS_FILTERED, item);
