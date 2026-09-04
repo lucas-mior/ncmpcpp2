@@ -16,7 +16,7 @@ nc_menu_owned_string_copy(char **dest_data, int32 *dest_len,
     ASSERT(source_len >= 0);
     ASSERT((source_data != NULL) || (source_len == 0));
 
-    nc_menu_owned_string_destroy(dest_data, dest_len, dest_cap);
+    stupid_string_free(dest_data, dest_len, dest_cap);
     if (source_len == 0) {
         return;
     }
@@ -64,7 +64,7 @@ nc_media_library_tag_row_destroy(NcMediaLibraryTagRow *row) {
     if (row == NULL) {
         return;
     }
-    nc_menu_owned_string_destroy(&row->tag, &row->tag_len, &row->tag_cap);
+    stupid_string_free(&row->tag, &row->tag_len, &row->tag_cap);
     row->mtime = 0;
     return;
 }
@@ -91,10 +91,10 @@ nc_media_library_album_row_destroy(NcMediaLibraryAlbumRow *row) {
     if (row == NULL) {
         return;
     }
-    nc_menu_owned_string_destroy(&row->tag, &row->tag_len, &row->tag_cap);
-    nc_menu_owned_string_destroy(&row->album, &row->album_len,
+    stupid_string_free(&row->tag, &row->tag_len, &row->tag_cap);
+    stupid_string_free(&row->album, &row->album_len,
                                  &row->album_cap);
-    nc_menu_owned_string_destroy(&row->date, &row->date_len, &row->date_cap);
+    stupid_string_free(&row->date, &row->date_len, &row->date_cap);
     row->mtime = 0;
     row->all_tracks_entry = false;
     return;
@@ -127,7 +127,7 @@ nc_editor_action_row_destroy(NcEditorActionRow *row) {
     if (row == NULL) {
         return;
     }
-    nc_menu_owned_string_destroy(&row->label, &row->label_len,
+    stupid_string_free(&row->label, &row->label_len,
                                  &row->label_cap);
     row->run = NULL;
     row->user = NULL;
