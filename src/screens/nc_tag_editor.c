@@ -4046,18 +4046,18 @@ tag_editor_layout(TagEditorScreen *screen) {
     screen->parser_helper_start_x = screen->parser_start_x
                                     + screen->parser_width_one;
 
-    nc_window_move_to(&screen->directories_window, screen->start_x,
-                      screen->main_start_y);
-    nc_window_resize(&screen->directories_window, screen->left_width,
-                     screen->main_height);
-    nc_window_move_to(&screen->tag_types_window, screen->middle_start_x,
-                      screen->main_start_y);
-    nc_window_resize(&screen->tag_types_window, screen->middle_width,
-                     screen->main_height);
-    nc_window_move_to(&screen->tags_window, screen->right_start_x,
-                      screen->main_start_y);
-    nc_window_resize(&screen->tags_window, screen->right_width,
-                     screen->main_height);
+    nc_window_move_to(&screen->directories_window,
+                      screen->start_x, screen->main_start_y);
+    nc_window_resize(&screen->directories_window,
+                     screen->left_width, screen->main_height);
+    nc_window_move_to(&screen->tag_types_window,
+                     screen->middle_start_x, screen->main_start_y);
+    nc_window_resize(&screen->tag_types_window,
+                     screen->middle_width, screen->main_height);
+    nc_window_move_to(&screen->tags_window,
+                      screen->right_start_x, screen->main_start_y);
+    nc_window_resize(&screen->tags_window,
+                     screen->right_width, screen->main_height);
 
     nc_window_move_to(&screen->parser_dialog_window,
                       screen->parser_dialog_start_x,
