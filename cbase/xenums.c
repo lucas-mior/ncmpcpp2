@@ -201,7 +201,7 @@ CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
         }
     #define XENUM_EXACT_1(e)    XENUM_EXACT(e)
     #define XENUM_EXACT_2(e, v) XENUM_EXACT(e)
-    #define XX(...)              SELECT_ON_NUM_ARGS(XENUM_EXACT_, __VA_ARGS__)
+    #define XX(...)             SELECT_ON_NUM_ARGS(XENUM_EXACT_, __VA_ARGS__)
 
     ENUM_FIELDS
 
