@@ -3544,17 +3544,17 @@ tag_editor_run_current(NcScreen *screen) {
         if (choice >= (int32)TAG_EDITOR_PARSER_ACTION_RECENT_START) {
             NcMenuString *row;
 
-            row = nc_menu_active_item_at(menu, choice);
-            ASSERT(row != NULL);
-            tag_editor_set_pattern(editor, row->data, row->len);
-            tag_editor_screen_prepare_parser_rows(
-                editor, editor->parser_mode, editor->pattern.data,
-                editor->pattern.len);
-            tag_editor_set_focus(editor, TAG_EDITOR_FOCUS_PARSER_ACTIONS);
-            nc_menu_goto_selectable(
-                nc_editor_string_menu_base(&editor->parser_actions),
-                TAG_EDITOR_PARSER_ACTION_PATTERN);
-            return 0;
+            if ((row = nc_menu_active_item_at(menu, choice))) {
+                tag_editor_set_pattern(editor, row->data, row->len);
+                tag_editor_screen_prepare_parser_rows(
+                    editor, editor->parser_mode, editor->pattern.data,
+                    editor->pattern.len);
+                tag_editor_set_focus(editor, TAG_EDITOR_FOCUS_PARSER_ACTIONS);
+                nc_menu_goto_selectable(
+                    nc_editor_string_menu_base(&editor->parser_actions),
+                    TAG_EDITOR_PARSER_ACTION_PATTERN);
+                return 0;
+            }
         }
         return -NCM_ERROR_UNAVAILABLE;
     }
