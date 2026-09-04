@@ -154,7 +154,7 @@ selected_items_adder_screen_destroy(
     if (screen == NULL) {
         return;
     }
-    (void)app_controller_unregister_screen(
+    app_controller_unregister_screen(
         selected_items_adder_screen_base(screen));
     for (int32 i = 0; i < nc_menu_all_item_count(
         nc_editor_action_menu_base(&screen->playlist_selector));
@@ -163,7 +163,7 @@ selected_items_adder_screen_destroy(
 
         row = nc_editor_action_menu_item_at(&screen->playlist_selector,
                                             NC_MENU_ITEMS_ALL, i);
-        if (row && (row->run == adder_action_existing_playlist)) {
+        if (row->run == adder_action_existing_playlist) {
             existing_playlist_action_destroy(row->user);
             row->user = NULL;
         }
@@ -215,7 +215,7 @@ selected_items_adder_screen_open(
     PlaylistScreen *playlist, NcmMpdClient *client, NcmError *ncm_error
 ) {
     NcmMpdPlaylistList playlists;
-    NcmSongArray selected_songs;
+    NcmSongArray selected_songs = {0};
     NcmError playlist_error;
     NcScreen *current;
     int32 status;
@@ -249,13 +249,7 @@ selected_items_adder_screen_open(
                                     STRLIT("missing previous screen"));
     }
 
-    selected_songs = (NcmSongArray){0};
-    if ((status = ncm_song_array_copy(&selected_songs, songs)) < 0) {
-        ncm_song_array_destroy(&selected_songs);
-        ncm_error_set_status(ncm_error, status,
-                             STRLIT("failed to copy selected songs"));
-        return status;
-    }
+    ncm_song_array_copy(&selected_songs, songs);
 
     nc_menu_reset(nc_editor_action_menu_base(&screen->playlist_selector));
     nc_menu_reset(nc_editor_action_menu_base(&screen->position_selector));
@@ -302,7 +296,7 @@ selected_items_adder_screen_open(
 
             row = nc_editor_action_menu_item_at(
                 &screen->playlist_selector, NC_MENU_ITEMS_ALL, i);
-            if (row && (row->run == adder_action_existing_playlist)) {
+            if (row->run == adder_action_existing_playlist) {
                 existing_playlist_action_destroy(row->user);
                 row->user = NULL;
             }
@@ -325,18 +319,12 @@ selected_items_adder_screen_open(
                 action = malloc2(SIZEOF(*action));
                 *action = (ExistingPlaylistAction){0};
                 action->screen = screen;
-                action->playlist = NULL;
-                action->playlist_len = 0;
-                action->playlist_cap = 0;
-                if (stored_playlist->path
-                    && (stored_playlist->path_len > 0)) {
-                    action->playlist_cap = stored_playlist->path_len + 1;
-                    action->playlist = malloc2(action->playlist_cap);
-                    memcpy64(action->playlist, stored_playlist->path,
-                             stored_playlist->path_len);
-                    action->playlist[stored_playlist->path_len] = '\0';
-                    action->playlist_len = stored_playlist->path_len;
-                }
+                action->playlist_cap = stored_playlist->path_len + 1;
+                action->playlist = malloc2(action->playlist_cap);
+                memcpy64(action->playlist, stored_playlist->path,
+                         stored_playlist->path_len);
+                action->playlist[stored_playlist->path_len] = '\0';
+                action->playlist_len = stored_playlist->path_len;
                 adder_add_action_row(
                     menu, stored_playlist->path, stored_playlist->path_len,
                     adder_action_existing_playlist, action);
@@ -354,11 +342,10 @@ selected_items_adder_screen_open(
                     &screen->playlist_selector, NC_MENU_ITEMS_ALL, smallest);
                 right = nc_editor_action_menu_item_at(
                     &screen->playlist_selector, NC_MENU_ITEMS_ALL, j);
-                if (left && right
-                    && (ncm_compare_locale_strings(
-                        right->label, right->label_len,
-                        left->label, left->label_len,
-                        Config.ignore_leading_the) < 0)) {
+                if (ncm_compare_locale_strings(
+                    right->label, right->label_len,
+                    left->label, left->label_len,
+                    Config.ignore_leading_the) < 0) {
                     smallest = j;
                 }
             }
@@ -489,10 +476,7 @@ adder_draw_row(NcMenu *menu, NcWindow *window, void *item,
     (void)pos;
     (void)user;
 
-    if ((row == NULL) || (row->label == NULL) || (row->label_len <= 0)) {
-        return;
-    }
-
+    ASSERT(row != NULL);
     nc_window_print_data(window, row->label, row->label_len);
     return;
 }
@@ -528,7 +512,8 @@ adder_can_run_current_callback(NcScreen *screen) {
     SelectedItemsAdderScreen *adder;
     NcEditorActionRow *row;
 
-    if (((adder = adder_from_screen(screen)) == NULL) || !adder->ready) {
+    adder = adder_from_screen(screen);
+    if (!adder->ready) {
         return false;
     }
     row = nc_menu_current_item(
@@ -564,7 +549,8 @@ static char *
 adder_title_callback(NcScreen *screen) {
     SelectedItemsAdderScreen *adder;
 
-    if ((adder = adder_from_screen(screen)) && adder->previous_screen) {
+    adder = adder_from_screen(screen);
+    if (adder->previous_screen) {
         return nc_screen_title(adder->previous_screen);
     }
     return "Add selected items";
@@ -593,10 +579,10 @@ adder_mouse_callback(NcScreen *screen, MEVENT event) {
         return;
     }
     if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
-        (void)nc_menu_goto_selectable(
+        nc_menu_goto_selectable(
             selected_items_adder_screen_active_menu(adder), y);
         if (event.bstate & BUTTON3_PRESSED) {
-            (void)selected_items_adder_screen_run_current(adder);
+            selected_items_adder_screen_run_current(adder);
         }
         return;
     }
@@ -637,7 +623,7 @@ adder_filter_callback(NcMenu *menu, void *item, void *user) {
 
 static bool
 adder_row_matches(NcEditorActionRow *row, NcmRegex *regex) {
-    if ((row == NULL) || (row->label == NULL)) {
+    if (row->label == NULL) {
         return false;
     }
     return ncm_regex_matches(regex, row->label, row->label_len);
@@ -649,7 +635,7 @@ adder_statusbar_prompt_can_continue(char *text, void *user) {
     return ncm_statusbar_prompt_should_continue(text, optional_strlen32(text));
 }
 
-static int32
+static void
 adder_add_to_stored_playlist(
     SelectedItemsAdderScreen *screen, char *playlist,
     int32 playlist_len
@@ -658,33 +644,17 @@ adder_add_to_stored_playlist(
     NcmError ncm_error;
     int32 status;
 
-    if ((screen == NULL) || !screen->ready || (screen->client == NULL)) {
-        return -NCM_ERROR_UNAVAILABLE;
-    }
-
+    ASSERT(screen->ready);
     ncm_error_clear(&ncm_error);
-    if (playlist == NULL) {
-        status = ncm_error_set_status(&ncm_error, -EINVAL,
-                                      STRLIT("missing stored playlist"));
-    } else if (screen->selected_songs.len <= 0) {
-        status = ncm_error_set_status(&ncm_error, -EINVAL,
-                                      STRLIT("no selected songs"));
-    } else {
-        status = ncm_mpd_client_start_command_list(screen->client,
-                                                   &ncm_error);
-        for (int32 i = 0;
-             (status == 0) && (i < screen->selected_songs.len); i += 1) {
-            status = ncm_mpd_client_add_song_to_playlist(
+    status = ncm_mpd_client_start_command_list(screen->client, &ncm_error);
+    if (status == 0) {
+        for (int32 i = 0; i < screen->selected_songs.len; i += 1) {
+            ncm_mpd_client_add_song_to_playlist(
                 screen->client, playlist, &screen->selected_songs.items[i],
                 &ncm_error);
         }
-        if (status == 0) {
-            status = ncm_mpd_client_commit_command_list(screen->client,
-                                                        &ncm_error);
-        }
-        if ((status < 0) && screen->client->command_list_active) {
-            screen->client->command_list_active = false;
-        }
+        status = ncm_mpd_client_commit_command_list(screen->client,
+                                                    &ncm_error);
     }
     if (status < 0) {
         if (ncm_error.message[0] != '\0') {
@@ -695,7 +665,7 @@ adder_add_to_stored_playlist(
                 Config.message_delay_time,
                 "Could not add selected items");
         }
-        return status;
+        return;
     }
 
     SB_APPEND(&message, "Selected item(s) added to playlist \"");
@@ -704,10 +674,10 @@ adder_add_to_stored_playlist(
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
     sb_free(&message);
     adder_finish(screen);
-    return 0;
+    return;
 }
 
-static int32
+static bool
 adder_try_add_current_song(
     SelectedItemsAdderScreen *screen, NcmSong *song,
     int32 position, bool *added, bool *success
@@ -722,7 +692,7 @@ adder_try_add_current_song(
                                            NULL, &ncm_error);
     if (status == 0) {
         *added = true;
-        return 0;
+        return true;
     }
 
     if (ncm_error.code == MPD_ERROR_SERVER) {
@@ -731,7 +701,7 @@ adder_try_add_current_song(
             screen->client, (int32)server_error,
             ncm_error.message, optional_strlen32(ncm_error.message));
         *success = false;
-        return 0;
+        return true;
     }
 
     if (ncm_error.message[0] != '\0') {
@@ -742,10 +712,10 @@ adder_try_add_current_song(
             Config.message_delay_time,
             "Could not add selected item");
     }
-    return status;
+    return false;
 }
 
-static int32
+static void
 adder_add_to_current_playlist(
     SelectedItemsAdderScreen *screen, int32 position
 ) {
@@ -755,27 +725,22 @@ adder_add_to_current_playlist(
     bool success;
     int32 first;
     int32 insert_position;
-    int32 status;
 
-    if ((screen == NULL) || !screen->ready || (screen->client == NULL)
-        || (screen->selected_songs.len <= 0) || (position < -1)) {
-        return -EINVAL;
-    }
+    ASSERT(screen->ready);
     if (position == INT32_MAX) {
         ncm_statusbar_print_cstring(
             Config.message_delay_time,
             "Playlist position is too large");
-        return -EOVERFLOW;
+        return;
     }
 
     success = true;
     first = 0;
     while (first < screen->selected_songs.len) {
-        status = adder_try_add_current_song(
+        if (!adder_try_add_current_song(
             screen, &screen->selected_songs.items[first],
-            position, &added, &success);
-        if (status < 0) {
-            return status;
+            position, &added, &success)) {
+            return;
         }
         if (added) {
             break;
@@ -787,22 +752,20 @@ adder_add_to_current_playlist(
         if (position == -1) {
             for (int32 i = first + 1;
                  i < screen->selected_songs.len; i += 1) {
-                status = adder_try_add_current_song(
+                if (!adder_try_add_current_song(
                     screen, &screen->selected_songs.items[i], -1,
-                    &added, &success);
-                if (status < 0) {
-                    return status;
+                    &added, &success)) {
+                    return;
                 }
             }
         } else {
             insert_position = position + 1;
             for (int32 i = screen->selected_songs.len - 1;
                  i > first; i -= 1) {
-                status = adder_try_add_current_song(
+                if (!adder_try_add_current_song(
                     screen, &screen->selected_songs.items[i],
-                    insert_position, &added, &success);
-                if (status < 0) {
-                    return status;
+                    insert_position, &added, &success)) {
+                    return;
                 }
             }
         }
@@ -815,7 +778,7 @@ adder_add_to_current_playlist(
                         message.data, message.len);
     sb_free(&message);
     adder_finish(screen);
-    return 0;
+    return;
 }
 
 static void
@@ -831,9 +794,6 @@ adder_action_current_playlist(void *user) {
     SelectedItemsAdderScreen *screen;
 
     screen = user;
-    if (screen == NULL) {
-        return;
-    }
     screen->active_menu = SELECTED_ITEMS_ADDER_MENU_POSITIONS;
     nc_menu_reset(nc_editor_action_menu_base(&screen->position_selector));
     return;
@@ -881,7 +841,7 @@ adder_action_new_playlist(void *user) {
         playlist = "";
     }
     playlist_len = optional_strlen32(playlist);
-    (void)adder_add_to_stored_playlist(screen, playlist, playlist_len);
+    adder_add_to_stored_playlist(screen, playlist, playlist_len);
     nc_window_prompt_result_destroy(input);
     return;
 }
@@ -900,7 +860,7 @@ adder_action_position_end(void *user) {
     SelectedItemsAdderScreen *screen;
 
     screen = user;
-    (void)adder_add_to_current_playlist(screen, -1);
+    adder_add_to_current_playlist(screen, -1);
     return;
 }
 
@@ -909,7 +869,7 @@ adder_action_position_beginning(void *user) {
     SelectedItemsAdderScreen *screen;
 
     screen = user;
-    (void)adder_add_to_current_playlist(screen, 0);
+    adder_add_to_current_playlist(screen, 0);
     return;
 }
 
@@ -927,7 +887,7 @@ adder_action_position_current_song(void *user) {
     if ((position < 0) || (position == INT32_MAX)) {
         return;
     }
-    (void)adder_add_to_current_playlist(screen, position + 1);
+    adder_add_to_current_playlist(screen, position + 1);
     return;
 }
 
@@ -981,7 +941,7 @@ adder_action_position_current_album(void *user) {
     }
 
     ncm_song_destroy(&current);
-    (void)adder_add_to_current_playlist(screen, position);
+    adder_add_to_current_playlist(screen, position);
     return;
 }
 
@@ -999,7 +959,7 @@ adder_action_position_highlighted(void *user) {
     song_position = ncm_song_position(&song);
     ncm_song_destroy(&song);
 
-    (void)adder_add_to_current_playlist(screen, song_position + 1);
+    adder_add_to_current_playlist(screen, song_position + 1);
     return;
 }
 
@@ -1017,7 +977,7 @@ adder_action_existing_playlist(void *user) {
     ExistingPlaylistAction *action;
 
     action = user;
-    (void)adder_add_to_stored_playlist(
+    adder_add_to_stored_playlist(
         action->screen, action->playlist, action->playlist_len);
     return;
 }
@@ -1028,13 +988,11 @@ adder_add_action_row(NcEditorActionMenu *menu, char *label,
     NcEditorActionRow row;
 
     row = (NcEditorActionRow){0};
-    if (label && (label_len > 0)) {
-        row.label_cap = label_len + 1;
-        row.label = malloc2(row.label_cap);
-        memcpy64(row.label, label, label_len);
-        row.label[label_len] = '\0';
-        row.label_len = label_len;
-    }
+    row.label_cap = label_len + 1;
+    row.label = malloc2(row.label_cap);
+    memcpy64(row.label, label, label_len);
+    row.label[label_len] = '\0';
+    row.label_len = label_len;
     row.run = run;
     row.user = user;
     nc_editor_action_menu_add(menu, &row);
@@ -1047,9 +1005,6 @@ existing_playlist_action_destroy(void *user) {
     ExistingPlaylistAction *action;
 
     action = user;
-    if (action == NULL) {
-        return;
-    }
     free2(action->playlist, action->playlist_cap);
     free2(action, SIZEOF(*action));
     return;
@@ -1115,14 +1070,10 @@ static void
 adder_finish(SelectedItemsAdderScreen *screen) {
     NcScreen *previous;
 
-    if (screen == NULL) {
-        return;
-    }
-
     previous = screen->previous_screen;
     screen->ready = false;
     if (previous) {
-        (void)nc_screen_switcher_switch_to(
+        nc_screen_switcher_switch_to(
             previous, nc_screen_has_to_be_resized(previous));
     }
 
