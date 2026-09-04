@@ -18,26 +18,6 @@ static void tiny_editor_resize(NcScreen *screen);
 static char *tiny_editor_title(NcScreen *screen);
 static void tiny_editor_update(NcScreen *screen);
 static void tiny_editor_mouse_callback(NcScreen *screen, MEVENT event);
-static void tiny_editor_draw_row(NcMenu *menu, NcWindow *window,
-                                 void *item, int32 pos, void *user);
-static void tiny_editor_add_row(TinyTagEditorScreen *screen,
-                                NcBuffer *buffer, uint32 flags);
-static int32 tiny_editor_current_row(TinyTagEditorScreen *screen);
-static void tiny_editor_status_message(TinyTagEditorScreen *screen,
-                                       char *message, int32 message_len);
-static int32 tiny_editor_finish(TinyTagEditorScreen *screen);
-static void tiny_editor_buffer_key_value(NcBuffer *buffer, char *key,
-                                         int32 key_len, char *value,
-                                         int32 value_len);
-static void tiny_editor_buffer_mutable_tag(NcBuffer *buffer,
-                                           NcmMutableSong *song,
-                                           enum NcmTagsField field,
-                                           char *tag_separator,
-                                           int32 tag_separator_len,
-                                           bool show_duplicate_tags);
-static void tiny_editor_buffer_key_uint(NcBuffer *buffer, char *key,
-                                        int32 key_len, uint32 value,
-                                        char *suffix, int32 suffix_len);
 
 #define NC_SCREEN_IMPL_TYPE TinyTagEditorScreen
 #define NC_SCREEN_IMPL_PREFIX tiny_editor
@@ -58,6 +38,36 @@ static void tiny_editor_buffer_key_uint(NcBuffer *buffer, char *key,
     tiny_tag_editor_screen_destroy
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
+
+static void
+tiny_editor_draw_row(NcMenu *menu, NcWindow *window, void *item,
+                     int32 pos, void *user) {
+    NcBuffer *buffer;
+    NcBufferProperty *properties;
+    int32 property_count;
+    int32 property_index;
+
+    (void)menu;
+    (void)pos;
+    (void)user;
+    buffer = item;
+
+    properties = nc_buffer_properties(buffer);
+    property_count = nc_buffer_property_count(buffer);
+    property_index = 0;
+    for (int32 i = 0;; i += 1) {
+        while ((property_index < property_count)
+               && (properties[property_index].position == i)) {
+            nc_buffer_apply_property(window, &properties[property_index]);
+            property_index += 1;
+        }
+        if (i >= nc_buffer_len(buffer)) {
+            break;
+        }
+        nc_window_print_char(window, nc_buffer_data(buffer)[i]);
+    }
+    return;
+}
 
 void
 tiny_tag_editor_screen_init(
@@ -134,6 +144,57 @@ tiny_tag_editor_screen_rows(TinyTagEditorScreen *screen) {
         return NULL;
     }
     return &screen->rows;
+}
+
+static void
+tiny_editor_buffer_key_value(NcBuffer *buffer, char *key, int32 key_len,
+                             char *value, int32 value_len) {
+    nc_buffer_append_data(buffer, key, key_len);
+    nc_buffer_append_data(buffer, STRLIT(": "));
+    if (value_len > 0) {
+        nc_buffer_append_data(buffer, value, value_len);
+    }
+    return;
+}
+
+static void
+tiny_editor_add_row(TinyTagEditorScreen *screen, NcBuffer *buffer,
+                    uint32 flags) {
+    nc_editor_buffer_menu_add_with_flags(&screen->rows, buffer, flags);
+    return;
+}
+
+static void
+tiny_editor_buffer_key_uint(NcBuffer *buffer, char *key, int32 key_len,
+                            uint32 value, char *suffix, int32 suffix_len) {
+    char number[64];
+    int32 len;
+
+    tiny_editor_buffer_key_value(buffer, key, key_len, NULL, 0);
+    len = SNPRINTF(number, "%u", value);
+    nc_buffer_append_data(buffer, number, len);
+    nc_buffer_append_data(buffer, suffix, suffix_len);
+    return;
+}
+
+static void
+tiny_editor_buffer_mutable_tag(
+    NcBuffer *buffer, NcmMutableSong *song, enum NcmTagsField field,
+    char *tag_separator, int32 tag_separator_len,
+    bool show_duplicate_tags
+) {
+    StrBuilder value;
+    char *name;
+
+    name = ncm_tags_field_name(field);
+    tiny_editor_buffer_key_value(buffer,
+                                 name, optional_strlen32(name), NULL, 0);
+    value = ncm_mutable_song_tags_buffer(song, field,
+                                         tag_separator, tag_separator_len,
+                                         show_duplicate_tags);
+    nc_buffer_append_data(buffer, value.data, value.len);
+    sb_free(&value);
+    return;
 }
 
 enum TinyTagEditorOpenResult
@@ -320,6 +381,33 @@ tiny_tag_editor_screen_open_song(
         ncm_taglib_file_close(&file);
     }
     return TINY_TAG_EDITOR_OPEN_SUCCESS;
+}
+
+static void
+tiny_editor_status_message(
+    TinyTagEditorScreen *screen, char *message, int32 message_len
+) {
+    if (screen->hooks.status_message) {
+        screen->hooks.status_message(screen->hooks.user, message,
+                                     message_len);
+    }
+    return;
+}
+
+static int32
+tiny_editor_finish(TinyTagEditorScreen *screen) {
+    NcScreen *previous;
+
+    previous = screen->previous_screen;
+    if (previous == NULL) {
+        return 0;
+    }
+    if (screen->hooks.switch_to_screen) {
+        screen->hooks.switch_to_screen(screen->hooks.user, previous);
+        return 0;
+    }
+    return nc_screen_switcher_switch_to(
+        previous, nc_screen_has_to_be_resized(previous));
 }
 
 static int32
@@ -512,6 +600,11 @@ tiny_editor_run_row(TinyTagEditorScreen *screen, int32 row) {
     return -NCM_ERROR_UNAVAILABLE;
 }
 
+static int32
+tiny_editor_current_row(TinyTagEditorScreen *screen) {
+    return nc_menu_highlight(nc_editor_buffer_menu_base(&screen->rows));
+}
+
 static bool
 tiny_editor_action_runnable(TinyTagEditorScreen *screen) {
     NcMenu *menu;
@@ -685,119 +778,6 @@ tiny_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     for (int32 i = 0; i < count; i += 1) {
         tiny_editor_scroll(screen, where);
     }
-    return;
-}
-
-static void
-tiny_editor_draw_row(NcMenu *menu, NcWindow *window, void *item,
-                     int32 pos, void *user) {
-    NcBuffer *buffer;
-    NcBufferProperty *properties;
-    int32 property_count;
-    int32 property_index;
-
-    (void)menu;
-    (void)pos;
-    (void)user;
-    buffer = item;
-
-    properties = nc_buffer_properties(buffer);
-    property_count = nc_buffer_property_count(buffer);
-    property_index = 0;
-    for (int32 i = 0;; i += 1) {
-        while ((property_index < property_count)
-               && (properties[property_index].position == i)) {
-            nc_buffer_apply_property(window, &properties[property_index]);
-            property_index += 1;
-        }
-        if (i >= nc_buffer_len(buffer)) {
-            break;
-        }
-        nc_window_print_char(window, nc_buffer_data(buffer)[i]);
-    }
-    return;
-}
-
-static void
-tiny_editor_add_row(TinyTagEditorScreen *screen, NcBuffer *buffer,
-                    uint32 flags) {
-    nc_editor_buffer_menu_add_with_flags(&screen->rows, buffer, flags);
-    return;
-}
-
-static int32
-tiny_editor_current_row(TinyTagEditorScreen *screen) {
-    return nc_menu_highlight(nc_editor_buffer_menu_base(&screen->rows));
-}
-
-static void
-tiny_editor_status_message(
-    TinyTagEditorScreen *screen, char *message, int32 message_len
-) {
-    if (screen->hooks.status_message) {
-        screen->hooks.status_message(screen->hooks.user, message,
-                                     message_len);
-    }
-    return;
-}
-
-static int32
-tiny_editor_finish(TinyTagEditorScreen *screen) {
-    NcScreen *previous;
-
-    previous = screen->previous_screen;
-    if (previous == NULL) {
-        return 0;
-    }
-    if (screen->hooks.switch_to_screen) {
-        screen->hooks.switch_to_screen(screen->hooks.user, previous);
-        return 0;
-    }
-    return nc_screen_switcher_switch_to(
-        previous, nc_screen_has_to_be_resized(previous));
-}
-
-static void
-tiny_editor_buffer_key_value(NcBuffer *buffer, char *key, int32 key_len,
-                             char *value, int32 value_len) {
-    nc_buffer_append_data(buffer, key, key_len);
-    nc_buffer_append_data(buffer, STRLIT(": "));
-    if (value_len > 0) {
-        nc_buffer_append_data(buffer, value, value_len);
-    }
-    return;
-}
-
-static void
-tiny_editor_buffer_mutable_tag(
-    NcBuffer *buffer, NcmMutableSong *song, enum NcmTagsField field,
-    char *tag_separator, int32 tag_separator_len,
-    bool show_duplicate_tags
-) {
-    StrBuilder value;
-    char *name;
-
-    name = ncm_tags_field_name(field);
-    tiny_editor_buffer_key_value(buffer,
-                                 name, optional_strlen32(name), NULL, 0);
-    value = ncm_mutable_song_tags_buffer(song, field,
-                                         tag_separator, tag_separator_len,
-                                         show_duplicate_tags);
-    nc_buffer_append_data(buffer, value.data, value.len);
-    sb_free(&value);
-    return;
-}
-
-static void
-tiny_editor_buffer_key_uint(NcBuffer *buffer, char *key, int32 key_len,
-                            uint32 value, char *suffix, int32 suffix_len) {
-    char number[64];
-    int32 len;
-
-    tiny_editor_buffer_key_value(buffer, key, key_len, NULL, 0);
-    len = SNPRINTF(number, "%u", value);
-    nc_buffer_append_data(buffer, number, len);
-    nc_buffer_append_data(buffer, suffix, suffix_len);
     return;
 }
 
