@@ -185,10 +185,10 @@ tiny_editor_buffer_mutable_tag(
 ) {
     StrBuilder value;
     char *name;
+    int32 name_len;
 
-    name = ncm_tags_field_name(field);
-    tiny_editor_buffer_key_value(buffer,
-                                 name, optional_strlen32(name), NULL, 0);
+    name_len = NCM_TAGS_FIELD_alias_len(field, &name);
+    tiny_editor_buffer_key_value(buffer, name, name_len, NULL, 0);
     value = ncm_mutable_song_tags_buffer(song, field,
                                          tag_separator, tag_separator_len,
                                          show_duplicate_tags);
@@ -416,6 +416,7 @@ tiny_editor_run_row(TinyTagEditorScreen *screen, int32 row) {
     enum NcmTagsField field;
     NcmStringView initial;
     char *field_name;
+    int32 field_name_len;
     NcmStringView current_name;
     StrBuilder input = {0};
     StrBuilder tag_value;
@@ -438,13 +439,13 @@ tiny_editor_run_row(TinyTagEditorScreen *screen, int32 row) {
             screen->tag_separator.len, screen->show_duplicate_tags);
         initial.data = tag_value.data;
         initial.len = tag_value.len;
-        field_name = ncm_tags_field_name(field);
+        field_name_len = NCM_TAGS_FIELD_alias_len(field, &field_name);
         if (screen->hooks.prompt == NULL) {
             prompt_result = TINY_TAG_EDITOR_PROMPT_ERROR;
         } else {
             prompt_result = screen->hooks.prompt(
-                screen->hooks.user, field_name,
-                optional_strlen32(field_name), initial, &input);
+                screen->hooks.user, field_name, field_name_len, initial,
+                &input);
         }
         sb_free(&tag_value);
         if (prompt_result == TINY_TAG_EDITOR_PROMPT_ABORTED) {
