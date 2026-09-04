@@ -64,7 +64,7 @@ static void *
 menu_construct_item(NcMenu *menu) {
     void *item;
 
-    ASSERT(menu->item_callbacks.item_size > 0);
+    ASSERT_POSITIVE(menu->item_callbacks.item_size);
     item = malloc2(menu->item_callbacks.item_size);
     if (menu->item_callbacks.construct) {
         menu->item_callbacks.construct(item, menu->item_callbacks.user);
