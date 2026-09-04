@@ -999,13 +999,12 @@ nc_menu_activate_current(NcMenu *menu) {
 uint32
 nc_menu_item_flags_at(NcMenu *menu, enum NcMenuItemSource source,
                       int32 pos) {
-    uint32 *flags;
-    int32 count;
+    uint32 *flags = menu_flags_array(menu, source);
+    int32 count = menu_array_count(menu, source);
 
-    flags = menu_flags_array(menu, source);
-    count = menu_array_count(menu, source);
     ASSERT_NON_NEGATIVE(pos);
     ASSERT_LESS(pos, count);
+
     return flags[pos];
 }
 
