@@ -14,8 +14,6 @@
 
 Configuration Config;
 
-static bool settings_quiet;
-
 typedef int32 (*SettingsApplyFn)(Configuration *config,
                                 char *value, int32 value_len,
                                 NcmError *ncm_error);
@@ -29,258 +27,8 @@ typedef struct SettingsOption {
     bool used;
 } SettingsOption;
 
-#define SETTINGS_OPTION(NAME, DEFAULT_VALUE, APPLY)              \
-    {                                                            \
-        .name = (char *)NAME,                                    \
-        .default_value = (char *)DEFAULT_VALUE,                  \
-        .name_len = STRLIT_LEN(NAME),                            \
-        .default_value_len = STRLIT_LEN(DEFAULT_VALUE),          \
-        .apply = APPLY,                                          \
-        .used = false,                                           \
-    }
 
-SettingsOption options[] = {
-    SETTINGS_OPTION("ncmpcpp_directory", "~/.config/ncmpcpp/",
-                    apply_ncmpcpp_directory),
-    SETTINGS_OPTION("lyrics_directory", "~/.lyrics/",
-                    apply_lyrics_directory),
-    SETTINGS_OPTION("mpd_host", "localhost", apply_mpd_host),
-    SETTINGS_OPTION("mpd_port", "6600", apply_mpd_port),
-    SETTINGS_OPTION("mpd_password", "", apply_mpd_password),
-    SETTINGS_OPTION("mpd_music_dir", "~/music", apply_mpd_music_dir),
-    SETTINGS_OPTION("mpd_connection_timeout", "5",
-                    apply_mpd_connection_timeout),
-    SETTINGS_OPTION("mpd_crossfade_time", "5", apply_mpd_crossfade_time),
-    SETTINGS_OPTION("random_exclude_pattern", "",
-                    apply_random_exclude_pattern),
-    SETTINGS_OPTION("visualizer_data_source", "/tmp/mpd.fifo",
-                    apply_visualizer_data_source),
-    SETTINGS_OPTION("visualizer_output_name", "Visualizer feed",
-                    apply_visualizer_output_name),
-    SETTINGS_OPTION("visualizer_in_stereo", "yes",
-                    apply_visualizer_in_stereo),
-#if defined(HAVE_FFTW3_H)
-    SETTINGS_OPTION("visualizer_type", "spectrum", apply_visualizer_type),
-#else
-    SETTINGS_OPTION("visualizer_type", "ellipse", apply_visualizer_type),
-#endif
-    SETTINGS_OPTION("visualizer_look", "●▮", apply_visualizer_look),
-    SETTINGS_OPTION("visualizer_fps", "60", apply_visualizer_fps),
-    SETTINGS_OPTION("visualizer_autoscale", "no",
-                    apply_visualizer_autoscale),
-    SETTINGS_OPTION("visualizer_spectrum_smooth_look", "yes",
-                    apply_visualizer_spectrum_smooth_look),
-    SETTINGS_OPTION("visualizer_spectrum_smooth_look_legacy_chars", "yes",
-                    apply_visualizer_spectrum_smooth_look_legacy_chars),
-    SETTINGS_OPTION("visualizer_spectrum_dft_size", "2",
-                    apply_visualizer_spectrum_dft_size),
-    SETTINGS_OPTION("visualizer_spectrum_gain", "10",
-                    apply_visualizer_spectrum_gain),
-    SETTINGS_OPTION("visualizer_spectrum_hz_min", "20",
-                    apply_visualizer_spectrum_hz_min),
-    SETTINGS_OPTION("visualizer_spectrum_hz_max", "20000",
-                    apply_visualizer_spectrum_hz_max),
-    SETTINGS_OPTION("visualizer_spectrum_log_scale_x", "yes",
-                    apply_visualizer_spectrum_log_scale_x),
-    SETTINGS_OPTION("visualizer_spectrum_log_scale_y", "yes",
-                    apply_visualizer_spectrum_log_scale_y),
-    SETTINGS_OPTION("visualizer_color",
-                    "blue, cyan, green, yellow, magenta, red",
-                    apply_visualizer_color),
-    SETTINGS_OPTION("system_encoding", "", apply_system_encoding),
-    SETTINGS_OPTION("playlist_disable_highlight_delay", "5",
-                    apply_playlist_disable_highlight_delay),
-    SETTINGS_OPTION("message_delay_time", "5", apply_message_delay_time),
-    SETTINGS_OPTION("song_list_format", "{%a - }{%t}|{$8%f$9}$R{$3%l$9}",
-                    apply_song_list_format),
-    SETTINGS_OPTION("song_status_format",
-                    "{{%a{ \"%b\"{ (%y)}} - }{%t}}|{%f}",
-                    apply_song_status_format),
-    SETTINGS_OPTION("song_library_format", "{%n - }{%t}|{%f}",
-                    apply_song_library_format),
-    SETTINGS_OPTION("alternative_header_first_line_format",
-                    "$b$1$aqqu$/a$9 {%t}|{%f} $1$atqq$/a$9$/b",
-                    apply_header_first_line_format),
-    SETTINGS_OPTION("alternative_header_second_line_format",
-                    "{{$4$b%a$/b$9}{ - $7%b$9}{ ($4%y$9)}}|{%D}",
-                    apply_header_second_line_format),
-    SETTINGS_OPTION("current_item_prefix", "$(yellow)$r",
-                    apply_current_item_prefix),
-    SETTINGS_OPTION("current_item_suffix", "$/r$(end)",
-                    apply_current_item_suffix),
-    SETTINGS_OPTION("current_item_inactive_column_prefix", "$(white)$r",
-                    apply_current_item_inactive_column_prefix),
-    SETTINGS_OPTION("current_item_inactive_column_suffix", "$/r$(end)",
-                    apply_current_item_inactive_column_suffix),
-    SETTINGS_OPTION("now_playing_prefix", "$b", apply_now_playing_prefix),
-    SETTINGS_OPTION("now_playing_suffix", "$/b", apply_now_playing_suffix),
-    SETTINGS_OPTION("browser_playlist_prefix", "$2playlist$9 ",
-                    apply_browser_playlist_prefix),
-    SETTINGS_OPTION("selected_item_prefix", "$6",
-                    apply_selected_item_prefix),
-    SETTINGS_OPTION("selected_item_suffix", "$9",
-                    apply_selected_item_suffix),
-    SETTINGS_OPTION("modified_item_prefix", "$3>$9 ",
-                    apply_modified_item_prefix),
-    SETTINGS_OPTION("song_window_title_format", "{%a - }{%t}|{%f}",
-                    apply_song_window_title_format),
-    SETTINGS_OPTION("browser_sort_mode", "type", apply_browser_sort_mode),
-    SETTINGS_OPTION("browser_sort_format", "{%a - }{%t}|{%f} {%l}",
-                    apply_browser_sort_format),
-    SETTINGS_OPTION("song_columns_list_format",
-                    "(20)[]{a} (6f)[green]{NE} "
-                    "(50)[white]{t|f:Title} (20)[cyan]{b} "
-                    "(7f)[magenta]{l}",
-                    apply_song_columns_list_format),
-    SETTINGS_OPTION("execute_on_song_change", "",
-                    apply_execute_on_song_change),
-    SETTINGS_OPTION("execute_on_player_state_change", "",
-                    apply_execute_on_player_state_change),
-    SETTINGS_OPTION("playlist_show_mpd_host", "no",
-                    apply_playlist_show_mpd_host),
-    SETTINGS_OPTION("playlist_show_remaining_time", "no",
-                    apply_playlist_show_remaining_time),
-    SETTINGS_OPTION("playlist_shorten_total_times", "no",
-                    apply_playlist_shorten_total_times),
-    SETTINGS_OPTION("playlist_separate_albums", "no",
-                    apply_playlist_separate_albums),
-    SETTINGS_OPTION("playlist_display_mode", "columns",
-                    apply_playlist_display_mode),
-    SETTINGS_OPTION("browser_display_mode", "classic",
-                    apply_browser_display_mode),
-    SETTINGS_OPTION("search_engine_display_mode", "classic",
-                    apply_search_engine_display_mode),
-    SETTINGS_OPTION("playlist_editor_display_mode", "classic",
-                    apply_playlist_editor_display_mode),
-    SETTINGS_OPTION("discard_colors_if_item_is_selected", "yes",
-                    apply_discard_colors_if_item_is_selected),
-    SETTINGS_OPTION("show_duplicate_tags", "yes",
-                    apply_show_duplicate_tags),
-    SETTINGS_OPTION("incremental_seeking", "yes",
-                    apply_incremental_seeking),
-    SETTINGS_OPTION("seek_time", "1", apply_seek_time),
-    SETTINGS_OPTION("volume_change_step", "2", apply_volume_change_step),
-    SETTINGS_OPTION("autocenter_mode", "no", apply_autocenter_mode),
-    SETTINGS_OPTION("centered_cursor", "no", apply_centered_cursor),
-    SETTINGS_OPTION("progressbar_look", "=>", apply_progressbar_look),
-    SETTINGS_OPTION("default_place_to_search_in", "database",
-                    apply_default_place_to_search_in),
-    SETTINGS_OPTION("user_interface", "classic", apply_user_interface),
-    SETTINGS_OPTION("data_fetching_delay", "yes",
-                    apply_data_fetching_delay),
-    SETTINGS_OPTION("media_library_hide_album_dates", "no",
-                    apply_media_library_hide_album_dates),
-    SETTINGS_OPTION("media_library_primary_tag", "artist",
-                    apply_media_library_primary_tag),
-    SETTINGS_OPTION("media_library_albums_split_by_date", "yes",
-                    apply_media_library_albums_split_by_date),
-    SETTINGS_OPTION("default_find_mode", "wrapped",
-                    apply_default_find_mode),
-    SETTINGS_OPTION("default_tag_editor_pattern", "%n - %t",
-                    apply_default_tag_editor_pattern),
-    SETTINGS_OPTION("header_visibility", "yes", apply_header_visibility),
-    SETTINGS_OPTION("statusbar_visibility", "yes",
-                    apply_statusbar_visibility),
-    SETTINGS_OPTION("connected_message_on_startup", "yes",
-                    apply_connected_message_on_startup),
-    SETTINGS_OPTION("titles_visibility", "yes", apply_titles_visibility),
-    SETTINGS_OPTION("header_text_scrolling", "yes",
-                    apply_header_text_scrolling),
-    SETTINGS_OPTION("cyclic_scrolling", "no", apply_cyclic_scrolling),
-    SETTINGS_OPTION("lyrics_fetchers",
-                    "azlyrics, genius, letras, musixmatch, tekstowo, "
-                    "vagalume, internet",
-                    apply_lyrics_fetchers),
-    SETTINGS_OPTION("follow_now_playing_lyrics", "no",
-                    apply_follow_now_playing_lyrics),
-    SETTINGS_OPTION("fetch_lyrics_for_current_song_in_background", "no",
-                    apply_fetch_lyrics_background),
-    SETTINGS_OPTION("store_lyrics_in_song_dir", "no",
-                    apply_store_lyrics_in_song_dir),
-    SETTINGS_OPTION("generate_win32_compatible_filenames", "yes",
-                    apply_generate_win32_compatible_filenames),
-    SETTINGS_OPTION("allow_for_physical_item_deletion", "no",
-                    apply_allow_for_physical_item_deletion),
-    SETTINGS_OPTION("lastfm_preferred_language", "en",
-                    apply_lastfm_preferred_language),
-    SETTINGS_OPTION("space_add_mode", "add_remove", apply_space_add_mode),
-    SETTINGS_OPTION("show_hidden_files_in_local_browser", "no",
-                    apply_show_hidden_files_in_local_browser),
-    SETTINGS_OPTION("screen_switcher_mode", "playlist, browser",
-                    apply_screen_switcher_mode),
-    SETTINGS_OPTION("startup_screen", "playlist", apply_startup_screen),
-    SETTINGS_OPTION("startup_slave_screen", "", apply_startup_slave_screen),
-    SETTINGS_OPTION("startup_slave_screen_focus", "no",
-                    apply_startup_slave_screen_focus),
-    SETTINGS_OPTION("locked_screen_width_part", "50",
-                    apply_locked_screen_width_part),
-    SETTINGS_OPTION("ask_for_locked_screen_width_part", "yes",
-                    apply_ask_for_locked_screen_width_part),
-    SETTINGS_OPTION("media_library_column_width_ratio_two", "1:1",
-                    apply_media_library_column_width_ratio_two),
-    SETTINGS_OPTION("media_library_column_width_ratio_three", "1:1:1",
-                    apply_media_library_column_width_ratio_three),
-    SETTINGS_OPTION("playlist_editor_column_width_ratio", "1:2",
-                    apply_playlist_editor_column_width_ratio),
-    SETTINGS_OPTION("jump_to_now_playing_song_at_start", "yes",
-                    apply_jump_to_now_playing_song_at_start),
-    SETTINGS_OPTION("ask_before_clearing_playlists", "yes",
-                    apply_ask_before_clearing_playlists),
-    SETTINGS_OPTION("ask_before_shuffling_playlists", "yes",
-                    apply_ask_before_shuffling_playlists),
-    SETTINGS_OPTION("display_volume_level", "yes",
-                    apply_display_volume_level),
-    SETTINGS_OPTION("display_bitrate", "no", apply_display_bitrate),
-    SETTINGS_OPTION("display_remaining_time", "no",
-                    apply_display_remaining_time),
-    SETTINGS_OPTION("regular_expressions", "extended",
-                    apply_regular_expressions),
-    SETTINGS_OPTION("ignore_leading_the", "no", apply_ignore_leading_the),
-    SETTINGS_OPTION("block_search_constraints_change_if_items_found", "yes",
-                    apply_block_search_constraints_change),
-    SETTINGS_OPTION("mouse_support", "yes", apply_mouse_support),
-    SETTINGS_OPTION("mouse_list_scroll_whole_page", "no",
-                    apply_mouse_list_scroll_whole_page),
-    SETTINGS_OPTION("lines_scrolled", "5", apply_lines_scrolled),
-    SETTINGS_OPTION("empty_tag_marker", "<empty>", apply_empty_tag_marker),
-    SETTINGS_OPTION("tags_separator", " | ", apply_tags_separator),
-    SETTINGS_OPTION("tag_editor_extended_numeration", "no",
-                    apply_tag_editor_extended_numeration),
-    SETTINGS_OPTION("media_library_sort_by_mtime", "no",
-                    apply_media_library_sort_by_mtime),
-    SETTINGS_OPTION("enable_window_title", "yes",
-                    apply_enable_window_title),
-    SETTINGS_OPTION("search_engine_default_search_mode", "1",
-                    apply_search_engine_default_search_mode),
-    SETTINGS_OPTION("external_editor", "nano", apply_external_editor),
-    SETTINGS_OPTION("use_console_editor", "yes", apply_use_console_editor),
-    SETTINGS_OPTION("colors_enabled", "yes", apply_colors_enabled),
-    SETTINGS_OPTION("empty_tag_color", "cyan", apply_empty_tag_color),
-    SETTINGS_OPTION("header_window_color", "default",
-                    apply_header_window_color),
-    SETTINGS_OPTION("volume_color", "default", apply_volume_color),
-    SETTINGS_OPTION("state_line_color", "default", apply_state_line_color),
-    SETTINGS_OPTION("state_flags_color", "default:b",
-                    apply_state_flags_color),
-    SETTINGS_OPTION("main_window_color", "yellow", apply_main_window_color),
-    SETTINGS_OPTION("color1", "white", apply_color1),
-    SETTINGS_OPTION("color2", "green", apply_color2),
-    SETTINGS_OPTION("progressbar_color", "black:b",
-                    apply_progressbar_color),
-    SETTINGS_OPTION("progressbar_elapsed_color", "green:b",
-                    apply_progressbar_elapsed_color),
-    SETTINGS_OPTION("statusbar_color", "default", apply_statusbar_color),
-    SETTINGS_OPTION("statusbar_time_color", "default:b",
-                    apply_statusbar_time_color),
-    SETTINGS_OPTION("player_state_color", "default:b",
-                    apply_player_state_color),
-    SETTINGS_OPTION("alternative_ui_separator_color", "black:b",
-                    apply_alternative_ui_separator_color),
-    SETTINGS_OPTION("window_border_color", "green",
-                    apply_window_border_color),
-    SETTINGS_OPTION("active_window_border", "red",
-                    apply_active_window_border),
-};
+static bool settings_quiet;
 
 static int32
 settings_error(NcmError *ncm_error, char *message, int32 message_len) {
@@ -650,133 +398,6 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
     }
     return 0;
 }
-
-#define APPLY_STRING_DIR(FUNC, FIELD)                                          \
-    static int32                                                               \
-    FUNC(Configuration *config, char *value, int32 value_len,                  \
-         NcmError *ncm_error) {                                                \
-        (void)ncm_error;                                                       \
-        settings_string_set_directory(&config->FIELD,                          \
-                                      &config->FIELD##_len,                    \
-                                      &config->FIELD##_cap,                    \
-                                      value, value_len);                       \
-        return 0;                                                              \
-    }
-
-#define APPLY_STRING_PATH(FUNC, FIELD)                                         \
-    static int32                                                               \
-    FUNC(Configuration *config, char *value, int32 value_len,                  \
-         NcmError *ncm_error) {                                                \
-        (void)ncm_error;                                                       \
-        settings_string_set_expanded(&config->FIELD,                           \
-                                     &config->FIELD##_len,                     \
-                                     &config->FIELD##_cap,                     \
-                                     value, value_len);                        \
-        return 0;                                                              \
-    }
-
-#define APPLY_STRING(FUNC, FIELD)                                              \
-    static int32                                                               \
-    FUNC(Configuration *config, char *value, int32 value_len,                  \
-         NcmError *ncm_error) {                                                \
-        (void)ncm_error;                                                       \
-        stupid_string_set(&config->FIELD, &config->FIELD##_len,              \
-                            &config->FIELD##_cap, value, value_len);           \
-        return 0;                                                              \
-    }
-
-#define APPLY_BOOL(FUNC, FIELD)                                                \
-    static int32                                                               \
-    FUNC(Configuration *config, char *value, int32 value_len,                  \
-         NcmError *ncm_error) {                                                \
-        return settings_parse_bool(value, value_len, &config->FIELD,           \
-                                   ncm_error);                                 \
-    }
-
-#define APPLY_UINT(FUNC, FIELD)                                                \
-    static int32                                                               \
-    FUNC(Configuration *config, char *value, int32 value_len,                  \
-         NcmError *ncm_error) {                                                \
-        return ncm_parse_int32(value, value_len, &config->FIELD,               \
-                               ncm_error);                                     \
-    }
-
-APPLY_STRING_DIR(apply_ncmpcpp_directory, ncmpcpp_directory)
-APPLY_STRING_DIR(apply_lyrics_directory, lyrics_directory)
-APPLY_STRING_DIR(apply_mpd_music_dir, mpd_music_dir)
-APPLY_STRING(apply_random_exclude_pattern, random_exclude_pattern)
-APPLY_STRING_PATH(apply_visualizer_data_source, visualizer_data_source)
-APPLY_STRING(apply_visualizer_output_name, visualizer_output_name)
-APPLY_BOOL(apply_visualizer_in_stereo, visualizer_in_stereo)
-APPLY_BOOL(apply_visualizer_autoscale, visualizer_autoscale)
-APPLY_BOOL(apply_visualizer_spectrum_smooth_look,
-           visualizer_spectrum_smooth_look)
-APPLY_BOOL(apply_visualizer_spectrum_smooth_look_legacy_chars,
-           visualizer_spectrum_smooth_look_legacy_chars)
-APPLY_BOOL(apply_visualizer_spectrum_log_scale_x,
-           visualizer_spectrum_log_scale_x)
-APPLY_BOOL(apply_visualizer_spectrum_log_scale_y,
-           visualizer_spectrum_log_scale_y)
-APPLY_UINT(apply_message_delay_time, message_delay_time)
-APPLY_STRING_PATH(apply_execute_on_song_change, execute_on_song_change)
-APPLY_STRING_PATH(apply_execute_on_player_state_change,
-                  execute_on_player_state_change)
-APPLY_BOOL(apply_playlist_show_mpd_host, playlist_show_mpd_host)
-APPLY_BOOL(apply_playlist_show_remaining_time, playlist_show_remaining_time)
-APPLY_BOOL(apply_playlist_shorten_total_times, playlist_shorten_total_times)
-APPLY_BOOL(apply_playlist_separate_albums, playlist_separate_albums)
-APPLY_BOOL(apply_discard_colors_if_item_is_selected,
-           discard_colors_if_item_is_selected)
-APPLY_BOOL(apply_show_duplicate_tags, show_duplicate_tags)
-APPLY_BOOL(apply_incremental_seeking, incremental_seeking)
-APPLY_UINT(apply_seek_time, seek_time)
-APPLY_UINT(apply_volume_change_step, volume_change_step)
-APPLY_BOOL(apply_autocenter_mode, autocenter_mode)
-APPLY_BOOL(apply_centered_cursor, centered_cursor)
-APPLY_BOOL(apply_data_fetching_delay, data_fetching_delay)
-APPLY_BOOL(apply_media_library_hide_album_dates, media_lib_hide_album_dates)
-APPLY_BOOL(apply_media_library_albums_split_by_date,
-           media_library_albums_split_by_date)
-APPLY_STRING(apply_default_tag_editor_pattern, pattern)
-APPLY_BOOL(apply_header_visibility, header_visibility)
-APPLY_BOOL(apply_statusbar_visibility, statusbar_visibility)
-APPLY_BOOL(apply_connected_message_on_startup, connected_message_on_startup)
-APPLY_BOOL(apply_titles_visibility, titles_visibility)
-APPLY_BOOL(apply_header_text_scrolling, header_text_scrolling)
-APPLY_BOOL(apply_cyclic_scrolling, use_cyclic_scrolling)
-APPLY_BOOL(apply_follow_now_playing_lyrics, now_playing_lyrics)
-APPLY_BOOL(apply_fetch_lyrics_background, fetch_lyrics_in_background)
-APPLY_BOOL(apply_store_lyrics_in_song_dir, store_lyrics_in_song_dir)
-APPLY_BOOL(apply_generate_win32_compatible_filenames,
-           generate_win32_compatible_filenames)
-APPLY_BOOL(apply_allow_for_physical_item_deletion,
-           allow_for_physical_item_deletion)
-APPLY_STRING(apply_lastfm_preferred_language, lastfm_preferred_language)
-APPLY_BOOL(apply_show_hidden_files_in_local_browser,
-           local_browser_show_hidden_files)
-APPLY_BOOL(apply_startup_slave_screen_focus, startup_slave_screen_focus)
-APPLY_BOOL(apply_ask_for_locked_screen_width_part,
-           ask_for_locked_screen_width_part)
-APPLY_BOOL(apply_jump_to_now_playing_song_at_start,
-           jump_to_now_playing_song_at_start)
-APPLY_BOOL(apply_ask_before_clearing_playlists, ask_before_clearing_playlists)
-APPLY_BOOL(apply_ask_before_shuffling_playlists, ask_before_shuffling_playlists)
-APPLY_BOOL(apply_display_volume_level, display_volume_level)
-APPLY_BOOL(apply_display_bitrate, display_bitrate)
-APPLY_BOOL(apply_display_remaining_time, display_remaining_time)
-APPLY_BOOL(apply_ignore_leading_the, ignore_leading_the)
-APPLY_BOOL(apply_block_search_constraints_change,
-           block_search_constraints_change)
-APPLY_BOOL(apply_mouse_support, mouse_support)
-APPLY_BOOL(apply_mouse_list_scroll_whole_page, mouse_list_scroll_whole_page)
-APPLY_UINT(apply_lines_scrolled, lines_scrolled)
-APPLY_STRING(apply_empty_tag_marker, empty_tag)
-APPLY_STRING(apply_tags_separator, tags_separator)
-APPLY_BOOL(apply_tag_editor_extended_numeration, tag_editor_extended_numeration)
-APPLY_BOOL(apply_media_library_sort_by_mtime, media_library_sort_by_mtime)
-APPLY_STRING_PATH(apply_external_editor, external_editor)
-APPLY_BOOL(apply_use_console_editor, use_console_editor)
-APPLY_BOOL(apply_colors_enabled, colors_enabled)
 
 static int32
 apply_mpd_host(Configuration *config, char *value, int32 value_len,
@@ -1853,6 +1474,387 @@ settings_apply_option(Configuration *config, SettingsOption *option,
     }
     return 0;
 }
+
+#define APPLY_STRING_DIR(FUNC, FIELD)                                          \
+    static int32                                                               \
+    FUNC(Configuration *config, char *value, int32 value_len,                  \
+         NcmError *ncm_error) {                                                \
+        (void)ncm_error;                                                       \
+        settings_string_set_directory(&config->FIELD,                          \
+                                      &config->FIELD##_len,                    \
+                                      &config->FIELD##_cap,                    \
+                                      value, value_len);                       \
+        return 0;                                                              \
+    }
+
+#define APPLY_STRING_PATH(FUNC, FIELD)                                         \
+    static int32                                                               \
+    FUNC(Configuration *config, char *value, int32 value_len,                  \
+         NcmError *ncm_error) {                                                \
+        (void)ncm_error;                                                       \
+        settings_string_set_expanded(&config->FIELD,                           \
+                                     &config->FIELD##_len,                     \
+                                     &config->FIELD##_cap,                     \
+                                     value, value_len);                        \
+        return 0;                                                              \
+    }
+
+#define APPLY_STRING(FUNC, FIELD)                                              \
+    static int32                                                               \
+    FUNC(Configuration *config, char *value, int32 value_len,                  \
+         NcmError *ncm_error) {                                                \
+        (void)ncm_error;                                                       \
+        stupid_string_set(&config->FIELD, &config->FIELD##_len,              \
+                            &config->FIELD##_cap, value, value_len);           \
+        return 0;                                                              \
+    }
+
+#define APPLY_BOOL(FUNC, FIELD)                                                \
+    static int32                                                               \
+    FUNC(Configuration *config, char *value, int32 value_len,                  \
+         NcmError *ncm_error) {                                                \
+        return settings_parse_bool(value, value_len, &config->FIELD,           \
+                                   ncm_error);                                 \
+    }
+
+#define APPLY_UINT(FUNC, FIELD)                                                \
+    static int32                                                               \
+    FUNC(Configuration *config, char *value, int32 value_len,                  \
+         NcmError *ncm_error) {                                                \
+        return ncm_parse_int32(value, value_len, &config->FIELD,               \
+                               ncm_error);                                     \
+    }
+
+APPLY_STRING_DIR(apply_ncmpcpp_directory, ncmpcpp_directory)
+APPLY_STRING_DIR(apply_lyrics_directory, lyrics_directory)
+APPLY_STRING_DIR(apply_mpd_music_dir, mpd_music_dir)
+APPLY_STRING(apply_random_exclude_pattern, random_exclude_pattern)
+APPLY_STRING_PATH(apply_visualizer_data_source, visualizer_data_source)
+APPLY_STRING(apply_visualizer_output_name, visualizer_output_name)
+APPLY_BOOL(apply_visualizer_in_stereo, visualizer_in_stereo)
+APPLY_BOOL(apply_visualizer_autoscale, visualizer_autoscale)
+APPLY_BOOL(apply_visualizer_spectrum_smooth_look,
+           visualizer_spectrum_smooth_look)
+APPLY_BOOL(apply_visualizer_spectrum_smooth_look_legacy_chars,
+           visualizer_spectrum_smooth_look_legacy_chars)
+APPLY_BOOL(apply_visualizer_spectrum_log_scale_x,
+           visualizer_spectrum_log_scale_x)
+APPLY_BOOL(apply_visualizer_spectrum_log_scale_y,
+           visualizer_spectrum_log_scale_y)
+APPLY_UINT(apply_message_delay_time, message_delay_time)
+APPLY_STRING_PATH(apply_execute_on_song_change, execute_on_song_change)
+APPLY_STRING_PATH(apply_execute_on_player_state_change,
+                  execute_on_player_state_change)
+APPLY_BOOL(apply_playlist_show_mpd_host, playlist_show_mpd_host)
+APPLY_BOOL(apply_playlist_show_remaining_time, playlist_show_remaining_time)
+APPLY_BOOL(apply_playlist_shorten_total_times, playlist_shorten_total_times)
+APPLY_BOOL(apply_playlist_separate_albums, playlist_separate_albums)
+APPLY_BOOL(apply_discard_colors_if_item_is_selected,
+           discard_colors_if_item_is_selected)
+APPLY_BOOL(apply_show_duplicate_tags, show_duplicate_tags)
+APPLY_BOOL(apply_incremental_seeking, incremental_seeking)
+APPLY_UINT(apply_seek_time, seek_time)
+APPLY_UINT(apply_volume_change_step, volume_change_step)
+APPLY_BOOL(apply_autocenter_mode, autocenter_mode)
+APPLY_BOOL(apply_centered_cursor, centered_cursor)
+APPLY_BOOL(apply_data_fetching_delay, data_fetching_delay)
+APPLY_BOOL(apply_media_library_hide_album_dates, media_lib_hide_album_dates)
+APPLY_BOOL(apply_media_library_albums_split_by_date,
+           media_library_albums_split_by_date)
+APPLY_STRING(apply_default_tag_editor_pattern, pattern)
+APPLY_BOOL(apply_header_visibility, header_visibility)
+APPLY_BOOL(apply_statusbar_visibility, statusbar_visibility)
+APPLY_BOOL(apply_connected_message_on_startup, connected_message_on_startup)
+APPLY_BOOL(apply_titles_visibility, titles_visibility)
+APPLY_BOOL(apply_header_text_scrolling, header_text_scrolling)
+APPLY_BOOL(apply_cyclic_scrolling, use_cyclic_scrolling)
+APPLY_BOOL(apply_follow_now_playing_lyrics, now_playing_lyrics)
+APPLY_BOOL(apply_fetch_lyrics_background, fetch_lyrics_in_background)
+APPLY_BOOL(apply_store_lyrics_in_song_dir, store_lyrics_in_song_dir)
+APPLY_BOOL(apply_generate_win32_compatible_filenames,
+           generate_win32_compatible_filenames)
+APPLY_BOOL(apply_allow_for_physical_item_deletion,
+           allow_for_physical_item_deletion)
+APPLY_STRING(apply_lastfm_preferred_language, lastfm_preferred_language)
+APPLY_BOOL(apply_show_hidden_files_in_local_browser,
+           local_browser_show_hidden_files)
+APPLY_BOOL(apply_startup_slave_screen_focus, startup_slave_screen_focus)
+APPLY_BOOL(apply_ask_for_locked_screen_width_part,
+           ask_for_locked_screen_width_part)
+APPLY_BOOL(apply_jump_to_now_playing_song_at_start,
+           jump_to_now_playing_song_at_start)
+APPLY_BOOL(apply_ask_before_clearing_playlists, ask_before_clearing_playlists)
+APPLY_BOOL(apply_ask_before_shuffling_playlists, ask_before_shuffling_playlists)
+APPLY_BOOL(apply_display_volume_level, display_volume_level)
+APPLY_BOOL(apply_display_bitrate, display_bitrate)
+APPLY_BOOL(apply_display_remaining_time, display_remaining_time)
+APPLY_BOOL(apply_ignore_leading_the, ignore_leading_the)
+APPLY_BOOL(apply_block_search_constraints_change,
+           block_search_constraints_change)
+APPLY_BOOL(apply_mouse_support, mouse_support)
+APPLY_BOOL(apply_mouse_list_scroll_whole_page, mouse_list_scroll_whole_page)
+APPLY_UINT(apply_lines_scrolled, lines_scrolled)
+APPLY_STRING(apply_empty_tag_marker, empty_tag)
+APPLY_STRING(apply_tags_separator, tags_separator)
+APPLY_BOOL(apply_tag_editor_extended_numeration, tag_editor_extended_numeration)
+APPLY_BOOL(apply_media_library_sort_by_mtime, media_library_sort_by_mtime)
+APPLY_STRING_PATH(apply_external_editor, external_editor)
+APPLY_BOOL(apply_use_console_editor, use_console_editor)
+APPLY_BOOL(apply_colors_enabled, colors_enabled)
+
+#define SETTINGS_OPTION(NAME, DEFAULT_VALUE, APPLY)              \
+    {                                                            \
+        .name = (char *)NAME,                                    \
+        .default_value = (char *)DEFAULT_VALUE,                  \
+        .name_len = STRLIT_LEN(NAME),                            \
+        .default_value_len = STRLIT_LEN(DEFAULT_VALUE),          \
+        .apply = APPLY,                                          \
+        .used = false,                                           \
+    }
+
+static SettingsOption options[] = {
+    SETTINGS_OPTION("ncmpcpp_directory", "~/.config/ncmpcpp/",
+                    apply_ncmpcpp_directory),
+    SETTINGS_OPTION("lyrics_directory", "~/.lyrics/",
+                    apply_lyrics_directory),
+    SETTINGS_OPTION("mpd_host", "localhost", apply_mpd_host),
+    SETTINGS_OPTION("mpd_port", "6600", apply_mpd_port),
+    SETTINGS_OPTION("mpd_password", "", apply_mpd_password),
+    SETTINGS_OPTION("mpd_music_dir", "~/music", apply_mpd_music_dir),
+    SETTINGS_OPTION("mpd_connection_timeout", "5",
+                    apply_mpd_connection_timeout),
+    SETTINGS_OPTION("mpd_crossfade_time", "5", apply_mpd_crossfade_time),
+    SETTINGS_OPTION("random_exclude_pattern", "",
+                    apply_random_exclude_pattern),
+    SETTINGS_OPTION("visualizer_data_source", "/tmp/mpd.fifo",
+                    apply_visualizer_data_source),
+    SETTINGS_OPTION("visualizer_output_name", "Visualizer feed",
+                    apply_visualizer_output_name),
+    SETTINGS_OPTION("visualizer_in_stereo", "yes",
+                    apply_visualizer_in_stereo),
+#if defined(HAVE_FFTW3_H)
+    SETTINGS_OPTION("visualizer_type", "spectrum", apply_visualizer_type),
+#else
+    SETTINGS_OPTION("visualizer_type", "ellipse", apply_visualizer_type),
+#endif
+    SETTINGS_OPTION("visualizer_look", "●▮", apply_visualizer_look),
+    SETTINGS_OPTION("visualizer_fps", "60", apply_visualizer_fps),
+    SETTINGS_OPTION("visualizer_autoscale", "no",
+                    apply_visualizer_autoscale),
+    SETTINGS_OPTION("visualizer_spectrum_smooth_look", "yes",
+                    apply_visualizer_spectrum_smooth_look),
+    SETTINGS_OPTION("visualizer_spectrum_smooth_look_legacy_chars", "yes",
+                    apply_visualizer_spectrum_smooth_look_legacy_chars),
+    SETTINGS_OPTION("visualizer_spectrum_dft_size", "2",
+                    apply_visualizer_spectrum_dft_size),
+    SETTINGS_OPTION("visualizer_spectrum_gain", "10",
+                    apply_visualizer_spectrum_gain),
+    SETTINGS_OPTION("visualizer_spectrum_hz_min", "20",
+                    apply_visualizer_spectrum_hz_min),
+    SETTINGS_OPTION("visualizer_spectrum_hz_max", "20000",
+                    apply_visualizer_spectrum_hz_max),
+    SETTINGS_OPTION("visualizer_spectrum_log_scale_x", "yes",
+                    apply_visualizer_spectrum_log_scale_x),
+    SETTINGS_OPTION("visualizer_spectrum_log_scale_y", "yes",
+                    apply_visualizer_spectrum_log_scale_y),
+    SETTINGS_OPTION("visualizer_color",
+                    "blue, cyan, green, yellow, magenta, red",
+                    apply_visualizer_color),
+    SETTINGS_OPTION("system_encoding", "", apply_system_encoding),
+    SETTINGS_OPTION("playlist_disable_highlight_delay", "5",
+                    apply_playlist_disable_highlight_delay),
+    SETTINGS_OPTION("message_delay_time", "5", apply_message_delay_time),
+    SETTINGS_OPTION("song_list_format", "{%a - }{%t}|{$8%f$9}$R{$3%l$9}",
+                    apply_song_list_format),
+    SETTINGS_OPTION("song_status_format",
+                    "{{%a{ \"%b\"{ (%y)}} - }{%t}}|{%f}",
+                    apply_song_status_format),
+    SETTINGS_OPTION("song_library_format", "{%n - }{%t}|{%f}",
+                    apply_song_library_format),
+    SETTINGS_OPTION("alternative_header_first_line_format",
+                    "$b$1$aqqu$/a$9 {%t}|{%f} $1$atqq$/a$9$/b",
+                    apply_header_first_line_format),
+    SETTINGS_OPTION("alternative_header_second_line_format",
+                    "{{$4$b%a$/b$9}{ - $7%b$9}{ ($4%y$9)}}|{%D}",
+                    apply_header_second_line_format),
+    SETTINGS_OPTION("current_item_prefix", "$(yellow)$r",
+                    apply_current_item_prefix),
+    SETTINGS_OPTION("current_item_suffix", "$/r$(end)",
+                    apply_current_item_suffix),
+    SETTINGS_OPTION("current_item_inactive_column_prefix", "$(white)$r",
+                    apply_current_item_inactive_column_prefix),
+    SETTINGS_OPTION("current_item_inactive_column_suffix", "$/r$(end)",
+                    apply_current_item_inactive_column_suffix),
+    SETTINGS_OPTION("now_playing_prefix", "$b", apply_now_playing_prefix),
+    SETTINGS_OPTION("now_playing_suffix", "$/b", apply_now_playing_suffix),
+    SETTINGS_OPTION("browser_playlist_prefix", "$2playlist$9 ",
+                    apply_browser_playlist_prefix),
+    SETTINGS_OPTION("selected_item_prefix", "$6",
+                    apply_selected_item_prefix),
+    SETTINGS_OPTION("selected_item_suffix", "$9",
+                    apply_selected_item_suffix),
+    SETTINGS_OPTION("modified_item_prefix", "$3>$9 ",
+                    apply_modified_item_prefix),
+    SETTINGS_OPTION("song_window_title_format", "{%a - }{%t}|{%f}",
+                    apply_song_window_title_format),
+    SETTINGS_OPTION("browser_sort_mode", "type", apply_browser_sort_mode),
+    SETTINGS_OPTION("browser_sort_format", "{%a - }{%t}|{%f} {%l}",
+                    apply_browser_sort_format),
+    SETTINGS_OPTION("song_columns_list_format",
+                    "(20)[]{a} (6f)[green]{NE} "
+                    "(50)[white]{t|f:Title} (20)[cyan]{b} "
+                    "(7f)[magenta]{l}",
+                    apply_song_columns_list_format),
+    SETTINGS_OPTION("execute_on_song_change", "",
+                    apply_execute_on_song_change),
+    SETTINGS_OPTION("execute_on_player_state_change", "",
+                    apply_execute_on_player_state_change),
+    SETTINGS_OPTION("playlist_show_mpd_host", "no",
+                    apply_playlist_show_mpd_host),
+    SETTINGS_OPTION("playlist_show_remaining_time", "no",
+                    apply_playlist_show_remaining_time),
+    SETTINGS_OPTION("playlist_shorten_total_times", "no",
+                    apply_playlist_shorten_total_times),
+    SETTINGS_OPTION("playlist_separate_albums", "no",
+                    apply_playlist_separate_albums),
+    SETTINGS_OPTION("playlist_display_mode", "columns",
+                    apply_playlist_display_mode),
+    SETTINGS_OPTION("browser_display_mode", "classic",
+                    apply_browser_display_mode),
+    SETTINGS_OPTION("search_engine_display_mode", "classic",
+                    apply_search_engine_display_mode),
+    SETTINGS_OPTION("playlist_editor_display_mode", "classic",
+                    apply_playlist_editor_display_mode),
+    SETTINGS_OPTION("discard_colors_if_item_is_selected", "yes",
+                    apply_discard_colors_if_item_is_selected),
+    SETTINGS_OPTION("show_duplicate_tags", "yes",
+                    apply_show_duplicate_tags),
+    SETTINGS_OPTION("incremental_seeking", "yes",
+                    apply_incremental_seeking),
+    SETTINGS_OPTION("seek_time", "1", apply_seek_time),
+    SETTINGS_OPTION("volume_change_step", "2", apply_volume_change_step),
+    SETTINGS_OPTION("autocenter_mode", "no", apply_autocenter_mode),
+    SETTINGS_OPTION("centered_cursor", "no", apply_centered_cursor),
+    SETTINGS_OPTION("progressbar_look", "=>", apply_progressbar_look),
+    SETTINGS_OPTION("default_place_to_search_in", "database",
+                    apply_default_place_to_search_in),
+    SETTINGS_OPTION("user_interface", "classic", apply_user_interface),
+    SETTINGS_OPTION("data_fetching_delay", "yes",
+                    apply_data_fetching_delay),
+    SETTINGS_OPTION("media_library_hide_album_dates", "no",
+                    apply_media_library_hide_album_dates),
+    SETTINGS_OPTION("media_library_primary_tag", "artist",
+                    apply_media_library_primary_tag),
+    SETTINGS_OPTION("media_library_albums_split_by_date", "yes",
+                    apply_media_library_albums_split_by_date),
+    SETTINGS_OPTION("default_find_mode", "wrapped",
+                    apply_default_find_mode),
+    SETTINGS_OPTION("default_tag_editor_pattern", "%n - %t",
+                    apply_default_tag_editor_pattern),
+    SETTINGS_OPTION("header_visibility", "yes", apply_header_visibility),
+    SETTINGS_OPTION("statusbar_visibility", "yes",
+                    apply_statusbar_visibility),
+    SETTINGS_OPTION("connected_message_on_startup", "yes",
+                    apply_connected_message_on_startup),
+    SETTINGS_OPTION("titles_visibility", "yes", apply_titles_visibility),
+    SETTINGS_OPTION("header_text_scrolling", "yes",
+                    apply_header_text_scrolling),
+    SETTINGS_OPTION("cyclic_scrolling", "no", apply_cyclic_scrolling),
+    SETTINGS_OPTION("lyrics_fetchers",
+                    "azlyrics, genius, letras, musixmatch, tekstowo, "
+                    "vagalume, internet",
+                    apply_lyrics_fetchers),
+    SETTINGS_OPTION("follow_now_playing_lyrics", "no",
+                    apply_follow_now_playing_lyrics),
+    SETTINGS_OPTION("fetch_lyrics_for_current_song_in_background", "no",
+                    apply_fetch_lyrics_background),
+    SETTINGS_OPTION("store_lyrics_in_song_dir", "no",
+                    apply_store_lyrics_in_song_dir),
+    SETTINGS_OPTION("generate_win32_compatible_filenames", "yes",
+                    apply_generate_win32_compatible_filenames),
+    SETTINGS_OPTION("allow_for_physical_item_deletion", "no",
+                    apply_allow_for_physical_item_deletion),
+    SETTINGS_OPTION("lastfm_preferred_language", "en",
+                    apply_lastfm_preferred_language),
+    SETTINGS_OPTION("space_add_mode", "add_remove", apply_space_add_mode),
+    SETTINGS_OPTION("show_hidden_files_in_local_browser", "no",
+                    apply_show_hidden_files_in_local_browser),
+    SETTINGS_OPTION("screen_switcher_mode", "playlist, browser",
+                    apply_screen_switcher_mode),
+    SETTINGS_OPTION("startup_screen", "playlist", apply_startup_screen),
+    SETTINGS_OPTION("startup_slave_screen", "", apply_startup_slave_screen),
+    SETTINGS_OPTION("startup_slave_screen_focus", "no",
+                    apply_startup_slave_screen_focus),
+    SETTINGS_OPTION("locked_screen_width_part", "50",
+                    apply_locked_screen_width_part),
+    SETTINGS_OPTION("ask_for_locked_screen_width_part", "yes",
+                    apply_ask_for_locked_screen_width_part),
+    SETTINGS_OPTION("media_library_column_width_ratio_two", "1:1",
+                    apply_media_library_column_width_ratio_two),
+    SETTINGS_OPTION("media_library_column_width_ratio_three", "1:1:1",
+                    apply_media_library_column_width_ratio_three),
+    SETTINGS_OPTION("playlist_editor_column_width_ratio", "1:2",
+                    apply_playlist_editor_column_width_ratio),
+    SETTINGS_OPTION("jump_to_now_playing_song_at_start", "yes",
+                    apply_jump_to_now_playing_song_at_start),
+    SETTINGS_OPTION("ask_before_clearing_playlists", "yes",
+                    apply_ask_before_clearing_playlists),
+    SETTINGS_OPTION("ask_before_shuffling_playlists", "yes",
+                    apply_ask_before_shuffling_playlists),
+    SETTINGS_OPTION("display_volume_level", "yes",
+                    apply_display_volume_level),
+    SETTINGS_OPTION("display_bitrate", "no", apply_display_bitrate),
+    SETTINGS_OPTION("display_remaining_time", "no",
+                    apply_display_remaining_time),
+    SETTINGS_OPTION("regular_expressions", "extended",
+                    apply_regular_expressions),
+    SETTINGS_OPTION("ignore_leading_the", "no", apply_ignore_leading_the),
+    SETTINGS_OPTION("block_search_constraints_change_if_items_found", "yes",
+                    apply_block_search_constraints_change),
+    SETTINGS_OPTION("mouse_support", "yes", apply_mouse_support),
+    SETTINGS_OPTION("mouse_list_scroll_whole_page", "no",
+                    apply_mouse_list_scroll_whole_page),
+    SETTINGS_OPTION("lines_scrolled", "5", apply_lines_scrolled),
+    SETTINGS_OPTION("empty_tag_marker", "<empty>", apply_empty_tag_marker),
+    SETTINGS_OPTION("tags_separator", " | ", apply_tags_separator),
+    SETTINGS_OPTION("tag_editor_extended_numeration", "no",
+                    apply_tag_editor_extended_numeration),
+    SETTINGS_OPTION("media_library_sort_by_mtime", "no",
+                    apply_media_library_sort_by_mtime),
+    SETTINGS_OPTION("enable_window_title", "yes",
+                    apply_enable_window_title),
+    SETTINGS_OPTION("search_engine_default_search_mode", "1",
+                    apply_search_engine_default_search_mode),
+    SETTINGS_OPTION("external_editor", "nano", apply_external_editor),
+    SETTINGS_OPTION("use_console_editor", "yes", apply_use_console_editor),
+    SETTINGS_OPTION("colors_enabled", "yes", apply_colors_enabled),
+    SETTINGS_OPTION("empty_tag_color", "cyan", apply_empty_tag_color),
+    SETTINGS_OPTION("header_window_color", "default",
+                    apply_header_window_color),
+    SETTINGS_OPTION("volume_color", "default", apply_volume_color),
+    SETTINGS_OPTION("state_line_color", "default", apply_state_line_color),
+    SETTINGS_OPTION("state_flags_color", "default:b",
+                    apply_state_flags_color),
+    SETTINGS_OPTION("main_window_color", "yellow", apply_main_window_color),
+    SETTINGS_OPTION("color1", "white", apply_color1),
+    SETTINGS_OPTION("color2", "green", apply_color2),
+    SETTINGS_OPTION("progressbar_color", "black:b",
+                    apply_progressbar_color),
+    SETTINGS_OPTION("progressbar_elapsed_color", "green:b",
+                    apply_progressbar_elapsed_color),
+    SETTINGS_OPTION("statusbar_color", "default", apply_statusbar_color),
+    SETTINGS_OPTION("statusbar_time_color", "default:b",
+                    apply_statusbar_time_color),
+    SETTINGS_OPTION("player_state_color", "default:b",
+                    apply_player_state_color),
+    SETTINGS_OPTION("alternative_ui_separator_color", "black:b",
+                    apply_alternative_ui_separator_color),
+    SETTINGS_OPTION("window_border_color", "green",
+                    apply_window_border_color),
+    SETTINGS_OPTION("active_window_border", "red",
+                    apply_active_window_border),
+};
+
 
 int32
 configuration_read(Configuration *config, NcmStringViewArray *config_paths,
