@@ -1187,17 +1187,11 @@ menu_is_position_highlightable(int32 pos, void *user) {
 
 static void
 menu_print_buffer(NcWindow *window, NcBuffer *buffer) {
-    NcBufferProperty *properties;
-    char *data;
-    int32 property_count;
-    int32 property_index;
-    int32 len;
-
-    data = nc_buffer_data(buffer);
-    len = nc_buffer_len(buffer);
-    properties = nc_buffer_properties(buffer);
-    property_count = nc_buffer_property_count(buffer);
-    property_index = 0;
+    NcBufferProperty *properties = nc_buffer_properties(buffer);
+    char *data = nc_buffer_data(buffer);
+    int32 len = nc_buffer_len(buffer);
+    int32 property_count = nc_buffer_property_count(buffer);
+    int32 property_index = 0;
 
     for (int32 i = 0; i <= len; i += 1) {
         while ((property_index < property_count)
