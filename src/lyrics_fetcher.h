@@ -41,7 +41,6 @@ typedef struct NcmLyricsFetcherDef {
     char *name;
 
     int32 name_len;
-    int32 name_cap;
 
     enum NcmLyricsFetcherType type;
     bool enabled;
