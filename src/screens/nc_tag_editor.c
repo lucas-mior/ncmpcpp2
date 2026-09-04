@@ -3388,7 +3388,8 @@ tag_editor_run_current(NcScreen *screen) {
                 }
                 SB_APPEND(&new_name, input.data, input.len);
                 if (stem_dot >= 0) {
-                    SB_APPEND(&new_name, stem_name.data + stem_dot,
+                    SB_APPEND(&new_name,
+                              stem_name.data + stem_dot,
                               stem_name.len - stem_dot);
                 }
                 ncm_mutable_song_set_new_name(song, new_name.data,
