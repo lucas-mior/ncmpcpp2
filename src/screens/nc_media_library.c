@@ -1052,10 +1052,9 @@ media_library_screen_format_tag_row(MediaLibraryScreen *screen,
 }
 
 void
-media_library_screen_format_album_row(
-    MediaLibraryScreen *screen, NcMediaLibraryAlbumRow *row,
-    StrBuilder *output
-) {
+media_library_screen_format_album_row(MediaLibraryScreen *screen,
+                                      NcMediaLibraryAlbumRow *row,
+                                      StrBuilder *output) {
     StrBuilder raw = {0};
 
     if (output == NULL) {
