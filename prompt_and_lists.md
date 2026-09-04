@@ -36,7 +36,6 @@ list and try the next and so on. When you end up changing a .c file, send me the
 result as a tar ball (but include all the changes of the previous prompts as
 well).
 
-- src/configuration.c
 - src/c/ncm_format.c
 - src/screens/nc_tiny_tag_editor.c
 - src/screens/nc_screen.c

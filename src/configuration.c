@@ -56,111 +56,74 @@ ncm_configuration_options_destroy(NcmConfigurationOptions *options) {
     return;
 }
 
-static int32
+static void
 command_line_options_append_path(StrBuilderArray *paths, char *path,
                                  int32 path_len) {
     StrBuilder *slot;
 
-    if ((slot = str_builder_array_append(paths)) == NULL) {
-        return -ENOMEM;
-    }
+    slot = str_builder_array_append(paths);
     SB_APPEND(slot, path, path_len);
-    return 0;
+    return;
 }
 
-static int32
+static void
 configuration_append_buffer_path(StrBuilderArray *paths, StrBuilder *path) {
-    return command_line_options_append_path(paths, path->data, path->len);
+    command_line_options_append_path(paths, path->data, path->len);
+    return;
 }
 
-static int32
+static void
 configuration_append_default_file(StrBuilderArray *paths, char *filename,
                                   int32 filename_len) {
     char *xdg_config_home;
     StrBuilder directory = {0};
     StrBuilder path = {0};
-    int32 status;
 
-    status = 0;
     if ((xdg_config_home = getenv("XDG_CONFIG_HOME"))
         && (xdg_config_home[0] != '\0')) {
         SB_APPEND(&directory, xdg_config_home, strlen32(xdg_config_home));
     } else {
         SB_APPEND(&directory, "~/.config");
     }
-    if ((status = ncm_fs_join(&directory, directory.data, directory.len,
-                              STRLIT("ncmpcpp"))) < 0) {
-        goto cleanup;
-    }
-    if ((status = ncm_fs_join(&path, directory.data, directory.len,
-                              filename, filename_len)) < 0) {
-        goto cleanup;
-    }
-    status = configuration_append_buffer_path(paths, &path);
+    ncm_fs_join(&directory, directory.data, directory.len, STRLIT("ncmpcpp"));
+    ncm_fs_join(&path, directory.data, directory.len, filename, filename_len);
+    configuration_append_buffer_path(paths, &path);
 
-cleanup:
     sb_free(&path);
     sb_free(&directory);
-    return status;
+    return;
 }
 
-static int32
+static void
 configuration_append_legacy_file(StrBuilderArray *paths, char *filename,
                                  int32 filename_len) {
     StrBuilder directory = {0};
     StrBuilder path = {0};
-    int32 status;
 
-    status = 0;
     SB_APPEND(&directory, "~/.ncmpcpp");
-    if ((status = ncm_fs_join(&path, directory.data, directory.len,
-                              filename, filename_len)) < 0) {
-        goto cleanup;
-    }
-    status = configuration_append_buffer_path(paths, &path);
+    ncm_fs_join(&path, directory.data, directory.len, filename, filename_len);
+    configuration_append_buffer_path(paths, &path);
 
-cleanup:
     sb_free(&path);
     sb_free(&directory);
-    return status;
+    return;
 }
 
 int32
 configuration_discover_default_paths(StrBuilderArray *config_paths,
                                      StrBuilderArray *bindings_paths,
                                      NcmError *ncm_error) {
-    int32 status;
-
     if ((config_paths == NULL) || (bindings_paths == NULL)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing default path output"));
     }
 
-    if ((status = configuration_append_default_file(config_paths,
-                                                    STRLIT("config"))) < 0) {
-        goto fail;
-    }
-    if ((status = configuration_append_legacy_file(config_paths,
-                                                   STRLIT("config"))) < 0) {
-        goto fail;
-    }
-    if ((status = configuration_append_default_file(bindings_paths,
-                                                    STRLIT("bindings"))) < 0) {
-        goto fail;
-    }
-    if ((status = configuration_append_legacy_file(bindings_paths,
-                                                   STRLIT("bindings"))) < 0) {
-        goto fail;
-    }
+    configuration_append_default_file(config_paths, STRLIT("config"));
+    configuration_append_legacy_file(config_paths, STRLIT("config"));
+    configuration_append_default_file(bindings_paths, STRLIT("bindings"));
+    configuration_append_legacy_file(bindings_paths, STRLIT("bindings"));
 
     return ncm_error_ok(ncm_error);
-
-fail:
-    if (!ncm_error_is_set(ncm_error)) {
-        ncm_error_set_status(ncm_error, status,
-                             STRLIT("failed to build default paths"));
-    }
-    return status;
 }
 
 static void
@@ -304,10 +267,8 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
                 }
             } else if (STREQUAL(name, name_len, "config")) {
                 REQUIRE_LONG_VALUE();
-                if ((status = command_line_options_append_path(
-                    &options->config_paths, value, value_len)) < 0) {
-                    return status;
-                }
+                command_line_options_append_path(
+                    &options->config_paths, value, value_len);
             } else if (STREQUAL(name, name_len, "ignore-config-errors")) {
                 REJECT_LONG_VALUE();
                 options->ignore_config_errors = true;
@@ -316,10 +277,8 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
                 options->test_lyrics_fetchers = true;
             } else if (STREQUAL(name, name_len, "bindings")) {
                 REQUIRE_LONG_VALUE();
-                if ((status = command_line_options_append_path(
-                    &options->bindings_paths, value, value_len)) < 0) {
-                    return status;
-                }
+                command_line_options_append_path(
+                    &options->bindings_paths, value, value_len);
             } else if (STREQUAL(name, name_len, "screen")) {
                 REQUIRE_LONG_VALUE();
                 options->screen = true;
@@ -420,16 +379,12 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
                 options->port_provided = true;
                 break;
             case 'c':
-                if ((status = command_line_options_append_path(
-                    &options->config_paths, value, value_len)) < 0) {
-                    return status;
-                }
+                command_line_options_append_path(
+                    &options->config_paths, value, value_len);
                 break;
             case 'b':
-                if ((status = command_line_options_append_path(
-                    &options->bindings_paths, value, value_len)) < 0) {
-                    return status;
-                }
+                command_line_options_append_path(
+                    &options->bindings_paths, value, value_len);
                 break;
             case 's':
                 options->screen = true;
@@ -461,23 +416,15 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
 
         str_builder_array_init(&default_config_paths);
         str_builder_array_init(&default_bindings_paths);
-        if ((status = configuration_discover_default_paths(
-            &default_config_paths, &default_bindings_paths, ncm_error)) < 0) {
-            str_builder_array_destroy(&default_config_paths);
-            str_builder_array_destroy(&default_bindings_paths);
-            return status;
-        }
+        configuration_discover_default_paths(
+            &default_config_paths, &default_bindings_paths, ncm_error);
         if (options->config_paths.len == 0) {
             for (int32 j = 0; j < default_config_paths.len; j += 1) {
                 StrBuilder *path;
 
                 path = &default_config_paths.items[j];
-                if ((status = command_line_options_append_path(
-                    &options->config_paths, path->data, path->len)) < 0) {
-                    str_builder_array_destroy(&default_config_paths);
-                    str_builder_array_destroy(&default_bindings_paths);
-                    return status;
-                }
+                command_line_options_append_path(
+                    &options->config_paths, path->data, path->len);
             }
         }
         if (options->bindings_paths.len == 0) {
@@ -485,12 +432,8 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
                 StrBuilder *path;
 
                 path = &default_bindings_paths.items[j];
-                if ((status = command_line_options_append_path(
-                    &options->bindings_paths, path->data, path->len)) < 0) {
-                    str_builder_array_destroy(&default_config_paths);
-                    str_builder_array_destroy(&default_bindings_paths);
-                    return status;
-                }
+                command_line_options_append_path(
+                    &options->bindings_paths, path->data, path->len);
             }
         }
         str_builder_array_destroy(&default_config_paths);
@@ -519,12 +462,7 @@ ncm_configuration_options_apply(NcmConfigurationOptions *options,
         StrBuilder *buffer;
 
         buffer = &options->config_paths.items[i];
-        if ((view = ncm_string_view_array_append(&config_views)) == NULL) {
-            ncm_string_view_array_destroy(&config_views);
-            return ncm_error_set_status(
-                ncm_error, -ENOMEM,
-                STRLIT("failed to build config path views"));
-        }
+        view = ncm_string_view_array_append(&config_views);
         view->data = buffer->data;
         view->len = buffer->len;
     }
@@ -561,10 +499,8 @@ ncm_configuration_options_apply(NcmConfigurationOptions *options,
     env_host = getenv("MPD_HOST");
     env_port = getenv("MPD_PORT");
     if (env_host != NULL) {
-        if ((status = ncm_mpd_client_set_hostname(
-            &global_mpd, env_host, strlen32(env_host), ncm_error)) < 0) {
-            return status;
-        }
+        ncm_mpd_client_set_hostname(&global_mpd, env_host,
+                                    strlen32(env_host), ncm_error);
     }
     if (env_port != NULL) {
         if ((status = ncm_parse_int32(env_port, strlen32(env_port), &port,
@@ -579,11 +515,8 @@ ncm_configuration_options_apply(NcmConfigurationOptions *options,
     }
 
     if (options->host_provided) {
-        if ((status = ncm_mpd_client_set_hostname(
-            &global_mpd, options->host.data, options->host.len,
-            ncm_error)) < 0) {
-            return status;
-        }
+        ncm_mpd_client_set_hostname(&global_mpd, options->host.data,
+                                    options->host.len, ncm_error);
     }
     if (options->port_provided) {
         ncm_mpd_client_set_port(&global_mpd, (uint16)options->port);
@@ -626,7 +559,7 @@ typedef struct ConfigurationLyricsFetcherTest {
 
 static void
 configuration_print_error(char *context, NcmError *ncm_error) {
-    if (ncm_error && (ncm_error->message[0] != '\0')) {
+    if (ncm_error->message[0] != '\0') {
         fprintf(stderr, "%s: %s\n", context, ncm_error->message);
     } else {
         fprintf(stderr, "%s\n", context);
@@ -656,66 +589,59 @@ configure(int32 argc, char **argv) {
     if (options.help) {
         StrBuilderArray config_paths;
         StrBuilderArray bindings_paths;
-        NcmError usage_error;
 
         str_builder_array_init(&config_paths);
         str_builder_array_init(&bindings_paths);
-        ncm_error_clear(&usage_error);
-        if (configuration_discover_default_paths(&config_paths,
-                                                 &bindings_paths,
-                                                 &usage_error) < 0) {
-            configuration_print_error("Failed to build default paths",
-                                      &usage_error);
-        } else {
-            printf("Usage: %s [options]...\n", argv[0]);
-            printf("Options:\n");
-            printf("  -h, --host HOST              "
-                   "connect to server at host\n");
-            printf("  -p, --port PORT              "
-                   "connect to server at port\n");
-            printf("      --current-song[=FORMAT]  print current song using ");
-            printf("given format and exit\n");
-            printf("  -c, --config PATH            "
-                   "specify configuration file(s)\n");
-            printf("                               default: ");
-            for (int32 i = 0; i < config_paths.len; i += 1) {
-                StrBuilder *path;
+        configuration_discover_default_paths(&config_paths, &bindings_paths,
+                                             &ncm_error);
+        printf("Usage: %s [options]...\n", argv[0]);
+        printf("Options:\n");
+        printf("  -h, --host HOST              "
+               "connect to server at host\n");
+        printf("  -p, --port PORT              "
+               "connect to server at port\n");
+        printf("      --current-song[=FORMAT]  print current song using ");
+        printf("given format and exit\n");
+        printf("  -c, --config PATH            "
+               "specify configuration file(s)\n");
+        printf("                               default: ");
+        for (int32 i = 0; i < config_paths.len; i += 1) {
+            StrBuilder *path;
 
-                path = &config_paths.items[i];
-                if (i > 0) {
-                    printf(" AND ");
-                }
-                printf("%.*s", path->len, path->data);
+            path = &config_paths.items[i];
+            if (i > 0) {
+                printf(" AND ");
             }
-            printf("\n");
-            printf("      --ignore-config-errors   "
-                   "ignore unknown and invalid ");
-            printf("options in configuration files\n");
-            printf("      --test-lyrics-fetchers   "
-                   "check if lyrics fetchers work\n");
-            printf("  -b, --bindings PATH          specify bindings file(s)\n");
-            printf("                               default: ");
-            for (int32 i = 0; i < bindings_paths.len; i += 1) {
-                StrBuilder *path;
-
-                path = &bindings_paths.items[i];
-                if (i > 0) {
-                    printf(" AND ");
-                }
-                printf("%.*s", path->len, path->data);
-            }
-            printf("\n");
-            printf("  -s, --screen SCREEN          "
-                   "specify the startup screen\n");
-            printf("  -S, --slave-screen SCREEN    "
-                   "specify startup slave screen\n");
-            printf("  -?, --help                   show help message\n");
-            printf("  -v, --version                "
-                   "display version information\n");
-            printf("  -q, --quiet                  "
-                   "suppress logs and excess output\n");
-            printf("\n");
+            printf("%.*s", path->len, path->data);
         }
+        printf("\n");
+        printf("      --ignore-config-errors   "
+               "ignore unknown and invalid ");
+        printf("options in configuration files\n");
+        printf("      --test-lyrics-fetchers   "
+               "check if lyrics fetchers work\n");
+        printf("  -b, --bindings PATH          specify bindings file(s)\n");
+        printf("                               default: ");
+        for (int32 i = 0; i < bindings_paths.len; i += 1) {
+            StrBuilder *path;
+
+            path = &bindings_paths.items[i];
+            if (i > 0) {
+                printf(" AND ");
+            }
+            printf("%.*s", path->len, path->data);
+        }
+        printf("\n");
+        printf("  -s, --screen SCREEN          "
+               "specify the startup screen\n");
+        printf("  -S, --slave-screen SCREEN    "
+               "specify startup slave screen\n");
+        printf("  -?, --help                   show help message\n");
+        printf("  -v, --version                "
+               "display version information\n");
+        printf("  -q, --quiet                  "
+               "suppress logs and excess output\n");
+        printf("\n");
         str_builder_array_destroy(&bindings_paths);
         str_builder_array_destroy(&config_paths);
         ncm_configuration_options_destroy(&options);
@@ -799,25 +725,17 @@ configure(int32 argc, char **argv) {
             },
         };
 
-        status = 0;
         for (int32 i = 0; i < LENGTH(tests); i += 1) {
             NcmLyricsFetcherDef fetcher = {0};
             NcmLyricsResult result = {0};
 
-            status = ncm_lyrics_fetcher_def_set_name(
+            ncm_lyrics_fetcher_def_set_name(
                 &fetcher, tests[i].name, tests[i].name_len);
-            if (status < 0) {
-                ncm_error_set_status(&ncm_error, status,
-                                     STRLIT("unknown lyrics fetcher"));
-                ncm_lyrics_result_destroy(&result);
-                ncm_lyrics_fetcher_def_destroy(&fetcher);
-                break;
-            }
 
             printf("%-20.*s : ", ncm_lyrics_fetcher_name_len(&fetcher),
                    ncm_lyrics_fetcher_name(&fetcher));
             fflush(stdout);
-            (void)ncm_lyrics_fetcher_fetch(
+            ncm_lyrics_fetcher_fetch(
                 &fetcher, &result, tests[i].artist, tests[i].artist_len,
                 tests[i].title, tests[i].title_len);
             if (result.success) {
@@ -830,11 +748,6 @@ configure(int32 argc, char **argv) {
         }
 
         ncm_configuration_options_destroy(&options);
-        if (status < 0) {
-            configuration_print_error("Error while testing lyrics fetchers",
-                                      &ncm_error);
-            exit(EXIT_FAILURE);
-        }
         exit(EXIT_SUCCESS);
     }
 
