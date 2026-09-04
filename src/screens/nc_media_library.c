@@ -1263,12 +1263,22 @@ library_append_album(MediaLibraryAlbumArray *albums,
 
     item = media_library_album_array_append(albums);
     row = &item->row;
-    stupid_string_set(&row->tag, &row->tag_len, &row->tag_cap,
-                             tag, tag_len);
-    stupid_string_set(&row->album, &row->album_len, &row->album_cap,
-                             album, album_len);
-    stupid_string_set(&row->date, &row->date_len, &row->date_cap,
-                             date, date_len);
+    ASSERT((tag != NULL) || (tag_len == 0));
+    ASSERT((album != NULL) || (album_len == 0));
+    ASSERT((date != NULL) || (date_len == 0));
+
+    if (tag_len > 0) {
+        row->tag = xstrndup(tag, tag_len);
+        row->tag_len = tag_len;
+    }
+    if (album_len > 0) {
+        row->album = xstrndup(album, album_len);
+        row->album_len = album_len;
+    }
+    if (date_len > 0) {
+        row->date = xstrndup(date, date_len);
+        row->date_len = date_len;
+    }
     row->mtime = mtime;
     row->all_tracks_entry = all_tracks_entry;
     item->menu_flags = menu_flags;
@@ -3126,15 +3136,22 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
         NcMediaLibraryAlbumRow row = {0};
         NcMenu *base;
 
-        stupid_string_set(
-            &row.tag, &row.tag_len, &row.tag_cap,
-            album_tag, album_tag_len);
-        stupid_string_set(
-            &row.album, &row.album_len, &row.album_cap,
-            album.data, album.len);
-        stupid_string_set(
-            &row.date, &row.date_len, &row.date_cap,
-            album_date, album_date_len);
+        ASSERT((album_tag != NULL) || (album_tag_len == 0));
+        ASSERT((album.data != NULL) || (album.len == 0));
+        ASSERT((album_date != NULL) || (album_date_len == 0));
+
+        if (album_tag_len > 0) {
+            row.tag = xstrndup(album_tag, album_tag_len);
+            row.tag_len = album_tag_len;
+        }
+        if (album.len > 0) {
+            row.album = xstrndup(album.data, album.len);
+            row.album_len = album.len;
+        }
+        if (album_date_len > 0) {
+            row.date = xstrndup(album_date, album_date_len);
+            row.date_len = album_date_len;
+        }
         row.mtime = song->last_modified;
         row.all_tracks_entry = false;
         nc_media_library_album_menu_add_with_flags(

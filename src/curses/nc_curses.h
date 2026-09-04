@@ -549,11 +549,8 @@ typedef struct NcMediaLibraryAlbumRow {
     char *date;
 
     int32 tag_len;
-    int32 tag_cap;
     int32 album_len;
-    int32 album_cap;
     int32 date_len;
-    int32 date_cap;
 
     time_t mtime;
     bool all_tracks_entry;
