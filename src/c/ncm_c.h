@@ -52,6 +52,8 @@ int32 ncm_error_set_status(NcmError *ncm_error, int32 status,
                            char *message, int32 message_len);
 int32 ncm_error_ok(NcmError *ncm_error);
 void stupid_string_free(char **data, int32 *len, int32 *cap);
+void stupid_string_set(char **dest, int32 *dest_len, int32 *dest_cap,
+                       char *source, int32 source_len);
 
 /* c/ncm_tags.h */
 #include <mpd/tag.h>

@@ -79,36 +79,6 @@ library_mpd_list_tags(void *user, enum mpd_tag_type tag_type,
     return ncm_mpd_client_get_list(client, tag_type, tags, ncm_error);
 }
 
-static void
-library_set_owned_string(char **dest, int32 *dest_len, int32 *dest_cap,
-                         char *source, int32 source_len) {
-    char *copy;
-    int32 cap;
-
-    ASSERT(dest != NULL);
-    ASSERT(dest_len != NULL);
-    ASSERT(dest_cap != NULL);
-    ASSERT_NON_NEGATIVE(source_len);
-    ASSERT((source != NULL) || (source_len == 0));
-
-    free2(*dest, *dest_cap);
-    *dest = NULL;
-    *dest_len = 0;
-    *dest_cap = 0;
-
-    if (source_len == 0) {
-        return;
-    }
-    cap = source_len + 1;
-    copy = malloc2(cap);
-    memcpy64(copy, source, source_len);
-    copy[source_len] = '\0';
-    *dest = copy;
-    *dest_len = source_len;
-    *dest_cap = cap;
-    return;
-}
-
 static int32
 library_ratio_value(NcmInt32Array *ratios, int32 idx,
                     int32 fallback) {
