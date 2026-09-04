@@ -1612,7 +1612,7 @@ APPLY_BOOL(apply_colors_enabled, colors_enabled)
         .used = false,                                           \
     }
 
-static SettingsOption options[] = {
+static SettingsOption ncmpcpp_options[] = {
 OPT(ncmpcpp_directory, "~/.config/ncmpcpp/", apply_ncmpcpp_directory),
 OPT(lyrics_directory, "~/.lyrics/", apply_lyrics_directory),
 
@@ -1840,10 +1840,10 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                 }
 
                 option = NULL;
-                for (int32 j = 0; j < LENGTH(options); j += 1) {
+                for (int32 j = 0; j < LENGTH(ncmpcpp_options); j += 1) {
                     if (STREQUAL(parsed.option, parsed.option_len,
-                                 options[j].name, options[j].name_len)) {
-                        option = &options[j];
+                                 ncmpcpp_options[j].name, ncmpcpp_options[j].name_len)) {
+                        option = &ncmpcpp_options[j];
                         break;
                     }
                 }
@@ -1907,13 +1907,13 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
         }
     }
 
-    for (int32 i = 0; i < LENGTH(options); i += 1) {
-        if (options[i].used) {
+    for (int32 i = 0; i < LENGTH(ncmpcpp_options); i += 1) {
+        if (ncmpcpp_options[i].used) {
             continue;
         }
         status = settings_apply_option(
-            config, &options[i], options[i].default_value,
-            options[i].default_value_len, true, ignore_errors, ncm_error);
+            config, &ncmpcpp_options[i], ncmpcpp_options[i].default_value,
+            ncmpcpp_options[i].default_value_len, true, ignore_errors, ncm_error);
         if (status < 0) {
             return status;
         }
