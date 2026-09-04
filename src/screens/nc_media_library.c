@@ -299,8 +299,6 @@ library_update_titles(MediaLibraryScreen *screen,
     return;
 }
 
-static void library_set_conversion_error(NcmError *ncm_error,
-                                         char *message, int32 message_len);
 static void library_request_all_updates(MediaLibraryScreen *screen);
 
 typedef struct MediaLibrarySearchContext {
@@ -2720,15 +2718,6 @@ media_library_screen_update(MediaLibraryScreen *screen,
         nc_screen_clear_update_request(&screen->screen);
     }
     return 0;
-}
-
-static void
-library_set_conversion_error(NcmError *ncm_error,
-                             char *message, int32 message_len) {
-    if (ncm_error && !ncm_error_is_set(ncm_error)) {
-        ncm_error_set(ncm_error, EINVAL, message, message_len);
-    }
-    return;
 }
 
 static void
