@@ -1615,12 +1615,14 @@ APPLY_BOOL(apply_colors_enabled, colors_enabled)
 static SettingsOption options[] = {
 OPT(ncmpcpp_directory, "~/.config/ncmpcpp/", apply_ncmpcpp_directory),
 OPT(lyrics_directory, "~/.lyrics/", apply_lyrics_directory),
-OPT(mpd_host, "localhost", apply_mpd_host),
-OPT(mpd_port, "6600", apply_mpd_port),
-OPT(mpd_password, "", apply_mpd_password),
-OPT(mpd_music_dir, "~/music", apply_mpd_music_dir),
+
+OPT(mpd_host,               "localhost", apply_mpd_host),
+OPT(mpd_port,               "6600", apply_mpd_port),
+OPT(mpd_password,           "", apply_mpd_password),
+OPT(mpd_music_dir,          "~/music", apply_mpd_music_dir),
 OPT(mpd_connection_timeout, "5", apply_mpd_connection_timeout),
-OPT(mpd_crossfade_time, "5", apply_mpd_crossfade_time),
+OPT(mpd_crossfade_time,     "5", apply_mpd_crossfade_time),
+
 OPT(random_exclude_pattern, "", apply_random_exclude_pattern),
 OPT(visualizer_data_source, "/tmp/mpd.fifo", apply_visualizer_data_source),
 OPT(visualizer_output_name, "Visualizer feed", apply_visualizer_output_name),
