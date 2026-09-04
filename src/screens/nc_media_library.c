@@ -909,10 +909,8 @@ media_library_screen_set_active_column(MediaLibraryScreen *screen,
 }
 
 bool
-media_library_screen_column_is_visible(
-    MediaLibraryScreen *screen,
-    enum MediaLibraryColumn column
-) {
+media_library_screen_column_is_visible(MediaLibraryScreen *screen,
+                                       enum MediaLibraryColumn column) {
     if (screen == NULL) {
         return false;
     }
