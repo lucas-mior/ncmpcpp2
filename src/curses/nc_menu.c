@@ -1126,11 +1126,9 @@ menu_flags_for_item(NcMenu *menu, void *item) {
 
 static int32
 menu_item_index(NcMenu *menu, enum NcMenuItemSource source, void *item) {
-    void **items;
-    int32 count;
+    void **items = menu_array(menu, source);
+    int32 count = menu_array_count(menu, source);
 
-    items = menu_array(menu, source);
-    count = menu_array_count(menu, source);
     for (int32 i = 0; i < count; i += 1) {
         if (items[i] == item) {
             return i;
