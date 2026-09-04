@@ -345,8 +345,8 @@ CAT(ENUM_PREFIX_, parse)(char *string) {
         }
         token_len = (int32)(p - token);
         if (token_len <= 0) {
-            error2("Error: invalid enum parse character '%c' in %s.\n", *p,
-                   string);
+            error2("Error: invalid enum parse character '%c' in %s.\n",
+                   *p, string);
             TRAP();
         }
 
