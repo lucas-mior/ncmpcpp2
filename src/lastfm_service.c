@@ -40,15 +40,6 @@ lastfm_string_set(char **data, int32 *len, int32 *cap, char *source,
 }
 
 static void
-lastfm_string_destroy(char **data, int32 *len, int32 *cap) {
-    free2(*data, *cap);
-    *data = NULL;
-    *len = 0;
-    *cap = 0;
-    return;
-}
-
-static void
 lastfm_result_clear_unchecked(NcmLastfmResult *result) {
     lastfm_string_destroy(&result->text, &result->text_len, &result->text_cap);
     result->success = false;

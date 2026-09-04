@@ -77,15 +77,6 @@ ncm_formatted_color_array_append(NcmFormattedColorArray *array) {
     return item;
 }
 
-static void
-settings_string_destroy(char **data, int32 *len, int32 *cap) {
-    free2(*data, *cap);
-    *data = NULL;
-    *len = 0;
-    *cap = 0;
-    return;
-}
-
 void
 column_init(Column *column) {
     column->name = NULL;

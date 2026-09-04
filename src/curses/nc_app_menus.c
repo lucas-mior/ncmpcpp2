@@ -7,15 +7,6 @@
 #include "curses/nc_curses.h"
 
 static void
-nc_menu_owned_string_destroy(char **data, int32 *len, int32 *cap) {
-    free2(*data, *cap);
-    *data = NULL;
-    *len = 0;
-    *cap = 0;
-    return;
-}
-
-static void
 nc_menu_owned_string_copy(char **dest_data, int32 *dest_len,
                           int32 *dest_cap, char *source_data,
                           int32 source_len) {
