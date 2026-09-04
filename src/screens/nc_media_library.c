@@ -932,10 +932,8 @@ media_library_screen_column_is_visible(
 }
 
 MediaLibraryColumnState *
-media_library_screen_column_state(
-    MediaLibraryScreen *screen,
-    enum MediaLibraryColumn column
-) {
+media_library_screen_column_state(MediaLibraryScreen *screen,
+                                  enum MediaLibraryColumn column) {
     if (screen == NULL) {
         return NULL;
     }
@@ -955,9 +953,7 @@ library_active_column_state(MediaLibraryScreen *screen) {
 }
 
 StrBuilder *
-media_library_screen_active_filter_constraint(
-    MediaLibraryScreen *screen
-) {
+media_library_screen_active_filter_constraint(MediaLibraryScreen *screen) {
     MediaLibraryColumnState *state;
 
     state = library_active_column_state(screen);
@@ -965,9 +961,7 @@ media_library_screen_active_filter_constraint(
 }
 
 StrBuilder *
-media_library_screen_active_search_constraint(
-    MediaLibraryScreen *screen
-) {
+media_library_screen_active_search_constraint(MediaLibraryScreen *screen) {
     MediaLibraryColumnState *state;
 
     state = library_active_column_state(screen);
