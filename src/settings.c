@@ -48,9 +48,7 @@ settings_error(NcmError *ncm_error, char *message, int32 message_len) {
 static int32
 settings_invalid_value(NcmError *ncm_error, char *value, int32 value_len) {
     char message[256];
-    int32 len;
-
-    len = SNPRINTF(message, "invalid value: %.*s", value_len, value);
+    int32 len = SNPRINTF(message, "invalid value: %.*s", value_len, value);
     return settings_error(ncm_error, message, len);
 }
 
