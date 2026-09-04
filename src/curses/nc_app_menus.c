@@ -39,35 +39,6 @@ nc_menu_owned_string_copy(char **dest_data, int32 *dest_len,
 }
 
 void
-nc_menu_string_pair_destroy(StrBuilderPair *pair) {
-    if (pair == NULL) {
-        return;
-    }
-    nc_menu_owned_string_destroy(&pair->first, &pair->first_len,
-                                 &pair->first_cap);
-    nc_menu_owned_string_destroy(&pair->second, &pair->second_len,
-                                 &pair->second_cap);
-    return;
-}
-
-int32
-nc_menu_string_pair_copy(StrBuilderPair *dest, StrBuilderPair *source) {
-    StrBuilderPair tmp = {0};
-
-    if ((dest == NULL) || (source == NULL)) {
-        return -EINVAL;
-    }
-    nc_menu_owned_string_copy(&tmp.first, &tmp.first_len, &tmp.first_cap,
-                              source->first, source->first_len);
-    nc_menu_owned_string_copy(&tmp.second, &tmp.second_len, &tmp.second_cap,
-                              source->second, source->second_len);
-
-    nc_menu_string_pair_destroy(dest);
-    *dest = tmp;
-    return 0;
-}
-
-void
 nc_search_row_destroy(NcSearchRow *row) {
     if (row == NULL) {
         return;
@@ -326,30 +297,37 @@ nc_media_library_album_menu_item_destroy(void *item, void *user) {
 }
 
 static void
-nc_menu_string_item_copy(void *dest, void *source, void *user) {
+str_builder_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    ASSERT(sb_copy(dest, source) >= 0);
+    sb_copy(dest, source);
     return;
 }
 
 static void
-nc_menu_string_item_destroy(void *item, void *user) {
+str_builder_menu_item_destroy(void *item, void *user) {
     (void)user;
     sb_free(item);
     return;
 }
 
 static void
-nc_menu_string_pair_item_copy(void *dest, void *source, void *user) {
+str_builder_pair_menu_item_copy(void *dest, void *source, void *user) {
+    StrBuilderPair *dest_pair = dest;
+    StrBuilderPair *source_pair = source;
+
     (void)user;
-    ASSERT(nc_menu_string_pair_copy(dest, source) >= 0);
+    sb_copy(&dest_pair->first, &source_pair->first);
+    sb_copy(&dest_pair->second, &source_pair->second);
     return;
 }
 
 static void
-nc_menu_string_pair_item_destroy(void *item, void *user) {
+str_builder_pair_menu_item_destroy(void *item, void *user) {
+    StrBuilderPair *pair = item;
+
     (void)user;
-    nc_menu_string_pair_destroy(item);
+    sb_free(&pair->first);
+    sb_free(&pair->second);
     return;
 }
 
@@ -431,15 +409,15 @@ static const NcMenuItemCallbacks nc_media_library_album_menu_callbacks = {
     .copy = nc_media_library_album_menu_item_copy,
     .destroy = nc_media_library_album_menu_item_destroy,
 };
-static const NcMenuItemCallbacks nc_menu_string_callbacks = {
+static const NcMenuItemCallbacks str_builder_menu_callbacks = {
     .item_size = SIZEOF(StrBuilder),
-    .copy = nc_menu_string_item_copy,
-    .destroy = nc_menu_string_item_destroy,
+    .copy = str_builder_menu_item_copy,
+    .destroy = str_builder_menu_item_destroy,
 };
-static const NcMenuItemCallbacks nc_menu_string_pair_callbacks = {
+static const NcMenuItemCallbacks str_builder_pair_menu_callbacks = {
     .item_size = SIZEOF(StrBuilderPair),
-    .copy = nc_menu_string_pair_item_copy,
-    .destroy = nc_menu_string_pair_item_destroy,
+    .copy = str_builder_pair_menu_item_copy,
+    .destroy = str_builder_pair_menu_item_destroy,
 };
 static const NcMenuItemCallbacks nc_editor_action_menu_callbacks = {
     .item_size = SIZEOF(NcEditorActionRow),
@@ -614,7 +592,7 @@ NC_TYPED_MENU_DEFINE_CURRENT(NcMediaLibrarySongMenu,
 
 NC_TYPED_MENU_DEFINE_COMMON(NcEditorStringMenu,
                             nc_editor_string_menu,
-                            nc_menu_string_callbacks)
+                            str_builder_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD_WITH_FLAGS(NcEditorStringMenu,
                                     nc_editor_string_menu,
                                     StrBuilder)
@@ -622,7 +600,7 @@ NC_TYPED_MENU_DEFINE_ADD_SEPARATOR(NcEditorStringMenu, nc_editor_string_menu)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcEditorPairMenu,
                             nc_editor_pair_menu,
-                            nc_menu_string_pair_callbacks)
+                            str_builder_pair_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD(NcEditorPairMenu,
                          nc_editor_pair_menu,
                          StrBuilderPair)

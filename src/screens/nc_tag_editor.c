@@ -223,9 +223,9 @@ tag_editor_draw_directory(NcMenu *menu, NcWindow *window, void *item,
 
     ASSERT(window != NULL);
     ASSERT(pair != NULL);
-    ASSERT(pair->first != NULL);
+    ASSERT(pair->first.data != NULL);
 
-    nc_window_print_data(window, pair->first, pair->first_len);
+    nc_window_print_data(window, pair->first.data, pair->first.len);
     return;
 }
 
@@ -233,14 +233,14 @@ static bool
 tag_editor_directory_matches_regex(StrBuilderPair *pair,
                                    NcmRegex *regex, bool filter) {
     ASSERT(pair != NULL);
-    ASSERT(pair->first != NULL);
-    if (STREQUAL(pair->first, pair->first_len, ".")) {
+    ASSERT(pair->first.data != NULL);
+    if (STREQUAL(pair->first.data, pair->first.len, ".")) {
         return filter;
     }
-    if (STREQUAL(pair->first, pair->first_len, "..")) {
+    if (STREQUAL(pair->first.data, pair->first.len, "..")) {
         return filter;
     }
-    return ncm_regex_matches(regex, pair->first, pair->first_len);
+    return ncm_regex_matches(regex, pair->first.data, pair->first.len);
 }
 
 static bool
@@ -530,9 +530,9 @@ tag_editor_current_directory_path(TagEditorScreen *screen,
     if (pair == NULL) {
         return false;
     }
-    ASSERT(pair->second != NULL);
-    *path = pair->second;
-    *path_len = pair->second_len;
+    ASSERT(pair->second.data != NULL);
+    *path = pair->second.data;
+    *path_len = pair->second.len;
     return true;
 }
 
@@ -1030,8 +1030,8 @@ tag_editor_restore_current_directory(TagEditorScreen *screen,
 
         pair = nc_menu_active_item_at(menu, i);
         ASSERT(pair != NULL);
-        ASSERT(pair->second != NULL);
-        if (STREQUAL(pair->second, pair->second_len,
+        ASSERT(pair->second.data != NULL);
+        if (STREQUAL(pair->second.data, pair->second.len,
                      path->data, path->len)) {
             nc_menu_goto_selectable(menu, i);
             return;
@@ -1333,8 +1333,8 @@ tag_editor_screen_locate_song(TagEditorScreen *screen,
 
             item = nc_menu_active_item_at(menu, i);
             ASSERT(item != NULL);
-            ASSERT(item->second != NULL);
-            if (STREQUAL(item->second, item->second_len,
+            ASSERT(item->second.data != NULL);
+            if (STREQUAL(item->second.data, item->second.len,
                          directory.data, directory.len)) {
                 nc_menu_goto_selectable(menu, i);
                 tag_editor_observe_current_directory(screen);
@@ -1393,8 +1393,8 @@ tag_editor_current_directory_pair(TagEditorScreen *screen,
     if (current == NULL) {
         return false;
     }
-    ASSERT(current->first != NULL);
-    ASSERT(current->second != NULL);
+    ASSERT(current->first.data != NULL);
+    ASSERT(current->second.data != NULL);
     *pair = current;
     return true;
 }
@@ -1414,8 +1414,8 @@ tag_editor_screen_rename_directory_available(TagEditorScreen *screen,
     if (!tag_editor_current_directory_pair(screen, &pair)) {
         return false;
     }
-    if (STREQUAL(pair->first, pair->first_len, ".")
-        || STREQUAL(pair->first, pair->first_len, "..")) {
+    if (STREQUAL(pair->first.data, pair->first.len, ".")
+        || STREQUAL(pair->first.data, pair->first.len, "..")) {
         return false;
     }
     return true;
@@ -1444,7 +1444,7 @@ tag_editor_screen_rename_current_directory(TagEditorScreen *screen,
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    ncm_string_view_set(&initial, pair->first, pair->first_len);
+    ncm_string_view_set(&initial, pair->first.data, pair->first.len);
     result = screen->hooks.prompt(
         screen->hooks.user, STRLIT("Directory: "), initial, &name);
     if (result == TAG_EDITOR_PROMPT_ABORTED) {
@@ -1456,13 +1456,13 @@ tag_editor_screen_rename_current_directory(TagEditorScreen *screen,
         return -NCM_ERROR_UNAVAILABLE;
     }
     if ((name.len <= 0)
-        || STREQUAL(name.data, name.len, pair->first, pair->first_len)) {
+        || STREQUAL(name.data, name.len, pair->first.data, pair->first.len)) {
         sb_free(&name);
         return 0;
     }
 
     ncm_fs_join(&old_path, music_dir, music_dir_len,
-                pair->second, pair->second_len);
+                pair->second.data, pair->second.len);
     ncm_fs_join(&new_relative, screen->current_dir.data,
                 screen->current_dir.len, name.data, name.len);
     ncm_fs_join(&new_path, music_dir, music_dir_len,
@@ -1476,7 +1476,7 @@ tag_editor_screen_rename_current_directory(TagEditorScreen *screen,
         int32 error_len;
 
         SB_APPEND(&message, "Couldn't rename \"");
-        SB_APPEND(&message, pair->first, pair->first_len);
+        SB_APPEND(&message, pair->first.data, pair->first.len);
         SB_APPEND(&message, "\": ");
         if (ncm_error_is_set(&ncm_error)) {
             error_len = strlen32(ncm_error.message);
@@ -1517,20 +1517,15 @@ tag_editor_screen_add_directory(TagEditorScreen *screen,
                                 char *label, int32 label_len,
                                 char *path, int32 path_len) {
     StrBuilderPair pair = {0};
-    StrBuilder first = {0};
-    StrBuilder second = {0};
 
-    sb_set(&first, label, label_len);
-    sb_set(&second, path, path_len);
-    pair.first = sb_steal(&first, &pair.first_len, &pair.first_cap);
-    pair.second = sb_steal(&second, &pair.second_len, &pair.second_cap);
+    sb_set(&pair.first, label, label_len);
+    sb_set(&pair.second, path, path_len);
     nc_editor_pair_menu_add(&screen->directories, &pair);
     screen->last_known_directory_count = nc_menu_item_count(
         nc_editor_pair_menu_base(&screen->directories));
     tag_editor_update_titles(screen, true);
-    sb_free(&second);
-    sb_free(&first);
-    nc_menu_string_pair_destroy(&pair);
+    sb_free(&pair.second);
+    sb_free(&pair.first);
     return;
 }
 
