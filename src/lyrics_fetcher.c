@@ -214,8 +214,9 @@ ncm_lyrics_result_set(NcmLyricsResult *result, bool success,
 
 static void
 lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher) {
-    stupid_string_free(&fetcher->name, &fetcher->name_len,
-                          &fetcher->name_cap);
+    free2(fetcher->name, fetcher->name_len + 1);
+    fetcher->name = NULL;
+    fetcher->name_len = 0;
     fetcher->type = NCM_LYRICS_FETCHER_UNKNOWN;
     fetcher->enabled = false;
     return;
@@ -291,8 +292,8 @@ lyrics_fetcher_def_set_name(NcmLyricsFetcherDef *fetcher,
     *fetcher = (NcmLyricsFetcherDef){0};
     fetcher->type = type;
     fetcher->enabled = true;
-    stupid_string_set(&fetcher->name, &fetcher->name_len,
-                      &fetcher->name_cap, profile->name, profile->name_len);
+    fetcher->name = xstrndup(profile->name, profile->name_len);
+    fetcher->name_len = profile->name_len;
     return 0;
 }
 
