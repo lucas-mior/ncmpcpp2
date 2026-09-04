@@ -92,7 +92,6 @@ static void
 playlist_editor_update_menu_highlights(PlaylistEditorScreen *screen) {
     NcMenu *playlists = nc_playlist_entry_menu_base(&screen->playlists);
     NcMenu *content = nc_song_menu_base(&screen->content);
-    NcMenu *active;
 
     nc_menu_set_highlight_prefix(playlists,
                                  &Config.current_item_inactive_column_prefix);
@@ -103,9 +102,11 @@ playlist_editor_update_menu_highlights(PlaylistEditorScreen *screen) {
     nc_menu_set_highlight_suffix(content,
                                  &Config.current_item_inactive_column_suffix);
 
-    active = playlist_editor_screen_active_menu(screen);
-    nc_menu_set_highlight_prefix(active, &Config.current_item_prefix);
-    nc_menu_set_highlight_suffix(active, &Config.current_item_suffix);
+    {
+        NcMenu *active = playlist_editor_screen_active_menu(screen);
+        nc_menu_set_highlight_prefix(active, &Config.current_item_prefix);
+        nc_menu_set_highlight_suffix(active, &Config.current_item_suffix);
+    }
     return;
 }
 
