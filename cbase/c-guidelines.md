@@ -271,6 +271,8 @@ In general, we must always know the lengths of our strings:
 In general, pass `char *string` and `int32 string_len` around. Also use this
 convention in struct definitions.
 
+If the string is expected to grow later, use StrBuilder directly.
+
 That means to also avoid calling `strlen32`:
 
 - `strlen32` shall be viewed as an interface for code that we do not control or
