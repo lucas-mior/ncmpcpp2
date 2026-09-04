@@ -841,9 +841,8 @@ media_library_screen_set_mode(MediaLibraryScreen *screen,
 }
 
 int32
-media_library_screen_toggle_mode(
-    MediaLibraryScreen *screen, enum MediaLibraryMode *mode
-) {
+media_library_screen_toggle_mode(MediaLibraryScreen *screen,
+                                 enum MediaLibraryMode *mode) {
     enum MediaLibraryMode next_mode;
 
     if (screen == NULL) {
