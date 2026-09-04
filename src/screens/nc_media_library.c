@@ -88,7 +88,7 @@ library_set_owned_string(char **dest, int32 *dest_len, int32 *dest_cap,
     ASSERT(dest != NULL);
     ASSERT(dest_len != NULL);
     ASSERT(dest_cap != NULL);
-    ASSERT(source_len >= 0);
+    ASSERT_NON_NEGATIVE(source_len);
     ASSERT((source != NULL) || (source_len == 0));
 
     free2(*dest, *dest_cap);
@@ -2787,7 +2787,7 @@ library_move_to_tag(MediaLibraryScreen *screen,
     NcMenu *menu;
 
     ASSERT(screen != NULL);
-    ASSERT(tag_len >= 0);
+    ASSERT_NON_NEGATIVE(tag_len);
     ASSERT((tag != NULL) || (tag_len == 0));
 
     menu = nc_media_library_tag_menu_base(&screen->tags);
@@ -2813,9 +2813,9 @@ library_move_to_album(MediaLibraryScreen *screen,
     NcMenu *menu;
 
     ASSERT(screen != NULL);
-    ASSERT(tag_len >= 0);
-    ASSERT(album_len >= 0);
-    ASSERT(date_len >= 0);
+    ASSERT_NON_NEGATIVE(tag_len);
+    ASSERT_NON_NEGATIVE(album_len);
+    ASSERT_NON_NEGATIVE(date_len);
     ASSERT((tag != NULL) || (tag_len == 0));
     ASSERT((album != NULL) || (album_len == 0));
     ASSERT((date != NULL) || (date_len == 0));
