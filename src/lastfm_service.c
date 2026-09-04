@@ -16,7 +16,7 @@ static NcmLastfmCurlPerformFn lastfm_test_perform;
 static NcmLastfmCurlEscapeFn lastfm_test_escape;
 static void *lastfm_test_user;
 
-static void lastfm_string_destroy(char **data, int32 *len, int32 *cap);
+static void stupid_string_free(char **data, int32 *len, int32 *cap);
 static void
 lastfm_string_set(char **data, int32 *len, int32 *cap, char *source,
                   int32 source_len) {
@@ -25,7 +25,7 @@ lastfm_string_set(char **data, int32 *len, int32 *cap, char *source,
 
     ASSERT((source_len >= 0)
            && ((source != NULL) || (source_len == 0)));
-    lastfm_string_destroy(data, len, cap);
+    stupid_string_free(data, len, cap);
     if (source_len == 0) {
         return;
     }
@@ -41,7 +41,7 @@ lastfm_string_set(char **data, int32 *len, int32 *cap, char *source,
 
 static void
 lastfm_result_clear_unchecked(NcmLastfmResult *result) {
-    lastfm_string_destroy(&result->text, &result->text_len, &result->text_cap);
+    stupid_string_free(&result->text, &result->text_len, &result->text_cap);
     result->success = false;
     return;
 }
@@ -86,9 +86,9 @@ ncm_lastfm_result_set(NcmLastfmResult *result, bool success, char *text,
 
 static void
 lastfm_service_destroy_unchecked(NcmLastfmService *service) {
-    lastfm_string_destroy(&service->artist, &service->artist_len,
+    stupid_string_free(&service->artist, &service->artist_len,
                           &service->artist_cap);
-    lastfm_string_destroy(&service->lang, &service->lang_len,
+    stupid_string_free(&service->lang, &service->lang_len,
                           &service->lang_cap);
     service->type = NCM_LASTFM_SERVICE_NONE;
     return;
