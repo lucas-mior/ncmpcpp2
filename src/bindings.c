@@ -24,7 +24,7 @@ ncm_bindings_error(NcmError *ncm_error, char *format, ...) {
     len = vsnprintf(buffer, (size_t)SIZEOF(buffer), format, args);
     va_end(args);
 
-    ASSERT(len >= 0);
+    ASSERT_NON_NEGATIVE(len);
     if (len >= SIZEOF(buffer)) {
         len = SIZEOF(buffer) - 1;
     }
