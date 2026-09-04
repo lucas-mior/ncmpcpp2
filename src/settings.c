@@ -1824,6 +1824,7 @@ OPT(window_border_color, "green", apply_window_border_color),
 OPT(active_window_border, "red", apply_active_window_border),
 };
 
+#undef OPT
 
 int32
 configuration_read(Configuration *config, NcmStringViewArray *config_paths,
