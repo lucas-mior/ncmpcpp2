@@ -3456,8 +3456,9 @@ tag_editor_run_current(NcScreen *screen) {
 
                 initial.data = editor->pattern.data;
                 initial.len = editor->pattern.len;
-                prompt_result = editor->hooks.prompt(
-                    editor->hooks.user, STRLIT("Pattern"), initial, &input);
+                prompt_result = editor->hooks.prompt(editor->hooks.user,
+                                                     STRLIT("Pattern"),
+                                                     initial, &input);
                 if (prompt_result == TAG_EDITOR_PROMPT_ABORTED) {
                     tag_editor_status_message(
                         editor, STRLIT("Action aborted"));
