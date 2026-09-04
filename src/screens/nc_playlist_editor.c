@@ -375,14 +375,14 @@ playlist_editor_apply_geometry(PlaylistEditorScreen *screen) {
         screen->right_width = 1;
     }
 
-    nc_window_resize(&screen->playlists_window, screen->left_width,
-                     screen->main_height);
-    nc_window_move_to(&screen->playlists_window, screen->start_x,
-                      screen->main_start_y);
-    nc_window_resize(&screen->content_window, screen->right_width,
-                     screen->main_height);
-    nc_window_move_to(&screen->content_window, screen->right_start_x,
-                      screen->main_start_y);
+    nc_window_resize(&screen->playlists_window,
+                     screen->left_width, screen->main_height);
+    nc_window_move_to(&screen->playlists_window,
+                      screen->start_x, screen->main_start_y);
+    nc_window_resize(&screen->content_window,
+                     screen->right_width, screen->main_height);
+    nc_window_move_to(&screen->content_window,
+                      screen->right_start_x, screen->main_start_y);
     return;
 }
 
