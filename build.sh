@@ -35,8 +35,8 @@ CPPFLAGS="$CPPFLAGS -I. -Isrc -Icbase"
 
 CFLAGS="$CFLAGS -std=c11"
 CFLAGS="$CFLAGS -Wfatal-errors"
-CFLAGS="$CFLAGS -fmax-errors=1"
-CFLAGS="$CFLAGS -ferror-limit=1"
+# CFLAGS="$CFLAGS -fmax-errors=1"
+# CFLAGS="$CFLAGS -ferror-limit=1"
 
 CFLAGS="$CFLAGS -pthread"
 LDFLAGS="$LDFLAGS -lm"
