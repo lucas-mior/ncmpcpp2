@@ -101,30 +101,24 @@ ncm_format_parse_color_component(char *data, int32 data_len,
     return 0;
 }
 
-static int32
+static void
 ncm_format_text_append(NcmFormatExprList *list, StrBuilder *token) {
     NcmFormatExpr *expr;
 
     if (token->len <= 0) {
-        return 0;
+        return;
     }
 
-    if ((expr = ncm_format_expr_list_append(list)) == NULL) {
-        return -ENOMEM;
-    }
-
+    expr = ncm_format_expr_list_append(list);
     expr->type = NCM_FORMAT_EXPR_TEXT;
     expr->value.text = *token;
     *token = (StrBuilder){0};
 
-    return 0;
+    return;
 }
 
-void
-ncm_format_expr_list_clear(NcmFormatExprList *list) {
-    if (list == NULL) {
-        return;
-    }
+static void
+ncm_format_expr_list_clear_unchecked(NcmFormatExprList *list) {
     for (int32 i = 0; i < list->len; i += 1) {
         NcmFormatExpr *expr = &list->items[i];
 
@@ -134,7 +128,10 @@ ncm_format_expr_list_clear(NcmFormatExprList *list) {
             break;
         case NCM_FORMAT_EXPR_GROUP:
         case NCM_FORMAT_EXPR_FIRST_OF:
-            ncm_format_expr_list_destroy(&expr->value.list);
+            ncm_format_expr_list_clear_unchecked(&expr->value.list);
+            free2(expr->value.list.items,
+                  expr->value.list.cap*SIZEOF(*expr->value.list.items));
+            expr->value.list = (NcmFormatExprList){0};
             break;
         case NCM_FORMAT_EXPR_COLOR:
         case NCM_FORMAT_EXPR_FORMAT:
@@ -152,15 +149,30 @@ ncm_format_expr_list_clear(NcmFormatExprList *list) {
 }
 
 void
+ncm_format_expr_list_clear(NcmFormatExprList *list) {
+    if (list == NULL) {
+        return;
+    }
+
+    ncm_format_expr_list_clear_unchecked(list);
+    return;
+}
+
+static void
+ncm_format_expr_list_destroy_unchecked(NcmFormatExprList *list) {
+    ncm_format_expr_list_clear_unchecked(list);
+    free2(list->items, list->cap*SIZEOF(*list->items));
+    *list = (NcmFormatExprList){0};
+    return;
+}
+
+void
 ncm_format_expr_list_destroy(NcmFormatExprList *list) {
     if (list == NULL) {
         return;
     }
 
-    ncm_format_expr_list_clear(list);
-    free2(list->items, list->cap*SIZEOF(*list->items));
-    *list = (NcmFormatExprList){0};
-
+    ncm_format_expr_list_destroy_unchecked(list);
     return;
 }
 
@@ -203,7 +215,7 @@ ncm_format_ast_destroy(NcmFormatAst *ast) {
     if (ast == NULL) {
         return;
     }
-    ncm_format_expr_list_destroy(&ast->root);
+    ncm_format_expr_list_destroy_unchecked(&ast->root);
     return;
 }
 
@@ -212,13 +224,13 @@ ncm_format_ast_clear(NcmFormatAst *ast) {
     if (ast == NULL) {
         return;
     }
-    ncm_format_expr_list_clear(&ast->root);
+    ncm_format_expr_list_clear_unchecked(&ast->root);
     return;
 }
 
 void
 ncm_format_ast_move(NcmFormatAst *dest, NcmFormatAst *source) {
-    ncm_format_ast_destroy(dest);
+    ncm_format_expr_list_destroy_unchecked(&dest->root);
     ncm_format_expr_list_move(&dest->root, &source->root);
     return;
 }
@@ -244,18 +256,14 @@ ncm_format_ast_append_column_types(NcmFormatAst *ast,
         }
     }
 
-    if ((first = ncm_format_expr_list_append(&ast->root)) == NULL) {
-        return -ENOMEM;
-    }
+    first = ncm_format_expr_list_append(&ast->root);
     first->type = NCM_FORMAT_EXPR_FIRST_OF;
     first->value.list = (NcmFormatExprList){0};
 
     for (int32 i = 0; i < types_len; i += 1) {
         NcmFormatExpr *tag;
 
-        if ((tag = ncm_format_expr_list_append(&first->value.list)) == NULL) {
-            return -ENOMEM;
-        }
+        tag = ncm_format_expr_list_append(&first->value.list);
         tag->type = NCM_FORMAT_EXPR_SONG_TAG;
         tag->value.song_tag.getter = ncm_song_getter_from_char(types[i]);
         tag->value.song_tag.delimiter = 0;
@@ -273,145 +281,129 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
     status = 0;
     for (int32 i = start; (status == 0) && (i < end); i += 1) {
         if (data[i] == '{') {
-            status = ncm_format_text_append(out, &token);
-            if (status == 0) {
-                NcmFormatExpr *first;
-                bool done;
-                int32 first_i;
+            NcmFormatExpr *first;
+            bool done;
+            int32 first_i;
 
-                if ((first = ncm_format_expr_list_append(out)) == NULL) {
-                    status = -ENOMEM;
-                    continue;
-                }
-                first->type = NCM_FORMAT_EXPR_FIRST_OF;
-                first->value.list = (NcmFormatExprList){0};
+            ncm_format_text_append(out, &token);
+            first = ncm_format_expr_list_append(out);
+            first->type = NCM_FORMAT_EXPR_FIRST_OF;
+            first->value.list = (NcmFormatExprList){0};
 
-                first_i = i;
-                done = false;
-                while ((status == 0) && !done) {
-                    NcmFormatExprList inner = {0};
-                    int32 close = -1;
-                    int32 depth = 1;
+            first_i = i;
+            done = false;
+            while ((status == 0) && !done) {
+                NcmFormatExprList inner = {0};
+                int32 close = -1;
+                int32 depth = 1;
 
-                    for (int32 j = first_i + 1; j < end; j += 1) {
-                        if (data[j] == '{') {
-                            depth += 1;
-                        } else if (data[j] == '}') {
-                            depth -= 1;
-                            if (depth == 0) {
-                                close = j;
-                                break;
-                            }
+                for (int32 j = first_i + 1; j < end; j += 1) {
+                    if (data[j] == '{') {
+                        depth += 1;
+                    } else if (data[j] == '}') {
+                        depth -= 1;
+                        if (depth == 0) {
+                            close = j;
+                            break;
                         }
                     }
-                    if (close < 0) {
-                        status = ncm_format_set_error(
-                            ncm_error, "unexpected end", first_i);
-                        break;
-                    }
-
-                    status = ncm_format_parse_bracket(
-                        &inner, data, first_i + 1, close, flags, ncm_error);
-                    if (status == 0) {
-                        NcmFormatExpr *expr;
-
-                        if ((expr = ncm_format_expr_list_append(
-                                 &first->value.list)) == NULL) {
-                            status = -ENOMEM;
-                        } else if (inner.len == 1) {
-                            *expr = inner.items[0];
-                            inner.items[0].type = NCM_FORMAT_EXPR_TEXT;
-                            inner.items[0].value.text = (StrBuilder){0};
-                            inner.len = 0;
-                        } else {
-                            expr->type = NCM_FORMAT_EXPR_GROUP;
-                            ncm_format_expr_list_move(&expr->value.list,
-                                                      &inner);
-                        }
-                    }
-                    ncm_format_expr_list_destroy(&inner);
-                    if (status < 0) {
-                        break;
-                    }
-
-                    first_i = close + 1;
-                    if ((first_i < end) && (data[first_i] == '|')) {
-                        first_i += 1;
-                        if ((first_i >= end) || (data[first_i] != '{')) {
-                            status = ncm_format_set_error(
-                                ncm_error, "expected bracket", first_i);
-                        }
-                    } else {
-                        done = true;
-                    }
                 }
-                if (status == 0) {
-                    i = first_i - 1;
-                }
-            }
-        } else if ((flags & NCM_FORMAT_FLAG_TAG) && (data[i] == '%')) {
-            status = ncm_format_text_append(out, &token);
-            if (status == 0) {
-                NcmFormatExpr *expr;
-                uint32 delimiter;
-                int32 percent_i;
-                enum NcmSongGetter getter;
-
-                percent_i = i + 1;
-                if (percent_i >= end) {
+                if (close < 0) {
                     status = ncm_format_set_error(
-                        ncm_error, "unexpected end", percent_i);
-                } else if (data[percent_i] == '%') {
-                    if ((expr = ncm_format_expr_list_append(out)) == NULL) {
-                        status = -ENOMEM;
+                        ncm_error, "unexpected end", first_i);
+                    break;
+                }
+
+                status = ncm_format_parse_bracket(
+                    &inner, data, first_i + 1, close, flags, ncm_error);
+                if (status == 0) {
+                    NcmFormatExpr *expr;
+
+                    expr = ncm_format_expr_list_append(&first->value.list);
+                    if (inner.len == 1) {
+                        *expr = inner.items[0];
+                        inner.items[0].type = NCM_FORMAT_EXPR_TEXT;
+                        inner.items[0].value.text = (StrBuilder){0};
+                        inner.len = 0;
                     } else {
-                        expr->type = NCM_FORMAT_EXPR_TEXT;
-                        sb_append_byte(&expr->value.text, '%');
-                        i = percent_i;
+                        expr->type = NCM_FORMAT_EXPR_GROUP;
+                        ncm_format_expr_list_move(&expr->value.list, &inner);
+                    }
+                }
+                ncm_format_expr_list_destroy_unchecked(&inner);
+                if (status < 0) {
+                    break;
+                }
+
+                first_i = close + 1;
+                if ((first_i < end) && (data[first_i] == '|')) {
+                    first_i += 1;
+                    if ((first_i >= end) || (data[first_i] != '{')) {
+                        status = ncm_format_set_error(
+                            ncm_error, "expected bracket", first_i);
                     }
                 } else {
-                    delimiter = 0;
-                    if (isdigit((uint8)data[percent_i])) {
-                        int32 delimiter_start = percent_i;
+                    done = true;
+                }
+            }
+            if (status == 0) {
+                i = first_i - 1;
+            }
+        } else if ((flags & NCM_FORMAT_FLAG_TAG) && (data[i] == '%')) {
+            NcmFormatExpr *expr;
+            uint32 delimiter;
+            int32 percent_i;
+            enum NcmSongGetter getter;
 
-                        while ((percent_i < end)
-                               && isdigit((uint8)data[percent_i])) {
-                            percent_i += 1;
-                        }
-                        if (percent_i >= end) {
-                            status = ncm_format_set_error(
-                                ncm_error, "unexpected end", percent_i);
-                        } else {
-                            for (int32 j = delimiter_start;
-                                 (status == 0) && (j < percent_i); j += 1) {
-                                uint32 digit = (uint32)(data[j] - '0');
+            ncm_format_text_append(out, &token);
+            percent_i = i + 1;
+            if (percent_i >= end) {
+                status = ncm_format_set_error(
+                    ncm_error, "unexpected end", percent_i);
+            } else if (data[percent_i] == '%') {
+                expr = ncm_format_expr_list_append(out);
+                expr->type = NCM_FORMAT_EXPR_TEXT;
+                sb_append_byte(&expr->value.text, '%');
+                i = percent_i;
+            } else {
+                delimiter = 0;
+                if (isdigit((uint8)data[percent_i])) {
+                    int32 delimiter_start = percent_i;
 
-                                if (delimiter
-                                    > (MAXOF(delimiter) - digit)/10) {
-                                    status = ncm_error_set_status(
-                                        ncm_error, -EOVERFLOW,
-                                        STRLIT("tag delimiter too large"));
-                                } else {
-                                    delimiter = delimiter*10 + digit;
-                                }
+                    while ((percent_i < end)
+                           && isdigit((uint8)data[percent_i])) {
+                        percent_i += 1;
+                    }
+                    if (percent_i >= end) {
+                        status = ncm_format_set_error(
+                            ncm_error, "unexpected end", percent_i);
+                    } else {
+                        for (int32 j = delimiter_start;
+                             (status == 0) && (j < percent_i); j += 1) {
+                            uint32 digit = (uint32)(data[j] - '0');
+
+                            if (delimiter > (MAXOF(delimiter) - digit)/10) {
+                                status = ncm_error_set_status(
+                                    ncm_error, -EOVERFLOW,
+                                    STRLIT("tag delimiter too large"));
+                            } else {
+                                delimiter = delimiter*10 + digit;
                             }
                         }
                     }
+                }
 
-                    if (status == 0) {
-                        getter = ncm_song_getter_from_char(data[percent_i]);
-                        if (getter == NCM_SONG_GETTER_NONE) {
-                            status = ncm_format_set_error(
-                                ncm_error, "invalid tag", percent_i);
-                        } else if ((expr = ncm_format_expr_list_append(out))
-                                   == NULL) {
-                            status = -ENOMEM;
-                        } else {
-                            expr->type = NCM_FORMAT_EXPR_SONG_TAG;
-                            expr->value.song_tag.getter = getter;
-                            expr->value.song_tag.delimiter = delimiter;
-                            i = percent_i;
-                        }
+                if (status == 0) {
+                    getter = ncm_song_getter_from_char(data[percent_i]);
+                    if (getter == NCM_SONG_GETTER_NONE) {
+                        status = ncm_format_set_error(
+                            ncm_error, "invalid tag", percent_i);
+                    } else {
+                        expr = ncm_format_expr_list_append(out);
+                        expr->type = NCM_FORMAT_EXPR_SONG_TAG;
+                        expr->value.song_tag.getter = getter;
+                        expr->value.song_tag.delimiter = delimiter;
+                        i = percent_i;
                     }
                 }
             }
@@ -419,26 +411,22 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                              |NCM_FORMAT_FLAG_FORMAT
                              |NCM_FORMAT_FLAG_OUTPUT_SWITCH))
                    && (data[i] == '$')) {
-            status = ncm_format_text_append(out, &token);
-            if (status == 0) {
-                NcmFormatExpr *expr;
-                int32 dollar_i = i + 1;
+            NcmFormatExpr *expr;
+            int32 dollar_i = i + 1;
 
-                if (dollar_i >= end) {
-                    status = ncm_format_set_error(
-                        ncm_error, "unexpected end", dollar_i);
-                } else if (data[dollar_i] == '$') {
-                    if ((expr = ncm_format_expr_list_append(out)) == NULL) {
-                        status = -ENOMEM;
-                    } else {
-                        expr->type = NCM_FORMAT_EXPR_TEXT;
-                        sb_append_byte(&expr->value.text, '$');
-                        i = dollar_i;
-                    }
-                } else if ((expr = ncm_format_expr_list_append(out)) == NULL) {
-                    status = -ENOMEM;
-                } else if ((flags & NCM_FORMAT_FLAG_COLOR)
-                           && isdigit((uint8)data[dollar_i])) {
+            ncm_format_text_append(out, &token);
+            if (dollar_i >= end) {
+                status = ncm_format_set_error(
+                    ncm_error, "unexpected end", dollar_i);
+            } else if (data[dollar_i] == '$') {
+                expr = ncm_format_expr_list_append(out);
+                expr->type = NCM_FORMAT_EXPR_TEXT;
+                sb_append_byte(&expr->value.text, '$');
+                i = dollar_i;
+            } else {
+                expr = ncm_format_expr_list_append(out);
+                if ((flags & NCM_FORMAT_FLAG_COLOR)
+                    && isdigit((uint8)data[dollar_i])) {
                     int32 color_index;
 
                     color_index = ncm_color_index_from_char(data[dollar_i]);
@@ -622,7 +610,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
     }
 
     if (status == 0) {
-        status = ncm_format_text_append(out, &token);
+        ncm_format_text_append(out, &token);
     }
     sb_free(&token);
     return status;
@@ -647,22 +635,18 @@ ncm_format_parse(NcmFormatAst *ast, char *data, int32 data_len,
     status = ncm_format_parse_bracket(&tmp.root, data, 0, data_len,
                                       flags, ncm_error);
     if (status < 0) {
-        ncm_format_ast_destroy(&tmp);
+        ncm_format_expr_list_destroy_unchecked(&tmp.root);
         return status;
     }
 
     ncm_format_ast_move(ast, &tmp);
-    ncm_format_ast_destroy(&tmp);
+    ncm_format_expr_list_destroy_unchecked(&tmp.root);
     return 0;
 }
 
-StrBuilder
-ncm_format_render_tag(NcmSong *song, NcmFormatSongTag *tag) {
-    StrBuilder result = {0};
-
-    if ((song == NULL) || (tag == NULL)) {
-        return result;
-    }
+static StrBuilder
+ncm_format_render_tag_unchecked(NcmSong *song, NcmFormatSongTag *tag) {
+    StrBuilder result;
 
     result = ncm_song_tags_buffer(song, tag->getter, STRLIT(" | "), true);
     if ((tag->delimiter > 0) && (result.len > 0)) {
@@ -686,6 +670,15 @@ ncm_format_render_tag(NcmSong *song, NcmFormatSongTag *tag) {
     }
 
     return result;
+}
+
+StrBuilder
+ncm_format_render_tag(NcmSong *song, NcmFormatSongTag *tag) {
+    if ((song == NULL) || (tag == NULL)) {
+        return (StrBuilder){0};
+    }
+
+    return ncm_format_render_tag_unchecked(song, tag);
 }
 
 static void
@@ -743,7 +736,7 @@ ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
         if (!(flags & NCM_FORMAT_FLAG_TAG) || (song == NULL)) {
             return NCM_FORMAT_RESULT_MISSING;
         }
-        tag = ncm_format_render_tag(song, &expr->value.song_tag);
+        tag = ncm_format_render_tag_unchecked(song, &expr->value.song_tag);
         if (tag.len <= 0) {
             sb_free(&tag);
             return NCM_FORMAT_RESULT_MISSING;
@@ -827,9 +820,8 @@ ncm_format_render(NcmFormatAst *ast, NcmSong *song,
         return;
     }
 
-    (void)ncm_format_render_list(&ast->root, song, callbacks, output,
-                                 second_output, flags, &no_output,
-                                 &switched);
+    ncm_format_render_list(&ast->root, song, callbacks, output,
+                           second_output, flags, &no_output, &switched);
     return;
 }
 
