@@ -433,33 +433,11 @@ ncm_song_getter_to_tags_field(enum NcmSongGetter getter) {
 
 char *
 ncm_tags_field_name(enum NcmTagsField field) {
-    switch (field) {
-    case NCM_TAGS_FIELD_TITLE:
-        return "Title";
-    case NCM_TAGS_FIELD_ARTIST:
-        return "Artist";
-    case NCM_TAGS_FIELD_ALBUM_ARTIST:
-        return "Album Artist";
-    case NCM_TAGS_FIELD_ALBUM:
-        return "Album";
-    case NCM_TAGS_FIELD_DATE:
-        return "Date";
-    case NCM_TAGS_FIELD_TRACK:
-        return "Track";
-    case NCM_TAGS_FIELD_GENRE:
-        return "Genre";
-    case NCM_TAGS_FIELD_COMPOSER:
-        return "Composer";
-    case NCM_TAGS_FIELD_PERFORMER:
-        return "Performer";
-    case NCM_TAGS_FIELD_DISC:
-        return "Disc";
-    case NCM_TAGS_FIELD_COMMENT:
-        return "Comment";
-    case NCM_TAGS_FIELD_COUNT:
-    default:
+    if (field >= NCM_TAGS_FIELD_COUNT) {
         return "";
     }
+
+    return NCM_TAGS_FIELD_alias(field);
 }
 
 #undef NCM_LIBMPDCLIENT_CHECK_VERSION
