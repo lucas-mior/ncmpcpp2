@@ -101,16 +101,14 @@ static int32
 settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
                         int32 *width, bool keep_existing,
                         NcmError *ncm_error) {
-    NcmFormatAst ast;
-    NcBuffer tmp;
+    NcmFormatAst ast = {0};
+    NcBuffer tmp = {0};
     int32 status;
 
     if (keep_existing && !nc_buffer_is_empty(buffer)) {
         return 0;
     }
 
-    ast = (NcmFormatAst){0};
-    tmp = (NcBuffer){0};
     status = ncm_format_parse(&ast, value, value_len,
                               NCM_FORMAT_FLAG_COLOR | NCM_FORMAT_FLAG_FORMAT,
                               ncm_error);
