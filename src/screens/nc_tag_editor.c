@@ -194,7 +194,7 @@ struct SaveContext {
 static void
 tag_editor_append_string_row(NcEditorStringMenu *menu,
                              char *data, int32 data_len, uint32 flags) {
-    NcMenuString string = {0};
+    StrBuilder string = {0};
 
     nc_menu_string_set(&string, data, data_len);
     nc_editor_string_menu_add_with_flags(menu, &string, flags);
@@ -215,7 +215,7 @@ tag_editor_configure_menu(NcMenu *menu) {
 static void
 tag_editor_draw_directory(NcMenu *menu, NcWindow *window, void *item,
                           int32 pos, void *user) {
-    NcMenuStringPair *pair = item;
+    StrBuilderPair *pair = item;
 
     (void)menu;
     (void)pos;
@@ -230,7 +230,7 @@ tag_editor_draw_directory(NcMenu *menu, NcWindow *window, void *item,
 }
 
 static bool
-tag_editor_directory_matches_regex(NcMenuStringPair *pair,
+tag_editor_directory_matches_regex(StrBuilderPair *pair,
                                    NcmRegex *regex, bool filter) {
     ASSERT(pair != NULL);
     ASSERT(pair->first != NULL);
@@ -246,7 +246,7 @@ tag_editor_directory_matches_regex(NcMenuStringPair *pair,
 static bool
 tag_editor_directory_filter(NcMenu *menu, void *item, void *user) {
     TagEditorScreen *screen = user;
-    NcMenuStringPair *pair = item;
+    StrBuilderPair *pair = item;
 
     (void)menu;
     if (!screen->directory_filter_enabled) {
@@ -269,7 +269,7 @@ tag_editor_directory_display_callbacks(TagEditorScreen *screen) {
 static void
 tag_editor_draw_string(NcMenu *menu, NcWindow *window, void *item,
                        int32 pos, void *user) {
-    NcMenuString *string = item;
+    StrBuilder *string = item;
 
     (void)menu;
     (void)pos;
@@ -518,7 +518,7 @@ tag_editor_update_titles(TagEditorScreen *screen,
 static bool
 tag_editor_current_directory_path(TagEditorScreen *screen,
                                   char **path, int32 *path_len) {
-    NcMenuStringPair *pair;
+    StrBuilderPair *pair;
 
     ASSERT(screen != NULL);
     ASSERT(path != NULL);
@@ -1026,7 +1026,7 @@ tag_editor_restore_current_directory(TagEditorScreen *screen,
     }
     menu = nc_editor_pair_menu_base(&screen->directories);
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        NcMenuStringPair *pair;
+        StrBuilderPair *pair;
 
         pair = nc_menu_active_item_at(menu, i);
         ASSERT(pair != NULL);
@@ -1329,7 +1329,7 @@ tag_editor_screen_locate_song(TagEditorScreen *screen,
         bool found = false;
 
         for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-            NcMenuStringPair *item;
+            StrBuilderPair *item;
 
             item = nc_menu_active_item_at(menu, i);
             ASSERT(item != NULL);
@@ -1382,8 +1382,8 @@ tag_editor_screen_locate_song(TagEditorScreen *screen,
 
 static bool
 tag_editor_current_directory_pair(TagEditorScreen *screen,
-                                  NcMenuStringPair **pair) {
-    NcMenuStringPair *current;
+                                  StrBuilderPair **pair) {
+    StrBuilderPair *current;
 
     ASSERT(screen != NULL);
     ASSERT(pair != NULL);
@@ -1403,7 +1403,7 @@ bool
 tag_editor_screen_rename_directory_available(TagEditorScreen *screen,
                                              char *music_dir,
                                              int32 music_dir_len) {
-    NcMenuStringPair *pair;
+    StrBuilderPair *pair;
 
     if ((screen == NULL) || (music_dir == NULL) || (music_dir_len <= 0)) {
         return false;
@@ -1425,7 +1425,7 @@ int32
 tag_editor_screen_rename_current_directory(TagEditorScreen *screen,
                                            char *music_dir,
                                            int32 music_dir_len) {
-    NcMenuStringPair *pair;
+    StrBuilderPair *pair;
     NcmStringView initial;
     StrBuilder name = {0};
     StrBuilder old_path = {0};
@@ -1516,7 +1516,7 @@ void
 tag_editor_screen_add_directory(TagEditorScreen *screen,
                                 char *label, int32 label_len,
                                 char *path, int32 path_len) {
-    NcMenuStringPair pair = {0};
+    StrBuilderPair pair = {0};
     StrBuilder first = {0};
     StrBuilder second = {0};
 
@@ -2297,7 +2297,7 @@ tag_editor_append_parser_separator(TagEditorScreen *screen) {
 static void
 tag_editor_append_parser_row(NcEditorStringMenu *menu, char *data,
                              int32 data_len, uint32 flags) {
-    NcMenuString string = {0};
+    StrBuilder string = {0};
 
     nc_menu_string_set(&string, data, data_len);
     nc_editor_string_menu_add_with_flags(menu, &string, flags);
@@ -2945,7 +2945,7 @@ static enum TagEditorTagTypeAction
 tag_editor_current_tag_type_action(TagEditorScreen *screen,
                                    enum NcmTagsField *field) {
     NcMenu *menu;
-    NcMenuString *row;
+    StrBuilder *row;
     int32 choice;
 
     ASSERT(screen != NULL);
@@ -3542,7 +3542,7 @@ tag_editor_run_current(NcScreen *screen) {
             return 0;
         }
         if (choice >= (int32)TAG_EDITOR_PARSER_ACTION_RECENT_START) {
-            NcMenuString *row;
+            StrBuilder *row;
 
             row = nc_menu_active_item_at(menu, choice);
             ASSERT(row != NULL);

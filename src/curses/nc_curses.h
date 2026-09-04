@@ -525,13 +525,7 @@ void nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
 
 #include "c/ncm_c.h"
 
-typedef struct NcMenuString {
-    char *data;
-    int32 len;
-    int32 cap;
-} NcMenuString;
-
-typedef struct NcMenuStringPair {
+typedef struct StrBuilderPair {
     char *first;
     char *second;
 
@@ -539,7 +533,7 @@ typedef struct NcMenuStringPair {
     int32 first_cap;
     int32 second_len;
     int32 second_cap;
-} NcMenuStringPair;
+} StrBuilderPair;
 
 typedef struct NcSearchRow {
     NcmSong song;
@@ -716,17 +710,17 @@ NC_TYPED_MENU_DECLARE_COMMON(NcEditorStringMenu,
                              nc_editor_string_menu);
 NC_TYPED_MENU_DECLARE_ADD_WITH_FLAGS(NcEditorStringMenu,
                                      nc_editor_string_menu,
-                                     NcMenuString);
+                                     StrBuilder);
 NC_TYPED_MENU_DECLARE_ADD_SEPARATOR(NcEditorStringMenu,
                                     nc_editor_string_menu);
 
 NC_TYPED_MENU_DECLARE_COMMON(NcEditorPairMenu, nc_editor_pair_menu);
 NC_TYPED_MENU_DECLARE_ADD(NcEditorPairMenu,
                           nc_editor_pair_menu,
-                          NcMenuStringPair);
+                          StrBuilderPair);
 NC_TYPED_MENU_DECLARE_CURRENT(NcEditorPairMenu,
                               nc_editor_pair_menu,
-                              NcMenuStringPair);
+                              StrBuilderPair);
 
 NC_TYPED_MENU_DECLARE_COMMON(NcEditorActionMenu,
                              nc_editor_action_menu);
@@ -775,13 +769,13 @@ NC_TYPED_MENU_DECLARE_ITEM_AT(NcEditorBufferMenu,
 #undef NC_TYPED_MENU_DECLARE_CURRENT
 #undef NC_TYPED_MENU_DECLARE_COMMON
 
-void nc_menu_string_destroy(NcMenuString *string);
-int32 nc_menu_string_copy(NcMenuString *dest, NcMenuString *source);
-int32 nc_menu_string_set(NcMenuString *string, char *data, int32 data_len);
+void nc_menu_string_destroy(StrBuilder *string);
+int32 nc_menu_string_copy(StrBuilder *dest, StrBuilder *source);
+int32 nc_menu_string_set(StrBuilder *string, char *data, int32 data_len);
 
-void nc_menu_string_pair_destroy(NcMenuStringPair *pair);
+void nc_menu_string_pair_destroy(StrBuilderPair *pair);
 int32 nc_menu_string_pair_copy(
-    NcMenuStringPair *dest, NcMenuStringPair *source);
+    StrBuilderPair *dest, StrBuilderPair *source);
 
 void nc_search_row_destroy(NcSearchRow *row);
 int32 nc_search_row_copy(NcSearchRow *dest, NcSearchRow *source);
