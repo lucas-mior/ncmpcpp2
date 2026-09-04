@@ -34,8 +34,8 @@ menu_item_count(NcMenu *menu, enum NcMenuItemSource source) {
 }
 
 static bool
-menu_position_is_selected(NcMenu *menu, enum NcMenuItemSource source,
-                          int32 pos) {
+menu_source_position_is_selected(NcMenu *menu, enum NcMenuItemSource source,
+                                 int32 pos) {
     uint32 flags;
     void *item;
 
@@ -72,7 +72,7 @@ ncm_menu_reverse_selection(NcMenu *menu, enum NcMenuItemSource source) {
         uint32 flags;
         void *item;
 
-        selected = menu_position_is_selected(menu, source, i);
+        selected = menu_source_position_is_selected(menu, source, i);
         if ((item = nc_menu_item_at(menu, source, i)) == NULL) {
             continue;
         }
@@ -116,7 +116,7 @@ ncm_menu_find_selected_range(NcMenu *menu, enum NcMenuItemSource source,
 
     range_first = count;
     for (int32 i = 0; i < count; i += 1) {
-        if (menu_position_is_selected(menu, source, i)) {
+        if (menu_source_position_is_selected(menu, source, i)) {
             range_first = i;
             break;
         }
@@ -129,7 +129,7 @@ ncm_menu_find_selected_range(NcMenu *menu, enum NcMenuItemSource source,
         *first = range_first;
     }
     for (int32 i = count - 1; i >= range_first; i -= 1) {
-        if (menu_position_is_selected(menu, source, i)) {
+        if (menu_source_position_is_selected(menu, source, i)) {
             if (last) {
                 *last = i + 1;
             }
@@ -161,7 +161,7 @@ ncm_menu_find_full_selected_range(NcMenu *menu, enum NcMenuItemSource source,
         return 0;
     }
     for (int32 i = range_first; i < range_last; i += 1) {
-        if (!menu_position_is_selected(menu, source, i)) {
+        if (!menu_source_position_is_selected(menu, source, i)) {
             return -NCM_ERROR_UNAVAILABLE;
         }
     }
