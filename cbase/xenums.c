@@ -79,15 +79,15 @@
 #if XENUMS_FUNCTIONS_ONLY == 0
 #if ENUM_BITFLAGS
 enum CAT(ENUM_NAME, _BitIndices) ENUM_UNDERLYING_TYPE_SPEC {
-    #define X_IDX_1(e)    CAT(e, _BIT_IDX),
-    #define X_IDX_2(e, v)
-    #define XX(...)       SELECT_ON_NUM_ARGS(X_IDX_, __VA_ARGS__)
+    #define X_INDEX_1(e)    CAT(e, _BIT_INDEX),
+    #define X_INDEX_2(e, v)
+    #define XX(...)       SELECT_ON_NUM_ARGS(X_INDEX_, __VA_ARGS__)
 
     ENUM_FIELDS
 
     #undef XX
-    #undef X_IDX_1
-    #undef X_IDX_2
+    #undef X_INDEX_1
+    #undef X_INDEX_2
     CAT(ENUM_PREFIX_, BIT_COUNT)
 };
 _Static_assert(CAT(ENUM_PREFIX_, BIT_COUNT)
@@ -114,7 +114,7 @@ enum ENUM_NAME ENUM_UNDERLYING_TYPE_SPEC {
     #define XENUM_1(e)        e,
     #define XENUM_2(e, alias) e,
 #else
-    #define XENUM_1(e)        e = (ENUM_UNDERLYING_TYPE)1 << CAT(e, _BIT_IDX),
+    #define XENUM_1(e)        e = (ENUM_UNDERLYING_TYPE)1 << CAT(e, _BIT_INDEX),
     #define XENUM_2(e, v)     e = v,
 #endif
     #define XX(...)           SELECT_ON_NUM_ARGS(XENUM_, __VA_ARGS__)
@@ -454,7 +454,7 @@ CAT(ENUM_PREFIX_, functions_sink)(void) {
 int
 main(void) {
     char *s;
-    ASSERT_ZERO(TEST_FLAGS_READ_BIT_IDX);
+    ASSERT_ZERO(TEST_FLAGS_READ_BIT_INDEX);
     ASSERT(TEST_FLAGS_BIT_COUNT == 3);
     ASSERT(TEST_FLAGS_READ == (1 << 0));
     ASSERT(TEST_FLAGS_WRITE == (1 << 1));
