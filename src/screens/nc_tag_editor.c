@@ -4068,14 +4068,13 @@ tag_editor_layout(TagEditorScreen *screen) {
                      screen->parser_dialog_width,
                      screen->parser_dialog_height);
 
-    nc_window_move_to(&screen->parser_window, screen->parser_start_x,
-                      screen->parser_start_y);
-    nc_window_resize(&screen->parser_window, screen->parser_width_one,
-                     screen->parser_height);
+    nc_window_move_to(&screen->parser_window,
+                     screen->parser_start_x, screen->parser_start_y);
+    nc_window_resize(&screen->parser_window,
+                     screen->parser_width_one, screen->parser_height);
 
     nc_window_move_to(&screen->parser_helper_window,
-                      screen->parser_helper_start_x,
-                      screen->parser_start_y);
+                      screen->parser_helper_start_x, screen->parser_start_y);
     nc_window_resize(&screen->parser_helper_window,
                      screen->parser_width_two, screen->parser_height);
     return;
