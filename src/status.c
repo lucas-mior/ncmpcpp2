@@ -137,10 +137,7 @@ status_print_value(char *prefix, int32 prefix_len,
                    char *value, int32 value_len) {
     StrBuilder message = {0};
 
-    if (value == NULL) {
-        value = "";
-        value_len = 0;
-    } else if (value_len < 0) {
+    if (value_len < 0) {
         value_len = optional_strlen32(value);
     }
 
@@ -169,7 +166,6 @@ ncm_status_handle_server_error_value(NcmMpdClient *client, int32 code,
     status_print_server_error(message, message_len);
     if ((code == MPD_SERVER_ERROR_PERMISSION) && (client != NULL)) {
         enum NcPromptStatus prompt_status;
-        NcmError password_error = {0};
         NcPrompt prompt = {0};
         NcWindow *window;
         char *password;
@@ -198,20 +194,12 @@ ncm_status_handle_server_error_value(NcmMpdClient *client, int32 code,
             password = "";
         }
 
-        ncm_error_clear(&password_error);
-        if (ncm_mpd_client_set_password(client, password, -1,
-                                        &password_error) < 0) {
-            status_print_client_error(password_error.message, -1);
-            if (password_allocated) {
-                nc_window_prompt_result_destroy(password);
-            }
-            return;
-        }
+        ncm_mpd_client_set_password(client, password, -1, NULL);
         if (password_allocated) {
             nc_window_prompt_result_destroy(password);
         }
 
-        if (ncm_mpd_client_send_password(client, &password_error) < 0) {
+        if (ncm_mpd_client_send_password(client, NULL) < 0) {
             if (ncm_mpd_client_error_code(client) == MPD_ERROR_SERVER) {
                 status_print_server_error(
                     ncm_mpd_client_error_message(client), -1);
@@ -247,15 +235,10 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
     if (client && ncm_mpd_client_is_connected(client)) {
         if (!status_initialized) {
             NcmMpdStatus mpd_status = {0};
-            int32 init_status;
-
-            init_status = ncm_mpd_client_get_status(client, &mpd_status,
-                                                    ncm_error);
-            if (init_status >= 0) {
-                init_status = ncm_status_apply_mpd_status(
+            if (ncm_mpd_client_get_status(client, &mpd_status,
+                                          ncm_error) >= 0) {
+                ncm_status_apply_mpd_status(
                     &mpd_status, status_full_event_mask(), NULL, ncm_error);
-            }
-            if (init_status >= 0) {
                 NcmStatusInitHooks *init_hooks = NULL;
 
                 if (status_init_hooks_set) {
@@ -300,8 +283,8 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
                     if ((fd = ncm_mpd_client_fd(&global_mpd)) >= 0) {
                         int32 flag = 1;
 
-                        (void)setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &flag,
-                                         (socklen_t)SIZEOF(flag));
+                        setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &flag,
+                                   (socklen_t)SIZEOF(flag));
                     }
 #endif
                 }
@@ -329,8 +312,8 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
                     VisualizerScreen *visualizer2 = app_screen_visualizer();
 
                     visualizer_screen_close_data_source(visualizer2);
-                    (void)visualizer_screen_open_data_source(visualizer2);
-                    (void)visualizer_screen_find_output_id(visualizer2);
+                    visualizer_screen_open_data_source(visualizer2);
+                    visualizer_screen_find_output_id(visualizer2);
 #endif
                 }
 
@@ -372,7 +355,7 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
 
         app_controller_update_visible_screens();
         ncm_statusbar_try_redraw();
-        (void)ncm_mpd_client_idle(client, ncm_error);
+        ncm_mpd_client_idle(client, ncm_error);
     }
 
     if (update_window_timeout) {
@@ -548,7 +531,6 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         } else {
             NcmError playlist_error = {0};
 
-            ncm_error_clear(&playlist_error);
             if (playlist_screen_reload_from_mpd(
                 app_screen_playlist(), &global_mpd, previous_playlist_version,
                 status_playlist_length, &playlist_error) < 0) {
@@ -558,7 +540,6 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                 status_playlist_update_observer(
                     status_playlist_update_observer_user);
             }
-            ncm_error_clear(&playlist_error);
             if (status_ui_hooks_set && status_ui_hooks.playlist_changed) {
                 status_ui_hooks.playlist_changed(previous_playlist_version,
                                                  status_ui_hooks.user);
@@ -580,7 +561,6 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                 active_hooks->song_id_changed(mpd_status->song_id,
                                               active_hooks->user);
             } else {
-                NcmError song_error = {0};
                 NcmSong song = {0};
                 bool has_song;
 
@@ -605,9 +585,8 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                         &song) == 0) {
                         has_song = true;
                     } else if (ncm_mpd_client_is_connected(&global_mpd)) {
-                        ncm_error_clear(&song_error);
                         if (ncm_mpd_client_get_current_song(
-                            &global_mpd, &song, &song_error) >= 0) {
+                            &global_mpd, &song, NULL) >= 0) {
                             has_song = !ncm_song_is_empty(&song);
                         }
                     }
@@ -615,24 +594,19 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                     if (has_song) {
                         if (!ncm_song_is_empty(&song)) {
                             if (Config.execute_on_song_change_len > 0) {
-                                ncm_error_clear(&song_error);
-                                (void)ncm_macro_run_external_command(
+                                ncm_macro_run_external_command(
                                     Config.execute_on_song_change,
                                     Config.execute_on_song_change_len, true,
-                                    &song_error);
-                                ncm_error_clear(&song_error);
+                                    NULL);
                             }
 
                             if (Config.fetch_lyrics_in_background) {
-                                ncm_error_clear(&song_error);
-                                (void)lyrics_screen_fetch_in_background(
-                                    app_screen_lyrics(), &song, false,
-                                    &song_error);
-                                ncm_error_clear(&song_error);
+                                lyrics_screen_fetch_in_background(
+                                    app_screen_lyrics(), &song, false, NULL);
                             }
 
                             if (Config.autocenter_mode) {
-                                (void)playlist_screen_locate_position(
+                                playlist_screen_locate_position(
                                     app_screen_playlist(),
                                     ncm_song_position(&song));
                             }
@@ -642,11 +616,8 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                                     app_screen_lyrics_base())
                                 && (app_controller_previous_screen()
                                     == app_screen_playlist_base())) {
-                                ncm_error_clear(&song_error);
-                                (void)lyrics_screen_fetch(
-                                    app_screen_lyrics(), &song, NULL,
-                                    &song_error);
-                                ncm_error_clear(&song_error);
+                                lyrics_screen_fetch(
+                                    app_screen_lyrics(), &song, NULL, NULL);
                             }
 
                             if (status_ui_hooks_set
@@ -955,7 +926,6 @@ ncm_status_changes_player_state(void) {
     NcWindow *state_window;
 
     if (Config.execute_on_player_state_change_len > 0) {
-        NcmError player_state_error = {0};
         char *player_state_env = "unknown";
 
         switch (status_player_state) {
@@ -973,14 +943,11 @@ ncm_status_changes_player_state(void) {
             break;
         }
 
-        (void)setenv("MPD_PLAYER_STATE", player_state_env, 1);
-        ncm_error_clear(&player_state_error);
-        (void)ncm_macro_run_external_command(
+        setenv("MPD_PLAYER_STATE", player_state_env, 1);
+        ncm_macro_run_external_command(
             Config.execute_on_player_state_change,
-            Config.execute_on_player_state_change_len, true,
-            &player_state_error);
-        ncm_error_clear(&player_state_error);
-        (void)unsetenv("MPD_PLAYER_STATE");
+            Config.execute_on_player_state_change_len, true, NULL);
+        unsetenv("MPD_PLAYER_STATE");
     }
 
     if (status_ui_hooks_set && status_ui_hooks.player_state_changed) {
@@ -1077,10 +1044,6 @@ status_apply_formatted_color(NcWindow *window, NcFormattedColor *color) {
     enum NcFormat *formats;
     int32 count;
 
-    if ((window == NULL) || (color == NULL)) {
-        return;
-    }
-
     nc_window_push_color(window, color->color);
     formats = nc_formatted_color_formats(color);
     count = nc_formatted_color_format_count(color);
@@ -1094,10 +1057,6 @@ static void
 status_apply_formatted_color_end(NcWindow *window, NcFormattedColor *color) {
     enum NcFormat *formats;
     int32 count;
-
-    if ((window == NULL) || (color == NULL)) {
-        return;
-    }
 
     if (!nc_color_is_default(color->color)) {
         nc_window_push_color(window, nc_color_end());
@@ -1243,16 +1202,14 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
 
     if (update_elapsed) {
         NcmMpdStatus mpd_status = {0};
-        NcmError elapsed_error = {0};
         int64 elapsed_ms;
 
         if (!ncm_mpd_client_is_connected(&global_mpd)) {
             elapsed_ms = status_elapsed_time_ms_now();
             status_rebase_elapsed_time(status_elapsed_time + 1, elapsed_ms);
         } else {
-            ncm_error_clear(&elapsed_error);
             if (ncm_mpd_client_get_status(&global_mpd, &mpd_status,
-                                          &elapsed_error) < 0) {
+                                          NULL) < 0) {
                 elapsed_ms = status_elapsed_time_ms_now();
                 status_rebase_elapsed_time(status_elapsed_time + 1,
                                            elapsed_ms);
@@ -1598,9 +1555,6 @@ ncm_status_changes_mixer(void) {
         global_volume_state_append("n/a", STRLIT_LEN("n/a"));
     } else {
         volume_len = SNPRINTF(volume, "%d", status_volume);
-        if (volume_len < 0) {
-            volume_len = 0;
-        }
         global_volume_state_append(volume, volume_len);
         global_volume_state_append("%", STRLIT_LEN("%"));
     }
