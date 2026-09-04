@@ -61,17 +61,17 @@ struct mpd_song;
 #define ENUM_PREFIX_ NCM_TAGS_FIELD_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                  \
-    XX(NCM_TAGS_FIELD_TITLE,        "Title")         \
-    XX(NCM_TAGS_FIELD_ARTIST,       "Artist")        \
-    XX(NCM_TAGS_FIELD_ALBUM_ARTIST, "Album Artist")  \
-    XX(NCM_TAGS_FIELD_ALBUM,        "Album")         \
-    XX(NCM_TAGS_FIELD_DATE,         "Date")          \
-    XX(NCM_TAGS_FIELD_TRACK,        "Track")         \
-    XX(NCM_TAGS_FIELD_GENRE,        "Genre")         \
-    XX(NCM_TAGS_FIELD_COMPOSER,     "Composer")      \
-    XX(NCM_TAGS_FIELD_PERFORMER,    "Performer")     \
-    XX(NCM_TAGS_FIELD_DISC,         "Disc")          \
-    XX(NCM_TAGS_FIELD_COMMENT,      "Comment")
+    XX(NCM_TAGS_FIELD_TITLE, Title)                  \
+    XX(NCM_TAGS_FIELD_ARTIST, Artist)                \
+    XX(NCM_TAGS_FIELD_ALBUM_ARTIST, Album Artist)    \
+    XX(NCM_TAGS_FIELD_ALBUM, Album)                  \
+    XX(NCM_TAGS_FIELD_DATE, Date)                    \
+    XX(NCM_TAGS_FIELD_TRACK, Track)                  \
+    XX(NCM_TAGS_FIELD_GENRE, Genre)                  \
+    XX(NCM_TAGS_FIELD_COMPOSER, Composer)            \
+    XX(NCM_TAGS_FIELD_PERFORMER, Performer)          \
+    XX(NCM_TAGS_FIELD_DISC, Disc)                    \
+    XX(NCM_TAGS_FIELD_COMMENT, Comment)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcmTagsReadResult
