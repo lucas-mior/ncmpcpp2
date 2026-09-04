@@ -3250,8 +3250,7 @@ tag_editor_build_parser_preview(TagEditorScreen *screen,
                               new_name.data, new_name.len);
                 } else if (Config.empty_tag) {
                     SB_APPEND(&screen->parser_preview,
-                              Config.empty_tag,
-                              Config.empty_tag_len);
+                              Config.empty_tag, Config.empty_tag_len);
                 }
                 SB_APPEND(&screen->parser_preview,
                           "\n\n");
