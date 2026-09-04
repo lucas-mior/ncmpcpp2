@@ -214,8 +214,7 @@ CAT(ENUM_PREFIX_, str_len)(enum ENUM_NAME val, char **out) {
         if (val && ((val & e) == e)) {                                         \
             char *name = #e;                                                   \
             int32 len = STRLIT_LEN(#e);                                        \
-            int32 new_cap;                                                     \
-            new_cap = buffer_len + len + 1;                                    \
+            int32 new_cap = buffer_len + len + 1;                              \
             if (is_first == 0) {                                               \
                 new_cap += 1;                                                  \
             }                                                                  \
