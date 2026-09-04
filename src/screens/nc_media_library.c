@@ -1028,10 +1028,9 @@ media_library_screen_has_current_album_value(
 }
 
 void
-media_library_screen_format_tag_row(
-    MediaLibraryScreen *screen, NcMediaLibraryTagRow *row,
-    StrBuilder *output
-) {
+media_library_screen_format_tag_row(MediaLibraryScreen *screen,
+                                    NcMediaLibraryTagRow *row,
+                                    StrBuilder *output) {
     (void)screen;
 
     if (output == NULL) {
