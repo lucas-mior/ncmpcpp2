@@ -140,13 +140,11 @@ visualizer_data_source_system_hooks(NcmMpdClient *client) {
 
 static void
 visualizer_destroy_colors(VisualizerScreen *screen) {
-    if (screen->visualizer_colors) {
-        for (int32 i = 0; i < screen->visualizer_colors_len; i += 1) {
-            nc_formatted_color_destroy(&screen->visualizer_colors[i]);
-        }
-        free2(screen->visualizer_colors,
-              screen->visualizer_colors_cap*SIZEOF(*screen->visualizer_colors));
+    for (int32 i = 0; i < screen->visualizer_colors_len; i += 1) {
+        nc_formatted_color_destroy(&screen->visualizer_colors[i]);
     }
+    free2(screen->visualizer_colors,
+          screen->visualizer_colors_cap*SIZEOF(*screen->visualizer_colors));
     screen->visualizer_colors = NULL;
     screen->visualizer_colors_len = 0;
     screen->visualizer_colors_cap = 0;
@@ -159,10 +157,6 @@ visualizer_color(VisualizerScreen *screen,
                  bool wrap) {
     int32 index;
 
-    if ((screen->visualizer_colors == NULL)
-        || (screen->visualizer_colors_len <= 0)) {
-        return NULL;
-    }
     if ((max <= 0.0) || !isfinite(number) || !isfinite(max)) {
         return &screen->visualizer_colors[0];
     }
@@ -192,8 +186,7 @@ visualizer_draw_character(VisualizerScreen *screen,
     int32 width = nc_window_width(&screen->window);
     int32 height = nc_window_height(&screen->window);
 
-    if ((x < 0) || (y < 0) || (x >= width) || (y >= height)
-        || (character == NULL) || (character_len <= 0)) {
+    if ((x < 0) || (y < 0) || (x >= width) || (y >= height)) {
         return;
     }
 
@@ -278,14 +271,6 @@ visualizer_screen_init_data_source(VisualizerScreen *screen,
                                    int32 source_location_len) {
     int32 colon = -1;
 
-    if (screen == NULL) {
-        return;
-    }
-    if ((source_location == NULL) || (source_location_len <= 0)) {
-        source_location = NULL;
-        source_location_len = 0;
-    }
-
     for (int32 i = source_location_len - 1; i >= 0; i -= 1) {
         if (source_location[i] == ':') {
             colon = i;
@@ -311,24 +296,14 @@ visualizer_screen_init_data_source(VisualizerScreen *screen,
 
 int32
 visualizer_screen_open_data_source(VisualizerScreen *screen) {
-    if (screen == NULL) {
-        return -EINVAL;
-    }
     if (screen->source_fd >= 0) {
         return screen->source_fd;
     }
 
     {
-        char *location = screen->source_location.data;
-        char *port = screen->source_port.data;
+        char *location = sb_opt_cstr(&screen->source_location);
+        char *port = sb_opt_cstr(&screen->source_port);
         int32 fd;
-
-        if (location == NULL) {
-            location = "";
-        }
-        if (port == NULL) {
-            port = "";
-        }
 
         if (screen->source_port.len > 0) {
             if (screen->data_source_hooks.open_udp == NULL) {
@@ -360,7 +335,7 @@ visualizer_screen_open_data_source(VisualizerScreen *screen) {
 
 void
 visualizer_screen_close_data_source(VisualizerScreen *screen) {
-    if ((screen == NULL) || (screen->source_fd < 0)) {
+    if (screen->source_fd < 0) {
         return;
     }
 
@@ -382,20 +357,12 @@ visualizer_screen_drain_data_source(VisualizerScreen *screen) {
     int32 bytes_read;
     int32 total_read;
 
-    if ((screen == NULL) || (screen->source_fd < 0)
+    if ((screen->source_fd < 0)
         || (screen->data_source_hooks.read_source == NULL)) {
         return 0;
     }
-    if (screen->incoming_samples.data == NULL) {
-        return 0;
-    }
-
     buffer_size = ncm_sample_buffer_capacity(&screen->incoming_samples)
                   *SIZEOF(*screen->incoming_samples.data);
-    if (buffer_size <= 0) {
-        return 0;
-    }
-
     total_read = 0;
     do {
         bytes_read = screen->data_source_hooks.read_source(
@@ -416,10 +383,6 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
     NcmError ncm_error;
     int32 status;
     bool found = false;
-
-    if (screen == NULL) {
-        return -EINVAL;
-    }
 
     screen->output_id = -1;
     if ((screen->output_name.len <= 0) || (screen->source_port.len > 0)) {
@@ -699,9 +662,7 @@ visualizer_screen_init(VisualizerScreen *screen,
 
 void
 visualizer_screen_destroy(VisualizerScreen *screen) {
-    if ((screen == NULL) || !screen->initialized) {
-        return;
-    }
+    ASSERT(screen->initialized);
 
     visualizer_screen_close_data_source(screen);
 
@@ -752,10 +713,6 @@ visualizer_screen_init_visualization(VisualizerScreen *screen) {
     int32 incoming_cap;
     int32 channel_cap;
 
-    if ((screen == NULL) || !screen->initialized) {
-        return;
-    }
-
     width = nc_window_width(&screen->window);
     if (width <= 0) {
         width = 1;
@@ -792,17 +749,6 @@ visualizer_screen_init_visualization(VisualizerScreen *screen) {
         rendered_samples *= 2;
         incoming_samples *= 2;
     }
-    if (rendered_samples < 1) {
-        rendered_samples = 1;
-    }
-    if (incoming_samples < 1) {
-        incoming_samples = 1;
-    }
-    if ((rendered_samples > INT32_MAX)
-        || (incoming_samples > INT32_MAX)) {
-        return;
-    }
-
     rendered_cap = rendered_samples;
     incoming_cap = incoming_samples;
     channel_cap = 0;
@@ -878,9 +824,6 @@ visualizer_screen_requested_samples(VisualizerScreen *screen) {
     int64 scaled_frames;
     int32 channels = 1;
 
-    if ((screen == NULL) || (screen->sample_rate <= 0)) {
-        return 0;
-    }
     now = time_monotonic_now();
     if (!screen->sample_clock_initialized) {
         screen->sample_clock = now;
@@ -917,52 +860,28 @@ visualizer_screen_requested_samples(VisualizerScreen *screen) {
     return (int32)(frames*channels);
 }
 
-int32
+void
 visualizer_screen_push_samples(VisualizerScreen *screen, int16 *samples,
                                int32 samples_len) {
-    if (screen == NULL) {
-        return -EINVAL;
-    }
-    if (samples_len <= 0) {
-        return 0;
-    }
-    if (samples == NULL) {
-        return -EINVAL;
-    }
-
     visualizer_screen_apply_auto_scale(screen, samples, samples_len);
-    return ncm_sample_buffer_put(&screen->buffered_samples,
-                                 samples, samples_len);
+    ncm_sample_buffer_put(&screen->buffered_samples, samples, samples_len);
+    return;
 }
 
 int32
 visualizer_screen_take_render_samples(VisualizerScreen *screen, int16 *dest,
                                       int32 dest_len) {
     int32 requested;
-    int32 result;
-
-    if ((screen == NULL) || (dest == NULL) || (dest_len <= 0)) {
-        return 0;
-    }
 
     requested = visualizer_screen_requested_samples(screen);
-    result = ncm_sample_buffer_get_clamped(&screen->buffered_samples,
-                                           requested, dest, dest_len);
-    if (result <= 0) {
-        return 0;
-    }
-
-    return result;
+    return ncm_sample_buffer_get_clamped(&screen->buffered_samples,
+                                         requested, dest, dest_len);
 }
 
 int32
 visualizer_screen_split_stereo(VisualizerScreen *screen, int16 *samples,
                                int32 samples_len) {
     int32 pairs;
-
-    if ((screen == NULL) || (samples == NULL) || (samples_len <= 1)) {
-        return 0;
-    }
 
     ncm_sample_buffer_clear(&screen->left_channel);
     ncm_sample_buffer_clear(&screen->right_channel);
@@ -990,8 +909,7 @@ visualizer_screen_apply_auto_scale(VisualizerScreen *screen, int16 *samples,
     double scale;
     int32 scaled;
 
-    if ((screen == NULL) || !screen->autoscale
-        || (samples == NULL) || (samples_len <= 0)) {
+    if (!screen->autoscale) {
         return;
     }
 
@@ -1040,8 +958,7 @@ visualizer_draw_wave(VisualizerScreen *screen,
     int32 samples_per_column;
     int32 previous_y;
 
-    if ((samples == NULL) || (samples_len <= 0)
-        || (width <= 0) || (height <= 0)) {
+    if (height <= 0) {
         return;
     }
     samples_per_column = samples_len / width;
@@ -1104,8 +1021,7 @@ visualizer_draw_wave_filled(VisualizerScreen *screen,
     int32 samples_per_column;
     bool flipped = y_offset > 0;
 
-    if ((samples == NULL) || (samples_len <= 0)
-        || (width <= 0) || (height <= 0)) {
+    if (height <= 0) {
         return;
     }
     samples_per_column = samples_len / width;
@@ -1254,8 +1170,7 @@ visualizer_draw_frequency(VisualizerScreen *screen,
     int32 current_bin;
     bool flipped = y_offset > 0;
 
-    if ((samples == NULL) || (samples_len <= 0)
-        || (width <= 0) || (height <= 0) || (fft->plan == NULL)
+    if ((height <= 0) || (fft->plan == NULL)
         || (fft->input == NULL) || (fft->output == NULL)) {
         return;
     }
@@ -1584,19 +1499,15 @@ visualizer_draw_frequency(VisualizerScreen *screen,
 }
 #endif
 
-int32
+void
 visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
                        int32 samples_len) {
     int32 height;
     int32 half_height;
 
-    if ((screen == NULL) || !screen->initialized
-        || (samples == NULL) || (samples_len <= 0)) {
-        return -EINVAL;
-    }
     height = nc_window_height(&screen->window);
     if ((nc_window_width(&screen->window) <= 0) || (height <= 0)) {
-        return -NCM_ERROR_UNAVAILABLE;
+        return;
     }
 
     nc_window_clear(&screen->window);
@@ -1605,7 +1516,7 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
             screen, samples, samples_len);
 
         if (channel_samples <= 0) {
-            return -NCM_ERROR_UNAVAILABLE;
+            return;
         }
         half_height = height / 2;
         switch (screen->visualization_type) {
@@ -1645,49 +1556,46 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
             int32 bottom_half_height;
             int32 radius;
 
-            if ((screen->left_channel.data != NULL)
-                && (screen->right_channel.data != NULL)
-                && (channel_samples > 0) && (width > 0) && (height > 0)) {
-                left_half_width = width / 2;
-                right_half_width = width - left_half_width;
-                top_half_height = half_height;
-                bottom_half_height = height - half_height;
-                radius = 2*screen->visualizer_colors_len;
-                for (int32 i = 0; i < channel_samples; i += 1) {
-                    double distance;
-                    int32 x;
-                    int32 y;
+            left_half_width = width / 2;
+            right_half_width = width - left_half_width;
+            top_half_height = half_height;
+            bottom_half_height = height - half_height;
+            radius = 2*screen->visualizer_colors_len;
+            for (int32 i = 0; i < channel_samples; i += 1) {
+                double distance;
+                int32 x;
+                int32 y;
 
-                    if (screen->left_channel.data[i] < 0) {
-                        x = (int32)((double)screen->left_channel.data[i]
-                                    /32768.0*(double)left_half_width);
-                    } else {
-                        x = (int32)((double)screen->left_channel.data[i]
-                                    /32768.0*(double)right_half_width);
-                    }
-                    if (screen->right_channel.data[i] < 0) {
-                        y = (int32)((double)screen->right_channel.data[i]
-                                    /32768.0*(double)top_half_height);
-                    } else {
-                        y = (int32)((double)screen->right_channel.data[i]
-                                    /32768.0*(double)bottom_half_height);
-                    }
-                    distance = sqrt((double)x*(double)x
-                                    + 4.0*(double)y*(double)y);
-
-                    visualizer_draw_character(
-                        screen, left_half_width + x, top_half_height + y,
-                        visualizer_color(screen, distance, radius, true),
-                        false, character, character_len);
+                if (screen->left_channel.data[i] < 0) {
+                    x = (int32)((double)screen->left_channel.data[i]
+                                /32768.0*(double)left_half_width);
+                } else {
+                    x = (int32)((double)screen->left_channel.data[i]
+                                /32768.0*(double)right_half_width);
                 }
+                if (screen->right_channel.data[i] < 0) {
+                    y = (int32)((double)screen->right_channel.data[i]
+                                /32768.0*(double)top_half_height);
+                } else {
+                    y = (int32)((double)screen->right_channel.data[i]
+                                /32768.0*(double)bottom_half_height);
+                }
+                distance = sqrt((double)x*(double)x
+                                + 4.0*(double)y*(double)y);
+
+                visualizer_draw_character(
+                    screen, left_half_width + x, top_half_height + y,
+                    visualizer_color(screen, distance, radius, true),
+                    false, character, character_len);
             }
             break;
         }
         case VISUALIZER_TYPE_COUNT:
         default:
-            return -NCM_ERROR_INVALID_STATE;
+            ASSERT(false);
+            return;
         }
-        return 0;
+        return;
     }
 
     switch (screen->visualization_type) {
@@ -1713,44 +1621,42 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
         int32 ellipse_half_height;
         double angle_multiplier;
 
-        if ((samples != NULL) && (samples_len > 0)
-            && (width > 0) && (height > 0)) {
-            half_width = width / 2;
-            ellipse_half_height = height / 2;
-            angle_multiplier = 2.0*VISUALIZER_PI/(double)samples_len;
+        half_width = width / 2;
+        ellipse_half_height = height / 2;
+        angle_multiplier = 2.0*VISUALIZER_PI/(double)samples_len;
 
-            for (int32 i = 0; i < samples_len; i += 1) {
-                double angle;
-                double max_radius;
-                double radius;
-                int32 x;
-                int32 y;
+        for (int32 i = 0; i < samples_len; i += 1) {
+            double angle;
+            double max_radius;
+            double radius;
+            int32 x;
+            int32 y;
 
-                angle = (double)i*angle_multiplier;
-                x = (int32)((double)half_width*cos(angle));
-                y = (int32)((double)ellipse_half_height*sin(angle));
-                max_radius = sqrt((double)x*(double)x
-                                  + (double)y*(double)y);
-                radius = fabs((double)samples[i])/32768.0;
-                x = (int32)((double)x*radius);
-                y = (int32)((double)y*radius);
+            angle = (double)i*angle_multiplier;
+            x = (int32)((double)half_width*cos(angle));
+            y = (int32)((double)ellipse_half_height*sin(angle));
+            max_radius = sqrt((double)x*(double)x
+                              + (double)y*(double)y);
+            radius = fabs((double)samples[i])/32768.0;
+            x = (int32)((double)x*radius);
+            y = (int32)((double)y*radius);
 
-                visualizer_draw_character(
-                    screen, half_width + x, ellipse_half_height + y,
-                    visualizer_color(
-                        screen,
-                        sqrt((double)x*(double)x + (double)y*(double)y),
-                        max_radius, false),
-                    false, character, character_len);
-            }
+            visualizer_draw_character(
+                screen, half_width + x, ellipse_half_height + y,
+                visualizer_color(
+                    screen,
+                    sqrt((double)x*(double)x + (double)y*(double)y),
+                    max_radius, false),
+                false, character, character_len);
         }
         break;
     }
     case VISUALIZER_TYPE_COUNT:
     default:
-        return -NCM_ERROR_INVALID_STATE;
+        ASSERT(false);
+        return;
     }
-    return 0;
+    return;
 }
 
 static int32
@@ -1858,17 +1764,8 @@ visualizer_system_open_udp(void *user, char *location, int32 location_len,
 static int32
 visualizer_system_read_source(void *user, int32 fd, void *buffer,
                               int32 buffer_size) {
-    int64 r;
-    int32 r2;
     (void)user;
-
-    if ((r = read64(fd, buffer, buffer_size)) >= MAXOF(r2)) {
-        error("Visualizer: too many bytes read.\n");
-        fatal(EXIT_FAILURE);
-    }
-
-    r2 = (int32)r;
-    return r2;
+    return (int32)read64(fd, buffer, buffer_size);
 }
 
 static void
@@ -1883,10 +1780,6 @@ visualizer_system_get_outputs(void *user, NcmMpdOutputList *outputs,
                               NcmError *ncm_error) {
     NcmMpdClient *client = user;
 
-    if (client == NULL) {
-        return ncm_error_set_status(
-            ncm_error, -EINVAL, STRLIT("MPD client is not configured"));
-    }
     return ncm_mpd_client_get_outputs(client, outputs, ncm_error);
 }
 
@@ -1894,10 +1787,6 @@ static int32
 visualizer_system_disable_output(void *user, int32 id, NcmError *ncm_error) {
     NcmMpdClient *client = user;
 
-    if (client == NULL) {
-        return ncm_error_set_status(
-            ncm_error, -EINVAL, STRLIT("MPD client is not configured"));
-    }
     return ncm_mpd_client_disable_output(client, id, ncm_error);
 }
 
@@ -1905,19 +1794,13 @@ static int32
 visualizer_system_enable_output(void *user, int32 id, NcmError *ncm_error) {
     NcmMpdClient *client = user;
 
-    if (client == NULL) {
-        return ncm_error_set_status(
-            ncm_error, -EINVAL, STRLIT("MPD client is not configured"));
-    }
     return ncm_mpd_client_enable_output(client, id, ncm_error);
 }
 
 static void
 visualizer_system_sleep_microseconds(void *user, int32 microseconds) {
     (void)user;
-    if (microseconds > 0) {
-        sleep_us(microseconds);
-    }
+    sleep_us(microseconds);
     return;
 }
 
@@ -1948,7 +1831,7 @@ visualizer_switch_to_callback(NcScreen *screen) {
 
     if (visualizer->source_fd < 0) {
         if (visualizer_screen_open_data_source(visualizer) >= 0) {
-            (void)visualizer_screen_find_output_id(visualizer);
+            visualizer_screen_find_output_id(visualizer);
         }
     }
     visualizer_screen_clear(visualizer);
@@ -1977,7 +1860,6 @@ visualizer_window_timeout_callback(NcScreen *screen) {
     VisualizerScreen *visualizer = visualizer_from_screen(screen);
 
     if ((visualizer->source_fd >= 0)
-        && (visualizer->fps > 0)
         && (ncm_status_state_player() == NCM_STATUS_PLAYER_PLAY)) {
         return 1000 / visualizer->fps;
     }
@@ -2039,31 +1921,23 @@ visualizer_update_callback(NcScreen *screen) {
         visualizer->reset_output = false;
     }
 
-    if ((visualizer->data_source_hooks.read_source != NULL)
-        && (visualizer->incoming_samples.data != NULL)) {
+    if (visualizer->data_source_hooks.read_source != NULL) {
         int32 buffer_size;
         int32 bytes_read;
         int32 samples_read;
 
         buffer_size = visualizer->incoming_samples.cap
                       *SIZEOF(*visualizer->incoming_samples.data);
-        if (buffer_size > 0) {
-            bytes_read = visualizer->data_source_hooks.read_source(
-                visualizer->data_source_hooks.user,
-                visualizer->source_fd,
-                visualizer->incoming_samples.data,
-                buffer_size);
-            if (bytes_read > 0) {
-                if (bytes_read > buffer_size) {
-                    bytes_read = buffer_size;
-                }
-                samples_read = (int32)(bytes_read
-                    /SIZEOF(*visualizer->incoming_samples.data));
-                if (samples_read > 0) {
-                    (void)visualizer_screen_push_samples(
-                        visualizer, visualizer->incoming_samples.data,
-                        samples_read);
-                }
+        bytes_read = visualizer->data_source_hooks.read_source(
+            visualizer->data_source_hooks.user, visualizer->source_fd,
+            visualizer->incoming_samples.data, buffer_size);
+        if (bytes_read > 0) {
+            samples_read = (int32)(bytes_read
+                /SIZEOF(*visualizer->incoming_samples.data));
+            if (samples_read > 0) {
+                visualizer_screen_push_samples(
+                    visualizer, visualizer->incoming_samples.data,
+                    samples_read);
             }
         }
     }
@@ -2074,11 +1948,8 @@ visualizer_update_callback(NcScreen *screen) {
         return;
     }
 
-    if (visualizer_screen_draw(visualizer,
-                               visualizer->rendered_samples.data,
-                               visualizer->rendered_samples.cap) < 0) {
-        return;
-    }
+    visualizer_screen_draw(visualizer, visualizer->rendered_samples.data,
+                           visualizer->rendered_samples.cap);
     nc_window_refresh(&visualizer->window);
     return;
 }
