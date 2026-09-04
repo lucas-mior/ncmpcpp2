@@ -20,15 +20,21 @@ ncm_lrc_document_clear(NcmLrcDocument *document) {
     return;
 }
 
+static void
+ncm_lrc_document_destroy_unchecked(NcmLrcDocument *document) {
+    sb_free(&document->text);
+    free2(document->entries, document->entries_cap*SIZEOF(*document->entries));
+    *document = (NcmLrcDocument){0};
+    return;
+}
+
 void
 ncm_lrc_document_destroy(NcmLrcDocument *document) {
     if (document == NULL) {
         return;
     }
 
-    sb_free(&document->text);
-    free2(document->entries, document->entries_cap*SIZEOF(*document->entries));
-    *document = (NcmLrcDocument){0};
+    ncm_lrc_document_destroy_unchecked(document);
     return;
 }
 
@@ -65,9 +71,9 @@ static int32
 ncm_lrc_parse_uint(char *data, int32 data_len, int64 *value) {
     int64 result;
 
-    if ((data == NULL) || (data_len <= 0) || (value == NULL)) {
-        return -NCM_ERROR_PARSE;
-    }
+    ASSERT(data != NULL);
+    ASSERT(data_len > 0);
+    ASSERT(value != NULL);
 
     result = 0;
     for (int32 i = 0; i < data_len; i += 1) {
@@ -183,7 +189,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
                     value_len -= 1;
                 }
                 if (value_len <= 0) {
-                    ncm_lrc_document_destroy(&parsed);
+                    ncm_lrc_document_destroy_unchecked(&parsed);
                     return ncm_error_set_status(
                         ncm_error, -NCM_ERROR_PARSE,
                         STRLIT("malformed LRC offset"));
@@ -196,7 +202,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
                     start = 1;
                 }
                 if (start >= value_len) {
-                    ncm_lrc_document_destroy(&parsed);
+                    ncm_lrc_document_destroy_unchecked(&parsed);
                     return ncm_error_set_status(
                         ncm_error, -NCM_ERROR_PARSE,
                         STRLIT("malformed LRC offset"));
@@ -206,7 +212,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
                                             value_len - start,
                                             &unsigned_value);
                 if (status < 0) {
-                    ncm_lrc_document_destroy(&parsed);
+                    ncm_lrc_document_destroy_unchecked(&parsed);
                     return ncm_error_set_status(
                         ncm_error, status, STRLIT("malformed LRC offset"));
                 }
@@ -214,7 +220,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
                 signed_value = sign*unsigned_value;
                 if ((signed_value < MINOF(offset_ms))
                     || (signed_value > MAXOF(offset_ms))) {
-                    ncm_lrc_document_destroy(&parsed);
+                    ncm_lrc_document_destroy_unchecked(&parsed);
                     return ncm_error_set_status(
                         ncm_error, -NCM_ERROR_PARSE,
                         STRLIT("malformed LRC offset"));
@@ -280,7 +286,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
                     int64 value;
 
                     if (tag_len < STRLIT_LEN("0:00")) {
-                        ncm_lrc_document_destroy(&parsed);
+                        ncm_lrc_document_destroy_unchecked(&parsed);
                         return ncm_error_set_status(
                             ncm_error, -NCM_ERROR_PARSE,
                             STRLIT("malformed LRC line"));
@@ -291,7 +297,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
                     for (int32 i = 0; i < tag_len; i += 1) {
                         if (tag[i] == ':') {
                             if (colon >= 0) {
-                                ncm_lrc_document_destroy(&parsed);
+                                ncm_lrc_document_destroy_unchecked(&parsed);
                                 return ncm_error_set_status(
                                     ncm_error, -NCM_ERROR_PARSE,
                                     STRLIT("malformed LRC line"));
@@ -299,7 +305,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
                             colon = i;
                         } else if (tag[i] == '.') {
                             if (dot >= 0) {
-                                ncm_lrc_document_destroy(&parsed);
+                                ncm_lrc_document_destroy_unchecked(&parsed);
                                 return ncm_error_set_status(
                                     ncm_error, -NCM_ERROR_PARSE,
                                     STRLIT("malformed LRC line"));
@@ -308,19 +314,19 @@ ncm_lrc_parse(NcmLrcDocument *document,
                         }
                     }
                     if ((colon <= 0) || (colon + 2 >= tag_len)) {
-                        ncm_lrc_document_destroy(&parsed);
+                        ncm_lrc_document_destroy_unchecked(&parsed);
                         return ncm_error_set_status(
                             ncm_error, -NCM_ERROR_PARSE,
                             STRLIT("malformed LRC line"));
                     }
                     if ((dot >= 0) && (dot != colon + 3)) {
-                        ncm_lrc_document_destroy(&parsed);
+                        ncm_lrc_document_destroy_unchecked(&parsed);
                         return ncm_error_set_status(
                             ncm_error, -NCM_ERROR_PARSE,
                             STRLIT("malformed LRC line"));
                     }
                     if ((dot < 0) && ((colon + 3) != tag_len)) {
-                        ncm_lrc_document_destroy(&parsed);
+                        ncm_lrc_document_destroy_unchecked(&parsed);
                         return ncm_error_set_status(
                             ncm_error, -NCM_ERROR_PARSE,
                             STRLIT("malformed LRC line"));
@@ -328,7 +334,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
 
                     status = ncm_lrc_parse_uint(tag, colon, &minutes);
                     if (status < 0) {
-                        ncm_lrc_document_destroy(&parsed);
+                        ncm_lrc_document_destroy_unchecked(&parsed);
                         return ncm_error_set_status(
                             ncm_error, status,
                             STRLIT("malformed LRC line"));
@@ -336,13 +342,13 @@ ncm_lrc_parse(NcmLrcDocument *document,
                     status = ncm_lrc_parse_uint(tag + colon + 1, 2,
                                                 &seconds);
                     if (status < 0) {
-                        ncm_lrc_document_destroy(&parsed);
+                        ncm_lrc_document_destroy_unchecked(&parsed);
                         return ncm_error_set_status(
                             ncm_error, status,
                             STRLIT("malformed LRC line"));
                     }
                     if (seconds >= 60) {
-                        ncm_lrc_document_destroy(&parsed);
+                        ncm_lrc_document_destroy_unchecked(&parsed);
                         return ncm_error_set_status(
                             ncm_error, -NCM_ERROR_PARSE,
                             STRLIT("malformed LRC line"));
@@ -352,7 +358,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
                     if (dot >= 0) {
                         frac_len = tag_len - dot - 1;
                         if ((frac_len <= 0) || (frac_len > 3)) {
-                            ncm_lrc_document_destroy(&parsed);
+                            ncm_lrc_document_destroy_unchecked(&parsed);
                             return ncm_error_set_status(
                                 ncm_error, -NCM_ERROR_PARSE,
                                 STRLIT("malformed LRC line"));
@@ -360,7 +366,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
                         status = ncm_lrc_parse_uint(tag + dot + 1, frac_len,
                                                     &milliseconds);
                         if (status < 0) {
-                            ncm_lrc_document_destroy(&parsed);
+                            ncm_lrc_document_destroy_unchecked(&parsed);
                             return ncm_error_set_status(
                                 ncm_error, status,
                                 STRLIT("malformed LRC line"));
@@ -373,14 +379,14 @@ ncm_lrc_parse(NcmLrcDocument *document,
                     }
 
                     if (minutes > (MAXOF(value) - seconds)/60) {
-                        ncm_lrc_document_destroy(&parsed);
+                        ncm_lrc_document_destroy_unchecked(&parsed);
                         return ncm_error_set_status(
                             ncm_error, -NCM_ERROR_PARSE,
                             STRLIT("malformed LRC line"));
                     }
                     value = minutes*60 + seconds;
                     if (value > (MAXOF(value) - milliseconds)/1000) {
-                        ncm_lrc_document_destroy(&parsed);
+                        ncm_lrc_document_destroy_unchecked(&parsed);
                         return ncm_error_set_status(
                             ncm_error, -NCM_ERROR_PARSE,
                             STRLIT("malformed LRC line"));
@@ -388,14 +394,14 @@ ncm_lrc_parse(NcmLrcDocument *document,
                     value = value*1000 + milliseconds;
                     if ((parsed.offset_ms > 0)
                         && (value > (MAXOF(value) - parsed.offset_ms))) {
-                        ncm_lrc_document_destroy(&parsed);
+                        ncm_lrc_document_destroy_unchecked(&parsed);
                         return ncm_error_set_status(
                             ncm_error, -NCM_ERROR_PARSE,
                             STRLIT("malformed LRC line"));
                     }
                     if ((parsed.offset_ms < 0)
                         && (value < (MINOF(value) - parsed.offset_ms))) {
-                        ncm_lrc_document_destroy(&parsed);
+                        ncm_lrc_document_destroy_unchecked(&parsed);
                         return ncm_error_set_status(
                             ncm_error, -NCM_ERROR_PARSE,
                             STRLIT("malformed LRC line"));
@@ -403,7 +409,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
                     value += parsed.offset_ms;
                     if ((value < MINOF(time_ms))
                         || (value > MAXOF(time_ms))) {
-                        ncm_lrc_document_destroy(&parsed);
+                        ncm_lrc_document_destroy_unchecked(&parsed);
                         return ncm_error_set_status(
                             ncm_error, -NCM_ERROR_PARSE,
                             STRLIT("malformed LRC line"));
@@ -464,7 +470,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
     }
 
     if (parsed.entries_len <= 0) {
-        ncm_lrc_document_destroy(&parsed);
+        ncm_lrc_document_destroy_unchecked(&parsed);
         return ncm_error_set_code(ncm_error, NCM_ERROR_PARSE,
                                   STRLIT("no synchronized LRC lines"));
     }
@@ -475,37 +481,41 @@ ncm_lrc_parse(NcmLrcDocument *document,
                 ncm_lrc_entry_compare);
     }
 
-    ncm_lrc_document_destroy(document);
+    ncm_lrc_document_destroy_unchecked(document);
     *document = parsed;
     ncm_error_clear(ncm_error);
     return 0;
 }
 
-NcmStringView
-ncm_lrc_entry_text(NcmLrcDocument *document, NcmLrcEntry *entry) {
-    NcmStringView view = {0};
+static NcmStringView
+ncm_lrc_entry_text_unchecked(NcmLrcDocument *document, NcmLrcEntry *entry) {
+    NcmStringView view;
 
-    if ((document == NULL) || (entry == NULL)) {
-        return view;
-    }
-    if ((entry->text_start < 0) || (entry->text_len < 0)) {
-        return view;
-    }
-    if ((entry->text_start + entry->text_len) > document->text.len) {
-        return view;
-    }
     if (entry->text_len <= 0) {
-        view.data = "";
-        view.len = 0;
-        return view;
-    }
-    if (document->text.data == NULL) {
-        return view;
+        return (NcmStringView){.data = ""};
     }
 
     view.data = document->text.data + entry->text_start;
     view.len = entry->text_len;
     return view;
+}
+
+NcmStringView
+ncm_lrc_entry_text(NcmLrcDocument *document, NcmLrcEntry *entry) {
+    if ((document == NULL) || (entry == NULL)) {
+        return (NcmStringView){0};
+    }
+    if ((entry->text_start < 0) || (entry->text_len < 0)) {
+        return (NcmStringView){0};
+    }
+    if ((entry->text_start + entry->text_len) > document->text.len) {
+        return (NcmStringView){0};
+    }
+    if ((entry->text_len > 0) && (document->text.data == NULL)) {
+        return (NcmStringView){0};
+    }
+
+    return ncm_lrc_entry_text_unchecked(document, entry);
 }
 
 static void
@@ -544,11 +554,7 @@ ncm_lrc_document_render_plain(NcmLrcDocument *document,
             }
         }
 
-        text = ncm_lrc_entry_text(document, entry);
-        if ((text.len > 0) && (text.data == NULL)) {
-            ncm_lrc_document_clear_buffer_positions(document);
-            return -EINVAL;
-        }
+        text = ncm_lrc_entry_text_unchecked(document, entry);
 
         entry->buffer_start = target->position(target->user);
         target->append(target->user, text.data, text.len);
@@ -558,35 +564,11 @@ ncm_lrc_document_render_plain(NcmLrcDocument *document,
     return 0;
 }
 
-int32
-ncm_lrc_document_entry_at_time(NcmLrcDocument *document,
-                               int64 elapsed_ms) {
-    int32 next;
-
-    if ((document == NULL) || (document->entries_len <= 0)) {
-        return -1;
-    }
-    if (elapsed_ms < 0) {
-        return -1;
-    }
-
-    next = ncm_lrc_document_next_entry_after_time(document, elapsed_ms);
-    if (next < 0) {
-        return document->entries_len - 1;
-    }
-
-    return next - 1;
-}
-
-int32
-ncm_lrc_document_next_entry_after_time(NcmLrcDocument *document,
-                                       int64 elapsed_ms) {
+static int32
+ncm_lrc_document_next_entry_after_time_unchecked(NcmLrcDocument *document,
+                                                 int64 elapsed_ms) {
     int32 left;
     int32 right;
-
-    if ((document == NULL) || (document->entries_len <= 0)) {
-        return -1;
-    }
 
     left = 0;
     right = document->entries_len;
@@ -605,6 +587,38 @@ ncm_lrc_document_next_entry_after_time(NcmLrcDocument *document,
         return -1;
     }
     return left;
+}
+
+int32
+ncm_lrc_document_entry_at_time(NcmLrcDocument *document,
+                               int64 elapsed_ms) {
+    int32 next;
+
+    if ((document == NULL) || (document->entries_len <= 0)) {
+        return -1;
+    }
+    if (elapsed_ms < 0) {
+        return -1;
+    }
+
+    next = ncm_lrc_document_next_entry_after_time_unchecked(document,
+                                                            elapsed_ms);
+    if (next < 0) {
+        return document->entries_len - 1;
+    }
+
+    return next - 1;
+}
+
+int32
+ncm_lrc_document_next_entry_after_time(NcmLrcDocument *document,
+                                       int64 elapsed_ms) {
+    if ((document == NULL) || (document->entries_len <= 0)) {
+        return -1;
+    }
+
+    return ncm_lrc_document_next_entry_after_time_unchecked(document,
+                                                            elapsed_ms);
 }
 
 #endif /* NCM_LRC_C */
