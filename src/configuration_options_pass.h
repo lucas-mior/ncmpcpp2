@@ -190,7 +190,7 @@
 #endif
 #endif
 
-#include "configuration_options.def"
+#include "configuration_options.h"
 
 #undef XX_COLUMNS
 #undef XX_UINT32_CHOICE
