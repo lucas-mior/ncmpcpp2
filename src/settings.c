@@ -575,7 +575,8 @@ _Static_assert(SETTINGS_COLUMNS_COUNT == 1,
 
 enum {
     SETTINGS_GENERATED_OPTION_COUNT =
-        SETTINGS_PRIMITIVE_COUNT
+        0
+        + SETTINGS_PRIMITIVE_COUNT
         + SETTINGS_ENUM_COUNT
         + SETTINGS_OPTIONAL_ENUM_COUNT
         + SETTINGS_COLOR_COUNT
@@ -813,18 +814,18 @@ static int32
 settings_parse_int_range(char *value, int32 value_len, int32 *result,
                          int32 minimum, int32 maximum,
                          NcmError *ncm_error) {
-    int32 parsed;
+    llong parsed;
     int32 status;
 
-    status = ncm_parse_int32(value, value_len, &parsed, ncm_error);
+    status = parse_integer(value, value_len, &parsed);
     if (status < 0) {
-        return status;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
     status = ncm_bounds_check_i64(parsed, minimum, maximum, ncm_error);
     if (status < 0) {
         return status;
     }
-    *result = parsed;
+    *result = (int32)parsed;
     return 0;
 }
 
@@ -839,11 +840,11 @@ settings_parse_double_range(char *value, int32 value_len, double *result,
     if (status < 0) {
         return status;
     }
-    if ((minimum == -INFINITY) && (maximum == INFINITY)) {
+    if ((minimum == -HUGE_VAL) && (maximum == HUGE_VAL)) {
         *result = parsed;
         return 0;
     }
-    if (maximum == INFINITY) {
+    if (maximum == HUGE_VAL) {
         status = ncm_lower_bound_check_f64(parsed, minimum, ncm_error);
     } else {
         status = ncm_bounds_check_f64(parsed, minimum, maximum, ncm_error);
