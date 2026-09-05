@@ -120,9 +120,9 @@ NCM_APP_SCREEN_INIT_FLAGS(NCM_APP_SCREEN_DECLARE_INIT_FLAG)
 #define ENUM_NAME PromptResult
 #define ENUM_PREFIX_ PROMPT_RESULT_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(PROMPT_RESULT_ERROR)                                                    \
-    XX(PROMPT_RESULT_ABORTED)                                                  \
+#define ENUM_FIELDS               \
+    XX(PROMPT_RESULT_ERROR)       \
+    XX(PROMPT_RESULT_ABORTED)     \
     XX(PROMPT_RESULT_ACCEPTED)
 #include "cbase/xenums.c"
 
