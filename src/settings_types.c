@@ -158,7 +158,7 @@ configuration_init_unchecked(Configuration *config) {
     NCM_CONFIG_STRING_INIT(visualizer_fifo_path);
     NCM_CONFIG_STRING_INIT(visualizer_data_source);
     NCM_CONFIG_STRING_INIT(visualizer_output_name);
-    NCM_CONFIG_STRING_INIT(empty_tag);
+    NCM_CONFIG_STRING_INIT(empty_tag_marker);
     NCM_CONFIG_STRING_INIT(external_editor);
     NCM_CONFIG_STRING_INIT(system_encoding);
     NCM_CONFIG_STRING_INIT(execute_on_song_change);
@@ -341,7 +341,7 @@ configuration_destroy(Configuration *config) {
     NCM_CONFIG_STRING_DESTROY(visualizer_fifo_path);
     NCM_CONFIG_STRING_DESTROY(visualizer_data_source);
     NCM_CONFIG_STRING_DESTROY(visualizer_output_name);
-    NCM_CONFIG_STRING_DESTROY(empty_tag);
+    NCM_CONFIG_STRING_DESTROY(empty_tag_marker);
     NCM_CONFIG_STRING_DESTROY(external_editor);
     NCM_CONFIG_STRING_DESTROY(system_encoding);
     NCM_CONFIG_STRING_DESTROY(execute_on_song_change);
