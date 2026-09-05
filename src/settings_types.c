@@ -255,7 +255,7 @@ configuration_init_unchecked(Configuration *config) {
     config->display_bitrate = false;
     config->display_remaining_time = false;
     config->ignore_leading_the = false;
-    config->block_search_constraints_change = false;
+    config->block_search_constraints_change_if_items_found = false;
     config->use_console_editor = false;
     config->cyclic_scrolling = false;
     config->ask_before_clearing_playlists = false;

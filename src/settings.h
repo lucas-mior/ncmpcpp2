@@ -166,7 +166,7 @@ typedef struct Configuration {
     bool display_bitrate;
     bool display_remaining_time;
     bool ignore_leading_the;
-    bool block_search_constraints_change;
+    bool block_search_constraints_change_if_items_found;
     bool use_console_editor;
     bool cyclic_scrolling;
     bool ask_before_clearing_playlists;
