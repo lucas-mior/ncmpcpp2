@@ -831,8 +831,7 @@ nc_menu_clear_filtered_items(NcMenu *menu) {
 void
 nc_menu_apply_filter(NcMenu *menu) {
     nc_menu_clear_filtered_items(menu);
-    for (int32 i = 0; i < menu_array_count(menu, NC_MENU_ITEMS_ALL);
-         i += 1) {
+    for (int32 i = 0; i < menu_array_count(menu, NC_MENU_ITEMS_ALL); i += 1) {
         void *item;
 
         item = menu->all_items[i];
