@@ -36,12 +36,8 @@ nc_buffer_reserve(NcBuffer *buffer, int32 extra) {
 
 static void
 nc_buffer_add_property(NcBuffer *buffer, NcBufferProperty *property) {
-    int32 i;
-    int32 count;
-
-    count = ARRAY_LEN(buffer->properties);
+    int32 i = ARRAY_LEN(buffer->properties);
     ARRAY_PUSH(buffer->properties, *property);
-    i = count;
     while ((i > 0) && (buffer->properties[i - 1].position
                        > property->position)) {
         buffer->properties[i] = buffer->properties[i - 1];
