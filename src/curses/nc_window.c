@@ -335,7 +335,6 @@ static int32
 nc_prompt_read_key(FILE *file) {
     NcWindow *window;
     NcKey key;
-    int32 x;
 
     (void)file;
     window = nc_readline_state.window;
@@ -343,8 +342,8 @@ nc_prompt_read_key(FILE *file) {
 
     do {
         char *line = rl_line_buffer;
+        int32 x = nc_window_get_x(window);
 
-        x = nc_window_get_x(window);
         if ((nc_readline_state.should_continue != NULL)
             && !nc_readline_state.should_continue(
                 line, nc_readline_state.should_continue_user_data)) {
