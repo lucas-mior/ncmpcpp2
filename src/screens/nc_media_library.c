@@ -1009,8 +1009,8 @@ media_library_screen_format_tag_row(MediaLibraryScreen *screen,
         return;
     }
     if ((row->tag == NULL) || (row->tag_len <= 0)) {
-        if (Config.empty_tag && (Config.empty_tag_len > 0)) {
-            SB_APPEND(output, Config.empty_tag, Config.empty_tag_len);
+        if (Config.empty_tag_marker && (Config.empty_tag_marker_len > 0)) {
+            SB_APPEND(output, Config.empty_tag_marker, Config.empty_tag_marker_len);
         }
         return;
     }
@@ -1040,9 +1040,9 @@ media_library_screen_format_album_row(MediaLibraryScreen *screen,
     if (screen
         && (screen->mode == MEDIA_LIBRARY_MODE_TWO_COLUMNS)) {
         if ((row->tag == NULL) || (row->tag_len <= 0)) {
-            if (Config.empty_tag
-                && (Config.empty_tag_len > 0)) {
-                SB_APPEND(&raw, Config.empty_tag, Config.empty_tag_len);
+            if (Config.empty_tag_marker
+                && (Config.empty_tag_marker_len > 0)) {
+                SB_APPEND(&raw, Config.empty_tag_marker, Config.empty_tag_marker_len);
             }
         } else {
             SB_APPEND(&raw, row->tag, row->tag_len);

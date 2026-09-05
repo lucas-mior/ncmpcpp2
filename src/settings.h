@@ -57,7 +57,7 @@ typedef struct Configuration {
     char *visualizer_fifo_path;
     char *visualizer_data_source;
     char *visualizer_output_name;
-    char *empty_tag;
+    char *empty_tag_marker;
     char *external_editor;
     char *system_encoding;
     char *execute_on_song_change;
@@ -73,7 +73,7 @@ typedef struct Configuration {
     int32 visualizer_fifo_path_len;
     int32 visualizer_data_source_len;
     int32 visualizer_output_name_len;
-    int32 empty_tag_len;
+    int32 empty_tag_marker_len;
     int32 external_editor_len;
     int32 system_encoding_len;
     int32 execute_on_song_change_len;

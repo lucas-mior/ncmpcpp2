@@ -81,9 +81,9 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
                 sb_free(&tag_value);
             }
         }
-        if ((value.len == 0) && column->display_empty_tag && Config.empty_tag
-            && (Config.empty_tag_len > 0)) {
-            SB_APPEND(&value, Config.empty_tag, Config.empty_tag_len);
+        if ((value.len == 0) && column->display_empty_tag && Config.empty_tag_marker
+            && (Config.empty_tag_marker_len > 0)) {
+            SB_APPEND(&value, Config.empty_tag_marker, Config.empty_tag_marker_len);
         }
         cut_len = utf8_cut_width(value.data, value.len, width);
         value_width = utf8_width(value.data, cut_len);
