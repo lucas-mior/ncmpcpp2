@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_CURSES_H)
-#define NCMPCPP_NC_CURSES_H
+#if !defined(NC_CURSES_H)
+#define NC_CURSES_H
 
 #define NCURSES_NOMACROS 1
 
@@ -779,4 +779,4 @@ int32 nc_editor_action_row_copy(NcEditorActionRow *dest,
 void nc_editor_sort_row_destroy(NcEditorSortRow *row);
 int32 nc_editor_sort_row_copy(NcEditorSortRow *dest, NcEditorSortRow *source);
 
-#endif /* NCMPCPP_NC_CURSES_H */
+#endif /* NC_CURSES_H */
