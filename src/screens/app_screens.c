@@ -1192,8 +1192,7 @@ append_song_key_value(NcBuffer *buffer, char *key,
 }
 
 static void
-append_help_line(NcBuffer *buffer, enum NcmActionType type,
-                 char *description) {
+append_help(NcBuffer *buffer, enum NcmActionType type, char *description) {
     int32 column_start;
     int32 width;
 
@@ -1242,38 +1241,38 @@ help_render(void *user, NcBuffer *buffer) {
     append_format(buffer, NC_FORMAT_BOLD);
     nc_buffer_append_cstring(buffer, "\n  Keys - Movement\n\n");
     append_format(buffer, NC_FORMAT_NO_BOLD);
-    append_help_line(buffer, NCM_ACTION_SCROLL_UP, "Move cursor up");
-    append_help_line(buffer, NCM_ACTION_SCROLL_DOWN,
+    append_help(buffer, NCM_ACTION_SCROLL_UP, "Move cursor up");
+    append_help(buffer, NCM_ACTION_SCROLL_DOWN,
                             "Move cursor down");
-    append_help_line(buffer, NCM_ACTION_PAGE_UP, "Page up");
-    append_help_line(buffer, NCM_ACTION_PAGE_DOWN, "Page down");
-    append_help_line(buffer, NCM_ACTION_MOVE_HOME, "Home");
-    append_help_line(buffer, NCM_ACTION_MOVE_END, "End");
-    append_help_line(buffer, NCM_ACTION_NEXT_SCREEN, "Next screen");
-    append_help_line(buffer, NCM_ACTION_PREVIOUS_SCREEN,
+    append_help(buffer, NCM_ACTION_PAGE_UP, "Page up");
+    append_help(buffer, NCM_ACTION_PAGE_DOWN, "Page down");
+    append_help(buffer, NCM_ACTION_MOVE_HOME, "Home");
+    append_help(buffer, NCM_ACTION_MOVE_END, "End");
+    append_help(buffer, NCM_ACTION_NEXT_SCREEN, "Next screen");
+    append_help(buffer, NCM_ACTION_PREVIOUS_SCREEN,
                             "Previous screen");
-    append_help_line(buffer, NCM_ACTION_SHOW_HELP, "Show help");
-    append_help_line(buffer, NCM_ACTION_SHOW_PLAYLIST,
+    append_help(buffer, NCM_ACTION_SHOW_HELP, "Show help");
+    append_help(buffer, NCM_ACTION_SHOW_PLAYLIST,
                             "Show playlist");
-    append_help_line(buffer, NCM_ACTION_SHOW_BROWSER, "Show browser");
-    append_help_line(buffer, NCM_ACTION_SHOW_SEARCH_ENGINE,
+    append_help(buffer, NCM_ACTION_SHOW_BROWSER, "Show browser");
+    append_help(buffer, NCM_ACTION_SHOW_SEARCH_ENGINE,
                             "Show search engine");
-    append_help_line(buffer, NCM_ACTION_SHOW_MEDIA_LIBRARY,
+    append_help(buffer, NCM_ACTION_SHOW_MEDIA_LIBRARY,
                             "Show media library");
-    append_help_line(buffer, NCM_ACTION_SHOW_PLAYLIST_EDITOR,
+    append_help(buffer, NCM_ACTION_SHOW_PLAYLIST_EDITOR,
                             "Show playlist editor");
-    append_help_line(buffer, NCM_ACTION_SHOW_SERVER_INFO,
+    append_help(buffer, NCM_ACTION_SHOW_SERVER_INFO,
                             "Show server info");
 #if defined(ENABLE_OUTPUTS)
-    append_help_line(buffer, NCM_ACTION_SHOW_OUTPUTS,
+    append_help(buffer, NCM_ACTION_SHOW_OUTPUTS,
                             "Show outputs");
 #endif
 #if defined(ENABLE_VISUALIZER)
-    append_help_line(buffer, NCM_ACTION_SHOW_VISUALIZER,
+    append_help(buffer, NCM_ACTION_SHOW_VISUALIZER,
                             "Show music visualizer");
 #endif
 #if defined(HAVE_TAGLIB_H)
-    append_help_line(buffer, NCM_ACTION_SHOW_TAG_EDITOR,
+    append_help(buffer, NCM_ACTION_SHOW_TAG_EDITOR,
                             "Show tag editor");
 #endif
 
@@ -1281,20 +1280,20 @@ help_render(void *user, NcBuffer *buffer) {
     nc_buffer_append_cstring(buffer, "\n  Keys - Global\n\n");
     append_format(buffer, NC_FORMAT_NO_BOLD);
 
-    append_help_line(buffer, NCM_ACTION_PLAY, "Play");
-    append_help_line(buffer, NCM_ACTION_STOP, "Stop");
-    append_help_line(buffer, NCM_ACTION_PAUSE, "Pause");
-    append_help_line(buffer, NCM_ACTION_NEXT, "Next track");
-    append_help_line(buffer, NCM_ACTION_PREVIOUS, "Previous track");
-    append_help_line(buffer, NCM_ACTION_VOLUME_DOWN, "Decrease volume");
-    append_help_line(buffer, NCM_ACTION_VOLUME_UP, "Increase volume");
-    append_help_line(buffer, NCM_ACTION_TOGGLE_REPEAT, "Toggle repeat mode");
-    append_help_line(buffer, NCM_ACTION_TOGGLE_RANDOM, "Toggle random mode");
-    append_help_line(buffer, NCM_ACTION_TOGGLE_SINGLE, "Toggle single mode");
-    append_help_line(buffer, NCM_ACTION_TOGGLE_CONSUME, "Toggle consume mode");
-    append_help_line(buffer, NCM_ACTION_UPDATE_DATABASE, "Start music database update");
-    append_help_line(buffer, NCM_ACTION_EXECUTE_COMMAND, "Execute command");
-    append_help_line(buffer, NCM_ACTION_QUIT, "Quit");
+    append_help(buffer, NCM_ACTION_PLAY, "Play");
+    append_help(buffer, NCM_ACTION_STOP, "Stop");
+    append_help(buffer, NCM_ACTION_PAUSE, "Pause");
+    append_help(buffer, NCM_ACTION_NEXT, "Next track");
+    append_help(buffer, NCM_ACTION_PREVIOUS, "Previous track");
+    append_help(buffer, NCM_ACTION_VOLUME_DOWN, "Decrease volume");
+    append_help(buffer, NCM_ACTION_VOLUME_UP, "Increase volume");
+    append_help(buffer, NCM_ACTION_TOGGLE_REPEAT, "Toggle repeat mode");
+    append_help(buffer, NCM_ACTION_TOGGLE_RANDOM, "Toggle random mode");
+    append_help(buffer, NCM_ACTION_TOGGLE_SINGLE, "Toggle single mode");
+    append_help(buffer, NCM_ACTION_TOGGLE_CONSUME, "Toggle consume mode");
+    append_help(buffer, NCM_ACTION_UPDATE_DATABASE, "Start music database update");
+    append_help(buffer, NCM_ACTION_EXECUTE_COMMAND, "Execute command");
+    append_help(buffer, NCM_ACTION_QUIT, "Quit");
 
     return 1;
 }
