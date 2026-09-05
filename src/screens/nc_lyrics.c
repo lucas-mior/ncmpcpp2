@@ -1269,7 +1269,7 @@ static int32
 lyrics_lrc_buffer_position(void *user) {
     LyricsScreen *screen = user;
 
-    return nc_buffer_len(&screen->display);
+    return screen->display.len;
 }
 
 static void
@@ -1641,11 +1641,11 @@ lyrics_append_fetching(NcBuffer *buffer, NcmLyricsFetcherDef *fetcher) {
     name_len = ncm_lyrics_fetcher_name_len(fetcher);
 
     nc_buffer_append_cstring(buffer, "Fetching lyrics from ");
-    fetcher_position = nc_buffer_len(buffer);
+    fetcher_position = buffer->len;
     nc_buffer_add_format(buffer, fetcher_position, NC_FORMAT_BOLD,
                          LYRICS_FETCH_PROPERTY_ID);
     nc_buffer_append_data(buffer, name, name_len);
-    nc_buffer_add_format(buffer, nc_buffer_len(buffer), NC_FORMAT_NO_BOLD,
+    nc_buffer_add_format(buffer, buffer->len, NC_FORMAT_NO_BOLD,
                          LYRICS_FETCH_PROPERTY_ID);
     nc_buffer_append_cstring(buffer, "... ");
 
@@ -1658,10 +1658,10 @@ lyrics_job_append_fetch_error(LyricsJob *job,
     NcColor red = nc_color_make(COLOR_RED, NC_COLOR_CURRENT, false, false);
 
     pthread_mutex_lock(&job->log_mutex);
-    nc_buffer_add_color(&job->log, nc_buffer_len(&job->log), red,
+    nc_buffer_add_color(&job->log, job->log.len, red,
                         LYRICS_FETCH_PROPERTY_ID);
     nc_buffer_append_data(&job->log, result->text, result->text_len);
-    nc_buffer_add_color(&job->log, nc_buffer_len(&job->log), nc_color_end(),
+    nc_buffer_add_color(&job->log, job->log.len, nc_color_end(),
                         LYRICS_FETCH_PROPERTY_ID);
     nc_buffer_append_char(&job->log, '\n');
     job->log_dirty = true;

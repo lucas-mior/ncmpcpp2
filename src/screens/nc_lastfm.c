@@ -514,11 +514,11 @@ lastfm_job_complete(int32 status, NcmError *ncm_error, void *user) {
 
         red = nc_color_make(COLOR_RED, NC_COLOR_CURRENT, false, false);
         nc_buffer_append_char(buffer, ' ');
-        nc_buffer_add_color(buffer, nc_buffer_len(buffer), red,
+        nc_buffer_add_color(buffer, buffer->len, red,
                             LASTFM_DEFAULT_PROPERTY_ID);
         nc_buffer_append_data(buffer,
                               screen->result.text, screen->result.text_len);
-        nc_buffer_add_color(buffer, nc_buffer_len(buffer), nc_color_end(),
+        nc_buffer_add_color(buffer, buffer->len, nc_color_end(),
                             LASTFM_DEFAULT_PROPERTY_ID);
     }
     screen->refresh_window = true;

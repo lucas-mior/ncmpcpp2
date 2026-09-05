@@ -56,13 +56,13 @@ static void tag_editor_mouse_callback(NcScreen *, MEVENT);
 static void
 tag_editor_append_formatted_color_end(NcBuffer *buffer,
                                       NcFormattedColor *color) {
-    nc_buffer_add_formatted_color_end(buffer, nc_buffer_len(buffer), color, 0);
+    nc_buffer_add_formatted_color_end(buffer, buffer->len, color, 0);
     return;
 }
 
 static void
 tag_editor_append_formatted_color(NcBuffer *buffer, NcFormattedColor *color) {
-    nc_buffer_add_formatted_color(buffer, nc_buffer_len(buffer), color, 0);
+    nc_buffer_add_formatted_color(buffer, buffer->len, color, 0);
     return;
 }
 
@@ -121,7 +121,7 @@ tag_editor_draw_tag(NcMenu *menu, NcWindow *window, void *item,
     {
         NcBufferProperty *properties = nc_buffer_properties(&buffer);
         char *data = nc_buffer_data(&buffer);
-        int32 len = nc_buffer_len(&buffer);
+        int32 len = buffer.len;
         int32 property_count = ARRAY_LEN(buffer.properties);
         int32 property_index = 0;
 

@@ -1137,21 +1137,21 @@ append_data(NcBuffer *buffer, char *string, int32 len) {
 
 static void
 append_format(NcBuffer *buffer, enum NcFormat format) {
-    nc_buffer_add_format(buffer, nc_buffer_len(buffer), format, 0);
+    nc_buffer_add_format(buffer, buffer->len, format, 0);
     return;
 }
 
 static void
 append_formatted_color(NcBuffer *buffer,
                        NcFormattedColor *color) {
-    nc_buffer_add_formatted_color(buffer, nc_buffer_len(buffer), color, 0);
+    nc_buffer_add_formatted_color(buffer, buffer->len, color, 0);
     return;
 }
 
 static void
 append_formatted_color_end(NcBuffer *buffer,
                            NcFormattedColor *color) {
-    nc_buffer_add_formatted_color_end(buffer, nc_buffer_len(buffer), color, 0);
+    nc_buffer_add_formatted_color_end(buffer, buffer->len, color, 0);
     return;
 }
 
@@ -1204,7 +1204,7 @@ append_help_line(NcBuffer *buffer, enum NcmActionType type,
     int32 width;
 
     nc_buffer_append_cstring(buffer, "    ");
-    column_start = nc_buffer_len(buffer);
+    column_start = buffer->len;
     width = 0;
     for (int32 i = 0; i < Bindings.keys_len; i += 1) {
         NcmKeyBindings *key_bindings;
@@ -1232,7 +1232,7 @@ append_help_line(NcBuffer *buffer, enum NcmActionType type,
             width += key_len;
         }
     }
-    while ((nc_buffer_len(buffer) - column_start) < 20) {
+    while ((buffer->len - column_start) < 20) {
         nc_buffer_append_char(buffer, ' ');
     }
     nc_buffer_append_cstring(buffer, " : ");

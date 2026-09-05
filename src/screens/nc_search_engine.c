@@ -1261,7 +1261,7 @@ search_build_constraint_row(SearchEngineScreen *screen, int32 idx,
     nc_buffer_clear(buffer);
     search_append_format(buffer, NC_FORMAT_BOLD);
     nc_buffer_append_cstring(buffer, search_constraint_names[idx]);
-    while (nc_buffer_len(buffer) < 13) {
+    while (buffer->len < 13) {
         nc_buffer_append_char(buffer, ' ');
     }
     search_append_format(buffer, NC_FORMAT_NO_BOLD);
@@ -1275,10 +1275,10 @@ search_build_constraint_row(SearchEngineScreen *screen, int32 idx,
         return;
     }
     nc_buffer_add_formatted_color(
-        buffer, nc_buffer_len(buffer), &Config.empty_tags_color, 0);
+        buffer, buffer->len, &Config.empty_tags_color, 0);
     nc_buffer_append_data(buffer, Config.empty_tag, Config.empty_tag_len);
     nc_buffer_add_formatted_color_end(
-        buffer, nc_buffer_len(buffer), &Config.empty_tags_color, 0);
+        buffer, buffer->len, &Config.empty_tags_color, 0);
     return;
 }
 
@@ -1318,7 +1318,7 @@ search_build_search_mode_row(SearchEngineScreen *screen, NcBuffer *buffer) {
 
 static void
 search_append_format(NcBuffer *buffer, enum NcFormat format) {
-    nc_buffer_add_format(buffer, nc_buffer_len(buffer), format, 0);
+    nc_buffer_add_format(buffer, buffer->len, format, 0);
     return;
 }
 
@@ -1444,7 +1444,7 @@ search_print_buffer(NcWindow *window, NcBuffer *buffer) {
     char *data = nc_buffer_data(buffer);
     int32 property_count = ARRAY_LEN(buffer->properties);
     int32 property_index;
-    int32 len = nc_buffer_len(buffer);
+    int32 len = buffer->len;
 
     property_index = 0;
 

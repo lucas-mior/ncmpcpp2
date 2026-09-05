@@ -143,11 +143,6 @@ nc_buffer_data(NcBuffer *buffer) {
     return buffer->data;
 }
 
-int32
-nc_buffer_len(NcBuffer *buffer) {
-    return buffer->len;
-}
-
 NcBufferProperty *
 nc_buffer_properties(NcBuffer *buffer) {
     return buffer->properties;
