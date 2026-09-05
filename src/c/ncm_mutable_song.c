@@ -455,10 +455,11 @@ ncm_mutable_song_get_tag_buffer_unchecked(NcmMutableSong *song,
                                           enum NcmTagsField field, int32 idx,
                                           StrBuilder *buffer) {
     NcmStringView view;
-    int32 len;
 
     sb_clear(buffer);
     if (field == NCM_TAGS_FIELD_TRACK) {
+        int32 len;
+
         if (!ncm_mutable_song_has_tag_view_unchecked(song, field, idx, &view)) {
             return;
         }
