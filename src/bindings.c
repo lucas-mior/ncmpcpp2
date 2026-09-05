@@ -328,7 +328,7 @@ ncm_binding_execute_default(NcmBinding *binding) {
 
     runtime = ncm_binding_default_runtime();
     for (int32 i = 0; i < binding->actions_len; i += 1) {
-        NcmBindingAction *action = binding->actions + i;
+        NcmBindingAction *action = &binding->actions[i];
 
         if (!ncm_binding_action_can_run(action, runtime)) {
             return -NCM_ERROR_UNAVAILABLE;
