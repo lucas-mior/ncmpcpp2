@@ -1654,12 +1654,12 @@ server_info_title(void *user) {
 
 static void
 server_info_destroy(void *user) {
-    ServerInfoScreen *owner;
+    ServerInfoScreen *owner = user;
 
-    owner = user;
     ncm_mpd_string_list_destroy(&owner->url_handlers);
     ncm_mpd_string_list_destroy(&owner->tag_types);
     owner->initialized = false;
+
     return;
 }
 
