@@ -153,11 +153,11 @@ NCM_APP_SCREEN_DIRECT_ACCESSOR_TYPES(NCM_APP_SCREEN_DIRECT_ACCESSOR)
 
 #undef NCM_APP_SCREEN_DIRECT_ACCESSOR
 
-#define NCM_APP_SCREEN_DEFINE_WRAPPED_ACCESSOR(suffix, base_expr)              \
-    NcScreen *                                                                 \
-    app_screen_##suffix##_base(void) {                                         \
-        app_screen_##suffix##_init();                                          \
-        return base_expr;                                                      \
+#define NCM_APP_SCREEN_DEFINE_WRAPPED_ACCESSOR(suffix, base_expr)           \
+    NcScreen *                                                              \
+    app_screen_##suffix##_base(void) {                                      \
+        app_screen_##suffix##_init();                                       \
+        return base_expr;                                                   \
     }
 
 NCM_APP_SCREEN_WRAPPED_ACCESSOR_TYPES(NCM_APP_SCREEN_DEFINE_WRAPPED_ACCESSOR)
