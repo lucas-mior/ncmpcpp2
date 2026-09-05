@@ -28,8 +28,7 @@ nc_screen_switcher_is_visible(NcScreen *screen) {
 }
 
 int32
-nc_screen_switcher_switch_to(NcScreen *screen,
-                             bool has_to_be_resized) {
+nc_screen_switcher_switch_to(NcScreen *screen, bool has_to_be_resized) {
     int32 status;
 
     if (screen == NULL) {
@@ -50,8 +49,7 @@ nc_screen_switcher_finish_switch(NcScreen *screen) {
 }
 
 NcScreenResizeParams
-nc_screen_switcher_resize_params(NcScreen *screen,
-                                 bool adjust_locked_screen) {
+nc_screen_switcher_resize_params(NcScreen *screen, bool adjust_locked_screen) {
     return app_controller_screen_resize_params(screen, adjust_locked_screen);
 }
 
