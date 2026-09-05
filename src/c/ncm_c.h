@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "config.h"
+#include "configura.h"
 
 #include <mpd/client.h>
 #include <mpd/tag.h>
@@ -1319,7 +1319,7 @@ int32 ncm_mpd_client_get_tag_types(NcmMpdClient *client,
                                   NcmStringViewList *strings,
                                   NcmError *ncm_error);
 
-#include "config.h"
+#include "configura.h"
 
 #define ENUM_NAME SearchDirection
 #define ENUM_PREFIX_ NCM_SEARCH_DIRECTION_

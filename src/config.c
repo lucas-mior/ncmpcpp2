@@ -5,8 +5,8 @@
 
 #include "bindings.h"
 #include "c/ncm_c.h"
+#include "configura.h"
 #include "config.h"
-#include "configuration.h"
 #include "global.h"
 #include "lyrics_fetcher.h"
 #include "screens/nc_screens.h"

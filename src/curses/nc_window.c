@@ -5,7 +5,7 @@
 
 #include <termios.h>
 
-#include "config.h"
+#include "configura.h"
 
 #if defined(HAVE_READLINE_HISTORY_H)
 #include <readline/history.h>

@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "config.h"
+#include "configura.h"
 
 #include <mpd/client.h>
 #include <mpd/status.h>

@@ -5,14 +5,14 @@
 
 #include "c/ncm_c.h"
 #include "curses/nc_curses.h"
-#include "config.h"
+#include "configura.h"
 #include "lastfm_service.h"
 #include "lyrics_fetcher.h"
 
 #include <fftw3.h>
 
 /* screens/screen_defs.h */
-#include "config.h"
+#include "configura.h"
 
 #define NCM_SCREEN_FLAG_NONE 0
 #define NCM_SCREEN_FLAG_STARTUP 1
@@ -936,7 +936,7 @@ int32 nc_server_info_screen_start_x(NcServerInfoScreen *screen);
 int32 nc_server_info_screen_start_y(NcServerInfoScreen *screen);
 
 /* screens/nc_visualizer.h */
-#include "config.h"
+#include "configura.h"
 
 #if defined(HAVE_FFTW3_H)
 #define FFTW_NO_Complex 1
