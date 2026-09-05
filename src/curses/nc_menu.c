@@ -324,10 +324,12 @@ nc_menu_copy(NcMenu *dest, NcMenu *source) {
     dest->item_callbacks = source->item_callbacks;
     dest->display_callbacks = source->display_callbacks;
     dest->action_callbacks = source->action_callbacks;
+
     menu_copy_buffer(&dest->highlight_prefix, &source->highlight_prefix);
     menu_copy_buffer(&dest->highlight_suffix, &source->highlight_suffix);
     menu_copy_buffer(&dest->selected_prefix, &source->selected_prefix);
     menu_copy_buffer(&dest->selected_suffix, &source->selected_suffix);
+
     dest->item_count = 0;
     dest->beginning = source->beginning;
     dest->highlight = source->highlight;
