@@ -2101,7 +2101,6 @@ ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
     }
 
     retry = false;
-    str_builder_array_init(&direct_urls);
     {
         StrBuilderArray *urls = &direct_urls;
 
@@ -2311,7 +2310,6 @@ ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
         int32 search_status;
         bool search_retry;
 
-        str_builder_array_init(&page_urls);
         lyrics_fetcher_build_url(fetcher, &search_url, artist, artist_len,
                                  title, title_len);
         search_status = lyrics_curl_perform(
