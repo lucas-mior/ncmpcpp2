@@ -1290,9 +1290,8 @@ nc_window_read_key(NcWindow *window) {
     res = select(fd_max + 1, &fds_read, NULL, NULL, tv_addr);
     if (res > 0) {
         if (FD_ISSET(STDIN_FILENO, &fds_read)) {
-            int32 key;
+            int32 key = wgetch(window->window);
 
-            key = wgetch(window->window);
             if (key == EOF) {
                 result = NC_KEY_EOF;
             } else {
