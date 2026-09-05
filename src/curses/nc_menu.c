@@ -49,9 +49,8 @@ menu_array_count(NcMenu *menu, enum NcMenuItemSource source) {
 
 static void *
 menu_copy_item(NcMenu *menu, void *source) {
-    void *item;
+    void *item = menu_construct_item(menu);
 
-    item = menu_construct_item(menu);
     if (menu->item_callbacks.copy) {
         menu->item_callbacks.copy(item, source, menu->item_callbacks.user);
     }
