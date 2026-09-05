@@ -1280,6 +1280,7 @@ help_render(void *user, NcBuffer *buffer) {
     append_format(buffer, NC_FORMAT_BOLD);
     nc_buffer_append_cstring(buffer, "\n  Keys - Global\n\n");
     append_format(buffer, NC_FORMAT_NO_BOLD);
+
     append_help_line(buffer, NCM_ACTION_PLAY, "Play");
     append_help_line(buffer, NCM_ACTION_STOP, "Stop");
     append_help_line(buffer, NCM_ACTION_PAUSE, "Pause");
@@ -1294,6 +1295,7 @@ help_render(void *user, NcBuffer *buffer) {
     append_help_line(buffer, NCM_ACTION_UPDATE_DATABASE, "Start music database update");
     append_help_line(buffer, NCM_ACTION_EXECUTE_COMMAND, "Execute command");
     append_help_line(buffer, NCM_ACTION_QUIT, "Quit");
+
     return 1;
 }
 
