@@ -407,7 +407,7 @@ tiny_editor_finish(TinyTagEditorScreen *screen) {
         return 0;
     }
     return nc_screen_switcher_switch_to(
-        previous, nc_screen_has_to_be_resized(previous));
+        previous, previous->has_to_be_resized);
 }
 
 static int32

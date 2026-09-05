@@ -455,7 +455,6 @@ int32 nc_screen_type(NcScreen *screen);
 void nc_screen_mouse_button_pressed(NcScreen *screen, MEVENT event);
 bool nc_screen_is_lockable(NcScreen *screen);
 bool nc_screen_is_mergable(NcScreen *screen);
-bool nc_screen_has_to_be_resized(NcScreen *screen);
 void nc_screen_set_has_to_be_resized(NcScreen *screen,
                                      bool has_to_be_resized);
 void nc_screen_set_has_to_be_updated(NcScreen *screen,

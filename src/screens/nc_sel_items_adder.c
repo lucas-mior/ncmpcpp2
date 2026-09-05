@@ -536,7 +536,7 @@ adder_resize_callback(NcScreen *screen) {
     adder_apply_geometry(adder);
     previous = adder->previous_screen;
     if (previous
-        && nc_screen_has_to_be_resized(previous)) {
+        && previous->has_to_be_resized) {
         nc_screen_resize(previous);
         nc_screen_refresh(previous);
     }
@@ -1074,7 +1074,7 @@ adder_finish(SelectedItemsAdderScreen *screen) {
     screen->ready = false;
     if (previous) {
         nc_screen_switcher_switch_to(
-            previous, nc_screen_has_to_be_resized(previous));
+            previous, previous->has_to_be_resized);
     }
 
     ncm_song_array_clear(&screen->selected_songs);

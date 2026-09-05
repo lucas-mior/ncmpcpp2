@@ -315,11 +315,6 @@ nc_screen_is_mergable(NcScreen *screen) {
     return screen->ops->mergable;
 }
 
-bool
-nc_screen_has_to_be_resized(NcScreen *screen) {
-    return screen->has_to_be_resized;
-}
-
 void
 nc_screen_set_has_to_be_resized(NcScreen *screen, bool has_to_be_resized) {
     screen->has_to_be_resized = has_to_be_resized;
@@ -594,7 +589,7 @@ nc_screen_registry_switch_to(NcScreenRegistry *registry,
         }
     }
 
-    if (nc_screen_has_to_be_resized(screen) || is_screen_mergable) {
+    if (screen->has_to_be_resized || is_screen_mergable) {
         nc_screen_resize(screen);
     }
 

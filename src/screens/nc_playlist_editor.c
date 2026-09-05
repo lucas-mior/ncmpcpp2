@@ -794,8 +794,8 @@ playlist_editor_show_screen(PlaylistEditorScreen *screen) {
         }
         screen->registered = true;
     }
-    return nc_screen_switcher_switch_to(
-        &screen->screen, nc_screen_has_to_be_resized(&screen->screen));
+    return nc_screen_switcher_switch_to(&screen->screen,
+                                        screen->screen.has_to_be_resized);
 }
 
 int32
