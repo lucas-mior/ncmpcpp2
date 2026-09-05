@@ -359,15 +359,13 @@ nc_menu_set_item_callbacks(NcMenu *menu, NcMenuItemCallbacks callbacks) {
 }
 
 void
-nc_menu_set_display_callbacks(NcMenu *menu,
-                              NcMenuDisplayCallbacks callbacks) {
+nc_menu_set_display_callbacks(NcMenu *menu, NcMenuDisplayCallbacks callbacks) {
     menu->display_callbacks = callbacks;
     return;
 }
 
 void
-nc_menu_set_action_callbacks(NcMenu *menu,
-                             NcMenuActionCallbacks callbacks) {
+nc_menu_set_action_callbacks(NcMenu *menu, NcMenuActionCallbacks callbacks) {
     menu->action_callbacks = callbacks;
     return;
 }
