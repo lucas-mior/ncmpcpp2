@@ -1280,28 +1280,22 @@ help_render(void *user, NcBuffer *buffer) {
     append_format(buffer, NC_FORMAT_BOLD);
     nc_buffer_append_cstring(buffer, "\n  Keys - Global\n\n");
     append_format(buffer, NC_FORMAT_NO_BOLD);
+
     append_help_line(buffer, NCM_ACTION_PLAY, "Play");
     append_help_line(buffer, NCM_ACTION_STOP, "Stop");
     append_help_line(buffer, NCM_ACTION_PAUSE, "Pause");
     append_help_line(buffer, NCM_ACTION_NEXT, "Next track");
     append_help_line(buffer, NCM_ACTION_PREVIOUS, "Previous track");
-    append_help_line(buffer, NCM_ACTION_VOLUME_DOWN,
-                            "Decrease volume");
-    append_help_line(buffer, NCM_ACTION_VOLUME_UP,
-                            "Increase volume");
-    append_help_line(buffer, NCM_ACTION_TOGGLE_REPEAT,
-                            "Toggle repeat mode");
-    append_help_line(buffer, NCM_ACTION_TOGGLE_RANDOM,
-                            "Toggle random mode");
-    append_help_line(buffer, NCM_ACTION_TOGGLE_SINGLE,
-                            "Toggle single mode");
-    append_help_line(buffer, NCM_ACTION_TOGGLE_CONSUME,
-                            "Toggle consume mode");
-    append_help_line(buffer, NCM_ACTION_UPDATE_DATABASE,
-                            "Start music database update");
-    append_help_line(buffer, NCM_ACTION_EXECUTE_COMMAND,
-                            "Execute command");
+    append_help_line(buffer, NCM_ACTION_VOLUME_DOWN, "Decrease volume");
+    append_help_line(buffer, NCM_ACTION_VOLUME_UP, "Increase volume");
+    append_help_line(buffer, NCM_ACTION_TOGGLE_REPEAT, "Toggle repeat mode");
+    append_help_line(buffer, NCM_ACTION_TOGGLE_RANDOM, "Toggle random mode");
+    append_help_line(buffer, NCM_ACTION_TOGGLE_SINGLE, "Toggle single mode");
+    append_help_line(buffer, NCM_ACTION_TOGGLE_CONSUME, "Toggle consume mode");
+    append_help_line(buffer, NCM_ACTION_UPDATE_DATABASE, "Start music database update");
+    append_help_line(buffer, NCM_ACTION_EXECUTE_COMMAND, "Execute command");
     append_help_line(buffer, NCM_ACTION_QUIT, "Quit");
+
     return 1;
 }
 
