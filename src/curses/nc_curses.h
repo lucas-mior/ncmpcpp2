@@ -352,18 +352,18 @@ typedef bool NcMenuPositionMatchesFunc(NcMenu *menu, int32 pos, void *user);
 #define ENUM_NAME NcMenuItemSource
 #define ENUM_PREFIX_ NC_MENU_ITEMS_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NC_MENU_ITEMS_ALL)                                                      \
+#define ENUM_FIELDS                       \
+    XX(NC_MENU_ITEMS_ALL)                 \
     XX(NC_MENU_ITEMS_FILTERED)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcMenuItemFlag
 #define ENUM_PREFIX_ NC_MENU_ITEM_
 #define ENUM_BITFLAGS 1
-#define ENUM_FIELDS                                                            \
-    XX(NC_MENU_ITEM_SELECTABLE)                                                \
-    XX(NC_MENU_ITEM_SELECTED)                                                  \
-    XX(NC_MENU_ITEM_INACTIVE)                                                  \
+#define ENUM_FIELDS                       \
+    XX(NC_MENU_ITEM_SELECTABLE)           \
+    XX(NC_MENU_ITEM_SELECTED)             \
+    XX(NC_MENU_ITEM_INACTIVE)             \
     XX(NC_MENU_ITEM_SEPARATOR)
 #include "cbase/xenums.c"
 
