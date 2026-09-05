@@ -142,8 +142,8 @@ typedef struct NcFdCallback {
 #define ENUM_NAME NcPromptStatus
 #define ENUM_PREFIX_ NC_PROMPT_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NC_PROMPT_ACCEPTED)                                                     \
+#define ENUM_FIELDS                  \
+    XX(NC_PROMPT_ACCEPTED)           \
     XX(NC_PROMPT_ABORTED)
 #include "cbase/xenums.c"
 
