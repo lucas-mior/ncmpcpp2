@@ -152,7 +152,6 @@ ncm_fs_rename(char *old_path, int32 old_path_len,
 int32
 ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *ncm_error) {
     char *copy;
-    int32 code;
     int32 status;
 
     ncm_fs_path_copy(path, path_len, &copy);
@@ -170,7 +169,7 @@ ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *ncm_error) {
 
         copy[i] = '\0';
         if (mkdir(copy, 0700) < 0) {
-            code = errno;
+            int32 code = errno;
             if (code != EEXIST) {
                 status = ncm_fs_set_errno_error(
                     ncm_error, code, "mkdir", copy, i);
