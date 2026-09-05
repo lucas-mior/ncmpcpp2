@@ -529,18 +529,14 @@ ncm_bindings_string_to_key(char *string, int32 string_len) {
 
 NcKey
 ncm_read_key(NcWindow *window) {
-    NcKey result;
+    NcKey result = NC_KEY_NONE;
     StrBuilder tmp = {0};
-    bool alt_pressed;
-
-    result = NC_KEY_NONE;
-    alt_pressed = false;
+    bool alt_pressed = false;
 
     while (true) {
         NcKey input;
 
-        input = nc_window_read_key(window);
-        if (input == NC_KEY_NONE) {
+        if ((input = nc_window_read_key(window)) == NC_KEY_NONE) {
             break;
         }
         if (input & NC_KEY_ALT) {
