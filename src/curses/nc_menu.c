@@ -1151,8 +1151,7 @@ menu_set_flags_for_item(NcMenu *menu, void *item, uint32 flags) {
     ASSERT_NON_NEGATIVE(pos);
     menu->all_item_flags[pos] = flags;
 
-    pos = menu_item_index(menu, NC_MENU_ITEMS_FILTERED, item);
-    if (pos >= 0) {
+    if ((pos = menu_item_index(menu, NC_MENU_ITEMS_FILTERED, item)) >= 0) {
         menu->filtered_item_flags[pos] = flags;
     }
     return;
