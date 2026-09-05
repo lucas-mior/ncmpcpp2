@@ -1453,9 +1453,9 @@ settings_apply_option(Configuration *config, SettingsOption *option,
     return 0;
 }
 
-#define APPLY_STRING_DIR(FUNC, FIELD)                                          \
+#define APPLY_STRING_DIR(FIELD)                                                \
     static int32                                                               \
-    FUNC(Configuration *config, char *value, int32 value_len,                  \
+    apply_##FIELD(Configuration *config, char *value, int32 value_len,         \
          NcmError *ncm_error) {                                                \
         StrBuilder buffer = {0};                                               \
                                                                                \
@@ -1472,9 +1472,9 @@ settings_apply_option(Configuration *config, SettingsOption *option,
         return 0;                                                              \
     }
 
-#define APPLY_STRING_PATH(FUNC, FIELD)                                         \
+#define APPLY_STRING_PATH(FIELD)                                               \
     static int32                                                               \
-    FUNC(Configuration *config, char *value, int32 value_len,                  \
+    apply_##FIELD(Configuration *config, char *value, int32 value_len,         \
          NcmError *ncm_error) {                                                \
         StrBuilder buffer = {0};                                               \
                                                                                \
@@ -1490,9 +1490,9 @@ settings_apply_option(Configuration *config, SettingsOption *option,
         return 0;                                                              \
     }
 
-#define APPLY_STRING(FUNC, FIELD)                                              \
+#define APPLY_STRING(FIELD)                                                    \
     static int32                                                               \
-    FUNC(Configuration *config, char *value, int32 value_len,                  \
+    apply_##FIELD(Configuration *config, char *value, int32 value_len,         \
          NcmError *ncm_error) {                                                \
         (void)ncm_error;                                                       \
         free2(config->FIELD, config->FIELD##_len + 1);                         \
@@ -1505,42 +1505,37 @@ settings_apply_option(Configuration *config, SettingsOption *option,
         return 0;                                                              \
     }
 
-#define APPLY_BOOL(FUNC, FIELD)                                                \
+#define APPLY_BOOL(FIELD)                                                \
     static int32                                                               \
-    FUNC(Configuration *config, char *value, int32 value_len,                  \
+    apply_##FIELD(Configuration *config, char *value, int32 value_len,                  \
          NcmError *ncm_error) {                                                \
         return settings_parse_bool(value, value_len, &config->FIELD,           \
                                    ncm_error);                                 \
     }
 
-#define APPLY_UINT(FUNC, FIELD)                                                \
+#define APPLY_UINT(FIELD)                                                      \
     static int32                                                               \
-    FUNC(Configuration *config, char *value, int32 value_len,                  \
+    apply_##FIELD(Configuration *config, char *value, int32 value_len,         \
          NcmError *ncm_error) {                                                \
         return ncm_parse_int32(value, value_len, &config->FIELD,               \
                                ncm_error);                                     \
     }
 
-APPLY_STRING_DIR(apply_ncmpcpp_directory, ncmpcpp_directory)
-APPLY_STRING_DIR(apply_lyrics_directory, lyrics_directory)
-APPLY_STRING_DIR(apply_mpd_music_dir, mpd_music_dir)
-APPLY_STRING(apply_random_exclude_pattern, random_exclude_pattern)
-APPLY_STRING_PATH(apply_visualizer_data_source, visualizer_data_source)
-APPLY_STRING(apply_visualizer_output_name, visualizer_output_name)
-APPLY_BOOL(apply_visualizer_in_stereo, visualizer_in_stereo)
-APPLY_BOOL(apply_visualizer_autoscale, visualizer_autoscale)
-APPLY_BOOL(apply_visualizer_spectrum_smooth_look,
-           visualizer_spectrum_smooth_look)
-APPLY_BOOL(apply_visualizer_spectrum_smooth_look_legacy_chars,
-           visualizer_spectrum_smooth_look_legacy_chars)
-APPLY_BOOL(apply_visualizer_spectrum_log_scale_x,
-           visualizer_spectrum_log_scale_x)
-APPLY_BOOL(apply_visualizer_spectrum_log_scale_y,
-           visualizer_spectrum_log_scale_y)
+APPLY_STRING_DIR(ncmpcpp_directory)
+APPLY_STRING_DIR(lyrics_directory)
+APPLY_STRING_DIR(mpd_music_dir)
+APPLY_STRING(random_exclude_pattern)
+APPLY_STRING_PATH(visualizer_data_source)
+APPLY_STRING(visualizer_output_name)
+APPLY_BOOL(visualizer_in_stereo)
+APPLY_BOOL(visualizer_autoscale)
+APPLY_BOOL(visualizer_spectrum_smooth_look)
+APPLY_BOOL(visualizer_spectrum_smooth_look_legacy_chars)
+APPLY_BOOL(visualizer_spectrum_log_scale_x)
+APPLY_BOOL(visualizer_spectrum_log_scale_y)
 APPLY_UINT(apply_message_delay_time, message_delay_time)
 APPLY_STRING_PATH(apply_execute_on_song_change, execute_on_song_change)
-APPLY_STRING_PATH(apply_execute_on_player_state_change,
-                  execute_on_player_state_change)
+APPLY_STRING_PATH(apply_execute_on_player_state_change, execute_on_player_state_change)
 APPLY_BOOL(apply_playlist_show_mpd_host, playlist_show_mpd_host)
 APPLY_BOOL(apply_playlist_show_remaining_time, playlist_show_remaining_time)
 APPLY_BOOL(apply_playlist_shorten_total_times, playlist_shorten_total_times)
