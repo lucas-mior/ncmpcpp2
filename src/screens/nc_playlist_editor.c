@@ -12,19 +12,19 @@
 #include "status.h"
 #include "statusbar.h"
 
-static NcWindow *playlist_editor_active_window_callback(NcScreen *screen);
-static void playlist_editor_refresh_callback(NcScreen *screen);
-static void playlist_editor_refresh_window_callback(NcScreen *screen);
-static void playlist_editor_scroll_callback(NcScreen *screen,
+static NcWindow *playlist_editor_active_window_callback(NcScreen *);
+static void playlist_editor_refresh_callback(NcScreen *);
+static void playlist_editor_refresh_window_callback(NcScreen *);
+static void playlist_editor_scroll_callback(NcScreen *,
                                             enum NcScroll where);
-static void playlist_editor_finish_list_change_callback(NcScreen *screen);
-static void playlist_editor_switch_to_callback(NcScreen *screen);
-static void playlist_editor_resize_callback(NcScreen *screen);
-static int32 playlist_editor_timeout_callback(NcScreen *screen);
-static char *playlist_editor_title_callback(NcScreen *screen);
-static void playlist_editor_update_callback(NcScreen *screen);
-static void playlist_editor_mouse_callback(NcScreen *screen, MEVENT event);
-static void playlist_editor_destroy_callback(NcScreen *screen);
+static void playlist_editor_finish_list_change_callback(NcScreen *);
+static void playlist_editor_switch_to_callback(NcScreen *);
+static void playlist_editor_resize_callback(NcScreen *);
+static int32 playlist_editor_timeout_callback(NcScreen *);
+static char *playlist_editor_title_callback(NcScreen *);
+static void playlist_editor_update_callback(NcScreen *);
+static void playlist_editor_mouse_callback(NcScreen *, MEVENT event);
+static void playlist_editor_destroy_callback(NcScreen *);
 static bool playlist_filter_callback(NcMenu *menu, void *item, void *user);
 static bool content_filter_callback(NcMenu *menu, void *item, void *user);
 static void playlist_draw_callback(NcMenu *menu, NcWindow *window,
