@@ -35,7 +35,9 @@ enum SettingsPrimitiveOption {
     SETTINGS_PRIMITIVE_##NAME,
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     SETTINGS_PRIMITIVE_##NAME,
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
 #include "configuration_options.def"
+#undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
 #undef XX_DIR
@@ -47,6 +49,28 @@ enum SettingsPrimitiveOption {
 
 _Static_assert(SETTINGS_PRIMITIVE_COUNT == 78,
                "primitive configuration option count changed");
+
+enum SettingsEnumOption {
+#define XX_BOOL(NAME, DEFAULT_VALUE)
+#define XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_PATH(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT_VALUE)
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) SETTINGS_ENUM_##NAME,
+#include "configuration_options.def"
+#undef XX_ENUM
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_DIR
+#undef XX_PATH
+#undef XX_STRING
+#undef XX_BOOL
+    SETTINGS_ENUM_COUNT,
+};
+
+_Static_assert(SETTINGS_ENUM_COUNT == 10,
+               "enum configuration option count changed");
 
 #define SETTINGS_ASSERT_FIELD_TYPE(NAME, TYPE) \
     _Static_assert(_Generic(&((Configuration *)0)->NAME, \
@@ -64,7 +88,10 @@ _Static_assert(SETTINGS_PRIMITIVE_COUNT == 78,
     SETTINGS_ASSERT_FIELD_TYPE(NAME, int32);
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, double);
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, C_TYPE);
 #include "configuration_options.def"
+#undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
 #undef XX_DIR
@@ -501,16 +528,43 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
 }
 
 static int32
-apply_visualizer_type(Configuration *config, char *value, int32 value_len,
-                      NcmError *ncm_error) {
-    int32 status;
-
-    status = ncm_visualizer_type_parse(value, value_len,
-                                       &config->visualizer_type);
-    if (status < 0) {
-        return settings_invalid_value(ncm_error, value, value_len);
+settings_parse_browser_sort_mode(char *value, int32 value_len,
+                                 enum SortMode *result) {
+    if (STREQUAL(value, value_len, "noop")) {
+        value = "none";
+        value_len = STRLIT_LEN("none");
     }
-    return 0;
+    return ncm_sort_mode_parse(value, value_len, result);
+}
+
+static int32
+settings_parse_media_library_primary_tag(char *value, int32 value_len,
+                                         enum mpd_tag_type *result) {
+    if (STREQUAL(value, value_len, "artist")) {
+        *result = MPD_TAG_ARTIST;
+        return 0;
+    }
+    if (STREQUAL(value, value_len, "album_artist")) {
+        *result = MPD_TAG_ALBUM_ARTIST;
+        return 0;
+    }
+    if (STREQUAL(value, value_len, "date")) {
+        *result = MPD_TAG_DATE;
+        return 0;
+    }
+    if (STREQUAL(value, value_len, "genre")) {
+        *result = MPD_TAG_GENRE;
+        return 0;
+    }
+    if (STREQUAL(value, value_len, "composer")) {
+        *result = MPD_TAG_COMPOSER;
+        return 0;
+    }
+    if (STREQUAL(value, value_len, "performer")) {
+        *result = MPD_TAG_PERFORMER;
+        return 0;
+    }
+    return -NCM_ERROR_PARSE;
 }
 
 static int32
@@ -709,19 +763,6 @@ apply_song_window_title_format(Configuration *config,
 }
 
 static int32
-apply_browser_sort_mode(Configuration *config, char *value, int32 value_len,
-                        NcmError *ncm_error) {
-    if (STREQUAL(value, value_len, "noop")) {
-        value = "none";
-        value_len = STRLIT_LEN("none");
-    }
-    if (ncm_sort_mode_parse(value, value_len, &config->browser_sort_mode) < 0) {
-        return settings_invalid_value(ncm_error, value, value_len);
-    }
-    return 0;
-}
-
-static int32
 apply_browser_sort_format(Configuration *config, char *value, int32 value_len,
                           NcmError *ncm_error) {
     return settings_parse_format(&config->browser_sort_format, value, value_len,
@@ -872,48 +913,6 @@ apply_song_columns_list_format(Configuration *config,
 }
 
 static int32
-apply_playlist_display_mode(Configuration *config, char *value, int32 value_len,
-                            NcmError *ncm_error) {
-    if (ncm_display_mode_parse(value, value_len,
-                               &config->playlist_display_mode) < 0) {
-        return settings_invalid_value(ncm_error, value, value_len);
-    }
-    return 0;
-}
-
-static int32
-apply_browser_display_mode(Configuration *config, char *value, int32 value_len,
-                           NcmError *ncm_error) {
-    if (ncm_display_mode_parse(value, value_len,
-                               &config->browser_display_mode) < 0) {
-        return settings_invalid_value(ncm_error, value, value_len);
-    }
-    return 0;
-}
-
-static int32
-apply_search_engine_display_mode(Configuration *config,
-                                 char *value, int32 value_len,
-                                 NcmError *ncm_error) {
-    if (ncm_display_mode_parse(value, value_len,
-                               &config->search_engine_display_mode) < 0) {
-        return settings_invalid_value(ncm_error, value, value_len);
-    }
-    return 0;
-}
-
-static int32
-apply_playlist_editor_display_mode(Configuration *config,
-                                   char *value, int32 value_len,
-                                   NcmError *ncm_error) {
-    if (ncm_display_mode_parse(value, value_len,
-                               &config->playlist_editor_display_mode) < 0) {
-        return settings_invalid_value(ncm_error, value, value_len);
-    }
-    return 0;
-}
-
-static int32
 apply_progressbar_look(Configuration *config, char *value, int32 value_len,
                        NcmError *ncm_error) {
     int32 characters = utf8_characters(value, value_len);
@@ -939,49 +938,6 @@ apply_default_place_to_search_in(Configuration *config,
     }
     if (STREQUAL(value, value_len, "playlist")) {
         config->default_place_to_search_in = false;
-        return 0;
-    }
-    return settings_invalid_value(ncm_error, value, value_len);
-}
-
-static int32
-apply_user_interface(Configuration *config, char *value, int32 value_len,
-                     NcmError *ncm_error) {
-    int32 status;
-
-    status = ncm_design_parse(value, value_len, &config->user_interface);
-    if (status < 0) {
-        return settings_invalid_value(ncm_error, value, value_len);
-    }
-    return 0;
-}
-
-static int32
-apply_media_library_primary_tag(Configuration *config,
-                                char *value, int32 value_len,
-                                NcmError *ncm_error) {
-    if (STREQUAL(value, value_len, "artist")) {
-        config->media_library_primary_tag = MPD_TAG_ARTIST;
-        return 0;
-    }
-    if (STREQUAL(value, value_len, "album_artist")) {
-        config->media_library_primary_tag = MPD_TAG_ALBUM_ARTIST;
-        return 0;
-    }
-    if (STREQUAL(value, value_len, "date")) {
-        config->media_library_primary_tag = MPD_TAG_DATE;
-        return 0;
-    }
-    if (STREQUAL(value, value_len, "genre")) {
-        config->media_library_primary_tag = MPD_TAG_GENRE;
-        return 0;
-    }
-    if (STREQUAL(value, value_len, "composer")) {
-        config->media_library_primary_tag = MPD_TAG_COMPOSER;
-        return 0;
-    }
-    if (STREQUAL(value, value_len, "performer")) {
-        config->media_library_primary_tag = MPD_TAG_PERFORMER;
         return 0;
     }
     return settings_invalid_value(ncm_error, value, value_len);
@@ -1038,19 +994,6 @@ apply_lyrics_fetchers(Configuration *config, char *value, int32 value_len,
 }
 
 static int32
-apply_space_add_mode(Configuration *config, char *value, int32 value_len,
-                     NcmError *ncm_error) {
-    int32 status;
-
-    status = ncm_space_add_mode_parse(value, value_len,
-                                      &config->space_add_mode);
-    if (status < 0) {
-        return settings_invalid_value(ncm_error, value, value_len);
-    }
-    return 0;
-}
-
-static int32
 apply_screen_switcher_mode(Configuration *config, char *value, int32 value_len,
                            NcmError *ncm_error) {
     int32 pos;
@@ -1090,19 +1033,6 @@ apply_screen_switcher_mode(Configuration *config, char *value, int32 value_len,
         added = true;
     }
     if (!added) {
-        return settings_invalid_value(ncm_error, value, value_len);
-    }
-    return 0;
-}
-
-static int32
-apply_startup_screen(Configuration *config, char *value, int32 value_len,
-                     NcmError *ncm_error) {
-    int32 status;
-
-    status = screen_type_parse_startup(value, value_len,
-                                       &config->startup_screen);
-    if (status < 0) {
         return settings_invalid_value(ncm_error, value, value_len);
     }
     return 0;
@@ -1541,8 +1471,21 @@ settings_primitive_post_apply(enum SettingsPrimitiveOption option,
                                              ncm_error); \
     }
 
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) \
+    static int32 \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        int32 status; \
+        status = PARSER(value, value_len, &config->NAME); \
+        if (status < 0) { \
+            return settings_invalid_value(ncm_error, value, value_len); \
+        } \
+        return 0; \
+    }
+
 #include "configuration_options.def"
 
+#undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
 #undef XX_BOOL
@@ -1568,7 +1511,9 @@ static const SettingsOption ncmpcpp_options[] = {
     OPT(NAME, DEFAULT_VALUE),
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     OPT(NAME, DEFAULT_VALUE),
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) OPT(NAME, DEFAULT_VALUE),
 #include "configuration_options.def"
+#undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
 #undef XX_DIR
@@ -1576,11 +1521,6 @@ static const SettingsOption ncmpcpp_options[] = {
 #undef XX_STRING
 #undef XX_BOOL
 
-#if defined(HAVE_FFTW3_H)
-OPT(visualizer_type, "spectrum"),
-#else
-OPT(visualizer_type, "ellipse"),
-#endif
 OPT(visualizer_look, "●▮"),
 OPT(visualizer_color, "blue, cyan, green, yellow, magenta, red"),
 OPT(song_list_format, "{%a - }{%t}|{$8%f$9}$R{$3%l$9}"),
@@ -1601,25 +1541,16 @@ OPT(selected_item_prefix, "$6"),
 OPT(selected_item_suffix, "$9"),
 OPT(modified_item_prefix, "$3>$9 "),
 OPT(song_window_title_format, "{%a - }{%t}|{%f}"),
-OPT(browser_sort_mode, "type"),
 OPT(browser_sort_format, "{%a - }{%t}|{%f} {%l}"),
 OPT(song_columns_list_format,
     "(20)[]{a} (6f)[green]{NE} (50)[white]{t|f:Title}"
     " (20)[cyan]{b} (7f)[magenta]{l}"),
-OPT(playlist_display_mode, "columns"),
-OPT(browser_display_mode, "classic"),
-OPT(search_engine_display_mode, "classic"),
-OPT(playlist_editor_display_mode, "classic"),
 OPT(progressbar_look, "=>"),
 OPT(default_place_to_search_in, "database"),
-OPT(user_interface, "classic"),
-OPT(media_library_primary_tag, "artist"),
 OPT(default_find_mode, "wrapped"),
 OPT(lyrics_fetchers,
     "azlyrics, genius, letras, musixmatch, tekstowo, vagalume, internet"),
-OPT(space_add_mode, "add_remove"),
 OPT(screen_switcher_mode, "playlist, browser"),
-OPT(startup_screen, "playlist"),
 OPT(startup_slave_screen, ""),
 OPT(media_library_column_width_ratio_two, "1:1"),
 OPT(media_library_column_width_ratio_three, "1:1:1"),

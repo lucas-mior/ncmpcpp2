@@ -158,7 +158,10 @@ configuration_init_unchecked(Configuration *config) {
     config->NAME = 0;
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     config->NAME = 0;
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) \
+    config->NAME = (C_TYPE)0;
 #include "configuration_options.def"
+#undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
 #undef XX_DIR
@@ -219,16 +222,6 @@ configuration_init_unchecked(Configuration *config) {
     config->screen_switcher_mode = (ScreenTypeArray){0};
     config->lyrics_fetchers = (NcmLyricsFetcherRegistry){0};
 
-    config->playlist_display_mode = NCM_DISPLAY_MODE_CLASSIC;
-    config->browser_display_mode = NCM_DISPLAY_MODE_CLASSIC;
-    config->search_engine_display_mode = NCM_DISPLAY_MODE_CLASSIC;
-    config->playlist_editor_display_mode = NCM_DISPLAY_MODE_CLASSIC;
-    config->visualizer_type = NCM_VISUALIZER_TYPE_WAVE;
-    config->user_interface = NCM_DESIGN_CLASSIC;
-    config->space_add_mode = NCM_SPACE_ADD_MODE_ADD_REMOVE;
-    config->media_library_primary_tag = MPD_TAG_ARTIST;
-    config->browser_sort_mode = NCM_SORT_MODE_TYPE;
-
     config->screen_switcher_previous = false;
     config->default_find_mode = false;
     config->default_place_to_search_in = false;
@@ -246,7 +239,6 @@ configuration_init_unchecked(Configuration *config) {
     config->current_item_inactive_column_prefix_length = 0;
     config->current_item_inactive_column_suffix_length = 0;
 
-    config->startup_screen = NCM_SCREEN_TYPE_PLAYLIST;
     config->startup_slave_screen = NCM_SCREEN_TYPE_COUNT;
     return;
 }
@@ -276,7 +268,9 @@ configuration_destroy(Configuration *config) {
 #define XX_DIR(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
 #define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
 #include "configuration_options.def"
+#undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
 #undef XX_DIR

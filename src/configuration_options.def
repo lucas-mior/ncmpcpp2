@@ -1,5 +1,5 @@
 /*
- * Primitive configuration options.
+ * Generated configuration options migrated to the X-macro subsystem.
  *
  * This file intentionally has no include guard.  Its includer must define all
  * XX_* macros below before including it.
@@ -87,3 +87,29 @@ XX_INT_RANGE(search_engine_default_search_mode, "1", 1, 3)
 XX_PATH(external_editor, "nano")
 XX_BOOL(use_console_editor, "yes")
 XX_BOOL(colors_enabled, "yes")
+
+/* Ordinary enum-backed settings. */
+#if defined(HAVE_FFTW3_H)
+XX_ENUM(visualizer_type, enum VisualizerType, "spectrum",
+        ncm_visualizer_type_parse)
+#else
+XX_ENUM(visualizer_type, enum VisualizerType, "ellipse",
+        ncm_visualizer_type_parse)
+#endif
+XX_ENUM(browser_sort_mode, enum SortMode, "type",
+        settings_parse_browser_sort_mode)
+XX_ENUM(playlist_display_mode, enum DisplayMode, "columns",
+        ncm_display_mode_parse)
+XX_ENUM(browser_display_mode, enum DisplayMode, "classic",
+        ncm_display_mode_parse)
+XX_ENUM(search_engine_display_mode, enum DisplayMode, "classic",
+        ncm_display_mode_parse)
+XX_ENUM(playlist_editor_display_mode, enum DisplayMode, "classic",
+        ncm_display_mode_parse)
+XX_ENUM(user_interface, enum Design, "classic", ncm_design_parse)
+XX_ENUM(media_library_primary_tag, enum mpd_tag_type, "artist",
+        settings_parse_media_library_primary_tag)
+XX_ENUM(space_add_mode, enum SpaceAddMode, "add_remove",
+        ncm_space_add_mode_parse)
+XX_ENUM(startup_screen, enum ScreenType, "playlist",
+        screen_type_parse_startup)
