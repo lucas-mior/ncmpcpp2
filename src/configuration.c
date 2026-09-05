@@ -25,8 +25,8 @@ ncm_configuration_options_init(NcmConfigurationOptions *options) {
     options->screen_name = (StrBuilder){0};
     options->slave_screen_name = (StrBuilder){0};
 
-    str_builder_array_init(&options->config_paths);
-    str_builder_array_init(&options->bindings_paths);
+    options->config_paths = (StrBuilderArray){0};
+    options->bindings_paths = (StrBuilderArray){0};
 
     SB_APPEND(&options->host, "localhost");
     SB_APPEND(&options->current_song_format, "{{{(%l) }{{%a - }%t}}|{%f}}");
@@ -411,11 +411,9 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
 
     if ((options->config_paths.len == 0)
         || (options->bindings_paths.len == 0)) {
-        StrBuilderArray default_config_paths;
-        StrBuilderArray default_bindings_paths;
+        StrBuilderArray default_config_paths = {0};
+        StrBuilderArray default_bindings_paths = {0};
 
-        str_builder_array_init(&default_config_paths);
-        str_builder_array_init(&default_bindings_paths);
         configuration_discover_default_paths(
             &default_config_paths, &default_bindings_paths, ncm_error);
         if (options->config_paths.len == 0) {
@@ -588,11 +586,9 @@ configure(int32 argc, char **argv) {
     configuration_quiet = options.quiet;
 
     if (options.help) {
-        StrBuilderArray config_paths;
-        StrBuilderArray bindings_paths;
+        StrBuilderArray config_paths = {0};
+        StrBuilderArray bindings_paths = {0};
 
-        str_builder_array_init(&config_paths);
-        str_builder_array_init(&bindings_paths);
         configuration_discover_default_paths(&config_paths, &bindings_paths,
                                              &ncm_error);
         printf("Usage: %s [options]...\n", argv[0]);

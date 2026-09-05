@@ -584,7 +584,7 @@ tag_editor_screen_init(TagEditorScreen *screen,
     screen->parser_legend = (StrBuilder){0};
     screen->parser_preview = (StrBuilder){0};
 
-    str_builder_array_init(&screen->recent_patterns);
+    screen->recent_patterns = (StrBuilderArray){0};
 
     screen->directory_filter_constraint = (StrBuilder){0};
     screen->tag_filter_constraint = (StrBuilder){0};
@@ -3476,7 +3476,6 @@ tag_editor_run_current(NcScreen *screen) {
                     StrBuilder first = {0};
                     int32 existing;
 
-                    str_builder_array_init(&replacement);
                     sb_set(&first, editor->pattern.data, editor->pattern.len);
                     str_builder_array_append_copy(&replacement, &first);
                     sb_free(&first);

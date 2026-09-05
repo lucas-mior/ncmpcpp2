@@ -340,7 +340,7 @@ browser_screen_init(BrowserScreen *screen,
     screen->path_buffer = (StrBuilder){0};
     screen->scratch_buffer = (StrBuilder){0};
 
-    str_builder_array_init(&screen->supported_extensions);
+    screen->supported_extensions = (StrBuilderArray){0};
     screen->filter_regex = (NcmRegex){0};
 
     screen->start_x = start_x;
@@ -820,7 +820,6 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
         return status;
     }
 
-    str_builder_array_init(&extensions);
     for (int32 i = 0; i < strings.count; i += 1) {
         NcmStringView *string = &strings.items[i];
         StrBuilder buffer = {0};
