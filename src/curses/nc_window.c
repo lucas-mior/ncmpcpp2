@@ -654,9 +654,8 @@ nc_window_width(NcWindow *window) {
 
 int32
 nc_window_height(NcWindow *window) {
-    int32 height;
+    int32 height = window->height;
 
-    height = window->height;
     if (window->border.enabled) {
         height += 2;
     }
