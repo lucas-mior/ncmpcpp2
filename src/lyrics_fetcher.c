@@ -1885,8 +1885,8 @@ lyrics_fetch_page(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
             int32 end;
 
             sb_clear(out);
-            marker = lyrics_find_ignore_case(
-                content_data, content_len, STRLIT(">LETRA<"), 0);
+            marker = lyrics_find_ignore_case(content_data, content_len,
+                                             STRLIT(">LETRA<"), 0);
             if (marker < 0) {
                 extract_status = -NCM_ERROR_NOT_FOUND;
                 break;
@@ -2067,8 +2067,8 @@ cleanup:
 
 int32
 ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
-                         char *artist, int32 artist_len, char *title,
-                         int32 title_len) {
+                         char *artist, int32 artist_len,
+                         char *title, int32 title_len) {
     StrBuilderArray direct_urls = {0};
     int32 status;
     bool retry;
