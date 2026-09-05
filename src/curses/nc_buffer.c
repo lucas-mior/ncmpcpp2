@@ -25,8 +25,8 @@ nc_buffer_reserve(NcBuffer *buffer, int32 extra) {
         new_cap *= 2;
     }
 
-    buffer->data = realloc2(buffer->data, old_cap, new_cap,
-                            SIZEOF(*buffer->data));
+    buffer->data = realloc2(buffer->data,
+                            old_cap, new_cap, SIZEOF(*buffer->data));
     buffer->cap = new_cap;
     if (buffer->len <= 0) {
         buffer->data[0] = '\0';
