@@ -1080,8 +1080,8 @@ menu_is_selected(NcMenu *menu, void *item) {
     if (menu->display_callbacks.is_selected == NULL) {
         return false;
     }
-    return menu->display_callbacks.is_selected(
-        item, menu->display_callbacks.user);
+    return menu->display_callbacks.is_selected(item,
+                                               menu->display_callbacks.user);
 }
 
 static bool
