@@ -5315,7 +5315,7 @@ action_runtime_edit_lyrics(void) {
     ncm_error_clear(&ncm_error);
     if (Config.use_console_editor) {
         nc_pause_screen();
-        success = ncm_macro_run_external_console_command(command.data,
+        success = ncm_run_external_console_command(command.data,
                                                          command.len,
                                                          &ncm_error) == 0;
         nc_unpause_screen();
@@ -5333,7 +5333,7 @@ action_runtime_edit_lyrics(void) {
             success = status >= 0;
         }
     } else {
-        success = ncm_macro_run_external_command(command.data, command.len,
+        success = ncm_run_external_command(command.data, command.len,
                                                  false, &ncm_error) == 0;
     }
 

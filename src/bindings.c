@@ -259,7 +259,7 @@ int32
 ncm_binding_runtime_run_external_command(char *command, int32 command_len,
                                          void *user) {
     (void)user;
-    return ncm_macro_run_external_command(command, command_len, true, NULL);
+    return ncm_run_external_command(command, command_len, true, NULL);
 }
 
 int32
@@ -270,7 +270,7 @@ ncm_binding_runtime_run_external_console_command(char *command,
 
     (void)user;
     nc_pause_screen();
-    status = ncm_macro_run_external_console_command(command, command_len, NULL);
+    status = ncm_run_external_console_command(command, command_len, NULL);
     nc_unpause_screen();
     return status;
 }
