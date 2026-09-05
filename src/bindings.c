@@ -716,8 +716,9 @@ ncm_bindings_bind(NcmBindingsConfiguration *bindings, NcKey key,
             } else {
                 new_cap = bindings->keys_cap*2;
             }
-            bindings->keys = realloc2(bindings->keys, bindings->keys_cap,
-                                      new_cap, SIZEOF(*bindings->keys));
+            bindings->keys = realloc2(bindings->keys,
+                                      bindings->keys_cap, new_cap,
+                                      SIZEOF(*bindings->keys));
             bindings->keys_cap = new_cap;
         }
         if (at < bindings->keys_len) {
