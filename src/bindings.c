@@ -765,14 +765,13 @@ ncm_bindings_key_is_unbound(NcmBindingsConfiguration *bindings, NcKey key) {
 static void
 ncm_bindings_bind_single(NcmBindingsConfiguration *bindings, char *key_name,
                          int32 key_name_len, enum NcmActionType type) {
-    NcmBinding binding;
-    NcKey key;
+    NcmBinding binding = {0};
+    NcKey key = ncm_bindings_string_to_key(key_name, key_name_len);
 
-    key = ncm_bindings_string_to_key(key_name, key_name_len);
     if (!ncm_bindings_key_is_unbound(bindings, key)) {
         return;
     }
-    binding = (NcmBinding){0};
+
     ncm_binding_append_normal(&binding, type);
     ncm_bindings_bind(bindings, key, &binding);
     ncm_binding_destroy(&binding);
