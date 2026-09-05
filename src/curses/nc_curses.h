@@ -376,8 +376,8 @@ typedef struct NcMenuItemCallbacks {
 } NcMenuItemCallbacks;
 
 typedef struct NcMenuDisplayCallbacks {
-    void (*draw)(NcMenu *menu, NcWindow *window, void *item,
-                 int32 pos, void *user);
+    void (*draw)(NcMenu *menu, NcWindow *window,
+                 void *item, int32 pos, void *user);
     bool (*matches_filter)(NcMenu *menu, void *item, void *user);
     bool (*is_separator)(void *item, void *user);
     bool (*is_selected)(void *item, void *user);
