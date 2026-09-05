@@ -74,6 +74,55 @@ settings_expand_home(StrBuilder *buffer, char *value, int32 value_len) {
     return;
 }
 
+static void
+settings_parse_string(char **result, int32 *result_len,
+                      char *value, int32 value_len) {
+    free2(*result, *result_len + 1);
+    *result = NULL;
+    *result_len = 0;
+    if (value_len > 0) {
+        *result = xstrndup(value, value_len);
+        *result_len = value_len;
+    }
+    return;
+}
+
+static void
+settings_parse_path_common(char **result, int32 *result_len,
+                           char *value, int32 value_len, bool directory) {
+    StrBuilder buffer = {0};
+
+    settings_expand_home(&buffer, value, value_len);
+    if (directory) {
+        sb_append_byte_if_not(&buffer, '/');
+    }
+
+    free2(*result, *result_len + 1);
+    *result = NULL;
+    *result_len = 0;
+    if (buffer.len > 0) {
+        *result = sb_steal_exact(&buffer, result_len);
+    }
+    sb_free(&buffer);
+    return;
+}
+
+static void
+settings_parse_path(char **result, int32 *result_len,
+                    char *value, int32 value_len) {
+    settings_parse_path_common(result, result_len,
+                               value, value_len, false);
+    return;
+}
+
+static void
+settings_parse_dir(char **result, int32 *result_len,
+                   char *value, int32 value_len) {
+    settings_parse_path_common(result, result_len,
+                               value, value_len, true);
+    return;
+}
+
 static int32
 settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
                         int32 *width, bool keep_existing,
@@ -118,6 +167,38 @@ settings_parse_bool(char *value, int32 value_len, bool *result,
         return settings_invalid_value(ncm_error, value, value_len);
     }
     return 0;
+}
+
+static int32
+settings_parse_int_range(char *value, int32 value_len, int32 *result,
+                         int32 minimum, int32 maximum,
+                         NcmError *ncm_error) {
+    int32 status;
+
+    status = ncm_parse_int32(value, value_len, result, ncm_error);
+    if (status < 0) {
+        return status;
+    }
+    return ncm_bounds_check_i64(*result, minimum, maximum, ncm_error);
+}
+
+static int32
+settings_parse_double_range(char *value, int32 value_len, double *result,
+                            double minimum, double maximum,
+                            NcmError *ncm_error) {
+    int32 status;
+
+    status = ncm_parse_double(value, value_len, result, ncm_error);
+    if (status < 0) {
+        return status;
+    }
+    if ((minimum == -INFINITY) && (maximum == INFINITY)) {
+        return 0;
+    }
+    if (maximum == INFINITY) {
+        return ncm_lower_bound_check_f64(*result, minimum, ncm_error);
+    }
+    return ncm_bounds_check_f64(*result, minimum, maximum, ncm_error);
 }
 
 static int32
@@ -377,18 +458,10 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
 static int32
 apply_mpd_host(Configuration *config, char *value, int32 value_len,
                NcmError *ncm_error) {
-    StrBuilder host = {0};
-
-    settings_expand_home(&host, value, value_len);
-    free2(config->mpd_host, config->mpd_host_len + 1);
-    config->mpd_host = NULL;
-    config->mpd_host_len = 0;
-    if (host.len > 0) {
-        config->mpd_host = sb_steal_exact(&host, &config->mpd_host_len);
-    }
+    settings_parse_path(&config->mpd_host, &config->mpd_host_len,
+                        value, value_len);
     ncm_mpd_client_set_hostname(&global_mpd, config->mpd_host,
                                 config->mpd_host_len, ncm_error);
-    sb_free(&host);
     return 0;
 }
 
@@ -397,7 +470,8 @@ apply_mpd_port(Configuration *config, char *value, int32 value_len,
                NcmError *ncm_error) {
     int32 status;
 
-    status = ncm_parse_int32(value, value_len, &config->mpd_port, ncm_error);
+    status = settings_parse_int_range(value, value_len, &config->mpd_port,
+                                      INT32_MIN, INT32_MAX, ncm_error);
     if (status < 0) {
         return status;
     }
@@ -411,14 +485,11 @@ apply_mpd_port(Configuration *config, char *value, int32 value_len,
 static int32
 apply_mpd_password(Configuration *config, char *value, int32 value_len,
                    NcmError *ncm_error) {
-    free2(config->mpd_password, config->mpd_password_len + 1);
-    config->mpd_password = NULL;
-    config->mpd_password_len = 0;
-    if (value_len <= 0) {
+    settings_parse_string(&config->mpd_password, &config->mpd_password_len,
+                          value, value_len);
+    if (config->mpd_password_len <= 0) {
         return 0;
     }
-    config->mpd_password = xstrndup(value, value_len);
-    config->mpd_password_len = value_len;
     ncm_mpd_client_set_password(&global_mpd, config->mpd_password,
                                 config->mpd_password_len, ncm_error);
     return 0;
@@ -429,8 +500,9 @@ apply_mpd_connection_timeout(Configuration *config, char *value,
                              int32 value_len, NcmError *ncm_error) {
     int32 status;
 
-    status = ncm_parse_int32(value, value_len,
-                             &config->mpd_connection_timeout, ncm_error);
+    status = settings_parse_int_range(
+        value, value_len, &config->mpd_connection_timeout,
+        INT32_MIN, INT32_MAX, ncm_error);
     if (status < 0) {
         return status;
     }
@@ -443,8 +515,9 @@ apply_mpd_connection_timeout(Configuration *config, char *value,
 static int32
 apply_mpd_crossfade_time(Configuration *config, char *value, int32 value_len,
                          NcmError *ncm_error) {
-    return ncm_parse_int32(value, value_len, &config->mpd_crossfade_time,
-                           ncm_error);
+    return settings_parse_int_range(value, value_len,
+                                    &config->mpd_crossfade_time,
+                                    INT32_MIN, INT32_MAX, ncm_error);
 }
 
 static int32
@@ -474,76 +547,41 @@ apply_visualizer_look(Configuration *config, char *value, int32 value_len,
 static int32
 apply_visualizer_fps(Configuration *config, char *value, int32 value_len,
                      NcmError *ncm_error) {
-    int32 status;
-
-    status = ncm_parse_int32(value, value_len, &config->visualizer_fps,
-                             ncm_error);
-    if (status < 0) {
-        return status;
-    }
-    return ncm_bounds_check_i64(config->visualizer_fps,
-                                30, 1000, ncm_error);
+    return settings_parse_int_range(value, value_len, &config->visualizer_fps,
+                                    30, 1000, ncm_error);
 }
 
 static int32
 apply_visualizer_spectrum_dft_size(Configuration *config,
                                    char *value, int32 value_len,
                                    NcmError *ncm_error) {
-    int32 status;
-
-    status = ncm_parse_int32(value, value_len,
-                             &config->visualizer_spectrum_dft_size,
-                             ncm_error);
-    if (status < 0) {
-        return status;
-    }
-    return ncm_bounds_check_i64(config->visualizer_spectrum_dft_size,
-                                1, 5, ncm_error);
+    return settings_parse_int_range(
+        value, value_len, &config->visualizer_spectrum_dft_size,
+        1, 5, ncm_error);
 }
 
 static int32
 apply_visualizer_spectrum_gain(Configuration *config, char *value,
                                int32 value_len, NcmError *ncm_error) {
-    int32 status;
-
-    status = ncm_parse_double(value, value_len,
-                              &config->visualizer_spectrum_gain, ncm_error);
-    if (status < 0) {
-        return status;
-    }
-    return ncm_bounds_check_f64(config->visualizer_spectrum_gain,
-                                0, 100, ncm_error);
+    return settings_parse_double_range(
+        value, value_len, &config->visualizer_spectrum_gain,
+        0, 100, ncm_error);
 }
 
 static int32
 apply_visualizer_spectrum_hz_min(Configuration *config, char *value,
                                  int32 value_len, NcmError *ncm_error) {
-    int32 status;
-
-    status = ncm_parse_double(value, value_len,
-                              &config->visualizer_spectrum_hz_min,
-                              ncm_error);
-    if (status < 0) {
-        return status;
-    }
-    return ncm_lower_bound_check_f64(config->visualizer_spectrum_hz_min,
-                                     1, ncm_error);
+    return settings_parse_double_range(
+        value, value_len, &config->visualizer_spectrum_hz_min,
+        1, INFINITY, ncm_error);
 }
 
 static int32
 apply_visualizer_spectrum_hz_max(Configuration *config, char *value,
                                  int32 value_len, NcmError *ncm_error) {
-    int32 status;
-
-    status = ncm_parse_double(value, value_len,
-                              &config->visualizer_spectrum_hz_max,
-                              ncm_error);
-    if (status < 0) {
-        return status;
-    }
-    return ncm_lower_bound_check_f64(config->visualizer_spectrum_hz_max,
-                                     config->visualizer_spectrum_hz_min + 1,
-                                     ncm_error);
+    return settings_parse_double_range(
+        value, value_len, &config->visualizer_spectrum_hz_max,
+        config->visualizer_spectrum_hz_min + 1, INFINITY, ncm_error);
 }
 
 static int32
@@ -602,18 +640,17 @@ apply_system_encoding(Configuration *config, char *value, int32 value_len,
     (void)value_len;
     (void)ncm_error;
 
-    free2(config->system_encoding, config->system_encoding_len + 1);
-    config->system_encoding = NULL;
-    config->system_encoding_len = 0;
+    settings_parse_string(&config->system_encoding,
+                          &config->system_encoding_len, "", 0);
     return 0;
 }
 
 static int32
 apply_playlist_disable_highlight_delay(Configuration *config, char *value,
                                        int32 value_len, NcmError *ncm_error) {
-    return ncm_parse_int32(
+    return settings_parse_int_range(
         value, value_len, &config->playlist_disable_highlight_delay,
-        ncm_error);
+        INT32_MIN, INT32_MAX, ncm_error);
 }
 
 static int32
@@ -1176,9 +1213,9 @@ apply_locked_screen_width_part(Configuration *config,
                                NcmError *ncm_error) {
     int32 status;
 
-    status = ncm_parse_double(value, value_len,
-                              &config->locked_screen_width_part,
-                              ncm_error);
+    status = settings_parse_double_range(
+        value, value_len, &config->locked_screen_width_part,
+        -INFINITY, INFINITY, ncm_error);
     if (status < 0) {
         return status;
     }
@@ -1261,11 +1298,8 @@ apply_search_engine_default_search_mode(Configuration *config,
     int32 mode;
     int32 status;
 
-    status = ncm_parse_int32(value, value_len, &mode, ncm_error);
-    if (status < 0) {
-        return status;
-    }
-    status = ncm_bounds_check_i64(mode, 1, 3, ncm_error);
+    status = settings_parse_int_range(value, value_len, &mode,
+                                      1, 3, ncm_error);
     if (status < 0) {
         return status;
     }
@@ -1465,72 +1499,50 @@ settings_apply_option(Configuration *config, SettingsOption *option,
     return 0;
 }
 
-#define APPLY_STRING_DIR(FIELD)                                                \
-    static int32                                                               \
-    apply_##FIELD(Configuration *config, char *value, int32 value_len,         \
-         NcmError *ncm_error) {                                                \
-        StrBuilder buffer = {0};                                               \
-                                                                               \
-        (void)ncm_error;                                                       \
-        settings_expand_home(&buffer, value, value_len);                       \
-        sb_append_byte_if_not(&buffer, '/');                                   \
-        free2(config->FIELD, config->FIELD##_len + 1);                         \
-        config->FIELD = NULL;                                                  \
-        config->FIELD##_len = 0;                                               \
-        if (buffer.len > 0) {                                                  \
-            config->FIELD = sb_steal_exact(&buffer, &config->FIELD##_len);     \
-        }                                                                      \
-        sb_free(&buffer);                                                      \
-        return 0;                                                              \
+#define APPLY_STRING_DIR(FIELD) \
+    static int32 \
+    apply_##FIELD(Configuration *config, char *value, int32 value_len, \
+                  NcmError *ncm_error) { \
+        (void)ncm_error; \
+        settings_parse_dir(&config->FIELD, &config->FIELD##_len, \
+                           value, value_len); \
+        return 0; \
     }
 
-#define APPLY_STRING_PATH(FIELD)                                               \
-    static int32                                                               \
-    apply_##FIELD(Configuration *config, char *value, int32 value_len,         \
-         NcmError *ncm_error) {                                                \
-        StrBuilder buffer = {0};                                               \
-                                                                               \
-        (void)ncm_error;                                                       \
-        settings_expand_home(&buffer, value, value_len);                       \
-        free2(config->FIELD, config->FIELD##_len + 1);                         \
-        config->FIELD = NULL;                                                  \
-        config->FIELD##_len = 0;                                               \
-        if (buffer.len > 0) {                                                  \
-            config->FIELD = sb_steal_exact(&buffer, &config->FIELD##_len);     \
-        }                                                                      \
-        sb_free(&buffer);                                                      \
-        return 0;                                                              \
+#define APPLY_STRING_PATH(FIELD) \
+    static int32 \
+    apply_##FIELD(Configuration *config, char *value, int32 value_len, \
+                  NcmError *ncm_error) { \
+        (void)ncm_error; \
+        settings_parse_path(&config->FIELD, &config->FIELD##_len, \
+                            value, value_len); \
+        return 0; \
     }
 
-#define APPLY_STRING(FIELD)                                                    \
-    static int32                                                               \
-    apply_##FIELD(Configuration *config, char *value, int32 value_len,         \
-         NcmError *ncm_error) {                                                \
-        (void)ncm_error;                                                       \
-        free2(config->FIELD, config->FIELD##_len + 1);                         \
-        config->FIELD = NULL;                                                  \
-        config->FIELD##_len = 0;                                               \
-        if (value_len > 0) {                                                   \
-            config->FIELD = xstrndup(value, value_len);                        \
-            config->FIELD##_len = value_len;                                   \
-        }                                                                      \
-        return 0;                                                              \
+#define APPLY_STRING(FIELD) \
+    static int32 \
+    apply_##FIELD(Configuration *config, char *value, int32 value_len, \
+                  NcmError *ncm_error) { \
+        (void)ncm_error; \
+        settings_parse_string(&config->FIELD, &config->FIELD##_len, \
+                              value, value_len); \
+        return 0; \
     }
 
-#define APPLY_BOOL(FIELD)                                                \
-    static int32                                                               \
-    apply_##FIELD(Configuration *config, char *value, int32 value_len,                  \
-         NcmError *ncm_error) {                                                \
-        return settings_parse_bool(value, value_len, &config->FIELD,           \
-                                   ncm_error);                                 \
+#define APPLY_BOOL(FIELD) \
+    static int32 \
+    apply_##FIELD(Configuration *config, char *value, int32 value_len, \
+                  NcmError *ncm_error) { \
+        return settings_parse_bool(value, value_len, &config->FIELD, \
+                                   ncm_error); \
     }
 
-#define APPLY_UINT(FIELD)                                                      \
-    static int32                                                               \
-    apply_##FIELD(Configuration *config, char *value, int32 value_len,         \
-         NcmError *ncm_error) {                                                \
-        return ncm_parse_int32(value, value_len, &config->FIELD,               \
-                               ncm_error);                                     \
+#define APPLY_INT_RANGE(FIELD, MINIMUM, MAXIMUM) \
+    static int32 \
+    apply_##FIELD(Configuration *config, char *value, int32 value_len, \
+                  NcmError *ncm_error) { \
+        return settings_parse_int_range(value, value_len, &config->FIELD, \
+                                        MINIMUM, MAXIMUM, ncm_error); \
     }
 
 APPLY_STRING_DIR(ncmpcpp_directory)
@@ -1545,7 +1557,7 @@ APPLY_BOOL(visualizer_spectrum_smooth_look)
 APPLY_BOOL(visualizer_spectrum_smooth_look_legacy_chars)
 APPLY_BOOL(visualizer_spectrum_log_scale_x)
 APPLY_BOOL(visualizer_spectrum_log_scale_y)
-APPLY_UINT(message_delay_time)
+APPLY_INT_RANGE(message_delay_time, INT32_MIN, INT32_MAX)
 APPLY_STRING_PATH(execute_on_song_change)
 APPLY_STRING_PATH(execute_on_player_state_change)
 APPLY_BOOL(playlist_show_mpd_host)
@@ -1555,8 +1567,8 @@ APPLY_BOOL(playlist_separate_albums)
 APPLY_BOOL(discard_colors_if_item_is_selected)
 APPLY_BOOL(show_duplicate_tags)
 APPLY_BOOL(incremental_seeking)
-APPLY_UINT(seek_time)
-APPLY_UINT(volume_change_step)
+APPLY_INT_RANGE(seek_time, INT32_MIN, INT32_MAX)
+APPLY_INT_RANGE(volume_change_step, INT32_MIN, INT32_MAX)
 APPLY_BOOL(autocenter_mode)
 APPLY_BOOL(centered_cursor)
 APPLY_BOOL(data_fetching_delay)
@@ -1588,7 +1600,7 @@ APPLY_BOOL(ignore_leading_the)
 APPLY_BOOL(block_search_constraints_change_if_items_found)
 APPLY_BOOL(mouse_support)
 APPLY_BOOL(mouse_list_scroll_whole_page)
-APPLY_UINT(lines_scrolled)
+APPLY_INT_RANGE(lines_scrolled, INT32_MIN, INT32_MAX)
 APPLY_STRING(empty_tag_marker)
 APPLY_STRING(tags_separator)
 APPLY_BOOL(tag_editor_extended_numeration)
