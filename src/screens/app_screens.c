@@ -1787,12 +1787,12 @@ song_info_resize(void *user, NcSongInfoScreen *screen) {
 
 static void
 song_info_destroy(void *user) {
-    SongInfoScreen *owner;
+    SongInfoScreen *owner = user;
 
-    owner = user;
     ncm_song_destroy(&owner->song);
     owner->has_song = false;
     owner->initialized = false;
+
     return;
 }
 
