@@ -155,7 +155,7 @@ int32
 ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
                char *directory, char *new_name,
                NcmTagsGetFieldCallback *callback, void *user) {
-    NcmTaglibFile file;
+    NcmTaglibFile file = {0};
     char *old_path;
     char *new_path;
     int32 old_path_len;
@@ -184,7 +184,6 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
         memcpy64(old_path + music_dir_len, uri, uri_len + 1);
     }
 
-    file = (NcmTaglibFile){0};
     if ((status = ncm_taglib_file_open(&file, old_path)) < 0) {
         free2(old_path, old_path_len + 1);
         return status;
