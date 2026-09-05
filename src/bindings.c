@@ -783,11 +783,9 @@ static void
 ncm_bindings_bind_chain2(NcmBindingsConfiguration *bindings, char *key_name,
                          int32 key_name_len, enum NcmActionType first,
                          enum NcmActionType second) {
-    NcmBinding binding;
-    NcKey key;
+    NcmBinding binding = {0};
+    NcKey key = ncm_bindings_string_to_key(key_name, key_name_len);
 
-    binding = (NcmBinding){0};
-    key = ncm_bindings_string_to_key(key_name, key_name_len);
     if (!ncm_bindings_key_is_unbound(bindings, key)) {
         return;
     }
