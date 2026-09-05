@@ -26,7 +26,7 @@ ncm_mutable_song_set_string(char **dest, int32 *dest_len,
 
     copy = NULL;
     if (source != NULL) {
-        copy = (char *)malloc2(source_len + 1);
+        copy = malloc2(source_len + 1);
         if (source_len > 0) {
             memcpy64(copy, source, source_len);
         }
