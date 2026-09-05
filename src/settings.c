@@ -26,6 +26,27 @@ typedef struct SettingsOption {
     SettingsApplyFn apply;
 } SettingsOption;
 
+enum SettingsPrimitiveOption {
+#define XX_BOOL(NAME, DEFAULT_VALUE) SETTINGS_PRIMITIVE_##NAME,
+#define XX_STRING(NAME, DEFAULT_VALUE) SETTINGS_PRIMITIVE_##NAME,
+#define XX_PATH(NAME, DEFAULT_VALUE) SETTINGS_PRIMITIVE_##NAME,
+#define XX_DIR(NAME, DEFAULT_VALUE) SETTINGS_PRIMITIVE_##NAME,
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+    SETTINGS_PRIMITIVE_##NAME,
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+    SETTINGS_PRIMITIVE_##NAME,
+#include "configuration_options.def"
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_DIR
+#undef XX_PATH
+#undef XX_STRING
+#undef XX_BOOL
+    SETTINGS_PRIMITIVE_COUNT,
+};
+
+_Static_assert(SETTINGS_PRIMITIVE_COUNT == 78,
+               "primitive configuration option count changed");
 
 static bool settings_quiet;
 
@@ -455,71 +476,6 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
 }
 
 static int32
-apply_mpd_host(Configuration *config, char *value, int32 value_len,
-               NcmError *ncm_error) {
-    settings_parse_path(&config->mpd_host, &config->mpd_host_len,
-                        value, value_len);
-    ncm_mpd_client_set_hostname(&global_mpd, config->mpd_host,
-                                config->mpd_host_len, ncm_error);
-    return 0;
-}
-
-static int32
-apply_mpd_port(Configuration *config, char *value, int32 value_len,
-               NcmError *ncm_error) {
-    int32 status;
-
-    status = settings_parse_int_range(value, value_len, &config->mpd_port,
-                                      INT32_MIN, INT32_MAX, ncm_error);
-    if (status < 0) {
-        return status;
-    }
-    if (config->mpd_port > 65535) {
-        return settings_invalid_value(ncm_error, value, value_len);
-    }
-    ncm_mpd_client_set_port(&global_mpd, (uint16)config->mpd_port);
-    return 0;
-}
-
-static int32
-apply_mpd_password(Configuration *config, char *value, int32 value_len,
-                   NcmError *ncm_error) {
-    settings_parse_string(&config->mpd_password, &config->mpd_password_len,
-                          value, value_len);
-    if (config->mpd_password_len <= 0) {
-        return 0;
-    }
-    ncm_mpd_client_set_password(&global_mpd, config->mpd_password,
-                                config->mpd_password_len, ncm_error);
-    return 0;
-}
-
-static int32
-apply_mpd_connection_timeout(Configuration *config, char *value,
-                             int32 value_len, NcmError *ncm_error) {
-    int32 status;
-
-    status = settings_parse_int_range(
-        value, value_len, &config->mpd_connection_timeout,
-        INT32_MIN, INT32_MAX, ncm_error);
-    if (status < 0) {
-        return status;
-    }
-    ncm_mpd_client_set_timeout_ms(&global_mpd,
-                                  config->mpd_connection_timeout * 1000,
-                                  ncm_error);
-    return 0;
-}
-
-static int32
-apply_mpd_crossfade_time(Configuration *config, char *value, int32 value_len,
-                         NcmError *ncm_error) {
-    return settings_parse_int_range(value, value_len,
-                                    &config->mpd_crossfade_time,
-                                    INT32_MIN, INT32_MAX, ncm_error);
-}
-
-static int32
 apply_visualizer_type(Configuration *config, char *value, int32 value_len,
                       NcmError *ncm_error) {
     int32 status;
@@ -541,46 +497,6 @@ apply_visualizer_look(Configuration *config, char *value, int32 value_len,
     sb_clear(&config->visualizer_look);
     SB_APPEND(&config->visualizer_look, value, value_len);
     return 0;
-}
-
-static int32
-apply_visualizer_fps(Configuration *config, char *value, int32 value_len,
-                     NcmError *ncm_error) {
-    return settings_parse_int_range(value, value_len, &config->visualizer_fps,
-                                    30, 1000, ncm_error);
-}
-
-static int32
-apply_visualizer_spectrum_dft_size(Configuration *config,
-                                   char *value, int32 value_len,
-                                   NcmError *ncm_error) {
-    return settings_parse_int_range(
-        value, value_len, &config->visualizer_spectrum_dft_size,
-        1, 5, ncm_error);
-}
-
-static int32
-apply_visualizer_spectrum_gain(Configuration *config, char *value,
-                               int32 value_len, NcmError *ncm_error) {
-    return settings_parse_double_range(
-        value, value_len, &config->visualizer_spectrum_gain,
-        0, 100, ncm_error);
-}
-
-static int32
-apply_visualizer_spectrum_hz_min(Configuration *config, char *value,
-                                 int32 value_len, NcmError *ncm_error) {
-    return settings_parse_double_range(
-        value, value_len, &config->visualizer_spectrum_hz_min,
-        1, INFINITY, ncm_error);
-}
-
-static int32
-apply_visualizer_spectrum_hz_max(Configuration *config, char *value,
-                                 int32 value_len, NcmError *ncm_error) {
-    return settings_parse_double_range(
-        value, value_len, &config->visualizer_spectrum_hz_max,
-        config->visualizer_spectrum_hz_min + 1, INFINITY, ncm_error);
 }
 
 static int32
@@ -630,26 +546,6 @@ settings_parse_format(NcmFormatAst *format, char *value, int32 value_len,
     ncm_format_ast_clear(format);
     status = ncm_format_parse(format, value, value_len, flags, ncm_error);
     return status;
-}
-
-static int32
-apply_system_encoding(Configuration *config, char *value, int32 value_len,
-                      NcmError *ncm_error) {
-    (void)value;
-    (void)value_len;
-    (void)ncm_error;
-
-    settings_parse_string(&config->system_encoding,
-                          &config->system_encoding_len, "", 0);
-    return 0;
-}
-
-static int32
-apply_playlist_disable_highlight_delay(Configuration *config, char *value,
-                                       int32 value_len, NcmError *ncm_error) {
-    return settings_parse_int_range(
-        value, value_len, &config->playlist_disable_highlight_delay,
-        INT32_MIN, INT32_MAX, ncm_error);
 }
 
 static int32
@@ -1207,22 +1103,6 @@ apply_startup_slave_screen(Configuration *config, char *value, int32 value_len,
 }
 
 static int32
-apply_locked_screen_width_part(Configuration *config,
-                               char *value, int32 value_len,
-                               NcmError *ncm_error) {
-    int32 status;
-
-    status = settings_parse_double_range(
-        value, value_len, &config->locked_screen_width_part,
-        -INFINITY, INFINITY, ncm_error);
-    if (status < 0) {
-        return status;
-    }
-    config->locked_screen_width_part /= 100.0;
-    return 0;
-}
-
-static int32
 apply_media_library_column_width_ratio_two(Configuration *config,
                                            char *value, int32 value_len,
                                            NcmError *ncm_error) {
@@ -1262,48 +1142,6 @@ apply_regular_expressions(Configuration *config, char *value, int32 value_len,
         return 0;
     }
     return settings_invalid_value(ncm_error, value, value_len);
-}
-
-static int32
-apply_enable_window_title(Configuration *config, char *value, int32 value_len,
-                          NcmError *ncm_error) {
-    char *term;
-    int32 term_len;
-    bool unsupported;
-
-    term = getenv("TERM");
-    unsupported = term == NULL;
-    if (!unsupported) {
-        term_len = strlen32(term);
-        unsupported = memmem64(term, term_len, STRLIT("linux"))
-                      || BEGINS_WITH(term, term_len, "eterm");
-    }
-    if (unsupported) {
-        config->enable_window_title = false;
-        if (!settings_quiet) {
-            error2("Terminal doesn't support window title, skipping "
-                   "'enable_window_title'.\n");
-        }
-        return 0;
-    }
-    return settings_parse_bool(value, value_len, &config->enable_window_title,
-                               ncm_error);
-}
-
-static int32
-apply_search_engine_default_search_mode(Configuration *config,
-                                        char *value, int32 value_len,
-                                        NcmError *ncm_error) {
-    int32 mode;
-    int32 status;
-
-    status = settings_parse_int_range(value, value_len, &mode,
-                                      1, 3, ncm_error);
-    if (status < 0) {
-        return status;
-    }
-    config->search_engine_default_search_mode = mode - 1;
-    return 0;
 }
 
 static int32
@@ -1498,115 +1336,194 @@ settings_apply_option(Configuration *config, SettingsOption option,
     return 0;
 }
 
-#define APPLY_STRING_DIR(FIELD) \
+static bool
+settings_bool_option_handled(enum SettingsPrimitiveOption option,
+                             Configuration *config) {
+    char *term;
+    int32 term_len;
+    bool unsupported;
+
+    if (option != SETTINGS_PRIMITIVE_enable_window_title) {
+        return false;
+    }
+
+    term = getenv("TERM");
+    unsupported = term == NULL;
+    if (!unsupported) {
+        term_len = strlen32(term);
+        unsupported = memmem64(term, term_len, STRLIT("linux"))
+                      || BEGINS_WITH(term, term_len, "eterm");
+    }
+    if (!unsupported) {
+        return false;
+    }
+
+    config->enable_window_title = false;
+    if (!settings_quiet) {
+        error2("Terminal doesn't support window title, skipping "
+               "'enable_window_title'.\n");
+    }
+    return true;
+}
+
+static int32
+settings_parse_primitive_int_range(enum SettingsPrimitiveOption option,
+                                   int32 *result,
+                                   char *value, int32 value_len,
+                                   int32 minimum, int32 maximum,
+                                   NcmError *ncm_error) {
+    int32 parsed;
+    int32 *target;
+    int32 status;
+
+    target = result;
+    if (option == SETTINGS_PRIMITIVE_search_engine_default_search_mode) {
+        target = &parsed;
+    }
+    status = settings_parse_int_range(value, value_len, target,
+                                      minimum, maximum, ncm_error);
+    if (status < 0) {
+        return status;
+    }
+    if (option == SETTINGS_PRIMITIVE_search_engine_default_search_mode) {
+        *result = parsed;
+    }
+    return 0;
+}
+
+static int32
+settings_primitive_post_apply(enum SettingsPrimitiveOption option,
+                              Configuration *config,
+                              char *value, int32 value_len,
+                              NcmError *ncm_error) {
+    switch (option) {
+    case SETTINGS_PRIMITIVE_mpd_host:
+        ncm_mpd_client_set_hostname(&global_mpd, config->mpd_host,
+                                    config->mpd_host_len, ncm_error);
+        return 0;
+    case SETTINGS_PRIMITIVE_mpd_port:
+        if (config->mpd_port > 65535) {
+            return settings_invalid_value(ncm_error, value, value_len);
+        }
+        ncm_mpd_client_set_port(&global_mpd, (uint16)config->mpd_port);
+        return 0;
+    case SETTINGS_PRIMITIVE_mpd_password:
+        if (config->mpd_password_len <= 0) {
+            return 0;
+        }
+        ncm_mpd_client_set_password(&global_mpd, config->mpd_password,
+                                    config->mpd_password_len, ncm_error);
+        return 0;
+    case SETTINGS_PRIMITIVE_mpd_connection_timeout:
+        ncm_mpd_client_set_timeout_ms(&global_mpd,
+                                      config->mpd_connection_timeout * 1000,
+                                      ncm_error);
+        return 0;
+    case SETTINGS_PRIMITIVE_system_encoding:
+        settings_parse_string(&config->system_encoding,
+                              &config->system_encoding_len, "", 0);
+        return 0;
+    case SETTINGS_PRIMITIVE_locked_screen_width_part:
+        config->locked_screen_width_part /= 100.0;
+        return 0;
+    case SETTINGS_PRIMITIVE_search_engine_default_search_mode:
+        config->search_engine_default_search_mode -= 1;
+        return 0;
+    default:
+        return 0;
+    }
+}
+
+#define XX_DIR(NAME, DEFAULT_VALUE) \
     static int32 \
-    apply_##FIELD(Configuration *config, char *value, int32 value_len, \
-                  NcmError *ncm_error) { \
-        (void)ncm_error; \
-        settings_parse_dir(&config->FIELD, &config->FIELD##_len, \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        settings_parse_dir(&config->NAME, &config->NAME##_len, \
                            value, value_len); \
-        return 0; \
+        return settings_primitive_post_apply(SETTINGS_PRIMITIVE_##NAME, \
+                                             config, value, value_len, \
+                                             ncm_error); \
     }
 
-#define APPLY_STRING_PATH(FIELD) \
+#define XX_PATH(NAME, DEFAULT_VALUE) \
     static int32 \
-    apply_##FIELD(Configuration *config, char *value, int32 value_len, \
-                  NcmError *ncm_error) { \
-        (void)ncm_error; \
-        settings_parse_path(&config->FIELD, &config->FIELD##_len, \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        settings_parse_path(&config->NAME, &config->NAME##_len, \
                             value, value_len); \
-        return 0; \
+        return settings_primitive_post_apply(SETTINGS_PRIMITIVE_##NAME, \
+                                             config, value, value_len, \
+                                             ncm_error); \
     }
 
-#define APPLY_STRING(FIELD) \
+#define XX_STRING(NAME, DEFAULT_VALUE) \
     static int32 \
-    apply_##FIELD(Configuration *config, char *value, int32 value_len, \
-                  NcmError *ncm_error) { \
-        (void)ncm_error; \
-        settings_parse_string(&config->FIELD, &config->FIELD##_len, \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        settings_parse_string(&config->NAME, &config->NAME##_len, \
                               value, value_len); \
-        return 0; \
+        return settings_primitive_post_apply(SETTINGS_PRIMITIVE_##NAME, \
+                                             config, value, value_len, \
+                                             ncm_error); \
     }
 
-#define APPLY_BOOL(FIELD) \
+#define XX_BOOL(NAME, DEFAULT_VALUE) \
     static int32 \
-    apply_##FIELD(Configuration *config, char *value, int32 value_len, \
-                  NcmError *ncm_error) { \
-        return settings_parse_bool(value, value_len, &config->FIELD, \
-                                   ncm_error); \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        int32 status; \
+        if (settings_bool_option_handled(SETTINGS_PRIMITIVE_##NAME, config)) { \
+            return 0; \
+        } \
+        status = settings_parse_bool(value, value_len, &config->NAME, \
+                                     ncm_error); \
+        if (status < 0) { \
+            return status; \
+        } \
+        return settings_primitive_post_apply(SETTINGS_PRIMITIVE_##NAME, \
+                                             config, value, value_len, \
+                                             ncm_error); \
     }
 
-#define APPLY_INT_RANGE(FIELD, MINIMUM, MAXIMUM) \
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     static int32 \
-    apply_##FIELD(Configuration *config, char *value, int32 value_len, \
-                  NcmError *ncm_error) { \
-        return settings_parse_int_range(value, value_len, &config->FIELD, \
-                                        MINIMUM, MAXIMUM, ncm_error); \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        int32 status; \
+        status = settings_parse_primitive_int_range( \
+            SETTINGS_PRIMITIVE_##NAME, &config->NAME, value, value_len, \
+            MINIMUM, MAXIMUM, ncm_error); \
+        if (status < 0) { \
+            return status; \
+        } \
+        return settings_primitive_post_apply(SETTINGS_PRIMITIVE_##NAME, \
+                                             config, value, value_len, \
+                                             ncm_error); \
     }
 
-APPLY_STRING_DIR(ncmpcpp_directory)
-APPLY_STRING_DIR(lyrics_directory)
-APPLY_STRING_DIR(mpd_music_dir)
-APPLY_STRING(random_exclude_pattern)
-APPLY_STRING_PATH(visualizer_data_source)
-APPLY_STRING(visualizer_output_name)
-APPLY_BOOL(visualizer_in_stereo)
-APPLY_BOOL(visualizer_autoscale)
-APPLY_BOOL(visualizer_spectrum_smooth_look)
-APPLY_BOOL(visualizer_spectrum_smooth_look_legacy_chars)
-APPLY_BOOL(visualizer_spectrum_log_scale_x)
-APPLY_BOOL(visualizer_spectrum_log_scale_y)
-APPLY_INT_RANGE(message_delay_time, INT32_MIN, INT32_MAX)
-APPLY_STRING_PATH(execute_on_song_change)
-APPLY_STRING_PATH(execute_on_player_state_change)
-APPLY_BOOL(playlist_show_mpd_host)
-APPLY_BOOL(playlist_show_remaining_time)
-APPLY_BOOL(playlist_shorten_total_times)
-APPLY_BOOL(playlist_separate_albums)
-APPLY_BOOL(discard_colors_if_item_is_selected)
-APPLY_BOOL(show_duplicate_tags)
-APPLY_BOOL(incremental_seeking)
-APPLY_INT_RANGE(seek_time, INT32_MIN, INT32_MAX)
-APPLY_INT_RANGE(volume_change_step, INT32_MIN, INT32_MAX)
-APPLY_BOOL(autocenter_mode)
-APPLY_BOOL(centered_cursor)
-APPLY_BOOL(data_fetching_delay)
-APPLY_BOOL(media_library_hide_album_dates)
-APPLY_BOOL(media_library_albums_split_by_date)
-APPLY_STRING(default_tag_editor_pattern)
-APPLY_BOOL(header_visibility)
-APPLY_BOOL(statusbar_visibility)
-APPLY_BOOL(connected_message_on_startup)
-APPLY_BOOL(titles_visibility)
-APPLY_BOOL(header_text_scrolling)
-APPLY_BOOL(cyclic_scrolling)
-APPLY_BOOL(follow_now_playing_lyrics)
-APPLY_BOOL(fetch_lyrics_for_current_song_in_background)
-APPLY_BOOL(store_lyrics_in_song_dir)
-APPLY_BOOL(generate_win32_compatible_filenames)
-APPLY_BOOL(allow_for_physical_item_deletion)
-APPLY_STRING(lastfm_preferred_language)
-APPLY_BOOL(show_hidden_files_in_local_browser)
-APPLY_BOOL(startup_slave_screen_focus)
-APPLY_BOOL(ask_for_locked_screen_width_part)
-APPLY_BOOL(jump_to_now_playing_song_at_start)
-APPLY_BOOL(ask_before_clearing_playlists)
-APPLY_BOOL(ask_before_shuffling_playlists)
-APPLY_BOOL(display_volume_level)
-APPLY_BOOL(display_bitrate)
-APPLY_BOOL(display_remaining_time)
-APPLY_BOOL(ignore_leading_the)
-APPLY_BOOL(block_search_constraints_change_if_items_found)
-APPLY_BOOL(mouse_support)
-APPLY_BOOL(mouse_list_scroll_whole_page)
-APPLY_INT_RANGE(lines_scrolled, INT32_MIN, INT32_MAX)
-APPLY_STRING(empty_tag_marker)
-APPLY_STRING(tags_separator)
-APPLY_BOOL(tag_editor_extended_numeration)
-APPLY_BOOL(media_library_sort_by_mtime)
-APPLY_STRING_PATH(external_editor)
-APPLY_BOOL(use_console_editor)
-APPLY_BOOL(colors_enabled)
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+    static int32 \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        int32 status; \
+        status = settings_parse_double_range(value, value_len, &config->NAME, \
+                                             MINIMUM, MAXIMUM, ncm_error); \
+        if (status < 0) { \
+            return status; \
+        } \
+        return settings_primitive_post_apply(SETTINGS_PRIMITIVE_##NAME, \
+                                             config, value, value_len, \
+                                             ncm_error); \
+    }
+
+#include "configuration_options.def"
+
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_BOOL
+#undef XX_STRING
+#undef XX_PATH
+#undef XX_DIR
 
 #define OPT(NAME, DEFAULT_VALUE)                 \
     {                                            \
@@ -1618,40 +1535,29 @@ APPLY_BOOL(colors_enabled)
     }
 
 static const SettingsOption ncmpcpp_options[] = {
-OPT(ncmpcpp_directory, "~/.config/ncmpcpp/"),
-OPT(lyrics_directory,  "~/.lyrics/"),
+#define XX_BOOL(NAME, DEFAULT_VALUE) OPT(NAME, DEFAULT_VALUE),
+#define XX_STRING(NAME, DEFAULT_VALUE) OPT(NAME, DEFAULT_VALUE),
+#define XX_PATH(NAME, DEFAULT_VALUE) OPT(NAME, DEFAULT_VALUE),
+#define XX_DIR(NAME, DEFAULT_VALUE) OPT(NAME, DEFAULT_VALUE),
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+    OPT(NAME, DEFAULT_VALUE),
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+    OPT(NAME, DEFAULT_VALUE),
+#include "configuration_options.def"
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_DIR
+#undef XX_PATH
+#undef XX_STRING
+#undef XX_BOOL
 
-OPT(mpd_host,               "localhost"),
-OPT(mpd_port,               "6600"),
-OPT(mpd_password,           ""),
-OPT(mpd_music_dir,          "~/music"),
-OPT(mpd_connection_timeout, "5"),
-OPT(mpd_crossfade_time,     "5"),
-
-OPT(random_exclude_pattern, ""),
-OPT(visualizer_data_source, "/tmp/mpd.fifo"),
-OPT(visualizer_output_name, "Visualizer feed"),
-OPT(visualizer_in_stereo, "yes"),
 #if defined(HAVE_FFTW3_H)
 OPT(visualizer_type, "spectrum"),
 #else
 OPT(visualizer_type, "ellipse"),
 #endif
 OPT(visualizer_look, "●▮"),
-OPT(visualizer_fps, "60"),
-OPT(visualizer_autoscale, "no"),
-OPT(visualizer_spectrum_smooth_look, "yes"),
-OPT(visualizer_spectrum_smooth_look_legacy_chars, "yes"),
-OPT(visualizer_spectrum_dft_size, "2"),
-OPT(visualizer_spectrum_gain, "10"),
-OPT(visualizer_spectrum_hz_min, "20"),
-OPT(visualizer_spectrum_hz_max, "20000"),
-OPT(visualizer_spectrum_log_scale_x, "yes"),
-OPT(visualizer_spectrum_log_scale_y, "yes"),
 OPT(visualizer_color, "blue, cyan, green, yellow, magenta, red"),
-OPT(system_encoding, ""),
-OPT(playlist_disable_highlight_delay, "5"),
-OPT(message_delay_time, "5"),
 OPT(song_list_format, "{%a - }{%t}|{$8%f$9}$R{$3%l$9}"),
 OPT(song_status_format, "{{%a{ \"%b\"{ (%y)}} - }{%t}}|{%f}"),
 OPT(song_library_format, "{%n - }{%t}|{%f}"),
@@ -1675,79 +1581,26 @@ OPT(browser_sort_format, "{%a - }{%t}|{%f} {%l}"),
 OPT(song_columns_list_format,
     "(20)[]{a} (6f)[green]{NE} (50)[white]{t|f:Title}"
     " (20)[cyan]{b} (7f)[magenta]{l}"),
-OPT(execute_on_song_change, ""),
-OPT(execute_on_player_state_change, ""),
-OPT(playlist_show_mpd_host, "no"),
-OPT(playlist_show_remaining_time, "no"),
-OPT(playlist_shorten_total_times, "no"),
-OPT(playlist_separate_albums, "no"),
 OPT(playlist_display_mode, "columns"),
 OPT(browser_display_mode, "classic"),
 OPT(search_engine_display_mode, "classic"),
 OPT(playlist_editor_display_mode, "classic"),
-OPT(discard_colors_if_item_is_selected, "yes"),
-OPT(show_duplicate_tags, "yes"),
-OPT(incremental_seeking, "yes"),
-OPT(seek_time, "1"),
-OPT(volume_change_step, "2"),
-OPT(autocenter_mode, "no"),
-OPT(centered_cursor, "no"),
 OPT(progressbar_look, "=>"),
 OPT(default_place_to_search_in, "database"),
 OPT(user_interface, "classic"),
-OPT(data_fetching_delay, "yes"),
-OPT(media_library_hide_album_dates, "no"),
 OPT(media_library_primary_tag, "artist"),
-OPT(media_library_albums_split_by_date, "yes"),
 OPT(default_find_mode, "wrapped"),
-OPT(default_tag_editor_pattern, "%n - %t"),
-OPT(header_visibility, "yes"),
-OPT(statusbar_visibility, "yes"),
-OPT(connected_message_on_startup, "yes"),
-OPT(titles_visibility, "yes"),
-OPT(header_text_scrolling, "yes"),
-OPT(cyclic_scrolling, "no"),
 OPT(lyrics_fetchers,
     "azlyrics, genius, letras, musixmatch, tekstowo, vagalume, internet"),
-OPT(follow_now_playing_lyrics, "no"),
-OPT(fetch_lyrics_for_current_song_in_background, "no"),
-OPT(store_lyrics_in_song_dir, "no"),
-OPT(generate_win32_compatible_filenames, "yes"),
-OPT(allow_for_physical_item_deletion, "no"),
-OPT(lastfm_preferred_language, "en"),
 OPT(space_add_mode, "add_remove"),
-OPT(show_hidden_files_in_local_browser, "no"),
 OPT(screen_switcher_mode, "playlist, browser"),
 OPT(startup_screen, "playlist"),
 OPT(startup_slave_screen, ""),
-OPT(startup_slave_screen_focus, "no"),
-OPT(locked_screen_width_part, "50"),
-OPT(ask_for_locked_screen_width_part, "yes"),
 OPT(media_library_column_width_ratio_two, "1:1"),
 OPT(media_library_column_width_ratio_three, "1:1:1"),
 OPT(playlist_editor_column_width_ratio, "1:2"),
-OPT(jump_to_now_playing_song_at_start, "yes"),
-OPT(ask_before_clearing_playlists, "yes"),
-OPT(ask_before_shuffling_playlists, "yes"),
-OPT(display_volume_level, "yes"),
-OPT(display_bitrate, "no"),
-OPT(display_remaining_time, "no"),
 OPT(regular_expressions, "extended"),
-OPT(ignore_leading_the, "no"),
-OPT(block_search_constraints_change_if_items_found, "yes"),
-OPT(mouse_support, "yes"),
-OPT(mouse_list_scroll_whole_page, "no"),
-OPT(lines_scrolled, "5"),
-OPT(empty_tag_marker, "<empty>"),
 OPT(empty_tag_color, "cyan"),
-OPT(tags_separator, " | "),
-OPT(tag_editor_extended_numeration, "no"),
-OPT(media_library_sort_by_mtime, "no"),
-OPT(enable_window_title, "yes"),
-OPT(search_engine_default_search_mode, "1"),
-OPT(external_editor, "nano"),
-OPT(use_console_editor, "yes"),
-OPT(colors_enabled, "yes"),
 OPT(header_window_color, "default"),
 OPT(volume_color, "default"),
 OPT(state_line_color, "default"),
@@ -1764,6 +1617,9 @@ OPT(alternative_ui_separator_color, "black:b"),
 OPT(window_border_color, "green"),
 OPT(active_window_border, "red"),
 };
+
+_Static_assert(LENGTH(ncmpcpp_options) == 134,
+               "configuration option count changed");
 
 #undef OPT
 
