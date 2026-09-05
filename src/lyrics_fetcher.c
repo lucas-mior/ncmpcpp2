@@ -511,11 +511,9 @@ lyrics_append_clean_lines(StrBuilder *out, char *data, int32 data_len) {
     previous_empty = true;
     for (int32 i = 0; i <= data_len; i += 1) {
         if ((i == data_len) || (data[i] == '\n') || (data[i] == '\r')) {
-            char *line;
-            int32 line_len;
+            char *line = data + line_start;
+            int32 line_len = i - line_start;
 
-            line = data + line_start;
-            line_len = i - line_start;
             lyrics_trim_view(&line, &line_len);
             if (line_len > 0) {
                 if (out->len > 0) {
