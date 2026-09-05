@@ -11,7 +11,7 @@ settings_test_apply(SettingsApplyFn apply, Configuration *config,
 }
 
 static void
-settings_assert_primitives_empty(Configuration *config) {
+settings_assert_generated_empty(Configuration *config) {
 #define XX_BOOL(NAME, DEFAULT_VALUE) ASSERT(!config->NAME);
 #define XX_STRING(NAME, DEFAULT_VALUE) \
     ASSERT(config->NAME == NULL); \
@@ -22,7 +22,10 @@ settings_assert_primitives_empty(Configuration *config) {
     ASSERT(config->NAME == 0);
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     ASSERT(config->NAME == 0);
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) \
+    ASSERT(config->NAME == (C_TYPE)0);
 #include "configuration_options.def"
+#undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
 #undef XX_DIR
@@ -62,7 +65,7 @@ test_declared_defaults_and_cleanup(void) {
     NcmError ncm_error = {0};
 
     configuration_init(&config);
-    settings_assert_primitives_empty(&config);
+    settings_assert_generated_empty(&config);
     ASSERT_ZERO(configuration_read(&config, &paths, false, true, &ncm_error));
 
     ASSERT(config.mpd_port == 6600);
@@ -76,9 +79,23 @@ test_declared_defaults_and_cleanup(void) {
     ASSERT(!config.has_startup_slave_screen_type);
     ASSERT(config.regular_expressions
            == NCM_REGEX_EXTENDED_CASE_INSENSITIVE);
+#if defined(HAVE_FFTW3_H)
+    ASSERT(config.visualizer_type == NCM_VISUALIZER_TYPE_SPECTRUM);
+#else
+    ASSERT(config.visualizer_type == NCM_VISUALIZER_TYPE_ELLIPSE);
+#endif
+    ASSERT(config.browser_sort_mode == NCM_SORT_MODE_TYPE);
+    ASSERT(config.playlist_display_mode == NCM_DISPLAY_MODE_COLUMNS);
+    ASSERT(config.browser_display_mode == NCM_DISPLAY_MODE_CLASSIC);
+    ASSERT(config.search_engine_display_mode == NCM_DISPLAY_MODE_CLASSIC);
+    ASSERT(config.playlist_editor_display_mode == NCM_DISPLAY_MODE_CLASSIC);
+    ASSERT(config.user_interface == NCM_DESIGN_CLASSIC);
+    ASSERT(config.media_library_primary_tag == MPD_TAG_ARTIST);
+    ASSERT(config.space_add_mode == NCM_SPACE_ADD_MODE_ADD_REMOVE);
+    ASSERT(config.startup_screen == NCM_SCREEN_TYPE_PLAYLIST);
 
     configuration_destroy(&config);
-    settings_assert_primitives_empty(&config);
+    settings_assert_generated_empty(&config);
     ASSERT(config.ncmpcpp_directory == NULL);
     ASSERT(config.ncmpcpp_directory_len == 0);
     ASSERT(config.progressbar_look.data == NULL);
@@ -145,6 +162,41 @@ test_numeric_boundaries(void) {
     ASSERT(settings_test_apply(
         apply_search_engine_default_search_mode, &config, "4") < 0);
     ASSERT(config.search_engine_default_search_mode == 2);
+
+    configuration_destroy(&config);
+    return;
+}
+
+static void
+test_enum_options(void) {
+    Configuration config = {0};
+
+    configuration_init(&config);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_browser_sort_mode, &config, "noop"));
+    ASSERT(config.browser_sort_mode == NCM_SORT_MODE_NONE);
+    ASSERT(settings_test_apply(
+        apply_browser_sort_mode, &config, "invalid") < 0);
+    ASSERT(config.browser_sort_mode == NCM_SORT_MODE_NONE);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_playlist_display_mode, &config, "columns"));
+    ASSERT(config.playlist_display_mode == NCM_DISPLAY_MODE_COLUMNS);
+    ASSERT(settings_test_apply(
+        apply_playlist_display_mode, &config, "invalid") < 0);
+    ASSERT(config.playlist_display_mode == NCM_DISPLAY_MODE_COLUMNS);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_media_library_primary_tag, &config, "performer"));
+    ASSERT(config.media_library_primary_tag == MPD_TAG_PERFORMER);
+    ASSERT(settings_test_apply(
+        apply_media_library_primary_tag, &config, "invalid") < 0);
+    ASSERT(config.media_library_primary_tag == MPD_TAG_PERFORMER);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_startup_screen, &config, "playlist"));
+    ASSERT(config.startup_screen == NCM_SCREEN_TYPE_PLAYLIST);
 
     configuration_destroy(&config);
     return;
@@ -241,6 +293,7 @@ main(void) {
     test_option_table_shape();
     test_declared_defaults_and_cleanup();
     test_numeric_boundaries();
+    test_enum_options();
     test_duplicate_option_is_rejected();
     test_duplicate_state_is_per_read();
 

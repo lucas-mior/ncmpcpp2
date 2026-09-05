@@ -60,7 +60,9 @@ typedef struct Configuration {
 #define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) int32 NAME;
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     double NAME;
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) C_TYPE NAME;
 #include "configuration_options.def"
+#undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
 #undef XX_DIR
@@ -88,11 +90,6 @@ typedef struct Configuration {
     NcmInt32Array media_library_column_width_ratio_two;
     NcmInt32Array media_library_column_width_ratio_three;
     ColumnArray song_columns_list_format;
-
-    enum DisplayMode playlist_display_mode;
-    enum DisplayMode browser_display_mode;
-    enum DisplayMode search_engine_display_mode;
-    enum DisplayMode playlist_editor_display_mode;
 
     NcBuffer browser_playlist_prefix;
     NcBuffer selected_item_prefix;
@@ -122,13 +119,8 @@ typedef struct Configuration {
     NcFormattedColor alternative_ui_separator_color;
     NcmFormattedColorArray visualizer_color;
 
-    enum VisualizerType visualizer_type;
     NcBorder window_border_color;
     NcBorder active_window_border;
-    enum Design user_interface;
-    enum SpaceAddMode space_add_mode;
-    enum mpd_tag_type media_library_primary_tag;
-    enum SortMode browser_sort_mode;
 
     bool screen_switcher_previous;
     bool default_find_mode;
@@ -147,7 +139,6 @@ typedef struct Configuration {
     int32 current_item_inactive_column_prefix_length;
     int32 current_item_inactive_column_suffix_length;
 
-    enum ScreenType startup_screen;
     enum ScreenType startup_slave_screen;
     ScreenTypeArray screen_switcher_mode;
 
