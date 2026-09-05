@@ -101,7 +101,7 @@ settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
     nc_buffer_destroy(buffer);
     nc_buffer_move(buffer, &tmp);
     if (width) {
-        *width = utf8_width(nc_buffer_data(buffer), nc_buffer_len(buffer));
+        *width = utf8_width(nc_buffer_data(buffer), buffer->len);
     }
     nc_buffer_destroy(&tmp);
     ncm_format_ast_destroy(&ast);

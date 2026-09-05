@@ -1162,7 +1162,7 @@ static void
 playlist_print_buffer(NcWindow *window, NcBuffer *buffer) {
     NcBufferProperty *properties = nc_buffer_properties(buffer);
     char *data = nc_buffer_data(buffer);
-    int32 len = nc_buffer_len(buffer);
+    int32 len = buffer->len;
     int32 property_count = ARRAY_LEN(buffer->properties);
     int32 property_index = 0;
 

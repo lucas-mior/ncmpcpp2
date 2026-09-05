@@ -431,7 +431,7 @@ library_draw_song(NcMenu *menu, NcWindow *window,
         char *data = nc_buffer_data(&text);
         int32 property_count = ARRAY_LEN(text.properties);
         int32 property_index = 0;
-        int32 len = nc_buffer_len(&text);
+        int32 len = text.len;
 
         for (int32 i = 0;; i += 1) {
             while ((property_index < property_count)

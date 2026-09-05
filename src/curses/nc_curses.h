@@ -321,7 +321,6 @@ void nc_buffer_clear(NcBuffer *buffer);
 bool nc_buffer_is_empty(NcBuffer *buffer);
 
 char *nc_buffer_data(NcBuffer *buffer);
-int32 nc_buffer_len(NcBuffer *buffer);
 NcBufferProperty *nc_buffer_properties(NcBuffer *buffer);
 
 void nc_buffer_append_data(NcBuffer *buffer, char *data, int32 data_len);

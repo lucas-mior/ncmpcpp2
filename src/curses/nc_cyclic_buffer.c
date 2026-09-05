@@ -125,7 +125,7 @@ nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
     }
 
     string = nc_buffer_data(buffer);
-    string_len = nc_buffer_len(buffer);
+    string_len = buffer->len;
     string_width = utf8_width(string, string_len);
     if (string_width <= width) {
         NcBufferProperty *properties = nc_buffer_properties(buffer);
@@ -302,7 +302,7 @@ nc_cyclic_buffer_write_segment(NcBuffer *buffer, NcWindow *window,
                                int32 *written_width, int32 width) {
     NcBufferProperty *properties = nc_buffer_properties(buffer);
     char *string = nc_buffer_data(buffer);
-    int32 string_len = nc_buffer_len(buffer);
+    int32 string_len = buffer->len;
     int32 property_count = ARRAY_LEN(buffer->properties);
     int32 byte;
 

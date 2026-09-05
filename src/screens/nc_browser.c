@@ -113,7 +113,7 @@ browser_draw_item(NcMenu *menu, NcWindow *window,
     {
         NcBufferProperty *properties = nc_buffer_properties(&buffer);
         char *data = nc_buffer_data(&buffer);
-        int32 data_len = nc_buffer_len(&buffer);
+        int32 data_len = buffer.len;
         int32 property_count = ARRAY_LEN(buffer.properties);
         int32 property_index = 0;
 

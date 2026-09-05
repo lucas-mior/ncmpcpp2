@@ -61,7 +61,7 @@ tiny_editor_draw_row(NcMenu *menu, NcWindow *window, void *item,
             nc_buffer_apply_property(window, &properties[property_index]);
             property_index += 1;
         }
-        if (i >= nc_buffer_len(buffer)) {
+        if (i >= buffer->len) {
             break;
         }
         nc_window_print_char(window, nc_buffer_data(buffer)[i]);
