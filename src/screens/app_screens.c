@@ -1367,12 +1367,12 @@ app_screen_help_init(void) {
 static void
 outputs_fetch(void *user, NcOutputsScreen *screen) {
 #if defined(ENABLE_OUTPUTS)
-    NcmMpdOutputList outputs;
+    NcmMpdOutputList outputs = {0};
     NcmError ncm_error;
 
     (void)user;
     ncm_error_clear(&ncm_error);
-    outputs = (NcmMpdOutputList){0};
+
     if (ncm_mpd_client_get_outputs(&global_mpd, &outputs, &ncm_error) < 0) {
         StrBuilder message = {0};
 
