@@ -475,6 +475,7 @@ nc_init_readline(void) {
     rl_getc_function = nc_prompt_read_key;
     rl_redisplay_function = nc_prompt_display_string;
     rl_startup_hook = nc_prompt_add_initial_text;
+
     nc_readline_state.initialized = true;
     return;
 }
