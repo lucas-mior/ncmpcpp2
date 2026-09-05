@@ -679,7 +679,8 @@ ncm_bindings_command_index(NcmBindingsConfiguration *bindings, char *name,
     at = ncm_bindings_command_lower_bound(bindings, name, name_len);
     if ((at >= bindings->commands_len)
         || !STREQUAL(bindings->commands[at].name,
-                     bindings->commands[at].name_len, name, name_len)) {
+                     bindings->commands[at].name_len,
+                     name, name_len)) {
         return -1;
     }
     return at;
@@ -716,8 +717,9 @@ ncm_bindings_bind(NcmBindingsConfiguration *bindings, NcKey key,
             } else {
                 new_cap = bindings->keys_cap*2;
             }
-            bindings->keys = realloc2(bindings->keys, bindings->keys_cap,
-                                      new_cap, SIZEOF(*bindings->keys));
+            bindings->keys = realloc2(bindings->keys,
+                                      bindings->keys_cap, new_cap,
+                                      SIZEOF(*bindings->keys));
             bindings->keys_cap = new_cap;
         }
         if (at < bindings->keys_len) {
