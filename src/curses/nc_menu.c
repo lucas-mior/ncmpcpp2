@@ -43,9 +43,7 @@ menu_flags_array(NcMenu *menu, enum NcMenuItemSource source) {
 
 static int32
 menu_array_count(NcMenu *menu, enum NcMenuItemSource source) {
-    void **items;
-
-    items = menu_array(menu, source);
+    void **items = menu_array(menu, source);
     return ARRAY_LEN(items);
 }
 
