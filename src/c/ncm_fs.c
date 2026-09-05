@@ -103,13 +103,12 @@ ncm_fs_path_is_existing(char *path, int32 path_len) {
 int32
 ncm_fs_unlink(char *path, int32 path_len, NcmError *ncm_error) {
     char *path_copy;
-    int32 code;
     int32 status;
 
     ncm_fs_path_copy(path, path_len, &path_copy);
 
     if (unlink(path_copy) != 0) {
-        code = errno;
+        int32 code = errno;
         if (code == ENOENT) {
             free2(path_copy, path_len + 1);
             return ncm_error_ok(ncm_error);
