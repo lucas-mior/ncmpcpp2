@@ -835,16 +835,14 @@ ncm_format_buffer_text(void *user, char *data, int32 data_len,
 
 static void
 ncm_format_buffer_color(void *user, NcColor color) {
-    NcBuffer *buffer = (NcBuffer *)user;
-
+    NcBuffer *buffer = user;
     nc_buffer_add_color(buffer, nc_buffer_len(buffer), color, MAXOF((int64)0));
     return;
 }
 
 static void
 ncm_format_buffer_format(void *user, enum NcFormat format) {
-    NcBuffer *buffer = (NcBuffer *)user;
-
+    NcBuffer *buffer = user;
     nc_buffer_add_format(buffer, nc_buffer_len(buffer),
                          format, MAXOF((int64)0));
     return;
