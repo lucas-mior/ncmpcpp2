@@ -269,11 +269,9 @@ nc_buffer_add_formatted_color_end(NcBuffer *buffer, int32 position,
 
 void
 nc_buffer_remove_properties(NcBuffer *buffer, int64 id) {
-    int32 out;
-    int32 count;
+    int32 count = ARRAY_LEN(buffer->properties);
+    int32 out = 0;
 
-    out = 0;
-    count = ARRAY_LEN(buffer->properties);
     for (int32 i = 0; i < count; i += 1) {
         if (buffer->properties[i].id == id) {
             nc_buffer_property_destroy(&buffer->properties[i]);
