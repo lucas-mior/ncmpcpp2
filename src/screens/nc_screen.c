@@ -321,15 +321,13 @@ nc_screen_has_to_be_resized(NcScreen *screen) {
 }
 
 void
-nc_screen_set_has_to_be_resized(NcScreen *screen,
-                                bool has_to_be_resized) {
+nc_screen_set_has_to_be_resized(NcScreen *screen, bool has_to_be_resized) {
     screen->has_to_be_resized = has_to_be_resized;
     return;
 }
 
 void
-nc_screen_set_has_to_be_updated(NcScreen *screen,
-                                bool has_to_be_updated) {
+nc_screen_set_has_to_be_updated(NcScreen *screen, bool has_to_be_updated) {
     screen->has_to_be_updated = has_to_be_updated;
     return;
 }
