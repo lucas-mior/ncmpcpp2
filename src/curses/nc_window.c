@@ -678,9 +678,8 @@ nc_window_start_x(NcWindow *window) {
 
 int32
 nc_window_start_y(NcWindow *window) {
-    int32 start_y;
+    int32 start_y = window->start_y;
 
-    start_y = window->start_y;
     if (window->border.enabled) {
         start_y -= 1;
     }
