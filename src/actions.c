@@ -55,7 +55,7 @@ XX(edit_playlist_name, EDIT_PLAYLIST_NAME)                                     \
 XX(edit_song, EDIT_SONG)                                                       \
 XX(enter_directory, ENTER_DIRECTORY)                                           \
 XX(execute_command, EXECUTE_COMMAND)                                           \
-XX(fetch_lyrics_in_background, FETCH_LYRICS_IN_BACKGROUND)                     \
+XX(fetch_lyrics_for_current_song_in_background, FETCH_LYRICS_IN_BACKGROUND)                     \
 XX(find, FIND)                                                                 \
 XX(find_item_backward, FIND_ITEM_BACKWARD)                                     \
 XX(find_item_forward, FIND_ITEM_FORWARD)                                       \
@@ -1362,8 +1362,8 @@ action_runtime_toggle_lyrics_update_on_song_change(void) {
 
 static int32
 action_runtime_toggle_fetching_lyrics_in_background(void) {
-    Config.fetch_lyrics_in_background = !Config.fetch_lyrics_in_background;
-    if (Config.fetch_lyrics_in_background) {
+    Config.fetch_lyrics_for_current_song_in_background = !Config.fetch_lyrics_for_current_song_in_background;
+    if (Config.fetch_lyrics_for_current_song_in_background) {
         action_runtime_print_toggle(
             STRLIT("Fetching lyrics for playing songs in background: "),
             "on");
