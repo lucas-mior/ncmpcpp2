@@ -1480,9 +1480,7 @@ outputs_resize(void *user, NcOutputsScreen *screen) {
 static void
 outputs_destroy(void *user) {
 #if defined(ENABLE_OUTPUTS)
-    OutputsScreen *owner;
-
-    owner = user;
+    OutputsScreen *owner = user;
     owner->initialized = false;
 #else
     (void)user;
