@@ -1291,7 +1291,7 @@ help_render(void *user, NcBuffer *buffer) {
     append_help(buffer, NCM_ACTION_TOGGLE_RANDOM, "Toggle random mode");
     append_help(buffer, NCM_ACTION_TOGGLE_SINGLE, "Toggle single mode");
     append_help(buffer, NCM_ACTION_TOGGLE_CONSUME, "Toggle consume mode");
-    append_help(buffer, NCM_ACTION_UPDATE_DATABASE, "Start music database update");
+    append_help(buffer, NCM_ACTION_UPDATE_DATABASE, "Start database update");
     append_help(buffer, NCM_ACTION_EXECUTE_COMMAND, "Execute command");
     append_help(buffer, NCM_ACTION_QUIT, "Quit");
 
