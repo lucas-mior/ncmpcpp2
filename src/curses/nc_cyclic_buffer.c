@@ -300,16 +300,11 @@ static void
 nc_cyclic_buffer_write_segment(NcBuffer *buffer, NcWindow *window,
                                int32 start_byte, int32 *property_index,
                                int32 *written_width, int32 width) {
-    NcBufferProperty *properties;
-    char *string;
-    int32 property_count;
-    int32 string_len;
+    NcBufferProperty *properties = nc_buffer_properties(buffer);
+    char *string = nc_buffer_data(buffer);
+    int32 string_len = nc_buffer_len(buffer);
+    int32 property_count = nc_buffer_property_count(buffer);
     int32 byte;
-
-    string = nc_buffer_data(buffer);
-    string_len = nc_buffer_len(buffer);
-    properties = nc_buffer_properties(buffer);
-    property_count = nc_buffer_property_count(buffer);
 
     if (start_byte < 0) {
         start_byte = 0;
