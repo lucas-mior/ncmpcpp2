@@ -650,17 +650,13 @@ ncm_bindings_command_lower_bound(NcmBindingsConfiguration *bindings, char *name,
 
 static int32
 ncm_bindings_key_lower_bound(NcmBindingsConfiguration *bindings, NcKey key) {
-    int32 first;
-    int32 count;
+    int32 first = 0;
+    int32 count = bindings->keys_len;
 
-    first = 0;
-    count = bindings->keys_len;
     while (count > 0) {
-        int32 step;
-        int32 mid;
+        int32 step = count / 2;
+        int32 mid = first + step;
 
-        step = count / 2;
-        mid = first + step;
         if (bindings->keys[mid].key < key) {
             first = mid + 1;
             count -= step + 1;
