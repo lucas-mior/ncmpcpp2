@@ -290,7 +290,7 @@ ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
 void
 ncm_fs_directory_close(NcmFsDirectory *directory) {
     if (directory->dir != NULL) {
-        closedir((DIR *)directory->dir);
+        closedir(directory->dir);
     }
     free2(directory->path, directory->path_len + 1);
 
