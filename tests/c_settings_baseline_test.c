@@ -24,7 +24,18 @@ settings_assert_generated_empty(Configuration *config) {
     ASSERT(config->NAME == 0);
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) \
     ASSERT(config->NAME == (C_TYPE)0);
+#define XX_COLOR(NAME, DEFAULT_VALUE) \
+    ASSERT(nc_color_is_default(config->NAME));
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) \
+    ASSERT(config->NAME.formats == NULL); \
+    ASSERT(nc_color_is_default(config->NAME.color));
+#define XX_BORDER(NAME, DEFAULT_VALUE) \
+    ASSERT(!config->NAME.enabled); \
+    ASSERT(nc_color_is_default(config->NAME.color));
 #include "configuration_options.def"
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -203,6 +214,46 @@ test_enum_options(void) {
 }
 
 static void
+test_color_options(void) {
+    Configuration config = {0};
+    NcColor expected;
+
+    configuration_init(&config);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_header_window_color, &config, "red_blue"));
+    expected = nc_color_make(COLOR_RED, COLOR_BLUE, false, false);
+    ASSERT(nc_color_is_equal(config.header_window_color, expected));
+    ASSERT(settings_test_apply(
+        apply_header_window_color, &config, "red_invalid") < 0);
+    ASSERT(nc_color_is_equal(config.header_window_color, expected));
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_state_flags_color, &config, "green:bu"));
+    expected = nc_color_make(COLOR_GREEN, NC_COLOR_CURRENT, false, false);
+    ASSERT(nc_color_is_equal(config.state_flags_color.color, expected));
+    ASSERT(nc_formatted_color_format_count(&config.state_flags_color) == 2);
+    ASSERT(config.state_flags_color.formats[0] == NC_FORMAT_BOLD);
+    ASSERT(config.state_flags_color.formats[1] == NC_FORMAT_UNDERLINE);
+    ASSERT(settings_test_apply(
+        apply_state_flags_color, &config, "green:x") < 0);
+    ASSERT(nc_formatted_color_format_count(&config.state_flags_color) == 2);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_window_border_color, &config, "cyan"));
+    expected = nc_color_make(COLOR_CYAN, NC_COLOR_CURRENT, false, false);
+    ASSERT(config.window_border_color.enabled);
+    ASSERT(nc_color_is_equal(config.window_border_color.color, expected));
+    ASSERT(settings_test_apply(
+        apply_window_border_color, &config, "invalid") < 0);
+    ASSERT(config.window_border_color.enabled);
+    ASSERT(nc_color_is_equal(config.window_border_color.color, expected));
+
+    configuration_destroy(&config);
+    return;
+}
+
+static void
 test_duplicate_option_is_rejected(void) {
     static char first_contents[] = "lines_scrolled = 4\n";
     static char second_contents[] = "lines_scrolled = 6\n";
@@ -294,6 +345,7 @@ main(void) {
     test_declared_defaults_and_cleanup();
     test_numeric_boundaries();
     test_enum_options();
+    test_color_options();
     test_duplicate_option_is_rejected();
     test_duplicate_state_is_per_read();
 

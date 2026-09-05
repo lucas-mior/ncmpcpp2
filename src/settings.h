@@ -61,7 +61,13 @@ typedef struct Configuration {
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     double NAME;
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) C_TYPE NAME;
+#define XX_COLOR(NAME, DEFAULT_VALUE) NcColor NAME;
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) NcFormattedColor NAME;
+#define XX_BORDER(NAME, DEFAULT_VALUE) NcBorder NAME;
 #include "configuration_options.def"
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -102,25 +108,7 @@ typedef struct Configuration {
     NcBuffer current_item_inactive_column_prefix;
     NcBuffer current_item_inactive_column_suffix;
 
-    NcColor header_window_color;
-    NcColor main_window_color;
-    NcColor statusbar_color;
-
-    NcFormattedColor color1;
-    NcFormattedColor color2;
-    NcFormattedColor empty_tag_color;
-    NcFormattedColor volume_color;
-    NcFormattedColor state_line_color;
-    NcFormattedColor state_flags_color;
-    NcFormattedColor progressbar_color;
-    NcFormattedColor progressbar_elapsed_color;
-    NcFormattedColor player_state_color;
-    NcFormattedColor statusbar_time_color;
-    NcFormattedColor alternative_ui_separator_color;
     NcmFormattedColorArray visualizer_color;
-
-    NcBorder window_border_color;
-    NcBorder active_window_border;
 
     bool screen_switcher_previous;
     bool default_find_mode;
