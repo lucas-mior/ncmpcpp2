@@ -335,8 +335,7 @@ ncm_mpd_item_list_to_directory_array(NcmMpdItemList *list,
         for (int32 i = 0; i < list->count; i += 1) {
             NcmDirectory *directory;
 
-            if (ncm_mpd_item_kind(&list->items[i])
-                != NCM_MPD_ITEM_DIRECTORY) {
+            if (ncm_mpd_item_kind(&list->items[i]) != NCM_MPD_ITEM_DIRECTORY) {
                 continue;
             }
 
