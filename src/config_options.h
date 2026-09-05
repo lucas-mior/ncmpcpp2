@@ -188,8 +188,7 @@ XX_COLUMNS(
     song_columns_mode_format)
 
 /* Named bool-backed settings. */
-XX_NAMED_BOOL(default_place_to_search_in, "database",
-              "database", "playlist")
+XX_NAMED_BOOL(default_place_to_search_in, "database", "database", "playlist")
 XX_NAMED_BOOL(default_find_mode, "wrapped", "wrapped", "normal")
 
 /* UInt32 choice settings. */
