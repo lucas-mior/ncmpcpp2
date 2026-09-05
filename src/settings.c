@@ -39,7 +39,9 @@ enum SettingsPrimitiveOption {
 #define XX_COLOR(NAME, DEFAULT_VALUE)
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
 #define XX_BORDER(NAME, DEFAULT_VALUE)
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS)
 #include "configuration_options.def"
+#undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
@@ -67,7 +69,9 @@ enum SettingsEnumOption {
 #define XX_COLOR(NAME, DEFAULT_VALUE)
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
 #define XX_BORDER(NAME, DEFAULT_VALUE)
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS)
 #include "configuration_options.def"
+#undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
@@ -95,7 +99,9 @@ enum SettingsColorOption {
 #define XX_COLOR(NAME, DEFAULT_VALUE) SETTINGS_COLOR_##NAME,
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) SETTINGS_COLOR_##NAME,
 #define XX_BORDER(NAME, DEFAULT_VALUE) SETTINGS_COLOR_##NAME,
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS)
 #include "configuration_options.def"
+#undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
@@ -111,6 +117,36 @@ enum SettingsColorOption {
 
 _Static_assert(SETTINGS_COLOR_COUNT == 16,
                "color configuration option count changed");
+
+enum SettingsFormatOption {
+#define XX_BOOL(NAME, DEFAULT_VALUE)
+#define XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_PATH(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT_VALUE)
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_COLOR(NAME, DEFAULT_VALUE)
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
+#define XX_BORDER(NAME, DEFAULT_VALUE)
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS) SETTINGS_FORMAT_##NAME,
+#include "configuration_options.def"
+#undef XX_FORMAT
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
+#undef XX_ENUM
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_DIR
+#undef XX_PATH
+#undef XX_STRING
+#undef XX_BOOL
+    SETTINGS_FORMAT_COUNT,
+};
+
+_Static_assert(SETTINGS_FORMAT_COUNT == 7,
+               "format configuration option count changed");
 
 #define SETTINGS_ASSERT_FIELD_TYPE(NAME, TYPE) \
     _Static_assert(_Generic(&((Configuration *)0)->NAME, \
@@ -136,7 +172,10 @@ _Static_assert(SETTINGS_COLOR_COUNT == 16,
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcFormattedColor);
 #define XX_BORDER(NAME, DEFAULT_VALUE) \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcBorder);
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, NcmFormatAst);
 #include "configuration_options.def"
+#undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
@@ -691,46 +730,6 @@ settings_parse_format(NcmFormatAst *format, char *value, int32 value_len,
 }
 
 static int32
-apply_song_list_format(Configuration *config, char *value, int32 value_len,
-                       NcmError *ncm_error) {
-    return settings_parse_format(&config->song_list_format, value, value_len,
-                                 NCM_FORMAT_FLAG_ALL, ncm_error);
-}
-
-static int32
-apply_song_status_format(Configuration *config, char *value, int32 value_len,
-                         NcmError *ncm_error) {
-    return settings_parse_format(
-        &config->song_status_format, value, value_len,
-        NCM_FORMAT_FLAG_ALL ^ NCM_FORMAT_FLAG_OUTPUT_SWITCH, ncm_error);
-}
-
-static int32
-apply_song_library_format(Configuration *config, char *value, int32 value_len,
-                          NcmError *ncm_error) {
-    return settings_parse_format(&config->song_library_format, value, value_len,
-                                 NCM_FORMAT_FLAG_ALL, ncm_error);
-}
-
-static int32
-apply_alternative_header_first_line_format(
-    Configuration *config, char *value, int32 value_len,
-    NcmError *ncm_error) {
-    return settings_parse_format(
-        &config->alternative_header_first_line_format, value, value_len,
-        NCM_FORMAT_FLAG_ALL ^ NCM_FORMAT_FLAG_OUTPUT_SWITCH, ncm_error);
-}
-
-static int32
-apply_alternative_header_second_line_format(
-    Configuration *config, char *value, int32 value_len,
-    NcmError *ncm_error) {
-    return settings_parse_format(
-        &config->alternative_header_second_line_format, value, value_len,
-        NCM_FORMAT_FLAG_ALL ^ NCM_FORMAT_FLAG_OUTPUT_SWITCH, ncm_error);
-}
-
-static int32
 apply_current_item_prefix(Configuration *config, char *value, int32 value_len,
                           NcmError *ncm_error) {
     return settings_copy_nc_buffer(&config->current_item_prefix, value,
@@ -814,22 +813,6 @@ apply_modified_item_prefix(Configuration *config, char *value, int32 value_len,
                            NcmError *ncm_error) {
     return settings_copy_nc_buffer(&config->modified_item_prefix,
                                    value, value_len, NULL, false, ncm_error);
-}
-
-static int32
-apply_song_window_title_format(Configuration *config,
-                               char *value, int32 value_len,
-                               NcmError *ncm_error) {
-    return settings_parse_format(&config->song_window_title_format,
-                                 value, value_len, NCM_FORMAT_FLAG_TAG,
-                                 ncm_error);
-}
-
-static int32
-apply_browser_sort_format(Configuration *config, char *value, int32 value_len,
-                          NcmError *ncm_error) {
-    return settings_parse_format(&config->browser_sort_format, value, value_len,
-                                 NCM_FORMAT_FLAG_TAG, ncm_error);
 }
 
 static int32
@@ -1438,8 +1421,17 @@ settings_primitive_post_apply(enum SettingsPrimitiveOption option,
                                      ncm_error); \
     }
 
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS) \
+    static int32 \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        return settings_parse_format(&config->NAME, value, value_len, \
+                                     FLAGS, ncm_error); \
+    }
+
 #include "configuration_options.def"
 
+#undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
@@ -1473,7 +1465,9 @@ static const SettingsOption ncmpcpp_options[] = {
 #define XX_COLOR(NAME, DEFAULT_VALUE) OPT(NAME, DEFAULT_VALUE),
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) OPT(NAME, DEFAULT_VALUE),
 #define XX_BORDER(NAME, DEFAULT_VALUE) OPT(NAME, DEFAULT_VALUE),
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS) OPT(NAME, DEFAULT_VALUE),
 #include "configuration_options.def"
+#undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
@@ -1487,13 +1481,6 @@ static const SettingsOption ncmpcpp_options[] = {
 
 OPT(visualizer_look, "●▮"),
 OPT(visualizer_color, "blue, cyan, green, yellow, magenta, red"),
-OPT(song_list_format, "{%a - }{%t}|{$8%f$9}$R{$3%l$9}"),
-OPT(song_status_format, "{{%a{ \"%b\"{ (%y)}} - }{%t}}|{%f}"),
-OPT(song_library_format, "{%n - }{%t}|{%f}"),
-OPT(alternative_header_first_line_format,
-    "$b$1$aqqu$/a$9 {%t}|{%f} $1$atqq$/a$9$/b"),
-OPT(alternative_header_second_line_format,
-    "{{$4$b%a$/b$9}{ - $7%b$9}{ ($4%y$9)}}|{%D}"),
 OPT(current_item_prefix, "$(yellow)$r"),
 OPT(current_item_suffix, "$/r$(end)"),
 OPT(current_item_inactive_column_prefix, "$(white)$r"),
@@ -1504,8 +1491,6 @@ OPT(browser_playlist_prefix, "$2playlist$9 "),
 OPT(selected_item_prefix, "$6"),
 OPT(selected_item_suffix, "$9"),
 OPT(modified_item_prefix, "$3>$9 "),
-OPT(song_window_title_format, "{%a - }{%t}|{%f}"),
-OPT(browser_sort_format, "{%a - }{%t}|{%f} {%l}"),
 OPT(song_columns_list_format,
     "(20)[]{a} (6f)[green]{NE} (50)[white]{t|f:Title}"
     " (20)[cyan]{b} (7f)[magenta]{l}"),

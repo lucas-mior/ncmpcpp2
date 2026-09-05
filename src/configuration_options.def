@@ -131,3 +131,19 @@ XX_FORMATTED_COLOR(player_state_color, "default:b")
 XX_FORMATTED_COLOR(alternative_ui_separator_color, "black:b")
 XX_BORDER(window_border_color, "green")
 XX_BORDER(active_window_border, "red")
+
+/* Format-AST-backed settings. */
+XX_FORMAT(song_list_format, "{%a - }{%t}|{$8%f$9}$R{$3%l$9}",
+          NCM_FORMAT_FLAG_ALL)
+XX_FORMAT(song_status_format, "{{%a{ \"%b\"{ (%y)}} - }{%t}}|{%f}",
+          NCM_FORMAT_FLAG_ALL ^ NCM_FORMAT_FLAG_OUTPUT_SWITCH)
+XX_FORMAT(song_library_format, "{%n - }{%t}|{%f}", NCM_FORMAT_FLAG_ALL)
+XX_FORMAT(alternative_header_first_line_format,
+          "$b$1$aqqu$/a$9 {%t}|{%f} $1$atqq$/a$9$/b",
+          NCM_FORMAT_FLAG_ALL ^ NCM_FORMAT_FLAG_OUTPUT_SWITCH)
+XX_FORMAT(alternative_header_second_line_format,
+          "{{$4$b%a$/b$9}{ - $7%b$9}{ ($4%y$9)}}|{%D}",
+          NCM_FORMAT_FLAG_ALL ^ NCM_FORMAT_FLAG_OUTPUT_SWITCH)
+XX_FORMAT(song_window_title_format, "{%a - }{%t}|{%f}", NCM_FORMAT_FLAG_TAG)
+XX_FORMAT(browser_sort_format, "{%a - }{%t}|{%f} {%l}", NCM_FORMAT_FLAG_TAG)
+
