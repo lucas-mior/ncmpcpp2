@@ -646,13 +646,10 @@ playlist_editor_screen_reload_playlists_from_mpd(PlaylistEditorScreen *screen,
 static void
 playlist_editor_restore_content_song(PlaylistEditorScreen *screen,
                                      NcmSong *song) {
-    NcMenu *menu;
-
-    menu = nc_song_menu_base(&screen->content);
+    NcMenu *menu = nc_song_menu_base(&screen->content);
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        NcmSong *item;
+        NcmSong *item = nc_menu_active_item_at(menu, i);
 
-        item = nc_menu_active_item_at(menu, i);
         if (ncm_song_is_equal(item, song)) {
             nc_menu_highlight_position(menu, i, screen->main_height);
             return;
