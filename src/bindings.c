@@ -111,7 +111,6 @@ ncm_binding_action_init(NcmBindingAction *action) {
     action->argument_len = 0;
     action->argument_cap = 0;
     action->keys_len = 0;
-    action->keys_cap = 0;
     action->type = NCM_ACTION_DUMMY;
     action->kind = NCM_BINDING_ACTION_NORMAL;
     action->screen_type = NCM_SCREEN_TYPE_COUNT;
@@ -121,7 +120,7 @@ ncm_binding_action_init(NcmBindingAction *action) {
 void
 ncm_binding_action_destroy(NcmBindingAction *action) {
     free2(action->argument, action->argument_cap);
-    free2(action->keys, action->keys_cap*SIZEOF(*action->keys));
+    free2(action->keys, action->keys_len*SIZEOF(*action->keys));
     ncm_binding_action_init(action);
     return;
 }
@@ -170,8 +169,7 @@ ncm_binding_append_action(NcmBinding *binding, NcmBindingAction *action) {
         copy.argument_len = action->argument_len;
     }
     if (action->keys_len > 0) {
-        copy.keys_cap = action->keys_len;
-        copy.keys = malloc2(copy.keys_cap*SIZEOF(*copy.keys));
+        copy.keys = malloc2(action->keys_len*SIZEOF(*copy.keys));
         memcpy64(copy.keys, action->keys,
                  action->keys_len*SIZEOF(*copy.keys));
         copy.keys_len = action->keys_len;
@@ -1126,7 +1124,6 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                     status = -NCM_ERROR_PARSE;
                 } else {
                     action.kind = NCM_BINDING_ACTION_PUSH_CHARACTERS;
-                    action.keys_cap = 1;
                     action.keys_len = 1;
                     action.keys = malloc2(SIZEOF(*action.keys));
                     action.keys[0] = action_key;
@@ -1141,10 +1138,9 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                     status = -NCM_ERROR_PARSE;
                 } else {
                     action.kind = NCM_BINDING_ACTION_PUSH_CHARACTERS;
-                    action.keys_cap = argument.len;
                     action.keys_len = argument.len;
                     action.keys =
-                        malloc2(action.keys_cap*SIZEOF(*action.keys));
+                        malloc2(action.keys_len*SIZEOF(*action.keys));
                     for (int32 i = 0; i < argument.len; i += 1) {
                         action.keys[i] = (NcKey)(uint8)argument.data[i];
                     }

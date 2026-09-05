@@ -49,6 +49,7 @@ int32 ncm_error_status(NcmError *ncm_error);
 int32 ncm_error_set_status(NcmError *ncm_error, int32 status,
                            char *message, int32 message_len);
 int32 ncm_error_ok(NcmError *ncm_error);
+
 void stupid_string_free(char **data, int32 *len, int32 *cap);
 void stupid_string_set(char **dest, int32 *dest_len, int32 *dest_cap,
                        char *source, int32 source_len);
@@ -1575,7 +1576,6 @@ typedef struct NcmPlaylistSortSwap {
 typedef struct NcmPlaylistSortPlan {
     NcmPlaylistSortSwap *items;
     int32 len;
-    int32 cap;
 } NcmPlaylistSortPlan;
 
 int32 ncm_playlist_sort_range(
