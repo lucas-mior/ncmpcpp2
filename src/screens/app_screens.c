@@ -1743,10 +1743,9 @@ song_info_render(void *user, NcSongInfoScreen *screen,
 
 static void
 song_info_switch_to(void *user, NcSongInfoScreen *screen) {
-    SongInfoScreen *owner;
+    SongInfoScreen *owner = user;
     NcmError ncm_error;
 
-    owner = user;
     ncm_error_clear(&ncm_error);
     ncm_song_destroy(&owner->song);
     owner->song = (NcmSong){0};
