@@ -53,7 +53,7 @@ tiny_editor_draw_row(NcMenu *menu, NcWindow *window, void *item,
     buffer = item;
 
     properties = nc_buffer_properties(buffer);
-    property_count = nc_buffer_property_count(buffer);
+    property_count = ARRAY_LEN(buffer->properties);
     property_index = 0;
     for (int32 i = 0;; i += 1) {
         while ((property_index < property_count)
