@@ -496,15 +496,14 @@ static int32
 search_list_database_songs(
     void *user, NcmSongArray *songs, NcmError *ncm_error
 ) {
-    NcmMpdSongList source;
+    NcmMpdSongList source = {0};
     int32 status;
 
     (void)user;
 
     ncm_song_array_clear(songs);
-    source = (NcmMpdSongList){0};
-    status = ncm_mpd_client_get_directory_recursive(
-        &global_mpd, "/", &source, ncm_error);
+    status = ncm_mpd_client_get_directory_recursive(&global_mpd,
+                                                    "/", &source, ncm_error);
     if (status >= 0) {
         ncm_mpd_song_list_to_song_array(&source, songs);
         status = 0;
