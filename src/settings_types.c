@@ -219,11 +219,6 @@ configuration_init_unchecked(Configuration *config) {
 #undef XX_STRING
 #undef XX_BOOL
 
-    config->visualizer_fifo_path = NULL;
-    config->visualizer_fifo_path_len = 0;
-
-    config->lyrics_db = 0;
-
     return;
 }
 
@@ -309,10 +304,6 @@ configuration_destroy(Configuration *config) {
 #undef XX_PATH
 #undef XX_STRING
 #undef XX_BOOL
-
-    free2(config->visualizer_fifo_path, config->visualizer_fifo_path_len + 1);
-    config->visualizer_fifo_path = NULL;
-    config->visualizer_fifo_path_len = 0;
 
     configuration_init_unchecked(config);
 

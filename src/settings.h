@@ -112,12 +112,6 @@ typedef struct Configuration {
 #undef XX_STRING
 #undef XX_BOOL
 
-    char *visualizer_fifo_path;
-
-    int32 visualizer_fifo_path_len;
-
-    int32 lyrics_db;
-
 } Configuration;
 
 void column_init(Column *column);

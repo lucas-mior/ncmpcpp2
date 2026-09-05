@@ -496,6 +496,12 @@ ncm_configuration_options_apply(NcmConfigurationOptions *options,
         return status;
     }
 
+    status = configuration_apply_runtime(
+        &Config, &global_mpd, options->quiet, ncm_error);
+    if (status < 0) {
+        return status;
+    }
+
     env_host = getenv("MPD_HOST");
     env_port = getenv("MPD_PORT");
     if (env_host != NULL) {
@@ -521,11 +527,6 @@ ncm_configuration_options_apply(NcmConfigurationOptions *options,
     if (options->port_provided) {
         ncm_mpd_client_set_port(&global_mpd, (uint16)options->port);
     }
-    if ((status = ncm_mpd_client_set_timeout_ms(
-        &global_mpd, Config.mpd_connection_timeout*1000, ncm_error)) < 0) {
-        return status;
-    }
-
     if (options->screen) {
         status = screen_type_parse_startup(options->screen_name.data,
                                            options->screen_name.len,

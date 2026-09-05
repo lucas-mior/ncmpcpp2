@@ -184,6 +184,16 @@ test_runtime_application_is_separate(void) {
     Configuration config = {0};
     NcmStringViewArray paths = {0};
     NcmError ncm_error = {0};
+    StrBuilder previous_term = {0};
+    char *term;
+    bool had_term;
+
+    term = getenv("TERM");
+    had_term = term != NULL;
+    if (had_term) {
+        SB_APPEND(&previous_term, term, strlen32(term));
+    }
+    ASSERT_ZERO(setenv("TERM", "linux", 1));
 
     configuration_init(&config);
 
@@ -224,14 +234,127 @@ test_runtime_application_is_separate(void) {
 
     ASSERT_ZERO(configuration_apply_runtime(
         &config, &global_mpd, true, &ncm_error));
+    ASSERT(config.enable_window_title);
+    ASSERT(!window_title_enabled);
     ASSERT(STREQUAL(global_mpd.host.data, global_mpd.host.len, "after-host"));
     ASSERT(global_mpd.port == 4567);
     ASSERT(STREQUAL(global_mpd.password.data, global_mpd.password.len,
                     "after-password"));
     ASSERT(global_mpd.timeout_ms == 9000);
 
+    if (had_term) {
+        ASSERT_ZERO(setenv("TERM", sb_opt_cstr(&previous_term), 1));
+    } else {
+        ASSERT_ZERO(unsetenv("TERM"));
+    }
+    sb_free(&previous_term);
     configuration_destroy(&config);
     ncm_string_view_array_destroy(&paths);
+    return;
+}
+
+static void
+test_configuration_options_apply_runtime_precedence(void) {
+    static char contents[] =
+        "ncmpcpp_directory = /tmp/\n"
+        "lyrics_directory = /tmp/\n"
+        "mpd_host = config-host\n"
+        "mpd_port = 1111\n"
+        "mpd_password = config-password\n"
+        "mpd_connection_timeout = 7\n"
+        "enable_window_title = no\n";
+    NcmConfigurationOptions options = {0};
+    NcmError ncm_error = {0};
+    StrBuilder previous_host = {0};
+    StrBuilder previous_port = {0};
+    StrBuilder *config_path;
+    char *env_host;
+    char *env_port;
+    char path[PATH_MAX];
+    int32 contents_len = SIZEOF(contents) - 1;
+    int32 fd;
+    bool had_host;
+    bool had_port;
+
+    env_host = getenv("MPD_HOST");
+    env_port = getenv("MPD_PORT");
+    had_host = env_host != NULL;
+    had_port = env_port != NULL;
+    if (had_host) {
+        SB_APPEND(&previous_host, env_host, strlen32(env_host));
+    }
+    if (had_port) {
+        SB_APPEND(&previous_port, env_port, strlen32(env_port));
+    }
+    ASSERT_ZERO(unsetenv("MPD_HOST"));
+    ASSERT_ZERO(unsetenv("MPD_PORT"));
+
+    fd = cbase_make_temp_file(path, SIZEOF(path),
+                              "ncmpcpp2-settings-runtime", ".conf");
+    ASSERT_NON_NEGATIVE(fd);
+    ASSERT_ZERO(XCLOSE(&fd, path));
+    ASSERT(write_entire_file(path, contents, contents_len) == contents_len);
+
+    ncm_configuration_options_init(&options);
+    options.quiet = true;
+    config_path = str_builder_array_append(&options.config_paths);
+    SB_APPEND(config_path, path, strlen32(path));
+
+    ASSERT_ZERO(ncm_configuration_options_apply(&options, &ncm_error));
+    ASSERT(STREQUAL(global_mpd.host.data, global_mpd.host.len, "config-host"));
+    ASSERT(global_mpd.port == 1111);
+    ASSERT(STREQUAL(global_mpd.password.data, global_mpd.password.len,
+                    "config-password"));
+    ASSERT(global_mpd.timeout_ms == 7000);
+    ASSERT(STREQUAL(Config.mpd_host, Config.mpd_host_len, "config-host"));
+    ASSERT(Config.mpd_port == 1111);
+    ASSERT(STREQUAL(Config.mpd_password, Config.mpd_password_len,
+                    "config-password"));
+    ASSERT(Config.mpd_connection_timeout == 7);
+    ASSERT(!window_title_enabled);
+
+    ASSERT_ZERO(setenv("MPD_HOST", "env-host", 1));
+    ASSERT_ZERO(setenv("MPD_PORT", "2222", 1));
+    ncm_error_clear(&ncm_error);
+    ASSERT_ZERO(ncm_configuration_options_apply(&options, &ncm_error));
+    ASSERT(STREQUAL(global_mpd.host.data, global_mpd.host.len, "env-host"));
+    ASSERT(global_mpd.port == 2222);
+    ASSERT(STREQUAL(global_mpd.password.data, global_mpd.password.len,
+                    "config-password"));
+    ASSERT(global_mpd.timeout_ms == 7000);
+    ASSERT(STREQUAL(Config.mpd_host, Config.mpd_host_len, "config-host"));
+    ASSERT(Config.mpd_port == 1111);
+
+    sb_clear(&options.host);
+    SB_APPEND(&options.host, "cli-host");
+    options.host_provided = true;
+    options.port = 3333;
+    options.port_provided = true;
+    ncm_error_clear(&ncm_error);
+    ASSERT_ZERO(ncm_configuration_options_apply(&options, &ncm_error));
+    ASSERT(STREQUAL(global_mpd.host.data, global_mpd.host.len, "cli-host"));
+    ASSERT(global_mpd.port == 3333);
+    ASSERT(STREQUAL(global_mpd.password.data, global_mpd.password.len,
+                    "config-password"));
+    ASSERT(global_mpd.timeout_ms == 7000);
+    ASSERT(STREQUAL(Config.mpd_host, Config.mpd_host_len, "config-host"));
+    ASSERT(Config.mpd_port == 1111);
+
+    if (had_host) {
+        ASSERT_ZERO(setenv("MPD_HOST", sb_opt_cstr(&previous_host), 1));
+    } else {
+        ASSERT_ZERO(unsetenv("MPD_HOST"));
+    }
+    if (had_port) {
+        ASSERT_ZERO(setenv("MPD_PORT", sb_opt_cstr(&previous_port), 1));
+    } else {
+        ASSERT_ZERO(unsetenv("MPD_PORT"));
+    }
+
+    sb_free(&previous_host);
+    sb_free(&previous_port);
+    ncm_configuration_options_destroy(&options);
+    ASSERT_ZERO(cbase_remove_file(path));
     return;
 }
 
@@ -751,10 +874,12 @@ test_duplicate_state_is_per_read(void) {
 int
 main(void) {
     global_state_init();
+    configuration_init(&Config);
 
     test_option_table_shape();
     test_declared_defaults_and_cleanup();
     test_runtime_application_is_separate();
+    test_configuration_options_apply_runtime_precedence();
     test_numeric_boundaries();
     test_enum_options();
     test_optional_enum_options();
@@ -767,6 +892,7 @@ main(void) {
     test_duplicate_option_is_rejected();
     test_duplicate_state_is_per_read();
 
+    configuration_destroy(&Config);
     global_state_destroy();
     return 0;
 }

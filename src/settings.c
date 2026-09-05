@@ -8,6 +8,7 @@
 #include "c/ncm_c.h"
 #include "config.h"
 #include "settings.h"
+#include "title.h"
 
 #define SETTINGS_LINE_CAP 16384
 
@@ -573,21 +574,18 @@ enum SettingsColumnsOption {
 _Static_assert(SETTINGS_COLUMNS_COUNT == 1,
                "columns configuration option count changed");
 
-enum {
-    SETTINGS_GENERATED_OPTION_COUNT =
-        0
-        + SETTINGS_PRIMITIVE_COUNT
-        + SETTINGS_ENUM_COUNT
-        + SETTINGS_OPTIONAL_ENUM_COUNT
-        + SETTINGS_COLOR_COUNT
-        + SETTINGS_FORMAT_COUNT
-        + SETTINGS_BUFFER_COUNT
-        + SETTINGS_LOOK_COUNT
-        + SETTINGS_LIST_COUNT
-        + SETTINGS_NAMED_BOOL_COUNT
-        + SETTINGS_UINT32_CHOICE_COUNT
-        + SETTINGS_COLUMNS_COUNT,
-};
+#define SETTINGS_GENERATED_OPTION_COUNT \
+    ((int32)SETTINGS_PRIMITIVE_COUNT \
+     + (int32)SETTINGS_ENUM_COUNT \
+     + (int32)SETTINGS_OPTIONAL_ENUM_COUNT \
+     + (int32)SETTINGS_COLOR_COUNT \
+     + (int32)SETTINGS_FORMAT_COUNT \
+     + (int32)SETTINGS_BUFFER_COUNT \
+     + (int32)SETTINGS_LOOK_COUNT \
+     + (int32)SETTINGS_LIST_COUNT \
+     + (int32)SETTINGS_NAMED_BOOL_COUNT \
+     + (int32)SETTINGS_UINT32_CHOICE_COUNT \
+     + (int32)SETTINGS_COLUMNS_COUNT)
 
 _Static_assert(SETTINGS_GENERATED_OPTION_COUNT == 134,
                "generated configuration option count changed");
@@ -819,7 +817,8 @@ settings_parse_int_range(char *value, int32 value_len, int32 *result,
 
     status = parse_integer(value, value_len, &parsed);
     if (status < 0) {
-        return settings_invalid_value(ncm_error, value, value_len);
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("invalid integer"));
     }
     status = ncm_bounds_check_i64(parsed, minimum, maximum, ncm_error);
     if (status < 0) {
@@ -1367,8 +1366,10 @@ settings_parse_look(StrBuilder *look, char *value, int32 value_len,
     sb_clear(look);
     SB_APPEND(look, value, value_len);
     if (pad_to_max) {
+        char zero = '\0';
+
         for (int32 i = characters; i < max_chars; i += 1) {
-            sb_append_byte(look, '\0');
+            sb_append(look, &zero, 1);
         }
     }
     return 0;
@@ -1571,18 +1572,16 @@ configuration_validate(const Configuration *config, NcmError *ncm_error) {
 int32
 configuration_apply_runtime(Configuration *config, NcmMpdClient *client,
                             bool quiet, NcmError *ncm_error) {
-    char *term;
-    int32 term_len;
     int32 status;
-    bool unsupported;
 
     if ((config == NULL) || (client == NULL)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing runtime configuration"));
     }
 
-    if ((status = ncm_mpd_client_set_hostname(
-        client, config->mpd_host, config->mpd_host_len, ncm_error)) < 0) {
+    status = ncm_mpd_client_set_hostname(
+        client, config->mpd_host, config->mpd_host_len, ncm_error);
+    if (status < 0) {
         return status;
     }
     ncm_mpd_client_set_port(client, (uint16)config->mpd_port);
@@ -1599,24 +1598,7 @@ configuration_apply_runtime(Configuration *config, NcmMpdClient *client,
         return status;
     }
 
-    if (!config->enable_window_title) {
-        return ncm_error_ok(ncm_error);
-    }
-
-    term = getenv("TERM");
-    unsupported = term == NULL;
-    if (!unsupported) {
-        term_len = strlen32(term);
-        unsupported = memmem64(term, term_len, STRLIT("linux"))
-                      || BEGINS_WITH(term, term_len, "eterm");
-    }
-    if (unsupported) {
-        config->enable_window_title = false;
-        if (!quiet) {
-            error2("Terminal doesn't support window title, skipping "
-                   "'enable_window_title'.\n");
-        }
-    }
+    ncm_window_title_configure(config->enable_window_title, quiet);
     return ncm_error_ok(ncm_error);
 }
 

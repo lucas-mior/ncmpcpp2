@@ -9,6 +9,8 @@
 #include "title.h"
 #include "ui_state.h"
 
+static bool window_title_enabled;
+
 static void
 title_apply_formatted_color(NcWindow *window, NcFormattedColor *color) {
     enum NcFormat *formats;
@@ -48,6 +50,36 @@ title_apply_formatted_color_end(NcWindow *window, NcFormattedColor *color) {
 }
 
 void
+ncm_window_title_configure(bool enabled, bool quiet) {
+    char *term;
+    int32 term_len;
+    bool unsupported;
+
+    window_title_enabled = false;
+    if (!enabled) {
+        return;
+    }
+
+    term = getenv("TERM");
+    unsupported = term == NULL;
+    if (!unsupported) {
+        term_len = strlen32(term);
+        unsupported = memmem64(term, term_len, STRLIT("linux"))
+                      || BEGINS_WITH(term, term_len, "eterm");
+    }
+    if (unsupported) {
+        if (!quiet) {
+            error2("Terminal doesn't support window title, skipping "
+                   "'enable_window_title'.\n");
+        }
+        return;
+    }
+
+    window_title_enabled = true;
+    return;
+}
+
+void
 ncm_window_title_write(char *title, int32 title_len) {
     printf("\033]0;");
     if (title && (title_len > 0)) {
@@ -60,7 +92,7 @@ ncm_window_title_write(char *title, int32 title_len) {
 
 void
 ncm_window_title_set(char *title, int32 title_len) {
-    if (!Config.enable_window_title) {
+    if (!window_title_enabled) {
         return;
     }
 
