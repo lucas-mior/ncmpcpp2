@@ -955,9 +955,9 @@ ncm_mpd_connection_get_playlists(NcmMpdConnection *connection,
                 new_capacity = 8;
             }
 
-            playlists->items = (NcmPlaylist *)realloc2(
-                playlists->items, old_capacity, new_capacity,
-                SIZEOF(*playlists->items));
+            playlists->items = realloc2(playlists->items,
+                                        old_capacity, new_capacity,
+                                        SIZEOF(*playlists->items));
             playlists->capacity = new_capacity;
         }
 
@@ -1167,9 +1167,9 @@ ncm_mpd_connection_get_directory(NcmMpdConnection *connection,
                 new_capacity = 8;
             }
 
-            items->items = (NcmMpdItem *)realloc2(
-                items->items, old_capacity, new_capacity,
-                SIZEOF(*items->items));
+            items->items = realloc2(items->items,
+                                    old_capacity, new_capacity,
+                                    SIZEOF(*items->items));
             items->capacity = new_capacity;
         }
 
@@ -1410,9 +1410,9 @@ ncm_mpd_connection_get_outputs(NcmMpdConnection *connection,
                 new_capacity = 8;
             }
 
-            outputs->items = (NcmMpdOutput *)realloc2(
-                outputs->items, old_capacity, new_capacity,
-                SIZEOF(*outputs->items));
+            outputs->items = realloc2(outputs->items,
+                                      old_capacity, new_capacity,
+                                      SIZEOF(*outputs->items));
             outputs->capacity = new_capacity;
         }
 
