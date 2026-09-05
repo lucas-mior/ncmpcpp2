@@ -1377,8 +1377,8 @@ outputs_fetch(void *user, NcOutputsScreen *screen) {
         StrBuilder message = {0};
 
         SB_APPEND(&message, "Could not fetch outputs: ");
-        SB_APPEND(&message, ncm_error.message,
-                  optional_strlen32(ncm_error.message));
+        SB_APPEND(&message,
+                  ncm_error.message, optional_strlen32(ncm_error.message));
         ncm_statusbar_print(5, message.data, message.len);
         sb_free(&message);
         ncm_mpd_output_list_destroy(&outputs);
