@@ -44,7 +44,7 @@ typedef struct SettingsOption {
 #define XX_DIR(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
 #define XX_INTEGER(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, int32);
-#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+#define XX_DOUBLE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, double);
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, C_TYPE);
@@ -1033,7 +1033,7 @@ configuration_apply_runtime(Configuration *config, NcmMpdClient *client,
                                         MINIMUM, MAXIMUM, ncm_error); \
     }
 
-#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+#define XX_DOUBLE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     static int32 \
     apply_##NAME(Configuration *config, char *value, int32 value_len, \
                  NcmError *ncm_error) { \

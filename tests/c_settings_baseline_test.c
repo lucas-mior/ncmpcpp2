@@ -87,7 +87,7 @@ settings_assert_generated_empty(Configuration *config) {
 #define XX_DIR(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
 #define XX_INTEGER(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     ASSERT(config->NAME == 0);
-#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+#define XX_DOUBLE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     ASSERT(config->NAME == 0);
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) \
     ASSERT(config->NAME == (C_TYPE)0);
@@ -450,7 +450,7 @@ test_generated_numeric_boundaries(void) {
 #define XX_INTEGER(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     settings_test_int_range(apply_##NAME, &config, &config.NAME, \
                             MINIMUM, MAXIMUM);
-#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+#define XX_DOUBLE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     settings_test_double_range(apply_##NAME, &config, &config.NAME, \
                                MINIMUM, MAXIMUM);
 #include "config_options_pass.h"
