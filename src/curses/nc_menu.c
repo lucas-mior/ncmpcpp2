@@ -63,11 +63,13 @@ menu_construct_item(NcMenu *menu) {
 
     ASSERT_POSITIVE(menu->item_callbacks.item_size);
     item = malloc2(menu->item_callbacks.item_size);
+
     if (menu->item_callbacks.construct) {
         menu->item_callbacks.construct(item, menu->item_callbacks.user);
     } else {
         memset64(item, 0, menu->item_callbacks.item_size);
     }
+
     return item;
 }
 
