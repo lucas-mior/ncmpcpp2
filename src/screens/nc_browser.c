@@ -1058,7 +1058,7 @@ browser_collect_local_directory_songs(
             status = 0;
             break;
         }
-        if (!Config.local_browser_show_hidden_files
+        if (!Config.show_hidden_files_in_local_browser
             && (entry.name_len > 0) && (entry.name[0] == '.')) {
             continue;
         }
@@ -1715,7 +1715,7 @@ browser_reload_from_local(BrowserScreen *screen, NcmError *ncm_error) {
         if (read_status == 0) {
             break;
         }
-        if (!Config.local_browser_show_hidden_files
+        if (!Config.show_hidden_files_in_local_browser
             && (entry.name_len > 0) && (entry.name[0] == '.')) {
             continue;
         }
