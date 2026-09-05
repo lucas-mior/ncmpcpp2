@@ -631,8 +631,7 @@ ncm_mutable_song_set_new_name(NcmMutableSong *song, char *new_name,
         ncm_mutable_song_free_string(&song->new_name, &song->new_name_len);
         return 0;
     }
-    if (optional_strequal(song->name, song->name_len, new_name,
-                          new_name_len)) {
+    if (optional_strequal(song->name, song->name_len, new_name, new_name_len)) {
         ncm_mutable_song_free_string(&song->new_name, &song->new_name_len);
         return 0;
     }
