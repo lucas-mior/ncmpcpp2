@@ -1241,8 +1241,7 @@ nc_window_get_input_char(NcWindow *window, int32 key) {
     {
         NcKey key_prim;
 
-        key_prim = nc_window_get_input_char(window, key);
-        if (key_prim != NC_KEY_NONE) {
+        if ((key_prim = nc_window_get_input_char(window, key)) != NC_KEY_NONE) {
             return NC_KEY_ALT | key_prim;
         }
         return NC_KEY_NONE;
