@@ -55,7 +55,7 @@ XX(edit_playlist_name, EDIT_PLAYLIST_NAME)                                     \
 XX(edit_song, EDIT_SONG)                                                       \
 XX(enter_directory, ENTER_DIRECTORY)                                           \
 XX(execute_command, EXECUTE_COMMAND)                                           \
-XX(fetch_lyrics_for_current_song_in_background, FETCH_LYRICS_IN_BACKGROUND)                     \
+XX(fetch_lyrics_for_current_song_in_background, FETCH_LYRICS_IN_BACKGROUND)    \
 XX(find, FIND)                                                                 \
 XX(find_item_backward, FIND_ITEM_BACKWARD)                                     \
 XX(find_item_forward, FIND_ITEM_FORWARD)                                       \
