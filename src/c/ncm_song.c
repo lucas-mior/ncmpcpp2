@@ -90,9 +90,7 @@ ncm_song_grow_tags(NcmSong *song) {
         new_cap = old_cap*2;
     }
 
-    song->tags = (NcmSongTag *)realloc2(song->tags, old_cap,
-                                        new_cap,
-                                        SIZEOF(*song->tags));
+    song->tags = realloc2(song->tags, old_cap, new_cap, SIZEOF(*song->tags));
     for (int32 i = old_cap; i < new_cap; i += 1) {
         ncm_song_tag_init(&song->tags[i]);
     }
