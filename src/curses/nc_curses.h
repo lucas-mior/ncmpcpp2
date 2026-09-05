@@ -107,43 +107,43 @@ typedef struct NcFdCallback {
 #define ENUM_NAME NcTermManip
 #define ENUM_PREFIX_ NC_TERM_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
+#define ENUM_FIELDS  \
     XX(NC_TERM_CLEAR_TO_EOL)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcFormat
 #define ENUM_PREFIX_ NC_FORMAT_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NC_FORMAT_BOLD) \
-    XX(NC_FORMAT_NO_BOLD) \
-    XX(NC_FORMAT_UNDERLINE) \
-    XX(NC_FORMAT_NO_UNDERLINE) \
-    XX(NC_FORMAT_REVERSE) \
-    XX(NC_FORMAT_NO_REVERSE) \
-    XX(NC_FORMAT_ALT_CHARSET) \
-    XX(NC_FORMAT_NO_ALT_CHARSET) \
-    XX(NC_FORMAT_ITALIC) \
+#define ENUM_FIELDS                  \
+    XX(NC_FORMAT_BOLD)               \
+    XX(NC_FORMAT_NO_BOLD)            \
+    XX(NC_FORMAT_UNDERLINE)          \
+    XX(NC_FORMAT_NO_UNDERLINE)       \
+    XX(NC_FORMAT_REVERSE)            \
+    XX(NC_FORMAT_NO_REVERSE)         \
+    XX(NC_FORMAT_ALT_CHARSET)        \
+    XX(NC_FORMAT_NO_ALT_CHARSET)     \
+    XX(NC_FORMAT_ITALIC)             \
     XX(NC_FORMAT_NO_ITALIC)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcScroll
 #define ENUM_PREFIX_ NC_SCROLL_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NC_SCROLL_UP) \
-    XX(NC_SCROLL_DOWN) \
-    XX(NC_SCROLL_PAGE_UP) \
-    XX(NC_SCROLL_PAGE_DOWN) \
-    XX(NC_SCROLL_HOME) \
+#define ENUM_FIELDS                  \
+    XX(NC_SCROLL_UP)                 \
+    XX(NC_SCROLL_DOWN)               \
+    XX(NC_SCROLL_PAGE_UP)            \
+    XX(NC_SCROLL_PAGE_DOWN)          \
+    XX(NC_SCROLL_HOME)               \
     XX(NC_SCROLL_END)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcPromptStatus
 #define ENUM_PREFIX_ NC_PROMPT_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NC_PROMPT_ACCEPTED) \
+#define ENUM_FIELDS                                                            \
+    XX(NC_PROMPT_ACCEPTED)                                                     \
     XX(NC_PROMPT_ABORTED)
 #include "cbase/xenums.c"
 
@@ -287,10 +287,10 @@ int32 nc_formatted_color_format_count(NcFormattedColor *formatted_color);
 #define ENUM_NAME NcBufferPropertyType
 #define ENUM_PREFIX_ NC_BUFFER_PROPERTY_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NC_BUFFER_PROPERTY_COLOR) \
-    XX(NC_BUFFER_PROPERTY_FORMAT) \
-    XX(NC_BUFFER_PROPERTY_FORMATTED_COLOR) \
+#define ENUM_FIELDS                                                            \
+    XX(NC_BUFFER_PROPERTY_COLOR)                                               \
+    XX(NC_BUFFER_PROPERTY_FORMAT)                                              \
+    XX(NC_BUFFER_PROPERTY_FORMATTED_COLOR)                                     \
     XX(NC_BUFFER_PROPERTY_FORMATTED_COLOR_END)
 #include "cbase/xenums.c"
 
@@ -352,18 +352,18 @@ typedef bool NcMenuPositionMatchesFunc(NcMenu *menu, int32 pos, void *user);
 #define ENUM_NAME NcMenuItemSource
 #define ENUM_PREFIX_ NC_MENU_ITEMS_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS \
-    XX(NC_MENU_ITEMS_ALL) \
+#define ENUM_FIELDS                                                            \
+    XX(NC_MENU_ITEMS_ALL)                                                      \
     XX(NC_MENU_ITEMS_FILTERED)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcMenuItemFlag
 #define ENUM_PREFIX_ NC_MENU_ITEM_
 #define ENUM_BITFLAGS 1
-#define ENUM_FIELDS \
-    XX(NC_MENU_ITEM_SELECTABLE) \
-    XX(NC_MENU_ITEM_SELECTED) \
-    XX(NC_MENU_ITEM_INACTIVE) \
+#define ENUM_FIELDS                                                            \
+    XX(NC_MENU_ITEM_SELECTABLE)                                                \
+    XX(NC_MENU_ITEM_SELECTED)                                                  \
+    XX(NC_MENU_ITEM_INACTIVE)                                                  \
     XX(NC_MENU_ITEM_SEPARATOR)
 #include "cbase/xenums.c"
 
@@ -570,46 +570,46 @@ typedef struct NcEditorSortRow {
     enum NcmSongGetter getter;
 } NcEditorSortRow;
 
-#define NC_TYPED_MENU_DECLARE_TYPE(TYPE_NAME) \
-    typedef struct TYPE_NAME { \
-        NcMenu menu; \
+#define NC_TYPED_MENU_DECLARE_TYPE(TYPE_NAME)                                  \
+    typedef struct TYPE_NAME {                                                 \
+        NcMenu menu;                                                           \
     } TYPE_NAME
 
-#define NC_TYPED_MENU_DECLARE_INIT(TYPE_NAME, PREFIX) \
+#define NC_TYPED_MENU_DECLARE_INIT(TYPE_NAME, PREFIX)                          \
     void PREFIX##_init(TYPE_NAME *menu)
 
-#define NC_TYPED_MENU_DECLARE_DESTROY(TYPE_NAME, PREFIX) \
+#define NC_TYPED_MENU_DECLARE_DESTROY(TYPE_NAME, PREFIX)                       \
     void PREFIX##_destroy(TYPE_NAME *menu)
 
-#define NC_TYPED_MENU_DECLARE_BASE(TYPE_NAME, PREFIX) \
+#define NC_TYPED_MENU_DECLARE_BASE(TYPE_NAME, PREFIX)                          \
     NcMenu *PREFIX##_base(TYPE_NAME *menu)
 
-#define NC_TYPED_MENU_DECLARE_ADD(TYPE_NAME, PREFIX, ITEM_TYPE) \
+#define NC_TYPED_MENU_DECLARE_ADD(TYPE_NAME, PREFIX, ITEM_TYPE)                \
     void PREFIX##_add(TYPE_NAME *menu, ITEM_TYPE *item)
 
-#define NC_TYPED_MENU_DECLARE_ADD_WITH_FLAGS(TYPE_NAME, PREFIX, ITEM_TYPE) \
-    void PREFIX##_add_with_flags(TYPE_NAME *menu, ITEM_TYPE *item, \
+#define NC_TYPED_MENU_DECLARE_ADD_WITH_FLAGS(TYPE_NAME, PREFIX, ITEM_TYPE)     \
+    void PREFIX##_add_with_flags(TYPE_NAME *menu, ITEM_TYPE *item,             \
                                  uint32 flags)
 
-#define NC_TYPED_MENU_DECLARE_ADD_SEPARATOR(TYPE_NAME, PREFIX) \
+#define NC_TYPED_MENU_DECLARE_ADD_SEPARATOR(TYPE_NAME, PREFIX)                 \
     void PREFIX##_add_separator(TYPE_NAME *menu)
 
-#define NC_TYPED_MENU_DECLARE_INSERT_WITH_FLAGS(TYPE_NAME, PREFIX, ITEM_TYPE) \
-    void PREFIX##_insert_with_flags(TYPE_NAME *menu, int32 pos, \
+#define NC_TYPED_MENU_DECLARE_INSERT_WITH_FLAGS(TYPE_NAME, PREFIX, ITEM_TYPE)  \
+    void PREFIX##_insert_with_flags(TYPE_NAME *menu, int32 pos,                \
                                     ITEM_TYPE *item, uint32 flags)
 
-#define NC_TYPED_MENU_DECLARE_ITEM_AT(TYPE_NAME, PREFIX, ITEM_TYPE) \
-    ITEM_TYPE *PREFIX##_item_at(TYPE_NAME *menu, \
-                                enum NcMenuItemSource source, \
+#define NC_TYPED_MENU_DECLARE_ITEM_AT(TYPE_NAME, PREFIX, ITEM_TYPE)            \
+    ITEM_TYPE *PREFIX##_item_at(TYPE_NAME *menu,                               \
+                                enum NcMenuItemSource source,                  \
                                 int32 pos)
 
-#define NC_TYPED_MENU_DECLARE_CURRENT(TYPE_NAME, PREFIX, ITEM_TYPE) \
+#define NC_TYPED_MENU_DECLARE_CURRENT(TYPE_NAME, PREFIX, ITEM_TYPE)            \
     ITEM_TYPE *PREFIX##_current(TYPE_NAME *menu)
 
-#define NC_TYPED_MENU_DECLARE_COMMON(TYPE_NAME, PREFIX) \
-    NC_TYPED_MENU_DECLARE_TYPE(TYPE_NAME); \
-    NC_TYPED_MENU_DECLARE_INIT(TYPE_NAME, PREFIX); \
-    NC_TYPED_MENU_DECLARE_DESTROY(TYPE_NAME, PREFIX); \
+#define NC_TYPED_MENU_DECLARE_COMMON(TYPE_NAME, PREFIX)                        \
+    NC_TYPED_MENU_DECLARE_TYPE(TYPE_NAME);                                     \
+    NC_TYPED_MENU_DECLARE_INIT(TYPE_NAME, PREFIX);                             \
+    NC_TYPED_MENU_DECLARE_DESTROY(TYPE_NAME, PREFIX);                          \
     NC_TYPED_MENU_DECLARE_BASE(TYPE_NAME, PREFIX)
 
 NC_TYPED_MENU_DECLARE_COMMON(NcSongMenu, nc_song_menu);
