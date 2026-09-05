@@ -1146,9 +1146,8 @@ menu_clamp_navigation(NcMenu *menu) {
 
 static void
 menu_set_flags_for_item(NcMenu *menu, void *item, uint32 flags) {
-    int32 pos;
+    int32 pos = menu_item_index(menu, NC_MENU_ITEMS_ALL, item);
 
-    pos = menu_item_index(menu, NC_MENU_ITEMS_ALL, item);
     ASSERT_NON_NEGATIVE(pos);
     menu->all_item_flags[pos] = flags;
 
