@@ -8,10 +8,10 @@ The step-1 source contained 135 `OPT(...)` invocations but 134 effective
 option names: `visualizer_type` has two mutually exclusive default entries
 under `#if defined(HAVE_FFTW3_H)`.
 
-As of step 10, `src/configuration_options.def` is the authoritative production
+As of step 11, `src/configuration_options.def` is the authoritative production
 definition for all 78 primitive options, 10 ordinary enum-backed options, 16
-color-family options, 7 format-AST options, 10 formatted-buffer options, and 2
-look-string options.  It generates their
+color-family options, 7 format-AST options, 10 formatted-buffer options, 2
+look-string options, and 6 collection/list options.  It generates their
 `Configuration` fields, apply wrappers, option-table entries, and lifecycle
 initialization/destruction.  String, path, and directory entries generate both
 the owned pointer and its `_len` companion and own their cleanup.  `XX_ENUM`
@@ -23,9 +23,13 @@ the parser flag mask and own their `NcmFormatAst` lifecycle.  `XX_BUFFER` and
 `XX_BUFFER_WIDTH` entries own `NcBuffer` parsing/lifecycle and explicitly record
 whether an existing rendered value wins; width entries also generate their
 cached `_length` companion.  `XX_LOOK` entries record UTF-8 character bounds
-and whether short values are NUL-padded to the maximum width.  The remaining
-11 effective options are still declared by the handwritten `SettingsOption`
-table.  This document remains the behavioral migration inventory rather than a
+and whether short values are NUL-padded to the maximum width.  `XX_RATIO`,
+`XX_FORMATTED_COLOR_LIST`, `XX_LYRICS_FETCHERS`, and `XX_SCREEN_LIST` own their
+container fields, parsing, descriptor entries, initialization, and destruction;
+`XX_SCREEN_LIST` also owns its `screen_switcher_previous` companion flag.  The
+remaining 5 effective options are still declared by the handwritten
+`SettingsOption` table.  This document remains the behavioral migration
+inventory rather than a
 production include file.  Existing primitive side effects and transforms are
 preserved by temporary generated-wrapper pre/post handling until the later
 validation/runtime-application steps separate them from parsing.
@@ -69,6 +73,8 @@ remains a collection type for the later list migration.  All 7 option-backed
 `song_columns_mode_format` AST remains derived state of
 `song_columns_list_format` and is intentionally not an option entry.  All 10
 formatted-buffer settings and both `XX_LOOK` settings are migrated in step 10.
+All 3 `XX_RATIO` settings, the formatted-color list, lyrics-fetcher list, and
+screen list are migrated in step 11.
 
 ## Per-option baseline
 
@@ -98,7 +104,7 @@ formatted-buffer settings and both `XX_LOOK` settings are migrated in step 10.
 | `visualizer_spectrum_hz_max` | `20000` | `XX_DOUBLE_RANGE` | `visualizer_spectrum_hz_max` | `ncm_parse_double` + option-specific checks | Parse `double`; require >= current `visualizer_spectrum_hz_min + 1` (order-dependent cross-field validation). | trivial scalar |
 | `visualizer_spectrum_log_scale_x` | `yes` | `XX_BOOL` | `visualizer_spectrum_log_scale_x` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `visualizer_spectrum_log_scale_y` | `yes` | `XX_BOOL` | `visualizer_spectrum_log_scale_y` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
-| `visualizer_color` | `blue, cyan, green, yellow, magenta, red` | `XX_FORMATTED_COLOR_LIST` | `visualizer_color` | `apply_visualizer_color` custom body | Comma-separated formatted colors; ignore empty items; at least one item required. | array of owned `NcFormattedColor`; clear elements and free storage |
+| `visualizer_color` | `blue, cyan, green, yellow, magenta, red` | `XX_FORMATTED_COLOR_LIST` | `visualizer_color` | generated `settings_parse_formatted_color_list` wrapper | Comma-separated formatted colors; ignore empty items; at least one item required. | array of owned `NcFormattedColor`; clear elements and free storage |
 | `system_encoding` | `` | `XX_STRING` | `system_encoding`, `system_encoding_len` | `apply_system_encoding` custom body | Compatibility/no-op today: discard input and clear stored string. | owned string + `_len`; init NULL/0; `free2` on destroy |
 | `playlist_disable_highlight_delay` | `5` | `XX_INT_RANGE` | `playlist_disable_highlight_delay` | `ncm_parse_int32` + option-specific checks | Parse `int32`; no explicit bounds today. | trivial scalar |
 | `message_delay_time` | `5` | `XX_INT_RANGE` | `message_delay_time` | `APPLY_UINT` | Parse `int32`; no explicit bounds today. | trivial scalar |
@@ -153,7 +159,7 @@ formatted-buffer settings and both `XX_LOOK` settings are migrated in step 10.
 | `titles_visibility` | `yes` | `XX_BOOL` | `titles_visibility` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `header_text_scrolling` | `yes` | `XX_BOOL` | `header_text_scrolling` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `cyclic_scrolling` | `no` | `XX_BOOL` | `cyclic_scrolling` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
-| `lyrics_fetchers` | `azlyrics, genius, letras, musixmatch, tekstowo, vagalume, internet` | `XX_LYRICS_FETCHERS` | `lyrics_fetchers` | `apply_lyrics_fetchers` custom body | Comma-separated registered fetcher names; unknown names fail; at least one item required. | `NcmLyricsFetcherRegistry`; zero-init; registry destroy |
+| `lyrics_fetchers` | `azlyrics, genius, letras, musixmatch, tekstowo, vagalume, internet` | `XX_LYRICS_FETCHERS` | `lyrics_fetchers` | generated `settings_parse_lyrics_fetchers` wrapper | Comma-separated registered fetcher names; unknown names fail; at least one item required. | `NcmLyricsFetcherRegistry`; zero-init; registry destroy |
 | `follow_now_playing_lyrics` | `no` | `XX_BOOL` | `follow_now_playing_lyrics` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `fetch_lyrics_for_current_song_in_background` | `no` | `XX_BOOL` | `fetch_lyrics_for_current_song_in_background` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `store_lyrics_in_song_dir` | `no` | `XX_BOOL` | `store_lyrics_in_song_dir` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
@@ -162,15 +168,15 @@ formatted-buffer settings and both `XX_LOOK` settings are migrated in step 10.
 | `lastfm_preferred_language` | `en` | `XX_STRING` | `lastfm_preferred_language`, `lastfm_preferred_language_len` | `APPLY_STRING` | Copy value bytes verbatim. | owned string + `_len`; init NULL/0; `free2` on destroy |
 | `space_add_mode` | `add_remove` | `XX_ENUM` | `space_add_mode` | `ncm_space_add_mode_parse` | Parse named value into enum-like storage. | trivial scalar |
 | `show_hidden_files_in_local_browser` | `no` | `XX_BOOL` | `show_hidden_files_in_local_browser` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
-| `screen_switcher_mode` | `playlist, browser` | `XX_SCREEN_LIST` | `screen_switcher_mode`, `screen_switcher_previous` | `apply_screen_switcher_mode` custom body | Special `previous` sets a companion bool; otherwise parse a non-empty comma-separated list of startup-valid screens. | `ScreenTypeArray` + companion bool; free array storage |
+| `screen_switcher_mode` | `playlist, browser` | `XX_SCREEN_LIST` | `screen_switcher_mode`, `screen_switcher_previous` | generated `settings_parse_screen_list` wrapper | Special `previous` sets a companion bool; otherwise parse a non-empty comma-separated list of startup-valid screens. | `ScreenTypeArray` + companion bool; free array storage |
 | `startup_screen` | `playlist` | `XX_ENUM` | `startup_screen` | `screen_type_parse_startup` | Parse only screens allowed at startup. | trivial scalar |
 | `startup_slave_screen` | `` | `XX_OPTIONAL_ENUM` | `startup_slave_screen`, `has_startup_slave_screen_type` | `apply_startup_slave_screen` custom body | Empty means unset; otherwise parse startup-valid screen and set presence flag. | enum + presence bool; trivial scalars |
 | `startup_slave_screen_focus` | `no` | `XX_BOOL` | `startup_slave_screen_focus` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `locked_screen_width_part` | `50` | `XX_DOUBLE_RANGE` | `locked_screen_width_part` | `ncm_parse_double` + option-specific checks | Parse unbounded `double`, then divide by 100 before storage. | trivial scalar |
 | `ask_for_locked_screen_width_part` | `yes` | `XX_BOOL` | `ask_for_locked_screen_width_part` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
-| `media_library_column_width_ratio_two` | `1:1` | `XX_RATIO` | `media_library_column_width_ratio_two` | `settings_parse_ratio` | Parse exactly 2 colon-separated ints; sum must be nonzero. | `NcmInt32Array`; zero-init; array destroy |
-| `media_library_column_width_ratio_three` | `1:1:1` | `XX_RATIO` | `media_library_column_width_ratio_three` | `settings_parse_ratio` | Parse exactly 3 colon-separated ints; sum must be nonzero. | `NcmInt32Array`; zero-init; array destroy |
-| `playlist_editor_column_width_ratio` | `1:2` | `XX_RATIO` | `playlist_editor_column_width_ratio` | `settings_parse_ratio` | Parse exactly 2 colon-separated ints; sum must be nonzero. | `NcmInt32Array`; zero-init; array destroy |
+| `media_library_column_width_ratio_two` | `1:1` | `XX_RATIO` | `media_library_column_width_ratio_two` | generated `settings_parse_ratio` wrapper | Parse exactly 2 colon-separated ints; sum must be nonzero. | `NcmInt32Array`; zero-init; array destroy |
+| `media_library_column_width_ratio_three` | `1:1:1` | `XX_RATIO` | `media_library_column_width_ratio_three` | generated `settings_parse_ratio` wrapper | Parse exactly 3 colon-separated ints; sum must be nonzero. | `NcmInt32Array`; zero-init; array destroy |
+| `playlist_editor_column_width_ratio` | `1:2` | `XX_RATIO` | `playlist_editor_column_width_ratio` | generated `settings_parse_ratio` wrapper | Parse exactly 2 colon-separated ints; sum must be nonzero. | `NcmInt32Array`; zero-init; array destroy |
 | `jump_to_now_playing_song_at_start` | `yes` | `XX_BOOL` | `jump_to_now_playing_song_at_start` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `ask_before_clearing_playlists` | `yes` | `XX_BOOL` | `ask_before_clearing_playlists` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `ask_before_shuffling_playlists` | `yes` | `XX_BOOL` | `ask_before_shuffling_playlists` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |

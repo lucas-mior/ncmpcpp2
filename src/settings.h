@@ -34,11 +34,10 @@ typedef struct ColumnArray {
     int32 cap;
 } ColumnArray;
 
-typedef struct ScreenTypeArray {
-    enum ScreenType *items;
-    int32 len;
-    int32 cap;
-} ScreenTypeArray;
+NCM_ARRAY_DECLARE_TYPE(ScreenTypeArray, enum ScreenType)
+NCM_ARRAY_DECLARE_CLEAR(screen_type_array, ScreenTypeArray)
+NCM_ARRAY_DECLARE_DESTROY(screen_type_array, ScreenTypeArray)
+NCM_ARRAY_DECLARE_APPEND(screen_type_array, ScreenTypeArray, enum ScreenType)
 
 NCM_ARRAY_DECLARE_TYPE(NcmInt32Array, int32)
 NCM_ARRAY_DECLARE_CLEAR(ncm_int32_array, NcmInt32Array)
@@ -47,6 +46,7 @@ NCM_ARRAY_DECLARE_APPEND(ncm_int32_array, NcmInt32Array, int32)
 
 NCM_ARRAY_DECLARE_TYPE(NcmFormattedColorArray, NcFormattedColor)
 NCM_ARRAY_DECLARE_CLEAR(ncm_formatted_color_array, NcmFormattedColorArray)
+NCM_ARRAY_DECLARE_DESTROY(ncm_formatted_color_array, NcmFormattedColorArray)
 NCM_ARRAY_DECLARE_APPEND(ncm_formatted_color_array, NcmFormattedColorArray,
                          NcFormattedColor)
 
@@ -71,7 +71,18 @@ typedef struct Configuration {
     int32 NAME##_length;
 #define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX) \
     StrBuilder NAME;
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN) NcmInt32Array NAME;
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE) \
+    NcmFormattedColorArray NAME;
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE) NcmLyricsFetcherRegistry NAME;
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD) \
+    ScreenTypeArray NAME; \
+    bool PREVIOUS_FIELD;
 #include "configuration_options.def"
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
 #undef XX_LOOK
 #undef XX_BUFFER_WIDTH
 #undef XX_BUFFER
@@ -93,14 +104,8 @@ typedef struct Configuration {
 
     NcmFormatAst song_columns_mode_format;
 
-    NcmInt32Array playlist_editor_column_width_ratio;
-    NcmInt32Array media_library_column_width_ratio_two;
-    NcmInt32Array media_library_column_width_ratio_three;
     ColumnArray song_columns_list_format;
 
-    NcmFormattedColorArray visualizer_color;
-
-    bool screen_switcher_previous;
     bool default_find_mode;
     bool default_place_to_search_in;
     bool has_startup_slave_screen_type;
@@ -109,18 +114,12 @@ typedef struct Configuration {
     uint32 regular_expressions;
 
     enum ScreenType startup_slave_screen;
-    ScreenTypeArray screen_switcher_mode;
-
-    NcmLyricsFetcherRegistry lyrics_fetchers;
 } Configuration;
 
 void column_init(Column *column);
 
 Column *column_array_append(ColumnArray *array);
 void column_array_clear(ColumnArray *array);
-
-enum ScreenType *screen_type_array_append(ScreenTypeArray *array);
-void screen_type_array_clear(ScreenTypeArray *array);
 
 void configuration_init(Configuration *config);
 void configuration_destroy(Configuration *config);

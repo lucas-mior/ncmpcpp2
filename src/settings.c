@@ -43,7 +43,15 @@ enum SettingsPrimitiveOption {
 #define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)
 #define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)
 #define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN)
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE)
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD)
 #include "configuration_options.def"
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
 #undef XX_LOOK
 #undef XX_BUFFER_WIDTH
 #undef XX_BUFFER
@@ -79,7 +87,15 @@ enum SettingsEnumOption {
 #define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)
 #define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)
 #define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN)
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE)
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD)
 #include "configuration_options.def"
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
 #undef XX_LOOK
 #undef XX_BUFFER_WIDTH
 #undef XX_BUFFER
@@ -115,7 +131,15 @@ enum SettingsColorOption {
 #define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)
 #define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)
 #define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN)
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE)
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD)
 #include "configuration_options.def"
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
 #undef XX_LOOK
 #undef XX_BUFFER_WIDTH
 #undef XX_BUFFER
@@ -151,7 +175,15 @@ enum SettingsFormatOption {
 #define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)
 #define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)
 #define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN)
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE)
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD)
 #include "configuration_options.def"
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
 #undef XX_LOOK
 #undef XX_BUFFER_WIDTH
 #undef XX_BUFFER
@@ -188,7 +220,15 @@ enum SettingsBufferOption {
 #define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING) \
     SETTINGS_BUFFER_##NAME,
 #define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN)
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE)
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD)
 #include "configuration_options.def"
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
 #undef XX_LOOK
 #undef XX_BUFFER_WIDTH
 #undef XX_BUFFER
@@ -225,7 +265,15 @@ enum SettingsLookOption {
 #define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)
 #define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX) \
     SETTINGS_LOOK_##NAME,
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN)
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE)
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD)
 #include "configuration_options.def"
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
 #undef XX_LOOK
 #undef XX_BUFFER_WIDTH
 #undef XX_BUFFER
@@ -245,6 +293,51 @@ enum SettingsLookOption {
 
 _Static_assert(SETTINGS_LOOK_COUNT == 2,
                "look configuration option count changed");
+
+enum SettingsListOption {
+#define XX_BOOL(NAME, DEFAULT_VALUE)
+#define XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_PATH(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT_VALUE)
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_COLOR(NAME, DEFAULT_VALUE)
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
+#define XX_BORDER(NAME, DEFAULT_VALUE)
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS)
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN) SETTINGS_LIST_##NAME,
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE) SETTINGS_LIST_##NAME,
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE) SETTINGS_LIST_##NAME,
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD) \
+    SETTINGS_LIST_##NAME,
+#include "configuration_options.def"
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
+#undef XX_FORMAT
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
+#undef XX_ENUM
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_DIR
+#undef XX_PATH
+#undef XX_STRING
+#undef XX_BOOL
+    SETTINGS_LIST_COUNT,
+};
+
+_Static_assert(SETTINGS_LIST_COUNT == 6,
+               "list configuration option count changed");
 
 #define SETTINGS_ASSERT_FIELD_TYPE(NAME, TYPE) \
     _Static_assert(_Generic(&((Configuration *)0)->NAME, \
@@ -279,7 +372,20 @@ _Static_assert(SETTINGS_LOOK_COUNT == 2,
     SETTINGS_ASSERT_FIELD_TYPE(NAME##_length, int32);
 #define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX) \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, StrBuilder);
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, NcmInt32Array);
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, NcmFormattedColorArray);
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, NcmLyricsFetcherRegistry);
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, ScreenTypeArray); \
+    SETTINGS_ASSERT_FIELD_TYPE(PREVIOUS_FIELD, bool);
 #include "configuration_options.def"
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
 #undef XX_LOOK
 #undef XX_BUFFER_WIDTH
 #undef XX_BUFFER
@@ -778,9 +884,9 @@ settings_parse_media_library_primary_tag(char *value, int32 value_len,
 }
 
 static int32
-apply_visualizer_color(Configuration *config, char *value, int32 value_len,
-                       NcmError *ncm_error) {
-    NcmFormattedColorArray *array = &config->visualizer_color;
+settings_parse_formatted_color_list(NcmFormattedColorArray *array,
+                                    char *value, int32 value_len,
+                                    NcmError *ncm_error) {
     int32 pos;
     int32 status;
     bool added;
@@ -1018,13 +1124,14 @@ apply_default_find_mode(Configuration *config, char *value, int32 value_len,
 }
 
 static int32
-apply_lyrics_fetchers(Configuration *config, char *value, int32 value_len,
-                      NcmError *ncm_error) {
+settings_parse_lyrics_fetchers(NcmLyricsFetcherRegistry *registry,
+                               char *value, int32 value_len,
+                               NcmError *ncm_error) {
     int32 pos;
     int32 status;
     bool added;
 
-    ncm_lyrics_fetcher_registry_clear(&config->lyrics_fetchers);
+    ncm_lyrics_fetcher_registry_clear(registry);
     pos = 0;
     added = false;
     while (pos <= value_len) {
@@ -1041,7 +1148,7 @@ apply_lyrics_fetchers(Configuration *config, char *value, int32 value_len,
             continue;
         }
         status = ncm_lyrics_fetcher_registry_append_name(
-            &config->lyrics_fetchers, item, item_len);
+            registry, item, item_len);
         if (status < 0) {
             return settings_error(ncm_error, STRLIT("unknown lyrics fetcher"));
         }
@@ -1054,19 +1161,20 @@ apply_lyrics_fetchers(Configuration *config, char *value, int32 value_len,
 }
 
 static int32
-apply_screen_switcher_mode(Configuration *config, char *value, int32 value_len,
+settings_parse_screen_list(ScreenTypeArray *array, bool *previous,
+                           char *value, int32 value_len,
                            NcmError *ncm_error) {
     int32 pos;
     int32 status;
     bool added;
 
     if (STREQUAL(value, value_len, "previous")) {
-        config->screen_switcher_previous = true;
-        screen_type_array_clear(&config->screen_switcher_mode);
+        *previous = true;
+        screen_type_array_clear(array);
         return 0;
     }
-    config->screen_switcher_previous = false;
-    screen_type_array_clear(&config->screen_switcher_mode);
+    *previous = false;
+    screen_type_array_clear(array);
     pos = 0;
     added = false;
     while (pos <= value_len) {
@@ -1088,7 +1196,7 @@ apply_screen_switcher_mode(Configuration *config, char *value, int32 value_len,
         if (status < 0) {
             return settings_invalid_value(ncm_error, item, item_len);
         }
-        slot = screen_type_array_append(&config->screen_switcher_mode);
+        slot = screen_type_array_append(array);
         *slot = screen;
         added = true;
     }
@@ -1115,30 +1223,6 @@ apply_startup_slave_screen(Configuration *config, char *value, int32 value_len,
     }
     config->has_startup_slave_screen_type = true;
     return 0;
-}
-
-static int32
-apply_media_library_column_width_ratio_two(Configuration *config,
-                                           char *value, int32 value_len,
-                                           NcmError *ncm_error) {
-    return settings_parse_ratio(&config->media_library_column_width_ratio_two,
-                                value, value_len, 2, ncm_error);
-}
-
-static int32
-apply_media_library_column_width_ratio_three(Configuration *config,
-                                             char *value, int32 value_len,
-                                             NcmError *ncm_error) {
-    return settings_parse_ratio(&config->media_library_column_width_ratio_three,
-                                value, value_len, 3, ncm_error);
-}
-
-static int32
-apply_playlist_editor_column_width_ratio(Configuration *config,
-                                         char *value, int32 value_len,
-                                         NcmError *ncm_error) {
-    return settings_parse_ratio(&config->playlist_editor_column_width_ratio,
-                                value, value_len, 2, ncm_error);
 }
 
 static int32
@@ -1469,8 +1553,45 @@ settings_primitive_post_apply(enum SettingsPrimitiveOption option,
                                    ncm_error); \
     }
 
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN) \
+    static int32 \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        return settings_parse_ratio(&config->NAME, value, value_len, \
+                                    EXPECTED_LEN, ncm_error); \
+    }
+
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE) \
+    static int32 \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        return settings_parse_formatted_color_list( \
+            &config->NAME, value, value_len, ncm_error); \
+    }
+
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE) \
+    static int32 \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        return settings_parse_lyrics_fetchers( \
+            &config->NAME, value, value_len, ncm_error); \
+    }
+
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD) \
+    static int32 \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        return settings_parse_screen_list( \
+            &config->NAME, &config->PREVIOUS_FIELD, value, value_len, \
+            ncm_error); \
+    }
+
 #include "configuration_options.def"
 
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
 #undef XX_LOOK
 #undef XX_BUFFER_WIDTH
 #undef XX_BUFFER
@@ -1514,7 +1635,17 @@ static const SettingsOption ncmpcpp_options[] = {
     OPT(NAME, DEFAULT_VALUE),
 #define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX) \
     OPT(NAME, DEFAULT_VALUE),
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN) OPT(NAME, DEFAULT_VALUE),
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE) \
+    OPT(NAME, DEFAULT_VALUE),
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE) OPT(NAME, DEFAULT_VALUE),
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD) \
+    OPT(NAME, DEFAULT_VALUE),
 #include "configuration_options.def"
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
 #undef XX_LOOK
 #undef XX_BUFFER_WIDTH
 #undef XX_BUFFER
@@ -1530,19 +1661,12 @@ static const SettingsOption ncmpcpp_options[] = {
 #undef XX_STRING
 #undef XX_BOOL
 
-OPT(visualizer_color, "blue, cyan, green, yellow, magenta, red"),
 OPT(song_columns_list_format,
     "(20)[]{a} (6f)[green]{NE} (50)[white]{t|f:Title}"
     " (20)[cyan]{b} (7f)[magenta]{l}"),
 OPT(default_place_to_search_in, "database"),
 OPT(default_find_mode, "wrapped"),
-OPT(lyrics_fetchers,
-    "azlyrics, genius, letras, musixmatch, tekstowo, vagalume, internet"),
-OPT(screen_switcher_mode, "playlist, browser"),
 OPT(startup_slave_screen, ""),
-OPT(media_library_column_width_ratio_two, "1:1"),
-OPT(media_library_column_width_ratio_three, "1:1:1"),
-OPT(playlist_editor_column_width_ratio, "1:2"),
 OPT(regular_expressions, "extended"),
 };
 

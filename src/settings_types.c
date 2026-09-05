@@ -47,6 +47,10 @@ settings_array_reserve_append(void *items, int32 len, int32 *cap,
     return items;
 }
 
+NCM_ARRAY_DEFINE_CLEAR(screen_type_array, ScreenTypeArray,
+                       &settings_no_callbacks)
+NCM_ARRAY_DEFINE_DESTROY(screen_type_array, ScreenTypeArray)
+
 NCM_ARRAY_DEFINE_CLEAR(ncm_int32_array, NcmInt32Array, &settings_no_callbacks)
 NCM_ARRAY_DEFINE_DESTROY(ncm_int32_array, NcmInt32Array)
 
@@ -64,6 +68,7 @@ ncm_int32_array_append(NcmInt32Array *array) {
 
 NCM_ARRAY_DEFINE_CLEAR(ncm_formatted_color_array, NcmFormattedColorArray,
                        &settings_formatted_color_callbacks)
+NCM_ARRAY_DEFINE_DESTROY(ncm_formatted_color_array, NcmFormattedColorArray)
 
 NcFormattedColor *
 ncm_formatted_color_array_append(NcmFormattedColorArray *array) {
@@ -121,12 +126,6 @@ column_array_append(ColumnArray *array) {
     return column;
 }
 
-void
-screen_type_array_clear(ScreenTypeArray *array) {
-    array->len = 0;
-    return;
-}
-
 enum ScreenType *
 screen_type_array_append(ScreenTypeArray *array) {
     enum ScreenType *screen_type;
@@ -175,7 +174,20 @@ configuration_init_unchecked(Configuration *config) {
     config->NAME##_length = 0;
 #define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX) \
     config->NAME = (StrBuilder){0};
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN) \
+    config->NAME = (NcmInt32Array){0};
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE) \
+    config->NAME = (NcmFormattedColorArray){0};
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE) \
+    config->NAME = (NcmLyricsFetcherRegistry){0};
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD) \
+    config->NAME = (ScreenTypeArray){0}; \
+    config->PREVIOUS_FIELD = false;
 #include "configuration_options.def"
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
 #undef XX_LOOK
 #undef XX_BUFFER_WIDTH
 #undef XX_BUFFER
@@ -196,15 +208,8 @@ configuration_init_unchecked(Configuration *config) {
 
     config->song_columns_mode_format = (NcmFormatAst){0};
 
-    config->playlist_editor_column_width_ratio = (NcmInt32Array){0};
-    config->media_library_column_width_ratio_two = (NcmInt32Array){0};
-    config->media_library_column_width_ratio_three = (NcmInt32Array){0};
     config->song_columns_list_format = (ColumnArray){0};
-    config->visualizer_color = (NcmFormattedColorArray){0};
-    config->screen_switcher_mode = (ScreenTypeArray){0};
-    config->lyrics_fetchers = (NcmLyricsFetcherRegistry){0};
 
-    config->screen_switcher_previous = false;
     config->default_find_mode = false;
     config->default_place_to_search_in = false;
     config->has_startup_slave_screen_type = false;
@@ -255,7 +260,20 @@ configuration_destroy(Configuration *config) {
     config->NAME##_length = 0;
 #define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX) \
     sb_free(&config->NAME);
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN) \
+    ncm_int32_array_destroy(&config->NAME);
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE) \
+    ncm_formatted_color_array_destroy(&config->NAME);
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE) \
+    ncm_lyrics_fetcher_registry_destroy(&config->NAME);
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD) \
+    screen_type_array_destroy(&config->NAME); \
+    config->PREVIOUS_FIELD = false;
 #include "configuration_options.def"
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
 #undef XX_LOOK
 #undef XX_BUFFER_WIDTH
 #undef XX_BUFFER
@@ -277,26 +295,11 @@ configuration_destroy(Configuration *config) {
 
     ncm_format_ast_destroy(&config->song_columns_mode_format);
 
-    ncm_int32_array_destroy(&config->playlist_editor_column_width_ratio);
-    ncm_int32_array_destroy(&config->media_library_column_width_ratio_two);
-    ncm_int32_array_destroy(&config->media_library_column_width_ratio_three);
     column_array_clear(&config->song_columns_list_format);
     free2(config->song_columns_list_format.items,
           config->song_columns_list_format.cap
               *SIZEOF(*config->song_columns_list_format.items));
     config->song_columns_list_format = (ColumnArray){0};
-    ncm_formatted_color_array_clear(&config->visualizer_color);
-
-    free2(config->visualizer_color.items,
-          config->visualizer_color.cap
-              *SIZEOF(*config->visualizer_color.items));
-
-    config->visualizer_color = (NcmFormattedColorArray){0};
-    free2(config->screen_switcher_mode.items,
-          config->screen_switcher_mode.cap
-              *SIZEOF(*config->screen_switcher_mode.items));
-    config->screen_switcher_mode = (ScreenTypeArray){0};
-    ncm_lyrics_fetcher_registry_destroy(&config->lyrics_fetchers);
 
     configuration_init_unchecked(config);
 
