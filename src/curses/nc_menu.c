@@ -933,9 +933,8 @@ nc_menu_has_selected(NcMenu *menu) {
 
 int32
 nc_menu_selected_count(NcMenu *menu) {
-    int32 count;
+    int32 count = 0;
 
-    count = 0;
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         if (menu_position_is_selected(menu, i)) {
             count += 1;
