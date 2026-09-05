@@ -765,7 +765,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
     screen->result_rows_present = true;
     screen->result_count = songs.len;
 
-    screen->constraints_locked = Config.block_search_constraints_change;
+    screen->constraints_locked = Config.block_search_constraints_change_if_items_found;
     menu = search_engine_screen_menu(screen);
     if (nc_menu_all_item_count(menu)
         > SEARCH_ENGINE_SEARCH_BUTTON_ROW) {
