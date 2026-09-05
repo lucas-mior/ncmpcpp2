@@ -8,17 +8,18 @@ The step-1 source contained 135 `OPT(...)` invocations but 134 effective
 option names: `visualizer_type` has two mutually exclusive default entries
 under `#if defined(HAVE_FFTW3_H)`.
 
-As of step 5, `src/configuration_options.def` is the authoritative production
+As of step 6, `src/configuration_options.def` is the authoritative production
 definition for all 78 primitive options: `XX_BOOL`, `XX_INT_RANGE`,
 `XX_DOUBLE_RANGE`, `XX_STRING`, `XX_PATH`, and `XX_DIR`.  It now generates
-their `Configuration` fields as well as their apply wrappers and option-table
-entries.  String, path, and directory entries generate both the owned pointer
-and its `_len` companion.  The remaining 56 effective options are still
-declared by the handwritten `SettingsOption` table.  This document remains the
-behavioral migration inventory rather than a production include file.  Existing
-primitive side effects and transforms are preserved by temporary generated-
-wrapper pre/post handling until the later validation/runtime-application steps
-separate them from parsing.
+their `Configuration` fields, apply wrappers, option-table entries, and
+lifecycle initialization/destruction.  String, path, and directory entries
+generate both the owned pointer and its `_len` companion and own their cleanup.
+The remaining 56 effective options are still declared by the handwritten
+`SettingsOption` table.  This document remains the behavioral migration
+inventory rather than a production include file.  Existing primitive side
+effects and transforms are preserved by temporary generated-wrapper pre/post
+handling until the later validation/runtime-application steps separate them
+from parsing.
 
 ## Proposed X-macro type inventory
 
