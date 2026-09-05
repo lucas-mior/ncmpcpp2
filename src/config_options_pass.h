@@ -48,11 +48,11 @@
 #endif
 #endif
 
-#if !defined(XX_DOUBLE_RANGE)
+#if !defined(XX_DOUBLE)
 #if defined(XX_OPTION)
-#define XX_DOUBLE_RANGE XX_OPTION
+#define XX_DOUBLE XX_OPTION
 #else
-#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_DOUBLE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #endif
 #endif
 
@@ -208,7 +208,7 @@
 #undef XX_COLOR
 #undef XX_OPTIONAL_ENUM
 #undef XX_ENUM
-#undef XX_DOUBLE_RANGE
+#undef XX_DOUBLE
 #undef XX_INTEGER
 #undef XX_DIR
 #undef XX_PATH
