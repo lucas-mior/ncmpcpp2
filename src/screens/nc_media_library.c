@@ -665,13 +665,13 @@ media_library_screen_init(MediaLibraryScreen *screen,
 
     nc_menu_set_cyclic_scrolling(
         nc_media_library_tag_menu_base(&screen->tags),
-        Config.use_cyclic_scrolling);
+        Config.cyclic_scrolling);
     nc_menu_set_cyclic_scrolling(
         nc_media_library_album_menu_base(&screen->albums),
-        Config.use_cyclic_scrolling);
+        Config.cyclic_scrolling);
     nc_menu_set_cyclic_scrolling(
         nc_media_library_song_menu_base(&screen->songs),
-        Config.use_cyclic_scrolling);
+        Config.cyclic_scrolling);
     nc_menu_set_centered_cursor(
         nc_media_library_tag_menu_base(&screen->tags),
         Config.centered_cursor);

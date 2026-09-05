@@ -220,8 +220,8 @@ playlist_editor_screen_init(PlaylistEditorScreen *screen,
         nc_menu_set_selected_prefix(content, &Config.selected_item_prefix);
         nc_menu_set_selected_suffix(content, &Config.selected_item_suffix);
 
-        nc_menu_set_cyclic_scrolling(playlists, Config.use_cyclic_scrolling);
-        nc_menu_set_cyclic_scrolling(content, Config.use_cyclic_scrolling);
+        nc_menu_set_cyclic_scrolling(playlists, Config.cyclic_scrolling);
+        nc_menu_set_cyclic_scrolling(content, Config.cyclic_scrolling);
         nc_menu_set_centered_cursor(playlists, Config.centered_cursor);
         nc_menu_set_centered_cursor(content, Config.centered_cursor);
 

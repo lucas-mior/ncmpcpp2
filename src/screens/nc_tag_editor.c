@@ -207,7 +207,7 @@ tag_editor_configure_menu(NcMenu *menu) {
     ASSERT(menu != NULL);
     nc_menu_set_selected_prefix(menu, &Config.selected_item_prefix);
     nc_menu_set_selected_suffix(menu, &Config.selected_item_suffix);
-    nc_menu_set_cyclic_scrolling(menu, Config.use_cyclic_scrolling);
+    nc_menu_set_cyclic_scrolling(menu, Config.cyclic_scrolling);
     nc_menu_set_centered_cursor(menu, Config.centered_cursor);
     return;
 }

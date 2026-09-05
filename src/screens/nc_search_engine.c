@@ -160,7 +160,7 @@ search_engine_screen_init(SearchEngineScreen *screen,
     nc_menu_set_selected_suffix(menu, &Config.selected_item_suffix);
     nc_menu_set_highlight_prefix(menu, &Config.current_item_prefix);
     nc_menu_set_highlight_suffix(menu, &Config.current_item_suffix);
-    nc_menu_set_cyclic_scrolling(menu, Config.use_cyclic_scrolling);
+    nc_menu_set_cyclic_scrolling(menu, Config.cyclic_scrolling);
     nc_menu_set_centered_cursor(menu, Config.centered_cursor);
     search_engine_screen_update_column_title(screen);
     return;

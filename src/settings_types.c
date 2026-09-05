@@ -257,7 +257,7 @@ configuration_init_unchecked(Configuration *config) {
     config->ignore_leading_the = false;
     config->block_search_constraints_change = false;
     config->use_console_editor = false;
-    config->use_cyclic_scrolling = false;
+    config->cyclic_scrolling = false;
     config->ask_before_clearing_playlists = false;
     config->ask_before_shuffling_playlists = false;
     config->mouse_support = false;

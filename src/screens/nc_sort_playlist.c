@@ -148,7 +148,7 @@ sort_playlist_dialog_init(SortPlaylistDialog *dialog,
     nc_menu_set_display_callbacks(menu, display_callbacks);
     nc_menu_set_highlight_prefix(menu, &Config.current_item_prefix);
     nc_menu_set_highlight_suffix(menu, &Config.current_item_suffix);
-    nc_menu_set_cyclic_scrolling(menu, Config.use_cyclic_scrolling);
+    nc_menu_set_cyclic_scrolling(menu, Config.cyclic_scrolling);
     nc_menu_set_centered_cursor(menu, Config.centered_cursor);
     nc_window_init(&dialog->window, start_x, start_y, width, height,
                    STRLIT("Sort songs by..."), color, border);
