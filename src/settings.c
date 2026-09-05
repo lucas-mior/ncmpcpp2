@@ -1767,147 +1767,146 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
 
     configuration_clear(config);
     settings_quiet = quiet;
-    if (config_paths) {
-        for (int32 i = 0; i < config_paths->len; i += 1) {
-            NcmStringView path = config_paths->items[i];
-            FILE *file;
-            StrBuilder path_buffer = {0};
-            char line[SETTINGS_LINE_CAP];
 
-            if (!ncm_fs_path_is_existing(path.data, path.len)) {
-                continue;
+    for (int32 i = 0; i < config_paths->len; i += 1) {
+        NcmStringView path = config_paths->items[i];
+        FILE *file;
+        StrBuilder path_buffer = {0};
+        char line[SETTINGS_LINE_CAP];
+
+        if (!ncm_fs_path_is_existing(path.data, path.len)) {
+            continue;
+        }
+
+        SB_APPEND(&path_buffer, path.data, path.len);
+        if ((file = fopen(path_buffer.data, "r")) == NULL) {
+            char message[256];
+            int32 saved_errno;
+            int32 len;
+
+            saved_errno = errno;
+            len = SNPRINTF(
+                message,
+                "failed to open configuration file '%.*s': %s",
+                path.len, path.data, strerror(saved_errno));
+            if (len < 0) {
+                ncm_error_set_status(
+                    ncm_error, -saved_errno,
+                    STRLIT("failed to open configuration file"));
+            } else {
+                if (len >= SIZEOF(message)) {
+                    len = SIZEOF(message) - 1;
+                }
+                ncm_error_set_status(ncm_error, -saved_errno,
+                                     message, len);
             }
-
-            SB_APPEND(&path_buffer, path.data, path.len);
-            if ((file = fopen(path_buffer.data, "r")) == NULL) {
-                char message[256];
-                int32 saved_errno;
-                int32 len;
-
-                saved_errno = errno;
-                len = SNPRINTF(
-                    message,
-                    "failed to open configuration file '%.*s': %s",
-                    path.len, path.data, strerror(saved_errno));
-                if (len < 0) {
-                    ncm_error_set_status(
-                        ncm_error, -saved_errno,
-                        STRLIT("failed to open configuration file"));
-                } else {
-                    if (len >= SIZEOF(message)) {
-                        len = SIZEOF(message) - 1;
-                    }
-                    ncm_error_set_status(ncm_error, -saved_errno,
-                                         message, len);
-                }
-                status = settings_report_or_ignore(ncm_error, ignore_errors);
-                sb_free(&path_buffer);
-                if (status < 0) {
-                    return status;
-                }
-                continue;
+            status = settings_report_or_ignore(ncm_error, ignore_errors);
+            sb_free(&path_buffer);
+            if (status < 0) {
+                return status;
             }
+            continue;
+        }
 
-            if (!quiet) {
-                error2("Reading configuration from %s...\n",
-                       path_buffer.data);
+        if (!quiet) {
+            error2("Reading configuration from %s...\n",
+                   path_buffer.data);
+        }
+        while (fgets(line, SIZEOF(line), file)) {
+            NcmOptionLine parsed;
+            SettingsOption *option;
+            int32 line_len = strlen32(line);
+            bool has_option;
+
+            while (
+                (line_len > 0)
+                && ((line[line_len - 1] == '\n')
+                    || (line[line_len - 1] == '\r'))) {
+                line_len -= 1;
+                line[line_len] = '\0';
             }
-            while (fgets(line, SIZEOF(line), file)) {
-                NcmOptionLine parsed;
-                SettingsOption *option;
-                int32 line_len = strlen32(line);
-                bool has_option;
-
-                while (
-                    (line_len > 0)
-                    && ((line[line_len - 1] == '\n')
-                        || (line[line_len - 1] == '\r'))) {
-                    line_len -= 1;
-                    line[line_len] = '\0';
-                }
-                status = ncm_option_parser_parse_line(line, line_len, &parsed,
-                                                      &has_option);
-                if (status < 0) {
-                    settings_invalid_value(ncm_error, line, line_len);
-                    status = settings_report_or_ignore(ncm_error,
-                                                       ignore_errors);
-                    if (status < 0) {
-                        fclose(file);
-                        sb_free(&path_buffer);
-                        return status;
-                    }
-                    continue;
-                }
-                if (!has_option) {
-                    continue;
-                }
-
-                option = NULL;
-                for (int32 j = 0; j < LENGTH(ncmpcpp_options); j += 1) {
-                    if (STREQUAL(parsed.option, parsed.option_len,
-                                 ncmpcpp_options[j].name, ncmpcpp_options[j].name_len)) {
-                        option = &ncmpcpp_options[j];
-                        break;
-                    }
-                }
-                if (option == NULL) {
-                    char message[256];
-                    int32 len;
-
-                    len = SNPRINTF(message, "unknown option: %.*s",
-                                   parsed.option_len, parsed.option);
-                    if (len < 0) {
-                        ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
-                                             STRLIT("unknown option"));
-                    } else {
-                        if (len >= SIZEOF(message)) {
-                            len = SIZEOF(message) - 1;
-                        }
-                        ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
-                                             message, len);
-                    }
-                    status = settings_report_or_ignore(ncm_error,
-                                                       ignore_errors);
-                    if (status < 0) {
-                        fclose(file);
-                        sb_free(&path_buffer);
-                        return status;
-                    }
-                    continue;
-                }
-                if (option->used) {
-                    char message[256];
-                    int32 len;
-
-                    len = SNPRINTF(
-                        message,
-                        "error while processing option \"%.*s\": "
-                        "option already set",
-                        option->name_len, option->name);
-                    ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
-                                         message, len);
-                    status = settings_report_or_ignore(ncm_error,
-                                                       ignore_errors);
-                    if (status < 0) {
-                        fclose(file);
-                        sb_free(&path_buffer);
-                        return status;
-                    }
-                    continue;
-                }
-                option->used = true;
-                status = settings_apply_option(
-                    config, option, parsed.value, parsed.value_len,
-                    false, ignore_errors, ncm_error);
+            status = ncm_option_parser_parse_line(line, line_len, &parsed,
+                                                  &has_option);
+            if (status < 0) {
+                settings_invalid_value(ncm_error, line, line_len);
+                status = settings_report_or_ignore(ncm_error,
+                                                   ignore_errors);
                 if (status < 0) {
                     fclose(file);
                     sb_free(&path_buffer);
                     return status;
                 }
+                continue;
             }
-            fclose(file);
-            sb_free(&path_buffer);
+            if (!has_option) {
+                continue;
+            }
+
+            option = NULL;
+            for (int32 j = 0; j < LENGTH(ncmpcpp_options); j += 1) {
+                if (STREQUAL(parsed.option, parsed.option_len,
+                             ncmpcpp_options[j].name, ncmpcpp_options[j].name_len)) {
+                    option = &ncmpcpp_options[j];
+                    break;
+                }
+            }
+            if (option == NULL) {
+                char message[256];
+                int32 len;
+
+                len = SNPRINTF(message, "unknown option: %.*s",
+                               parsed.option_len, parsed.option);
+                if (len < 0) {
+                    ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                                         STRLIT("unknown option"));
+                } else {
+                    if (len >= SIZEOF(message)) {
+                        len = SIZEOF(message) - 1;
+                    }
+                    ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                                         message, len);
+                }
+                status = settings_report_or_ignore(ncm_error,
+                                                   ignore_errors);
+                if (status < 0) {
+                    fclose(file);
+                    sb_free(&path_buffer);
+                    return status;
+                }
+                continue;
+            }
+            if (option->used) {
+                char message[256];
+                int32 len;
+
+                len = SNPRINTF(
+                    message,
+                    "error while processing option \"%.*s\": "
+                    "option already set",
+                    option->name_len, option->name);
+                ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                                     message, len);
+                status = settings_report_or_ignore(ncm_error,
+                                                   ignore_errors);
+                if (status < 0) {
+                    fclose(file);
+                    sb_free(&path_buffer);
+                    return status;
+                }
+                continue;
+            }
+            option->used = true;
+            status = settings_apply_option(
+                config, option, parsed.value, parsed.value_len,
+                false, ignore_errors, ncm_error);
+            if (status < 0) {
+                fclose(file);
+                sb_free(&path_buffer);
+                return status;
+            }
         }
+        fclose(file);
+        sb_free(&path_buffer);
     }
 
     for (int32 i = 0; i < LENGTH(ncmpcpp_options); i += 1) {
