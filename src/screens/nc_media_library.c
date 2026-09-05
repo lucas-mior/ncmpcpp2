@@ -1050,7 +1050,7 @@ media_library_screen_format_album_row(MediaLibraryScreen *screen,
         SB_APPEND(&raw, " - ");
     }
     if ((Config.media_lib_primary_tag != MPD_TAG_DATE)
-        && !Config.media_lib_hide_album_dates
+        && !Config.media_library_hide_album_dates
         && row->date && (row->date_len > 0)) {
         sb_append_byte(&raw, '(');
         SB_APPEND(&raw, row->date, row->date_len);

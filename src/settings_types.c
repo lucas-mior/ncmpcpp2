@@ -270,7 +270,7 @@ configuration_init_unchecked(Configuration *config) {
     config->visualizer_spectrum_log_scale_y = false;
     config->data_fetching_delay = false;
     config->media_library_sort_by_mtime = false;
-    config->media_lib_hide_album_dates = false;
+    config->media_library_hide_album_dates = false;
     config->tag_editor_extended_numeration = false;
     config->discard_colors_if_item_is_selected = false;
     config->store_lyrics_in_song_dir = false;
