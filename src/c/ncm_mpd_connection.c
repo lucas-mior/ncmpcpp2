@@ -77,8 +77,9 @@ ncm_mpd_song_list_push(NcmMpdSongList *list, NcmSong *song) {
             new_capacity = 8;
         }
 
-        list->items = (NcmSong *)realloc2(
-            list->items, old_capacity, new_capacity, SIZEOF(*list->items));
+        list->items = realloc2(list->items,
+                               old_capacity, new_capacity,
+                               SIZEOF(*list->items));
         list->capacity = new_capacity;
     }
 
