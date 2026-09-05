@@ -532,9 +532,9 @@ apply_visualizer_spectrum_hz_max(Configuration *config, char *value,
     if (status < 0) {
         return status;
     }
-    return ncm_lower_bound_check_f64(
-        config->visualizer_spectrum_hz_max,
-        config->visualizer_spectrum_hz_min + 1, ncm_error);
+    return ncm_lower_bound_check_f64(config->visualizer_spectrum_hz_max,
+                                     config->visualizer_spectrum_hz_min + 1,
+                                     ncm_error);
 }
 
 static int32
