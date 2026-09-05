@@ -90,7 +90,10 @@ entry or as an intrinsic companion of one. In step 17,
 passes, while `enum SettingsOptionId` generates one stable table index per
 option plus `SETTINGS_OPTION_COUNT`. The option table uses those generated IDs
 as designated initializer indices, and the old per-category/hardcoded counts
-are removed.
+are removed. In step 18, the three comma-separated collection parsers share one
+list traversal helper with type-specific item callbacks, trivial path/directory
+forwarders are removed, and settings-owned arrays use the existing NCM array
+reserve/append machinery instead of a local duplicate implementation.
 
 ## Per-option baseline
 
@@ -266,18 +269,36 @@ physical members of `Configuration`; most are companions or derived state.
   with `visualizer_spectrum_hz_min` is checked by `configuration_validate()`
   after all explicit values and defaults have been applied.
 
-## Step-1 regression coverage
+## Current generated regression coverage
 
-`tests/c_settings_baseline_test.c` locks down the following behavior before
-the implementation is reorganized:
+`tests/c_settings_baseline_test.c` now derives structural and numeric coverage
+from `configuration_options.def` itself:
 
-- generated descriptor count/indexing and unique option names;
-- successful parsing of every declared default in descriptor order;
-- representative post-default values, including user-facing values;
-- numeric boundary acceptance/rejection for currently bounded settings;
-- post-parse whole-configuration validation for dependent settings;
-- duplicate-option rejection;
-- destruction/reset of representative owned objects, including a second
-  destroy to catch non-idempotent cleanup;
-- parser/runtime separation for MPD settings and window-title parsing;
-- production runtime application and config/environment/CLI precedence.
+- every generated `SETTINGS_OPTION_*` ID is checked against its expected name,
+  default string, and generated `apply_*` function;
+- every descriptor slot is non-empty and option names remain unique;
+- every declared default is parsed in isolation into a fresh `Configuration`
+  and the resulting object is destroyed and checked for empty generated state;
+- a complete default-only `configuration_read()` is still tested to cover
+  descriptor ordering and whole-configuration validation;
+- every `XX_INT_RANGE` accepts its declared minimum/maximum and rejects the
+  immediately representable out-of-range integer when one exists;
+- every `XX_DOUBLE_RANGE` accepts finite declared bounds and rejects the
+  adjacent representable value outside each finite bound;
+- failed numeric range parses preserve the previously accepted field value;
+- special semantic types retain explicit tests for optional enums, named bools,
+  regex choices, formatted buffers, look padding, lists, columns, and enum
+  compatibility aliases;
+- cross-field visualizer-frequency validation remains explicitly tested;
+- duplicate-option rejection and per-read duplicate state remain covered;
+- parser/runtime separation is tested for MPD settings and window-title state;
+- production runtime tests cover configuration, environment, and command-line
+  precedence while verifying that overrides do not rewrite stored `Config`
+  values;
+- generated lifecycle cleanup is exercised both collectively and one option at
+  a time, including repeated destruction.
+
+The generated descriptor table has inferred array length plus a compile-time
+assertion against `SETTINGS_OPTION_COUNT`. Runtime identity/shape checks cover
+interior slots, so a missing or incorrectly mapped generated descriptor is
+caught even when the array length alone would not expose it.

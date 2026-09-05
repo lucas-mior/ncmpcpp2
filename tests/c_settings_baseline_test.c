@@ -11,6 +11,73 @@ settings_test_apply(SettingsApplyFn apply, Configuration *config,
 }
 
 static void
+settings_test_int_range(SettingsApplyFn apply, Configuration *config,
+                        int32 *field, int32 minimum, int32 maximum) {
+    char value[64];
+    int32 len;
+
+    len = SNPRINTF(value, "%d", minimum);
+    ASSERT(len > 0);
+    ASSERT_ZERO(settings_test_apply(apply, config, value));
+    ASSERT(*field == minimum);
+
+    if (minimum != INT32_MIN) {
+        len = SNPRINTF(value, "%d", minimum - 1);
+        ASSERT(len > 0);
+        ASSERT(settings_test_apply(apply, config, value) < 0);
+        ASSERT(*field == minimum);
+    }
+
+    len = SNPRINTF(value, "%d", maximum);
+    ASSERT(len > 0);
+    ASSERT_ZERO(settings_test_apply(apply, config, value));
+    ASSERT(*field == maximum);
+
+    if (maximum != INT32_MAX) {
+        len = SNPRINTF(value, "%d", maximum + 1);
+        ASSERT(len > 0);
+        ASSERT(settings_test_apply(apply, config, value) < 0);
+        ASSERT(*field == maximum);
+    }
+    return;
+}
+
+static void
+settings_test_double_range(SettingsApplyFn apply, Configuration *config,
+                           double *field, double minimum, double maximum) {
+    char value[64];
+    double outside;
+    int32 len;
+
+    if (minimum != -HUGE_VAL) {
+        len = SNPRINTF(value, "%.17g", minimum);
+        ASSERT(len > 0);
+        ASSERT_ZERO(settings_test_apply(apply, config, value));
+        ASSERT(*field == minimum);
+
+        outside = nextafter(minimum, -HUGE_VAL);
+        len = SNPRINTF(value, "%.17g", outside);
+        ASSERT(len > 0);
+        ASSERT(settings_test_apply(apply, config, value) < 0);
+        ASSERT(*field == minimum);
+    }
+
+    if (maximum != HUGE_VAL) {
+        len = SNPRINTF(value, "%.17g", maximum);
+        ASSERT(len > 0);
+        ASSERT_ZERO(settings_test_apply(apply, config, value));
+        ASSERT(*field == maximum);
+
+        outside = nextafter(maximum, HUGE_VAL);
+        len = SNPRINTF(value, "%.17g", outside);
+        ASSERT(len > 0);
+        ASSERT(settings_test_apply(apply, config, value) < 0);
+        ASSERT(*field == maximum);
+    }
+    return;
+}
+
+static void
 settings_assert_generated_empty(Configuration *config) {
 #define XX_BOOL(NAME, DEFAULT_VALUE) ASSERT(!config->NAME);
 #define XX_STRING(NAME, DEFAULT_VALUE) \
@@ -83,6 +150,40 @@ settings_assert_generated_empty(Configuration *config) {
     ASSERT(config->NAME.cap == 0);
 #include "configuration_options_pass.h"
 
+    return;
+}
+
+static void
+test_generated_option_identity(void) {
+#define XX_OPTION(NAME, DEFAULT_VALUE, ...) \
+    ASSERT(STREQUAL( \
+        ncmpcpp_options[SETTINGS_OPTION_##NAME].name, \
+        ncmpcpp_options[SETTINGS_OPTION_##NAME].name_len, #NAME)); \
+    ASSERT(STREQUAL( \
+        ncmpcpp_options[SETTINGS_OPTION_##NAME].default_value, \
+        ncmpcpp_options[SETTINGS_OPTION_##NAME].default_value_len, \
+        DEFAULT_VALUE)); \
+    ASSERT(ncmpcpp_options[SETTINGS_OPTION_##NAME].apply == apply_##NAME);
+#include "configuration_options_pass.h"
+
+    return;
+}
+
+static void
+test_each_declared_default(void) {
+    for (uint32 i = 0; i < SETTINGS_OPTION_COUNT; i += 1) {
+        Configuration config = {0};
+        SettingsOption option = ncmpcpp_options[i];
+        NcmError ncm_error = {0};
+        int32 status;
+
+        configuration_init(&config);
+        status = option.apply(&config, option.default_value,
+                              option.default_value_len, &ncm_error);
+        ASSERT_ZERO(status);
+        configuration_destroy(&config);
+        settings_assert_generated_empty(&config);
+    }
     return;
 }
 
@@ -300,6 +401,9 @@ test_configuration_options_apply_runtime_precedence(void) {
     ASSERT(global_mpd.timeout_ms == 7000);
     ASSERT(STREQUAL(Config.mpd_host, Config.mpd_host_len, "config-host"));
     ASSERT(Config.mpd_port == 1111);
+    ASSERT(STREQUAL(Config.mpd_password, Config.mpd_password_len,
+                    "config-password"));
+    ASSERT(Config.mpd_connection_timeout == 7);
 
     sb_clear(&options.host);
     SB_APPEND(&options.host, "cli-host");
@@ -315,6 +419,9 @@ test_configuration_options_apply_runtime_precedence(void) {
     ASSERT(global_mpd.timeout_ms == 7000);
     ASSERT(STREQUAL(Config.mpd_host, Config.mpd_host_len, "config-host"));
     ASSERT(Config.mpd_port == 1111);
+    ASSERT(STREQUAL(Config.mpd_password, Config.mpd_password_len,
+                    "config-password"));
+    ASSERT(Config.mpd_connection_timeout == 7);
 
     if (had_host) {
         ASSERT_ZERO(setenv("MPD_HOST", sb_opt_cstr(&previous_host), 1));
@@ -335,6 +442,25 @@ test_configuration_options_apply_runtime_precedence(void) {
 }
 
 static void
+test_generated_numeric_boundaries(void) {
+    Configuration config = {0};
+
+    configuration_init(&config);
+
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+    settings_test_int_range(apply_##NAME, &config, &config.NAME, \
+                            MINIMUM, MAXIMUM);
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+    settings_test_double_range(apply_##NAME, &config, &config.NAME, \
+                               MINIMUM, MAXIMUM);
+#include "configuration_options_pass.h"
+
+    configuration_destroy(&config);
+    settings_assert_generated_empty(&config);
+    return;
+}
+
+static void
 test_numeric_boundaries(void) {
     Configuration config = {0};
     NcmError ncm_error = {0};
@@ -343,34 +469,7 @@ test_numeric_boundaries(void) {
 
     ASSERT_ZERO(settings_test_apply(apply_mpd_port, &config, "-1"));
     ASSERT(config.mpd_port == -1);
-    ASSERT_ZERO(settings_test_apply(apply_mpd_port, &config, "65535"));
-    ASSERT(settings_test_apply(apply_mpd_port, &config, "65536") < 0);
 
-    ASSERT(settings_test_apply(apply_visualizer_fps, &config, "29") < 0);
-    ASSERT_ZERO(settings_test_apply(apply_visualizer_fps, &config, "30"));
-    ASSERT_ZERO(settings_test_apply(apply_visualizer_fps, &config, "1000"));
-    ASSERT(settings_test_apply(apply_visualizer_fps, &config, "1001") < 0);
-
-    ASSERT(settings_test_apply(
-        apply_visualizer_spectrum_dft_size, &config, "0") < 0);
-    ASSERT_ZERO(settings_test_apply(
-        apply_visualizer_spectrum_dft_size, &config, "1"));
-    ASSERT_ZERO(settings_test_apply(
-        apply_visualizer_spectrum_dft_size, &config, "5"));
-    ASSERT(settings_test_apply(
-        apply_visualizer_spectrum_dft_size, &config, "6") < 0);
-
-    ASSERT(settings_test_apply(
-        apply_visualizer_spectrum_gain, &config, "-0.1") < 0);
-    ASSERT_ZERO(settings_test_apply(
-        apply_visualizer_spectrum_gain, &config, "0"));
-    ASSERT_ZERO(settings_test_apply(
-        apply_visualizer_spectrum_gain, &config, "100"));
-    ASSERT(settings_test_apply(
-        apply_visualizer_spectrum_gain, &config, "100.1") < 0);
-
-    ASSERT(settings_test_apply(
-        apply_visualizer_spectrum_hz_min, &config, "0") < 0);
     ASSERT_ZERO(settings_test_apply(
         apply_visualizer_spectrum_hz_min, &config, "20"));
     ASSERT_ZERO(settings_test_apply(
@@ -381,8 +480,6 @@ test_numeric_boundaries(void) {
     ncm_error_clear(&ncm_error);
     ASSERT_ZERO(configuration_validate(&config, &ncm_error));
 
-    ASSERT(settings_test_apply(
-        apply_locked_screen_width_part, &config, "19") < 0);
     ASSERT_ZERO(settings_test_apply(
         apply_locked_screen_width_part, &config, "20"));
     ASSERT(config.locked_screen_width_part == 20.0);
@@ -391,12 +488,7 @@ test_numeric_boundaries(void) {
         apply_locked_screen_width_part, &config, "80"));
     ASSERT(config.locked_screen_width_part == 80.0);
     ASSERT(configuration_locked_screen_width_fraction(&config) == 0.8);
-    ASSERT(settings_test_apply(
-        apply_locked_screen_width_part, &config, "81") < 0);
-    ASSERT(config.locked_screen_width_part == 80.0);
 
-    ASSERT(settings_test_apply(
-        apply_search_engine_default_search_mode, &config, "0") < 0);
     ASSERT_ZERO(settings_test_apply(
         apply_search_engine_default_search_mode, &config, "1"));
     ASSERT(config.search_engine_default_search_mode == 1);
@@ -852,10 +944,13 @@ main(void) {
     global_state_init();
     configuration_init(&Config);
 
+    test_generated_option_identity();
+    test_each_declared_default();
     test_option_table_shape();
     test_declared_defaults_and_cleanup();
     test_runtime_application_is_separate();
     test_configuration_options_apply_runtime_precedence();
+    test_generated_numeric_boundaries();
     test_numeric_boundaries();
     test_enum_options();
     test_optional_enum_options();

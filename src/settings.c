@@ -18,6 +18,10 @@ typedef int32 (*SettingsApplyFn)(Configuration *config,
                                 char *value, int32 value_len,
                                 NcmError *ncm_error);
 
+typedef int32 (*SettingsListItemFn)(void *context,
+                                   char *item, int32 item_len,
+                                   NcmError *ncm_error);
+
 typedef struct SettingsOption {
     char *name;
     char *default_value;
@@ -157,22 +161,6 @@ settings_parse_path_common(char **result, int32 *result_len,
         *result = sb_steal_exact(&buffer, result_len);
     }
     sb_free(&buffer);
-    return;
-}
-
-static void
-settings_parse_path(char **result, int32 *result_len,
-                    char *value, int32 value_len) {
-    settings_parse_path_common(result, result_len,
-                               value, value_len, false);
-    return;
-}
-
-static void
-settings_parse_dir(char **result, int32 *result_len,
-                   char *value, int32 value_len) {
-    settings_parse_path_common(result, result_len,
-                               value, value_len, true);
     return;
 }
 
@@ -500,6 +488,43 @@ settings_next_list_item(char *value, int32 value_len, int32 *pos, char **item,
 }
 
 static int32
+settings_parse_list(char *value, int32 value_len, void *context,
+                    SettingsListItemFn append_item, NcmError *ncm_error) {
+    int32 pos;
+    bool added;
+
+    ASSERT(context != NULL);
+    ASSERT(append_item != NULL);
+
+    pos = 0;
+    added = false;
+    while (pos <= value_len) {
+        char *item;
+        int32 item_len;
+        int32 status;
+        bool found;
+
+        settings_next_list_item(value, value_len, &pos,
+                                &item, &item_len, &found);
+        if (!found) {
+            break;
+        }
+        if (item_len <= 0) {
+            continue;
+        }
+        status = append_item(context, item, item_len, ncm_error);
+        if (status < 0) {
+            return status;
+        }
+        added = true;
+    }
+    if (!added) {
+        return settings_invalid_value(ncm_error, value, value_len);
+    }
+    return 0;
+}
+
+static int32
 settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
                      int32 expected_len, NcmError *ncm_error) {
     int32 start;
@@ -578,52 +603,29 @@ settings_parse_media_library_primary_tag(char *value, int32 value_len,
 }
 
 static int32
+settings_append_formatted_color(void *context, char *item, int32 item_len,
+                                NcmError *ncm_error) {
+    NcmFormattedColorArray *array = context;
+    NcFormattedColor *dest;
+
+    dest = ncm_formatted_color_array_append(array);
+    return settings_parse_formatted_color(item, item_len, dest, ncm_error);
+}
+
+static int32
 settings_parse_formatted_color_list(NcmFormattedColorArray *array,
                                     char *value, int32 value_len,
                                     NcmError *ncm_error) {
-    int32 pos;
-    int32 status;
-    bool added;
-
     ncm_formatted_color_array_clear(array);
-    pos = 0;
-    added = false;
-    while (pos <= value_len) {
-        char *item;
-        int32 item_len;
-        bool found;
-        NcFormattedColor *dest;
-
-        settings_next_list_item(value, value_len, &pos, &item,
-                                &item_len, &found);
-        if (!found) {
-            break;
-        }
-        if (item_len <= 0) {
-            continue;
-        }
-        dest = ncm_formatted_color_array_append(array);
-        status = settings_parse_formatted_color(item, item_len, dest,
-                                                ncm_error);
-        if (status < 0) {
-            return status;
-        }
-        added = true;
-    }
-    if (!added) {
-        return settings_invalid_value(ncm_error, value, value_len);
-    }
-    return 0;
+    return settings_parse_list(value, value_len, array,
+                               settings_append_formatted_color, ncm_error);
 }
 
 static int32
 settings_parse_format(NcmFormatAst *format, char *value, int32 value_len,
                       uint32 flags, NcmError *ncm_error) {
-    int32 status;
-
     ncm_format_ast_clear(format);
-    status = ncm_format_parse(format, value, value_len, flags, ncm_error);
-    return status;
+    return ncm_format_parse(format, value, value_len, flags, ncm_error);
 }
 
 static int32
@@ -806,39 +808,42 @@ settings_parse_named_bool(char *value, int32 value_len, bool *result,
 }
 
 static int32
+settings_append_lyrics_fetcher(void *context, char *item, int32 item_len,
+                               NcmError *ncm_error) {
+    NcmLyricsFetcherRegistry *registry = context;
+    int32 status;
+
+    status = ncm_lyrics_fetcher_registry_append_name(registry,
+                                                      item, item_len);
+    if (status < 0) {
+        return settings_error(ncm_error, STRLIT("unknown lyrics fetcher"));
+    }
+    return 0;
+}
+
+static int32
 settings_parse_lyrics_fetchers(NcmLyricsFetcherRegistry *registry,
                                char *value, int32 value_len,
                                NcmError *ncm_error) {
-    int32 pos;
-    int32 status;
-    bool added;
-
     ncm_lyrics_fetcher_registry_clear(registry);
-    pos = 0;
-    added = false;
-    while (pos <= value_len) {
-        char *item;
-        int32 item_len;
-        bool found;
+    return settings_parse_list(value, value_len, registry,
+                               settings_append_lyrics_fetcher, ncm_error);
+}
 
-        settings_next_list_item(value, value_len, &pos, &item,
-                                &item_len, &found);
-        if (!found) {
-            break;
-        }
-        if (item_len <= 0) {
-            continue;
-        }
-        status = ncm_lyrics_fetcher_registry_append_name(
-            registry, item, item_len);
-        if (status < 0) {
-            return settings_error(ncm_error, STRLIT("unknown lyrics fetcher"));
-        }
-        added = true;
+static int32
+settings_append_screen(void *context, char *item, int32 item_len,
+                       NcmError *ncm_error) {
+    ScreenTypeArray *array = context;
+    enum ScreenType *slot;
+    enum ScreenType screen;
+    int32 status;
+
+    status = screen_type_parse_startup(item, item_len, &screen);
+    if (status < 0) {
+        return settings_invalid_value(ncm_error, item, item_len);
     }
-    if (!added) {
-        return settings_invalid_value(ncm_error, value, value_len);
-    }
+    slot = screen_type_array_append(array);
+    *slot = screen;
     return 0;
 }
 
@@ -846,10 +851,6 @@ static int32
 settings_parse_screen_list(ScreenTypeArray *array, bool *previous,
                            char *value, int32 value_len,
                            NcmError *ncm_error) {
-    int32 pos;
-    int32 status;
-    bool added;
-
     if (STREQUAL(value, value_len, "previous")) {
         *previous = true;
         screen_type_array_clear(array);
@@ -857,35 +858,8 @@ settings_parse_screen_list(ScreenTypeArray *array, bool *previous,
     }
     *previous = false;
     screen_type_array_clear(array);
-    pos = 0;
-    added = false;
-    while (pos <= value_len) {
-        char *item;
-        int32 item_len;
-        bool found;
-        enum ScreenType *slot;
-        enum ScreenType screen;
-
-        settings_next_list_item(value, value_len, &pos,
-                                &item, &item_len, &found);
-        if (!found) {
-            break;
-        }
-        if (item_len <= 0) {
-            continue;
-        }
-        status = screen_type_parse_startup(item, item_len, &screen);
-        if (status < 0) {
-            return settings_invalid_value(ncm_error, item, item_len);
-        }
-        slot = screen_type_array_append(array);
-        *slot = screen;
-        added = true;
-    }
-    if (!added) {
-        return settings_invalid_value(ncm_error, value, value_len);
-    }
-    return 0;
+    return settings_parse_list(value, value_len, array,
+                               settings_append_screen, ncm_error);
 }
 
 static int32
@@ -1020,8 +994,8 @@ configuration_apply_runtime(Configuration *config, NcmMpdClient *client,
     static int32 \
     apply_##NAME(Configuration *config, char *value, int32 value_len, \
                  NcmError *ncm_error UNUSED) { \
-        settings_parse_dir(&config->NAME, &config->NAME##_len, \
-                           value, value_len); \
+        settings_parse_path_common(&config->NAME, &config->NAME##_len, \
+                                   value, value_len, true); \
         return 0; \
     }
 
@@ -1029,8 +1003,8 @@ configuration_apply_runtime(Configuration *config, NcmMpdClient *client,
     static int32 \
     apply_##NAME(Configuration *config, char *value, int32 value_len, \
                  NcmError *ncm_error UNUSED) { \
-        settings_parse_path(&config->NAME, &config->NAME##_len, \
-                            value, value_len); \
+        settings_parse_path_common(&config->NAME, &config->NAME##_len, \
+                                   value, value_len, false); \
         return 0; \
     }
 
@@ -1047,39 +1021,24 @@ configuration_apply_runtime(Configuration *config, NcmMpdClient *client,
     static int32 \
     apply_##NAME(Configuration *config, char *value, int32 value_len, \
                  NcmError *ncm_error) { \
-        int32 status; \
-        status = settings_parse_bool(value, value_len, &config->NAME, \
-                                     ncm_error); \
-        if (status < 0) { \
-            return status; \
-        } \
-        return 0; \
+        return settings_parse_bool(value, value_len, &config->NAME, \
+                                   ncm_error); \
     }
 
 #define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     static int32 \
     apply_##NAME(Configuration *config, char *value, int32 value_len, \
                  NcmError *ncm_error) { \
-        int32 status; \
-        status = settings_parse_int_range(value, value_len, &config->NAME, \
-                                          MINIMUM, MAXIMUM, ncm_error); \
-        if (status < 0) { \
-            return status; \
-        } \
-        return 0; \
+        return settings_parse_int_range(value, value_len, &config->NAME, \
+                                        MINIMUM, MAXIMUM, ncm_error); \
     }
 
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     static int32 \
     apply_##NAME(Configuration *config, char *value, int32 value_len, \
                  NcmError *ncm_error) { \
-        int32 status; \
-        status = settings_parse_double_range(value, value_len, &config->NAME, \
-                                             MINIMUM, MAXIMUM, ncm_error); \
-        if (status < 0) { \
-            return status; \
-        } \
-        return 0; \
+        return settings_parse_double_range(value, value_len, &config->NAME, \
+                                           MINIMUM, MAXIMUM, ncm_error); \
     }
 
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) \
@@ -1239,18 +1198,21 @@ configuration_apply_runtime(Configuration *config, NcmMpdClient *client,
 
 #define OPT(NAME, DEFAULT_VALUE)                 \
     {                                            \
-        .name = (char *)#NAME,                   \
-        .default_value = (char *)DEFAULT_VALUE,  \
+        .name = #NAME,                           \
+        .default_value = DEFAULT_VALUE,          \
         .name_len = STRLIT_LEN(#NAME),           \
         .default_value_len = STRLIT_LEN(DEFAULT_VALUE), \
         .apply = apply_##NAME,                   \
     }
 
-static const SettingsOption ncmpcpp_options[SETTINGS_OPTION_COUNT] = {
+static const SettingsOption ncmpcpp_options[] = {
 #define XX_OPTION(NAME, DEFAULT_VALUE, ...) \
     [SETTINGS_OPTION_##NAME] = OPT(NAME, DEFAULT_VALUE),
 #include "configuration_options_pass.h"
 };
+
+_Static_assert(LENGTH(ncmpcpp_options) == SETTINGS_OPTION_COUNT,
+               "generated settings option table size mismatch");
 
 #undef OPT
 
