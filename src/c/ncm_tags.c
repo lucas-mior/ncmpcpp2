@@ -40,8 +40,7 @@ static void
 ncm_tags_mapped_property_callback(char *name, char *value, void *user) {
     NcmTagsMappedContext *context;
 
-    context = (NcmTagsMappedContext *)user;
-    if (context == NULL) {
+    if ((context = user) == NULL) {
         return;
     }
 
