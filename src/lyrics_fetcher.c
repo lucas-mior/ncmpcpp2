@@ -371,8 +371,7 @@ ncm_lyrics_fetcher_registry_append_name(NcmLyricsFetcherRegistry *registry,
 static bool
 lyrics_url_is_collected(StrBuilderArray *urls, char *url, int32 url_len) {
     for (int32 i = 0; i < urls->len; i += 1) {
-        if (STREQUAL(urls->items[i].data, urls->items[i].len,
-                     url, url_len)) {
+        if (STREQUAL(urls->items[i].data, urls->items[i].len, url, url_len)) {
             return true;
         }
     }
