@@ -247,6 +247,7 @@ nc_buffer_add_formatted_color(NcBuffer *buffer, int32 position,
     property.id = id;
     property.position = position;
     property.type = NC_BUFFER_PROPERTY_FORMATTED_COLOR;
+
     nc_buffer_add_property(buffer, &property);
     return;
 }
