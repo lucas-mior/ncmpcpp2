@@ -144,10 +144,9 @@ visualizer_destroy_colors(VisualizerScreen *screen) {
         nc_formatted_color_destroy(&screen->visualizer_colors[i]);
     }
     free2(screen->visualizer_colors,
-          screen->visualizer_colors_cap*SIZEOF(*screen->visualizer_colors));
+          screen->visualizer_colors_len*SIZEOF(*screen->visualizer_colors));
     screen->visualizer_colors = NULL;
     screen->visualizer_colors_len = 0;
-    screen->visualizer_colors_cap = 0;
     return;
 }
 
@@ -232,7 +231,7 @@ visualizer_fft_destroy(VisualizerScreen *screen) {
     free2(fft->bar_heights, fft->bar_heights_cap*SIZEOF(*fft->bar_heights));
     free2(fft->dft_frequency_space,
           fft->dft_frequency_space_cap*SIZEOF(*fft->dft_frequency_space));
-    free2(fft->freqs_mags, fft->freqs_mags_cap*SIZEOF(*fft->freqs_mags));
+    free2(fft->freqs_mags, fft->freqs_mags_len*SIZEOF(*fft->freqs_mags));
 
     *fft = (VisualizerFftState){0};
     return;
@@ -547,7 +546,6 @@ visualizer_screen_init(VisualizerScreen *screen,
 
     screen->visualizer_colors = NULL;
     screen->visualizer_colors_len = 0;
-    screen->visualizer_colors_cap = 0;
     visualizer_screen_init_data_source(screen, source_location,
                                        source_location_len);
     sb_set(&screen->output_name, output_name, output_name_len);
@@ -566,13 +564,11 @@ visualizer_screen_init(VisualizerScreen *screen,
     {
         visualizer_destroy_colors(screen);
         if ((visualizer_colors == NULL) || (visualizer_colors_len <= 0)) {
-            screen->visualizer_colors_cap = 1;
             screen->visualizer_colors = malloc2(
                 SIZEOF(*screen->visualizer_colors));
             nc_formatted_color_init(&screen->visualizer_colors[0]);
             screen->visualizer_colors_len = 1;
         } else {
-            screen->visualizer_colors_cap = visualizer_colors_len;
             screen->visualizer_colors = malloc2(
                 visualizer_colors_len*SIZEOF(*screen->visualizer_colors));
             for (int32 i = 0; i < visualizer_colors_len; i += 1) {
@@ -606,12 +602,11 @@ visualizer_screen_init(VisualizerScreen *screen,
         fft->gain = spectrum_gain;
 
         fft->freqs_mags_len = fft->results_len;
-        fft->freqs_mags_cap = fft->results_len;
         fft->dft_frequency_space_cap = VISUALIZER_FREQ_SPACE_CAP;
         fft->bar_heights_cap = VISUALIZER_BAR_HEIGHTS_CAP;
 
         fft->freqs_mags = malloc2(
-            fft->freqs_mags_cap*SIZEOF(*fft->freqs_mags));
+            fft->freqs_mags_len*SIZEOF(*fft->freqs_mags));
         fft->dft_frequency_space = malloc2(
             fft->dft_frequency_space_cap
             *SIZEOF(*fft->dft_frequency_space));
@@ -619,7 +614,7 @@ visualizer_screen_init(VisualizerScreen *screen,
             fft->bar_heights_cap*SIZEOF(*fft->bar_heights));
 
         memset64(fft->freqs_mags, 0,
-                 fft->freqs_mags_cap*SIZEOF(*fft->freqs_mags));
+                 fft->freqs_mags_len*SIZEOF(*fft->freqs_mags));
 
         fft->input = fftw_malloc(
             (size_t)(fft->dft_total_size*SIZEOF(*fft->input)));

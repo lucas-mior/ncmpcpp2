@@ -129,6 +129,7 @@ ncm_playlist_sort_range(
     int32 *temporary;
     int32 *current;
     int64 last_position;
+    int32 plan_items_len;
     bool started;
     int32 status;
 
@@ -174,12 +175,13 @@ ncm_playlist_sort_range(
         }
     }
 
+    plan_items_len = 0;
     if (songs->len > 1) {
         order = malloc2(songs->len*SIZEOF(*order));
         temporary = malloc2(songs->len*SIZEOF(*temporary));
         current = malloc2(songs->len*SIZEOF(*current));
-        plan.items = malloc2((songs->len - 1)*SIZEOF(*plan.items));
-        plan.cap = songs->len - 1;
+        plan_items_len = songs->len - 1;
+        plan.items = malloc2(plan_items_len*SIZEOF(*plan.items));
 
         for (int32 i = 0; i < songs->len; i += 1) {
             order[i] = i;
@@ -218,12 +220,12 @@ ncm_playlist_sort_range(
 
     status = ncm_error_ok(ncm_error);
     if (client == NULL) {
-        free2(plan.items, plan.cap*SIZEOF(*plan.items));
+        free2(plan.items, plan_items_len*SIZEOF(*plan.items));
         return ncm_error_set_code(ncm_error, EINVAL,
                                   STRLIT("missing MPD client"));
     }
     if (plan.len <= 0) {
-        free2(plan.items, plan.cap*SIZEOF(*plan.items));
+        free2(plan.items, plan_items_len*SIZEOF(*plan.items));
         return ncm_error_ok(ncm_error);
     }
 
@@ -244,7 +246,7 @@ ncm_playlist_sort_range(
         client->command_list_active = false;
     }
 
-    free2(plan.items, plan.cap*SIZEOF(*plan.items));
+    free2(plan.items, plan_items_len*SIZEOF(*plan.items));
     return status;
 }
 

@@ -24,7 +24,6 @@ typedef struct NcmBindingAction {
     int32 argument_len;
     int32 argument_cap;
     int32 keys_len;
-    int32 keys_cap;
 
     enum NcmActionType type;
     enum NcmBindingActionKind kind;

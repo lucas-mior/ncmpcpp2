@@ -1035,7 +1035,6 @@ typedef struct VisualizerFftState {
     int32 dft_total_size;
 
     int32 freqs_mags_len;
-    int32 freqs_mags_cap;
     int32 dft_frequency_space_len;
     int32 dft_frequency_space_cap;
     int32 bar_heights_len;
@@ -1079,7 +1078,6 @@ typedef struct VisualizerScreen {
     int64 sample_clock;
     int64 sample_clock_frame_remainder;
     int32 visualizer_colors_len;
-    int32 visualizer_colors_cap;
     int32 point_char_offset;
     int32 point_char_len;
     int32 bar_char_offset;
