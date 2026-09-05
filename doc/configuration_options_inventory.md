@@ -200,8 +200,8 @@ physical members of `Configuration`; most are companions or derived state.
 - Invalid explicit values fail unless `ignore_errors` is enabled.
 - Invalid defaults are reported as initialization errors.
 - `configuration_read()` begins by clearing the target `Configuration`.
-- Current option descriptors contain mutable `used` state; this is baseline
-  documentation for step 3, not the desired final architecture.
+- Option descriptors are immutable; duplicate-option state is local to each
+  `configuration_read()` invocation and is shared across all files in that read.
 - MPD host/port/password/timeout parsing currently mutates `global_mpd`.
 - `enable_window_title` currently depends on the process `TERM` environment.
 - `visualizer_spectrum_hz_max` currently validates against the already parsed
