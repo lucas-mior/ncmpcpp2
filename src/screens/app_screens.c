@@ -1159,7 +1159,7 @@ static void
 append_song_tag(NcBuffer *buffer, StrBuilder *tag) {
     if (tag->len <= 0) {
         append_formatted_color(buffer, &Config.empty_tags_color);
-        append_data(buffer, Config.empty_tag, Config.empty_tag_len);
+        append_data(buffer, Config.empty_tag_marker, Config.empty_tag_marker_len);
         append_formatted_color_end(buffer, &Config.empty_tags_color);
         return;
     }

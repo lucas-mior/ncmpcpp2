@@ -1271,12 +1271,12 @@ search_build_constraint_row(SearchEngineScreen *screen, int32 idx,
         nc_buffer_append_data(buffer, value->data, value->len);
         return;
     }
-    if ((Config.empty_tag == NULL) || (Config.empty_tag_len <= 0)) {
+    if ((Config.empty_tag_marker == NULL) || (Config.empty_tag_marker_len <= 0)) {
         return;
     }
     nc_buffer_add_formatted_color(
         buffer, buffer->len, &Config.empty_tags_color, 0);
-    nc_buffer_append_data(buffer, Config.empty_tag, Config.empty_tag_len);
+    nc_buffer_append_data(buffer, Config.empty_tag_marker, Config.empty_tag_marker_len);
     nc_buffer_add_formatted_color_end(
         buffer, buffer->len, &Config.empty_tags_color, 0);
     return;
