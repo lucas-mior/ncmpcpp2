@@ -751,9 +751,8 @@ playlist_editor_screen_reload_content_from_mpd(PlaylistEditorScreen *screen,
 static void
 playlist_editor_clear_playlist_filter(PlaylistEditorScreen *screen) {
     StrBuilder path = {0};
-    bool has_path;
+    bool has_path = playlist_editor_store_current_playlist_path(screen, &path);
 
-    has_path = playlist_editor_store_current_playlist_path(screen, &path);
     screen->playlist_filter_enabled = false;
     sb_clear(&screen->playlist_filter_constraint);
     nc_menu_show_all_items(nc_playlist_entry_menu_base(
