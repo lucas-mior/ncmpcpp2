@@ -12,7 +12,7 @@
 #include "c/ncm_html.c"
 #include "c/ncm_job.c"
 #include "c/ncm_lrc.c"
-#include "c/ncm_macro_utilities.c"
+#include "c/ncm_utilities.c"
 #include "c/ncm_mpd_client.c"
 #include "c/ncm_mpd_connection.c"
 #include "c/ncm_mpd_item.c"

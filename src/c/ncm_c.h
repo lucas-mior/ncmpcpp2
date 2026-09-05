@@ -1544,9 +1544,9 @@ int32 ncm_lrc_document_entry_at_time(NcmLrcDocument *document,
 int32 ncm_lrc_document_next_entry_after_time(NcmLrcDocument *document,
                                              int64 elapsed_ms);
 
-int32 ncm_macro_run_external_command(char *command, int32 command_len,
+int32 ncm_run_external_command(char *command, int32 command_len,
                                      bool block, NcmError *ncm_error);
-int32 ncm_macro_run_external_console_command(char *command, int32 command_len,
+int32 ncm_run_external_console_command(char *command, int32 command_len,
                                              NcmError *ncm_error);
 
 typedef struct NcmOptionLine {

@@ -595,7 +595,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                     if (has_song) {
                         if (!ncm_song_is_empty(&song)) {
                             if (Config.execute_on_song_change_len > 0) {
-                                ncm_macro_run_external_command(
+                                ncm_run_external_command(
                                     Config.execute_on_song_change,
                                     Config.execute_on_song_change_len, true,
                                     NULL);
@@ -945,7 +945,7 @@ ncm_status_changes_player_state(void) {
         }
 
         setenv("MPD_PLAYER_STATE", player_state_env, 1);
-        ncm_macro_run_external_command(
+        ncm_run_external_command(
             Config.execute_on_player_state_change,
             Config.execute_on_player_state_change_len, true, NULL);
         unsetenv("MPD_PLAYER_STATE");

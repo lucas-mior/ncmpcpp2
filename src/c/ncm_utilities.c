@@ -1,13 +1,13 @@
-#if !defined(NCM_MACRO_UTILITIES_C)
-#define NCM_MACRO_UTILITIES_C
+#if !defined(NCM_UTILITIES_C )
+#define NCM_UTILITIES_C 
 
 #include "cbase.h"
 
 #include "c/ncm_c.h"
 
 static int32
-ncm_macro_system_command(char *command, int32 command_len,
-                         bool block, int32 *status, NcmError *ncm_error) {
+ncm_system_command(char *command, int32 command_len,
+                   bool block, int32 *status, NcmError *ncm_error) {
     StrBuilder buffer = {0};
     Command process = {0};
     int32 rc;
@@ -57,22 +57,20 @@ ncm_macro_system_command(char *command, int32 command_len,
 }
 
 int32
-ncm_macro_run_external_command(char *command, int32 command_len,
-                               bool block, NcmError *ncm_error) {
+ncm_run_external_command(char *command, int32 command_len,
+                         bool block, NcmError *ncm_error) {
     int32 status;
 
-    return ncm_macro_system_command(command, command_len,
-                                    block, &status, ncm_error);
+    return ncm_system_command(command, command_len,
+                              block, &status, ncm_error);
 }
 
 int32
-ncm_macro_run_external_console_command(char *command,
-                                       int32 command_len,
-                                       NcmError *ncm_error) {
+ncm_run_external_console_command(char *command, int32 command_len,
+                                 NcmError *ncm_error) {
     int32 status;
 
-    return ncm_macro_system_command(command, command_len,
-                                    true, &status, ncm_error);
+    return ncm_system_command(command, command_len, true, &status, ncm_error);
 }
 
-#endif /* NCM_MACRO_UTILITIES_C */
+#endif /* NCM_UTILITIES_C */
