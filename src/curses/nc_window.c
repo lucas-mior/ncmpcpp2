@@ -407,23 +407,14 @@ nc_prompt_print_data(char *string, int32 string_len) {
 
 static void
 nc_prompt_display_string(void) {
-    NcWindow *window;
-    char *before_cursor;
-    char *after_cursor;
-    int32 before_len;
-    int32 after_len;
-    int32 cursor_pos;
-    int32 x;
-    int32 y;
-
-    window = nc_readline_state.window;
-    before_cursor = rl_line_buffer;
-    before_len = rl_point;
-    after_cursor = rl_line_buffer + rl_point;
-    after_len = rl_end - rl_point;
-    cursor_pos = utf8_width(before_cursor, before_len);
-    x = nc_readline_state.start_x;
-    y = nc_readline_state.start_y;
+    NcWindow *window = nc_readline_state.window;
+    char *before_cursor = rl_line_buffer;
+    int32 before_len = rl_point;
+    char *after_cursor = rl_line_buffer + rl_point;
+    int32 after_len = rl_end - rl_point;
+    int32 cursor_pos = utf8_width(before_cursor, before_len);
+    int32 x = nc_readline_state.start_x;
+    int32 y = nc_readline_state.start_y;
 
     mvwhline(window->window, y, x, ' ', nc_readline_state.width + 1);
     nc_window_go_to_xy(window, x, y);
