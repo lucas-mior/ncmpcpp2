@@ -24,7 +24,6 @@ typedef struct SettingsOption {
     int32 name_len;
     int32 default_value_len;
     SettingsApplyFn apply;
-    bool used;
 } SettingsOption;
 
 
@@ -1451,7 +1450,7 @@ settings_report_or_ignore(NcmError *ncm_error, bool ignore_errors) {
 }
 
 static int32
-settings_apply_option(Configuration *config, SettingsOption *option,
+settings_apply_option(Configuration *config, SettingsOption option,
                       char *value, int32 value_len, bool default_value,
                       bool ignore_errors, NcmError *ncm_error) {
     NcmError cause;
@@ -1463,7 +1462,7 @@ settings_apply_option(Configuration *config, SettingsOption *option,
     int32 status;
 
     ncm_error_clear(&cause);
-    status = option->apply(config, value, value_len, &cause);
+    status = option.apply(config, value, value_len, &cause);
     if (status < 0) {
         if (default_value) {
             phase = "initializing";
@@ -1478,7 +1477,7 @@ settings_apply_option(Configuration *config, SettingsOption *option,
         }
 
         len = SNPRINTF(message, "error while %s option \"%.*s\": %.*s",
-                       phase, option->name_len, option->name,
+                       phase, option.name_len, option.name,
                        detail_len, detail);
         if (len < 0) {
             ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
@@ -1616,10 +1615,9 @@ APPLY_BOOL(colors_enabled)
         .name_len = STRLIT_LEN(#NAME),           \
         .default_value_len = STRLIT_LEN(DEFAULT_VALUE), \
         .apply = apply_##NAME,                   \
-        .used = false,                           \
     }
 
-static SettingsOption ncmpcpp_options[] = {
+static const SettingsOption ncmpcpp_options[] = {
 OPT(ncmpcpp_directory, "~/.config/ncmpcpp/"),
 OPT(lyrics_directory,  "~/.lyrics/"),
 
@@ -1772,6 +1770,7 @@ OPT(active_window_border, "red"),
 int32
 configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                    bool ignore_errors, bool quiet, NcmError *ncm_error) {
+    bool used[LENGTH(ncmpcpp_options)] = {0};
     int32 status;
 
     configuration_clear(config);
@@ -1823,8 +1822,8 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
         }
         while (fgets(line, SIZEOF(line), file)) {
             NcmOptionLine parsed;
-            SettingsOption *option;
             int32 line_len = strlen32(line);
+            int32 option_index = -1;
             bool has_option;
 
             while (
@@ -1851,15 +1850,15 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                 continue;
             }
 
-            option = NULL;
             for (int32 j = 0; j < LENGTH(ncmpcpp_options); j += 1) {
-                if (STREQUAL(parsed.option, parsed.option_len,
-                             ncmpcpp_options[j].name, ncmpcpp_options[j].name_len)) {
-                    option = &ncmpcpp_options[j];
+                if (STREQUAL(
+                    parsed.option, parsed.option_len,
+                    ncmpcpp_options[j].name, ncmpcpp_options[j].name_len)) {
+                    option_index = j;
                     break;
                 }
             }
-            if (option == NULL) {
+            if (option_index < 0) {
                 char message[256];
                 int32 len;
 
@@ -1884,7 +1883,7 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                 }
                 continue;
             }
-            if (option->used) {
+            if (used[option_index]) {
                 char message[256];
                 int32 len;
 
@@ -1892,7 +1891,8 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                     message,
                     "error while processing option \"%.*s\": "
                     "option already set",
-                    option->name_len, option->name);
+                    ncmpcpp_options[option_index].name_len,
+                    ncmpcpp_options[option_index].name);
                 ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
                                      message, len);
                 status = settings_report_or_ignore(ncm_error,
@@ -1904,9 +1904,10 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                 }
                 continue;
             }
-            option->used = true;
+            used[option_index] = true;
             status = settings_apply_option(
-                config, option, parsed.value, parsed.value_len,
+                config, ncmpcpp_options[option_index],
+                parsed.value, parsed.value_len,
                 false, ignore_errors, ncm_error);
             if (status < 0) {
                 fclose(file);
@@ -1919,12 +1920,13 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
     }
 
     for (int32 i = 0; i < LENGTH(ncmpcpp_options); i += 1) {
-        if (ncmpcpp_options[i].used) {
+        if (used[i]) {
             continue;
         }
         status = settings_apply_option(
-            config, &ncmpcpp_options[i], ncmpcpp_options[i].default_value,
-            ncmpcpp_options[i].default_value_len, true, ignore_errors, ncm_error);
+            config, ncmpcpp_options[i], ncmpcpp_options[i].default_value,
+            ncmpcpp_options[i].default_value_len,
+            true, ignore_errors, ncm_error);
         if (status < 0) {
             return status;
         }

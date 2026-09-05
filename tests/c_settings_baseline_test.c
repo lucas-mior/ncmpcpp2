@@ -15,18 +15,18 @@ test_option_table_shape(void) {
     ASSERT(LENGTH(ncmpcpp_options) == 134);
 
     for (int32 i = 0; i < LENGTH(ncmpcpp_options); i += 1) {
-        SettingsOption *left = &ncmpcpp_options[i];
+        SettingsOption left = ncmpcpp_options[i];
 
-        ASSERT(left->name != NULL);
-        ASSERT(left->default_value != NULL);
-        ASSERT(left->apply != NULL);
-        ASSERT(left->name_len == strlen32(left->name));
-        ASSERT(left->default_value_len == strlen32(left->default_value));
+        ASSERT(left.name != NULL);
+        ASSERT(left.default_value != NULL);
+        ASSERT(left.apply != NULL);
+        ASSERT(left.name_len == strlen32(left.name));
+        ASSERT(left.default_value_len == strlen32(left.default_value));
         for (int32 j = i + 1; j < LENGTH(ncmpcpp_options); j += 1) {
-            SettingsOption *right = &ncmpcpp_options[j];
+            SettingsOption right = ncmpcpp_options[j];
 
-            ASSERT(!STREQUAL(left->name, left->name_len,
-                             right->name, right->name_len));
+            ASSERT(!STREQUAL(left.name, left.name_len,
+                             right.name, right.name_len));
         }
     }
     return;
@@ -139,10 +139,6 @@ test_duplicate_option_is_rejected(void) {
     int32 fd;
     int32 status;
 
-    for (int32 i = 0; i < LENGTH(ncmpcpp_options); i += 1) {
-        ncmpcpp_options[i].used = false;
-    }
-
     fd = cbase_make_temp_file(first_path, SIZEOF(first_path),
                               "ncmpcpp2-settings-a", ".conf");
     ASSERT_NON_NEGATIVE(fd);
@@ -178,6 +174,40 @@ test_duplicate_option_is_rejected(void) {
     return;
 }
 
+static void
+test_duplicate_state_is_per_read(void) {
+    static char contents[] = "lines_scrolled = 4\n";
+    Configuration config = {0};
+    NcmStringViewArray paths = {0};
+    NcmError ncm_error = {0};
+    NcmStringView *path_view;
+    char path[PATH_MAX];
+    int32 contents_len = SIZEOF(contents) - 1;
+    int32 fd;
+
+    fd = cbase_make_temp_file(path, SIZEOF(path),
+                              "ncmpcpp2-settings-repeat", ".conf");
+    ASSERT_NON_NEGATIVE(fd);
+    ASSERT_ZERO(XCLOSE(&fd, path));
+    ASSERT(write_entire_file(path, contents, contents_len) == contents_len);
+
+    path_view = ncm_string_view_array_append(&paths);
+    path_view->data = path;
+    path_view->len = strlen32(path);
+
+    configuration_init(&config);
+    ASSERT_ZERO(configuration_read(&config, &paths, false, true, &ncm_error));
+    ASSERT(config.lines_scrolled == 4);
+    ncm_error_clear(&ncm_error);
+    ASSERT_ZERO(configuration_read(&config, &paths, false, true, &ncm_error));
+    ASSERT(config.lines_scrolled == 4);
+
+    configuration_destroy(&config);
+    ncm_string_view_array_destroy(&paths);
+    ASSERT_ZERO(cbase_remove_file(path));
+    return;
+}
+
 int
 main(void) {
     global_state_init();
@@ -186,6 +216,7 @@ main(void) {
     test_declared_defaults_and_cleanup();
     test_numeric_boundaries();
     test_duplicate_option_is_rejected();
+    test_duplicate_state_is_per_read();
 
     global_state_destroy();
     return 0;
