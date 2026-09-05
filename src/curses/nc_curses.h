@@ -765,19 +765,18 @@ void nc_search_row_destroy(NcSearchRow *row);
 int32 nc_search_row_copy(NcSearchRow *dest, NcSearchRow *source);
 
 void nc_media_library_tag_row_destroy(NcMediaLibraryTagRow *row);
-int32 nc_media_library_tag_row_copy(
-    NcMediaLibraryTagRow *dest, NcMediaLibraryTagRow *source);
+int32 nc_media_library_tag_row_copy(NcMediaLibraryTagRow *dest,
+                                    NcMediaLibraryTagRow *source);
 
 void nc_media_library_album_row_destroy(NcMediaLibraryAlbumRow *row);
-int32 nc_media_library_album_row_copy(
-    NcMediaLibraryAlbumRow *dest, NcMediaLibraryAlbumRow *source);
+int32 nc_media_library_album_row_copy(NcMediaLibraryAlbumRow *dest,
+                                      NcMediaLibraryAlbumRow *source);
 
 void nc_editor_action_row_destroy(NcEditorActionRow *row);
-int32 nc_editor_action_row_copy(
-    NcEditorActionRow *dest, NcEditorActionRow *source);
+int32 nc_editor_action_row_copy(NcEditorActionRow *dest,
+                                NcEditorActionRow *source);
 
 void nc_editor_sort_row_destroy(NcEditorSortRow *row);
-int32 nc_editor_sort_row_copy(
-    NcEditorSortRow *dest, NcEditorSortRow *source);
+int32 nc_editor_sort_row_copy(NcEditorSortRow *dest, NcEditorSortRow *source);
 
 #endif /* NCMPCPP_NC_CURSES_H */
