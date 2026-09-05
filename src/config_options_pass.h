@@ -40,11 +40,11 @@
 #endif
 #endif
 
-#if !defined(XX_INT_RANGE)
+#if !defined(XX_INTEGER)
 #if defined(XX_OPTION)
-#define XX_INT_RANGE XX_OPTION
+#define XX_INTEGER XX_OPTION
 #else
-#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_INTEGER(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #endif
 #endif
 
@@ -209,7 +209,7 @@
 #undef XX_OPTIONAL_ENUM
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
-#undef XX_INT_RANGE
+#undef XX_INTEGER
 #undef XX_DIR
 #undef XX_PATH
 #undef XX_STRING
