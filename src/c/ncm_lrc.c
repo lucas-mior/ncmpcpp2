@@ -567,11 +567,9 @@ ncm_lrc_document_render_plain(NcmLrcDocument *document,
 static int32
 ncm_lrc_document_next_entry_after_time_unchecked(NcmLrcDocument *document,
                                                  int64 elapsed_ms) {
-    int32 left;
-    int32 right;
+    int32 left = 0;
+    int32 right = document->entries_len;
 
-    left = 0;
-    right = document->entries_len;
     while (left < right) {
         int32 middle;
 
