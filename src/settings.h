@@ -65,7 +65,16 @@ typedef struct Configuration {
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) NcFormattedColor NAME;
 #define XX_BORDER(NAME, DEFAULT_VALUE) NcBorder NAME;
 #define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS) NcmFormatAst NAME;
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING) NcBuffer NAME;
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING) \
+    NcBuffer NAME; \
+    int32 NAME##_length;
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX) \
+    StrBuilder NAME;
 #include "configuration_options.def"
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
 #undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
@@ -82,26 +91,12 @@ typedef struct Configuration {
 
     int32 visualizer_fifo_path_len;
 
-    StrBuilder progressbar_look;
-    StrBuilder visualizer_look;
-
     NcmFormatAst song_columns_mode_format;
 
     NcmInt32Array playlist_editor_column_width_ratio;
     NcmInt32Array media_library_column_width_ratio_two;
     NcmInt32Array media_library_column_width_ratio_three;
     ColumnArray song_columns_list_format;
-
-    NcBuffer browser_playlist_prefix;
-    NcBuffer selected_item_prefix;
-    NcBuffer selected_item_suffix;
-    NcBuffer now_playing_prefix;
-    NcBuffer now_playing_suffix;
-    NcBuffer modified_item_prefix;
-    NcBuffer current_item_prefix;
-    NcBuffer current_item_suffix;
-    NcBuffer current_item_inactive_column_prefix;
-    NcBuffer current_item_inactive_column_suffix;
 
     NcmFormattedColorArray visualizer_color;
 
@@ -112,15 +107,6 @@ typedef struct Configuration {
 
     int32 lyrics_db;
     uint32 regular_expressions;
-
-    int32 selected_item_prefix_length;
-    int32 selected_item_suffix_length;
-    int32 now_playing_prefix_length;
-    int32 now_playing_suffix_length;
-    int32 current_item_prefix_length;
-    int32 current_item_suffix_length;
-    int32 current_item_inactive_column_prefix_length;
-    int32 current_item_inactive_column_suffix_length;
 
     enum ScreenType startup_slave_screen;
     ScreenTypeArray screen_switcher_mode;

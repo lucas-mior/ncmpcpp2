@@ -40,7 +40,13 @@ enum SettingsPrimitiveOption {
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
 #define XX_BORDER(NAME, DEFAULT_VALUE)
 #define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS)
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)
 #include "configuration_options.def"
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
 #undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
@@ -70,7 +76,13 @@ enum SettingsEnumOption {
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
 #define XX_BORDER(NAME, DEFAULT_VALUE)
 #define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS)
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)
 #include "configuration_options.def"
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
 #undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
@@ -100,7 +112,13 @@ enum SettingsColorOption {
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) SETTINGS_COLOR_##NAME,
 #define XX_BORDER(NAME, DEFAULT_VALUE) SETTINGS_COLOR_##NAME,
 #define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS)
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)
 #include "configuration_options.def"
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
 #undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
@@ -130,7 +148,13 @@ enum SettingsFormatOption {
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
 #define XX_BORDER(NAME, DEFAULT_VALUE)
 #define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS) SETTINGS_FORMAT_##NAME,
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)
 #include "configuration_options.def"
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
 #undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
@@ -147,6 +171,80 @@ enum SettingsFormatOption {
 
 _Static_assert(SETTINGS_FORMAT_COUNT == 7,
                "format configuration option count changed");
+
+enum SettingsBufferOption {
+#define XX_BOOL(NAME, DEFAULT_VALUE)
+#define XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_PATH(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT_VALUE)
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_COLOR(NAME, DEFAULT_VALUE)
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
+#define XX_BORDER(NAME, DEFAULT_VALUE)
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS)
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING) SETTINGS_BUFFER_##NAME,
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING) \
+    SETTINGS_BUFFER_##NAME,
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)
+#include "configuration_options.def"
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
+#undef XX_FORMAT
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
+#undef XX_ENUM
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_DIR
+#undef XX_PATH
+#undef XX_STRING
+#undef XX_BOOL
+    SETTINGS_BUFFER_COUNT,
+};
+
+_Static_assert(SETTINGS_BUFFER_COUNT == 10,
+               "buffer configuration option count changed");
+
+enum SettingsLookOption {
+#define XX_BOOL(NAME, DEFAULT_VALUE)
+#define XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_PATH(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT_VALUE)
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_COLOR(NAME, DEFAULT_VALUE)
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
+#define XX_BORDER(NAME, DEFAULT_VALUE)
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS)
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX) \
+    SETTINGS_LOOK_##NAME,
+#include "configuration_options.def"
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
+#undef XX_FORMAT
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
+#undef XX_ENUM
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_DIR
+#undef XX_PATH
+#undef XX_STRING
+#undef XX_BOOL
+    SETTINGS_LOOK_COUNT,
+};
+
+_Static_assert(SETTINGS_LOOK_COUNT == 2,
+               "look configuration option count changed");
 
 #define SETTINGS_ASSERT_FIELD_TYPE(NAME, TYPE) \
     _Static_assert(_Generic(&((Configuration *)0)->NAME, \
@@ -174,7 +272,17 @@ _Static_assert(SETTINGS_FORMAT_COUNT == 7,
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcBorder);
 #define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS) \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcmFormatAst);
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, NcBuffer);
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, NcBuffer); \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME##_length, int32);
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, StrBuilder);
 #include "configuration_options.def"
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
 #undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
@@ -670,17 +778,6 @@ settings_parse_media_library_primary_tag(char *value, int32 value_len,
 }
 
 static int32
-apply_visualizer_look(Configuration *config, char *value, int32 value_len,
-                      NcmError *ncm_error) {
-    if (utf8_characters(value, value_len) != 2) {
-        return settings_invalid_value(ncm_error, value, value_len);
-    }
-    sb_clear(&config->visualizer_look);
-    SB_APPEND(&config->visualizer_look, value, value_len);
-    return 0;
-}
-
-static int32
 apply_visualizer_color(Configuration *config, char *value, int32 value_len,
                        NcmError *ncm_error) {
     NcmFormattedColorArray *array = &config->visualizer_color;
@@ -727,92 +824,6 @@ settings_parse_format(NcmFormatAst *format, char *value, int32 value_len,
     ncm_format_ast_clear(format);
     status = ncm_format_parse(format, value, value_len, flags, ncm_error);
     return status;
-}
-
-static int32
-apply_current_item_prefix(Configuration *config, char *value, int32 value_len,
-                          NcmError *ncm_error) {
-    return settings_copy_nc_buffer(&config->current_item_prefix, value,
-                                   value_len,
-                                   &config->current_item_prefix_length, true,
-                                   ncm_error);
-}
-
-static int32
-apply_current_item_suffix(Configuration *config, char *value, int32 value_len,
-                          NcmError *ncm_error) {
-    return settings_copy_nc_buffer(&config->current_item_suffix, value,
-                                   value_len,
-                                   &config->current_item_suffix_length, true,
-                                   ncm_error);
-}
-
-static int32
-apply_current_item_inactive_column_prefix(Configuration *config, char *value,
-                                          int32 value_len,
-                                          NcmError *ncm_error) {
-    return settings_copy_nc_buffer(
-        &config->current_item_inactive_column_prefix, value, value_len,
-        &config->current_item_inactive_column_prefix_length, true, ncm_error);
-}
-
-static int32
-apply_current_item_inactive_column_suffix(Configuration *config, char *value,
-                                          int32 value_len,
-                                          NcmError *ncm_error) {
-    return settings_copy_nc_buffer(
-        &config->current_item_inactive_column_suffix, value, value_len,
-        &config->current_item_inactive_column_suffix_length, true, ncm_error);
-}
-
-static int32
-apply_now_playing_prefix(Configuration *config, char *value, int32 value_len,
-                         NcmError *ncm_error) {
-    return settings_copy_nc_buffer(&config->now_playing_prefix, value,
-                                   value_len,
-                                   &config->now_playing_prefix_length, false,
-                                   ncm_error);
-}
-
-static int32
-apply_now_playing_suffix(Configuration *config, char *value, int32 value_len,
-                         NcmError *ncm_error) {
-    return settings_copy_nc_buffer(&config->now_playing_suffix, value,
-                                   value_len,
-                                   &config->now_playing_suffix_length, false,
-                                   ncm_error);
-}
-
-static int32
-apply_browser_playlist_prefix(Configuration *config, char *value,
-                              int32 value_len, NcmError *ncm_error) {
-    return settings_copy_nc_buffer(&config->browser_playlist_prefix, value,
-                                   value_len, NULL, false, ncm_error);
-}
-
-static int32
-apply_selected_item_prefix(Configuration *config, char *value, int32 value_len,
-                           NcmError *ncm_error) {
-    return settings_copy_nc_buffer(&config->selected_item_prefix, value,
-                                   value_len,
-                                   &config->selected_item_prefix_length, false,
-                                   ncm_error);
-}
-
-static int32
-apply_selected_item_suffix(Configuration *config, char *value, int32 value_len,
-                           NcmError *ncm_error) {
-    return settings_copy_nc_buffer(&config->selected_item_suffix,
-                                   value, value_len,
-                                   &config->selected_item_suffix_length, false,
-                                   ncm_error);
-}
-
-static int32
-apply_modified_item_prefix(Configuration *config, char *value, int32 value_len,
-                           NcmError *ncm_error) {
-    return settings_copy_nc_buffer(&config->modified_item_prefix,
-                                   value, value_len, NULL, false, ncm_error);
 }
 
 static int32
@@ -959,17 +970,20 @@ apply_song_columns_list_format(Configuration *config,
 }
 
 static int32
-apply_progressbar_look(Configuration *config, char *value, int32 value_len,
-                       NcmError *ncm_error) {
+settings_parse_look(StrBuilder *look, char *value, int32 value_len,
+                    int32 min_chars, int32 max_chars, bool pad_to_max,
+                    NcmError *ncm_error) {
     int32 characters = utf8_characters(value, value_len);
 
-    if ((characters < 2) || (characters > 3)) {
+    if ((characters < min_chars) || (characters > max_chars)) {
         return settings_invalid_value(ncm_error, value, value_len);
     }
-    sb_clear(&config->progressbar_look);
-    SB_APPEND(&config->progressbar_look, value, value_len);
-    if (characters == 2) {
-        sb_append_byte(&config->progressbar_look, '\0');
+    sb_clear(look);
+    SB_APPEND(look, value, value_len);
+    if (pad_to_max) {
+        for (int32 i = characters; i < max_chars; i += 1) {
+            sb_append_byte(look, '\0');
+        }
     }
     return 0;
 }
@@ -1429,8 +1443,37 @@ settings_primitive_post_apply(enum SettingsPrimitiveOption option,
                                      FLAGS, ncm_error); \
     }
 
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING) \
+    static int32 \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        return settings_copy_nc_buffer(&config->NAME, value, value_len, NULL, \
+                                       KEEP_EXISTING, ncm_error); \
+    }
+
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING) \
+    static int32 \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        return settings_copy_nc_buffer( \
+            &config->NAME, value, value_len, &config->NAME##_length, \
+            KEEP_EXISTING, ncm_error); \
+    }
+
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX) \
+    static int32 \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        return settings_parse_look(&config->NAME, value, value_len, \
+                                   MIN_CHARS, MAX_CHARS, PAD_TO_MAX, \
+                                   ncm_error); \
+    }
+
 #include "configuration_options.def"
 
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
 #undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
@@ -1466,7 +1509,15 @@ static const SettingsOption ncmpcpp_options[] = {
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) OPT(NAME, DEFAULT_VALUE),
 #define XX_BORDER(NAME, DEFAULT_VALUE) OPT(NAME, DEFAULT_VALUE),
 #define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS) OPT(NAME, DEFAULT_VALUE),
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING) OPT(NAME, DEFAULT_VALUE),
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING) \
+    OPT(NAME, DEFAULT_VALUE),
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX) \
+    OPT(NAME, DEFAULT_VALUE),
 #include "configuration_options.def"
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
 #undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
@@ -1479,22 +1530,10 @@ static const SettingsOption ncmpcpp_options[] = {
 #undef XX_STRING
 #undef XX_BOOL
 
-OPT(visualizer_look, "●▮"),
 OPT(visualizer_color, "blue, cyan, green, yellow, magenta, red"),
-OPT(current_item_prefix, "$(yellow)$r"),
-OPT(current_item_suffix, "$/r$(end)"),
-OPT(current_item_inactive_column_prefix, "$(white)$r"),
-OPT(current_item_inactive_column_suffix, "$/r$(end)"),
-OPT(now_playing_prefix, "$b"),
-OPT(now_playing_suffix, "$/b"),
-OPT(browser_playlist_prefix, "$2playlist$9 "),
-OPT(selected_item_prefix, "$6"),
-OPT(selected_item_suffix, "$9"),
-OPT(modified_item_prefix, "$3>$9 "),
 OPT(song_columns_list_format,
     "(20)[]{a} (6f)[green]{NE} (50)[white]{t|f:Title}"
     " (20)[cyan]{b} (7f)[magenta]{l}"),
-OPT(progressbar_look, "=>"),
 OPT(default_place_to_search_in, "database"),
 OPT(default_find_mode, "wrapped"),
 OPT(lyrics_fetchers,
