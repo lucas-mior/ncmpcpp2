@@ -25,8 +25,7 @@ static void
 ncm_tags_forward_value_callback(char *value, void *user) {
     NcmTagsForwardContext *context;
 
-    context = (NcmTagsForwardContext *)user;
-    if (context == NULL) {
+    if ((context = user) == NULL) {
         return;
     }
     if (context->callback == NULL) {
