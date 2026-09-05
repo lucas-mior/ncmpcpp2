@@ -137,17 +137,17 @@ static void app_register_screen(NcScreen *screen);
 static void show_long_time(NcBuffer *buffer, int32 seconds);
 
 #define NCM_APP_SCREEN_DIRECT_ACCESSOR(suffix, type, storage, base_expr) \
-type *                                                                   \
-app_screen_##suffix(void) {                                              \
-    app_screen_##suffix##_init();                                        \
-    return &storage;                                                     \
-}                                                                        \
+    type *                                                               \
+    app_screen_##suffix(void) {                                          \
+        app_screen_##suffix##_init();                                    \
+        return &storage;                                                 \
+    }                                                                    \
                                                                          \
-NcScreen *                                                               \
-app_screen_##suffix##_base(void) {                                       \
-    app_screen_##suffix##_init();                                        \
-    return base_expr;                                                    \
-}
+    NcScreen *                                                           \
+    app_screen_##suffix##_base(void) {                                   \
+        app_screen_##suffix##_init();                                    \
+        return base_expr;                                                \
+    }
 
 NCM_APP_SCREEN_DIRECT_ACCESSOR_TYPES(NCM_APP_SCREEN_DIRECT_ACCESSOR)
 
