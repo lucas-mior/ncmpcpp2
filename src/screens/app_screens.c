@@ -136,9 +136,7 @@ static NcBorder no_border(void);
 static void app_register_screen(NcScreen *screen);
 static void show_long_time(NcBuffer *buffer, int32 seconds);
 
-#define NCM_APP_SCREEN_DEFINE_DIRECT_ACCESSOR(                                 \
-    suffix, type, storage, base_expr                                           \
-)                                                                              \
+#define NCM_APP_SCREEN_DEFINE_DIRECT_ACCESSOR(suffix, type, storage, base_expr) \
 type *                                                                         \
 app_screen_##suffix(void) {                                                    \
     app_screen_##suffix##_init();                                              \
