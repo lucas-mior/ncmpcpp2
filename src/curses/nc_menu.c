@@ -352,8 +352,8 @@ nc_menu_swap(NcMenu *left, NcMenu *right) {
 
 void
 nc_menu_set_item_callbacks(NcMenu *menu, NcMenuItemCallbacks callbacks) {
-    ASSERT(menu_array_count(menu, NC_MENU_ITEMS_ALL) <= 0);
-    ASSERT(menu_array_count(menu, NC_MENU_ITEMS_FILTERED) <= 0);
+    ASSERT_NON_POSITIVE(menu_array_count(menu, NC_MENU_ITEMS_ALL));
+    ASSERT_NON_POSITIVE(menu_array_count(menu, NC_MENU_ITEMS_FILTERED));
     menu->item_callbacks = callbacks;
     return;
 }
