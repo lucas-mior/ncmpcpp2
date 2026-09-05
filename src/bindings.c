@@ -803,9 +803,8 @@ static void
 ncm_bindings_bind_group(NcmBindingsConfiguration *bindings,
                         char *key_name, int32 key_name_len,
                         enum NcmActionType *actions, int32 actions_len) {
-    NcKey key;
+    NcKey key = ncm_bindings_string_to_key(key_name, key_name_len);
 
-    key = ncm_bindings_string_to_key(key_name, key_name_len);
     if (!ncm_bindings_key_is_unbound(bindings, key)) {
         return;
     }
