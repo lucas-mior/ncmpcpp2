@@ -85,7 +85,7 @@ settings_assert_generated_empty(Configuration *config) {
     ASSERT(config->NAME##_len == 0);
 #define XX_PATH(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
 #define XX_DIR(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
-#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+#define XX_INTEGER(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     ASSERT(config->NAME == 0);
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     ASSERT(config->NAME == 0);
@@ -447,7 +447,7 @@ test_generated_numeric_boundaries(void) {
 
     configuration_init(&config);
 
-#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+#define XX_INTEGER(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     settings_test_int_range(apply_##NAME, &config, &config.NAME, \
                             MINIMUM, MAXIMUM);
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
