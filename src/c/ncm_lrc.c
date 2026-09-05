@@ -571,9 +571,8 @@ ncm_lrc_document_next_entry_after_time_unchecked(NcmLrcDocument *document,
     int32 right = document->entries_len;
 
     while (left < right) {
-        int32 middle;
+        int32 middle = left + (right - left)/2;
 
-        middle = left + (right - left)/2;
         if ((int64)document->entries[middle].time_ms <= elapsed_ms) {
             left = middle + 1;
         } else {
