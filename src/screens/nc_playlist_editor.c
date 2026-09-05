@@ -15,8 +15,7 @@
 static NcWindow *playlist_editor_active_window_callback(NcScreen *);
 static void playlist_editor_refresh_callback(NcScreen *);
 static void playlist_editor_refresh_window_callback(NcScreen *);
-static void playlist_editor_scroll_callback(NcScreen *,
-                                            enum NcScroll where);
+static void playlist_editor_scroll_callback(NcScreen *, enum NcScroll where);
 static void playlist_editor_finish_list_change_callback(NcScreen *);
 static void playlist_editor_switch_to_callback(NcScreen *);
 static void playlist_editor_resize_callback(NcScreen *);
@@ -25,11 +24,11 @@ static char *playlist_editor_title_callback(NcScreen *);
 static void playlist_editor_update_callback(NcScreen *);
 static void playlist_editor_mouse_callback(NcScreen *, MEVENT event);
 static void playlist_editor_destroy_callback(NcScreen *);
-static bool playlist_filter_callback(NcMenu *menu, void *item, void *user);
-static bool content_filter_callback(NcMenu *menu, void *item, void *user);
-static void playlist_draw_callback(NcMenu *menu, NcWindow *window,
+static bool playlist_filter_callback(NcMenu *, void *item, void *user);
+static bool content_filter_callback(NcMenu *, void *item, void *user);
+static void playlist_draw_callback(NcMenu *, NcWindow *window,
                                    void *item, int32 pos, void *user);
-static void content_draw_callback(NcMenu *menu, NcWindow *window,
+static void content_draw_callback(NcMenu *, NcWindow *window,
                                   void *item, int32 pos, void *user);
 
 static void
