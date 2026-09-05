@@ -11,6 +11,29 @@ settings_test_apply(SettingsApplyFn apply, Configuration *config,
 }
 
 static void
+settings_assert_primitives_empty(Configuration *config) {
+#define XX_BOOL(NAME, DEFAULT_VALUE) ASSERT(!config->NAME);
+#define XX_STRING(NAME, DEFAULT_VALUE) \
+    ASSERT(config->NAME == NULL); \
+    ASSERT(config->NAME##_len == 0);
+#define XX_PATH(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+    ASSERT(config->NAME == 0);
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+    ASSERT(config->NAME == 0);
+#include "configuration_options.def"
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_DIR
+#undef XX_PATH
+#undef XX_STRING
+#undef XX_BOOL
+
+    return;
+}
+
+static void
 test_option_table_shape(void) {
     ASSERT(LENGTH(ncmpcpp_options) == 134);
 
@@ -39,6 +62,7 @@ test_declared_defaults_and_cleanup(void) {
     NcmError ncm_error = {0};
 
     configuration_init(&config);
+    settings_assert_primitives_empty(&config);
     ASSERT_ZERO(configuration_read(&config, &paths, false, true, &ncm_error));
 
     ASSERT(config.mpd_port == 6600);
@@ -54,6 +78,7 @@ test_declared_defaults_and_cleanup(void) {
            == NCM_REGEX_EXTENDED_CASE_INSENSITIVE);
 
     configuration_destroy(&config);
+    settings_assert_primitives_empty(&config);
     ASSERT(config.ncmpcpp_directory == NULL);
     ASSERT(config.ncmpcpp_directory_len == 0);
     ASSERT(config.progressbar_look.data == NULL);

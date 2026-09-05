@@ -148,29 +148,26 @@ settings_formatted_color_array_destroy_item(void *item) {
 
 static void
 configuration_init_unchecked(Configuration *config) {
-#define NCM_CONFIG_STRING_INIT(name) \
-    config->name = NULL; \
-    config->name##_len = 0
+#define XX_BOOL(NAME, DEFAULT_VALUE) config->NAME = false;
+#define XX_STRING(NAME, DEFAULT_VALUE) \
+    config->NAME = NULL; \
+    config->NAME##_len = 0;
+#define XX_PATH(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+    config->NAME = 0;
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+    config->NAME = 0;
+#include "configuration_options.def"
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_DIR
+#undef XX_PATH
+#undef XX_STRING
+#undef XX_BOOL
 
-    NCM_CONFIG_STRING_INIT(ncmpcpp_directory);
-    NCM_CONFIG_STRING_INIT(lyrics_directory);
-    NCM_CONFIG_STRING_INIT(mpd_music_dir);
-    NCM_CONFIG_STRING_INIT(mpd_host);
-    NCM_CONFIG_STRING_INIT(mpd_password);
-    NCM_CONFIG_STRING_INIT(visualizer_fifo_path);
-    NCM_CONFIG_STRING_INIT(visualizer_data_source);
-    NCM_CONFIG_STRING_INIT(visualizer_output_name);
-    NCM_CONFIG_STRING_INIT(empty_tag_marker);
-    NCM_CONFIG_STRING_INIT(external_editor);
-    NCM_CONFIG_STRING_INIT(system_encoding);
-    NCM_CONFIG_STRING_INIT(execute_on_song_change);
-    NCM_CONFIG_STRING_INIT(execute_on_player_state_change);
-    NCM_CONFIG_STRING_INIT(lastfm_preferred_language);
-    NCM_CONFIG_STRING_INIT(default_tag_editor_pattern);
-    NCM_CONFIG_STRING_INIT(random_exclude_pattern);
-    NCM_CONFIG_STRING_INIT(tags_separator);
-
-#undef NCM_CONFIG_STRING_INIT
+    config->visualizer_fifo_path = NULL;
+    config->visualizer_fifo_path_len = 0;
 
     config->progressbar_look = (StrBuilder){0};
     config->visualizer_look = (StrBuilder){0};
@@ -232,76 +229,13 @@ configuration_init_unchecked(Configuration *config) {
     config->media_library_primary_tag = MPD_TAG_ARTIST;
     config->browser_sort_mode = NCM_SORT_MODE_TYPE;
 
-    config->colors_enabled = false;
-    config->playlist_show_mpd_host = false;
-    config->playlist_show_remaining_time = false;
-    config->playlist_shorten_total_times = false;
-    config->playlist_separate_albums = false;
-    config->enable_window_title = false;
-    config->header_visibility = false;
-    config->header_text_scrolling = false;
-    config->statusbar_visibility = false;
-    config->connected_message_on_startup = false;
-    config->titles_visibility = false;
-    config->centered_cursor = false;
     config->screen_switcher_previous = false;
-    config->autocenter_mode = false;
     config->default_find_mode = false;
-    config->incremental_seeking = false;
-    config->follow_now_playing_lyrics = false;
-    config->fetch_lyrics_for_current_song_in_background = false;
-    config->show_hidden_files_in_local_browser = false;
     config->default_place_to_search_in = false;
-    config->jump_to_now_playing_song_at_start = false;
-    config->display_volume_level = false;
-    config->display_bitrate = false;
-    config->display_remaining_time = false;
-    config->ignore_leading_the = false;
-    config->block_search_constraints_change_if_items_found = false;
-    config->use_console_editor = false;
-    config->cyclic_scrolling = false;
-    config->ask_before_clearing_playlists = false;
-    config->ask_before_shuffling_playlists = false;
-    config->mouse_support = false;
-    config->mouse_list_scroll_whole_page = false;
-    config->visualizer_in_stereo = false;
-    config->visualizer_autoscale = false;
-    config->visualizer_spectrum_smooth_look = false;
-    config->visualizer_spectrum_smooth_look_legacy_chars = false;
-    config->visualizer_spectrum_log_scale_x = false;
-    config->visualizer_spectrum_log_scale_y = false;
-    config->data_fetching_delay = false;
-    config->media_library_sort_by_mtime = false;
-    config->media_library_hide_album_dates = false;
-    config->tag_editor_extended_numeration = false;
-    config->discard_colors_if_item_is_selected = false;
-    config->store_lyrics_in_song_dir = false;
-    config->generate_win32_compatible_filenames = false;
-    config->ask_for_locked_screen_width_part = false;
-    config->allow_for_physical_item_deletion = false;
-    config->show_duplicate_tags = false;
-    config->media_library_albums_split_by_date = false;
-    config->startup_slave_screen_focus = false;
     config->has_startup_slave_screen_type = false;
 
-    config->mpd_port = 0;
-    config->mpd_connection_timeout = 0;
-    config->mpd_crossfade_time = 0;
-    config->seek_time = 0;
-    config->volume_change_step = 0;
-    config->message_delay_time = 0;
     config->lyrics_db = 0;
-    config->lines_scrolled = 0;
-    config->search_engine_default_search_mode = 0;
-    config->visualizer_fps = 0;
-    config->visualizer_spectrum_dft_size = 0;
-    config->playlist_disable_highlight_delay = 0;
     config->regular_expressions = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
-
-    config->visualizer_spectrum_gain = 0;
-    config->visualizer_spectrum_hz_min = 0;
-    config->visualizer_spectrum_hz_max = 0;
-    config->locked_screen_width_part = 0;
 
     config->selected_item_prefix_length = 0;
     config->selected_item_suffix_length = 0;
@@ -333,30 +267,26 @@ configuration_destroy(Configuration *config) {
         return;
     }
 
-#define NCM_CONFIG_STRING_DESTROY(name)          \
-    free2(config->name, config->name##_len + 1); \
-    config->name = NULL;                         \
-    config->name##_len = 0
+#define XX_BOOL(NAME, DEFAULT_VALUE)
+#define XX_STRING(NAME, DEFAULT_VALUE)           \
+    free2(config->NAME, config->NAME##_len + 1); \
+    config->NAME = NULL;                         \
+    config->NAME##_len = 0;
+#define XX_PATH(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#include "configuration_options.def"
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_DIR
+#undef XX_PATH
+#undef XX_STRING
+#undef XX_BOOL
 
-    NCM_CONFIG_STRING_DESTROY(ncmpcpp_directory);
-    NCM_CONFIG_STRING_DESTROY(lyrics_directory);
-    NCM_CONFIG_STRING_DESTROY(mpd_music_dir);
-    NCM_CONFIG_STRING_DESTROY(mpd_host);
-    NCM_CONFIG_STRING_DESTROY(mpd_password);
-    NCM_CONFIG_STRING_DESTROY(visualizer_fifo_path);
-    NCM_CONFIG_STRING_DESTROY(visualizer_data_source);
-    NCM_CONFIG_STRING_DESTROY(visualizer_output_name);
-    NCM_CONFIG_STRING_DESTROY(empty_tag_marker);
-    NCM_CONFIG_STRING_DESTROY(external_editor);
-    NCM_CONFIG_STRING_DESTROY(system_encoding);
-    NCM_CONFIG_STRING_DESTROY(execute_on_song_change);
-    NCM_CONFIG_STRING_DESTROY(execute_on_player_state_change);
-    NCM_CONFIG_STRING_DESTROY(lastfm_preferred_language);
-    NCM_CONFIG_STRING_DESTROY(default_tag_editor_pattern);
-    NCM_CONFIG_STRING_DESTROY(random_exclude_pattern);
-    NCM_CONFIG_STRING_DESTROY(tags_separator);
-
-#undef NCM_CONFIG_STRING_DESTROY
+    free2(config->visualizer_fifo_path, config->visualizer_fifo_path_len + 1);
+    config->visualizer_fifo_path = NULL;
+    config->visualizer_fifo_path_len = 0;
 
     sb_free(&config->progressbar_look);
     sb_free(&config->visualizer_look);
