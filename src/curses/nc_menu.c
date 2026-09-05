@@ -596,8 +596,7 @@ nc_menu_refresh(NcMenu *menu, NcWindow *window, int32 width, int32 height) {
         return;
     }
 
-    nc_menu_prepare_refresh(menu, height, menu_is_position_highlightable,
-                            menu);
+    nc_menu_prepare_refresh(menu, height, menu_is_position_highlightable, menu);
 
     line = 0;
     end = menu->beginning + height;
