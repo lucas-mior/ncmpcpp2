@@ -811,9 +811,7 @@ ncm_bindings_bind_group(NcmBindingsConfiguration *bindings,
     }
 
     for (int32 i = 0; i < actions_len; i += 1) {
-        NcmBinding binding;
-
-        binding = (NcmBinding){0};
+        NcmBinding binding = {0};
         ncm_binding_append_normal(&binding, actions[i]);
         ncm_bindings_bind(bindings, key, &binding);
         ncm_binding_destroy(&binding);
