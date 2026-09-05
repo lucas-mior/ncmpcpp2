@@ -114,7 +114,7 @@ static void
 ncm_song_set_uri_unchecked(NcmSong *song, char *uri, int32 uri_len) {
     char *copy;
 
-    copy = (char *)malloc2(uri_len + 1);
+    copy = malloc2(uri_len + 1);
     memcpy64(copy, uri, uri_len);
     copy[uri_len] = '\0';
 
@@ -133,7 +133,7 @@ ncm_song_add_tag_unchecked(NcmSong *song, enum mpd_tag_type type,
 
     tag = &song->tags[song->tags_len];
     ncm_song_tag_destroy(tag);
-    tag->value = (char *)malloc2(value_len + 1);
+    tag->value = malloc2(value_len + 1);
     tag->value_len = value_len;
     tag->type = type;
     memcpy64(tag->value, value, value_len);
