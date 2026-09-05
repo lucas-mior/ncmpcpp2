@@ -26,16 +26,6 @@ static bool nc_screen_callbacks_is_lockable(NcScreen *screen);
 static bool nc_screen_callbacks_is_mergable(NcScreen *screen);
 static void nc_screen_callbacks_destroy(NcScreen *screen);
 static bool nc_screen_run_current_is_available(NcScreen *screen);
-static int32 nc_screen_registry_index_of(NcScreenRegistry *registry,
-                                         NcScreen *screen);
-static bool nc_screen_registry_is_registered_unchecked(
-    NcScreenRegistry *registry, NcScreen *screen
-);
-static void nc_screen_registry_each_visible_unchecked(
-    NcScreenRegistry *registry, NcScreenEachCallback *callback, void *user
-);
-static void nc_screen_registry_update_one(NcScreen *screen, void *user);
-static void nc_screen_registry_resize_one(NcScreen *screen, void *user);
 
 const NcScreenOps nc_screen_default_ops = {
     .active_window = nc_screen_default_active_window,
@@ -408,6 +398,24 @@ nc_screen_user(NcScreen *screen) {
     return screen->user;
 }
 
+static int32
+nc_screen_registry_index_of(NcScreenRegistry *registry,
+                            NcScreen *screen) {
+    ASSERT(screen != NULL);
+    for (int32 i = 0; i < registry->screens_len; i += 1) {
+        if (registry->screens[i] == screen) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+static bool
+nc_screen_registry_is_registered_unchecked(NcScreenRegistry *registry,
+                                           NcScreen *screen) {
+    return nc_screen_registry_index_of(registry, screen) >= 0;
+}
+
 int32
 nc_screen_registry_register(NcScreenRegistry *registry, NcScreen *screen) {
     if ((registry == NULL) || (screen == NULL)) {
@@ -660,6 +668,29 @@ nc_screen_registry_is_visible(NcScreenRegistry *registry,
     return screen == registry->current_screen;
 }
 
+static void
+nc_screen_registry_each_visible_unchecked(
+    NcScreenRegistry *registry, NcScreenEachCallback *callback, void *user
+) {
+    ASSERT(callback != NULL);
+
+    if (registry->locked_screen
+        && registry->current_screen
+        && nc_screen_is_mergable(registry->current_screen)) {
+        if (registry->current_screen == registry->locked_screen) {
+            if (registry->inactive_screen) {
+                callback(registry->inactive_screen, user);
+            }
+        } else {
+            callback(registry->locked_screen, user);
+        }
+    }
+    if (registry->current_screen) {
+        callback(registry->current_screen, user);
+    }
+    return;
+}
+
 void
 nc_screen_registry_each_visible(NcScreenRegistry *registry,
                                 NcScreenEachCallback *callback,
@@ -668,6 +699,21 @@ nc_screen_registry_each_visible(NcScreenRegistry *registry,
         return;
     }
     nc_screen_registry_each_visible_unchecked(registry, callback, user);
+    return;
+}
+
+static void
+nc_screen_registry_resize_one(NcScreen *screen, void *user) {
+    (void)user;
+    nc_screen_resize(screen);
+    return;
+}
+
+static void
+nc_screen_registry_update_one(NcScreen *screen, void *user) {
+    (void)user;
+    screen->ops->update(screen);
+    screen->has_to_be_updated = false;
     return;
 }
 
@@ -848,62 +894,6 @@ nc_screen_callbacks_destroy(NcScreen *screen) {
 static bool
 nc_screen_run_current_is_available(NcScreen *screen) {
     return screen->ops->run_current != nc_screen_default_run_current;
-}
-
-static int32
-nc_screen_registry_index_of(NcScreenRegistry *registry,
-                            NcScreen *screen) {
-    ASSERT(screen != NULL);
-    for (int32 i = 0; i < registry->screens_len; i += 1) {
-        if (registry->screens[i] == screen) {
-            return i;
-        }
-    }
-    return -1;
-}
-
-static bool
-nc_screen_registry_is_registered_unchecked(NcScreenRegistry *registry,
-                                           NcScreen *screen) {
-    return nc_screen_registry_index_of(registry, screen) >= 0;
-}
-
-static void
-nc_screen_registry_each_visible_unchecked(
-    NcScreenRegistry *registry, NcScreenEachCallback *callback, void *user
-) {
-    ASSERT(callback != NULL);
-
-    if (registry->locked_screen
-        && registry->current_screen
-        && nc_screen_is_mergable(registry->current_screen)) {
-        if (registry->current_screen == registry->locked_screen) {
-            if (registry->inactive_screen) {
-                callback(registry->inactive_screen, user);
-            }
-        } else {
-            callback(registry->locked_screen, user);
-        }
-    }
-    if (registry->current_screen) {
-        callback(registry->current_screen, user);
-    }
-    return;
-}
-
-static void
-nc_screen_registry_update_one(NcScreen *screen, void *user) {
-    (void)user;
-    screen->ops->update(screen);
-    screen->has_to_be_updated = false;
-    return;
-}
-
-static void
-nc_screen_registry_resize_one(NcScreen *screen, void *user) {
-    (void)user;
-    nc_screen_resize(screen);
-    return;
 }
 
 #endif /* NCMPCPP_NC_SCREEN_C */
