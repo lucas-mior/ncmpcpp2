@@ -426,12 +426,9 @@ nc_prompt_display_string(void) {
         printed_width = cursor_pos;
         byte = 0;
         while (byte < after_len) {
-            int32 next_byte;
-            int32 char_width;
-
-            next_byte = utf8_next_position(after_cursor, after_len, byte);
-            char_width = utf8_width(after_cursor + byte,
-                                    next_byte - byte);
+            int32 next_byte = utf8_next_position(after_cursor, after_len, byte);
+            int32 char_width = utf8_width(after_cursor + byte,
+                                          next_byte - byte);
             if (printed_width + char_width > nc_readline_state.width) {
                 break;
             }
