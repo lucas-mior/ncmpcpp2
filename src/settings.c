@@ -36,7 +36,13 @@ enum SettingsPrimitiveOption {
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     SETTINGS_PRIMITIVE_##NAME,
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_COLOR(NAME, DEFAULT_VALUE)
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
+#define XX_BORDER(NAME, DEFAULT_VALUE)
 #include "configuration_options.def"
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -58,7 +64,13 @@ enum SettingsEnumOption {
 #define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) SETTINGS_ENUM_##NAME,
+#define XX_COLOR(NAME, DEFAULT_VALUE)
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
+#define XX_BORDER(NAME, DEFAULT_VALUE)
 #include "configuration_options.def"
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -71,6 +83,34 @@ enum SettingsEnumOption {
 
 _Static_assert(SETTINGS_ENUM_COUNT == 10,
                "enum configuration option count changed");
+
+enum SettingsColorOption {
+#define XX_BOOL(NAME, DEFAULT_VALUE)
+#define XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_PATH(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT_VALUE)
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_COLOR(NAME, DEFAULT_VALUE) SETTINGS_COLOR_##NAME,
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) SETTINGS_COLOR_##NAME,
+#define XX_BORDER(NAME, DEFAULT_VALUE) SETTINGS_COLOR_##NAME,
+#include "configuration_options.def"
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
+#undef XX_ENUM
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_DIR
+#undef XX_PATH
+#undef XX_STRING
+#undef XX_BOOL
+    SETTINGS_COLOR_COUNT,
+};
+
+_Static_assert(SETTINGS_COLOR_COUNT == 16,
+               "color configuration option count changed");
 
 #define SETTINGS_ASSERT_FIELD_TYPE(NAME, TYPE) \
     _Static_assert(_Generic(&((Configuration *)0)->NAME, \
@@ -90,7 +130,16 @@ _Static_assert(SETTINGS_ENUM_COUNT == 10,
     SETTINGS_ASSERT_FIELD_TYPE(NAME, double);
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, C_TYPE);
+#define XX_COLOR(NAME, DEFAULT_VALUE) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, NcColor);
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, NcFormattedColor);
+#define XX_BORDER(NAME, DEFAULT_VALUE) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, NcBorder);
 #include "configuration_options.def"
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -429,6 +478,20 @@ settings_parse_formatted_color(char *value, int32 value_len,
 
     nc_formatted_color_destroy(color);
     nc_formatted_color_move(color, &tmp);
+    return 0;
+}
+
+static int32
+settings_parse_border(char *value, int32 value_len, NcBorder *border,
+                      NcmError *ncm_error) {
+    NcColor color;
+    int32 status;
+
+    status = settings_parse_color(value, value_len, &color, ncm_error);
+    if (status < 0) {
+        return status;
+    }
+    *border = nc_border_make(color);
     return 0;
 }
 
@@ -1100,138 +1163,6 @@ apply_regular_expressions(Configuration *config, char *value, int32 value_len,
 }
 
 static int32
-apply_empty_tag_color(Configuration *config, char *value, int32 value_len,
-                      NcmError *ncm_error) {
-    return settings_parse_formatted_color(value, value_len,
-                                          &config->empty_tag_color, ncm_error);
-}
-
-static int32
-apply_header_window_color(Configuration *config, char *value, int32 value_len,
-                          NcmError *ncm_error) {
-    return settings_parse_color(value, value_len, &config->header_window_color,
-                                ncm_error);
-}
-
-static int32
-apply_volume_color(Configuration *config, char *value, int32 value_len,
-                   NcmError *ncm_error) {
-    return settings_parse_formatted_color(value, value_len,
-                                          &config->volume_color, ncm_error);
-}
-
-static int32
-apply_state_line_color(Configuration *config, char *value, int32 value_len,
-                       NcmError *ncm_error) {
-    return settings_parse_formatted_color(value, value_len,
-                                          &config->state_line_color, ncm_error);
-}
-
-static int32
-apply_state_flags_color(Configuration *config, char *value, int32 value_len,
-                        NcmError *ncm_error) {
-    return settings_parse_formatted_color(value, value_len,
-                                          &config->state_flags_color,
-                                          ncm_error);
-}
-
-static int32
-apply_main_window_color(Configuration *config, char *value, int32 value_len,
-                        NcmError *ncm_error) {
-    return settings_parse_color(value, value_len, &config->main_window_color,
-                                ncm_error);
-}
-
-static int32
-apply_color1(Configuration *config, char *value, int32 value_len,
-             NcmError *ncm_error) {
-    return settings_parse_formatted_color(value, value_len, &config->color1,
-                                          ncm_error);
-}
-
-static int32
-apply_color2(Configuration *config, char *value, int32 value_len,
-             NcmError *ncm_error) {
-    return settings_parse_formatted_color(value, value_len, &config->color2,
-                                          ncm_error);
-}
-
-static int32
-apply_progressbar_color(Configuration *config, char *value, int32 value_len,
-                        NcmError *ncm_error) {
-    return settings_parse_formatted_color(value, value_len,
-                                          &config->progressbar_color,
-                                          ncm_error);
-}
-
-static int32
-apply_progressbar_elapsed_color(Configuration *config,
-                                char *value, int32 value_len,
-                                NcmError *ncm_error) {
-    return settings_parse_formatted_color(
-        value, value_len, &config->progressbar_elapsed_color, ncm_error);
-}
-
-static int32
-apply_statusbar_color(Configuration *config, char *value, int32 value_len,
-                      NcmError *ncm_error) {
-    return settings_parse_color(value, value_len, &config->statusbar_color,
-                                ncm_error);
-}
-
-static int32
-apply_statusbar_time_color(Configuration *config, char *value, int32 value_len,
-                           NcmError *ncm_error) {
-    return settings_parse_formatted_color(value, value_len,
-                                          &config->statusbar_time_color,
-                                          ncm_error);
-}
-
-static int32
-apply_player_state_color(Configuration *config, char *value, int32 value_len,
-                         NcmError *ncm_error) {
-    return settings_parse_formatted_color(value, value_len,
-                                          &config->player_state_color,
-                                          ncm_error);
-}
-
-static int32
-apply_alternative_ui_separator_color(Configuration *config,
-                                     char *value, int32 value_len,
-                                     NcmError *ncm_error) {
-    return settings_parse_formatted_color(
-        value, value_len, &config->alternative_ui_separator_color, ncm_error);
-}
-
-static int32
-apply_window_border_color(Configuration *config, char *value, int32 value_len,
-                          NcmError *ncm_error) {
-    NcColor color;
-    int32 status;
-
-    status = settings_parse_color(value, value_len, &color, ncm_error);
-    if (status < 0) {
-        return status;
-    }
-    config->window_border_color = nc_border_make(color);
-    return 0;
-}
-
-static int32
-apply_active_window_border(Configuration *config, char *value, int32 value_len,
-                           NcmError *ncm_error) {
-    NcColor color;
-    int32 status;
-
-    status = settings_parse_color(value, value_len, &color, ncm_error);
-    if (status < 0) {
-        return status;
-    }
-    config->active_window_border = nc_border_make(color);
-    return 0;
-}
-
-static int32
 settings_report_or_ignore(NcmError *ncm_error, bool ignore_errors) {
     ASSERT(ncm_error_is_set(ncm_error));
     error2("%s\n", ncm_error->message);
@@ -1483,8 +1414,35 @@ settings_primitive_post_apply(enum SettingsPrimitiveOption option,
         return 0; \
     }
 
+#define XX_COLOR(NAME, DEFAULT_VALUE) \
+    static int32 \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        return settings_parse_color(value, value_len, &config->NAME, \
+                                    ncm_error); \
+    }
+
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) \
+    static int32 \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        return settings_parse_formatted_color(value, value_len, \
+                                              &config->NAME, ncm_error); \
+    }
+
+#define XX_BORDER(NAME, DEFAULT_VALUE) \
+    static int32 \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        return settings_parse_border(value, value_len, &config->NAME, \
+                                     ncm_error); \
+    }
+
 #include "configuration_options.def"
 
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -1512,7 +1470,13 @@ static const SettingsOption ncmpcpp_options[] = {
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     OPT(NAME, DEFAULT_VALUE),
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) OPT(NAME, DEFAULT_VALUE),
+#define XX_COLOR(NAME, DEFAULT_VALUE) OPT(NAME, DEFAULT_VALUE),
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) OPT(NAME, DEFAULT_VALUE),
+#define XX_BORDER(NAME, DEFAULT_VALUE) OPT(NAME, DEFAULT_VALUE),
 #include "configuration_options.def"
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -1556,22 +1520,6 @@ OPT(media_library_column_width_ratio_two, "1:1"),
 OPT(media_library_column_width_ratio_three, "1:1:1"),
 OPT(playlist_editor_column_width_ratio, "1:2"),
 OPT(regular_expressions, "extended"),
-OPT(empty_tag_color, "cyan"),
-OPT(header_window_color, "default"),
-OPT(volume_color, "default"),
-OPT(state_line_color, "default"),
-OPT(state_flags_color, "default:b"),
-OPT(main_window_color, "yellow"),
-OPT(color1, "white"),
-OPT(color2, "green"),
-OPT(progressbar_color, "black:b"),
-OPT(progressbar_elapsed_color, "green:b"),
-OPT(statusbar_color, "default"),
-OPT(statusbar_time_color, "default:b"),
-OPT(player_state_color, "default:b"),
-OPT(alternative_ui_separator_color, "black:b"),
-OPT(window_border_color, "green"),
-OPT(active_window_border, "red"),
 };
 
 _Static_assert(LENGTH(ncmpcpp_options) == 134,

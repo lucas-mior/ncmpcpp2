@@ -113,3 +113,21 @@ XX_ENUM(space_add_mode, enum SpaceAddMode, "add_remove",
         ncm_space_add_mode_parse)
 XX_ENUM(startup_screen, enum ScreenType, "playlist",
         screen_type_parse_startup)
+
+/* Color-backed settings. */
+XX_FORMATTED_COLOR(empty_tag_color, "cyan")
+XX_COLOR(header_window_color, "default")
+XX_FORMATTED_COLOR(volume_color, "default")
+XX_FORMATTED_COLOR(state_line_color, "default")
+XX_FORMATTED_COLOR(state_flags_color, "default:b")
+XX_COLOR(main_window_color, "yellow")
+XX_FORMATTED_COLOR(color1, "white")
+XX_FORMATTED_COLOR(color2, "green")
+XX_FORMATTED_COLOR(progressbar_color, "black:b")
+XX_FORMATTED_COLOR(progressbar_elapsed_color, "green:b")
+XX_COLOR(statusbar_color, "default")
+XX_FORMATTED_COLOR(statusbar_time_color, "default:b")
+XX_FORMATTED_COLOR(player_state_color, "default:b")
+XX_FORMATTED_COLOR(alternative_ui_separator_color, "black:b")
+XX_BORDER(window_border_color, "green")
+XX_BORDER(active_window_border, "red")

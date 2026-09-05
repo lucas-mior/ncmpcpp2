@@ -160,7 +160,16 @@ configuration_init_unchecked(Configuration *config) {
     config->NAME = 0;
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) \
     config->NAME = (C_TYPE)0;
+#define XX_COLOR(NAME, DEFAULT_VALUE) \
+    config->NAME = nc_color_default();
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) \
+    nc_formatted_color_init(&config->NAME);
+#define XX_BORDER(NAME, DEFAULT_VALUE) \
+    config->NAME = nc_border_none();
 #include "configuration_options.def"
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -194,25 +203,6 @@ configuration_init_unchecked(Configuration *config) {
     config->song_status_format = (NcmFormatAst){0};
     config->alternative_header_first_line_format = (NcmFormatAst){0};
     config->alternative_header_second_line_format = (NcmFormatAst){0};
-
-    config->header_window_color = nc_color_default();
-    config->main_window_color = nc_color_default();
-    config->statusbar_color = nc_color_default();
-
-    nc_formatted_color_init(&config->color1);
-    nc_formatted_color_init(&config->color2);
-    nc_formatted_color_init(&config->empty_tag_color);
-    nc_formatted_color_init(&config->volume_color);
-    nc_formatted_color_init(&config->state_line_color);
-    nc_formatted_color_init(&config->state_flags_color);
-    nc_formatted_color_init(&config->progressbar_color);
-    nc_formatted_color_init(&config->progressbar_elapsed_color);
-    nc_formatted_color_init(&config->player_state_color);
-    nc_formatted_color_init(&config->statusbar_time_color);
-    nc_formatted_color_init(&config->alternative_ui_separator_color);
-
-    config->window_border_color = nc_border_none();
-    config->active_window_border = nc_border_none();
 
     config->playlist_editor_column_width_ratio = (NcmInt32Array){0};
     config->media_library_column_width_ratio_two = (NcmInt32Array){0};
@@ -269,7 +259,14 @@ configuration_destroy(Configuration *config) {
 #define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_COLOR(NAME, DEFAULT_VALUE)
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) \
+    nc_formatted_color_destroy(&config->NAME);
+#define XX_BORDER(NAME, DEFAULT_VALUE)
 #include "configuration_options.def"
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -304,18 +301,6 @@ configuration_destroy(Configuration *config) {
     ncm_format_ast_destroy(&config->song_status_format);
     ncm_format_ast_destroy(&config->alternative_header_first_line_format);
     ncm_format_ast_destroy(&config->alternative_header_second_line_format);
-
-    nc_formatted_color_destroy(&config->color1);
-    nc_formatted_color_destroy(&config->color2);
-    nc_formatted_color_destroy(&config->empty_tag_color);
-    nc_formatted_color_destroy(&config->volume_color);
-    nc_formatted_color_destroy(&config->state_line_color);
-    nc_formatted_color_destroy(&config->state_flags_color);
-    nc_formatted_color_destroy(&config->progressbar_color);
-    nc_formatted_color_destroy(&config->progressbar_elapsed_color);
-    nc_formatted_color_destroy(&config->player_state_color);
-    nc_formatted_color_destroy(&config->statusbar_time_color);
-    nc_formatted_color_destroy(&config->alternative_ui_separator_color);
 
     ncm_int32_array_destroy(&config->playlist_editor_column_width_ratio);
     ncm_int32_array_destroy(&config->media_library_column_width_ratio_two);
