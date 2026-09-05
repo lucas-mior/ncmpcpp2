@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_MENU_C)
-#define NCMPCPP_NC_MENU_C
+#if !defined(NC_MENU_C)
+#define NC_MENU_C
 
 #include "cbase.h"
 
@@ -1198,4 +1198,4 @@ menu_copy_buffer(NcBuffer *dest, NcBuffer *source) {
     return;
 }
 
-#endif /* NCMPCPP_NC_MENU_C */
+#endif /* NC_MENU_C */
