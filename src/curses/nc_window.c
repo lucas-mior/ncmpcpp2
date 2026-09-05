@@ -1423,6 +1423,7 @@ void
 nc_window_scroll(NcWindow *window, enum NcScroll where) {
     idlok(window->window, 1);
     scrollok(window->window, 1);
+
     switch (where) {
     case NC_SCROLL_UP:
         wscrl(window->window, 1);
@@ -1443,6 +1444,7 @@ nc_window_scroll(NcWindow *window, enum NcScroll where) {
     default:
         break;
     }
+
     idlok(window->window, 0);
     scrollok(window->window, 0);
     return;
