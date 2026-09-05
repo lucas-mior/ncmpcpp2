@@ -181,11 +181,10 @@ XX_RATIO(media_library_column_width_ratio_three, "1:1:1", 3)
 XX_RATIO(playlist_editor_column_width_ratio, "1:2", 2)
 
 /* Custom/multi-field settings. */
-XX_COLUMNS(
-    song_columns_list_format,
-    "(20)[]{a} (6f)[green]{NE} (50)[white]{t|f:Title}"
-    " (20)[cyan]{b} (7f)[magenta]{l}",
-    song_columns_mode_format)
+XX_COLUMNS(song_columns_list_format,
+           "(20)[]{a} (6f)[green]{NE} (50)[white]{t|f:Title}"
+           " (20)[cyan]{b} (7f)[magenta]{l}",
+           song_columns_mode_format)
 
 /* Named bool-backed settings. */
 XX_NAMED_BOOL(default_place_to_search_in, "database", "database", "playlist")
