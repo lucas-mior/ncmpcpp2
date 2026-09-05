@@ -801,21 +801,22 @@ nc_menu_replace_item(NcMenu *menu, enum NcMenuItemSource source,
 
 void
 nc_menu_clear_items(NcMenu *menu) {
-    enum NcMenuItemSource active_items;
-    int32 count;
+    enum NcMenuItemSource active_items = menu->active_items;
+    int32 count = menu_array_count(menu, NC_MENU_ITEMS_ALL);
 
-    active_items = menu->active_items;
-    count = menu_array_count(menu, NC_MENU_ITEMS_ALL);
     for (int32 i = 0; i < count; i += 1) {
         menu_destroy_item(menu, menu->all_items[i]);
     }
+
     ARRAY_FREE(menu->all_items);
     ARRAY_FREE(menu->filtered_items);
     ARRAY_FREE(menu->all_item_flags);
     ARRAY_FREE(menu->filtered_item_flags);
+
     menu->active_items = active_items;
     menu->item_count = 0;
     menu_clamp_navigation(menu);
+
     return;
 }
 
