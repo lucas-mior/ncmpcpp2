@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_WINDOW_C)
-#define NCMPCPP_NC_WINDOW_C
+#if !defined(NC_WINDOW_C)
+#define NC_WINDOW_C
 
 #include "cbase.h"
 
@@ -1673,4 +1673,4 @@ nc_window_print_char(NcWindow *window, char ch) {
     return;
 }
 
-#endif /* NCMPCPP_NC_WINDOW_C */
+#endif /* NC_WINDOW_C */
