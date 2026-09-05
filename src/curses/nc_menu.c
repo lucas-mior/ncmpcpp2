@@ -710,9 +710,7 @@ nc_menu_add_item_with_flags(NcMenu *menu, void *item, uint32 flags) {
 
 void
 nc_menu_add_separator(NcMenu *menu) {
-    void *item;
-
-    item = menu_construct_item(menu);
+    void *item = menu_construct_item(menu);
     ARRAY_PUSH(menu->all_items, item);
     ARRAY_PUSH(menu->all_item_flags, NC_MENU_ITEM_SEPARATOR);
     nc_menu_sync_item_count(menu);
