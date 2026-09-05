@@ -166,7 +166,10 @@ configuration_init_unchecked(Configuration *config) {
     nc_formatted_color_init(&config->NAME);
 #define XX_BORDER(NAME, DEFAULT_VALUE) \
     config->NAME = nc_border_none();
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS) \
+    config->NAME = (NcmFormatAst){0};
 #include "configuration_options.def"
+#undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
@@ -195,14 +198,7 @@ configuration_init_unchecked(Configuration *config) {
     config->current_item_inactive_column_prefix = (NcBuffer){0};
     config->current_item_inactive_column_suffix = (NcBuffer){0};
 
-    config->song_list_format = (NcmFormatAst){0};
-    config->song_window_title_format = (NcmFormatAst){0};
-    config->song_library_format = (NcmFormatAst){0};
     config->song_columns_mode_format = (NcmFormatAst){0};
-    config->browser_sort_format = (NcmFormatAst){0};
-    config->song_status_format = (NcmFormatAst){0};
-    config->alternative_header_first_line_format = (NcmFormatAst){0};
-    config->alternative_header_second_line_format = (NcmFormatAst){0};
 
     config->playlist_editor_column_width_ratio = (NcmInt32Array){0};
     config->media_library_column_width_ratio_two = (NcmInt32Array){0};
@@ -263,7 +259,10 @@ configuration_destroy(Configuration *config) {
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) \
     nc_formatted_color_destroy(&config->NAME);
 #define XX_BORDER(NAME, DEFAULT_VALUE)
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS) \
+    ncm_format_ast_destroy(&config->NAME);
 #include "configuration_options.def"
+#undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
@@ -293,14 +292,7 @@ configuration_destroy(Configuration *config) {
     nc_buffer_destroy(&config->current_item_inactive_column_prefix);
     nc_buffer_destroy(&config->current_item_inactive_column_suffix);
 
-    ncm_format_ast_destroy(&config->song_list_format);
-    ncm_format_ast_destroy(&config->song_window_title_format);
-    ncm_format_ast_destroy(&config->song_library_format);
     ncm_format_ast_destroy(&config->song_columns_mode_format);
-    ncm_format_ast_destroy(&config->browser_sort_format);
-    ncm_format_ast_destroy(&config->song_status_format);
-    ncm_format_ast_destroy(&config->alternative_header_first_line_format);
-    ncm_format_ast_destroy(&config->alternative_header_second_line_format);
 
     ncm_int32_array_destroy(&config->playlist_editor_column_width_ratio);
     ncm_int32_array_destroy(&config->media_library_column_width_ratio_two);

@@ -32,7 +32,12 @@ settings_assert_generated_empty(Configuration *config) {
 #define XX_BORDER(NAME, DEFAULT_VALUE) \
     ASSERT(!config->NAME.enabled); \
     ASSERT(nc_color_is_default(config->NAME.color));
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS) \
+    ASSERT(config->NAME.root.items == NULL); \
+    ASSERT(config->NAME.root.len == 0); \
+    ASSERT(config->NAME.root.cap == 0);
 #include "configuration_options.def"
+#undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
@@ -254,6 +259,44 @@ test_color_options(void) {
 }
 
 static void
+test_format_options(void) {
+    Configuration config = {0};
+
+    configuration_init(&config);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_song_list_format, &config, "$R"));
+    ASSERT(config.song_list_format.root.len == 1);
+    ASSERT(config.song_list_format.root.items[0].type
+           == NCM_FORMAT_EXPR_OUTPUT_SWITCH);
+
+    ASSERT(settings_test_apply(
+        apply_song_status_format, &config, "$R") < 0);
+    ASSERT(config.song_status_format.root.len == 0);
+    ASSERT_ZERO(settings_test_apply(
+        apply_song_status_format, &config, "%a"));
+    ASSERT(config.song_status_format.root.len == 1);
+    ASSERT(config.song_status_format.root.items[0].type
+           == NCM_FORMAT_EXPR_SONG_TAG);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_song_window_title_format, &config, "$R"));
+    ASSERT(config.song_window_title_format.root.len == 1);
+    ASSERT(config.song_window_title_format.root.items[0].type
+           == NCM_FORMAT_EXPR_TEXT);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_browser_sort_format, &config, "%a"));
+    ASSERT(config.browser_sort_format.root.len == 1);
+    ASSERT(config.browser_sort_format.root.items[0].type
+           == NCM_FORMAT_EXPR_SONG_TAG);
+
+    configuration_destroy(&config);
+    settings_assert_generated_empty(&config);
+    return;
+}
+
+static void
 test_duplicate_option_is_rejected(void) {
     static char first_contents[] = "lines_scrolled = 4\n";
     static char second_contents[] = "lines_scrolled = 6\n";
@@ -346,6 +389,7 @@ main(void) {
     test_numeric_boundaries();
     test_enum_options();
     test_color_options();
+    test_format_options();
     test_duplicate_option_is_rejected();
     test_duplicate_state_is_per_read();
 

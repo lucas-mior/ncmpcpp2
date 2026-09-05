@@ -64,7 +64,9 @@ typedef struct Configuration {
 #define XX_COLOR(NAME, DEFAULT_VALUE) NcColor NAME;
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) NcFormattedColor NAME;
 #define XX_BORDER(NAME, DEFAULT_VALUE) NcBorder NAME;
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS) NcmFormatAst NAME;
 #include "configuration_options.def"
+#undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
@@ -83,14 +85,7 @@ typedef struct Configuration {
     StrBuilder progressbar_look;
     StrBuilder visualizer_look;
 
-    NcmFormatAst song_list_format;
-    NcmFormatAst song_window_title_format;
-    NcmFormatAst song_library_format;
     NcmFormatAst song_columns_mode_format;
-    NcmFormatAst browser_sort_format;
-    NcmFormatAst song_status_format;
-    NcmFormatAst alternative_header_first_line_format;
-    NcmFormatAst alternative_header_second_line_format;
 
     NcmInt32Array playlist_editor_column_width_ratio;
     NcmInt32Array media_library_column_width_ratio_two;

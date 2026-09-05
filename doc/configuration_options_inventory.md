@@ -8,21 +8,22 @@ The step-1 source contained 135 `OPT(...)` invocations but 134 effective
 option names: `visualizer_type` has two mutually exclusive default entries
 under `#if defined(HAVE_FFTW3_H)`.
 
-As of step 8, `src/configuration_options.def` is the authoritative production
-definition for all 78 primitive options, 10 ordinary enum-backed options, and
-16 color-family options.  It generates their `Configuration` fields, apply
-wrappers, option-table entries, and lifecycle initialization/destruction.
-String, path, and directory entries generate both the owned pointer and its
-`_len` companion and own their cleanup.  `XX_ENUM` entries record the C enum
-type, default string, and parser function; the generated lifecycle uses zero as
-their empty scalar state.  `XX_COLOR`, `XX_FORMATTED_COLOR`, and `XX_BORDER`
-entries share the existing color grammars and own the nontrivial formatted-color
-lifecycle.  The remaining 30 effective options are still declared by the
-handwritten `SettingsOption` table.  This document remains the behavioral
-migration inventory rather than a production include file.  Existing primitive
-side effects and transforms are preserved by temporary generated-wrapper
-pre/post handling until the later validation/runtime-application steps separate
-them from parsing.
+As of step 9, `src/configuration_options.def` is the authoritative production
+definition for all 78 primitive options, 10 ordinary enum-backed options, 16
+color-family options, and 7 format-AST options.  It generates their
+`Configuration` fields, apply wrappers, option-table entries, and lifecycle
+initialization/destruction.  String, path, and directory entries generate both
+the owned pointer and its `_len` companion and own their cleanup.  `XX_ENUM`
+entries record the C enum type, default string, and parser function; the
+generated lifecycle uses zero as their empty scalar state.  `XX_COLOR`,
+`XX_FORMATTED_COLOR`, and `XX_BORDER` entries share the existing color grammars
+and own the nontrivial formatted-color lifecycle.  `XX_FORMAT` entries record
+the parser flag mask and own their `NcmFormatAst` lifecycle.  The remaining 23
+effective options are still declared by the handwritten `SettingsOption`
+table.  This document remains the behavioral migration inventory rather than a
+production include file.  Existing primitive side effects and transforms are
+preserved by temporary generated-wrapper pre/post handling until the later
+validation/runtime-application steps separate them from parsing.
 
 ## Proposed X-macro type inventory
 
@@ -58,7 +59,10 @@ bool-backed named choices remain bools because changing them would ripple
 through screen/action APIs, and `regular_expressions` remains uint32 flag
 storage for a later decision.  All 3 `XX_COLOR`, 11 `XX_FORMATTED_COLOR`, and
 2 `XX_BORDER` settings are migrated in step 8; the `visualizer_color` list
-remains a collection type for the later list migration.
+remains a collection type for the later list migration.  All 7 option-backed
+`XX_FORMAT` settings are migrated in step 9.  The separate
+`song_columns_mode_format` AST remains derived state of
+`song_columns_list_format` and is intentionally not an option entry.
 
 ## Per-option baseline
 
