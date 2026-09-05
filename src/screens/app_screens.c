@@ -1612,7 +1612,7 @@ server_info_render(void *user, NcBuffer *buffer) {
 
     append_bold_label(buffer, "Tag Types:");
     for (int32 i = 0; i < owner->tag_types.count; i += 1) {
-        NcmStringView *tag = owner->tag_types.items + i;
+        NcmStringView *tag = &owner->tag_types.items[i];
 
         if (i == 0) {
             nc_buffer_append_cstring(buffer, " ");
