@@ -532,7 +532,7 @@ sort_dialog_finish(SortPlaylistDialog *dialog) {
     previous = dialog->previous_screen;
     dialog->ready = false;
     nc_screen_switcher_switch_to(
-        previous, nc_screen_has_to_be_resized(previous));
+        previous, previous->has_to_be_resized);
 
     ncm_song_array_clear(&dialog->songs);
     dialog->playlist = NULL;

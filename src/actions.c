@@ -448,7 +448,7 @@ action_runtime_switch_to_next_screen(bool reverse) {
             return -NCM_ERROR_UNAVAILABLE;
         }
         return nc_screen_switcher_switch_to(
-            current, nc_screen_has_to_be_resized(current));
+            current, current->has_to_be_resized);
     }
 
     if (sequence->len <= 0) {

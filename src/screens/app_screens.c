@@ -1019,7 +1019,7 @@ app_screens_switch_to_type(enum ScreenType screen_type) {
         return -ENOENT;
     }
     return nc_screen_switcher_switch_to(screen,
-                                        nc_screen_has_to_be_resized(screen));
+                                        screen->has_to_be_resized);
 }
 
 int32
@@ -1072,7 +1072,7 @@ app_screen_is_current(NcScreen *screen) {
 
 static void
 app_screen_switch_to(NcScreen *screen) {
-    nc_screen_switcher_switch_to(screen, nc_screen_has_to_be_resized(screen));
+    nc_screen_switcher_switch_to(screen, screen->has_to_be_resized);
     return;
 }
 
