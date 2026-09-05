@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_CONFIGURATION_C)
-#define NCMPCPP_CONFIGURATION_C
+#if !defined(CONFIGURATION_C)
+#define CONFIGURATION_C
 
 #include "cbase.h"
 
@@ -811,4 +811,4 @@ configure(int32 argc, char **argv) {
     return 1;
 }
 
-#endif /* NCMPCPP_CONFIGURATION_C */
+#endif /* CONFIGURATION_C */
