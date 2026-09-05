@@ -613,11 +613,9 @@ ncm_binding_append_normal(NcmBinding *binding, enum NcmActionType type) {
 static int32
 ncm_bindings_command_lower_bound(NcmBindingsConfiguration *bindings, char *name,
                                  int32 name_len) {
-    int32 first;
-    int32 count;
+    int32 first = 0;
+    int32 count = bindings->commands_len;
 
-    first = 0;
-    count = bindings->commands_len;
     while (count > 0) {
         int32 step;
         int32 mid;
