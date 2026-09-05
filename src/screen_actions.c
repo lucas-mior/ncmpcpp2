@@ -206,7 +206,7 @@ current_screen_apply_filter(char *pattern, int32 pattern_len,
     } else if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)) {
         status = playlist_editor_screen_apply_active_filter(
             app_screen_playlist_editor(), pattern, pattern_len,
-            Config.regex_flags, ncm_error);
+            Config.regular_expressions, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)) {
         status = search_engine_screen_apply_filter(
             app_screen_search_engine(), pattern, pattern_len, ncm_error);
@@ -220,10 +220,12 @@ current_screen_apply_filter(char *pattern, int32 pattern_len,
         screen = app_screen_tag_editor();
         if (screen->active_column == TAG_EDITOR_COLUMN_DIRECTORIES) {
             status = tag_editor_screen_apply_directory_filter(
-                screen, pattern, pattern_len, Config.regex_flags, ncm_error);
+                screen, pattern, pattern_len, Config.regular_expressions,
+                ncm_error);
         } else if (screen->active_column == TAG_EDITOR_COLUMN_TAGS) {
             status = tag_editor_screen_apply_tag_filter(
-                screen, pattern, pattern_len, Config.regex_flags, ncm_error);
+                screen, pattern, pattern_len, Config.regular_expressions,
+                ncm_error);
         }
 #endif
     }
@@ -297,7 +299,7 @@ current_screen_search(enum SearchDirection direction, char *pattern,
     } else if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)) {
         status = playlist_editor_screen_search_active(
             app_screen_playlist_editor(), pattern, pattern_len,
-            Config.regex_flags, forward, wrap, skip_current, ncm_error);
+            Config.regular_expressions, forward, wrap, skip_current, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)) {
         status = search_engine_screen_search(
             app_screen_search_engine(), pattern, pattern_len, forward,
@@ -318,7 +320,7 @@ current_screen_search(enum SearchDirection direction, char *pattern,
     } else if (current_screen_is(NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER)) {
         status = selected_items_adder_screen_search(
             app_screen_selected_items_adder(), pattern, pattern_len,
-            Config.regex_flags, forward, wrap, skip_current, ncm_error);
+            Config.regular_expressions, forward, wrap, skip_current, ncm_error);
 #if defined(HAVE_TAGLIB_H)
     } else if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
         status = tag_editor_screen_search(app_screen_tag_editor(),

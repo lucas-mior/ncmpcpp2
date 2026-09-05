@@ -150,7 +150,7 @@ main(int32 argc, char **argv) {
     ncmpcpp_init_screen(Config.colors_enabled, Config.mouse_support);
     ncmpcpp_set_statusbar_visibility_baseline(Config.statusbar_visibility);
 
-    if (Config.design == NCM_DESIGN_ALTERNATIVE) {
+    if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
         Config.statusbar_visibility = false;
     }
 
@@ -159,10 +159,10 @@ main(int32 argc, char **argv) {
 
     app_header_window = ncmpcpp_window_create(0, 0,
                                               COLS, ncmpcpp_header_height(),
-                                              Config.header_color);
+                                              Config.header_window_color);
     ui_state_set_header_window(app_header_window);
     if (Config.header_visibility
-        || (Config.design == NCM_DESIGN_ALTERNATIVE)) {
+        || (Config.user_interface == NCM_DESIGN_ALTERNATIVE)) {
         ncmpcpp_window_display(app_header_window);
     }
 
@@ -175,13 +175,13 @@ main(int32 argc, char **argv) {
     rand_int_seed((uint64)global_timer);
 
     ncmpcpp_playlist_switch_to();
-    if (Config.startup_screen_type != ncmpcpp_current_screen_type()) {
-        ASSERT_ZERO(ncmpcpp_switch_to_screen_type(Config.startup_screen_type));
+    if (Config.startup_screen != ncmpcpp_current_screen_type()) {
+        ASSERT_ZERO(ncmpcpp_switch_to_screen_type(Config.startup_screen));
     }
 
     if (Config.has_startup_slave_screen_type) {
         int32 status = ncmpcpp_lock_current_screen();
-        enum ScreenType slave_screen_type = Config.startup_slave_screen_type;
+        enum ScreenType slave_screen_type = Config.startup_slave_screen;
 
         if ((status == 0)
             && (slave_screen_type != ncmpcpp_current_screen_type())) {

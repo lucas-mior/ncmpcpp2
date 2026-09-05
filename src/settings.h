@@ -54,6 +54,8 @@ typedef struct Configuration {
     char *ncmpcpp_directory;
     char *lyrics_directory;
     char *mpd_music_dir;
+    char *mpd_host;
+    char *mpd_password;
     char *visualizer_fifo_path;
     char *visualizer_data_source;
     char *visualizer_output_name;
@@ -70,6 +72,8 @@ typedef struct Configuration {
     int32 ncmpcpp_directory_len;
     int32 lyrics_directory_len;
     int32 mpd_music_dir_len;
+    int32 mpd_host_len;
+    int32 mpd_password_len;
     int32 visualizer_fifo_path_len;
     int32 visualizer_data_source_len;
     int32 visualizer_output_name_len;
@@ -83,8 +87,8 @@ typedef struct Configuration {
     int32 random_exclude_pattern_len;
     int32 tags_separator_len;
 
-    StrBuilder progressbar;
-    StrBuilder visualizer_chars;
+    StrBuilder progressbar_look;
+    StrBuilder visualizer_look;
 
     NcmFormatAst song_list_format;
     NcmFormatAst song_window_title_format;
@@ -92,13 +96,13 @@ typedef struct Configuration {
     NcmFormatAst song_columns_mode_format;
     NcmFormatAst browser_sort_format;
     NcmFormatAst song_status_format;
-    NcmFormatAst new_header_first_line;
-    NcmFormatAst new_header_second_line;
+    NcmFormatAst alternative_header_first_line_format;
+    NcmFormatAst alternative_header_second_line_format;
 
     NcmInt32Array playlist_editor_column_width_ratio;
     NcmInt32Array media_library_column_width_ratio_two;
     NcmInt32Array media_library_column_width_ratio_three;
-    ColumnArray columns;
+    ColumnArray song_columns_list_format;
 
     enum DisplayMode playlist_display_mode;
     enum DisplayMode browser_display_mode;
@@ -116,13 +120,13 @@ typedef struct Configuration {
     NcBuffer current_item_inactive_column_prefix;
     NcBuffer current_item_inactive_column_suffix;
 
-    NcColor header_color;
-    NcColor main_color;
+    NcColor header_window_color;
+    NcColor main_window_color;
     NcColor statusbar_color;
 
     NcFormattedColor color1;
     NcFormattedColor color2;
-    NcFormattedColor empty_tags_color;
+    NcFormattedColor empty_tag_color;
     NcFormattedColor volume_color;
     NcFormattedColor state_line_color;
     NcFormattedColor state_flags_color;
@@ -131,14 +135,14 @@ typedef struct Configuration {
     NcFormattedColor player_state_color;
     NcFormattedColor statusbar_time_color;
     NcFormattedColor alternative_ui_separator_color;
-    NcmFormattedColorArray visualizer_colors;
+    NcmFormattedColorArray visualizer_color;
 
     enum VisualizerType visualizer_type;
-    NcBorder window_border;
+    NcBorder window_border_color;
     NcBorder active_window_border;
-    enum Design design;
+    enum Design user_interface;
     enum SpaceAddMode space_add_mode;
-    enum mpd_tag_type media_lib_primary_tag;
+    enum mpd_tag_type media_library_primary_tag;
     enum SortMode browser_sort_mode;
 
     bool colors_enabled;
@@ -146,7 +150,7 @@ typedef struct Configuration {
     bool playlist_show_remaining_time;
     bool playlist_shorten_total_times;
     bool playlist_separate_albums;
-    bool set_window_title;
+    bool enable_window_title;
     bool header_visibility;
     bool header_text_scrolling;
     bool statusbar_visibility;
@@ -155,12 +159,12 @@ typedef struct Configuration {
     bool centered_cursor;
     bool screen_switcher_previous;
     bool autocenter_mode;
-    bool wrapped_search;
+    bool default_find_mode;
     bool incremental_seeking;
     bool follow_now_playing_lyrics;
     bool fetch_lyrics_for_current_song_in_background;
     bool show_hidden_files_in_local_browser;
-    bool search_in_db;
+    bool default_place_to_search_in;
     bool jump_to_now_playing_song_at_start;
     bool display_volume_level;
     bool display_bitrate;
@@ -193,8 +197,9 @@ typedef struct Configuration {
     bool startup_slave_screen_focus;
     bool has_startup_slave_screen_type;
 
+    int32 mpd_port;
     int32 mpd_connection_timeout;
-    int32 crossfade_time;
+    int32 mpd_crossfade_time;
     int32 seek_time;
     int32 volume_change_step;
     int32 message_delay_time;
@@ -203,8 +208,8 @@ typedef struct Configuration {
     int32 search_engine_default_search_mode;
     int32 visualizer_fps;
     int32 visualizer_spectrum_dft_size;
-    int32 playlist_disable_highlight_delay_seconds;
-    uint32 regex_flags;
+    int32 playlist_disable_highlight_delay;
+    uint32 regular_expressions;
 
     double visualizer_spectrum_gain;
     double visualizer_spectrum_hz_min;
@@ -220,9 +225,9 @@ typedef struct Configuration {
     int32 current_item_inactive_column_prefix_length;
     int32 current_item_inactive_column_suffix_length;
 
-    enum ScreenType startup_screen_type;
-    enum ScreenType startup_slave_screen_type;
-    ScreenTypeArray screen_sequence;
+    enum ScreenType startup_screen;
+    enum ScreenType startup_slave_screen;
+    ScreenTypeArray screen_switcher_mode;
 
     NcmLyricsFetcherRegistry lyrics_fetchers;
 } Configuration;

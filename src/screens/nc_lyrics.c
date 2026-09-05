@@ -920,7 +920,8 @@ lyrics_buffer_find(NcBuffer *buffer,
 
     regex = (NcmRegex){0};
     if ((status = ncm_regex_compile(&regex, pattern, pattern_len,
-                                    Config.regex_flags, ncm_error)) < 0) {
+                                    Config.regular_expressions,
+                                    ncm_error)) < 0) {
         ncm_regex_destroy(&regex);
         return status;
     }
@@ -1196,7 +1197,7 @@ lyrics_title_callback(NcScreen *screen) {
     scroll_begin = nc_lyrics_screen_scroll_begin(&lyrics->screen);
     scroll_width = COLS - utf8_width(lyrics->title.data,
                                      lyrics->title.len);
-    if (Config.design == NCM_DESIGN_ALTERNATIVE) {
+    if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
         scroll_width -= 2;
     } else {
         scroll_width -= global_volume_state_len();

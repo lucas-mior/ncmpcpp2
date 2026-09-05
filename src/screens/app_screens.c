@@ -242,7 +242,7 @@ app_screen_browser_init(void) {
                         ui_state_screen_width(),
                         ui_state_main_start_y(),
                         ui_state_main_height(),
-                        Config.main_color,
+                        Config.main_window_color,
                         no_border());
     browser_screen_set_mouse_config(
         &browser_screen, Config.lines_scrolled,
@@ -278,7 +278,7 @@ app_screen_lastfm_init(void) {
                        ui_state_screen_width(),
                        ui_state_main_start_y(),
                        ui_state_main_height(),
-                       Config.main_color,
+                       Config.main_window_color,
                        no_border(),
                        Config.lines_scrolled);
     lastfm_screen_initialized = true;
@@ -303,7 +303,7 @@ app_screen_lyrics_init(void) {
                        ui_state_screen_width(),
                        ui_state_main_start_y(),
                        ui_state_main_height(),
-                       Config.main_color,
+                       Config.main_window_color,
                        no_border(),
                        Config.lines_scrolled);
     lyrics_screen_initialized = true;
@@ -342,10 +342,10 @@ app_screen_visualizer_init(void) {
     }
     visualizer_config.output_name = Config.visualizer_output_name;
     visualizer_config.output_name_len = Config.visualizer_output_name_len;
-    visualizer_config.visualizer_chars = Config.visualizer_chars.data;
-    visualizer_config.visualizer_chars_len = Config.visualizer_chars.len;
-    visualizer_config.visualizer_colors = Config.visualizer_colors.items;
-    visualizer_config.visualizer_colors_len = Config.visualizer_colors.len;
+    visualizer_config.visualizer_chars = Config.visualizer_look.data;
+    visualizer_config.visualizer_chars_len = Config.visualizer_look.len;
+    visualizer_config.visualizer_colors = Config.visualizer_color.items;
+    visualizer_config.visualizer_colors_len = Config.visualizer_color.len;
     visualizer_config.fps = Config.visualizer_fps;
     visualizer_config.spectrum_dft_size = Config.visualizer_spectrum_dft_size;
     visualizer_config.spectrum_gain = Config.visualizer_spectrum_gain;
@@ -371,7 +371,7 @@ app_screen_visualizer_init(void) {
                            ui_state_main_start_y(),
                            ui_state_screen_width(),
                            ui_state_main_height(),
-                           Config.main_color,
+                           Config.main_window_color,
                            no_border(),
                            &visualizer_config);
     visualizer_screen_initialized = true;
@@ -406,7 +406,7 @@ app_screen_playlist_init(void) {
                          ui_state_screen_width(),
                          ui_state_main_start_y(),
                          ui_state_main_height(),
-                         Config.main_color,
+                         Config.main_window_color,
                          no_border());
     playlist_screen_set_mouse_config(
         &playlist_screen, Config.lines_scrolled,
@@ -425,7 +425,7 @@ app_screen_playlist_editor_init(void) {
                                 ui_state_screen_width(),
                                 ui_state_main_start_y(),
                                 ui_state_main_height(),
-                                Config.main_color,
+                                Config.main_window_color,
                                 no_border());
     if ((Config.playlist_editor_column_width_ratio.len >= 2)
         && (Config.playlist_editor_column_width_ratio.items[0] > 0)
@@ -447,7 +447,7 @@ app_screen_selected_items_adder_init(void) {
     selected_items_adder_screen_init(
         &selected_items_adder_screen, 0, ui_state_main_start_y(),
         ui_state_screen_width(), ui_state_main_height(),
-        Config.main_color, Config.window_border);
+        Config.main_window_color, Config.window_border_color);
     selected_items_adder_screen_initialized = true;
     return;
 }
@@ -469,8 +469,8 @@ app_screen_sort_playlist_dialog_init(void) {
     sort_playlist_dialog_init(&sort_playlist_dialog, 0,
                               ui_state_main_start_y(),
                               30, ui_state_main_height(),
-                              Config.main_color,
-                              Config.window_border);
+                              Config.main_window_color,
+                              Config.window_border_color);
     sort_playlist_dialog_initialized = true;
     return;
 }
@@ -635,7 +635,7 @@ app_screen_search_engine_init(void) {
                               ui_state_screen_width(),
                               ui_state_main_start_y(),
                               ui_state_main_height(),
-                              Config.main_color,
+                              Config.main_window_color,
                               no_border());
 
     mode = SEARCH_ENGINE_SEARCH_MODE_LITERAL;
@@ -646,7 +646,7 @@ app_screen_search_engine_init(void) {
     }
     search_engine_screen_set_search_mode(&search_engine_screen, mode);
     search_engine_screen_set_search_source(
-        &search_engine_screen, Config.search_in_db);
+        &search_engine_screen, Config.default_place_to_search_in);
 
     hooks.client = &global_mpd;
     hooks.list_database_songs = search_list_database_songs;
@@ -679,7 +679,7 @@ app_screen_media_library_init(void) {
                               ui_state_screen_width(),
                               ui_state_main_start_y(),
                               ui_state_main_height(),
-                              Config.main_color,
+                              Config.main_window_color,
                               no_border());
     media_library_screen_initialized = true;
     return;
@@ -831,7 +831,7 @@ app_screen_tag_editor_init(void) {
                            ui_state_screen_width(),
                            ui_state_main_start_y(),
                            ui_state_main_height(),
-                           Config.main_color,
+                           Config.main_window_color,
                            no_border());
     hooks.prompt = tag_editor_hook_prompt;
     hooks.confirm = tag_editor_hook_confirm;
@@ -915,7 +915,7 @@ app_screen_tiny_tag_editor_init(void) {
                                 ui_state_screen_width(),
                                 ui_state_main_start_y(),
                                 ui_state_main_height(),
-                                Config.main_color,
+                                Config.main_window_color,
                                 no_border());
     hooks.prompt = tiny_tag_editor_prompt;
     hooks.status_message = tiny_tag_editor_status_message;
@@ -1158,9 +1158,9 @@ append_bold_label(NcBuffer *buffer, char *label) {
 static void
 append_song_tag(NcBuffer *buffer, StrBuilder *tag) {
     if (tag->len <= 0) {
-        append_formatted_color(buffer, &Config.empty_tags_color);
+        append_formatted_color(buffer, &Config.empty_tag_color);
         append_data(buffer, Config.empty_tag_marker, Config.empty_tag_marker_len);
-        append_formatted_color_end(buffer, &Config.empty_tags_color);
+        append_formatted_color_end(buffer, &Config.empty_tag_color);
         return;
     }
     append_data(buffer, tag->data, tag->len);
@@ -1345,7 +1345,7 @@ app_screen_help_init(void) {
                         ui_state_screen_width(),
                         ui_state_main_start_y(),
                         ui_state_main_height(),
-                        Config.main_color,
+                        Config.main_window_color,
                         no_border(),
                         Config.lines_scrolled);
     help_screen.initialized = true;
@@ -1500,8 +1500,8 @@ app_screen_outputs_init(void) {
                            ui_state_screen_width(),
                            ui_state_main_start_y(),
                            ui_state_main_height(),
-                           Config.main_color,
-                           Config.window_border,
+                           Config.main_window_color,
+                           Config.window_border_color,
                            Config.lines_scrolled,
                            Config.mouse_list_scroll_whole_page);
     prefix = (NcBuffer){0};
@@ -1671,8 +1671,8 @@ app_screen_server_info_init(void) {
                                ui_state_screen_height(),
                                ui_state_main_start_y(),
                                ui_state_main_height(),
-                               Config.main_color,
-                               Config.window_border);
+                               Config.main_window_color,
+                               Config.window_border_color);
     server_info_screen.initialized = true;
     return;
 }
@@ -1799,7 +1799,7 @@ app_screen_song_info_init(void) {
                              ui_state_screen_width(),
                              ui_state_main_start_y(),
                              ui_state_main_height(),
-                             Config.main_color,
+                             Config.main_window_color,
                              no_border(),
                              Config.lines_scrolled);
     song_info_screen.initialized = true;

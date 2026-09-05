@@ -134,7 +134,8 @@ nc_help_screen_find(NcHelpScreen *screen,
 
     regex = (NcmRegex){0};
     if ((status = ncm_regex_compile(&regex, pattern, pattern_len,
-                                    Config.regex_flags, ncm_error)) < 0) {
+                                    Config.regular_expressions,
+                                    ncm_error)) < 0) {
         ncm_regex_destroy(&regex);
         return status;
     }

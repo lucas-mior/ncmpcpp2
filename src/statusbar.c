@@ -126,13 +126,13 @@ ncm_progressbar_draw(int32 elapsed, int32 time) {
 
             progressbar[i].data = "";
             progressbar[i].len = 0;
-            if (byte >= Config.progressbar.len) {
+            if (byte >= Config.progressbar_look.len) {
                 continue;
             }
 
-            next = utf8_next_position(Config.progressbar.data,
-                                      Config.progressbar.len, byte);
-            progressbar[i].data = Config.progressbar.data + byte;
+            next = utf8_next_position(Config.progressbar_look.data,
+                                      Config.progressbar_look.len, byte);
+            progressbar[i].data = Config.progressbar_look.data + byte;
             progressbar[i].len = next - byte;
             byte = next;
         }
@@ -203,7 +203,7 @@ ncm_statusbar_scoped_lock_destroy(NcmStatusbarScopedLock *scoped_lock) {
             return;
         }
 
-        switch (Config.design) {
+        switch (Config.user_interface) {
         case NCM_DESIGN_CLASSIC:
             (void)ncm_statusbar_put();
             break;
@@ -244,7 +244,7 @@ ncm_statusbar_try_redraw(void) {
                 return;
             }
 
-            switch (Config.design) {
+            switch (Config.user_interface) {
             case NCM_DESIGN_CLASSIC:
                 switch (ncm_status_state_player()) {
                 case NCM_STATUS_PLAYER_UNKNOWN:

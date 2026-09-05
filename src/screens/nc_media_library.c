@@ -227,7 +227,8 @@ library_update_titles(MediaLibraryScreen *screen,
     sb_clear(&screen->albums_title);
     sb_clear(&screen->songs_title);
     if (Config.titles_visibility) {
-        char *tag_type_name = ncm_tag_type_name(Config.media_lib_primary_tag);
+        char *tag_type_name =
+            ncm_tag_type_name(Config.media_library_primary_tag);
         int32 tag_type_name_len = optional_strlen32(tag_type_name);
 
         SB_APPEND(&screen->tags_title, tag_type_name, tag_type_name_len);
@@ -1049,7 +1050,7 @@ media_library_screen_format_album_row(MediaLibraryScreen *screen,
         }
         SB_APPEND(&raw, " - ");
     }
-    if ((Config.media_lib_primary_tag != MPD_TAG_DATE)
+    if ((Config.media_library_primary_tag != MPD_TAG_DATE)
         && !Config.media_library_hide_album_dates
         && row->date && (row->date_len > 0)) {
         sb_append_byte(&raw, '(');
@@ -1657,12 +1658,12 @@ media_library_screen_set_primary_tag_type(MediaLibraryScreen *screen,
         return -EINVAL;
     }
 
-    if (Config.media_lib_primary_tag == tag_type) {
+    if (Config.media_library_primary_tag == tag_type) {
         library_update_titles(screen, true);
         return 0;
     }
 
-    Config.media_lib_primary_tag = tag_type;
+    Config.media_library_primary_tag = tag_type;
     nc_menu_clear_items(nc_media_library_tag_menu_base(&screen->tags));
     nc_menu_clear_items(nc_media_library_album_menu_base(&screen->albums));
     nc_menu_clear_items(nc_media_library_song_menu_base(&screen->songs));
@@ -1838,7 +1839,7 @@ library_query_from_tag(MediaLibraryScreen *screen,
                        NcMediaLibraryTagRow *tag,
                        MediaLibrarySongQuery *query) {
     (void)screen;
-    query->primary_tag = Config.media_lib_primary_tag;
+    query->primary_tag = Config.media_library_primary_tag;
     if (tag) {
         query->primary_value = tag->tag;
         query->primary_value_len = tag->tag_len;
@@ -1878,7 +1879,7 @@ library_query_from_album(MediaLibraryScreen *screen,
     ASSERT(screen != NULL);
     ASSERT(album != NULL);
 
-    query->primary_tag = Config.media_lib_primary_tag;
+    query->primary_tag = Config.media_library_primary_tag;
     if (screen->mode != MEDIA_LIBRARY_MODE_ALBUM_ONLY) {
         query->primary_value = album->tag;
         query->primary_value_len = album->tag_len;
@@ -2038,7 +2039,8 @@ media_library_screen_apply_filter(
     state = library_active_column_state(screen);
     if ((status = ncm_regex_compile(&state->filter_regex,
                                     pattern, pattern_len,
-                                    Config.regex_flags, ncm_error)) < 0) {
+                                    Config.regular_expressions,
+                                    ncm_error)) < 0) {
         return status;
     }
     sb_set(&state->filter_constraint, pattern, pattern_len);
@@ -2123,7 +2125,8 @@ media_library_screen_search(MediaLibraryScreen *screen,
     state = library_active_column_state(screen);
     if ((status = ncm_regex_compile(&state->search_regex,
                                     pattern, pattern_len,
-                                    Config.regex_flags, ncm_error)) < 0) {
+                                    Config.regular_expressions,
+                                    ncm_error)) < 0) {
         return status;
     }
     sb_set(&state->search_constraint, pattern, pattern_len);
@@ -2391,10 +2394,10 @@ media_library_screen_update(MediaLibraryScreen *screen,
                 return status;
             }
             media_library_tags_from_songs(
-                &tags, &songs, Config.media_lib_primary_tag);
+                &tags, &songs, Config.media_library_primary_tag);
         } else {
             status = media_library_screen_list_tags(
-                screen, Config.media_lib_primary_tag, &strings, ncm_error);
+                screen, Config.media_library_primary_tag, &strings, ncm_error);
             if (status < 0) {
                 screen->tags_update_request = true;
                 ncm_mpd_song_list_destroy(&songs);
@@ -2496,7 +2499,7 @@ media_library_screen_update(MediaLibraryScreen *screen,
             selected_tag_len = tag->tag_len;
             query.primary_value = tag->tag;
             query.primary_value_len = tag->tag_len;
-            query.primary_tag = Config.media_lib_primary_tag;
+            query.primary_tag = Config.media_library_primary_tag;
             query.match_primary_tag = true;
             status = media_library_screen_search_songs(
                 screen, &query, &songs, ncm_error);
@@ -2517,7 +2520,7 @@ media_library_screen_update(MediaLibraryScreen *screen,
         }
 
         media_library_albums_from_songs(
-            &albums, &songs, screen->mode, Config.media_lib_primary_tag,
+            &albums, &songs, screen->mode, Config.media_library_primary_tag,
             selected_tag, selected_tag_len);
         {
             NcMediaLibraryAlbumMenu replacement;
@@ -2602,7 +2605,7 @@ media_library_screen_update(MediaLibraryScreen *screen,
             return 0;
         }
 
-        query.primary_tag = Config.media_lib_primary_tag;
+        query.primary_tag = Config.media_library_primary_tag;
         if (screen->mode != MEDIA_LIBRARY_MODE_ALBUM_ONLY) {
             query.primary_value = album->tag;
             query.primary_value_len = album->tag_len;
@@ -2939,7 +2942,7 @@ media_library_screen_add_item_to_playlist(
             NcMediaLibraryTagRow *tag =
                 media_library_screen_current_tag(screen);
 
-            tag_name = ncm_tag_type_name(Config.media_lib_primary_tag);
+            tag_name = ncm_tag_type_name(Config.media_library_primary_tag);
 
             SB_APPEND(&message, "Songs with ");
             for (int32 i = 0; tag_name[i] != '\0'; i += 1) {
@@ -2960,7 +2963,7 @@ media_library_screen_add_item_to_playlist(
                    == MEDIA_LIBRARY_COLUMN_ALBUMS) {
             if ((album = media_library_screen_current_album(screen))
                 && album->all_tracks_entry) {
-                tag_name = ncm_tag_type_name(Config.media_lib_primary_tag);
+                tag_name = ncm_tag_type_name(Config.media_library_primary_tag);
                 SB_APPEND(&message, "Songs with ");
                 for (int32 i = 0; tag_name[i] != '\0'; i += 1) {
                     char ch = tag_name[i];
@@ -3028,7 +3031,7 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
             ncm_error, -EINVAL, STRLIT("missing locate-song argument"));
     }
     ncm_error_clear(ncm_error);
-    if (!ncm_song_has_tag_view(song, Config.media_lib_primary_tag,
+    if (!ncm_song_has_tag_view(song, Config.media_library_primary_tag,
                                0, &primary_value)
         || (primary_value.len <= 0)) {
         return ncm_error_set_status(ncm_error, -EINVAL,

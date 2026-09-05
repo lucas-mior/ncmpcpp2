@@ -91,8 +91,9 @@ browser_draw_item(NcMenu *menu, NcWindow *window,
             use_colors = !Config.discard_colors_if_item_is_selected
                          || !selected;
             ncm_display_song_columns(
-                &buffer, ncm_mpd_item_song(item), Config.columns.items,
-                Config.columns.len, list_width, use_colors);
+                &buffer, ncm_mpd_item_song(item),
+                Config.song_columns_list_format.items,
+                Config.song_columns_list_format.len, list_width, use_colors);
         } else {
             ncm_display_song_row(&buffer, &Config.song_list_format,
                                  ncm_mpd_item_song(item),
@@ -703,7 +704,7 @@ browser_screen_update_title_text(BrowserScreen *screen) {
 
     scroll_width = screen_width - utf8_width(screen->title_text.data,
                                              screen->title_text.len);
-    if (Config.design == NCM_DESIGN_ALTERNATIVE) {
+    if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
         scroll_width -= 2;
     } else {
         scroll_width -= global_volume_state_len();
@@ -725,6 +726,7 @@ browser_screen_update_title_text(BrowserScreen *screen) {
 
 void
 browser_screen_update_column_title(BrowserScreen *screen) {
+    ColumnArray *columns = &Config.song_columns_list_format;
     int32 width;
 
     if (screen == NULL) {
@@ -733,8 +735,8 @@ browser_screen_update_column_title(BrowserScreen *screen) {
 
     sb_clear(&screen->column_title_text);
     if ((screen->active_display_mode != NCM_DISPLAY_MODE_COLUMNS)
-        || !Config.titles_visibility || (Config.columns.items == NULL)
-        || (Config.columns.len <= 0) || (screen->main_height <= 2)) {
+        || !Config.titles_visibility || (columns->items == NULL)
+        || (columns->len <= 0) || (screen->main_height <= 2)) {
         nc_window_set_title(&screen->window, NULL, 0);
         return;
     }
@@ -746,8 +748,8 @@ browser_screen_update_column_title(BrowserScreen *screen) {
     }
 
     ncm_display_column_title(&screen->column_title_text,
-                             Config.columns.items,
-                             Config.columns.len, width);
+                             Config.song_columns_list_format.items,
+                             Config.song_columns_list_format.len, width);
     nc_window_set_title(&screen->window, screen->column_title_text.data,
                         screen->column_title_text.len);
     return;

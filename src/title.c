@@ -60,7 +60,7 @@ ncm_window_title_write(char *title, int32 title_len) {
 
 void
 ncm_window_title_set(char *title, int32 title_len) {
-    if (!Config.set_window_title) {
+    if (!Config.enable_window_title) {
         return;
     }
 
@@ -148,7 +148,8 @@ ncm_title_draw_header_with_config(char *title, int32 title_len,
 void
 ncm_title_draw_header(char *title, int32 title_len) {
     ncm_title_draw_header_with_config(title, title_len,
-                                      Config.header_visibility, Config.design,
+                                      Config.header_visibility,
+                                      Config.user_interface,
                                       &Config.volume_color,
                                       &Config.alternative_ui_separator_color);
     return;

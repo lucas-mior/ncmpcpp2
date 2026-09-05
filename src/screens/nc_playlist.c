@@ -357,6 +357,7 @@ playlist_screen_window(PlaylistScreen *screen) {
 
 void
 playlist_screen_update_column_title(PlaylistScreen *screen) {
+    ColumnArray *columns = &Config.song_columns_list_format;
     int32 list_width;
 
     if (screen == NULL) {
@@ -365,8 +366,8 @@ playlist_screen_update_column_title(PlaylistScreen *screen) {
 
     sb_clear(&screen->column_title);
     if ((Config.playlist_display_mode != NCM_DISPLAY_MODE_COLUMNS)
-        || !Config.titles_visibility || (Config.columns.items == NULL)
-        || (Config.columns.len <= 0) || (screen->screen.main_height <= 2)) {
+        || !Config.titles_visibility || (columns->items == NULL)
+        || (columns->len <= 0) || (screen->screen.main_height <= 2)) {
         nc_window_set_title(&screen->window, NULL, 0);
         return;
     }
@@ -377,8 +378,8 @@ playlist_screen_update_column_title(PlaylistScreen *screen) {
         return;
     }
 
-    ncm_display_column_title(&screen->column_title, Config.columns.items,
-                             Config.columns.len, list_width);
+    ncm_display_column_title(&screen->column_title, columns->items,
+                             columns->len, list_width);
     nc_window_set_title(&screen->window, screen->column_title.data,
                         screen->column_title.len);
     return;
@@ -811,7 +812,7 @@ playlist_screen_apply_filter(PlaylistScreen *screen,
     }
     if ((status = ncm_regex_compile(
         &screen->filter_regex, pattern, pattern_len,
-        Config.regex_flags, ncm_error)) < 0) {
+        Config.regular_expressions, ncm_error)) < 0) {
         return status;
     }
     sb_set(&screen->filter_constraint, pattern, pattern_len);
@@ -860,7 +861,7 @@ playlist_screen_search(PlaylistScreen *screen,
 
     regex = (NcmRegex){0};
     status = ncm_regex_compile(&regex, pattern, pattern_len,
-                               Config.regex_flags, ncm_error);
+                               Config.regular_expressions, ncm_error);
     if (status < 0) {
         ncm_regex_destroy(&regex);
         return status;
@@ -979,7 +980,7 @@ playlist_update(NcScreen *screen) {
         return;
     }
 
-    delay = Config.playlist_disable_highlight_delay_seconds;
+    delay = Config.playlist_disable_highlight_delay;
     if ((delay == 0)
         || (global_timer_elapsed_seconds(playlist->highlight_timer)
             <= delay)) {
@@ -1112,8 +1113,9 @@ playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
         list_width = available_width;
         use_colors = !Config.discard_colors_if_item_is_selected
                      || !nc_menu_position_is_selected(menu, pos);
-        ncm_display_song_columns(&buffer, item, Config.columns.items,
-                                 Config.columns.len, list_width, use_colors);
+        ncm_display_song_columns(
+            &buffer, item, Config.song_columns_list_format.items,
+            Config.song_columns_list_format.len, list_width, use_colors);
     } else {
         ncm_display_song_row(&buffer, &Config.song_list_format, item,
                              NCM_FORMAT_FLAG_ALL);

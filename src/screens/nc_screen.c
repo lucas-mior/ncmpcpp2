@@ -377,7 +377,7 @@ nc_screen_get_resize_params(NcScreen *screen, int32 *x_offset,
 
 void
 nc_screen_draw_vertical_separator(int32 x) {
-    color_set((int16)nc_color_pair_number(Config.main_color), NULL);
+    color_set((int16)nc_color_pair_number(Config.main_window_color), NULL);
     mvvline(ui_state_main_start_y(), x, 0, ui_state_main_height());
     standend();
     refresh();

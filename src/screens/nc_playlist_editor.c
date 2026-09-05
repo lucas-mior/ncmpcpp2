@@ -1783,9 +1783,9 @@ content_draw_callback(NcMenu *menu, NcWindow *window, void *item,
         }
         use_colors = !Config.discard_colors_if_item_is_selected
                      || !nc_menu_position_is_selected(menu, pos);
-        ncm_display_song_columns(&buffer, item, Config.columns.items,
-                                 Config.columns.len, list_width,
-                                 use_colors);
+        ncm_display_song_columns(
+            &buffer, item, Config.song_columns_list_format.items,
+            Config.song_columns_list_format.len, list_width, use_colors);
     } else {
         ncm_display_song_row(&buffer, &Config.song_list_format, item,
                              NCM_FORMAT_FLAG_ALL);

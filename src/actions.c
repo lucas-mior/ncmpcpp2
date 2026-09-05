@@ -432,7 +432,7 @@ ncm_action_toggle_visualization_type(void) {
 
 static int32
 action_runtime_switch_to_next_screen(bool reverse) {
-    ScreenTypeArray *sequence = &Config.screen_sequence;
+    ScreenTypeArray *sequence = &Config.screen_switcher_mode;
     NcScreen *current;
     bool selected_items_adder = action_runtime_current_screen_is(
         NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER);
@@ -734,7 +734,7 @@ action_runtime_replay_song(void) {
 static int32
 action_runtime_toggle_crossfade(void) {
     NcmError ncm_error;
-    int32 seconds = Config.crossfade_time;
+    int32 seconds = Config.mpd_crossfade_time;
 
     ncm_error_clear(&ncm_error);
     if (ncm_status_state_crossfade_is_enabled()) {
@@ -959,7 +959,7 @@ action_runtime_search_from_prompt_start(ActionRuntimeSearchPrompt *state,
     }
 
     status = current_screen_search(state->direction, text, text_len,
-                                   Config.wrapped_search, false, ncm_error);
+                                   Config.default_find_mode, false, ncm_error);
     if (status < 0) {
         *found = false;
         return status;
@@ -1135,7 +1135,7 @@ action_runtime_set_crossfade(void) {
     }
     sb_free(&input);
 
-    Config.crossfade_time = seconds;
+    Config.mpd_crossfade_time = seconds;
     ncm_error_clear(&ncm_error);
     if (ncm_mpd_client_set_crossfade(&global_mpd, seconds, &ncm_error) < 0) {
         return action_runtime_mpd_error_status(&ncm_error);
@@ -1304,13 +1304,13 @@ static int32
 action_runtime_toggle_interface(void) {
     NcmStatusbarScopedLock scoped_lock;
 
-    switch (Config.design) {
+    switch (Config.user_interface) {
     case NCM_DESIGN_CLASSIC:
-        Config.design = NCM_DESIGN_ALTERNATIVE;
+        Config.user_interface = NCM_DESIGN_ALTERNATIVE;
         Config.statusbar_visibility = false;
         break;
     case NCM_DESIGN_ALTERNATIVE:
-        Config.design = NCM_DESIGN_CLASSIC;
+        Config.user_interface = NCM_DESIGN_CLASSIC;
         Config.statusbar_visibility =
             ui_state_statusbar_visibility_is_baseline();
         break;
@@ -1326,7 +1326,7 @@ action_runtime_toggle_interface(void) {
     ncm_status_changes_mixer();
     ncm_status_changes_elapsed_time(false);
     action_runtime_print_toggle(STRLIT("User interface: "),
-                                ncm_design_str(Config.design));
+                                ncm_design_str(Config.user_interface));
     return 0;
 }
 
@@ -1785,7 +1785,7 @@ action_runtime_find_item(enum SearchDirection direction) {
             ncm_error_clear(&ncm_error);
             (void)current_screen_search(direction, previous_constraint.data,
                                         previous_constraint.len,
-                                        Config.wrapped_search, false,
+                                        Config.default_find_mode, false,
                                         &ncm_error);
         }
         ncm_statusbar_print_cstring(Config.message_delay_time,
@@ -1844,7 +1844,7 @@ action_runtime_repeat_search(enum SearchDirection direction) {
 
     ncm_error_clear(&ncm_error);
     status = current_screen_search(direction, constraint.data, constraint.len,
-                                   Config.wrapped_search, true, &ncm_error);
+                                   Config.default_find_mode, true, &ncm_error);
     if (status < 0) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
@@ -4492,15 +4492,15 @@ action_runtime_toggle_library_tag_type(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    if (Config.media_lib_primary_tag == MPD_TAG_ARTIST) {
+    if (Config.media_library_primary_tag == MPD_TAG_ARTIST) {
         tag_type = MPD_TAG_ALBUM_ARTIST;
-    } else if (Config.media_lib_primary_tag == MPD_TAG_ALBUM_ARTIST) {
+    } else if (Config.media_library_primary_tag == MPD_TAG_ALBUM_ARTIST) {
         tag_type = MPD_TAG_DATE;
-    } else if (Config.media_lib_primary_tag == MPD_TAG_DATE) {
+    } else if (Config.media_library_primary_tag == MPD_TAG_DATE) {
         tag_type = MPD_TAG_GENRE;
-    } else if (Config.media_lib_primary_tag == MPD_TAG_GENRE) {
+    } else if (Config.media_library_primary_tag == MPD_TAG_GENRE) {
         tag_type = MPD_TAG_COMPOSER;
-    } else if (Config.media_lib_primary_tag == MPD_TAG_COMPOSER) {
+    } else if (Config.media_library_primary_tag == MPD_TAG_COMPOSER) {
         tag_type = MPD_TAG_PERFORMER;
     }
 
@@ -4705,7 +4705,7 @@ action_runtime_media_library_current_artist_tag(char **artist,
     if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
         return false;
     }
-    if (Config.media_lib_primary_tag != MPD_TAG_ARTIST) {
+    if (Config.media_library_primary_tag != MPD_TAG_ARTIST) {
         return false;
     }
 
@@ -4993,8 +4993,8 @@ action_runtime_edit_library_tag(void) {
     if (status < 0) {
         goto cleanup;
     }
-    SB_APPEND(&prompt, ncm_tag_type_name(Config.media_lib_primary_tag),
-        optional_strlen32(ncm_tag_type_name(Config.media_lib_primary_tag)));
+    SB_APPEND(&prompt, ncm_tag_type_name(Config.media_library_primary_tag),
+        optional_strlen32(ncm_tag_type_name(Config.media_library_primary_tag)));
     SB_APPEND(&prompt, ": ");
     prompted = action_runtime_prompt_string(
         prompt.data, prompt.len, current_tag.data, false, NULL, NULL,
@@ -5010,7 +5010,7 @@ action_runtime_edit_library_tag(void) {
         goto cleanup;
     }
 
-    field = ncm_tags_field_from_tag_type(Config.media_lib_primary_tag);
+    field = ncm_tags_field_from_tag_type(Config.media_library_primary_tag);
     if (field == NCM_TAGS_FIELD_COUNT) {
         status = -NCM_ERROR_UNAVAILABLE;
         goto cleanup;
@@ -5020,7 +5020,7 @@ action_runtime_edit_library_tag(void) {
     ncm_error_clear(&ncm_error);
     if (ncm_mpd_client_start_search(&global_mpd, true, &ncm_error) < 0
         || ncm_mpd_client_add_search_tag(
-            &global_mpd, Config.media_lib_primary_tag, current_tag.data,
+            &global_mpd, Config.media_library_primary_tag, current_tag.data,
             &ncm_error) < 0
         || ncm_mpd_client_commit_search_songs(&global_mpd, &songs,
                                                &ncm_error) < 0) {
@@ -5495,7 +5495,7 @@ action_runtime_mouse_event(void) {
         progressbar_y -= 1;
     }
     player_state_y = LINES - 1;
-    if (Config.design == NCM_DESIGN_ALTERNATIVE) {
+    if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
         player_state_y = 1;
     }
 
@@ -5513,7 +5513,7 @@ action_runtime_mouse_event(void) {
         }
     } else if ((event->bstate & BUTTON1_PRESSED)
                && (Config.statusbar_visibility
-                   || (Config.design == NCM_DESIGN_ALTERNATIVE))
+                   || (Config.user_interface == NCM_DESIGN_ALTERNATIVE))
                && (ncm_status_state_player() != NCM_STATUS_PLAYER_STOP)
                && (event->y == player_state_y)
                && (event->x < 9)) {
@@ -5524,7 +5524,7 @@ action_runtime_mouse_event(void) {
     } else if (((event->bstate & BUTTON5_PRESSED)
                 || (event->bstate & BUTTON4_PRESSED))
                && (Config.header_visibility
-                   || (Config.design == NCM_DESIGN_ALTERNATIVE))
+                   || (Config.user_interface == NCM_DESIGN_ALTERNATIVE))
                && (event->y == 0)
                && (event->x > COLS - global_volume_state_len())) {
         if (event->bstate & BUTTON5_PRESSED) {
@@ -6431,8 +6431,8 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
     case NCM_ACTION_PREVIOUS_FOUND_ITEM:
         return action_runtime_repeat_search(NCM_SEARCH_DIRECTION_BACKWARD);
     case NCM_ACTION_TOGGLE_FIND_MODE:
-        Config.wrapped_search = !Config.wrapped_search;
-        if (Config.wrapped_search) {
+        Config.default_find_mode = !Config.default_find_mode;
+        if (Config.default_find_mode) {
             ncm_statusbar_print_cstring(Config.message_delay_time,
                                         "Search mode: Wrapped");
         } else {
