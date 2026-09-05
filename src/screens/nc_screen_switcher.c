@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_SCREEN_SWITCHER_C)
-#define NCMPCPP_NC_SCREEN_SWITCHER_C
+#if !defined(NC_SCREEN_SWITCHER_C)
+#define NC_SCREEN_SWITCHER_C
 
 #include "cbase.h"
 
@@ -60,4 +60,4 @@ nc_screen_switcher_get_resize_params(NcScreen *screen, int32 *x_offset,
     return;
 }
 
-#endif /* NCMPCPP_NC_SCREEN_SWITCHER_C */
+#endif /* NC_SCREEN_SWITCHER_C */
