@@ -6,84 +6,31 @@
 #include "c/ncm_c.h"
 #include "settings.h"
 
-static NcmArrayItemCallbacks settings_no_callbacks = {0};
+static void
+settings_screen_type_array_init_item(void *item) {
+    enum ScreenType *screen = item;
 
-static void settings_formatted_color_array_destroy_item(void *item);
-
-static NcmArrayItemCallbacks settings_formatted_color_callbacks = {
-    .destroy = settings_formatted_color_array_destroy_item,
-};
-
-static void *
-settings_array_reserve_append(void *items, int32 len, int32 *cap,
-                              int64 item_size) {
-    int64 needed = (int64)len + 1;
-    int32 old_cap;
-    int32 new_cap;
-
-    if (needed <= *cap) {
-        return items;
-    }
-    if (needed >= MAXOF(*cap)) {
-        error("Array only supports fewer than 2GB items.\n");
-        fatal(EXIT_FAILURE);
-    }
-
-    old_cap = *cap;
-    new_cap = *cap;
-    if (new_cap <= 0) {
-        new_cap = 8;
-    }
-    if (needed >= MAXOF(new_cap)/2) {
-        new_cap = (int32)needed;
-    } else {
-        while (new_cap < needed) {
-            new_cap *= 2;
-        }
-    }
-
-    items = realloc2(items, old_cap, new_cap, item_size);
-    *cap = new_cap;
-    return items;
+    *screen = NCM_SCREEN_TYPE_PLAYLIST;
+    return;
 }
 
-NCM_ARRAY_DEFINE_CLEAR(screen_type_array, ScreenTypeArray,
-                       &settings_no_callbacks)
-NCM_ARRAY_DEFINE_DESTROY(screen_type_array, ScreenTypeArray)
-
-NCM_ARRAY_DEFINE_CLEAR(ncm_int32_array, NcmInt32Array, &settings_no_callbacks)
-NCM_ARRAY_DEFINE_DESTROY(ncm_int32_array, NcmInt32Array)
-
-int32 *
-ncm_int32_array_append(NcmInt32Array *array) {
-    int32 *item;
-
-    array->items = settings_array_reserve_append(
-        array->items, array->len, &array->cap, SIZEOF(*array->items));
-    item = &array->items[array->len];
-    array->len += 1;
-    *item = 0;
-    return item;
-}
-
-NCM_ARRAY_DEFINE_CLEAR(ncm_formatted_color_array, NcmFormattedColorArray,
-                       &settings_formatted_color_callbacks)
-NCM_ARRAY_DEFINE_DESTROY(ncm_formatted_color_array, NcmFormattedColorArray)
-
-NcFormattedColor *
-ncm_formatted_color_array_append(NcmFormattedColorArray *array) {
-    NcFormattedColor *item;
-
-    array->items = settings_array_reserve_append(
-        array->items, array->len, &array->cap, SIZEOF(*array->items));
-    item = &array->items[array->len];
-    array->len += 1;
+static void
+settings_formatted_color_array_init_item(void *item) {
     nc_formatted_color_init(item);
-    return item;
+    return;
 }
 
-void
-column_init(Column *column) {
+static void
+settings_formatted_color_array_destroy_item(void *item) {
+    ASSERT(item != NULL);
+    nc_formatted_color_destroy(item);
+    return;
+}
+
+static void
+settings_column_array_init_item(void *item) {
+    Column *column = item;
+
     column->name = NULL;
     column->type = NULL;
     column->name_len = 0;
@@ -99,51 +46,53 @@ column_init(Column *column) {
     return;
 }
 
-void
-column_array_clear(ColumnArray *array) {
-    for (int32 i = 0; i < array->len; i += 1) {
-        Column *column = &array->items[i];
-
-        stupid_string_free(&column->name, &column->name_len,
-                                &column->name_cap);
-        stupid_string_free(&column->type, &column->type_len,
-                                &column->type_cap);
-        column_init(column);
-    }
-    array->len = 0;
-    return;
-}
-
-Column *
-column_array_append(ColumnArray *array) {
-    Column *column;
-
-    array->items = settings_array_reserve_append(
-        array->items, array->len, &array->cap, SIZEOF(*array->items));
-    column = &array->items[array->len];
-    array->len += 1;
-    column_init(column);
-    return column;
-}
-
-enum ScreenType *
-screen_type_array_append(ScreenTypeArray *array) {
-    enum ScreenType *screen_type;
-
-    array->items = settings_array_reserve_append(
-        array->items, array->len, &array->cap, SIZEOF(*array->items));
-    screen_type = &array->items[array->len];
-    array->len += 1;
-    *screen_type = NCM_SCREEN_TYPE_PLAYLIST;
-    return screen_type;
-}
-
 static void
-settings_formatted_color_array_destroy_item(void *item) {
-    ASSERT(item != NULL);
-    nc_formatted_color_destroy(item);
+settings_column_array_destroy_item(void *item) {
+    Column *column = item;
+
+    stupid_string_free(&column->name, &column->name_len, &column->name_cap);
+    stupid_string_free(&column->type, &column->type_len, &column->type_cap);
     return;
 }
+
+static NcmArrayItemCallbacks settings_screen_type_callbacks = {
+    .init = settings_screen_type_array_init_item,
+};
+
+static NcmArrayItemCallbacks settings_formatted_color_callbacks = {
+    .init = settings_formatted_color_array_init_item,
+    .destroy = settings_formatted_color_array_destroy_item,
+};
+
+static NcmArrayItemCallbacks settings_column_callbacks = {
+    .init = settings_column_array_init_item,
+    .destroy = settings_column_array_destroy_item,
+};
+
+NCM_ARRAY_DEFINE_CLEAR(screen_type_array, ScreenTypeArray,
+                       &settings_screen_type_callbacks)
+NCM_ARRAY_DEFINE_DESTROY(screen_type_array, ScreenTypeArray)
+NCM_ARRAY_DEFINE_RESERVE(screen_type_array, ScreenTypeArray)
+NCM_ARRAY_DEFINE_APPEND(screen_type_array, ScreenTypeArray, enum ScreenType,
+                        &settings_screen_type_callbacks)
+
+NCM_ARRAY_DEFINE_CLEAR(ncm_int32_array, NcmInt32Array, NULL)
+NCM_ARRAY_DEFINE_DESTROY(ncm_int32_array, NcmInt32Array)
+NCM_ARRAY_DEFINE_RESERVE(ncm_int32_array, NcmInt32Array)
+NCM_ARRAY_DEFINE_APPEND(ncm_int32_array, NcmInt32Array, int32, NULL)
+
+NCM_ARRAY_DEFINE_CLEAR(ncm_formatted_color_array, NcmFormattedColorArray,
+                       &settings_formatted_color_callbacks)
+NCM_ARRAY_DEFINE_DESTROY(ncm_formatted_color_array, NcmFormattedColorArray)
+NCM_ARRAY_DEFINE_RESERVE(ncm_formatted_color_array, NcmFormattedColorArray)
+NCM_ARRAY_DEFINE_APPEND(ncm_formatted_color_array, NcmFormattedColorArray,
+                        NcFormattedColor, &settings_formatted_color_callbacks)
+
+NCM_ARRAY_DEFINE_CLEAR(column_array, ColumnArray, &settings_column_callbacks)
+NCM_ARRAY_DEFINE_DESTROY(column_array, ColumnArray)
+NCM_ARRAY_DEFINE_RESERVE(column_array, ColumnArray)
+NCM_ARRAY_DEFINE_APPEND(column_array, ColumnArray, Column,
+                        &settings_column_callbacks)
 
 static void
 configuration_init_unchecked(Configuration *config) {
@@ -255,10 +204,7 @@ configuration_destroy(Configuration *config) {
 #define XX_UINT32_CHOICE(NAME, DEFAULT_VALUE, PARSER, UNSET_VALUE)
 #define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD) \
     ncm_format_ast_destroy(&config->FORMAT_FIELD); \
-    column_array_clear(&config->NAME); \
-    free2(config->NAME.items, \
-          config->NAME.cap*SIZEOF(*config->NAME.items)); \
-    config->NAME = (ColumnArray){0};
+    column_array_destroy(&config->NAME);
 #include "configuration_options_pass.h"
 
     configuration_init_unchecked(config);

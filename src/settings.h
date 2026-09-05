@@ -37,16 +37,19 @@ typedef struct ColumnArray {
 NCM_ARRAY_DECLARE_TYPE(ScreenTypeArray, enum ScreenType)
 NCM_ARRAY_DECLARE_CLEAR(screen_type_array, ScreenTypeArray)
 NCM_ARRAY_DECLARE_DESTROY(screen_type_array, ScreenTypeArray)
+NCM_ARRAY_DECLARE_RESERVE(screen_type_array, ScreenTypeArray)
 NCM_ARRAY_DECLARE_APPEND(screen_type_array, ScreenTypeArray, enum ScreenType)
 
 NCM_ARRAY_DECLARE_TYPE(NcmInt32Array, int32)
 NCM_ARRAY_DECLARE_CLEAR(ncm_int32_array, NcmInt32Array)
 NCM_ARRAY_DECLARE_DESTROY(ncm_int32_array, NcmInt32Array)
+NCM_ARRAY_DECLARE_RESERVE(ncm_int32_array, NcmInt32Array)
 NCM_ARRAY_DECLARE_APPEND(ncm_int32_array, NcmInt32Array, int32)
 
 NCM_ARRAY_DECLARE_TYPE(NcmFormattedColorArray, NcFormattedColor)
 NCM_ARRAY_DECLARE_CLEAR(ncm_formatted_color_array, NcmFormattedColorArray)
 NCM_ARRAY_DECLARE_DESTROY(ncm_formatted_color_array, NcmFormattedColorArray)
+NCM_ARRAY_DECLARE_RESERVE(ncm_formatted_color_array, NcmFormattedColorArray)
 NCM_ARRAY_DECLARE_APPEND(ncm_formatted_color_array, NcmFormattedColorArray,
                          NcFormattedColor)
 
@@ -98,10 +101,10 @@ typedef struct Configuration {
 
 } Configuration;
 
-void column_init(Column *column);
-
-Column *column_array_append(ColumnArray *array);
 void column_array_clear(ColumnArray *array);
+void column_array_destroy(ColumnArray *array);
+int32 column_array_reserve(ColumnArray *array, int32 extra);
+Column *column_array_append(ColumnArray *array);
 
 void configuration_init(Configuration *config);
 void configuration_destroy(Configuration *config);
