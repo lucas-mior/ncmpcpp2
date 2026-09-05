@@ -524,8 +524,6 @@ bool nc_screen_switcher_is_visible(NcScreen *screen);
 int32 nc_screen_switcher_switch_to(NcScreen *screen,
                                    bool has_to_be_resized);
 void nc_screen_switcher_finish_switch(NcScreen *screen);
-NcScreenResizeParams nc_screen_switcher_resize_params(
-    NcScreen *screen, bool adjust_locked_screen);
 void nc_screen_switcher_get_resize_params(NcScreen *screen,
                                           int32 *x_offset, int32 *width,
                                           bool adjust_locked_screen);
