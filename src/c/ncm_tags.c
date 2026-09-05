@@ -110,7 +110,7 @@ ncm_tags_read_lyrics(char *path, NcmTagsValueCallback *callback,
 
 int32
 ncm_tags_read_song(struct mpd_song *song) {
-    NcmTaglibFile file;
+    NcmTaglibFile file = {0};
     NcmTaglibAudioProperties properties;
     NcmTagsMappedContext context;
     char time_buffer[32];
@@ -122,7 +122,6 @@ ncm_tags_read_song(struct mpd_song *song) {
         return -EINVAL;
     }
 
-    file = (NcmTaglibFile){0};
     status = ncm_taglib_file_open(&file, (char *)mpd_song_get_uri(song));
     if (status < 0) {
         return status;
