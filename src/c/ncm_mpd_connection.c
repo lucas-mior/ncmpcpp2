@@ -731,8 +731,7 @@ ncm_mpd_connection_get_status(NcmMpdConnection *connection,
     char *error;
     int32 status;
 
-    NCM_MPD_RETURN_IF_ERROR(
-        ncm_mpd_connection_require_connected(connection));
+    NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (out_status == NULL) {
         return -EINVAL;
     }
