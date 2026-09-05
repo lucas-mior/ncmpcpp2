@@ -286,8 +286,7 @@ ncm_binding_default_runtime(void) {
         runtime.run_action = ncm_binding_runtime_run_action;
         runtime.current_screen_is = ncm_binding_runtime_current_screen_is;
         runtime.push_key = ncm_binding_runtime_push_key;
-        runtime.run_external_command =
-            ncm_binding_runtime_run_external_command;
+        runtime.run_external_command = ncm_binding_runtime_run_external_command;
         runtime.run_external_console_command =
             ncm_binding_runtime_run_external_console_command;
         runtime.user = ncm_action_runtime_global();
