@@ -192,11 +192,8 @@ nc_buffer_append_char(NcBuffer *buffer, char ch) {
 
 void
 nc_buffer_append_int32(NcBuffer *buffer, int32 value) {
-    char string[64];
-    int32 len;
-
-    len = SNPRINTF(string, "%d", value);
-    nc_buffer_append_data(buffer, string, len);
+    nc_buffer_reserve(buffer, 16);
+    buffer->len += itoa2(buffer->data, 16, value);
     return;
 }
 
