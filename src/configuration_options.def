@@ -1,8 +1,8 @@
 /*
- * Generated configuration options migrated to the X-macro subsystem.
+ * Authoritative configuration option schema.
  *
- * This file intentionally has no include guard.  Includers define the XX_*
- * macros needed by the generation pass before including it.
+ * This file intentionally has no include guard. It is expanded through
+ * configuration_options_pass.h by defining the XX_* macros needed by a pass.
  */
 
 XX_DIR(ncmpcpp_directory, "~/.config/ncmpcpp/")
@@ -180,24 +180,18 @@ XX_RATIO(media_library_column_width_ratio_three, "1:1:1", 3)
 XX_RATIO(playlist_editor_column_width_ratio, "1:2", 2)
 
 /* Custom/multi-field settings. */
-#if defined(XX_COLUMNS)
 XX_COLUMNS(
     song_columns_list_format,
     "(20)[]{a} (6f)[green]{NE} (50)[white]{t|f:Title}"
     " (20)[cyan]{b} (7f)[magenta]{l}",
     song_columns_mode_format)
-#endif
 
 /* Named bool-backed settings. */
-#if defined(XX_NAMED_BOOL)
 XX_NAMED_BOOL(default_place_to_search_in, "database",
               "database", "playlist")
 XX_NAMED_BOOL(default_find_mode, "wrapped", "wrapped", "normal")
-#endif
 
 /* UInt32 choice settings. */
-#if defined(XX_UINT32_CHOICE)
 XX_UINT32_CHOICE(regular_expressions, "extended",
                  settings_parse_regular_expressions,
                  NCM_REGEX_EXTENDED_CASE_INSENSITIVE)
-#endif
