@@ -789,15 +789,11 @@ nc_window_display(NcWindow *window) {
 void
 nc_window_refresh_border(NcWindow *window) {
     if (window->border.enabled) {
-        int32 start_x;
-        int32 start_y;
-        int32 width;
-        int32 height;
+        int32 start_x = nc_window_start_x(window);
+        int32 start_y = nc_window_start_y(window);
+        int32 width = nc_window_width(window);
+        int32 height = nc_window_height(window);
 
-        start_x = nc_window_start_x(window);
-        start_y = nc_window_start_y(window);
-        width = nc_window_width(window);
-        height = nc_window_height(window);
         color_set((int16)nc_color_pair_number(window->border.color), NULL);
         attron(A_ALTCHARSET);
         mvaddch(start_y, start_x, 'l');
