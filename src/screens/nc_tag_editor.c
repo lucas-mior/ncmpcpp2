@@ -1864,10 +1864,7 @@ tag_editor_number_song_callback(NcmMutableSong *song, void *user) {
     } else {
         len = SNPRINTF(buffer, "%d", numberer->current);
     }
-    ASSERT(len >= 0);
-    if (len >= SIZEOF(buffer)) {
-        len = SIZEOF(buffer) - 1;
-    }
+
     numberer->current += 1;
     ncm_mutable_song_set_tag(song, NCM_TAGS_FIELD_TRACK, 0, buffer, len);
     for (int32 i = 1; ncm_mutable_song_has_tag_view(
