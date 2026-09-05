@@ -1695,11 +1695,10 @@ app_screen_server_info_init(void) {
 static int32
 song_info_render(void *user, NcSongInfoScreen *screen,
                  NcBuffer *buffer) {
-    SongInfoScreen *owner;
+    SongInfoScreen *owner = user;
     StrBuilder value;
 
     (void)screen;
-    owner = user;
     if (!owner->has_song) {
         return 0;
     }
