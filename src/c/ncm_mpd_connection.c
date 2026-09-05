@@ -105,8 +105,9 @@ ncm_mpd_string_list_push(NcmStringViewList *list, char *value) {
             new_capacity = 8;
         }
 
-        list->items = (NcmStringView *)realloc2(
-            list->items, old_capacity, new_capacity, SIZEOF(*list->items));
+        list->items = realloc2(list->items,
+                               old_capacity, new_capacity,
+                               SIZEOF(*list->items));
         list->capacity = new_capacity;
     }
 
