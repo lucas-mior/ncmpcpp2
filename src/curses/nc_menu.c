@@ -747,13 +747,10 @@ nc_menu_insert_item_with_flags(NcMenu *menu, int32 pos, void *item,
 int32
 nc_menu_remove_item(NcMenu *menu, enum NcMenuItemSource source,
                     int32 pos) {
-    uint32 *flags;
-    void **items;
-    int32 count;
+    void **items = menu_array(menu, source);
+    uint32 *flags = menu_flags_array(menu, source);
+    int32 count = menu_array_count(menu, source);
 
-    items = menu_array(menu, source);
-    flags = menu_flags_array(menu, source);
-    count = menu_array_count(menu, source);
     if ((pos < 0) || (pos >= count)) {
         return -ERANGE;
     }
