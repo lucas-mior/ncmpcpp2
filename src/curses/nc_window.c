@@ -1057,12 +1057,10 @@ nc_window_get_input_char(NcWindow *window, int32 key) {
             return NC_KEY_HOME;
         case 'M':
         {
-            int32 raw_x;
-            int32 raw_y;
+            int32 raw_x = wgetch(window->window);
+            int32 raw_y = wgetch(window->window);
 
             key = wgetch(window->window);
-            raw_x = wgetch(window->window);
-            raw_y = wgetch(window->window);
             window->mouse_event.x = (raw_x - 33) & 0xff;
             window->mouse_event.y = (raw_y - 33) & 0xff;
             return nc_window_define_mouse_event(window, key);
