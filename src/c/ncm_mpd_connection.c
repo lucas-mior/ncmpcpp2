@@ -1567,8 +1567,7 @@ ncm_mpd_connection_set_volume(NcmMpdConnection *connection, int32 vol) {
 }
 
 int32
-ncm_mpd_connection_change_volume(NcmMpdConnection *connection,
-                                 int32 change) {
+ncm_mpd_connection_change_volume(NcmMpdConnection *connection, int32 change) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_change_volume(connection->mpd, change);
@@ -1577,8 +1576,7 @@ ncm_mpd_connection_change_volume(NcmMpdConnection *connection,
 
 int32
 ncm_mpd_connection_move(NcmMpdConnection *connection,
-                        int32 from,
-                        int32 to,
+                        int32 from, int32 to,
                         bool command_list_active) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1593,8 +1591,7 @@ ncm_mpd_connection_move(NcmMpdConnection *connection,
 
 int32
 ncm_mpd_connection_swap(NcmMpdConnection *connection,
-                        int32 from,
-                        int32 to,
+                        int32 from, int32 to,
                         bool command_list_active) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1617,8 +1614,7 @@ ncm_mpd_connection_shuffle(NcmMpdConnection *connection) {
 
 int32
 ncm_mpd_connection_shuffle_range(NcmMpdConnection *connection,
-                                 int32 start,
-                                 int32 end) {
+                                 int32 start, int32 end) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_shuffle_range(connection->mpd, (uint32)start, (uint32)end);
@@ -1635,8 +1631,7 @@ ncm_mpd_connection_clear_queue(NcmMpdConnection *connection) {
 
 int32
 ncm_mpd_connection_set_priority_id(NcmMpdConnection *connection,
-                                   int32 id,
-                                   int32 prio,
+                                   int32 id, int32 prio,
                                    bool command_list_active) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1710,8 +1705,7 @@ ncm_mpd_connection_add(NcmMpdConnection *connection,
 
 int32
 ncm_mpd_connection_delete(NcmMpdConnection *connection,
-                          int32 pos,
-                          bool command_list_active) {
+                          int32 pos, bool command_list_active) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_send_delete(connection->mpd, (uint32)pos);
@@ -1734,8 +1728,7 @@ ncm_mpd_connection_clear_playlist(NcmMpdConnection *connection,
 
 int32
 ncm_mpd_connection_add_to_playlist(NcmMpdConnection *connection,
-                                   char *playlist,
-                                   char *path,
+                                   char *playlist, char *path,
                                    bool command_list_active) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1751,8 +1744,7 @@ ncm_mpd_connection_add_to_playlist(NcmMpdConnection *connection,
 int32
 ncm_mpd_connection_playlist_move(NcmMpdConnection *connection,
                                  char *playlist,
-                                 int32 from,
-                                 int32 to,
+                                 int32 from, int32 to,
                                  bool command_list_active) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1783,8 +1775,7 @@ ncm_mpd_connection_playlist_delete(NcmMpdConnection *connection,
 
 int32
 ncm_mpd_connection_rename_playlist(NcmMpdConnection *connection,
-                                   char *from,
-                                   char *to) {
+                                   char *from, char *to) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_rename(connection->mpd, from, to);
