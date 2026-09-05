@@ -1510,8 +1510,7 @@ ncm_mpd_connection_previous(NcmMpdConnection *connection) {
 
 int32
 ncm_mpd_connection_seek_pos(NcmMpdConnection *connection,
-                            int32 pos,
-                            int32 seconds) {
+                            int32 pos, int32 seconds) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_seek_pos(connection->mpd, (uint32)pos, (uint32)seconds);
