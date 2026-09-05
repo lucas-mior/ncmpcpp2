@@ -335,11 +335,6 @@ app_screen_visualizer_init(void) {
     visualizer_config.source_location = Config.visualizer_data_source;
     visualizer_config.source_location_len =
         Config.visualizer_data_source_len;
-    if (Config.visualizer_fifo_path_len > 0) {
-        visualizer_config.source_location = Config.visualizer_fifo_path;
-        visualizer_config.source_location_len =
-            Config.visualizer_fifo_path_len;
-    }
     visualizer_config.output_name = Config.visualizer_output_name;
     visualizer_config.output_name_len = Config.visualizer_output_name_len;
     visualizer_config.visualizer_chars = Config.visualizer_look.data;
