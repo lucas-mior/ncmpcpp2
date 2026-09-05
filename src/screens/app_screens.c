@@ -1200,11 +1200,10 @@ append_help(NcBuffer *buffer, enum NcmActionType type, char *description) {
     column_start = buffer->len;
     width = 0;
     for (int32 i = 0; i < Bindings.keys_len; i += 1) {
-        NcmKeyBindings *key_bindings;
+        NcmKeyBindings *key_bindings = &Bindings.keys[i];
         char key_name[64];
         int32 key_len;
 
-        key_bindings = Bindings.keys + i;
         for (int32 j = 0; j < key_bindings->bindings_len; j += 1) {
             NcmBinding *binding = &key_bindings->bindings[j];
 
