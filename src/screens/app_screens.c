@@ -1136,15 +1136,13 @@ append_format(NcBuffer *buffer, enum NcFormat format) {
 }
 
 static void
-append_formatted_color(NcBuffer *buffer,
-                       NcFormattedColor *color) {
+append_formatted_color(NcBuffer *buffer, NcFormattedColor *color) {
     nc_buffer_add_formatted_color(buffer, buffer->len, color, 0);
     return;
 }
 
 static void
-append_formatted_color_end(NcBuffer *buffer,
-                           NcFormattedColor *color) {
+append_formatted_color_end(NcBuffer *buffer, NcFormattedColor *color) {
     nc_buffer_add_formatted_color_end(buffer, buffer->len, color, 0);
     return;
 }
