@@ -75,6 +75,7 @@ nc_buffer_copy(NcBuffer *dest, NcBuffer *source) {
         property.id = source_property->id;
         property.position = source_property->position;
         property.type = source_property->type;
+
         switch (source_property->type) {
         case NC_BUFFER_PROPERTY_COLOR:
             property.value.color = source_property->value.color;
@@ -91,6 +92,7 @@ nc_buffer_copy(NcBuffer *dest, NcBuffer *source) {
         default:
             break;
         }
+
         ARRAY_PUSH(dest->properties, property);
     }
     return;
@@ -216,6 +218,7 @@ nc_buffer_add_color(NcBuffer *buffer, int32 position, NcColor color, int64 id) {
     property.id = id;
     property.position = position;
     property.type = NC_BUFFER_PROPERTY_COLOR;
+
     nc_buffer_add_property(buffer, &property);
     return;
 }
@@ -229,6 +232,7 @@ nc_buffer_add_format(NcBuffer *buffer, int32 position,
     property.id = id;
     property.position = position;
     property.type = NC_BUFFER_PROPERTY_FORMAT;
+
     nc_buffer_add_property(buffer, &property);
     return;
 }
@@ -243,6 +247,7 @@ nc_buffer_add_formatted_color(NcBuffer *buffer, int32 position,
     property.id = id;
     property.position = position;
     property.type = NC_BUFFER_PROPERTY_FORMATTED_COLOR;
+
     nc_buffer_add_property(buffer, &property);
     return;
 }
@@ -257,6 +262,7 @@ nc_buffer_add_formatted_color_end(NcBuffer *buffer, int32 position,
     property.id = id;
     property.position = position;
     property.type = NC_BUFFER_PROPERTY_FORMATTED_COLOR_END;
+
     nc_buffer_add_property(buffer, &property);
     return;
 }
