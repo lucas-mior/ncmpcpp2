@@ -642,8 +642,7 @@ ncm_mutable_song_set_new_name(NcmMutableSong *song, char *new_name,
 }
 
 bool
-ncm_mutable_song_has_new_name_view(NcmMutableSong *song,
-                                   NcmStringView *view) {
+ncm_mutable_song_has_new_name_view(NcmMutableSong *song, NcmStringView *view) {
     if (view == NULL) {
         return false;
     }
