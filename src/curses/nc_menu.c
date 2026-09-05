@@ -832,9 +832,8 @@ void
 nc_menu_apply_filter(NcMenu *menu) {
     nc_menu_clear_filtered_items(menu);
     for (int32 i = 0; i < menu_array_count(menu, NC_MENU_ITEMS_ALL); i += 1) {
-        void *item;
+        void *item = menu->all_items[i];
 
-        item = menu->all_items[i];
         if (menu->display_callbacks.matches_filter
             && menu->display_callbacks.matches_filter(
                 menu, item, menu->display_callbacks.user)) {
