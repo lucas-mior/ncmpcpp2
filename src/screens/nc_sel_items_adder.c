@@ -85,12 +85,12 @@ selected_items_adder_screen_init(
     nc_menu_set_highlight_prefix(playlist_menu, &Config.current_item_prefix);
     nc_menu_set_highlight_suffix(playlist_menu, &Config.current_item_suffix);
     nc_menu_set_cyclic_scrolling(playlist_menu,
-                                 Config.use_cyclic_scrolling);
+                                 Config.cyclic_scrolling);
     nc_menu_set_centered_cursor(playlist_menu, Config.centered_cursor);
     nc_menu_set_highlight_prefix(position_menu, &Config.current_item_prefix);
     nc_menu_set_highlight_suffix(position_menu, &Config.current_item_suffix);
     nc_menu_set_cyclic_scrolling(position_menu,
-                                 Config.use_cyclic_scrolling);
+                                 Config.cyclic_scrolling);
     nc_menu_set_centered_cursor(position_menu, Config.centered_cursor);
     nc_window_init(&screen->playlist_window, start_x, start_y, width,
                    height, STRLIT("Add selected item(s) to..."),

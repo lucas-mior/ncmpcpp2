@@ -277,7 +277,7 @@ playlist_screen_init(PlaylistScreen *screen, int32 start_x,
     nc_menu_set_highlight_suffix(playlist_screen_menu(screen),
                                  &Config.current_item_suffix);
     nc_menu_set_cyclic_scrolling(playlist_screen_menu(screen),
-                                 Config.use_cyclic_scrolling);
+                                 Config.cyclic_scrolling);
     nc_menu_set_centered_cursor(playlist_screen_menu(screen),
                                 Config.centered_cursor);
     playlist_screen_set_mouse_config(
