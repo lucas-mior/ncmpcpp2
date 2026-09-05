@@ -2067,8 +2067,8 @@ cleanup:
 
 int32
 ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
-                         char *artist, int32 artist_len, char *title,
-                         int32 title_len) {
+                         char *artist, int32 artist_len,
+                         char *title, int32 title_len) {
     StrBuilderArray direct_urls = {0};
     int32 status;
     bool retry;
