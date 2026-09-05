@@ -406,11 +406,9 @@ ncm_mutable_song_set_tags(NcmMutableSong *song, enum NcmTagsField field,
     begin = 0;
     idx = 0;
     for (int32 i = 0; i <= value_len; i += 1) {
-        bool at_end;
-        bool at_separator;
+        bool at_end = (i == value_len);
+        bool at_separator = false;
 
-        at_end = i == value_len;
-        at_separator = false;
         if (!at_end && (i + separator_len <= value_len)) {
             at_separator = optional_strequal(
                 value + i, separator_len, separator, separator_len);
