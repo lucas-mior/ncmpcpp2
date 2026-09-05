@@ -804,24 +804,26 @@ nc_window_refresh_border(NcWindow *window) {
         mvhline(start_y + height - 1, start_x + 1, 'q', width - 2);
         mvvline(start_y + 1, start_x, 'x', height - 2);
         mvvline(start_y + 1, start_x + width - 1, 'x', height - 2);
+
         if (nc_window_has_title(window)) {
             mvaddch(start_y + 2, start_x, 't');
             mvaddch(start_y + 2, start_x + width - 1, 'u');
         }
+
         attroff(A_ALTCHARSET);
     } else {
         color_set((int16)nc_color_pair_number(window->base_color), NULL);
     }
+
     if (nc_window_has_title(window)) {
-        mvhline(window->start_y - 2, window->start_x,
-                ' ', window->width);
+        mvhline(window->start_y - 2, window->start_x, ' ', window->width);
         attron(A_BOLD);
         mvaddnstr(window->start_y - 2, window->start_x,
                   window->title, window->title_len);
         attroff(A_BOLD);
-        mvhline(window->start_y - 1, window->start_x,
-                0, window->width);
+        mvhline(window->start_y - 1, window->start_x, 0, window->width);
     }
+
     standend();
     refresh();
     return;
