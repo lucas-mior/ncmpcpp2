@@ -287,10 +287,10 @@ int32 nc_formatted_color_format_count(NcFormattedColor *formatted_color);
 #define ENUM_NAME NcBufferPropertyType
 #define ENUM_PREFIX_ NC_BUFFER_PROPERTY_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NC_BUFFER_PROPERTY_COLOR)                                               \
-    XX(NC_BUFFER_PROPERTY_FORMAT)                                              \
-    XX(NC_BUFFER_PROPERTY_FORMATTED_COLOR)                                     \
+#define ENUM_FIELDS                             \
+    XX(NC_BUFFER_PROPERTY_COLOR)                \
+    XX(NC_BUFFER_PROPERTY_FORMAT)               \
+    XX(NC_BUFFER_PROPERTY_FORMATTED_COLOR)      \
     XX(NC_BUFFER_PROPERTY_FORMATTED_COLOR_END)
 #include "cbase/xenums.c"
 
