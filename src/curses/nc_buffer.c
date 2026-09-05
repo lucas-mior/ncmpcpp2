@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_BUFFER_C)
-#define NCMPCPP_NC_BUFFER_C
+#if !defined(NC_BUFFER_C)
+#define NC_BUFFER_C
 
 #include "cbase.h"
 
@@ -345,4 +345,4 @@ nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property) {
     return;
 }
 
-#endif /* NCMPCPP_NC_BUFFER_C */
+#endif /* NC_BUFFER_C */
