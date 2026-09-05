@@ -119,6 +119,7 @@ test_numeric_boundaries(void) {
     ASSERT(config.search_engine_default_search_mode == 2);
     ASSERT(settings_test_apply(
         apply_search_engine_default_search_mode, &config, "4") < 0);
+    ASSERT(config.search_engine_default_search_mode == 2);
 
     configuration_destroy(&config);
     return;

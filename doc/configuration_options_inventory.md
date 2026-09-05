@@ -4,9 +4,18 @@ This is the step-1 baseline for the configuration-subsystem refactor.
 It records current behavior; it is deliberately not an authoritative
 production definition and should not be included by production code.
 
-The source contains 135 `OPT(...)` invocations but 134 effective option
-names: `visualizer_type` has two mutually exclusive default entries under
-`#if defined(HAVE_FFTW3_H)`.
+The step-1 source contained 135 `OPT(...)` invocations but 134 effective
+option names: `visualizer_type` has two mutually exclusive default entries
+under `#if defined(HAVE_FFTW3_H)`.
+
+As of step 4, `src/configuration_options.def` is the authoritative production
+definition for all 78 primitive options: `XX_BOOL`, `XX_INT_RANGE`,
+`XX_DOUBLE_RANGE`, `XX_STRING`, `XX_PATH`, and `XX_DIR`.  The remaining 56
+effective options are still declared by the handwritten `SettingsOption`
+table.  This document remains the behavioral migration inventory rather than
+a production include file.  Existing primitive side effects and transforms are
+preserved by temporary generated-wrapper pre/post handling until the later
+validation/runtime-application steps separate them from parsing.
 
 ## Proposed X-macro type inventory
 
