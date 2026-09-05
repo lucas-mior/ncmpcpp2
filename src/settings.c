@@ -48,6 +48,31 @@ enum SettingsPrimitiveOption {
 _Static_assert(SETTINGS_PRIMITIVE_COUNT == 78,
                "primitive configuration option count changed");
 
+#define SETTINGS_ASSERT_FIELD_TYPE(NAME, TYPE) \
+    _Static_assert(_Generic(&((Configuration *)0)->NAME, \
+                            TYPE *: 1, default: 0), \
+                   "generated Configuration field type mismatch")
+
+#define XX_BOOL(NAME, DEFAULT_VALUE) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, bool);
+#define XX_STRING(NAME, DEFAULT_VALUE) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, char *); \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME##_len, int32);
+#define XX_PATH(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, int32);
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, double);
+#include "configuration_options.def"
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_DIR
+#undef XX_PATH
+#undef XX_STRING
+#undef XX_BOOL
+#undef SETTINGS_ASSERT_FIELD_TYPE
+
 static bool settings_quiet;
 
 static int32

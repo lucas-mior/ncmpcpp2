@@ -51,41 +51,26 @@ NCM_ARRAY_DECLARE_APPEND(ncm_formatted_color_array, NcmFormattedColorArray,
                          NcFormattedColor)
 
 typedef struct Configuration {
-    char *ncmpcpp_directory;
-    char *lyrics_directory;
-    char *mpd_music_dir;
-    char *mpd_host;
-    char *mpd_password;
-    char *visualizer_fifo_path;
-    char *visualizer_data_source;
-    char *visualizer_output_name;
-    char *empty_tag_marker;
-    char *external_editor;
-    char *system_encoding;
-    char *execute_on_song_change;
-    char *execute_on_player_state_change;
-    char *lastfm_preferred_language;
-    char *default_tag_editor_pattern;
-    char *random_exclude_pattern;
-    char *tags_separator;
+#define XX_BOOL(NAME, DEFAULT_VALUE) bool NAME;
+#define XX_STRING(NAME, DEFAULT_VALUE) \
+    char *NAME; \
+    int32 NAME##_len;
+#define XX_PATH(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) int32 NAME;
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+    double NAME;
+#include "configuration_options.def"
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_DIR
+#undef XX_PATH
+#undef XX_STRING
+#undef XX_BOOL
 
-    int32 ncmpcpp_directory_len;
-    int32 lyrics_directory_len;
-    int32 mpd_music_dir_len;
-    int32 mpd_host_len;
-    int32 mpd_password_len;
+    char *visualizer_fifo_path;
+
     int32 visualizer_fifo_path_len;
-    int32 visualizer_data_source_len;
-    int32 visualizer_output_name_len;
-    int32 empty_tag_marker_len;
-    int32 external_editor_len;
-    int32 system_encoding_len;
-    int32 execute_on_song_change_len;
-    int32 execute_on_player_state_change_len;
-    int32 lastfm_preferred_language_len;
-    int32 default_tag_editor_pattern_len;
-    int32 random_exclude_pattern_len;
-    int32 tags_separator_len;
 
     StrBuilder progressbar_look;
     StrBuilder visualizer_look;
@@ -145,76 +130,13 @@ typedef struct Configuration {
     enum mpd_tag_type media_library_primary_tag;
     enum SortMode browser_sort_mode;
 
-    bool colors_enabled;
-    bool playlist_show_mpd_host;
-    bool playlist_show_remaining_time;
-    bool playlist_shorten_total_times;
-    bool playlist_separate_albums;
-    bool enable_window_title;
-    bool header_visibility;
-    bool header_text_scrolling;
-    bool statusbar_visibility;
-    bool connected_message_on_startup;
-    bool titles_visibility;
-    bool centered_cursor;
     bool screen_switcher_previous;
-    bool autocenter_mode;
     bool default_find_mode;
-    bool incremental_seeking;
-    bool follow_now_playing_lyrics;
-    bool fetch_lyrics_for_current_song_in_background;
-    bool show_hidden_files_in_local_browser;
     bool default_place_to_search_in;
-    bool jump_to_now_playing_song_at_start;
-    bool display_volume_level;
-    bool display_bitrate;
-    bool display_remaining_time;
-    bool ignore_leading_the;
-    bool block_search_constraints_change_if_items_found;
-    bool use_console_editor;
-    bool cyclic_scrolling;
-    bool ask_before_clearing_playlists;
-    bool ask_before_shuffling_playlists;
-    bool mouse_support;
-    bool mouse_list_scroll_whole_page;
-    bool visualizer_in_stereo;
-    bool visualizer_autoscale;
-    bool visualizer_spectrum_smooth_look;
-    bool visualizer_spectrum_smooth_look_legacy_chars;
-    bool visualizer_spectrum_log_scale_x;
-    bool visualizer_spectrum_log_scale_y;
-    bool data_fetching_delay;
-    bool media_library_sort_by_mtime;
-    bool media_library_hide_album_dates;
-    bool tag_editor_extended_numeration;
-    bool discard_colors_if_item_is_selected;
-    bool store_lyrics_in_song_dir;
-    bool generate_win32_compatible_filenames;
-    bool ask_for_locked_screen_width_part;
-    bool allow_for_physical_item_deletion;
-    bool show_duplicate_tags;
-    bool media_library_albums_split_by_date;
-    bool startup_slave_screen_focus;
     bool has_startup_slave_screen_type;
 
-    int32 mpd_port;
-    int32 mpd_connection_timeout;
-    int32 mpd_crossfade_time;
-    int32 seek_time;
-    int32 volume_change_step;
-    int32 message_delay_time;
     int32 lyrics_db;
-    int32 lines_scrolled;
-    int32 search_engine_default_search_mode;
-    int32 visualizer_fps;
-    int32 visualizer_spectrum_dft_size;
-    int32 playlist_disable_highlight_delay;
     uint32 regular_expressions;
-
-    double visualizer_spectrum_gain;
-    double visualizer_spectrum_hz_min;
-    double visualizer_spectrum_hz_max;
-    double locked_screen_width_part;
 
     int32 selected_item_prefix_length;
     int32 selected_item_suffix_length;
