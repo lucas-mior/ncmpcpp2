@@ -1104,8 +1104,8 @@ apply_screen_switcher_mode(Configuration *config, char *value, int32 value_len,
         enum ScreenType *slot;
         enum ScreenType screen;
 
-        settings_next_list_item(value, value_len, &pos, &item,
-                                &item_len, &found);
+        settings_next_list_item(value, value_len, &pos,
+                                &item, &item_len, &found);
         if (!found) {
             break;
         }
