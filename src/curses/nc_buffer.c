@@ -153,11 +153,6 @@ nc_buffer_properties(NcBuffer *buffer) {
     return buffer->properties;
 }
 
-int32
-nc_buffer_property_count(NcBuffer *buffer) {
-    return ARRAY_LEN(buffer->properties);
-}
-
 void
 nc_buffer_append_data(NcBuffer *buffer, char *data, int32 data_len) {
     if (data_len <= 0) {
