@@ -941,7 +941,7 @@ settings_apply_option(Configuration *config, SettingsOption option,
 }
 
 int32
-configuration_validate(const Configuration *config, NcmError *ncm_error) {
+configuration_validate(Configuration *config, NcmError *ncm_error) {
     if (config == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing configuration"));
