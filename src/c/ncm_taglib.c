@@ -3,7 +3,7 @@
 
 #include "cbase.h"
 
-#include "config.h"
+#include "configura.h"
 
 #if defined(HAVE_TAGLIB_H)
 #include <tag_c.h>

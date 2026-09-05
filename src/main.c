@@ -18,7 +18,7 @@
 
 #include "app_legacy_bridge.h"
 #include "bindings.h"
-#include "configuration.h"
+#include "config.h"
 #include "global.h"
 #include "settings.h"
 #include "title.h"
@@ -30,7 +30,7 @@
 #include "app_state.c"
 #include "bindings.c"
 
-#include "configuration.c"
+#include "config.c"
 #include "curl_handle.c"
 
 #include "global.c"

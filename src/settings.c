@@ -6,7 +6,7 @@
 #include <mpd/tag.h>
 
 #include "c/ncm_c.h"
-#include "config.h"
+#include "configura.h"
 #include "settings.h"
 #include "title.h"
 
