@@ -159,6 +159,11 @@ configuration_init_unchecked(Configuration *config) {
     config->NAME = 0;
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) \
     config->NAME = (C_TYPE)0;
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+) \
+    config->NAME = (C_TYPE)(UNSET_VALUE); \
+    config->PRESENT_FIELD = false;
 #define XX_COLOR(NAME, DEFAULT_VALUE) \
     config->NAME = nc_color_default();
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) \
@@ -183,7 +188,17 @@ configuration_init_unchecked(Configuration *config) {
 #define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD) \
     config->NAME = (ScreenTypeArray){0}; \
     config->PREVIOUS_FIELD = false;
+#define XX_NAMED_BOOL(NAME, DEFAULT_VALUE, TRUE_VALUE, FALSE_VALUE) \
+    config->NAME = false;
+#define XX_UINT32_CHOICE(NAME, DEFAULT_VALUE, PARSER, UNSET_VALUE) \
+    config->NAME = (UNSET_VALUE);
+#define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD) \
+    config->FORMAT_FIELD = (NcmFormatAst){0}; \
+    config->NAME = (ColumnArray){0};
 #include "configuration_options.def"
+#undef XX_COLUMNS
+#undef XX_UINT32_CHOICE
+#undef XX_NAMED_BOOL
 #undef XX_SCREEN_LIST
 #undef XX_LYRICS_FETCHERS
 #undef XX_FORMATTED_COLOR_LIST
@@ -195,6 +210,7 @@ configuration_init_unchecked(Configuration *config) {
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -206,18 +222,8 @@ configuration_init_unchecked(Configuration *config) {
     config->visualizer_fifo_path = NULL;
     config->visualizer_fifo_path_len = 0;
 
-    config->song_columns_mode_format = (NcmFormatAst){0};
-
-    config->song_columns_list_format = (ColumnArray){0};
-
-    config->default_find_mode = false;
-    config->default_place_to_search_in = false;
-    config->has_startup_slave_screen_type = false;
-
     config->lyrics_db = 0;
-    config->regular_expressions = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
 
-    config->startup_slave_screen = NCM_SCREEN_TYPE_COUNT;
     return;
 }
 
@@ -247,6 +253,9 @@ configuration_destroy(Configuration *config) {
 #define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+)
 #define XX_COLOR(NAME, DEFAULT_VALUE)
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) \
     nc_formatted_color_destroy(&config->NAME);
@@ -269,7 +278,18 @@ configuration_destroy(Configuration *config) {
 #define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD) \
     screen_type_array_destroy(&config->NAME); \
     config->PREVIOUS_FIELD = false;
+#define XX_NAMED_BOOL(NAME, DEFAULT_VALUE, TRUE_VALUE, FALSE_VALUE)
+#define XX_UINT32_CHOICE(NAME, DEFAULT_VALUE, PARSER, UNSET_VALUE)
+#define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD) \
+    ncm_format_ast_destroy(&config->FORMAT_FIELD); \
+    column_array_clear(&config->NAME); \
+    free2(config->NAME.items, \
+          config->NAME.cap*SIZEOF(*config->NAME.items)); \
+    config->NAME = (ColumnArray){0};
 #include "configuration_options.def"
+#undef XX_COLUMNS
+#undef XX_UINT32_CHOICE
+#undef XX_NAMED_BOOL
 #undef XX_SCREEN_LIST
 #undef XX_LYRICS_FETCHERS
 #undef XX_FORMATTED_COLOR_LIST
@@ -281,6 +301,7 @@ configuration_destroy(Configuration *config) {
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -293,14 +314,6 @@ configuration_destroy(Configuration *config) {
     config->visualizer_fifo_path = NULL;
     config->visualizer_fifo_path_len = 0;
 
-    ncm_format_ast_destroy(&config->song_columns_mode_format);
-
-    column_array_clear(&config->song_columns_list_format);
-    free2(config->song_columns_list_format.items,
-          config->song_columns_list_format.cap
-              *SIZEOF(*config->song_columns_list_format.items));
-    config->song_columns_list_format = (ColumnArray){0};
-
     configuration_init_unchecked(config);
 
     return;
@@ -310,6 +323,26 @@ void
 configuration_clear(Configuration *config) {
     configuration_destroy(config);
     return;
+}
+
+double
+configuration_locked_screen_width_fraction(const Configuration *config) {
+    ASSERT(config != NULL);
+    return config->locked_screen_width_part / 100.0;
+}
+
+enum SearchEngineSearchMode
+configuration_search_engine_default_mode(const Configuration *config) {
+    int32 mode;
+
+    ASSERT(config != NULL);
+
+    mode = config->search_engine_default_search_mode - 1;
+    if ((mode < (int32)SEARCH_ENGINE_SEARCH_MODE_LITERAL)
+        || (mode >= (int32)SEARCH_ENGINE_SEARCH_MODE_COUNT)) {
+        return SEARCH_ENGINE_SEARCH_MODE_LITERAL;
+    }
+    return (enum SearchEngineSearchMode)mode;
 }
 
 #endif /* NCMPCPP_SETTINGS_TYPES_C */

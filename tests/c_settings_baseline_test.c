@@ -24,6 +24,11 @@ settings_assert_generated_empty(Configuration *config) {
     ASSERT(config->NAME == 0);
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) \
     ASSERT(config->NAME == (C_TYPE)0);
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+) \
+    ASSERT(config->NAME == (C_TYPE)(UNSET_VALUE)); \
+    ASSERT(!config->PRESENT_FIELD);
 #define XX_COLOR(NAME, DEFAULT_VALUE) \
     ASSERT(nc_color_is_default(config->NAME));
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) \
@@ -65,7 +70,21 @@ settings_assert_generated_empty(Configuration *config) {
     ASSERT(config->NAME.len == 0); \
     ASSERT(config->NAME.cap == 0); \
     ASSERT(!config->PREVIOUS_FIELD);
+#define XX_NAMED_BOOL(NAME, DEFAULT_VALUE, TRUE_VALUE, FALSE_VALUE) \
+    ASSERT(!config->NAME);
+#define XX_UINT32_CHOICE(NAME, DEFAULT_VALUE, PARSER, UNSET_VALUE) \
+    ASSERT(config->NAME == (UNSET_VALUE));
+#define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD) \
+    ASSERT(config->FORMAT_FIELD.root.items == NULL); \
+    ASSERT(config->FORMAT_FIELD.root.len == 0); \
+    ASSERT(config->FORMAT_FIELD.root.cap == 0); \
+    ASSERT(config->NAME.items == NULL); \
+    ASSERT(config->NAME.len == 0); \
+    ASSERT(config->NAME.cap == 0);
 #include "configuration_options.def"
+#undef XX_COLUMNS
+#undef XX_UINT32_CHOICE
+#undef XX_NAMED_BOOL
 #undef XX_SCREEN_LIST
 #undef XX_LYRICS_FETCHERS
 #undef XX_FORMATTED_COLOR_LIST
@@ -77,6 +96,7 @@ settings_assert_generated_empty(Configuration *config) {
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -125,10 +145,11 @@ test_declared_defaults_and_cleanup(void) {
     ASSERT(config.visualizer_spectrum_gain == 10.0);
     ASSERT(config.visualizer_spectrum_hz_min == 20.0);
     ASSERT(config.visualizer_spectrum_hz_max == 20000.0);
-    ASSERT(config.locked_screen_width_part == 0.5);
-    ASSERT(config.search_engine_default_search_mode == 0);
+    ASSERT(config.locked_screen_width_part == 50.0);
+    ASSERT(config.search_engine_default_search_mode == 1);
     ASSERT(config.screen_switcher_mode.len == 2);
     ASSERT(!config.has_startup_slave_screen_type);
+    ASSERT(config.startup_slave_screen == NCM_SCREEN_TYPE_COUNT);
     ASSERT(config.regular_expressions
            == NCM_REGEX_EXTENDED_CASE_INSENSITIVE);
 #if defined(HAVE_FFTW3_H)
@@ -159,8 +180,65 @@ test_declared_defaults_and_cleanup(void) {
 }
 
 static void
+test_runtime_application_is_separate(void) {
+    Configuration config = {0};
+    NcmStringViewArray paths = {0};
+    NcmError ncm_error = {0};
+
+    configuration_init(&config);
+
+    ASSERT_ZERO(ncm_mpd_client_set_hostname(
+        &global_mpd, STRLIT("before-host"), &ncm_error));
+    ncm_mpd_client_set_port(&global_mpd, 1234);
+    ASSERT_ZERO(ncm_mpd_client_set_password(
+        &global_mpd, STRLIT("before-password"), &ncm_error));
+    ASSERT_ZERO(ncm_mpd_client_set_timeout_ms(
+        &global_mpd, 4321, &ncm_error));
+
+    ASSERT_ZERO(configuration_read(&config, &paths, false, true, &ncm_error));
+    ASSERT(config.enable_window_title);
+    ASSERT(STREQUAL(global_mpd.host.data, global_mpd.host.len,
+                    "before-host"));
+    ASSERT(global_mpd.port == 1234);
+    ASSERT(STREQUAL(global_mpd.password.data, global_mpd.password.len,
+                    "before-password"));
+    ASSERT(global_mpd.timeout_ms == 4321);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_mpd_host, &config, "after-host"));
+    ASSERT_ZERO(settings_test_apply(apply_mpd_port, &config, "4567"));
+    ASSERT_ZERO(settings_test_apply(
+        apply_mpd_password, &config, "after-password"));
+    ASSERT_ZERO(settings_test_apply(
+        apply_mpd_connection_timeout, &config, "9"));
+    ASSERT_ZERO(settings_test_apply(
+        apply_enable_window_title, &config, "yes"));
+
+    ASSERT(config.enable_window_title);
+    ASSERT(STREQUAL(global_mpd.host.data, global_mpd.host.len,
+                    "before-host"));
+    ASSERT(global_mpd.port == 1234);
+    ASSERT(STREQUAL(global_mpd.password.data, global_mpd.password.len,
+                    "before-password"));
+    ASSERT(global_mpd.timeout_ms == 4321);
+
+    ASSERT_ZERO(configuration_apply_runtime(
+        &config, &global_mpd, true, &ncm_error));
+    ASSERT(STREQUAL(global_mpd.host.data, global_mpd.host.len, "after-host"));
+    ASSERT(global_mpd.port == 4567);
+    ASSERT(STREQUAL(global_mpd.password.data, global_mpd.password.len,
+                    "after-password"));
+    ASSERT(global_mpd.timeout_ms == 9000);
+
+    configuration_destroy(&config);
+    ncm_string_view_array_destroy(&paths);
+    return;
+}
+
+static void
 test_numeric_boundaries(void) {
     Configuration config = {0};
+    NcmError ncm_error = {0};
 
     configuration_init(&config);
 
@@ -196,22 +274,47 @@ test_numeric_boundaries(void) {
         apply_visualizer_spectrum_hz_min, &config, "0") < 0);
     ASSERT_ZERO(settings_test_apply(
         apply_visualizer_spectrum_hz_min, &config, "20"));
-    ASSERT(settings_test_apply(
-        apply_visualizer_spectrum_hz_max, &config, "20") < 0);
+    ASSERT_ZERO(settings_test_apply(
+        apply_visualizer_spectrum_hz_max, &config, "20"));
+    ASSERT(configuration_validate(&config, &ncm_error) < 0);
     ASSERT_ZERO(settings_test_apply(
         apply_visualizer_spectrum_hz_max, &config, "21"));
+    ncm_error_clear(&ncm_error);
+    ASSERT_ZERO(configuration_validate(&config, &ncm_error));
+
+    ASSERT(settings_test_apply(
+        apply_locked_screen_width_part, &config, "19") < 0);
+    ASSERT_ZERO(settings_test_apply(
+        apply_locked_screen_width_part, &config, "20"));
+    ASSERT(config.locked_screen_width_part == 20.0);
+    ASSERT(configuration_locked_screen_width_fraction(&config) == 0.2);
+    ASSERT_ZERO(settings_test_apply(
+        apply_locked_screen_width_part, &config, "80"));
+    ASSERT(config.locked_screen_width_part == 80.0);
+    ASSERT(configuration_locked_screen_width_fraction(&config) == 0.8);
+    ASSERT(settings_test_apply(
+        apply_locked_screen_width_part, &config, "81") < 0);
+    ASSERT(config.locked_screen_width_part == 80.0);
 
     ASSERT(settings_test_apply(
         apply_search_engine_default_search_mode, &config, "0") < 0);
     ASSERT_ZERO(settings_test_apply(
         apply_search_engine_default_search_mode, &config, "1"));
-    ASSERT(config.search_engine_default_search_mode == 0);
+    ASSERT(config.search_engine_default_search_mode == 1);
+    ASSERT(configuration_search_engine_default_mode(&config)
+           == SEARCH_ENGINE_SEARCH_MODE_LITERAL);
     ASSERT_ZERO(settings_test_apply(
         apply_search_engine_default_search_mode, &config, "3"));
-    ASSERT(config.search_engine_default_search_mode == 2);
+    ASSERT(config.search_engine_default_search_mode == 3);
+    ASSERT(configuration_search_engine_default_mode(&config)
+           == SEARCH_ENGINE_SEARCH_MODE_EXACT);
     ASSERT(settings_test_apply(
         apply_search_engine_default_search_mode, &config, "4") < 0);
-    ASSERT(config.search_engine_default_search_mode == 2);
+    ASSERT(config.search_engine_default_search_mode == 3);
+
+    ASSERT_ZERO(settings_test_apply(apply_system_encoding, &config, "UTF-8"));
+    ASSERT(STREQUAL(config.system_encoding, config.system_encoding_len,
+                    "UTF-8"));
 
     configuration_destroy(&config);
     return;
@@ -249,6 +352,34 @@ test_enum_options(void) {
     ASSERT(config.startup_screen == NCM_SCREEN_TYPE_PLAYLIST);
 
     configuration_destroy(&config);
+    return;
+}
+
+static void
+test_optional_enum_options(void) {
+    Configuration config = {0};
+
+    configuration_init(&config);
+
+    ASSERT(!config.has_startup_slave_screen_type);
+    ASSERT(config.startup_slave_screen == NCM_SCREEN_TYPE_COUNT);
+    ASSERT_ZERO(settings_test_apply(
+        apply_startup_slave_screen, &config, "browser"));
+    ASSERT(config.has_startup_slave_screen_type);
+    ASSERT(config.startup_slave_screen == NCM_SCREEN_TYPE_BROWSER);
+
+    ASSERT(settings_test_apply(
+        apply_startup_slave_screen, &config, "invalid") < 0);
+    ASSERT(config.has_startup_slave_screen_type);
+    ASSERT(config.startup_slave_screen == NCM_SCREEN_TYPE_COUNT);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_startup_slave_screen, &config, ""));
+    ASSERT(!config.has_startup_slave_screen_type);
+    ASSERT(config.startup_slave_screen == NCM_SCREEN_TYPE_COUNT);
+
+    configuration_destroy(&config);
+    settings_assert_generated_empty(&config);
     return;
 }
 
@@ -429,6 +560,111 @@ test_collection_options(void) {
 }
 
 static void
+test_remaining_generated_options(void) {
+    Configuration config = {0};
+
+    configuration_init(&config);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_default_place_to_search_in, &config, "database"));
+    ASSERT(config.default_place_to_search_in);
+    ASSERT_ZERO(settings_test_apply(
+        apply_default_place_to_search_in, &config, "playlist"));
+    ASSERT(!config.default_place_to_search_in);
+    ASSERT(settings_test_apply(
+        apply_default_place_to_search_in, &config, "invalid") < 0);
+    ASSERT(!config.default_place_to_search_in);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_default_find_mode, &config, "wrapped"));
+    ASSERT(config.default_find_mode);
+    ASSERT_ZERO(settings_test_apply(
+        apply_default_find_mode, &config, "normal"));
+    ASSERT(!config.default_find_mode);
+    ASSERT(settings_test_apply(
+        apply_default_find_mode, &config, "invalid") < 0);
+    ASSERT(!config.default_find_mode);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_regular_expressions, &config, "none"));
+    ASSERT(config.regular_expressions
+           == NCM_REGEX_LITERAL_CASE_INSENSITIVE);
+    ASSERT_ZERO(settings_test_apply(
+        apply_regular_expressions, &config, "basic"));
+    ASSERT(config.regular_expressions
+           == NCM_REGEX_BASIC_CASE_INSENSITIVE);
+    ASSERT_ZERO(settings_test_apply(
+        apply_regular_expressions, &config, "extended"));
+    ASSERT(config.regular_expressions
+           == NCM_REGEX_EXTENDED_CASE_INSENSITIVE);
+    ASSERT(settings_test_apply(
+        apply_regular_expressions, &config, "invalid") < 0);
+    ASSERT(config.regular_expressions
+           == NCM_REGEX_EXTENDED_CASE_INSENSITIVE);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_song_columns_list_format, &config,
+        "(10)[red]{a:Artist} (5f)[blue]{rE|t:Title}"));
+    ASSERT(config.song_columns_list_format.len == 2);
+    ASSERT(config.song_columns_list_format.items[0].width == 10);
+    ASSERT(config.song_columns_list_format.items[0].stretch_limit == 5);
+    ASSERT(STREQUAL(config.song_columns_list_format.items[0].name,
+                    config.song_columns_list_format.items[0].name_len,
+                    "Artist"));
+    ASSERT(config.song_columns_list_format.items[1].fixed);
+    ASSERT(config.song_columns_list_format.items[1].right_alignment);
+    ASSERT(!config.song_columns_list_format.items[1].display_empty_tag);
+    ASSERT(STREQUAL(config.song_columns_list_format.items[1].name,
+                    config.song_columns_list_format.items[1].name_len,
+                    "Title"));
+    ASSERT(settings_test_apply(
+        apply_song_columns_list_format, &config, "invalid") < 0);
+    ASSERT(config.song_columns_list_format.len == 0);
+
+    configuration_destroy(&config);
+    settings_assert_generated_empty(&config);
+    return;
+}
+
+static void
+test_cross_field_validation_is_post_parse(void) {
+    static char contents[] =
+        "visualizer_spectrum_hz_min = 200\n"
+        "visualizer_spectrum_hz_max = 100\n";
+    Configuration config = {0};
+    NcmStringViewArray paths = {0};
+    NcmError ncm_error = {0};
+    NcmStringView *path_view;
+    char path[PATH_MAX];
+    int32 contents_len = SIZEOF(contents) - 1;
+    int32 fd;
+    int32 status;
+
+    fd = cbase_make_temp_file(path, SIZEOF(path),
+                              "ncmpcpp2-settings-validate", ".conf");
+    ASSERT_NON_NEGATIVE(fd);
+    ASSERT_ZERO(XCLOSE(&fd, path));
+    ASSERT(write_entire_file(path, contents, contents_len) == contents_len);
+
+    path_view = ncm_string_view_array_append(&paths);
+    path_view->data = path;
+    path_view->len = strlen32(path);
+
+    configuration_init(&config);
+    status = configuration_read(&config, &paths, false, true, &ncm_error);
+    ASSERT(status < 0);
+    ASSERT(config.visualizer_spectrum_hz_min == 200.0);
+    ASSERT(config.visualizer_spectrum_hz_max == 100.0);
+    ASSERT_CONTAINS(ncm_error.message, strlen32(ncm_error.message),
+                    "visualizer_spectrum_hz_max");
+
+    configuration_destroy(&config);
+    ncm_string_view_array_destroy(&paths);
+    ASSERT_ZERO(cbase_remove_file(path));
+    return;
+}
+
+static void
 test_duplicate_option_is_rejected(void) {
     static char first_contents[] = "lines_scrolled = 4\n";
     static char second_contents[] = "lines_scrolled = 6\n";
@@ -518,12 +754,16 @@ main(void) {
 
     test_option_table_shape();
     test_declared_defaults_and_cleanup();
+    test_runtime_application_is_separate();
     test_numeric_boundaries();
     test_enum_options();
+    test_optional_enum_options();
     test_color_options();
     test_format_options();
     test_buffer_and_look_options();
     test_collection_options();
+    test_remaining_generated_options();
+    test_cross_field_validation_is_post_parse();
     test_duplicate_option_is_rejected();
     test_duplicate_state_is_per_read();
 
