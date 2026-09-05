@@ -264,6 +264,7 @@ tag_editor_directory_display_callbacks(TagEditorScreen *screen) {
     callbacks.draw = tag_editor_draw_directory;
     callbacks.matches_filter = tag_editor_directory_filter;
     callbacks.user = screen;
+
     return callbacks;
 }
 
