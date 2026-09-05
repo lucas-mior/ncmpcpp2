@@ -788,12 +788,12 @@ nc_window_display(NcWindow *window) {
 
 void
 nc_window_refresh_border(NcWindow *window) {
-    int32 start_x;
-    int32 start_y;
-    int32 width;
-    int32 height;
-
     if (window->border.enabled) {
+        int32 start_x;
+        int32 start_y;
+        int32 width;
+        int32 height;
+
         start_x = nc_window_start_x(window);
         start_y = nc_window_start_y(window);
         width = nc_window_width(window);
