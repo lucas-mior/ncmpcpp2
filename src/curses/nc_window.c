@@ -756,6 +756,7 @@ nc_window_set_title(NcWindow *window, char *title, int32 title_len) {
     if ((title == NULL) || (title_len < 0)) {
         title_len = 0;
     }
+
     old_has_title = nc_window_has_title(window);
     new_has_title = title_len > 0;
     if (new_has_title && !old_has_title) {
@@ -767,6 +768,7 @@ nc_window_set_title(NcWindow *window, char *title, int32 title_len) {
         window->height += 2;
         nc_window_recreate(window, window->width, window->height);
     }
+
     nc_window_assign_title(window, title, title_len);
     return;
 }
