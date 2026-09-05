@@ -75,6 +75,7 @@ nc_buffer_copy(NcBuffer *dest, NcBuffer *source) {
         property.id = source_property->id;
         property.position = source_property->position;
         property.type = source_property->type;
+
         switch (source_property->type) {
         case NC_BUFFER_PROPERTY_COLOR:
             property.value.color = source_property->value.color;
@@ -91,6 +92,7 @@ nc_buffer_copy(NcBuffer *dest, NcBuffer *source) {
         default:
             break;
         }
+
         ARRAY_PUSH(dest->properties, property);
     }
     return;
