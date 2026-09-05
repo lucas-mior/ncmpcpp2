@@ -7,25 +7,23 @@
 #include "settings.h"
 #include "ui_state.h"
 
-static NcWindow *nc_screen_callbacks_active_window(NcScreen *screen);
-static void nc_screen_callbacks_refresh(NcScreen *screen);
-static void nc_screen_callbacks_refresh_window(NcScreen *screen);
-static void nc_screen_callbacks_scroll(NcScreen *screen,
-                                       enum NcScroll where);
-static void nc_screen_callbacks_list_change_finished(NcScreen *screen);
-static bool nc_screen_callbacks_can_run_current(NcScreen *screen);
-static int32 nc_screen_callbacks_run_current(NcScreen *screen);
-static void nc_screen_callbacks_switch_to(NcScreen *screen);
-static void nc_screen_callbacks_resize(NcScreen *screen);
-static int32 nc_screen_callbacks_window_timeout(NcScreen *screen);
-static char *nc_screen_callbacks_title(NcScreen *screen);
-static void nc_screen_callbacks_update(NcScreen *screen);
-static void nc_screen_callbacks_mouse_button_pressed(NcScreen *screen,
-                                                     MEVENT event);
-static bool nc_screen_callbacks_is_lockable(NcScreen *screen);
-static bool nc_screen_callbacks_is_mergable(NcScreen *screen);
-static void nc_screen_callbacks_destroy(NcScreen *screen);
-static bool nc_screen_run_current_is_available(NcScreen *screen);
+static NcWindow *nc_screen_callbacks_active_window(NcScreen *);
+static void nc_screen_callbacks_refresh(NcScreen *);
+static void nc_screen_callbacks_refresh_window(NcScreen *);
+static void nc_screen_callbacks_scroll(NcScreen *, enum NcScroll where);
+static void nc_screen_callbacks_list_change_finished(NcScreen *);
+static bool nc_screen_callbacks_can_run_current(NcScreen *);
+static int32 nc_screen_callbacks_run_current(NcScreen *);
+static void nc_screen_callbacks_switch_to(NcScreen *);
+static void nc_screen_callbacks_resize(NcScreen *);
+static int32 nc_screen_callbacks_window_timeout(NcScreen *);
+static char *nc_screen_callbacks_title(NcScreen *);
+static void nc_screen_callbacks_update(NcScreen *);
+static void nc_screen_callbacks_mouse_button_pressed(NcScreen *, MEVENT event);
+static bool nc_screen_callbacks_is_lockable(NcScreen *);
+static bool nc_screen_callbacks_is_mergable(NcScreen *);
+static void nc_screen_callbacks_destroy(NcScreen *);
+static bool nc_screen_run_current_is_available(NcScreen *);
 
 const NcScreenOps nc_screen_default_ops = {
     .active_window = nc_screen_default_active_window,
