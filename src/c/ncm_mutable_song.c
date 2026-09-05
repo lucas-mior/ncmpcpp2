@@ -227,12 +227,10 @@ ncm_mutable_song_copy(NcmMutableSong *dest, NcmMutableSong *source) {
     copy.is_from_database = source->is_from_database;
 
     for (int32 i = 0; i < source->tags_len; i += 1) {
-        NcmMutableSongTag *source_tag;
-        NcmMutableSongTag *tag;
-
-        source_tag = &source->tags[i];
-        tag = ncm_mutable_song_add_tag(&copy, source_tag->field,
-                                       source_tag->idx);
+        NcmMutableSongTag *source_tag = &source->tags[i];
+        NcmMutableSongTag *tag = ncm_mutable_song_add_tag(&copy,
+                                                          source_tag->field,
+                                                          source_tag->idx);
         ncm_mutable_song_tag_destroy(tag);
         tag->field = source_tag->field;
         tag->idx = source_tag->idx;
