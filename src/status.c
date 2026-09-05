@@ -601,7 +601,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                                     NULL);
                             }
 
-                            if (Config.fetch_lyrics_in_background) {
+                            if (Config.fetch_lyrics_for_current_song_in_background) {
                                 lyrics_screen_fetch_in_background(
                                     app_screen_lyrics(), &song, false, NULL);
                             }
