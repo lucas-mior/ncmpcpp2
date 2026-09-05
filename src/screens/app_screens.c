@@ -1581,7 +1581,7 @@ server_info_render(void *user, NcBuffer *buffer) {
 
     append_bold_label(buffer, "Version: ");
     append_cstring(buffer, "0.");
-    nc_buffer_append_int32(buffer, ncm_mpd_client_version(&global_mpd));
+    nc_buffer_append_int64(buffer, ncm_mpd_client_version(&global_mpd));
     append_cstring(buffer, ".*\n");
 
     append_bold_label(buffer, "Uptime: ");
@@ -1598,15 +1598,15 @@ server_info_render(void *user, NcBuffer *buffer) {
     append_cstring(buffer, "\n");
 
     append_bold_label(buffer, "Artist names: ");
-    nc_buffer_append_int32(buffer, stats.artists);
+    nc_buffer_append_int64(buffer, stats.artists);
     append_cstring(buffer, "\n");
 
     append_bold_label(buffer, "Album names: ");
-    nc_buffer_append_int32(buffer, stats.albums);
+    nc_buffer_append_int64(buffer, stats.albums);
     append_cstring(buffer, "\n");
 
     append_bold_label(buffer, "Songs in database: ");
-    nc_buffer_append_int32(buffer, stats.songs);
+    nc_buffer_append_int64(buffer, stats.songs);
     append_cstring(buffer, "\n\n");
 
     append_bold_label(buffer, "URL Handlers:");

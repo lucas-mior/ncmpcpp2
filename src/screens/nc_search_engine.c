@@ -747,7 +747,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
             screen, SEARCH_ENGINE_RESULT_SEPARATOR_ROW, &buffer,
             NC_MENU_ITEM_SEPARATOR);
         nc_buffer_append_cstring(&buffer, "Search results: Found ");
-        nc_buffer_append_int32(&buffer, songs.len);
+        nc_buffer_append_int64(&buffer, songs.len);
         if (songs.len == 1) {
             nc_buffer_append_cstring(&buffer, " song");
         } else {
