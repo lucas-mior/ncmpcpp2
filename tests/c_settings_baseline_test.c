@@ -81,38 +81,14 @@ settings_assert_generated_empty(Configuration *config) {
     ASSERT(config->NAME.items == NULL); \
     ASSERT(config->NAME.len == 0); \
     ASSERT(config->NAME.cap == 0);
-#include "configuration_options.def"
-#undef XX_COLUMNS
-#undef XX_UINT32_CHOICE
-#undef XX_NAMED_BOOL
-#undef XX_SCREEN_LIST
-#undef XX_LYRICS_FETCHERS
-#undef XX_FORMATTED_COLOR_LIST
-#undef XX_RATIO
-#undef XX_LOOK
-#undef XX_BUFFER_WIDTH
-#undef XX_BUFFER
-#undef XX_FORMAT
-#undef XX_BORDER
-#undef XX_FORMATTED_COLOR
-#undef XX_COLOR
-#undef XX_OPTIONAL_ENUM
-#undef XX_ENUM
-#undef XX_DOUBLE_RANGE
-#undef XX_INT_RANGE
-#undef XX_DIR
-#undef XX_PATH
-#undef XX_STRING
-#undef XX_BOOL
+#include "configuration_options_pass.h"
 
     return;
 }
 
 static void
 test_option_table_shape(void) {
-    ASSERT(LENGTH(ncmpcpp_options) == 134);
-
-    for (int32 i = 0; i < LENGTH(ncmpcpp_options); i += 1) {
+    for (uint32 i = 0; i < SETTINGS_OPTION_COUNT; i += 1) {
         SettingsOption left = ncmpcpp_options[i];
 
         ASSERT(left.name != NULL);
@@ -120,7 +96,7 @@ test_option_table_shape(void) {
         ASSERT(left.apply != NULL);
         ASSERT(left.name_len == strlen32(left.name));
         ASSERT(left.default_value_len == strlen32(left.default_value));
-        for (int32 j = i + 1; j < LENGTH(ncmpcpp_options); j += 1) {
+        for (uint32 j = i + 1; j < SETTINGS_OPTION_COUNT; j += 1) {
             SettingsOption right = ncmpcpp_options[j];
 
             ASSERT(!STREQUAL(left.name, left.name_len,

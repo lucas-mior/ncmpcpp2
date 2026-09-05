@@ -195,29 +195,7 @@ configuration_init_unchecked(Configuration *config) {
 #define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD) \
     config->FORMAT_FIELD = (NcmFormatAst){0}; \
     config->NAME = (ColumnArray){0};
-#include "configuration_options.def"
-#undef XX_COLUMNS
-#undef XX_UINT32_CHOICE
-#undef XX_NAMED_BOOL
-#undef XX_SCREEN_LIST
-#undef XX_LYRICS_FETCHERS
-#undef XX_FORMATTED_COLOR_LIST
-#undef XX_RATIO
-#undef XX_LOOK
-#undef XX_BUFFER_WIDTH
-#undef XX_BUFFER
-#undef XX_FORMAT
-#undef XX_BORDER
-#undef XX_FORMATTED_COLOR
-#undef XX_COLOR
-#undef XX_OPTIONAL_ENUM
-#undef XX_ENUM
-#undef XX_DOUBLE_RANGE
-#undef XX_INT_RANGE
-#undef XX_DIR
-#undef XX_PATH
-#undef XX_STRING
-#undef XX_BOOL
+#include "configuration_options_pass.h"
 
     return;
 }
@@ -281,29 +259,7 @@ configuration_destroy(Configuration *config) {
     free2(config->NAME.items, \
           config->NAME.cap*SIZEOF(*config->NAME.items)); \
     config->NAME = (ColumnArray){0};
-#include "configuration_options.def"
-#undef XX_COLUMNS
-#undef XX_UINT32_CHOICE
-#undef XX_NAMED_BOOL
-#undef XX_SCREEN_LIST
-#undef XX_LYRICS_FETCHERS
-#undef XX_FORMATTED_COLOR_LIST
-#undef XX_RATIO
-#undef XX_LOOK
-#undef XX_BUFFER_WIDTH
-#undef XX_BUFFER
-#undef XX_FORMAT
-#undef XX_BORDER
-#undef XX_FORMATTED_COLOR
-#undef XX_COLOR
-#undef XX_OPTIONAL_ENUM
-#undef XX_ENUM
-#undef XX_DOUBLE_RANGE
-#undef XX_INT_RANGE
-#undef XX_DIR
-#undef XX_PATH
-#undef XX_STRING
-#undef XX_BOOL
+#include "configuration_options_pass.h"
 
     configuration_init_unchecked(config);
 

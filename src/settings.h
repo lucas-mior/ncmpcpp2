@@ -50,6 +50,12 @@ NCM_ARRAY_DECLARE_DESTROY(ncm_formatted_color_array, NcmFormattedColorArray)
 NCM_ARRAY_DECLARE_APPEND(ncm_formatted_color_array, NcmFormattedColorArray,
                          NcFormattedColor)
 
+enum SettingsOptionId {
+#define XX_OPTION(NAME, DEFAULT_VALUE, ...) SETTINGS_OPTION_##NAME,
+#include "configuration_options_pass.h"
+    SETTINGS_OPTION_COUNT,
+};
+
 typedef struct Configuration {
 #define XX_BOOL(NAME, DEFAULT_VALUE) bool NAME;
 #define XX_STRING(NAME, DEFAULT_VALUE) \
@@ -88,29 +94,7 @@ typedef struct Configuration {
 #define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD) \
     NcmFormatAst FORMAT_FIELD; \
     ColumnArray NAME;
-#include "configuration_options.def"
-#undef XX_COLUMNS
-#undef XX_UINT32_CHOICE
-#undef XX_NAMED_BOOL
-#undef XX_SCREEN_LIST
-#undef XX_LYRICS_FETCHERS
-#undef XX_FORMATTED_COLOR_LIST
-#undef XX_RATIO
-#undef XX_LOOK
-#undef XX_BUFFER_WIDTH
-#undef XX_BUFFER
-#undef XX_FORMAT
-#undef XX_BORDER
-#undef XX_FORMATTED_COLOR
-#undef XX_COLOR
-#undef XX_OPTIONAL_ENUM
-#undef XX_ENUM
-#undef XX_DOUBLE_RANGE
-#undef XX_INT_RANGE
-#undef XX_DIR
-#undef XX_PATH
-#undef XX_STRING
-#undef XX_BOOL
+#include "configuration_options_pass.h"
 
 } Configuration;
 
