@@ -1599,9 +1599,8 @@ server_info_render(void *user, NcBuffer *buffer) {
 
     append_bold_label(buffer, "URL Handlers:");
     for (int32 i = 0; i < owner->url_handlers.count; i += 1) {
-        NcmStringView *handler;
+        NcmStringView *handler = &owner->url_handlers.items[i];
 
-        handler = owner->url_handlers.items + i;
         if (i == 0) {
             nc_buffer_append_cstring(buffer, " ");
         } else {
