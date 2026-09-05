@@ -164,9 +164,7 @@ NCM_APP_SCREEN_WRAPPED_ACCESSOR_TYPES(NCM_APP_SCREEN_DEFINE_WRAPPED_ACCESSOR)
 
 #undef NCM_APP_SCREEN_DEFINE_WRAPPED_ACCESSOR
 
-#define NCM_APP_SCREEN_DEFINE_TYPED_WRAPPED_ACCESSOR(                          \
-    suffix, function, type, expr                                               \
-)                                                                              \
+#define NCM_APP_SCREEN_DEFINE_TYPED_WRAPPED_ACCESSOR(suffix, function, type, expr) \
     type *                                                                     \
     function(void) {                                                           \
         app_screen_##suffix##_init();                                          \
