@@ -186,9 +186,7 @@ ncm_mutable_song_has_tag_view_unchecked(NcmMutableSong *song,
 static bool
 ncm_mutable_song_write_callback(enum NcmTagsField field, int32 idx,
                                 NcmStringView *value, void *user) {
-    NcmMutableSong *song;
-
-    song = (NcmMutableSong *)user;
+    NcmMutableSong *song = user;
     return ncm_mutable_song_has_tag_view_unchecked(song, field, idx, value);
 }
 
