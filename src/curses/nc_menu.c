@@ -129,10 +129,9 @@ menu_position_is_selected(NcMenu *menu, int32 pos) {
 
 static void
 menu_set_position_selected(NcMenu *menu, int32 pos, bool selected) {
-    void *item;
+    void *item = nc_menu_active_item_at(menu, pos);
     uint32 flags;
 
-    item = nc_menu_active_item_at(menu, pos);
     if (menu->action_callbacks.set_selected) {
         menu->action_callbacks.set_selected(item, selected,
                                             menu->action_callbacks.user);
