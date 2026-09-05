@@ -772,13 +772,13 @@ ncm_mpd_connection_get_status(NcmMpdConnection *connection,
 
 int32
 ncm_mpd_connection_version(NcmMpdConnection *connection) {
-    unsigned *version;
+    uint *version;
 
     if (!ncm_mpd_connection_is_connected(connection)) {
         return 0;
     }
 
-    version = (unsigned *)mpd_connection_get_server_version(connection->mpd);
+    version = (uint *)mpd_connection_get_server_version(connection->mpd);
     if (version == NULL) {
         return 0;
     }
@@ -1464,7 +1464,7 @@ int32
 ncm_mpd_connection_play_pos(NcmMpdConnection *connection, int32 pos) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
-    mpd_run_play_pos(connection->mpd, (unsigned)pos);
+    mpd_run_play_pos(connection->mpd, (uint)pos);
     return ncm_mpd_connection_check_error(connection);
 }
 
@@ -1472,7 +1472,7 @@ int32
 ncm_mpd_connection_play_id(NcmMpdConnection *connection, int32 id) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
-    mpd_run_play_id(connection->mpd, (unsigned)id);
+    mpd_run_play_id(connection->mpd, (uint)id);
     return ncm_mpd_connection_check_error(connection);
 }
 
