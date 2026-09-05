@@ -814,6 +814,7 @@ nc_window_refresh_border(NcWindow *window) {
     } else {
         color_set((int16)nc_color_pair_number(window->base_color), NULL);
     }
+
     if (nc_window_has_title(window)) {
         mvhline(window->start_y - 2, window->start_x, ' ', window->width);
         attron(A_BOLD);
@@ -822,6 +823,7 @@ nc_window_refresh_border(NcWindow *window) {
         attroff(A_BOLD);
         mvhline(window->start_y - 1, window->start_x, 0, window->width);
     }
+
     standend();
     refresh();
     return;
