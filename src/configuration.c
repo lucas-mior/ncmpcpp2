@@ -57,8 +57,8 @@ ncm_configuration_options_destroy(NcmConfigurationOptions *options) {
 }
 
 static void
-command_line_options_append_path(StrBuilderArray *paths, char *path,
-                                 int32 path_len) {
+command_line_options_append_path(StrBuilderArray *paths,
+                                 char *path, int32 path_len) {
     StrBuilder *slot = str_builder_array_append(paths);
     SB_APPEND(slot, path, path_len);
     return;
