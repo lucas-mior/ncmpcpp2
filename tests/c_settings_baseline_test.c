@@ -48,7 +48,28 @@ settings_assert_generated_empty(Configuration *config) {
     ASSERT(config->NAME.data == NULL); \
     ASSERT(config->NAME.len == 0); \
     ASSERT(config->NAME.cap == 0);
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN) \
+    ASSERT(config->NAME.items == NULL); \
+    ASSERT(config->NAME.len == 0); \
+    ASSERT(config->NAME.cap == 0);
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE) \
+    ASSERT(config->NAME.items == NULL); \
+    ASSERT(config->NAME.len == 0); \
+    ASSERT(config->NAME.cap == 0);
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE) \
+    ASSERT(config->NAME.fetchers.items == NULL); \
+    ASSERT(config->NAME.fetchers.len == 0); \
+    ASSERT(config->NAME.fetchers.cap == 0);
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD) \
+    ASSERT(config->NAME.items == NULL); \
+    ASSERT(config->NAME.len == 0); \
+    ASSERT(config->NAME.cap == 0); \
+    ASSERT(!config->PREVIOUS_FIELD);
 #include "configuration_options.def"
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
 #undef XX_LOOK
 #undef XX_BUFFER_WIDTH
 #undef XX_BUFFER
@@ -359,6 +380,55 @@ test_buffer_and_look_options(void) {
 }
 
 static void
+test_collection_options(void) {
+    Configuration config = {0};
+
+    configuration_init(&config);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_media_library_column_width_ratio_two, &config, "2:3"));
+    ASSERT(config.media_library_column_width_ratio_two.len == 2);
+    ASSERT(config.media_library_column_width_ratio_two.items[0] == 2);
+    ASSERT(config.media_library_column_width_ratio_two.items[1] == 3);
+    ASSERT(settings_test_apply(
+        apply_media_library_column_width_ratio_two, &config, "1") < 0);
+    ASSERT(config.media_library_column_width_ratio_two.len == 1);
+    ASSERT(settings_test_apply(
+        apply_media_library_column_width_ratio_two, &config, "0:0") < 0);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_visualizer_color, &config, "red, , blue"));
+    ASSERT(config.visualizer_color.len == 2);
+    ASSERT(settings_test_apply(
+        apply_visualizer_color, &config, " , ") < 0);
+    ASSERT(config.visualizer_color.len == 0);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_lyrics_fetchers, &config, "genius, internet"));
+    ASSERT(config.lyrics_fetchers.fetchers.len == 2);
+    ASSERT(settings_test_apply(
+        apply_lyrics_fetchers, &config, "genius, invalid") < 0);
+    ASSERT(config.lyrics_fetchers.fetchers.len == 1);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_screen_switcher_mode, &config, "playlist, browser"));
+    ASSERT(!config.screen_switcher_previous);
+    ASSERT(config.screen_switcher_mode.len == 2);
+    ASSERT(config.screen_switcher_mode.items[0]
+           == NCM_SCREEN_TYPE_PLAYLIST);
+    ASSERT(config.screen_switcher_mode.items[1]
+           == NCM_SCREEN_TYPE_BROWSER);
+    ASSERT_ZERO(settings_test_apply(
+        apply_screen_switcher_mode, &config, "previous"));
+    ASSERT(config.screen_switcher_previous);
+    ASSERT(config.screen_switcher_mode.len == 0);
+
+    configuration_destroy(&config);
+    settings_assert_generated_empty(&config);
+    return;
+}
+
+static void
 test_duplicate_option_is_rejected(void) {
     static char first_contents[] = "lines_scrolled = 4\n";
     static char second_contents[] = "lines_scrolled = 6\n";
@@ -453,6 +523,7 @@ main(void) {
     test_color_options();
     test_format_options();
     test_buffer_and_look_options();
+    test_collection_options();
     test_duplicate_option_is_rejected();
     test_duplicate_state_is_per_read();
 
