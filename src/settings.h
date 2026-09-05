@@ -157,7 +157,7 @@ typedef struct Configuration {
     bool autocenter_mode;
     bool wrapped_search;
     bool incremental_seeking;
-    bool now_playing_lyrics;
+    bool follow_now_playing_lyrics;
     bool fetch_lyrics_in_background;
     bool local_browser_show_hidden_files;
     bool search_in_db;
