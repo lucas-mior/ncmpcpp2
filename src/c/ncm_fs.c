@@ -238,7 +238,7 @@ ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
                                     STRLIT("directory is not open"));
     }
 
-    dir = (DIR *)directory->dir;
+    dir = directory->dir;
     errno = 0;
     while ((dirent = readdir(dir)) != NULL) {
         if (strequal(dirent->d_name, ".")) {
