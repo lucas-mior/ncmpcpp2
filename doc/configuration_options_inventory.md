@@ -8,9 +8,10 @@ The step-1 source contained 135 `OPT(...)` invocations but 134 effective
 option names: `visualizer_type` has two mutually exclusive default entries
 under `#if defined(HAVE_FFTW3_H)`.
 
-As of step 9, `src/configuration_options.def` is the authoritative production
+As of step 10, `src/configuration_options.def` is the authoritative production
 definition for all 78 primitive options, 10 ordinary enum-backed options, 16
-color-family options, and 7 format-AST options.  It generates their
+color-family options, 7 format-AST options, 10 formatted-buffer options, and 2
+look-string options.  It generates their
 `Configuration` fields, apply wrappers, option-table entries, and lifecycle
 initialization/destruction.  String, path, and directory entries generate both
 the owned pointer and its `_len` companion and own their cleanup.  `XX_ENUM`
@@ -18,8 +19,12 @@ entries record the C enum type, default string, and parser function; the
 generated lifecycle uses zero as their empty scalar state.  `XX_COLOR`,
 `XX_FORMATTED_COLOR`, and `XX_BORDER` entries share the existing color grammars
 and own the nontrivial formatted-color lifecycle.  `XX_FORMAT` entries record
-the parser flag mask and own their `NcmFormatAst` lifecycle.  The remaining 23
-effective options are still declared by the handwritten `SettingsOption`
+the parser flag mask and own their `NcmFormatAst` lifecycle.  `XX_BUFFER` and
+`XX_BUFFER_WIDTH` entries own `NcBuffer` parsing/lifecycle and explicitly record
+whether an existing rendered value wins; width entries also generate their
+cached `_length` companion.  `XX_LOOK` entries record UTF-8 character bounds
+and whether short values are NUL-padded to the maximum width.  The remaining
+11 effective options are still declared by the handwritten `SettingsOption`
 table.  This document remains the behavioral migration inventory rather than a
 production include file.  Existing primitive side effects and transforms are
 preserved by temporary generated-wrapper pre/post handling until the later
@@ -62,7 +67,8 @@ storage for a later decision.  All 3 `XX_COLOR`, 11 `XX_FORMATTED_COLOR`, and
 remains a collection type for the later list migration.  All 7 option-backed
 `XX_FORMAT` settings are migrated in step 9.  The separate
 `song_columns_mode_format` AST remains derived state of
-`song_columns_list_format` and is intentionally not an option entry.
+`song_columns_list_format` and is intentionally not an option entry.  All 10
+formatted-buffer settings and both `XX_LOOK` settings are migrated in step 10.
 
 ## Per-option baseline
 
@@ -81,7 +87,7 @@ remains a collection type for the later list migration.  All 7 option-backed
 | `visualizer_output_name` | `Visualizer feed` | `XX_STRING` | `visualizer_output_name`, `visualizer_output_name_len` | `APPLY_STRING` | Copy value bytes verbatim. | owned string + `_len`; init NULL/0; `free2` on destroy |
 | `visualizer_in_stereo` | `yes` | `XX_BOOL` | `visualizer_in_stereo` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `visualizer_type` | `spectrum if `HAVE_FFTW3_H`, otherwise ellipse` | `XX_ENUM` | `visualizer_type` | `ncm_visualizer_type_parse` | Parse named value into enum-like storage. | trivial scalar |
-| `visualizer_look` | `●▮` | `XX_LOOK` | `visualizer_look` | `apply_visualizer_look` custom body | Require exactly 2 UTF-8 characters. | `StrBuilder`; zero-init; `sb_free` on destroy |
+| `visualizer_look` | `●▮` | `XX_LOOK` | `visualizer_look` | generated `settings_parse_look` wrapper | Require exactly 2 UTF-8 characters. | `StrBuilder`; generated zero-init and `sb_free` |
 | `visualizer_fps` | `60` | `XX_INT_RANGE` | `visualizer_fps` | `ncm_parse_int32` + option-specific checks | Parse `int32`; require 30..1000. | trivial scalar |
 | `visualizer_autoscale` | `no` | `XX_BOOL` | `visualizer_autoscale` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `visualizer_spectrum_smooth_look` | `yes` | `XX_BOOL` | `visualizer_spectrum_smooth_look` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
@@ -101,16 +107,16 @@ remains a collection type for the later list migration.  All 7 option-backed
 | `song_library_format` | `{%n - }{%t}\|{%f}` | `XX_FORMAT` | `song_library_format` | `settings_parse_format` | Parse format expression with `NCM_FORMAT_FLAG_ALL`. | `NcmFormatAst`; zero-init; destroy AST |
 | `alternative_header_first_line_format` | `$b$1$aqqu$/a$9 {%t}\|{%f} $1$atqq$/a$9$/b` | `XX_FORMAT` | `alternative_header_first_line_format` | `settings_parse_format` | Parse format expression with `NCM_FORMAT_FLAG_ALL ^ NCM_FORMAT_FLAG_OUTPUT_SWITCH`. | `NcmFormatAst`; zero-init; destroy AST |
 | `alternative_header_second_line_format` | `{{$4$b%a$/b$9}{ - $7%b$9}{ ($4%y$9)}}\|{%D}` | `XX_FORMAT` | `alternative_header_second_line_format` | `settings_parse_format` | Parse format expression with `NCM_FORMAT_FLAG_ALL ^ NCM_FORMAT_FLAG_OUTPUT_SWITCH`. | `NcmFormatAst`; zero-init; destroy AST |
-| `current_item_prefix` | `$(yellow)$r` | `XX_BUFFER_WIDTH` | `current_item_prefix`, `current_item_prefix_length` | `settings_copy_nc_buffer` | Parse color/format markup and cache width; `keep_existing=true`. | `NcBuffer` + cached width; zero-init; destroy buffer |
-| `current_item_suffix` | `$/r$(end)` | `XX_BUFFER_WIDTH` | `current_item_suffix`, `current_item_suffix_length` | `settings_copy_nc_buffer` | Parse color/format markup and cache width; `keep_existing=true`. | `NcBuffer` + cached width; zero-init; destroy buffer |
-| `current_item_inactive_column_prefix` | `$(white)$r` | `XX_BUFFER_WIDTH` | `current_item_inactive_column_prefix`, `current_item_inactive_column_prefix_length` | `settings_copy_nc_buffer` | Parse color/format markup and cache width; `keep_existing=true`. | `NcBuffer` + cached width; zero-init; destroy buffer |
-| `current_item_inactive_column_suffix` | `$/r$(end)` | `XX_BUFFER_WIDTH` | `current_item_inactive_column_suffix`, `current_item_inactive_column_suffix_length` | `settings_copy_nc_buffer` | Parse color/format markup and cache width; `keep_existing=true`. | `NcBuffer` + cached width; zero-init; destroy buffer |
-| `now_playing_prefix` | `$b` | `XX_BUFFER_WIDTH` | `now_playing_prefix`, `now_playing_prefix_length` | `settings_copy_nc_buffer` | Parse color/format markup and cache width; replace existing value. | `NcBuffer` + cached width; zero-init; destroy buffer |
-| `now_playing_suffix` | `$/b` | `XX_BUFFER_WIDTH` | `now_playing_suffix`, `now_playing_suffix_length` | `settings_copy_nc_buffer` | Parse color/format markup and cache width; replace existing value. | `NcBuffer` + cached width; zero-init; destroy buffer |
-| `browser_playlist_prefix` | `$2playlist$9 ` | `XX_BUFFER` | `browser_playlist_prefix` | `settings_copy_nc_buffer` | Parse color/format markup; replace existing value; no cached width. | `NcBuffer`; zero-init; destroy buffer |
-| `selected_item_prefix` | `$6` | `XX_BUFFER_WIDTH` | `selected_item_prefix`, `selected_item_prefix_length` | `settings_copy_nc_buffer` | Parse color/format markup and cache width; replace existing value. | `NcBuffer` + cached width; zero-init; destroy buffer |
-| `selected_item_suffix` | `$9` | `XX_BUFFER_WIDTH` | `selected_item_suffix`, `selected_item_suffix_length` | `settings_copy_nc_buffer` | Parse color/format markup and cache width; replace existing value. | `NcBuffer` + cached width; zero-init; destroy buffer |
-| `modified_item_prefix` | `$3>$9 ` | `XX_BUFFER` | `modified_item_prefix` | `settings_copy_nc_buffer` | Parse color/format markup; replace existing value; no cached width. | `NcBuffer`; zero-init; destroy buffer |
+| `current_item_prefix` | `$(yellow)$r` | `XX_BUFFER_WIDTH` | `current_item_prefix`, `current_item_prefix_length` | generated `settings_copy_nc_buffer` wrapper | Parse color/format markup and cache width; `keep_existing=true`. | `NcBuffer` + cached width; generated init/destroy |
+| `current_item_suffix` | `$/r$(end)` | `XX_BUFFER_WIDTH` | `current_item_suffix`, `current_item_suffix_length` | generated `settings_copy_nc_buffer` wrapper | Parse color/format markup and cache width; `keep_existing=true`. | `NcBuffer` + cached width; generated init/destroy |
+| `current_item_inactive_column_prefix` | `$(white)$r` | `XX_BUFFER_WIDTH` | `current_item_inactive_column_prefix`, `current_item_inactive_column_prefix_length` | generated `settings_copy_nc_buffer` wrapper | Parse color/format markup and cache width; `keep_existing=true`. | `NcBuffer` + cached width; generated init/destroy |
+| `current_item_inactive_column_suffix` | `$/r$(end)` | `XX_BUFFER_WIDTH` | `current_item_inactive_column_suffix`, `current_item_inactive_column_suffix_length` | generated `settings_copy_nc_buffer` wrapper | Parse color/format markup and cache width; `keep_existing=true`. | `NcBuffer` + cached width; generated init/destroy |
+| `now_playing_prefix` | `$b` | `XX_BUFFER_WIDTH` | `now_playing_prefix`, `now_playing_prefix_length` | generated `settings_copy_nc_buffer` wrapper | Parse color/format markup and cache width; replace existing value. | `NcBuffer` + cached width; generated init/destroy |
+| `now_playing_suffix` | `$/b` | `XX_BUFFER_WIDTH` | `now_playing_suffix`, `now_playing_suffix_length` | generated `settings_copy_nc_buffer` wrapper | Parse color/format markup and cache width; replace existing value. | `NcBuffer` + cached width; generated init/destroy |
+| `browser_playlist_prefix` | `$2playlist$9 ` | `XX_BUFFER` | `browser_playlist_prefix` | generated `settings_copy_nc_buffer` wrapper | Parse color/format markup; replace existing value; no cached width. | `NcBuffer`; generated init/destroy |
+| `selected_item_prefix` | `$6` | `XX_BUFFER_WIDTH` | `selected_item_prefix`, `selected_item_prefix_length` | generated `settings_copy_nc_buffer` wrapper | Parse color/format markup and cache width; replace existing value. | `NcBuffer` + cached width; generated init/destroy |
+| `selected_item_suffix` | `$9` | `XX_BUFFER_WIDTH` | `selected_item_suffix`, `selected_item_suffix_length` | generated `settings_copy_nc_buffer` wrapper | Parse color/format markup and cache width; replace existing value. | `NcBuffer` + cached width; generated init/destroy |
+| `modified_item_prefix` | `$3>$9 ` | `XX_BUFFER` | `modified_item_prefix` | generated `settings_copy_nc_buffer` wrapper | Parse color/format markup; replace existing value; no cached width. | `NcBuffer`; generated init/destroy |
 | `song_window_title_format` | `{%a - }{%t}\|{%f}` | `XX_FORMAT` | `song_window_title_format` | `settings_parse_format` | Parse format expression with `NCM_FORMAT_FLAG_TAG`. | `NcmFormatAst`; zero-init; destroy AST |
 | `browser_sort_mode` | `type` | `XX_ENUM` | `browser_sort_mode` | `ncm_sort_mode_parse` plus `noop` -> `none` alias | Parse sort mode; compatibility alias `noop` is rewritten to `none`. | trivial scalar |
 | `browser_sort_format` | `{%a - }{%t}\|{%f} {%l}` | `XX_FORMAT` | `browser_sort_format` | `settings_parse_format` | Parse format expression with `NCM_FORMAT_FLAG_TAG`. | `NcmFormatAst`; zero-init; destroy AST |
@@ -132,7 +138,7 @@ remains a collection type for the later list migration.  All 7 option-backed
 | `volume_change_step` | `2` | `XX_INT_RANGE` | `volume_change_step` | `APPLY_UINT` | Parse `int32`; no explicit bounds today. | trivial scalar |
 | `autocenter_mode` | `no` | `XX_BOOL` | `autocenter_mode` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `centered_cursor` | `no` | `XX_BOOL` | `centered_cursor` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
-| `progressbar_look` | `=>` | `XX_LOOK` | `progressbar_look` | `apply_progressbar_look` custom body | Require 2..3 UTF-8 characters; if 2, append an extra NUL byte. | `StrBuilder`; zero-init; `sb_free` on destroy |
+| `progressbar_look` | `=>` | `XX_LOOK` | `progressbar_look` | generated `settings_parse_look` wrapper | Require 2..3 UTF-8 characters; if 2, append an extra NUL byte. | `StrBuilder`; generated zero-init and `sb_free` |
 | `default_place_to_search_in` | `database` | `XX_ENUM` | `default_place_to_search_in` | manual database/playlist -> bool | Named two-state value stored as bool: `database` -> true, `playlist` -> false. | trivial scalar |
 | `user_interface` | `classic` | `XX_ENUM` | `user_interface` | `ncm_design_parse` | Parse named value into enum-like storage. | trivial scalar |
 | `data_fetching_delay` | `yes` | `XX_BOOL` | `data_fetching_delay` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |

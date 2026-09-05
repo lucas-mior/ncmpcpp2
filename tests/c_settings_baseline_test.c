@@ -36,7 +36,22 @@ settings_assert_generated_empty(Configuration *config) {
     ASSERT(config->NAME.root.items == NULL); \
     ASSERT(config->NAME.root.len == 0); \
     ASSERT(config->NAME.root.cap == 0);
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING) \
+    ASSERT(config->NAME.data == NULL); \
+    ASSERT(config->NAME.properties == NULL); \
+    ASSERT(config->NAME.len == 0); \
+    ASSERT(config->NAME.cap == 0);
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING) \
+    XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING) \
+    ASSERT(config->NAME##_length == 0);
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX) \
+    ASSERT(config->NAME.data == NULL); \
+    ASSERT(config->NAME.len == 0); \
+    ASSERT(config->NAME.cap == 0);
 #include "configuration_options.def"
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
 #undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
@@ -114,8 +129,6 @@ test_declared_defaults_and_cleanup(void) {
     settings_assert_generated_empty(&config);
     ASSERT(config.ncmpcpp_directory == NULL);
     ASSERT(config.ncmpcpp_directory_len == 0);
-    ASSERT(config.progressbar_look.data == NULL);
-    ASSERT(config.current_item_prefix.data == NULL);
     ASSERT(config.visualizer_color.items == NULL);
     ASSERT(config.screen_switcher_mode.items == NULL);
     ASSERT(config.lyrics_fetchers.fetchers.items == NULL);
@@ -297,6 +310,55 @@ test_format_options(void) {
 }
 
 static void
+test_buffer_and_look_options(void) {
+    Configuration config = {0};
+
+    configuration_init(&config);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_selected_item_prefix, &config, "selected"));
+    ASSERT(STREQUAL(config.selected_item_prefix.data,
+                    config.selected_item_prefix.len, "selected"));
+    ASSERT(config.selected_item_prefix_length == 8);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_current_item_prefix, &config, "first"));
+    ASSERT_ZERO(settings_test_apply(
+        apply_current_item_prefix, &config, "second"));
+    ASSERT(STREQUAL(config.current_item_prefix.data,
+                    config.current_item_prefix.len, "first"));
+    ASSERT(config.current_item_prefix_length == 5);
+
+    ASSERT_ZERO(settings_test_apply(
+        apply_browser_playlist_prefix, &config, "playlist "));
+    ASSERT(STREQUAL(config.browser_playlist_prefix.data,
+                    config.browser_playlist_prefix.len, "playlist "));
+
+    ASSERT_ZERO(settings_test_apply(apply_visualizer_look, &config, "ab"));
+    ASSERT(config.visualizer_look.len == 2);
+    ASSERT(config.visualizer_look.data[0] == 'a');
+    ASSERT(config.visualizer_look.data[1] == 'b');
+    ASSERT(settings_test_apply(apply_visualizer_look, &config, "a") < 0);
+    ASSERT(config.visualizer_look.len == 2);
+
+    ASSERT_ZERO(settings_test_apply(apply_progressbar_look, &config, "ab"));
+    ASSERT(config.progressbar_look.len == 3);
+    ASSERT(config.progressbar_look.data[0] == 'a');
+    ASSERT(config.progressbar_look.data[1] == 'b');
+    ASSERT(config.progressbar_look.data[2] == '\0');
+    ASSERT_ZERO(settings_test_apply(apply_progressbar_look, &config, "abc"));
+    ASSERT(config.progressbar_look.len == 3);
+    ASSERT(config.progressbar_look.data[2] == 'c');
+    ASSERT(settings_test_apply(apply_progressbar_look, &config, "a") < 0);
+    ASSERT(config.progressbar_look.len == 3);
+    ASSERT(config.progressbar_look.data[2] == 'c');
+
+    configuration_destroy(&config);
+    settings_assert_generated_empty(&config);
+    return;
+}
+
+static void
 test_duplicate_option_is_rejected(void) {
     static char first_contents[] = "lines_scrolled = 4\n";
     static char second_contents[] = "lines_scrolled = 6\n";
@@ -390,6 +452,7 @@ main(void) {
     test_enum_options();
     test_color_options();
     test_format_options();
+    test_buffer_and_look_options();
     test_duplicate_option_is_rejected();
     test_duplicate_state_is_per_read();
 

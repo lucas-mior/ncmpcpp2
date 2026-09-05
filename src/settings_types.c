@@ -168,7 +168,17 @@ configuration_init_unchecked(Configuration *config) {
     config->NAME = nc_border_none();
 #define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS) \
     config->NAME = (NcmFormatAst){0};
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING) \
+    config->NAME = (NcBuffer){0};
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING) \
+    config->NAME = (NcBuffer){0}; \
+    config->NAME##_length = 0;
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX) \
+    config->NAME = (StrBuilder){0};
 #include "configuration_options.def"
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
 #undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
@@ -183,20 +193,6 @@ configuration_init_unchecked(Configuration *config) {
 
     config->visualizer_fifo_path = NULL;
     config->visualizer_fifo_path_len = 0;
-
-    config->progressbar_look = (StrBuilder){0};
-    config->visualizer_look = (StrBuilder){0};
-
-    config->browser_playlist_prefix = (NcBuffer){0};
-    config->selected_item_prefix = (NcBuffer){0};
-    config->selected_item_suffix = (NcBuffer){0};
-    config->now_playing_prefix = (NcBuffer){0};
-    config->now_playing_suffix = (NcBuffer){0};
-    config->modified_item_prefix = (NcBuffer){0};
-    config->current_item_prefix = (NcBuffer){0};
-    config->current_item_suffix = (NcBuffer){0};
-    config->current_item_inactive_column_prefix = (NcBuffer){0};
-    config->current_item_inactive_column_suffix = (NcBuffer){0};
 
     config->song_columns_mode_format = (NcmFormatAst){0};
 
@@ -215,15 +211,6 @@ configuration_init_unchecked(Configuration *config) {
 
     config->lyrics_db = 0;
     config->regular_expressions = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
-
-    config->selected_item_prefix_length = 0;
-    config->selected_item_suffix_length = 0;
-    config->now_playing_prefix_length = 0;
-    config->now_playing_suffix_length = 0;
-    config->current_item_prefix_length = 0;
-    config->current_item_suffix_length = 0;
-    config->current_item_inactive_column_prefix_length = 0;
-    config->current_item_inactive_column_suffix_length = 0;
 
     config->startup_slave_screen = NCM_SCREEN_TYPE_COUNT;
     return;
@@ -261,7 +248,17 @@ configuration_destroy(Configuration *config) {
 #define XX_BORDER(NAME, DEFAULT_VALUE)
 #define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS) \
     ncm_format_ast_destroy(&config->NAME);
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING) \
+    nc_buffer_destroy(&config->NAME);
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING) \
+    nc_buffer_destroy(&config->NAME); \
+    config->NAME##_length = 0;
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX) \
+    sb_free(&config->NAME);
 #include "configuration_options.def"
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
 #undef XX_FORMAT
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
@@ -277,20 +274,6 @@ configuration_destroy(Configuration *config) {
     free2(config->visualizer_fifo_path, config->visualizer_fifo_path_len + 1);
     config->visualizer_fifo_path = NULL;
     config->visualizer_fifo_path_len = 0;
-
-    sb_free(&config->progressbar_look);
-    sb_free(&config->visualizer_look);
-
-    nc_buffer_destroy(&config->browser_playlist_prefix);
-    nc_buffer_destroy(&config->selected_item_prefix);
-    nc_buffer_destroy(&config->selected_item_suffix);
-    nc_buffer_destroy(&config->now_playing_prefix);
-    nc_buffer_destroy(&config->now_playing_suffix);
-    nc_buffer_destroy(&config->modified_item_prefix);
-    nc_buffer_destroy(&config->current_item_prefix);
-    nc_buffer_destroy(&config->current_item_suffix);
-    nc_buffer_destroy(&config->current_item_inactive_column_prefix);
-    nc_buffer_destroy(&config->current_item_inactive_column_suffix);
 
     ncm_format_ast_destroy(&config->song_columns_mode_format);
 
