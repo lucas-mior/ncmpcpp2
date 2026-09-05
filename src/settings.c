@@ -7,7 +7,6 @@
 
 #include "c/ncm_c.h"
 #include "config.h"
-#include "global.h"
 #include "settings.h"
 
 #define SETTINGS_LINE_CAP 16384
@@ -36,6 +35,9 @@ enum SettingsPrimitiveOption {
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     SETTINGS_PRIMITIVE_##NAME,
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+)
 #define XX_COLOR(NAME, DEFAULT_VALUE)
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
 #define XX_BORDER(NAME, DEFAULT_VALUE)
@@ -48,6 +50,9 @@ enum SettingsPrimitiveOption {
 #define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)
 #define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD)
 #include "configuration_options.def"
+#undef XX_COLUMNS
+#undef XX_UINT32_CHOICE
+#undef XX_NAMED_BOOL
 #undef XX_SCREEN_LIST
 #undef XX_LYRICS_FETCHERS
 #undef XX_FORMATTED_COLOR_LIST
@@ -59,6 +64,7 @@ enum SettingsPrimitiveOption {
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -80,6 +86,61 @@ enum SettingsEnumOption {
 #define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) SETTINGS_ENUM_##NAME,
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+)
+#define XX_COLOR(NAME, DEFAULT_VALUE)
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
+#define XX_BORDER(NAME, DEFAULT_VALUE)
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS)
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN)
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE)
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD)
+#include "configuration_options.def"
+#undef XX_COLUMNS
+#undef XX_UINT32_CHOICE
+#undef XX_NAMED_BOOL
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
+#undef XX_FORMAT
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
+#undef XX_ENUM
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_DIR
+#undef XX_PATH
+#undef XX_STRING
+#undef XX_BOOL
+    SETTINGS_ENUM_COUNT,
+};
+
+_Static_assert(SETTINGS_ENUM_COUNT == 10,
+               "enum configuration option count changed");
+
+enum SettingsOptionalEnumOption {
+#define XX_BOOL(NAME, DEFAULT_VALUE)
+#define XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_PATH(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT_VALUE)
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+) \
+    SETTINGS_OPTIONAL_ENUM_##NAME,
 #define XX_COLOR(NAME, DEFAULT_VALUE)
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
 #define XX_BORDER(NAME, DEFAULT_VALUE)
@@ -103,6 +164,7 @@ enum SettingsEnumOption {
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -110,11 +172,11 @@ enum SettingsEnumOption {
 #undef XX_PATH
 #undef XX_STRING
 #undef XX_BOOL
-    SETTINGS_ENUM_COUNT,
+    SETTINGS_OPTIONAL_ENUM_COUNT,
 };
 
-_Static_assert(SETTINGS_ENUM_COUNT == 10,
-               "enum configuration option count changed");
+_Static_assert(SETTINGS_OPTIONAL_ENUM_COUNT == 1,
+               "optional enum configuration option count changed");
 
 enum SettingsColorOption {
 #define XX_BOOL(NAME, DEFAULT_VALUE)
@@ -124,6 +186,9 @@ enum SettingsColorOption {
 #define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+)
 #define XX_COLOR(NAME, DEFAULT_VALUE) SETTINGS_COLOR_##NAME,
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) SETTINGS_COLOR_##NAME,
 #define XX_BORDER(NAME, DEFAULT_VALUE) SETTINGS_COLOR_##NAME,
@@ -147,6 +212,7 @@ enum SettingsColorOption {
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -168,6 +234,9 @@ enum SettingsFormatOption {
 #define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+)
 #define XX_COLOR(NAME, DEFAULT_VALUE)
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
 #define XX_BORDER(NAME, DEFAULT_VALUE)
@@ -191,6 +260,7 @@ enum SettingsFormatOption {
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -212,6 +282,9 @@ enum SettingsBufferOption {
 #define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+)
 #define XX_COLOR(NAME, DEFAULT_VALUE)
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
 #define XX_BORDER(NAME, DEFAULT_VALUE)
@@ -236,6 +309,7 @@ enum SettingsBufferOption {
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -257,6 +331,9 @@ enum SettingsLookOption {
 #define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+)
 #define XX_COLOR(NAME, DEFAULT_VALUE)
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
 #define XX_BORDER(NAME, DEFAULT_VALUE)
@@ -281,6 +358,7 @@ enum SettingsLookOption {
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -302,6 +380,9 @@ enum SettingsListOption {
 #define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+)
 #define XX_COLOR(NAME, DEFAULT_VALUE)
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
 #define XX_BORDER(NAME, DEFAULT_VALUE)
@@ -326,6 +407,7 @@ enum SettingsListOption {
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -338,6 +420,176 @@ enum SettingsListOption {
 
 _Static_assert(SETTINGS_LIST_COUNT == 6,
                "list configuration option count changed");
+
+enum SettingsNamedBoolOption {
+#define XX_BOOL(NAME, DEFAULT_VALUE)
+#define XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_PATH(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT_VALUE)
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+)
+#define XX_COLOR(NAME, DEFAULT_VALUE)
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
+#define XX_BORDER(NAME, DEFAULT_VALUE)
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS)
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN)
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE)
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD)
+#define XX_NAMED_BOOL(NAME, DEFAULT_VALUE, TRUE_VALUE, FALSE_VALUE) \
+    SETTINGS_NAMED_BOOL_##NAME,
+#include "configuration_options.def"
+#undef XX_NAMED_BOOL
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
+#undef XX_FORMAT
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
+#undef XX_ENUM
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_DIR
+#undef XX_PATH
+#undef XX_STRING
+#undef XX_BOOL
+    SETTINGS_NAMED_BOOL_COUNT,
+};
+
+_Static_assert(SETTINGS_NAMED_BOOL_COUNT == 2,
+               "named bool configuration option count changed");
+
+enum SettingsUint32ChoiceOption {
+#define XX_BOOL(NAME, DEFAULT_VALUE)
+#define XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_PATH(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT_VALUE)
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+)
+#define XX_COLOR(NAME, DEFAULT_VALUE)
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
+#define XX_BORDER(NAME, DEFAULT_VALUE)
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS)
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN)
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE)
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD)
+#define XX_UINT32_CHOICE(NAME, DEFAULT_VALUE, PARSER, UNSET_VALUE) \
+    SETTINGS_UINT32_CHOICE_##NAME,
+#include "configuration_options.def"
+#undef XX_UINT32_CHOICE
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
+#undef XX_FORMAT
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
+#undef XX_ENUM
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_DIR
+#undef XX_PATH
+#undef XX_STRING
+#undef XX_BOOL
+    SETTINGS_UINT32_CHOICE_COUNT,
+};
+
+_Static_assert(SETTINGS_UINT32_CHOICE_COUNT == 1,
+               "uint32 choice configuration option count changed");
+
+enum SettingsColumnsOption {
+#define XX_BOOL(NAME, DEFAULT_VALUE)
+#define XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_PATH(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT_VALUE)
+#define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER)
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+)
+#define XX_COLOR(NAME, DEFAULT_VALUE)
+#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
+#define XX_BORDER(NAME, DEFAULT_VALUE)
+#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS)
+#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)
+#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN)
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE)
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)
+#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD)
+#define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD) SETTINGS_COLUMNS_##NAME,
+#include "configuration_options.def"
+#undef XX_COLUMNS
+#undef XX_SCREEN_LIST
+#undef XX_LYRICS_FETCHERS
+#undef XX_FORMATTED_COLOR_LIST
+#undef XX_RATIO
+#undef XX_LOOK
+#undef XX_BUFFER_WIDTH
+#undef XX_BUFFER
+#undef XX_FORMAT
+#undef XX_BORDER
+#undef XX_FORMATTED_COLOR
+#undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
+#undef XX_ENUM
+#undef XX_DOUBLE_RANGE
+#undef XX_INT_RANGE
+#undef XX_DIR
+#undef XX_PATH
+#undef XX_STRING
+#undef XX_BOOL
+    SETTINGS_COLUMNS_COUNT,
+};
+
+_Static_assert(SETTINGS_COLUMNS_COUNT == 1,
+               "columns configuration option count changed");
+
+enum {
+    SETTINGS_GENERATED_OPTION_COUNT =
+        SETTINGS_PRIMITIVE_COUNT
+        + SETTINGS_ENUM_COUNT
+        + SETTINGS_OPTIONAL_ENUM_COUNT
+        + SETTINGS_COLOR_COUNT
+        + SETTINGS_FORMAT_COUNT
+        + SETTINGS_BUFFER_COUNT
+        + SETTINGS_LOOK_COUNT
+        + SETTINGS_LIST_COUNT
+        + SETTINGS_NAMED_BOOL_COUNT
+        + SETTINGS_UINT32_CHOICE_COUNT
+        + SETTINGS_COLUMNS_COUNT,
+};
+
+_Static_assert(SETTINGS_GENERATED_OPTION_COUNT == 134,
+               "generated configuration option count changed");
 
 #define SETTINGS_ASSERT_FIELD_TYPE(NAME, TYPE) \
     _Static_assert(_Generic(&((Configuration *)0)->NAME, \
@@ -357,6 +609,11 @@ _Static_assert(SETTINGS_LIST_COUNT == 6,
     SETTINGS_ASSERT_FIELD_TYPE(NAME, double);
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, C_TYPE);
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, C_TYPE); \
+    SETTINGS_ASSERT_FIELD_TYPE(PRESENT_FIELD, bool);
 #define XX_COLOR(NAME, DEFAULT_VALUE) \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcColor);
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) \
@@ -381,7 +638,17 @@ _Static_assert(SETTINGS_LIST_COUNT == 6,
 #define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD) \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, ScreenTypeArray); \
     SETTINGS_ASSERT_FIELD_TYPE(PREVIOUS_FIELD, bool);
+#define XX_NAMED_BOOL(NAME, DEFAULT_VALUE, TRUE_VALUE, FALSE_VALUE) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, bool);
+#define XX_UINT32_CHOICE(NAME, DEFAULT_VALUE, PARSER, UNSET_VALUE) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, uint32);
+#define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD) \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, ColumnArray); \
+    SETTINGS_ASSERT_FIELD_TYPE(FORMAT_FIELD, NcmFormatAst);
 #include "configuration_options.def"
+#undef XX_COLUMNS
+#undef XX_UINT32_CHOICE
+#undef XX_NAMED_BOOL
 #undef XX_SCREEN_LIST
 #undef XX_LYRICS_FETCHERS
 #undef XX_FORMATTED_COLOR_LIST
@@ -393,6 +660,7 @@ _Static_assert(SETTINGS_LIST_COUNT == 6,
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -401,8 +669,6 @@ _Static_assert(SETTINGS_LIST_COUNT == 6,
 #undef XX_STRING
 #undef XX_BOOL
 #undef SETTINGS_ASSERT_FIELD_TYPE
-
-static bool settings_quiet;
 
 static int32
 settings_error(NcmError *ncm_error, char *message, int32 message_len) {
@@ -547,32 +813,46 @@ static int32
 settings_parse_int_range(char *value, int32 value_len, int32 *result,
                          int32 minimum, int32 maximum,
                          NcmError *ncm_error) {
+    int32 parsed;
     int32 status;
 
-    status = ncm_parse_int32(value, value_len, result, ncm_error);
+    status = ncm_parse_int32(value, value_len, &parsed, ncm_error);
     if (status < 0) {
         return status;
     }
-    return ncm_bounds_check_i64(*result, minimum, maximum, ncm_error);
+    status = ncm_bounds_check_i64(parsed, minimum, maximum, ncm_error);
+    if (status < 0) {
+        return status;
+    }
+    *result = parsed;
+    return 0;
 }
 
 static int32
 settings_parse_double_range(char *value, int32 value_len, double *result,
                             double minimum, double maximum,
                             NcmError *ncm_error) {
+    double parsed;
     int32 status;
 
-    status = ncm_parse_double(value, value_len, result, ncm_error);
+    status = ncm_parse_double(value, value_len, &parsed, ncm_error);
     if (status < 0) {
         return status;
     }
     if ((minimum == -INFINITY) && (maximum == INFINITY)) {
+        *result = parsed;
         return 0;
     }
     if (maximum == INFINITY) {
-        return ncm_lower_bound_check_f64(*result, minimum, ncm_error);
+        status = ncm_lower_bound_check_f64(parsed, minimum, ncm_error);
+    } else {
+        status = ncm_bounds_check_f64(parsed, minimum, maximum, ncm_error);
     }
-    return ncm_bounds_check_f64(*result, minimum, maximum, ncm_error);
+    if (status < 0) {
+        return status;
+    }
+    *result = parsed;
+    return 0;
 }
 
 static int32
@@ -933,16 +1213,16 @@ settings_parse_format(NcmFormatAst *format, char *value, int32 value_len,
 }
 
 static int32
-apply_song_columns_list_format(Configuration *config,
-                               char *value, int32 value_len,
-                               NcmError *ncm_error) {
+settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
+                       char *value, int32 value_len,
+                       NcmError *ncm_error) {
     int32 pos;
     int32 last_relative;
     int32 stretch_limit;
     int32 status;
 
-    column_array_clear(&config->song_columns_list_format);
-    ncm_format_ast_clear(&config->song_columns_mode_format);
+    column_array_clear(columns);
+    ncm_format_ast_clear(format);
     pos = 0;
     while (pos < value_len) {
         StrBuilder width = {0};
@@ -966,7 +1246,7 @@ apply_song_columns_list_format(Configuration *config,
         pos = next;
         tag = ncm_string_get_enclosed(value, value_len, '{', '}', pos, &next);
         pos = next;
-        column = column_array_append(&config->song_columns_list_format);
+        column = column_array_append(columns);
         if ((width.len > 0) && (width.data[width.len - 1] == 'f')) {
             column->fixed = true;
             width.len -= 1;
@@ -1045,31 +1325,30 @@ apply_song_columns_list_format(Configuration *config,
         sb_free(&tag);
     }
 
-    if (config->song_columns_list_format.len <= 0) {
+    if (columns->len <= 0) {
         return settings_invalid_value(ncm_error, value, value_len);
     }
 
     last_relative = -1;
     stretch_limit = 0;
-    for (int32 i = config->song_columns_list_format.len - 1; i >= 0; i -= 1) {
-        if (config->song_columns_list_format.items[i].fixed) {
-            stretch_limit += config->song_columns_list_format.items[i].width;
+    for (int32 i = columns->len - 1; i >= 0; i -= 1) {
+        if (columns->items[i].fixed) {
+            stretch_limit += columns->items[i].width;
         } else {
             last_relative = i;
             break;
         }
     }
     if (last_relative >= 0) {
-        Column *column =
-            &config->song_columns_list_format.items[last_relative];
+        Column *column = &columns->items[last_relative];
 
         column->stretch_limit = stretch_limit;
     }
 
-    for (int32 i = 0; i < config->song_columns_list_format.len; i += 1) {
-        Column *column = &config->song_columns_list_format.items[i];
+    for (int32 i = 0; i < columns->len; i += 1) {
+        Column *column = &columns->items[i];
 
-        ncm_format_ast_append_column_types(&config->song_columns_mode_format,
+        ncm_format_ast_append_column_types(format,
                                            column->type, column->type_len);
     }
     return 0;
@@ -1095,29 +1374,16 @@ settings_parse_look(StrBuilder *look, char *value, int32 value_len,
 }
 
 static int32
-apply_default_place_to_search_in(Configuration *config,
-                                 char *value, int32 value_len,
-                                 NcmError *ncm_error) {
-    if (STREQUAL(value, value_len, "database")) {
-        config->default_place_to_search_in = true;
+settings_parse_named_bool(char *value, int32 value_len, bool *result,
+                          char *true_value, int32 true_value_len,
+                          char *false_value, int32 false_value_len,
+                          NcmError *ncm_error) {
+    if (STREQUAL(value, value_len, true_value, true_value_len)) {
+        *result = true;
         return 0;
     }
-    if (STREQUAL(value, value_len, "playlist")) {
-        config->default_place_to_search_in = false;
-        return 0;
-    }
-    return settings_invalid_value(ncm_error, value, value_len);
-}
-
-static int32
-apply_default_find_mode(Configuration *config, char *value, int32 value_len,
-                        NcmError *ncm_error) {
-    if (STREQUAL(value, value_len, "wrapped")) {
-        config->default_find_mode = true;
-        return 0;
-    }
-    if (STREQUAL(value, value_len, "normal")) {
-        config->default_find_mode = false;
+    if (STREQUAL(value, value_len, false_value, false_value_len)) {
+        *result = false;
         return 0;
     }
     return settings_invalid_value(ncm_error, value, value_len);
@@ -1207,40 +1473,21 @@ settings_parse_screen_list(ScreenTypeArray *array, bool *previous,
 }
 
 static int32
-apply_startup_slave_screen(Configuration *config, char *value, int32 value_len,
-                           NcmError *ncm_error) {
-    int32 status;
-
-    if (value_len <= 0) {
-        config->has_startup_slave_screen_type = false;
-        config->startup_slave_screen = NCM_SCREEN_TYPE_COUNT;
-        return 0;
-    }
-    status = screen_type_parse_startup(value, value_len,
-                                       &config->startup_slave_screen);
-    if (status < 0) {
-        return settings_invalid_value(ncm_error, value, value_len);
-    }
-    config->has_startup_slave_screen_type = true;
-    return 0;
-}
-
-static int32
-apply_regular_expressions(Configuration *config, char *value, int32 value_len,
-                          NcmError *ncm_error) {
+settings_parse_regular_expressions(char *value, int32 value_len,
+                                   uint32 *result) {
     if (STREQUAL(value, value_len, "none")) {
-        config->regular_expressions = NCM_REGEX_LITERAL_CASE_INSENSITIVE;
+        *result = NCM_REGEX_LITERAL_CASE_INSENSITIVE;
         return 0;
     }
     if (STREQUAL(value, value_len, "basic")) {
-        config->regular_expressions = NCM_REGEX_BASIC_CASE_INSENSITIVE;
+        *result = NCM_REGEX_BASIC_CASE_INSENSITIVE;
         return 0;
     }
     if (STREQUAL(value, value_len, "extended")) {
-        config->regular_expressions = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
+        *result = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
         return 0;
     }
-    return settings_invalid_value(ncm_error, value, value_len);
+    return -NCM_ERROR_PARSE;
 }
 
 static int32
@@ -1303,15 +1550,56 @@ settings_apply_option(Configuration *config, SettingsOption option,
     return 0;
 }
 
-static bool
-settings_bool_option_handled(enum SettingsPrimitiveOption option,
-                             Configuration *config) {
+int32
+configuration_validate(const Configuration *config, NcmError *ncm_error) {
+    if (config == NULL) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing configuration"));
+    }
+
+    if (config->visualizer_spectrum_hz_max
+        <= config->visualizer_spectrum_hz_min) {
+        return settings_error(
+            ncm_error,
+            STRLIT("visualizer_spectrum_hz_max must be greater than "
+                   "visualizer_spectrum_hz_min"));
+    }
+    return ncm_error_ok(ncm_error);
+}
+
+int32
+configuration_apply_runtime(Configuration *config, NcmMpdClient *client,
+                            bool quiet, NcmError *ncm_error) {
     char *term;
     int32 term_len;
+    int32 status;
     bool unsupported;
 
-    if (option != SETTINGS_PRIMITIVE_enable_window_title) {
-        return false;
+    if ((config == NULL) || (client == NULL)) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing runtime configuration"));
+    }
+
+    if ((status = ncm_mpd_client_set_hostname(
+        client, config->mpd_host, config->mpd_host_len, ncm_error)) < 0) {
+        return status;
+    }
+    ncm_mpd_client_set_port(client, (uint16)config->mpd_port);
+    if (config->mpd_password_len > 0) {
+        status = ncm_mpd_client_set_password(
+            client, config->mpd_password, config->mpd_password_len, ncm_error);
+        if (status < 0) {
+            return status;
+        }
+    }
+    status = ncm_mpd_client_set_timeout_ms(
+        client, config->mpd_connection_timeout*1000, ncm_error);
+    if (status < 0) {
+        return status;
+    }
+
+    if (!config->enable_window_title) {
+        return ncm_error_ok(ncm_error);
     }
 
     term = getenv("TERM");
@@ -1321,117 +1609,41 @@ settings_bool_option_handled(enum SettingsPrimitiveOption option,
         unsupported = memmem64(term, term_len, STRLIT("linux"))
                       || BEGINS_WITH(term, term_len, "eterm");
     }
-    if (!unsupported) {
-        return false;
-    }
-
-    config->enable_window_title = false;
-    if (!settings_quiet) {
-        error2("Terminal doesn't support window title, skipping "
-               "'enable_window_title'.\n");
-    }
-    return true;
-}
-
-static int32
-settings_parse_primitive_int_range(enum SettingsPrimitiveOption option,
-                                   int32 *result,
-                                   char *value, int32 value_len,
-                                   int32 minimum, int32 maximum,
-                                   NcmError *ncm_error) {
-    int32 parsed;
-    int32 *target;
-    int32 status;
-
-    target = result;
-    if (option == SETTINGS_PRIMITIVE_search_engine_default_search_mode) {
-        target = &parsed;
-    }
-    status = settings_parse_int_range(value, value_len, target,
-                                      minimum, maximum, ncm_error);
-    if (status < 0) {
-        return status;
-    }
-    if (option == SETTINGS_PRIMITIVE_search_engine_default_search_mode) {
-        *result = parsed;
-    }
-    return 0;
-}
-
-static int32
-settings_primitive_post_apply(enum SettingsPrimitiveOption option,
-                              Configuration *config,
-                              char *value, int32 value_len,
-                              NcmError *ncm_error) {
-    switch (option) {
-    case SETTINGS_PRIMITIVE_mpd_host:
-        ncm_mpd_client_set_hostname(&global_mpd, config->mpd_host,
-                                    config->mpd_host_len, ncm_error);
-        return 0;
-    case SETTINGS_PRIMITIVE_mpd_port:
-        if (config->mpd_port > 65535) {
-            return settings_invalid_value(ncm_error, value, value_len);
+    if (unsupported) {
+        config->enable_window_title = false;
+        if (!quiet) {
+            error2("Terminal doesn't support window title, skipping "
+                   "'enable_window_title'.\n");
         }
-        ncm_mpd_client_set_port(&global_mpd, (uint16)config->mpd_port);
-        return 0;
-    case SETTINGS_PRIMITIVE_mpd_password:
-        if (config->mpd_password_len <= 0) {
-            return 0;
-        }
-        ncm_mpd_client_set_password(&global_mpd, config->mpd_password,
-                                    config->mpd_password_len, ncm_error);
-        return 0;
-    case SETTINGS_PRIMITIVE_mpd_connection_timeout:
-        ncm_mpd_client_set_timeout_ms(&global_mpd,
-                                      config->mpd_connection_timeout * 1000,
-                                      ncm_error);
-        return 0;
-    case SETTINGS_PRIMITIVE_system_encoding:
-        settings_parse_string(&config->system_encoding,
-                              &config->system_encoding_len, "", 0);
-        return 0;
-    case SETTINGS_PRIMITIVE_locked_screen_width_part:
-        config->locked_screen_width_part /= 100.0;
-        return 0;
-    case SETTINGS_PRIMITIVE_search_engine_default_search_mode:
-        config->search_engine_default_search_mode -= 1;
-        return 0;
-    default:
-        return 0;
     }
+    return ncm_error_ok(ncm_error);
 }
 
 #define XX_DIR(NAME, DEFAULT_VALUE) \
     static int32 \
     apply_##NAME(Configuration *config, char *value, int32 value_len, \
-                 NcmError *ncm_error) { \
+                 NcmError *ncm_error UNUSED) { \
         settings_parse_dir(&config->NAME, &config->NAME##_len, \
                            value, value_len); \
-        return settings_primitive_post_apply(SETTINGS_PRIMITIVE_##NAME, \
-                                             config, value, value_len, \
-                                             ncm_error); \
+        return 0; \
     }
 
 #define XX_PATH(NAME, DEFAULT_VALUE) \
     static int32 \
     apply_##NAME(Configuration *config, char *value, int32 value_len, \
-                 NcmError *ncm_error) { \
+                 NcmError *ncm_error UNUSED) { \
         settings_parse_path(&config->NAME, &config->NAME##_len, \
                             value, value_len); \
-        return settings_primitive_post_apply(SETTINGS_PRIMITIVE_##NAME, \
-                                             config, value, value_len, \
-                                             ncm_error); \
+        return 0; \
     }
 
 #define XX_STRING(NAME, DEFAULT_VALUE) \
     static int32 \
     apply_##NAME(Configuration *config, char *value, int32 value_len, \
-                 NcmError *ncm_error) { \
+                 NcmError *ncm_error UNUSED) { \
         settings_parse_string(&config->NAME, &config->NAME##_len, \
                               value, value_len); \
-        return settings_primitive_post_apply(SETTINGS_PRIMITIVE_##NAME, \
-                                             config, value, value_len, \
-                                             ncm_error); \
+        return 0; \
     }
 
 #define XX_BOOL(NAME, DEFAULT_VALUE) \
@@ -1439,17 +1651,12 @@ settings_primitive_post_apply(enum SettingsPrimitiveOption option,
     apply_##NAME(Configuration *config, char *value, int32 value_len, \
                  NcmError *ncm_error) { \
         int32 status; \
-        if (settings_bool_option_handled(SETTINGS_PRIMITIVE_##NAME, config)) { \
-            return 0; \
-        } \
         status = settings_parse_bool(value, value_len, &config->NAME, \
                                      ncm_error); \
         if (status < 0) { \
             return status; \
         } \
-        return settings_primitive_post_apply(SETTINGS_PRIMITIVE_##NAME, \
-                                             config, value, value_len, \
-                                             ncm_error); \
+        return 0; \
     }
 
 #define XX_INT_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
@@ -1457,15 +1664,12 @@ settings_primitive_post_apply(enum SettingsPrimitiveOption option,
     apply_##NAME(Configuration *config, char *value, int32 value_len, \
                  NcmError *ncm_error) { \
         int32 status; \
-        status = settings_parse_primitive_int_range( \
-            SETTINGS_PRIMITIVE_##NAME, &config->NAME, value, value_len, \
-            MINIMUM, MAXIMUM, ncm_error); \
+        status = settings_parse_int_range(value, value_len, &config->NAME, \
+                                          MINIMUM, MAXIMUM, ncm_error); \
         if (status < 0) { \
             return status; \
         } \
-        return settings_primitive_post_apply(SETTINGS_PRIMITIVE_##NAME, \
-                                             config, value, value_len, \
-                                             ncm_error); \
+        return 0; \
     }
 
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
@@ -1478,9 +1682,7 @@ settings_primitive_post_apply(enum SettingsPrimitiveOption option,
         if (status < 0) { \
             return status; \
         } \
-        return settings_primitive_post_apply(SETTINGS_PRIMITIVE_##NAME, \
-                                             config, value, value_len, \
-                                             ncm_error); \
+        return 0; \
     }
 
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) \
@@ -1492,6 +1694,26 @@ settings_primitive_post_apply(enum SettingsPrimitiveOption option,
         if (status < 0) { \
             return settings_invalid_value(ncm_error, value, value_len); \
         } \
+        return 0; \
+    }
+
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+) \
+    static int32 \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        int32 status; \
+        if (value_len <= 0) { \
+            config->PRESENT_FIELD = false; \
+            config->NAME = (C_TYPE)(UNSET_VALUE); \
+            return 0; \
+        } \
+        status = PARSER(value, value_len, &config->NAME); \
+        if (status < 0) { \
+            return settings_invalid_value(ncm_error, value, value_len); \
+        } \
+        config->PRESENT_FIELD = true; \
         return 0; \
     }
 
@@ -1586,8 +1808,41 @@ settings_primitive_post_apply(enum SettingsPrimitiveOption option,
             ncm_error); \
     }
 
+#define XX_NAMED_BOOL(NAME, DEFAULT_VALUE, TRUE_VALUE, FALSE_VALUE) \
+    static int32 \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        return settings_parse_named_bool( \
+            value, value_len, &config->NAME, TRUE_VALUE, \
+            STRLIT_LEN(TRUE_VALUE), FALSE_VALUE, STRLIT_LEN(FALSE_VALUE), \
+            ncm_error); \
+    }
+
+#define XX_UINT32_CHOICE(NAME, DEFAULT_VALUE, PARSER, UNSET_VALUE) \
+    static int32 \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        int32 status; \
+        status = PARSER(value, value_len, &config->NAME); \
+        if (status < 0) { \
+            return settings_invalid_value(ncm_error, value, value_len); \
+        } \
+        return 0; \
+    }
+
+#define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD) \
+    static int32 \
+    apply_##NAME(Configuration *config, char *value, int32 value_len, \
+                 NcmError *ncm_error) { \
+        return settings_parse_columns(&config->NAME, &config->FORMAT_FIELD, \
+                                      value, value_len, ncm_error); \
+    }
+
 #include "configuration_options.def"
 
+#undef XX_COLUMNS
+#undef XX_UINT32_CHOICE
+#undef XX_NAMED_BOOL
 #undef XX_SCREEN_LIST
 #undef XX_LYRICS_FETCHERS
 #undef XX_FORMATTED_COLOR_LIST
@@ -1599,6 +1854,7 @@ settings_primitive_post_apply(enum SettingsPrimitiveOption option,
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -1626,6 +1882,10 @@ static const SettingsOption ncmpcpp_options[] = {
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     OPT(NAME, DEFAULT_VALUE),
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) OPT(NAME, DEFAULT_VALUE),
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+) \
+    OPT(NAME, DEFAULT_VALUE),
 #define XX_COLOR(NAME, DEFAULT_VALUE) OPT(NAME, DEFAULT_VALUE),
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) OPT(NAME, DEFAULT_VALUE),
 #define XX_BORDER(NAME, DEFAULT_VALUE) OPT(NAME, DEFAULT_VALUE),
@@ -1641,7 +1901,16 @@ static const SettingsOption ncmpcpp_options[] = {
 #define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE) OPT(NAME, DEFAULT_VALUE),
 #define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD) \
     OPT(NAME, DEFAULT_VALUE),
+#define XX_NAMED_BOOL(NAME, DEFAULT_VALUE, TRUE_VALUE, FALSE_VALUE) \
+    OPT(NAME, DEFAULT_VALUE),
+#define XX_UINT32_CHOICE(NAME, DEFAULT_VALUE, PARSER, UNSET_VALUE) \
+    OPT(NAME, DEFAULT_VALUE),
+#define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD) \
+    OPT(NAME, DEFAULT_VALUE),
 #include "configuration_options.def"
+#undef XX_COLUMNS
+#undef XX_UINT32_CHOICE
+#undef XX_NAMED_BOOL
 #undef XX_SCREEN_LIST
 #undef XX_LYRICS_FETCHERS
 #undef XX_FORMATTED_COLOR_LIST
@@ -1653,6 +1922,7 @@ static const SettingsOption ncmpcpp_options[] = {
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -1661,17 +1931,10 @@ static const SettingsOption ncmpcpp_options[] = {
 #undef XX_STRING
 #undef XX_BOOL
 
-OPT(song_columns_list_format,
-    "(20)[]{a} (6f)[green]{NE} (50)[white]{t|f:Title}"
-    " (20)[cyan]{b} (7f)[magenta]{l}"),
-OPT(default_place_to_search_in, "database"),
-OPT(default_find_mode, "wrapped"),
-OPT(startup_slave_screen, ""),
-OPT(regular_expressions, "extended"),
 };
 
-_Static_assert(LENGTH(ncmpcpp_options) == 134,
-               "configuration option count changed");
+_Static_assert(LENGTH(ncmpcpp_options) == SETTINGS_GENERATED_OPTION_COUNT,
+               "configuration option generation mismatch");
 
 #undef OPT
 
@@ -1682,8 +1945,6 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
     int32 status;
 
     configuration_clear(config);
-    settings_quiet = quiet;
-
     for (int32 i = 0; i < config_paths->len; i += 1) {
         NcmStringView path = config_paths->items[i];
         FILE *file;
@@ -1838,6 +2099,11 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
         if (status < 0) {
             return status;
         }
+    }
+
+    status = configuration_validate(config, ncm_error);
+    if (status < 0) {
+        return settings_report_or_ignore(ncm_error, ignore_errors);
     }
     return 0;
 }

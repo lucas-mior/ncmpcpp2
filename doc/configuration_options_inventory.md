@@ -8,40 +8,40 @@ The step-1 source contained 135 `OPT(...)` invocations but 134 effective
 option names: `visualizer_type` has two mutually exclusive default entries
 under `#if defined(HAVE_FFTW3_H)`.
 
-As of step 11, `src/configuration_options.def` is the authoritative production
-definition for all 78 primitive options, 10 ordinary enum-backed options, 16
-color-family options, 7 format-AST options, 10 formatted-buffer options, 2
-look-string options, and 6 collection/list options.  It generates their
+As of step 15, `src/configuration_options.def` is the authoritative production
+definition for all 134 effective configuration options.  It generates their
 `Configuration` fields, apply wrappers, option-table entries, and lifecycle
-initialization/destruction.  String, path, and directory entries generate both
-the owned pointer and its `_len` companion and own their cleanup.  `XX_ENUM`
-entries record the C enum type, default string, and parser function; the
-generated lifecycle uses zero as their empty scalar state.  `XX_COLOR`,
-`XX_FORMATTED_COLOR`, and `XX_BORDER` entries share the existing color grammars
-and own the nontrivial formatted-color lifecycle.  `XX_FORMAT` entries record
-the parser flag mask and own their `NcmFormatAst` lifecycle.  `XX_BUFFER` and
-`XX_BUFFER_WIDTH` entries own `NcBuffer` parsing/lifecycle and explicitly record
-whether an existing rendered value wins; width entries also generate their
-cached `_length` companion.  `XX_LOOK` entries record UTF-8 character bounds
-and whether short values are NUL-padded to the maximum width.  `XX_RATIO`,
-`XX_FORMATTED_COLOR_LIST`, `XX_LYRICS_FETCHERS`, and `XX_SCREEN_LIST` own their
-container fields, parsing, descriptor entries, initialization, and destruction;
-`XX_SCREEN_LIST` also owns its `screen_switcher_previous` companion flag.  The
-remaining 5 effective options are still declared by the handwritten
-`SettingsOption` table.  This document remains the behavioral migration
-inventory rather than a
-production include file.  Existing primitive side effects and transforms are
-preserved by temporary generated-wrapper pre/post handling until the later
-validation/runtime-application steps separate them from parsing.
+initialization/destruction where the field type owns state.  String, path, and
+directory entries generate both the owned pointer and its `_len` companion and
+own their cleanup.  `XX_ENUM` entries record the C enum type, default string,
+and parser function; the generated lifecycle uses zero as their empty scalar
+state.  `XX_COLOR`, `XX_FORMATTED_COLOR`, and `XX_BORDER` entries share the
+existing color grammars and own the nontrivial formatted-color lifecycle.
+`XX_FORMAT` entries record the parser flag mask and own their `NcmFormatAst`
+lifecycle.  `XX_BUFFER` and `XX_BUFFER_WIDTH` entries own `NcBuffer`
+parsing/lifecycle and explicitly record whether an existing rendered value
+wins; width entries also generate their cached `_length` companion.  `XX_LOOK`
+entries record UTF-8 character bounds and whether short values are NUL-padded
+to the maximum width.  `XX_RATIO`, `XX_FORMATTED_COLOR_LIST`,
+`XX_LYRICS_FETCHERS`, and `XX_SCREEN_LIST` own their container fields, parsing,
+descriptor entries, initialization, and destruction; `XX_SCREEN_LIST` also owns
+its `screen_switcher_previous` companion flag.  `XX_OPTIONAL_ENUM` owns both
+its enum value and presence flag, using an explicit unset enum value for the
+empty state.  `XX_NAMED_BOOL` owns the two bool-backed named-choice settings,
+`XX_UINT32_CHOICE` owns the regex flag setting, and `XX_COLUMNS` owns the
+column mini-language plus its derived format AST.  This document remains the
+behavioral migration inventory rather than a production include file.  Option
+parsing populates `Configuration` directly; runtime side effects and derived
+runtime representations use explicit post-parse paths.
 
 ## Proposed X-macro type inventory
 
 | Proposed type | Count |
 | --- | ---: |
 | `XX_BOOL` | 47 |
-| `XX_ENUM` | 13 |
 | `XX_FORMATTED_COLOR` | 11 |
 | `XX_INT_RANGE` | 11 |
+| `XX_ENUM` | 10 |
 | `XX_BUFFER_WIDTH` | 8 |
 | `XX_STRING` | 8 |
 | `XX_FORMAT` | 7 |
@@ -53,28 +53,35 @@ validation/runtime-application steps separate them from parsing.
 | `XX_BORDER` | 2 |
 | `XX_BUFFER` | 2 |
 | `XX_LOOK` | 2 |
+| `XX_NAMED_BOOL` | 2 |
 | `XX_COLUMNS` | 1 |
 | `XX_FORMATTED_COLOR_LIST` | 1 |
 | `XX_LYRICS_FETCHERS` | 1 |
 | `XX_OPTIONAL_ENUM` | 1 |
 | `XX_SCREEN_LIST` | 1 |
+| `XX_UINT32_CHOICE` | 1 |
 | **Total effective options** | **134** |
 
 All integer settings are classified as `XX_INT_RANGE`, and all floating
 settings as `XX_DOUBLE_RANGE`; the current behavior column below records
 what the code enforces today, including cases with no explicit bounds.
-Ten of the 13 planned `XX_ENUM` settings are migrated in step 7.  The two
-bool-backed named choices remain bools because changing them would ripple
-through screen/action APIs, and `regular_expressions` remains uint32 flag
-storage for a later decision.  All 3 `XX_COLOR`, 11 `XX_FORMATTED_COLOR`, and
-2 `XX_BORDER` settings are migrated in step 8; the `visualizer_color` list
-remains a collection type for the later list migration.  All 7 option-backed
-`XX_FORMAT` settings are migrated in step 9.  The separate
+The two bool-backed named choices intentionally remain bool fields because
+changing their storage type would ripple through screen/action APIs; their
+configuration syntax is now described by `XX_NAMED_BOOL`.  The regex mode keeps
+its uint32 flag storage and is described by `XX_UINT32_CHOICE`.  The separate
 `song_columns_mode_format` AST remains derived state of
-`song_columns_list_format` and is intentionally not an option entry.  All 10
-formatted-buffer settings and both `XX_LOOK` settings are migrated in step 10.
-All 3 `XX_RATIO` settings, the formatted-color list, lyrics-fetcher list, and
-screen list are migrated in step 11.
+`song_columns_list_format`; both fields are generated by the single
+`XX_COLUMNS` entry.  In step 13, generated option parsers become
+configuration-only: MPD client mutation and terminal window-title capability
+handling move to `configuration_apply_runtime()`.  In step 14, parser-time
+representation transforms are removed for primitive settings: `Configuration`
+stores user-facing values for `locked_screen_width_part`,
+`search_engine_default_search_mode`, and `system_encoding`.  Runtime consumers
+use explicit helpers when they need a fractional locked-screen width or a
+zero-based search-mode enum, and `configuration_validate()` performs
+whole-configuration checks after all files and defaults have been applied.  In
+step 15, the final four handwritten option descriptors are moved into the
+production X-macro list.
 
 ## Per-option baseline
 
@@ -82,11 +89,11 @@ screen list are migrated in step 11.
 | --- | --- | --- | --- | --- | --- | --- |
 | `ncmpcpp_directory` | `~/.config/ncmpcpp/` | `XX_DIR` | `ncmpcpp_directory`, `ncmpcpp_directory_len` | `APPLY_STRING_DIR` | Expand leading `~`; ensure a trailing `/`. | owned string + `_len`; init NULL/0; `free2` on destroy |
 | `lyrics_directory` | `~/.lyrics/` | `XX_DIR` | `lyrics_directory`, `lyrics_directory_len` | `APPLY_STRING_DIR` | Expand leading `~`; ensure a trailing `/`. | owned string + `_len`; init NULL/0; `free2` on destroy |
-| `mpd_host` | `localhost` | `XX_PATH` | `mpd_host`, `mpd_host_len` | `apply_mpd_host` custom body | Expand leading `~`; store string; immediately update `global_mpd`; the MPD setter also interprets embedded `password@host`. | owned string + `_len`; init NULL/0; `free2` on destroy |
-| `mpd_port` | `6600` | `XX_INT_RANGE` | `mpd_port` | `ncm_parse_int32` + option-specific checks | Parse `int32`; reject only values > 65535; negatives currently pass and are cast to `uint16`; immediately update `global_mpd`. | trivial scalar |
-| `mpd_password` | `` | `XX_STRING` | `mpd_password`, `mpd_password_len` | `apply_mpd_password` custom body | Copy string; empty clears Configuration but does not call the MPD password setter; non-empty values immediately update `global_mpd`. | owned string + `_len`; init NULL/0; `free2` on destroy |
+| `mpd_host` | `localhost` | `XX_PATH` | `mpd_host`, `mpd_host_len` | generated path parser | Expand leading `~`; store only. `configuration_apply_runtime()` later applies it to the MPD client, whose setter interprets embedded `password@host`. | owned string + `_len`; init NULL/0; `free2` on destroy |
+| `mpd_port` | `6600` | `XX_INT_RANGE` | `mpd_port` | generated integer-range parser | Parse `int32`; require <= 65535; negatives still pass. Runtime application later casts the stored value to `uint16` for the MPD client. | trivial scalar |
+| `mpd_password` | `` | `XX_STRING` | `mpd_password`, `mpd_password_len` | generated string parser | Copy string only. Runtime application applies non-empty passwords to the MPD client; empty values preserve the existing no-setter behavior. | owned string + `_len`; init NULL/0; `free2` on destroy |
 | `mpd_music_dir` | `~/music` | `XX_DIR` | `mpd_music_dir`, `mpd_music_dir_len` | `APPLY_STRING_DIR` | Expand leading `~`; ensure a trailing `/`. | owned string + `_len`; init NULL/0; `free2` on destroy |
-| `mpd_connection_timeout` | `5` | `XX_INT_RANGE` | `mpd_connection_timeout` | `ncm_parse_int32` + option-specific checks | Parse unbounded `int32`; immediately set MPD timeout to value * 1000 ms. | trivial scalar |
+| `mpd_connection_timeout` | `5` | `XX_INT_RANGE` | `mpd_connection_timeout` | generated integer-range parser | Parse unbounded `int32`; runtime application later sets the MPD timeout to value * 1000 ms. | trivial scalar |
 | `mpd_crossfade_time` | `5` | `XX_INT_RANGE` | `mpd_crossfade_time` | `ncm_parse_int32` + option-specific checks | Parse `int32`; no explicit bounds today. | trivial scalar |
 | `random_exclude_pattern` | `` | `XX_STRING` | `random_exclude_pattern`, `random_exclude_pattern_len` | `APPLY_STRING` | Copy value bytes verbatim. | owned string + `_len`; init NULL/0; `free2` on destroy |
 | `visualizer_data_source` | `/tmp/mpd.fifo` | `XX_PATH` | `visualizer_data_source`, `visualizer_data_source_len` | `APPLY_STRING_PATH` | Expand leading `~`; otherwise copy bytes. | owned string + `_len`; init NULL/0; `free2` on destroy |
@@ -101,11 +108,11 @@ screen list are migrated in step 11.
 | `visualizer_spectrum_dft_size` | `2` | `XX_INT_RANGE` | `visualizer_spectrum_dft_size` | `ncm_parse_int32` + option-specific checks | Parse `int32`; require 1..5. | trivial scalar |
 | `visualizer_spectrum_gain` | `10` | `XX_DOUBLE_RANGE` | `visualizer_spectrum_gain` | `ncm_parse_double` + option-specific checks | Parse `double`; require 0..100. | trivial scalar |
 | `visualizer_spectrum_hz_min` | `20` | `XX_DOUBLE_RANGE` | `visualizer_spectrum_hz_min` | `ncm_parse_double` + option-specific checks | Parse `double`; require >= 1. | trivial scalar |
-| `visualizer_spectrum_hz_max` | `20000` | `XX_DOUBLE_RANGE` | `visualizer_spectrum_hz_max` | `ncm_parse_double` + option-specific checks | Parse `double`; require >= current `visualizer_spectrum_hz_min + 1` (order-dependent cross-field validation). | trivial scalar |
+| `visualizer_spectrum_hz_max` | `20000` | `XX_DOUBLE_RANGE` | `visualizer_spectrum_hz_max` | generated double-range parser | Parse `double`; require >= 1. `configuration_validate()` requires it to be greater than `visualizer_spectrum_hz_min` after all options/defaults are applied. | trivial scalar |
 | `visualizer_spectrum_log_scale_x` | `yes` | `XX_BOOL` | `visualizer_spectrum_log_scale_x` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `visualizer_spectrum_log_scale_y` | `yes` | `XX_BOOL` | `visualizer_spectrum_log_scale_y` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `visualizer_color` | `blue, cyan, green, yellow, magenta, red` | `XX_FORMATTED_COLOR_LIST` | `visualizer_color` | generated `settings_parse_formatted_color_list` wrapper | Comma-separated formatted colors; ignore empty items; at least one item required. | array of owned `NcFormattedColor`; clear elements and free storage |
-| `system_encoding` | `` | `XX_STRING` | `system_encoding`, `system_encoding_len` | `apply_system_encoding` custom body | Compatibility/no-op today: discard input and clear stored string. | owned string + `_len`; init NULL/0; `free2` on destroy |
+| `system_encoding` | `` | `XX_STRING` | `system_encoding`, `system_encoding_len` | generated string parser | Store the configured value. It remains a compatibility option because current runtime consumers ignore the stored value. | owned string + `_len`; init NULL/0; `free2` on destroy |
 | `playlist_disable_highlight_delay` | `5` | `XX_INT_RANGE` | `playlist_disable_highlight_delay` | `ncm_parse_int32` + option-specific checks | Parse `int32`; no explicit bounds today. | trivial scalar |
 | `message_delay_time` | `5` | `XX_INT_RANGE` | `message_delay_time` | `APPLY_UINT` | Parse `int32`; no explicit bounds today. | trivial scalar |
 | `song_list_format` | `{%a - }{%t}\|{$8%f$9}$R{$3%l$9}` | `XX_FORMAT` | `song_list_format` | `settings_parse_format` | Parse format expression with `NCM_FORMAT_FLAG_ALL`. | `NcmFormatAst`; zero-init; destroy AST |
@@ -126,7 +133,7 @@ screen list are migrated in step 11.
 | `song_window_title_format` | `{%a - }{%t}\|{%f}` | `XX_FORMAT` | `song_window_title_format` | `settings_parse_format` | Parse format expression with `NCM_FORMAT_FLAG_TAG`. | `NcmFormatAst`; zero-init; destroy AST |
 | `browser_sort_mode` | `type` | `XX_ENUM` | `browser_sort_mode` | `ncm_sort_mode_parse` plus `noop` -> `none` alias | Parse sort mode; compatibility alias `noop` is rewritten to `none`. | trivial scalar |
 | `browser_sort_format` | `{%a - }{%t}\|{%f} {%l}` | `XX_FORMAT` | `browser_sort_format` | `settings_parse_format` | Parse format expression with `NCM_FORMAT_FLAG_TAG`. | `NcmFormatAst`; zero-init; destroy AST |
-| `song_columns_list_format` | `(20)[]{a} (6f)[green]{NE} (50)[white]{t\|f:Title} (20)[cyan]{b} (7f)[magenta]{l}` | `XX_COLUMNS` | `song_columns_list_format`, derived `song_columns_mode_format` | `apply_song_columns_list_format` custom body | Custom `(width)[color]{tags}` grammar; rebuilds `ColumnArray`, stretch metadata, and derived `song_columns_mode_format` AST. | `ColumnArray` + derived format AST; clear/free both |
+| `song_columns_list_format` | `(20)[]{a} (6f)[green]{NE} (50)[white]{t\|f:Title} (20)[cyan]{b} (7f)[magenta]{l}` | `XX_COLUMNS` | `song_columns_list_format`, derived `song_columns_mode_format` | generated `XX_COLUMNS` wrapper | Custom `(width)[color]{tags}` grammar; rebuilds `ColumnArray`, stretch metadata, and derived `song_columns_mode_format` AST. | `ColumnArray` + derived format AST; clear/free both |
 | `execute_on_song_change` | `` | `XX_PATH` | `execute_on_song_change`, `execute_on_song_change_len` | `APPLY_STRING_PATH` | Expand leading `~`; otherwise copy bytes. | owned string + `_len`; init NULL/0; `free2` on destroy |
 | `execute_on_player_state_change` | `` | `XX_PATH` | `execute_on_player_state_change`, `execute_on_player_state_change_len` | `APPLY_STRING_PATH` | Expand leading `~`; otherwise copy bytes. | owned string + `_len`; init NULL/0; `free2` on destroy |
 | `playlist_show_mpd_host` | `no` | `XX_BOOL` | `playlist_show_mpd_host` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
@@ -145,13 +152,13 @@ screen list are migrated in step 11.
 | `autocenter_mode` | `no` | `XX_BOOL` | `autocenter_mode` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `centered_cursor` | `no` | `XX_BOOL` | `centered_cursor` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `progressbar_look` | `=>` | `XX_LOOK` | `progressbar_look` | generated `settings_parse_look` wrapper | Require 2..3 UTF-8 characters; if 2, append an extra NUL byte. | `StrBuilder`; generated zero-init and `sb_free` |
-| `default_place_to_search_in` | `database` | `XX_ENUM` | `default_place_to_search_in` | manual database/playlist -> bool | Named two-state value stored as bool: `database` -> true, `playlist` -> false. | trivial scalar |
+| `default_place_to_search_in` | `database` | `XX_NAMED_BOOL` | `default_place_to_search_in` | generated `XX_NAMED_BOOL` wrapper | Named two-state value stored as bool: `database` -> true, `playlist` -> false. | trivial scalar |
 | `user_interface` | `classic` | `XX_ENUM` | `user_interface` | `ncm_design_parse` | Parse named value into enum-like storage. | trivial scalar |
 | `data_fetching_delay` | `yes` | `XX_BOOL` | `data_fetching_delay` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `media_library_hide_album_dates` | `no` | `XX_BOOL` | `media_library_hide_album_dates` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `media_library_primary_tag` | `artist` | `XX_ENUM` | `media_library_primary_tag` | manual MPD tag mapping | Manual enum mapping: artist, album_artist, date, genre, composer, performer. | trivial scalar |
 | `media_library_albums_split_by_date` | `yes` | `XX_BOOL` | `media_library_albums_split_by_date` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
-| `default_find_mode` | `wrapped` | `XX_ENUM` | `default_find_mode` | manual wrapped/normal -> bool | Named two-state value stored as bool: `wrapped` -> true, `normal` -> false. | trivial scalar |
+| `default_find_mode` | `wrapped` | `XX_NAMED_BOOL` | `default_find_mode` | generated `XX_NAMED_BOOL` wrapper | Named two-state value stored as bool: `wrapped` -> true, `normal` -> false. | trivial scalar |
 | `default_tag_editor_pattern` | `%n - %t` | `XX_STRING` | `default_tag_editor_pattern`, `default_tag_editor_pattern_len` | `APPLY_STRING` | Copy value bytes verbatim. | owned string + `_len`; init NULL/0; `free2` on destroy |
 | `header_visibility` | `yes` | `XX_BOOL` | `header_visibility` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `statusbar_visibility` | `yes` | `XX_BOOL` | `statusbar_visibility` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
@@ -170,9 +177,9 @@ screen list are migrated in step 11.
 | `show_hidden_files_in_local_browser` | `no` | `XX_BOOL` | `show_hidden_files_in_local_browser` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `screen_switcher_mode` | `playlist, browser` | `XX_SCREEN_LIST` | `screen_switcher_mode`, `screen_switcher_previous` | generated `settings_parse_screen_list` wrapper | Special `previous` sets a companion bool; otherwise parse a non-empty comma-separated list of startup-valid screens. | `ScreenTypeArray` + companion bool; free array storage |
 | `startup_screen` | `playlist` | `XX_ENUM` | `startup_screen` | `screen_type_parse_startup` | Parse only screens allowed at startup. | trivial scalar |
-| `startup_slave_screen` | `` | `XX_OPTIONAL_ENUM` | `startup_slave_screen`, `has_startup_slave_screen_type` | `apply_startup_slave_screen` custom body | Empty means unset; otherwise parse startup-valid screen and set presence flag. | enum + presence bool; trivial scalars |
+| `startup_slave_screen` | `` | `XX_OPTIONAL_ENUM` | `startup_slave_screen`, `has_startup_slave_screen_type` | generated optional-enum wrapper using `screen_type_parse_startup` | Empty means unset; otherwise parse startup-valid screen and set presence flag. | enum + presence bool; generated scalar lifecycle |
 | `startup_slave_screen_focus` | `no` | `XX_BOOL` | `startup_slave_screen_focus` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
-| `locked_screen_width_part` | `50` | `XX_DOUBLE_RANGE` | `locked_screen_width_part` | `ncm_parse_double` + option-specific checks | Parse unbounded `double`, then divide by 100 before storage. | trivial scalar |
+| `locked_screen_width_part` | `50` | `XX_DOUBLE_RANGE` | `locked_screen_width_part` | generated double-range parser | Parse `double`; require 20..80; store the user-facing percentage. Runtime geometry converts it through `configuration_locked_screen_width_fraction()`. | trivial scalar |
 | `ask_for_locked_screen_width_part` | `yes` | `XX_BOOL` | `ask_for_locked_screen_width_part` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `media_library_column_width_ratio_two` | `1:1` | `XX_RATIO` | `media_library_column_width_ratio_two` | generated `settings_parse_ratio` wrapper | Parse exactly 2 colon-separated ints; sum must be nonzero. | `NcmInt32Array`; zero-init; array destroy |
 | `media_library_column_width_ratio_three` | `1:1:1` | `XX_RATIO` | `media_library_column_width_ratio_three` | generated `settings_parse_ratio` wrapper | Parse exactly 3 colon-separated ints; sum must be nonzero. | `NcmInt32Array`; zero-init; array destroy |
@@ -183,7 +190,7 @@ screen list are migrated in step 11.
 | `display_volume_level` | `yes` | `XX_BOOL` | `display_volume_level` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `display_bitrate` | `no` | `XX_BOOL` | `display_bitrate` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `display_remaining_time` | `no` | `XX_BOOL` | `display_remaining_time` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
-| `regular_expressions` | `extended` | `XX_ENUM` | `regular_expressions` | manual regex-flag mapping | Manual mapping: none/basic/extended to case-insensitive regex flags. | trivial scalar |
+| `regular_expressions` | `extended` | `XX_UINT32_CHOICE` | `regular_expressions` | generated `XX_UINT32_CHOICE` wrapper | Manual mapping: none/basic/extended to case-insensitive regex flags. | trivial scalar |
 | `ignore_leading_the` | `no` | `XX_BOOL` | `ignore_leading_the` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `block_search_constraints_change_if_items_found` | `yes` | `XX_BOOL` | `block_search_constraints_change_if_items_found` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `mouse_support` | `yes` | `XX_BOOL` | `mouse_support` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
@@ -194,8 +201,8 @@ screen list are migrated in step 11.
 | `tags_separator` | ` \| ` | `XX_STRING` | `tags_separator`, `tags_separator_len` | `APPLY_STRING` | Copy value bytes verbatim. | owned string + `_len`; init NULL/0; `free2` on destroy |
 | `tag_editor_extended_numeration` | `no` | `XX_BOOL` | `tag_editor_extended_numeration` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `media_library_sort_by_mtime` | `no` | `XX_BOOL` | `media_library_sort_by_mtime` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
-| `enable_window_title` | `yes` | `XX_BOOL` | `enable_window_title` | `apply_enable_window_title` custom body | If TERM is missing, contains `linux`, or begins `eterm`, force false and optionally warn; otherwise parse `yes`/`no`. | trivial scalar |
-| `search_engine_default_search_mode` | `1` | `XX_INT_RANGE` | `search_engine_default_search_mode` | `ncm_parse_int32` + option-specific checks | Parse `int32`; require 1..3, then store value - 1. | trivial scalar |
+| `enable_window_title` | `yes` | `XX_BOOL` | `enable_window_title` | generated bool parser | Parse `yes`/`no` without consulting the environment. `configuration_apply_runtime()` later disables it and optionally warns if TERM is missing, contains `linux`, or begins `eterm`. | trivial scalar |
+| `search_engine_default_search_mode` | `1` | `XX_INT_RANGE` | `search_engine_default_search_mode` | generated integer-range parser | Parse `int32`; require 1..3; store the user-facing mode number. Search-engine initialization converts it through `configuration_search_engine_default_mode()`. | trivial scalar |
 | `external_editor` | `nano` | `XX_PATH` | `external_editor`, `external_editor_len` | `APPLY_STRING_PATH` | Expand leading `~`; otherwise copy bytes. | owned string + `_len`; init NULL/0; `free2` on destroy |
 | `use_console_editor` | `yes` | `XX_BOOL` | `use_console_editor` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
 | `colors_enabled` | `yes` | `XX_BOOL` | `colors_enabled` | `APPLY_BOOL` | Parse `yes`/`no`. | trivial scalar |
@@ -224,7 +231,7 @@ physical members of `Configuration`; most are companions or derived state.
 | --- | --- |
 | `visualizer_fifo_path`, `visualizer_fifo_path_len` | no option entry; currently never populated by the settings parser |
 | all string `*_len` fields | ownership/length companions of string-like options |
-| `song_columns_mode_format` | derived from `song_columns_list_format` |
+| `song_columns_mode_format` | derived field generated by the `song_columns_list_format` `XX_COLUMNS` entry |
 | `screen_switcher_previous` | companion state of `screen_switcher_mode` |
 | `has_startup_slave_screen_type` | presence flag of `startup_slave_screen` |
 | the eight prefix/suffix `*_length` fields | cached widths derived from the corresponding buffer options |
@@ -240,10 +247,13 @@ physical members of `Configuration`; most are companions or derived state.
 - `configuration_read()` begins by clearing the target `Configuration`.
 - Option descriptors are immutable; duplicate-option state is local to each
   `configuration_read()` invocation and is shared across all files in that read.
-- MPD host/port/password/timeout parsing currently mutates `global_mpd`.
-- `enable_window_title` currently depends on the process `TERM` environment.
-- `visualizer_spectrum_hz_max` currently validates against the already parsed
-  value of `visualizer_spectrum_hz_min`.
+- Configuration option parsing does not mutate `global_mpd`; MPD host, port,
+  password, and timeout are applied in `configuration_apply_runtime()`.
+- `enable_window_title` parsing is environment-independent; terminal capability
+  handling occurs in `configuration_apply_runtime()`.
+- `visualizer_spectrum_hz_max` is parsed independently and the relationship
+  with `visualizer_spectrum_hz_min` is checked by `configuration_validate()`
+  after all explicit values and defaults have been applied.
 
 ## Step-1 regression coverage
 
@@ -252,8 +262,10 @@ the implementation is reorganized:
 
 - effective descriptor count and unique option names;
 - successful parsing of every declared default in descriptor order;
-- representative post-default values, including transformed values;
+- representative post-default values, including user-facing values;
 - numeric boundary acceptance/rejection for currently bounded settings;
+- post-parse whole-configuration validation for dependent settings;
 - duplicate-option rejection;
 - destruction/reset of representative owned objects, including a second
-  destroy to catch non-idempotent cleanup.
+  destroy to catch non-idempotent cleanup;
+- parser/runtime separation for MPD settings and window-title parsing.

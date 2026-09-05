@@ -1,15 +1,15 @@
 /*
  * Generated configuration options migrated to the X-macro subsystem.
  *
- * This file intentionally has no include guard.  Its includer must define all
- * XX_* macros below before including it.
+ * This file intentionally has no include guard.  Includers define the XX_*
+ * macros needed by the generation pass before including it.
  */
 
 XX_DIR(ncmpcpp_directory, "~/.config/ncmpcpp/")
 XX_DIR(lyrics_directory, "~/.lyrics/")
 
 XX_PATH(mpd_host, "localhost")
-XX_INT_RANGE(mpd_port, "6600", INT32_MIN, INT32_MAX)
+XX_INT_RANGE(mpd_port, "6600", INT32_MIN, 65535)
 XX_STRING(mpd_password, "")
 XX_DIR(mpd_music_dir, "~/music")
 XX_INT_RANGE(mpd_connection_timeout, "5", INT32_MIN, INT32_MAX)
@@ -26,8 +26,7 @@ XX_BOOL(visualizer_spectrum_smooth_look_legacy_chars, "yes")
 XX_INT_RANGE(visualizer_spectrum_dft_size, "2", 1, 5)
 XX_DOUBLE_RANGE(visualizer_spectrum_gain, "10", 0, 100)
 XX_DOUBLE_RANGE(visualizer_spectrum_hz_min, "20", 1, INFINITY)
-XX_DOUBLE_RANGE(visualizer_spectrum_hz_max, "20000",
-                config->visualizer_spectrum_hz_min + 1, INFINITY)
+XX_DOUBLE_RANGE(visualizer_spectrum_hz_max, "20000", 1, INFINITY)
 XX_BOOL(visualizer_spectrum_log_scale_x, "yes")
 XX_BOOL(visualizer_spectrum_log_scale_y, "yes")
 XX_STRING(system_encoding, "")
@@ -65,7 +64,7 @@ XX_BOOL(allow_for_physical_item_deletion, "no")
 XX_STRING(lastfm_preferred_language, "en")
 XX_BOOL(show_hidden_files_in_local_browser, "no")
 XX_BOOL(startup_slave_screen_focus, "no")
-XX_DOUBLE_RANGE(locked_screen_width_part, "50", -INFINITY, INFINITY)
+XX_DOUBLE_RANGE(locked_screen_width_part, "50", 20, 80)
 XX_BOOL(ask_for_locked_screen_width_part, "yes")
 XX_BOOL(jump_to_now_playing_song_at_start, "yes")
 XX_BOOL(ask_before_clearing_playlists, "yes")
@@ -113,6 +112,11 @@ XX_ENUM(space_add_mode, enum SpaceAddMode, "add_remove",
         ncm_space_add_mode_parse)
 XX_ENUM(startup_screen, enum ScreenType, "playlist",
         screen_type_parse_startup)
+
+/* Optional enum-backed settings. */
+XX_OPTIONAL_ENUM(startup_slave_screen, enum ScreenType, "",
+                 screen_type_parse_startup,
+                 has_startup_slave_screen_type, NCM_SCREEN_TYPE_COUNT)
 
 /* Color-backed settings. */
 XX_FORMATTED_COLOR(empty_tag_color, "cyan")
@@ -174,3 +178,26 @@ XX_SCREEN_LIST(screen_switcher_mode, "playlist, browser",
 XX_RATIO(media_library_column_width_ratio_two, "1:1", 2)
 XX_RATIO(media_library_column_width_ratio_three, "1:1:1", 3)
 XX_RATIO(playlist_editor_column_width_ratio, "1:2", 2)
+
+/* Custom/multi-field settings. */
+#if defined(XX_COLUMNS)
+XX_COLUMNS(
+    song_columns_list_format,
+    "(20)[]{a} (6f)[green]{NE} (50)[white]{t|f:Title}"
+    " (20)[cyan]{b} (7f)[magenta]{l}",
+    song_columns_mode_format)
+#endif
+
+/* Named bool-backed settings. */
+#if defined(XX_NAMED_BOOL)
+XX_NAMED_BOOL(default_place_to_search_in, "database",
+              "database", "playlist")
+XX_NAMED_BOOL(default_find_mode, "wrapped", "wrapped", "normal")
+#endif
+
+/* UInt32 choice settings. */
+#if defined(XX_UINT32_CHOICE)
+XX_UINT32_CHOICE(regular_expressions, "extended",
+                 settings_parse_regular_expressions,
+                 NCM_REGEX_EXTENDED_CASE_INSENSITIVE)
+#endif

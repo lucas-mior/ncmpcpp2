@@ -61,6 +61,11 @@ typedef struct Configuration {
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     double NAME;
 #define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) C_TYPE NAME;
+#define XX_OPTIONAL_ENUM( \
+    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+) \
+    C_TYPE NAME; \
+    bool PRESENT_FIELD;
 #define XX_COLOR(NAME, DEFAULT_VALUE) NcColor NAME;
 #define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE) NcFormattedColor NAME;
 #define XX_BORDER(NAME, DEFAULT_VALUE) NcBorder NAME;
@@ -78,7 +83,15 @@ typedef struct Configuration {
 #define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD) \
     ScreenTypeArray NAME; \
     bool PREVIOUS_FIELD;
+#define XX_NAMED_BOOL(NAME, DEFAULT_VALUE, TRUE_VALUE, FALSE_VALUE) bool NAME;
+#define XX_UINT32_CHOICE(NAME, DEFAULT_VALUE, PARSER, UNSET_VALUE) uint32 NAME;
+#define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD) \
+    NcmFormatAst FORMAT_FIELD; \
+    ColumnArray NAME;
 #include "configuration_options.def"
+#undef XX_COLUMNS
+#undef XX_UINT32_CHOICE
+#undef XX_NAMED_BOOL
 #undef XX_SCREEN_LIST
 #undef XX_LYRICS_FETCHERS
 #undef XX_FORMATTED_COLOR_LIST
@@ -90,6 +103,7 @@ typedef struct Configuration {
 #undef XX_BORDER
 #undef XX_FORMATTED_COLOR
 #undef XX_COLOR
+#undef XX_OPTIONAL_ENUM
 #undef XX_ENUM
 #undef XX_DOUBLE_RANGE
 #undef XX_INT_RANGE
@@ -102,18 +116,8 @@ typedef struct Configuration {
 
     int32 visualizer_fifo_path_len;
 
-    NcmFormatAst song_columns_mode_format;
-
-    ColumnArray song_columns_list_format;
-
-    bool default_find_mode;
-    bool default_place_to_search_in;
-    bool has_startup_slave_screen_type;
-
     int32 lyrics_db;
-    uint32 regular_expressions;
 
-    enum ScreenType startup_slave_screen;
 } Configuration;
 
 void column_init(Column *column);
@@ -124,10 +128,20 @@ void column_array_clear(ColumnArray *array);
 void configuration_init(Configuration *config);
 void configuration_destroy(Configuration *config);
 void configuration_clear(Configuration *config);
+int32 configuration_validate(const Configuration *config, NcmError *ncm_error);
+double configuration_locked_screen_width_fraction(
+    const Configuration *config
+);
+enum SearchEngineSearchMode configuration_search_engine_default_mode(
+    const Configuration *config
+);
 int32 configuration_read(Configuration *config,
                          NcmStringViewArray *config_paths,
                          bool ignore_errors, bool quiet,
                          NcmError *ncm_error);
+int32 configuration_apply_runtime(Configuration *config,
+                                  NcmMpdClient *client, bool quiet,
+                                  NcmError *ncm_error);
 
 extern Configuration Config;
 
