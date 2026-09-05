@@ -294,7 +294,6 @@ void
 nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property) {
     NcFormattedColor *formatted_color;
     enum NcFormat *formats;
-    enum NcFormat format;
     int32 count;
 
     switch (property->type) {
@@ -321,6 +320,8 @@ nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property) {
         formats = nc_formatted_color_formats(formatted_color);
         count = nc_formatted_color_format_count(formatted_color);
         for (int32 i = count - 1; i >= 0; i -= 1) {
+            enum NcFormat format;
+
             switch (formats[i]) {
             case NC_FORMAT_BOLD:
                 format = NC_FORMAT_NO_BOLD;
