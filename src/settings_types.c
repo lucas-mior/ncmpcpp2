@@ -219,13 +219,13 @@ configuration_clear(Configuration *config) {
 }
 
 double
-configuration_locked_screen_width_fraction(const Configuration *config) {
+configuration_locked_screen_width_fraction(Configuration *config) {
     ASSERT(config != NULL);
     return config->locked_screen_width_part / 100.0;
 }
 
 enum SearchEngineSearchMode
-configuration_search_engine_default_mode(const Configuration *config) {
+configuration_search_engine_default_mode(Configuration *config) {
     int32 mode;
 
     ASSERT(config != NULL);

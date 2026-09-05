@@ -1,8 +1,9 @@
 /*
  * Authoritative configuration option schema.
  *
- * This file intentionally has no include guard. It is expanded through
- * configuration_options_pass.h by defining the XX_* macros needed by a pass.
+ * An ordinary option of an existing type should require only one entry here.
+ * This file intentionally has no include guard and is expanded through
+ * configuration_options_pass.h by the generation passes.
  */
 
 XX_DIR(ncmpcpp_directory, "~/.config/ncmpcpp/")

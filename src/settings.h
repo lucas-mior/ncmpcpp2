@@ -59,6 +59,7 @@ enum SettingsOptionId {
     SETTINGS_OPTION_COUNT,
 };
 
+/* Fields and intrinsic companion state come from the option schema. */
 typedef struct Configuration {
 #define XX_BOOL(NAME, DEFAULT_VALUE) bool NAME;
 #define XX_STRING(NAME, DEFAULT_VALUE) \
@@ -109,12 +110,10 @@ Column *column_array_append(ColumnArray *array);
 void configuration_init(Configuration *config);
 void configuration_destroy(Configuration *config);
 void configuration_clear(Configuration *config);
-int32 configuration_validate(const Configuration *config, NcmError *ncm_error);
-double configuration_locked_screen_width_fraction(
-    const Configuration *config
-);
+int32 configuration_validate(Configuration *config, NcmError *ncm_error);
+double configuration_locked_screen_width_fraction(Configuration *config);
 enum SearchEngineSearchMode configuration_search_engine_default_mode(
-    const Configuration *config
+    Configuration *config
 );
 int32 configuration_read(Configuration *config,
                          NcmStringViewArray *config_paths,
