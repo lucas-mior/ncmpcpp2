@@ -97,11 +97,9 @@ menu_is_highlightable(NcMenu *menu, int32 pos,
 
 static bool
 menu_position_is_selectable(NcMenu *menu, int32 pos) {
-    void *item;
-    uint32 flags;
+    void *item = nc_menu_active_item_at(menu, pos);
+    uint32 flags = menu_flags_for_item(menu, item);
 
-    item = nc_menu_active_item_at(menu, pos);
-    flags = menu_flags_for_item(menu, item);
     if (!(flags & NC_MENU_ITEM_SELECTABLE)) {
         return false;
     }
