@@ -1436,7 +1436,7 @@ typedef struct NcmFsEntry {
 } NcmFsEntry;
 
 typedef struct NcmFsDirectory {
-    void *dir;
+    DIR *dir;
     char *path;
     int32 path_len;
 } NcmFsDirectory;
