@@ -218,6 +218,7 @@ nc_buffer_add_color(NcBuffer *buffer, int32 position, NcColor color, int64 id) {
     property.id = id;
     property.position = position;
     property.type = NC_BUFFER_PROPERTY_COLOR;
+
     nc_buffer_add_property(buffer, &property);
     return;
 }
@@ -231,6 +232,7 @@ nc_buffer_add_format(NcBuffer *buffer, int32 position,
     property.id = id;
     property.position = position;
     property.type = NC_BUFFER_PROPERTY_FORMAT;
+
     nc_buffer_add_property(buffer, &property);
     return;
 }
