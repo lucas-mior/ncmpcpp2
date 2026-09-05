@@ -612,7 +612,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                                     ncm_song_position(&song));
                             }
 
-                            if (Config.now_playing_lyrics
+                            if (Config.follow_now_playing_lyrics
                                 && app_controller_is_screen_visible(
                                     app_screen_lyrics_base())
                                 && (app_controller_previous_screen()

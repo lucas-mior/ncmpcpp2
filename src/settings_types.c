@@ -246,7 +246,7 @@ configuration_init_unchecked(Configuration *config) {
     config->autocenter_mode = false;
     config->wrapped_search = false;
     config->incremental_seeking = false;
-    config->now_playing_lyrics = false;
+    config->follow_now_playing_lyrics = false;
     config->fetch_lyrics_in_background = false;
     config->local_browser_show_hidden_files = false;
     config->search_in_db = false;

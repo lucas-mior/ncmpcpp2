@@ -1349,8 +1349,8 @@ action_runtime_toggle_lyrics_update_on_song_change(void) {
     if (!app_screen_lyrics_is_current()) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    Config.now_playing_lyrics = !Config.now_playing_lyrics;
-    if (Config.now_playing_lyrics) {
+    Config.follow_now_playing_lyrics = !Config.follow_now_playing_lyrics;
+    if (Config.follow_now_playing_lyrics) {
         action_runtime_print_toggle(
             STRLIT("Update lyrics if song changes: "), "on");
     } else {
