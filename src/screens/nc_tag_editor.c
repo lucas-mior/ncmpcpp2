@@ -122,7 +122,7 @@ tag_editor_draw_tag(NcMenu *menu, NcWindow *window, void *item,
         NcBufferProperty *properties = nc_buffer_properties(&buffer);
         char *data = nc_buffer_data(&buffer);
         int32 len = nc_buffer_len(&buffer);
-        int32 property_count = ARRAY_LEN(buffer->properties);
+        int32 property_count = ARRAY_LEN(buffer.properties);
         int32 property_index = 0;
 
         for (int32 i = 0; ; i += 1) {
