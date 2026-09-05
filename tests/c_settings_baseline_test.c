@@ -148,7 +148,7 @@ settings_assert_generated_empty(Configuration *config) {
     ASSERT(config->NAME.items == NULL); \
     ASSERT(config->NAME.len == 0); \
     ASSERT(config->NAME.cap == 0);
-#include "configuration_options_pass.h"
+#include "config_options_pass.h"
 
     return;
 }
@@ -164,7 +164,7 @@ test_generated_option_identity(void) {
         ncmpcpp_options[SETTINGS_OPTION_##NAME].default_value_len, \
         DEFAULT_VALUE)); \
     ASSERT(ncmpcpp_options[SETTINGS_OPTION_##NAME].apply == apply_##NAME);
-#include "configuration_options_pass.h"
+#include "config_options_pass.h"
 
     return;
 }
@@ -453,7 +453,7 @@ test_generated_numeric_boundaries(void) {
 #define XX_DOUBLE_RANGE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     settings_test_double_range(apply_##NAME, &config, &config.NAME, \
                                MINIMUM, MAXIMUM);
-#include "configuration_options_pass.h"
+#include "config_options_pass.h"
 
     configuration_destroy(&config);
     settings_assert_generated_empty(&config);

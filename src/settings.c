@@ -84,7 +84,7 @@ typedef struct SettingsOption {
 #define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD) \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, ColumnArray); \
     SETTINGS_ASSERT_FIELD_TYPE(FORMAT_FIELD, NcmFormatAst);
-#include "configuration_options_pass.h"
+#include "config_options_pass.h"
 #undef SETTINGS_ASSERT_FIELD_TYPE
 
 static int32
@@ -1194,7 +1194,7 @@ configuration_apply_runtime(Configuration *config, NcmMpdClient *client,
                                       value, value_len, ncm_error); \
     }
 
-#include "configuration_options_pass.h"
+#include "config_options_pass.h"
 
 #define OPT(NAME, DEFAULT_VALUE)                 \
     {                                            \
@@ -1208,7 +1208,7 @@ configuration_apply_runtime(Configuration *config, NcmMpdClient *client,
 static const SettingsOption ncmpcpp_options[] = {
 #define XX_OPTION(NAME, DEFAULT_VALUE, ...) \
     [SETTINGS_OPTION_##NAME] = OPT(NAME, DEFAULT_VALUE),
-#include "configuration_options_pass.h"
+#include "config_options_pass.h"
 };
 
 _Static_assert(LENGTH(ncmpcpp_options) == SETTINGS_OPTION_COUNT,

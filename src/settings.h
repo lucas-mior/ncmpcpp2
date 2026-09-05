@@ -55,7 +55,7 @@ NCM_ARRAY_DECLARE_APPEND(ncm_formatted_color_array, NcmFormattedColorArray,
 
 enum SettingsOptionId {
 #define XX_OPTION(NAME, DEFAULT_VALUE, ...) SETTINGS_OPTION_##NAME,
-#include "configuration_options_pass.h"
+#include "config_options_pass.h"
     SETTINGS_OPTION_COUNT,
 };
 
@@ -98,7 +98,7 @@ typedef struct Configuration {
 #define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD) \
     NcmFormatAst FORMAT_FIELD; \
     ColumnArray NAME;
-#include "configuration_options_pass.h"
+#include "config_options_pass.h"
 
 } Configuration;
 

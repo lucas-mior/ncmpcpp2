@@ -144,7 +144,7 @@ configuration_init_unchecked(Configuration *config) {
 #define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD) \
     config->FORMAT_FIELD = (NcmFormatAst){0}; \
     config->NAME = (ColumnArray){0};
-#include "configuration_options_pass.h"
+#include "config_options_pass.h"
 
     return;
 }
@@ -205,7 +205,7 @@ configuration_destroy(Configuration *config) {
 #define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD) \
     ncm_format_ast_destroy(&config->FORMAT_FIELD); \
     column_array_destroy(&config->NAME);
-#include "configuration_options_pass.h"
+#include "config_options_pass.h"
 
     configuration_init_unchecked(config);
 
