@@ -1629,8 +1629,7 @@ server_info_render(void *user, NcBuffer *buffer) {
 static void
 server_info_switch_to(void *user) {
     (void)user;
-    nc_screen_switcher_finish_switch(
-        app_screen_server_info_base());
+    nc_screen_switcher_finish_switch(app_screen_server_info_base());
     draw_screen_header(app_screen_server_info_base());
     return;
 }
