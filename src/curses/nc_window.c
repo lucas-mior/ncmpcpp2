@@ -1388,9 +1388,8 @@ nc_window_prompt(NcWindow *window, NcPrompt *prompt, char **result) {
     }
 
     if ((status == NC_PROMPT_ACCEPTED) && input) {
-        bool remember;
+        bool remember = true;
 
-        remember = true;
         if (prompt) {
             remember = prompt->remember;
         }
