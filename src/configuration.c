@@ -529,7 +529,7 @@ ncm_configuration_options_apply(NcmConfigurationOptions *options,
     if (options->screen) {
         status = screen_type_parse_startup(options->screen_name.data,
                                            options->screen_name.len,
-                                           &Config.startup_screen_type);
+                                           &Config.startup_screen);
         if (status < 0) {
             return ncm_error_set_status(ncm_error, -EINVAL,
                                         STRLIT("unknown screen"));
@@ -538,7 +538,7 @@ ncm_configuration_options_apply(NcmConfigurationOptions *options,
     if (options->slave_screen) {
         status = screen_type_parse_startup(options->slave_screen_name.data,
                                            options->slave_screen_name.len,
-                                           &Config.startup_slave_screen_type);
+                                           &Config.startup_slave_screen);
         if (status < 0) {
             return ncm_error_set_status(ncm_error, -EINVAL,
                                         STRLIT("unknown slave screen"));

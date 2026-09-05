@@ -241,6 +241,7 @@ search_engine_screen_format_song_text(SearchEngineScreen *screen,
 
 void
 search_engine_screen_update_column_title(SearchEngineScreen *screen) {
+    ColumnArray *columns = &Config.song_columns_list_format;
     int32 list_width;
 
     if (screen == NULL) {
@@ -249,8 +250,8 @@ search_engine_screen_update_column_title(SearchEngineScreen *screen) {
 
     sb_clear(&screen->column_title);
     if ((Config.search_engine_display_mode != NCM_DISPLAY_MODE_COLUMNS)
-        || !Config.titles_visibility || (Config.columns.items == NULL)
-        || (Config.columns.len <= 0) || (screen->main_height <= 2)) {
+        || !Config.titles_visibility || (columns->items == NULL)
+        || (columns->len <= 0) || (screen->main_height <= 2)) {
         nc_window_set_title(&screen->window, NULL, 0);
         return;
     }
@@ -261,8 +262,8 @@ search_engine_screen_update_column_title(SearchEngineScreen *screen) {
         return;
     }
 
-    ncm_display_column_title(&screen->column_title, Config.columns.items,
-                             Config.columns.len, list_width);
+    ncm_display_column_title(&screen->column_title, columns->items,
+                             columns->len, list_width);
     nc_window_set_title(&screen->window, screen->column_title.data,
                         screen->column_title.len);
     return;
@@ -615,7 +616,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                     }
                     if ((status = ncm_regex_compile(
                          &regexes[i], screen->constraints[i].data,
-                         screen->constraints[i].len, Config.regex_flags,
+                         screen->constraints[i].len, Config.regular_expressions,
                          ncm_error)) < 0) {
                         break;
                     }
@@ -1161,7 +1162,7 @@ search_run_current(NcScreen *base_screen) {
 
     if (pos == SEARCH_ENGINE_SEARCH_SOURCE_ROW) {
         screen->search_in_database = !screen->search_in_database;
-        Config.search_in_db = screen->search_in_database;
+        Config.default_place_to_search_in = screen->search_in_database;
         search_engine_screen_update_search_source_row(screen);
         return 0;
     }
@@ -1275,10 +1276,10 @@ search_build_constraint_row(SearchEngineScreen *screen, int32 idx,
         return;
     }
     nc_buffer_add_formatted_color(
-        buffer, buffer->len, &Config.empty_tags_color, 0);
+        buffer, buffer->len, &Config.empty_tag_color, 0);
     nc_buffer_append_data(buffer, Config.empty_tag_marker, Config.empty_tag_marker_len);
     nc_buffer_add_formatted_color_end(
-        buffer, buffer->len, &Config.empty_tags_color, 0);
+        buffer, buffer->len, &Config.empty_tag_color, 0);
     return;
 }
 
@@ -1403,8 +1404,9 @@ search_draw_row(NcMenu *menu, NcWindow *window, void *item,
 static void
 search_format_columns(NcmSong *song, NcBuffer *buffer,
                       int32 list_width) {
-    ncm_display_song_columns(buffer, song, Config.columns.items,
-                             Config.columns.len, list_width, true);
+    ncm_display_song_columns(
+        buffer, song, Config.song_columns_list_format.items,
+        Config.song_columns_list_format.len, list_width, true);
     return;
 }
 

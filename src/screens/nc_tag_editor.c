@@ -99,11 +99,11 @@ tag_editor_draw_tag(NcMenu *menu, NcWindow *window, void *item,
             Config.show_duplicate_tags);
         if (tag.len <= 0) {
             tag_editor_append_formatted_color(&buffer,
-                                              &Config.empty_tags_color);
+                                              &Config.empty_tag_color);
             nc_buffer_append_data(&buffer,
                                   Config.empty_tag_marker, Config.empty_tag_marker_len);
             tag_editor_append_formatted_color_end(
-                &buffer, &Config.empty_tags_color);
+                &buffer, &Config.empty_tag_color);
         } else {
             nc_buffer_append_data(&buffer, tag.data, tag.len);
         }
@@ -403,9 +403,9 @@ tag_editor_update_menu_highlights(TagEditorScreen *screen) {
         nc_menu_set_highlight_suffix(active, &Config.current_item_suffix);
     }
     {
-        NcBorder dialog_border = Config.window_border;
-        NcBorder parser_border = Config.window_border;
-        NcBorder helper_border = Config.window_border;
+        NcBorder dialog_border = Config.window_border_color;
+        NcBorder parser_border = Config.window_border_color;
+        NcBorder helper_border = Config.window_border_color;
 
         if (screen->active_focus == TAG_EDITOR_FOCUS_PARSER_CHOICE) {
             dialog_border = Config.active_window_border;
@@ -617,17 +617,17 @@ tag_editor_screen_init(TagEditorScreen *screen,
                    start_x, main_start_y, width, main_height,
                    screen->parser_dialog_title.data,
                    screen->parser_dialog_title.len,
-                   color, Config.window_border);
+                   color, Config.window_border_color);
     nc_window_init(&screen->parser_window,
                    start_x, main_start_y, width, main_height,
                    screen->parser_title.data,
                    screen->parser_title.len,
-                   color, Config.window_border);
+                   color, Config.window_border_color);
     nc_window_init(&screen->parser_helper_window,
                    start_x, main_start_y, width, main_height,
                    screen->parser_helper_title.data,
                    screen->parser_helper_title.len,
-                   color, Config.window_border);
+                   color, Config.window_border_color);
 
     screen->start_x = start_x;
     screen->width = width;
@@ -2251,7 +2251,8 @@ tag_editor_screen_search(TagEditorScreen *screen,
         enabled = &screen->directory_search_enabled;
     }
     if ((status = tag_editor_compile_constraint(
-        regex, pattern, pattern_len, Config.regex_flags, ncm_error)) < 0) {
+        regex, pattern, pattern_len, Config.regular_expressions,
+        ncm_error)) < 0) {
         return status;
     }
     sb_set(constraint, pattern, pattern_len);

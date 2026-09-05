@@ -971,7 +971,7 @@ ncm_status_changes_player_state(void) {
             ncm_progressbar_draw(0, 0);
         }
         playlist_screen_reload_remaining(app_screen_playlist());
-        if (Config.design == NCM_DESIGN_ALTERNATIVE) {
+        if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
             if ((header = ui_state_header_window())) {
                 nc_window_go_to_xy(header, 0, 0);
                 nc_window_apply_term_manip(header, NC_TERM_CLEAR_TO_EOL);
@@ -1003,7 +1003,7 @@ ncm_status_changes_player_state(void) {
 
     player_state_len = status_player_state_string(player_state,
                                                   SIZEOF(player_state));
-    switch (Config.design) {
+    switch (Config.user_interface) {
     case NCM_DESIGN_ALTERNATIVE:
         if ((state_window = ui_state_header_window())) {
             nc_window_go_to_xy(state_window, 0, 1);
@@ -1082,26 +1082,26 @@ status_player_state_string(char *buffer, int32 buffer_cap) {
 
     switch (status_player_state) {
     case NCM_STATUS_PLAYER_UNKNOWN:
-        if (Config.design == NCM_DESIGN_ALTERNATIVE) {
+        if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
             string = "[unknown]";
         }
         break;
     case NCM_STATUS_PLAYER_PLAY:
-        if (Config.design == NCM_DESIGN_ALTERNATIVE) {
+        if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
             string = "[playing]";
         } else {
             string = "Playing:";
         }
         break;
     case NCM_STATUS_PLAYER_PAUSE:
-        if (Config.design == NCM_DESIGN_ALTERNATIVE) {
+        if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
             string = "[paused]";
         } else {
             string = "Paused:";
         }
         break;
     case NCM_STATUS_PLAYER_STOP:
-        if (Config.design == NCM_DESIGN_ALTERNATIVE) {
+        if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
             string = "[stopped]";
         }
         break;
@@ -1150,13 +1150,13 @@ status_tracklength_buffer(StrBuilder *buffer) {
 
     sb_clear(buffer);
     if ((Config.display_bitrate) && (status_kbps != 0)
-        && (Config.design == NCM_DESIGN_CLASSIC)) {
+        && (Config.user_interface == NCM_DESIGN_CLASSIC)) {
         sb_append_byte(buffer, '(');
         sb_printf(buffer, "%d", status_kbps);
         SB_APPEND(buffer, " kbps) ");
     }
 
-    if (Config.design == NCM_DESIGN_CLASSIC) {
+    if (Config.user_interface == NCM_DESIGN_CLASSIC) {
         sb_append_byte(buffer, '[');
     }
 
@@ -1183,7 +1183,7 @@ status_tracklength_buffer(StrBuilder *buffer) {
         SB_APPEND(buffer, time_buffer, time_len);
     }
 
-    if (Config.design == NCM_DESIGN_CLASSIC) {
+    if (Config.user_interface == NCM_DESIGN_CLASSIC) {
         sb_append_byte(buffer, ']');
     } else if ((Config.display_bitrate) && (status_kbps != 0)) {
         SB_APPEND(buffer, " (");
@@ -1253,7 +1253,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
         = status_player_state_string(player_state, SIZEOF(player_state));
     status_draw_song_title(&song);
 
-    switch (Config.design) {
+    switch (Config.user_interface) {
     case NCM_DESIGN_CLASSIC:
         footer = ui_state_footer_window();
         if ((footer != NULL)
@@ -1322,10 +1322,12 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
 
             status_tracklength_buffer(&tracklength);
 
-            ncm_format_render_buffer(&Config.new_header_first_line, &song,
-                                     &first, &first, NCM_FORMAT_FLAG_ALL);
-            ncm_format_render_buffer(&Config.new_header_second_line, &song,
-                                     &second, &second, NCM_FORMAT_FLAG_ALL);
+            ncm_format_render_buffer(
+                &Config.alternative_header_first_line_format, &song,
+                &first, &first, NCM_FORMAT_FLAG_ALL);
+            ncm_format_render_buffer(
+                &Config.alternative_header_second_line_format, &song,
+                &second, &second, NCM_FORMAT_FLAG_ALL);
 
             first_len = utf8_width(first.data, first.len);
             first_margin = tracklength.len + 1;
@@ -1423,7 +1425,8 @@ ncm_status_changes_flags(void) {
     StrBuilder switch_state = {0};
     int32 flags_x;
 
-    if (!Config.header_visibility && (Config.design == NCM_DESIGN_CLASSIC)) {
+    if (!Config.header_visibility
+        && (Config.user_interface == NCM_DESIGN_CLASSIC)) {
         return;
     }
 
@@ -1431,7 +1434,7 @@ ncm_status_changes_flags(void) {
         return;
     }
 
-    switch (Config.design) {
+    switch (Config.user_interface) {
     case NCM_DESIGN_CLASSIC:
         sb_append_byte(&switch_state, status_repeat);
         sb_append_byte(&switch_state, status_random);
@@ -1531,7 +1534,7 @@ ncm_status_changes_mixer(void) {
 
     if (!Config.display_volume_level
         || (!Config.header_visibility
-            && (Config.design == NCM_DESIGN_CLASSIC))) {
+            && (Config.user_interface == NCM_DESIGN_CLASSIC))) {
         return;
     }
 
@@ -1539,7 +1542,7 @@ ncm_status_changes_mixer(void) {
         return;
     }
 
-    switch (Config.design) {
+    switch (Config.user_interface) {
     case NCM_DESIGN_CLASSIC:
         global_volume_state_set(" Volume: ", STRLIT_LEN(" Volume: "));
         break;

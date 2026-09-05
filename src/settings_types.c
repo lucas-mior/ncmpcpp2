@@ -155,6 +155,8 @@ configuration_init_unchecked(Configuration *config) {
     NCM_CONFIG_STRING_INIT(ncmpcpp_directory);
     NCM_CONFIG_STRING_INIT(lyrics_directory);
     NCM_CONFIG_STRING_INIT(mpd_music_dir);
+    NCM_CONFIG_STRING_INIT(mpd_host);
+    NCM_CONFIG_STRING_INIT(mpd_password);
     NCM_CONFIG_STRING_INIT(visualizer_fifo_path);
     NCM_CONFIG_STRING_INIT(visualizer_data_source);
     NCM_CONFIG_STRING_INIT(visualizer_output_name);
@@ -170,8 +172,8 @@ configuration_init_unchecked(Configuration *config) {
 
 #undef NCM_CONFIG_STRING_INIT
 
-    config->progressbar = (StrBuilder){0};
-    config->visualizer_chars = (StrBuilder){0};
+    config->progressbar_look = (StrBuilder){0};
+    config->visualizer_look = (StrBuilder){0};
 
     config->browser_playlist_prefix = (NcBuffer){0};
     config->selected_item_prefix = (NcBuffer){0};
@@ -190,16 +192,16 @@ configuration_init_unchecked(Configuration *config) {
     config->song_columns_mode_format = (NcmFormatAst){0};
     config->browser_sort_format = (NcmFormatAst){0};
     config->song_status_format = (NcmFormatAst){0};
-    config->new_header_first_line = (NcmFormatAst){0};
-    config->new_header_second_line = (NcmFormatAst){0};
+    config->alternative_header_first_line_format = (NcmFormatAst){0};
+    config->alternative_header_second_line_format = (NcmFormatAst){0};
 
-    config->header_color = nc_color_default();
-    config->main_color = nc_color_default();
+    config->header_window_color = nc_color_default();
+    config->main_window_color = nc_color_default();
     config->statusbar_color = nc_color_default();
 
     nc_formatted_color_init(&config->color1);
     nc_formatted_color_init(&config->color2);
-    nc_formatted_color_init(&config->empty_tags_color);
+    nc_formatted_color_init(&config->empty_tag_color);
     nc_formatted_color_init(&config->volume_color);
     nc_formatted_color_init(&config->state_line_color);
     nc_formatted_color_init(&config->state_flags_color);
@@ -209,15 +211,15 @@ configuration_init_unchecked(Configuration *config) {
     nc_formatted_color_init(&config->statusbar_time_color);
     nc_formatted_color_init(&config->alternative_ui_separator_color);
 
-    config->window_border = nc_border_none();
+    config->window_border_color = nc_border_none();
     config->active_window_border = nc_border_none();
 
     config->playlist_editor_column_width_ratio = (NcmInt32Array){0};
     config->media_library_column_width_ratio_two = (NcmInt32Array){0};
     config->media_library_column_width_ratio_three = (NcmInt32Array){0};
-    config->columns = (ColumnArray){0};
-    config->visualizer_colors = (NcmFormattedColorArray){0};
-    config->screen_sequence = (ScreenTypeArray){0};
+    config->song_columns_list_format = (ColumnArray){0};
+    config->visualizer_color = (NcmFormattedColorArray){0};
+    config->screen_switcher_mode = (ScreenTypeArray){0};
     config->lyrics_fetchers = (NcmLyricsFetcherRegistry){0};
 
     config->playlist_display_mode = NCM_DISPLAY_MODE_CLASSIC;
@@ -225,9 +227,9 @@ configuration_init_unchecked(Configuration *config) {
     config->search_engine_display_mode = NCM_DISPLAY_MODE_CLASSIC;
     config->playlist_editor_display_mode = NCM_DISPLAY_MODE_CLASSIC;
     config->visualizer_type = NCM_VISUALIZER_TYPE_WAVE;
-    config->design = NCM_DESIGN_CLASSIC;
+    config->user_interface = NCM_DESIGN_CLASSIC;
     config->space_add_mode = NCM_SPACE_ADD_MODE_ADD_REMOVE;
-    config->media_lib_primary_tag = MPD_TAG_ARTIST;
+    config->media_library_primary_tag = MPD_TAG_ARTIST;
     config->browser_sort_mode = NCM_SORT_MODE_TYPE;
 
     config->colors_enabled = false;
@@ -235,7 +237,7 @@ configuration_init_unchecked(Configuration *config) {
     config->playlist_show_remaining_time = false;
     config->playlist_shorten_total_times = false;
     config->playlist_separate_albums = false;
-    config->set_window_title = false;
+    config->enable_window_title = false;
     config->header_visibility = false;
     config->header_text_scrolling = false;
     config->statusbar_visibility = false;
@@ -244,12 +246,12 @@ configuration_init_unchecked(Configuration *config) {
     config->centered_cursor = false;
     config->screen_switcher_previous = false;
     config->autocenter_mode = false;
-    config->wrapped_search = false;
+    config->default_find_mode = false;
     config->incremental_seeking = false;
     config->follow_now_playing_lyrics = false;
     config->fetch_lyrics_for_current_song_in_background = false;
     config->show_hidden_files_in_local_browser = false;
-    config->search_in_db = false;
+    config->default_place_to_search_in = false;
     config->jump_to_now_playing_song_at_start = false;
     config->display_volume_level = false;
     config->display_bitrate = false;
@@ -282,8 +284,9 @@ configuration_init_unchecked(Configuration *config) {
     config->startup_slave_screen_focus = false;
     config->has_startup_slave_screen_type = false;
 
+    config->mpd_port = 0;
     config->mpd_connection_timeout = 0;
-    config->crossfade_time = 0;
+    config->mpd_crossfade_time = 0;
     config->seek_time = 0;
     config->volume_change_step = 0;
     config->message_delay_time = 0;
@@ -292,8 +295,8 @@ configuration_init_unchecked(Configuration *config) {
     config->search_engine_default_search_mode = 0;
     config->visualizer_fps = 0;
     config->visualizer_spectrum_dft_size = 0;
-    config->playlist_disable_highlight_delay_seconds = 0;
-    config->regex_flags = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
+    config->playlist_disable_highlight_delay = 0;
+    config->regular_expressions = NCM_REGEX_EXTENDED_CASE_INSENSITIVE;
 
     config->visualizer_spectrum_gain = 0;
     config->visualizer_spectrum_hz_min = 0;
@@ -309,8 +312,8 @@ configuration_init_unchecked(Configuration *config) {
     config->current_item_inactive_column_prefix_length = 0;
     config->current_item_inactive_column_suffix_length = 0;
 
-    config->startup_screen_type = NCM_SCREEN_TYPE_PLAYLIST;
-    config->startup_slave_screen_type = NCM_SCREEN_TYPE_COUNT;
+    config->startup_screen = NCM_SCREEN_TYPE_PLAYLIST;
+    config->startup_slave_screen = NCM_SCREEN_TYPE_COUNT;
     return;
 }
 
@@ -338,6 +341,8 @@ configuration_destroy(Configuration *config) {
     NCM_CONFIG_STRING_DESTROY(ncmpcpp_directory);
     NCM_CONFIG_STRING_DESTROY(lyrics_directory);
     NCM_CONFIG_STRING_DESTROY(mpd_music_dir);
+    NCM_CONFIG_STRING_DESTROY(mpd_host);
+    NCM_CONFIG_STRING_DESTROY(mpd_password);
     NCM_CONFIG_STRING_DESTROY(visualizer_fifo_path);
     NCM_CONFIG_STRING_DESTROY(visualizer_data_source);
     NCM_CONFIG_STRING_DESTROY(visualizer_output_name);
@@ -353,8 +358,8 @@ configuration_destroy(Configuration *config) {
 
 #undef NCM_CONFIG_STRING_DESTROY
 
-    sb_free(&config->progressbar);
-    sb_free(&config->visualizer_chars);
+    sb_free(&config->progressbar_look);
+    sb_free(&config->visualizer_look);
 
     nc_buffer_destroy(&config->browser_playlist_prefix);
     nc_buffer_destroy(&config->selected_item_prefix);
@@ -373,12 +378,12 @@ configuration_destroy(Configuration *config) {
     ncm_format_ast_destroy(&config->song_columns_mode_format);
     ncm_format_ast_destroy(&config->browser_sort_format);
     ncm_format_ast_destroy(&config->song_status_format);
-    ncm_format_ast_destroy(&config->new_header_first_line);
-    ncm_format_ast_destroy(&config->new_header_second_line);
+    ncm_format_ast_destroy(&config->alternative_header_first_line_format);
+    ncm_format_ast_destroy(&config->alternative_header_second_line_format);
 
     nc_formatted_color_destroy(&config->color1);
     nc_formatted_color_destroy(&config->color2);
-    nc_formatted_color_destroy(&config->empty_tags_color);
+    nc_formatted_color_destroy(&config->empty_tag_color);
     nc_formatted_color_destroy(&config->volume_color);
     nc_formatted_color_destroy(&config->state_line_color);
     nc_formatted_color_destroy(&config->state_flags_color);
@@ -391,20 +396,22 @@ configuration_destroy(Configuration *config) {
     ncm_int32_array_destroy(&config->playlist_editor_column_width_ratio);
     ncm_int32_array_destroy(&config->media_library_column_width_ratio_two);
     ncm_int32_array_destroy(&config->media_library_column_width_ratio_three);
-    column_array_clear(&config->columns);
-    free2(config->columns.items,
-          config->columns.cap*SIZEOF(*config->columns.items));
-    config->columns = (ColumnArray){0};
-    ncm_formatted_color_array_clear(&config->visualizer_colors);
+    column_array_clear(&config->song_columns_list_format);
+    free2(config->song_columns_list_format.items,
+          config->song_columns_list_format.cap
+              *SIZEOF(*config->song_columns_list_format.items));
+    config->song_columns_list_format = (ColumnArray){0};
+    ncm_formatted_color_array_clear(&config->visualizer_color);
 
-    free2(config->visualizer_colors.items,
-          config->visualizer_colors.cap
-              *SIZEOF(*config->visualizer_colors.items));
+    free2(config->visualizer_color.items,
+          config->visualizer_color.cap
+              *SIZEOF(*config->visualizer_color.items));
 
-    config->visualizer_colors = (NcmFormattedColorArray){0};
-    free2(config->screen_sequence.items,
-          config->screen_sequence.cap*SIZEOF(*config->screen_sequence.items));
-    config->screen_sequence = (ScreenTypeArray){0};
+    config->visualizer_color = (NcmFormattedColorArray){0};
+    free2(config->screen_switcher_mode.items,
+          config->screen_switcher_mode.cap
+              *SIZEOF(*config->screen_switcher_mode.items));
+    config->screen_switcher_mode = (ScreenTypeArray){0};
     ncm_lyrics_fetcher_registry_destroy(&config->lyrics_fetchers);
 
     configuration_init_unchecked(config);

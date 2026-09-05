@@ -118,7 +118,7 @@ ncmpcpp_set_windows_dimensions(void) {
 
     ui_state_set_screen_size(COLS, LINES);
 
-    if (Config.design == NCM_DESIGN_ALTERNATIVE) {
+    if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
         main_start_y = 5;
         main_height = LINES - 7;
     } else {
@@ -139,7 +139,7 @@ ncmpcpp_set_windows_dimensions(void) {
         main_height += 1;
     }
 
-    if (Config.design == NCM_DESIGN_ALTERNATIVE) {
+    if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
         if (Config.header_visibility) {
             header_height = 5;
         } else {
@@ -239,7 +239,7 @@ ncmpcpp_resize_screen(bool reload_main_window) {
     header = ui_state_header_window();
     if (header
         && (Config.header_visibility
-            || (Config.design == NCM_DESIGN_ALTERNATIVE))) {
+            || (Config.user_interface == NCM_DESIGN_ALTERNATIVE))) {
         nc_window_resize(header, COLS, ncmpcpp_header_height());
     }
 
