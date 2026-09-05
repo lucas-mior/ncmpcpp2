@@ -248,7 +248,7 @@ configuration_init_unchecked(Configuration *config) {
     config->incremental_seeking = false;
     config->follow_now_playing_lyrics = false;
     config->fetch_lyrics_for_current_song_in_background = false;
-    config->local_browser_show_hidden_files = false;
+    config->show_hidden_files_in_local_browser = false;
     config->search_in_db = false;
     config->jump_to_now_playing_song_at_start = false;
     config->display_volume_level = false;

@@ -159,7 +159,7 @@ typedef struct Configuration {
     bool incremental_seeking;
     bool follow_now_playing_lyrics;
     bool fetch_lyrics_for_current_song_in_background;
-    bool local_browser_show_hidden_files;
+    bool show_hidden_files_in_local_browser;
     bool search_in_db;
     bool jump_to_now_playing_song_at_start;
     bool display_volume_level;
