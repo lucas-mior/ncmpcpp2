@@ -1117,9 +1117,8 @@ nc_window_get_input_char(NcWindow *window, int32 key) {
                     break;
                 case ';':
                 {
-                    int32 local_key;
+                    int32 local_key = wgetch(window->window);
 
-                    local_key = wgetch(window->window);
                     modifier = nc_xterm_modifier_key(local_key);
                     local_key = wgetch(window->window);
                     if ((local_key != '~')
