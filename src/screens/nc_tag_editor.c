@@ -26,15 +26,15 @@ enum TagEditorParserActionRow {
 #define ENUM_NAME TagEditorTagTypeAction
 #define ENUM_PREFIX_ TAG_EDITOR_TAG_TYPE_ACTION_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                \
-    XX(TAG_EDITOR_TAG_TYPE_ACTION_NONE)            \
-    XX(TAG_EDITOR_TAG_TYPE_ACTION_FIELD)           \
-    XX(TAG_EDITOR_TAG_TYPE_ACTION_NUMBER_TRACKS)   \
-    XX(TAG_EDITOR_TAG_TYPE_ACTION_FILENAME)        \
-    XX(TAG_EDITOR_TAG_TYPE_ACTION_CAPITALIZE)      \
-    XX(TAG_EDITOR_TAG_TYPE_ACTION_LOWER)           \
-    XX(TAG_EDITOR_TAG_TYPE_ACTION_RESET)           \
-    XX(TAG_EDITOR_TAG_TYPE_ACTION_SAVE)
+#define ENUM_FIELDS                                            \
+    XX(TAG_EDITOR_TAG_TYPE_ACTION_NONE, none)                  \
+    XX(TAG_EDITOR_TAG_TYPE_ACTION_FIELD, Field)                \
+    XX(TAG_EDITOR_TAG_TYPE_ACTION_NUMBER_TRACKS, Track number) \
+    XX(TAG_EDITOR_TAG_TYPE_ACTION_FILENAME, Filename)          \
+    XX(TAG_EDITOR_TAG_TYPE_ACTION_CAPITALIZE, Capitalize First Letters) \
+    XX(TAG_EDITOR_TAG_TYPE_ACTION_LOWER, lower all letters)    \
+    XX(TAG_EDITOR_TAG_TYPE_ACTION_RESET, Reset)                \
+    XX(TAG_EDITOR_TAG_TYPE_ACTION_SAVE, Save)
 #include "cbase/xenums.c"
 
 typedef struct SaveContext SaveContext;

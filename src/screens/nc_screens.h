@@ -948,7 +948,7 @@ int32 nc_server_info_screen_start_y(NcServerInfoScreen *screen);
 
 #if defined(HAVE_FFTW3_H)
 #define VISUALIZER_FREQUENCY_FIELD                                             \
-    XX(VISUALIZER_FREQUENCY)
+    XX(VISUALIZER_FREQUENCY, spectrum)
 #else
 #define VISUALIZER_FREQUENCY_FIELD
 #endif
@@ -957,10 +957,10 @@ int32 nc_server_info_screen_start_y(NcServerInfoScreen *screen);
 #define ENUM_PREFIX_ VISUALIZER_TYPE_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(VISUALIZER_WAVE)                                                        \
-    XX(VISUALIZER_WAVE_FILLED)                                                 \
+    XX(VISUALIZER_WAVE, wave)                                                  \
+    XX(VISUALIZER_WAVE_FILLED, wave_filled)                                    \
     VISUALIZER_FREQUENCY_FIELD                                                 \
-    XX(VISUALIZER_ELLIPSE)
+    XX(VISUALIZER_ELLIPSE, ellipse)
 #include "cbase/xenums.c"
 #undef VISUALIZER_FREQUENCY_FIELD
 
@@ -1139,18 +1139,18 @@ int16 visualizer_clamp_sample(int32 sample);
 #define ENUM_PREFIX_ MEDIA_LIBRARY_MODE_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(MEDIA_LIBRARY_MODE_THREE_COLUMNS)                                       \
-    XX(MEDIA_LIBRARY_MODE_TWO_COLUMNS)                                         \
-    XX(MEDIA_LIBRARY_MODE_ALBUM_ONLY)
+    XX(MEDIA_LIBRARY_MODE_THREE_COLUMNS, three_columns)                        \
+    XX(MEDIA_LIBRARY_MODE_TWO_COLUMNS, two_columns)                            \
+    XX(MEDIA_LIBRARY_MODE_ALBUM_ONLY, album_only)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME MediaLibraryColumn
 #define ENUM_PREFIX_ MEDIA_LIBRARY_COLUMN_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(MEDIA_LIBRARY_COLUMN_TAGS)                                              \
-    XX(MEDIA_LIBRARY_COLUMN_ALBUMS)                                            \
-    XX(MEDIA_LIBRARY_COLUMN_SONGS)
+    XX(MEDIA_LIBRARY_COLUMN_TAGS, Tags)                                        \
+    XX(MEDIA_LIBRARY_COLUMN_ALBUMS, Albums)                                    \
+    XX(MEDIA_LIBRARY_COLUMN_SONGS, Songs)
 #include "cbase/xenums.c"
 
 typedef struct MediaLibraryAlbumItem {
@@ -1392,8 +1392,8 @@ int32 media_library_screen_locate_song(MediaLibraryScreen *screen,
 #define ENUM_PREFIX_ PLAYLIST_EDITOR_COLUMN_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(PLAYLIST_EDITOR_COLUMN_PLAYLISTS)                                       \
-    XX(PLAYLIST_EDITOR_COLUMN_CONTENT)
+    XX(PLAYLIST_EDITOR_COLUMN_PLAYLISTS, Playlists)                            \
+    XX(PLAYLIST_EDITOR_COLUMN_CONTENT, Content)
 #include "cbase/xenums.c"
 
 #define PLAYLIST_EDITOR_FETCH_DELAY_MS 250
@@ -1402,11 +1402,11 @@ int32 media_library_screen_locate_song(MediaLibraryScreen *screen,
 #define ENUM_PREFIX_ PLAYLIST_EDITOR_COMMAND_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(PLAYLIST_EDITOR_COMMAND_NONE)                                           \
-    XX(PLAYLIST_EDITOR_COMMAND_LOAD)                                           \
-    XX(PLAYLIST_EDITOR_COMMAND_SAVE)                                           \
-    XX(PLAYLIST_EDITOR_COMMAND_RENAME)                                         \
-    XX(PLAYLIST_EDITOR_COMMAND_DELETE)
+    XX(PLAYLIST_EDITOR_COMMAND_NONE, none)                                     \
+    XX(PLAYLIST_EDITOR_COMMAND_LOAD, Load)                                     \
+    XX(PLAYLIST_EDITOR_COMMAND_SAVE, Save)                                     \
+    XX(PLAYLIST_EDITOR_COMMAND_RENAME, Rename)                                 \
+    XX(PLAYLIST_EDITOR_COMMAND_DELETE, Delete)
 #include "cbase/xenums.c"
 
 typedef struct PlaylistEditorCommand {
@@ -1671,9 +1671,12 @@ void playlist_screen_reload_remaining(PlaylistScreen *screen);
 #define ENUM_PREFIX_ SEARCH_ENGINE_SEARCH_MODE_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(SEARCH_ENGINE_SEARCH_MODE_LITERAL)                                      \
-    XX(SEARCH_ENGINE_SEARCH_MODE_REGEX)                                        \
-    XX(SEARCH_ENGINE_SEARCH_MODE_EXACT)
+    XX(SEARCH_ENGINE_SEARCH_MODE_LITERAL,                                      \
+       Match if tag contains searched phrase (no regexes))                    \
+    XX(SEARCH_ENGINE_SEARCH_MODE_REGEX,                                        \
+       Match if tag contains searched phrase (regexes supported))              \
+    XX(SEARCH_ENGINE_SEARCH_MODE_EXACT,                                        \
+       Match only if both values are the same)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME SearchEnginePromptResult
@@ -1797,8 +1800,8 @@ typedef struct PlaylistScreen PlaylistScreen;
 #define ENUM_PREFIX_ SELECTED_ITEMS_ADDER_MENU_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(SELECTED_ITEMS_ADDER_MENU_PLAYLISTS)                                    \
-    XX(SELECTED_ITEMS_ADDER_MENU_POSITIONS)
+    XX(SELECTED_ITEMS_ADDER_MENU_PLAYLISTS, Playlists)                         \
+    XX(SELECTED_ITEMS_ADDER_MENU_POSITIONS, Positions)
 #include "cbase/xenums.c"
 
 typedef struct SelectedItemsAdderScreen {
@@ -1889,31 +1892,31 @@ int32 sort_playlist_dialog_move_current_down(SortPlaylistDialog *dialog);
 #define ENUM_PREFIX_ TAG_EDITOR_COLUMN_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(TAG_EDITOR_COLUMN_DIRECTORIES)                                          \
-    XX(TAG_EDITOR_COLUMN_TAG_TYPES)                                            \
-    XX(TAG_EDITOR_COLUMN_TAGS)
+    XX(TAG_EDITOR_COLUMN_DIRECTORIES, Directories)                             \
+    XX(TAG_EDITOR_COLUMN_TAG_TYPES, Tag types)                                 \
+    XX(TAG_EDITOR_COLUMN_TAGS, Tags)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME TagEditorParserMode
 #define ENUM_PREFIX_ TAG_EDITOR_PARSER_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(TAG_EDITOR_PARSER_NONE)                                                 \
-    XX(TAG_EDITOR_PARSER_TAGS_FROM_FILENAME)                                   \
-    XX(TAG_EDITOR_PARSER_RENAME_FILES)
+    XX(TAG_EDITOR_PARSER_NONE, Pattern)                                        \
+    XX(TAG_EDITOR_PARSER_TAGS_FROM_FILENAME, Get tags from filename)           \
+    XX(TAG_EDITOR_PARSER_RENAME_FILES, Rename files)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME TagEditorFocus
 #define ENUM_PREFIX_ TAG_EDITOR_FOCUS_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(TAG_EDITOR_FOCUS_DIRECTORIES)                                           \
-    XX(TAG_EDITOR_FOCUS_TAG_TYPES)                                             \
-    XX(TAG_EDITOR_FOCUS_TAGS)                                                  \
-    XX(TAG_EDITOR_FOCUS_PARSER_CHOICE)                                         \
-    XX(TAG_EDITOR_FOCUS_PARSER_ACTIONS)                                        \
-    XX(TAG_EDITOR_FOCUS_PARSER_LEGEND)                                         \
-    XX(TAG_EDITOR_FOCUS_PARSER_PREVIEW)
+    XX(TAG_EDITOR_FOCUS_DIRECTORIES, Directories)                              \
+    XX(TAG_EDITOR_FOCUS_TAG_TYPES, Tag types)                                  \
+    XX(TAG_EDITOR_FOCUS_TAGS, Tags)                                            \
+    XX(TAG_EDITOR_FOCUS_PARSER_CHOICE, Pattern)                                \
+    XX(TAG_EDITOR_FOCUS_PARSER_ACTIONS, Pattern actions)                       \
+    XX(TAG_EDITOR_FOCUS_PARSER_LEGEND, Legend)                                 \
+    XX(TAG_EDITOR_FOCUS_PARSER_PREVIEW, Preview)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME TagEditorPromptResult

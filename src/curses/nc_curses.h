@@ -114,17 +114,17 @@ typedef struct NcFdCallback {
 #define ENUM_NAME NcFormat
 #define ENUM_PREFIX_ NC_FORMAT_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                  \
-    XX(NC_FORMAT_BOLD)               \
-    XX(NC_FORMAT_NO_BOLD)            \
-    XX(NC_FORMAT_UNDERLINE)          \
-    XX(NC_FORMAT_NO_UNDERLINE)       \
-    XX(NC_FORMAT_REVERSE)            \
-    XX(NC_FORMAT_NO_REVERSE)         \
-    XX(NC_FORMAT_ALT_CHARSET)        \
-    XX(NC_FORMAT_NO_ALT_CHARSET)     \
-    XX(NC_FORMAT_ITALIC)             \
-    XX(NC_FORMAT_NO_ITALIC)
+#define ENUM_FIELDS                              \
+    XX(NC_FORMAT_BOLD, bold)                     \
+    XX(NC_FORMAT_NO_BOLD, no_bold)               \
+    XX(NC_FORMAT_UNDERLINE, underline)           \
+    XX(NC_FORMAT_NO_UNDERLINE, no_underline)     \
+    XX(NC_FORMAT_REVERSE, reverse)               \
+    XX(NC_FORMAT_NO_REVERSE, no_reverse)         \
+    XX(NC_FORMAT_ALT_CHARSET, alt_charset)       \
+    XX(NC_FORMAT_NO_ALT_CHARSET, no_alt_charset) \
+    XX(NC_FORMAT_ITALIC, italic)                 \
+    XX(NC_FORMAT_NO_ITALIC, no_italic)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME NcScroll
