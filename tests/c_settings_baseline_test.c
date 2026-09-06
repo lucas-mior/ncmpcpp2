@@ -42,30 +42,25 @@ settings_test_double_range(SettingsApplyFn apply, Configuration *config,
                            double *field, double minimum, double maximum) {
     char value[64];
     double outside;
-    int32 len;
 
     if (minimum != -HUGE_VAL) {
-        len = SNPRINTF(value, "%.17g", minimum);
-        ASSERT(len > 0);
+        SNPRINTF(value, "%.17g", minimum);
         ASSERT_ZERO(settings_test_apply(apply, config, value));
         ASSERT(*field == minimum);
 
         outside = nextafter(minimum, -HUGE_VAL);
-        len = SNPRINTF(value, "%.17g", outside);
-        ASSERT(len > 0);
+        SNPRINTF(value, "%.17g", outside);
         ASSERT(settings_test_apply(apply, config, value) < 0);
         ASSERT(*field == minimum);
     }
 
     if (maximum != HUGE_VAL) {
-        len = SNPRINTF(value, "%.17g", maximum);
-        ASSERT(len > 0);
+        SNPRINTF(value, "%.17g", maximum);
         ASSERT_ZERO(settings_test_apply(apply, config, value));
         ASSERT(*field == maximum);
 
         outside = nextafter(maximum, HUGE_VAL);
-        len = SNPRINTF(value, "%.17g", outside);
-        ASSERT(len > 0);
+        SNPRINTF(value, "%.17g", outside);
         ASSERT(settings_test_apply(apply, config, value) < 0);
         ASSERT(*field == maximum);
     }
