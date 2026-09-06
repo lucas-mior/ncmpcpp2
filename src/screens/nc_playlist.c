@@ -1284,13 +1284,10 @@ playlist_refresh_stats(PlaylistScreen *screen) {
 
 static void
 playlist_truncate_storage(PlaylistScreen *screen, int32 playlist_length) {
-    NcMenu *menu;
-    int32 new_count;
-    int32 old_count;
+    NcMenu *menu = playlist_storage_menu(screen);
+    int32 new_count = playlist_length;
+    int32 old_count = nc_menu_all_item_count(menu);
 
-    menu = playlist_storage_menu(screen);
-    new_count = playlist_length;
-    old_count = nc_menu_all_item_count(menu);
     while (old_count > new_count) {
         old_count -= 1;
         nc_menu_remove_item(menu, NC_MENU_ITEMS_ALL, old_count);
