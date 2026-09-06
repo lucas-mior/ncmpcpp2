@@ -14,26 +14,23 @@ static void
 settings_test_int_range(SettingsApplyFn apply, Configuration *config,
                         int32 *field, int32 minimum, int32 maximum) {
     char value[64];
-    int32 len;
 
-    len = SNPRINTF(value, "%d", minimum);
+    SNPRINTF(value, "%d", minimum);
     ASSERT_ZERO(settings_test_apply(apply, config, value));
     ASSERT(*field == minimum);
 
     if (minimum != INT32_MIN) {
-        len = SNPRINTF(value, "%d", minimum - 1);
-        ASSERT(len > 0);
+        SNPRINTF(value, "%d", minimum - 1);
         ASSERT(settings_test_apply(apply, config, value) < 0);
         ASSERT(*field == minimum);
     }
 
-    len = SNPRINTF(value, "%d", maximum);
+    SNPRINTF(value, "%d", maximum);
     ASSERT_ZERO(settings_test_apply(apply, config, value));
     ASSERT(*field == maximum);
 
     if (maximum != INT32_MAX) {
-        len = SNPRINTF(value, "%d", maximum + 1);
-        ASSERT(len > 0);
+        SNPRINTF(value, "%d", maximum + 1);
         ASSERT(settings_test_apply(apply, config, value) < 0);
         ASSERT(*field == maximum);
     }
