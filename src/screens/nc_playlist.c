@@ -1301,12 +1301,11 @@ playlist_truncate_storage(PlaylistScreen *screen, int32 playlist_length) {
 
 static void
 playlist_apply_changed_song_to_storage(PlaylistScreen *screen, NcmSong *song) {
-    NcMenu *menu;
-    int32 position;
+    NcMenu *menu = playlist_storage_menu(screen);
+    int32 position = ncm_song_position(song);
 
-    menu = playlist_storage_menu(screen);
-    position = ncm_song_position(song);
-    ASSERT(position >= 0);
+    ASSERT_NON_NEGATIVE(position);
+
     if (position < nc_menu_all_item_count(menu)) {
         nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL, position, song);
         return;
