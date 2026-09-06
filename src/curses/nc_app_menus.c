@@ -13,7 +13,7 @@ nc_menu_owned_string_copy(char **dest_data, int32 *dest_len,
     char *data;
     int32 cap;
 
-    ASSERT(source_len >= 0);
+    ASSERT_NON_NEGATIVE(source_len);
     ASSERT((source_data != NULL) || (source_len == 0));
 
     stupid_string_free(dest_data, dest_len, dest_cap);
