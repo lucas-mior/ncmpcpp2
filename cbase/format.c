@@ -58,8 +58,8 @@ format_float_validate_precision(int32 precision) {
 }
 
 static int32
-format_float_copy(char *buffer, int64 capacity, char *source,
-                  int32 source_len) {
+format_float_copy(char *buffer, int64 capacity,
+                  char *source, int32 source_len) {
     ASSERT(buffer != NULL);
     ASSERT(capacity > 0);
     ASSERT(source != NULL);
