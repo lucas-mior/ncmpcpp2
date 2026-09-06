@@ -72,7 +72,7 @@ ncm_lrc_parse_uint(char *data, int32 data_len, int64 *value) {
     int64 result;
 
     ASSERT(data != NULL);
-    ASSERT(data_len > 0);
+    ASSERT_POSITIVE(data_len);
     ASSERT(value != NULL);
 
     result = 0;
