@@ -170,8 +170,8 @@ typeof(var)  // good
   enum, or if we need the `_str` or the `_parse` functions.
   * It will give automatic bit flags if needed with `#define ENUM_BITFLAGS 1`.
   * It will give automatic `_str` and `_parse` functions.
-  * It will typedef the enum as `<ENUM_PREFIX_>`. This is the only exception
-    to the `CamelCase` type casing rule and to the enum typedef rule.
+  * It will typedef the enum as `<ENUM_PREFIX_>`. This is the one of the few
+    exception to the `CamelCase` type casing rule and to the enum typedef rule.
   * It will give automatic `_COUNT` value for non-bit flag enums. Use it for
     iterating on the enum:
     ```c
