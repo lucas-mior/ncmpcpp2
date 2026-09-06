@@ -21,7 +21,7 @@ ncm_mutable_song_set_string(char **dest, int32 *dest_len,
     char *copy;
 
     ASSERT((dest != NULL) && (dest_len != NULL));
-    ASSERT(source_len >= 0);
+    ASSERT_NON_NEGATIVE(source_len);
     ASSERT((source != NULL) || (source_len == 0));
 
     copy = NULL;
