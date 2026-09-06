@@ -1174,25 +1174,25 @@ configuration_apply_runtime(Configuration *config, NcmMpdClient *client,
             ncm_error);                                                        \
     }
 
-#define XX_UINT32_CHOICE(NAME, DEFAULT_VALUE, PARSER, UNSET_VALUE)             \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        int32 status;                                                          \
-        status = PARSER(value, value_len, &config->NAME);                      \
-        if (status < 0) {                                                      \
-            return settings_invalid_value(ncm_error, value, value_len);        \
-        }                                                                      \
-        return 0;                                                              \
+#define XX_UINT32_CHOICE(NAME, DEFAULT_VALUE, PARSER, UNSET_VALUE)       \
+    static int32                                                         \
+    apply_##NAME(Configuration *config, char *value, int32 value_len,    \
+                 NcmError *ncm_error) {                                  \
+        int32 status;                                                    \
+        status = PARSER(value, value_len, &config->NAME);                \
+        if (status < 0) {                                                \
+            return settings_invalid_value(ncm_error, value, value_len);  \
+        }                                                                \
+        return 0;                                                        \
     }
 
-#define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD)                          \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        return settings_parse_columns(&config->NAME,                           \
-                                      &config->FORMAT_FIELD,                   \
-                                      value, value_len, ncm_error);            \
+#define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD)                    \
+    static int32                                                         \
+    apply_##NAME(Configuration *config, char *value, int32 value_len,    \
+                 NcmError *ncm_error) {                                  \
+        return settings_parse_columns(&config->NAME,                     \
+                                      &config->FORMAT_FIELD,             \
+                                      value, value_len, ncm_error);      \
     }
 
 #include "config_options_pass.h"
