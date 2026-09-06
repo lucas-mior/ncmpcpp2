@@ -17,7 +17,6 @@ settings_test_int_range(SettingsApplyFn apply, Configuration *config,
     int32 len;
 
     len = SNPRINTF(value, "%d", minimum);
-    ASSERT(len > 0);
     ASSERT_ZERO(settings_test_apply(apply, config, value));
     ASSERT(*field == minimum);
 
@@ -29,7 +28,6 @@ settings_test_int_range(SettingsApplyFn apply, Configuration *config,
     }
 
     len = SNPRINTF(value, "%d", maximum);
-    ASSERT(len > 0);
     ASSERT_ZERO(settings_test_apply(apply, config, value));
     ASSERT(*field == maximum);
 

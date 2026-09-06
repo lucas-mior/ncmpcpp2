@@ -6,6 +6,10 @@
  * configuration_options_pass.h by the generation passes.
  */
 
+#if defined(__INCLUDE_LEVEL__) && (__INCLUDE_LEVEL__ == 0)
+#include "config_options_pass.h"
+#endif
+
 XX_DIR(ncmpcpp_directory, "~/.config/ncmpcpp/")
 XX_DIR(lyrics_directory, "~/.lyrics/")
 
