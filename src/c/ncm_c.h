@@ -1145,8 +1145,7 @@ int32 ncm_mpd_client_noidle(NcmMpdClient *client, int32 *flags,
                            NcmError *ncm_error);
 
 enum mpd_error ncm_mpd_client_error_code(NcmMpdClient *client);
-enum mpd_server_error ncm_mpd_client_server_error_code(
-    NcmMpdClient *client);
+enum mpd_server_error ncm_mpd_client_server_error_code(NcmMpdClient *client);
 bool ncm_mpd_client_error_is_clearable(NcmMpdClient *client);
 char *ncm_mpd_client_error_message(NcmMpdClient *client);
 
