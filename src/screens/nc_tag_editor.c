@@ -1579,7 +1579,7 @@ tag_editor_copy_selected_song_at(TagEditorScreen *screen,
     source = nc_menu_active_item_at(nc_tag_row_menu_base(&screen->tags), pos);
     ASSERT(source != NULL);
     ASSERT(source->uri != NULL);
-    ASSERT(source->uri_len > 0);
+    ASSERT_POSITIVE(source->uri_len);
 
     ncm_song_set_uri(&song, source->uri, source->uri_len);
     ncm_song_set_duration(&song, source->duration);
