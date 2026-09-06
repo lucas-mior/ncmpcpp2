@@ -957,17 +957,16 @@ void ncm_mpd_song_list_destroy(NcmMpdSongList *list);
 void ncm_mpd_song_list_clear(NcmMpdSongList *list);
 int32 ncm_mpd_song_list_count(NcmMpdSongList *list);
 NcmSong *ncm_mpd_song_list_at(NcmMpdSongList *list, int32 idx);
-int32 ncm_mpd_song_list_append_copy(
-    NcmMpdSongList *list, NcmSong *song);
-int32 ncm_mpd_song_list_to_song_array(
-    NcmMpdSongList *list, NcmSongArray *songs);
+int32 ncm_mpd_song_list_append_copy(NcmMpdSongList *list, NcmSong *song);
+int32 ncm_mpd_song_list_to_song_array(NcmMpdSongList *list,
+                                      NcmSongArray *songs);
 
 void ncm_mpd_item_list_destroy(NcmMpdItemList *list);
 void ncm_mpd_item_list_clear(NcmMpdItemList *list);
-int32 ncm_mpd_item_list_to_item_array(
-    NcmMpdItemList *list, NcmMpdItemArray *items);
-int32 ncm_mpd_item_list_to_directory_array(
-    NcmMpdItemList *list, NcmDirectoryArray *directories);
+int32 ncm_mpd_item_list_to_item_array(NcmMpdItemList *list,
+                                      NcmMpdItemArray *items);
+int32 ncm_mpd_item_list_to_directory_array(NcmMpdItemList *list,
+                                           NcmDirectoryArray *directories);
 
 void ncm_mpd_string_list_destroy(NcmStringViewList *list);
 void ncm_mpd_string_list_clear(NcmStringViewList *list);
@@ -1103,7 +1102,7 @@ int32 ncm_mpd_connection_load_playlist(NcmMpdConnection *connection,
                                       char *playlist,
                                       bool *loaded);
 int32 ncm_mpd_connection_save_playlist(NcmMpdConnection *connection,
-                                      char *playlist);
+                                       char *playlist);
 
 typedef void NcmMpdNoidleCallback(int32 flags, void *user);
 
