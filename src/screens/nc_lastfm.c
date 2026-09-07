@@ -309,8 +309,8 @@ lastfm_screen_take_refresh_request(LastfmScreen *screen) {
 }
 
 static int32
-lastfm_buffer_find_unchecked(NcBuffer *buffer, char *pattern,
-                             int32 pattern_len, NcmError *ncm_error) {
+lastfm_buffer_find_unchecked(NcBuffer *buffer, char *pattern, int32 pattern_len,
+                             NcmError *ncm_error) {
     LastfmFindState state;
     NcmRegex regex;
     char *data;
