@@ -1685,11 +1685,9 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                             character_len =
                                 visualizer_smooth_flipped_char_lens[index];
                         } else {
-                            index = VISUALIZER_SMOOTH_CHAR_COUNT
-                                    - index - 2;
+                            index = VISUALIZER_SMOOTH_CHAR_COUNT - index - 2;
                             character = visualizer_smooth_chars[index];
-                            character_len =
-                                visualizer_smooth_char_lens[index];
+                            character_len = visualizer_smooth_char_lens[index];
                             reverse = true;
                         }
                     } else {
