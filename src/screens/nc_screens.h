@@ -242,27 +242,27 @@
 #define NCM_APP_SCREEN_REGISTER_SWITCH_TYPES(XX)                  \
     XX(tiny_tag_editor)
 
-#define NCM_APP_SCREEN_IS_CURRENT_TYPES(XX)                                    \
-    XX(browser)                                                                \
-    XX(help)                                                                   \
-    XX(lastfm)                                                                 \
-    XX(lyrics)                                                                 \
-    XX(visualizer)                                                             \
-    XX(playlist)                                                               \
-    XX(playlist_editor)                                                        \
-    XX(selected_items_adder)                                                   \
-    XX(sort_playlist_dialog)                                                   \
-    XX(search_engine)                                                          \
-    XX(media_library)                                                          \
-    XX(tag_editor)                                                             \
-    XX(tiny_tag_editor)                                                        \
-    XX(song_info)                                                              \
-    XX(server_info)                                                            \
+#define NCM_APP_SCREEN_IS_CURRENT_TYPES(XX)                       \
+    XX(browser)                                                   \
+    XX(help)                                                      \
+    XX(lastfm)                                                    \
+    XX(lyrics)                                                    \
+    XX(visualizer)                                                \
+    XX(playlist)                                                  \
+    XX(playlist_editor)                                           \
+    XX(selected_items_adder)                                      \
+    XX(sort_playlist_dialog)                                      \
+    XX(search_engine)                                             \
+    XX(media_library)                                             \
+    XX(tag_editor)                                                \
+    XX(tiny_tag_editor)                                           \
+    XX(song_info)                                                 \
+    XX(server_info)                                               \
     XX(outputs)
 
 #if defined(ENABLE_OUTPUTS)
   #define NCM_APP_SCREEN_ENABLED_OUTPUTS(XX) XX(outputs)
-  #define NCM_APP_SCREEN_ENABLED_OUTPUTS_RESIZE(XX)                            \
+  #define NCM_APP_SCREEN_ENABLED_OUTPUTS_RESIZE(XX)               \
       XX(outputs, NC_SCREEN_TYPE_OUTPUTS)
 #else
   #define NCM_APP_SCREEN_ENABLED_OUTPUTS(XX)
@@ -270,11 +270,11 @@
 #endif
 
 #if defined(HAVE_TAGLIB_H)
-  #define NCM_APP_SCREEN_ENABLED_TAG_EDITOR(XX)                                \
-      XX(tag_editor)                                                           \
+  #define NCM_APP_SCREEN_ENABLED_TAG_EDITOR(XX)                   \
+      XX(tag_editor)                                              \
       XX(tiny_tag_editor)
-  #define NCM_APP_SCREEN_ENABLED_TAG_EDITOR_RESIZE(XX)                         \
-      XX(tag_editor, NC_SCREEN_TYPE_TAG_EDITOR)                                \
+  #define NCM_APP_SCREEN_ENABLED_TAG_EDITOR_RESIZE(XX)            \
+      XX(tag_editor, NC_SCREEN_TYPE_TAG_EDITOR)                   \
       XX(tiny_tag_editor, NC_SCREEN_TYPE_TINY_TAG_EDITOR)
 #else
   #define NCM_APP_SCREEN_ENABLED_TAG_EDITOR(XX)
@@ -283,7 +283,7 @@
 
 #if defined(ENABLE_VISUALIZER)
   #define NCM_APP_SCREEN_ENABLED_VISUALIZER(XX) XX(visualizer)
-  #define NCM_APP_SCREEN_ENABLED_VISUALIZER_RESIZE(XX)                         \
+  #define NCM_APP_SCREEN_ENABLED_VISUALIZER_RESIZE(XX)            \
       XX(visualizer, NC_SCREEN_TYPE_VISUALIZER)
 #else
   #define NCM_APP_SCREEN_ENABLED_VISUALIZER(XX)
