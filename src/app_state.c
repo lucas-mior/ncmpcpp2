@@ -39,7 +39,7 @@ app_state_unregister_screen(NcScreen *screen) {
 }
 
 NcScreen *
-app_state_find_screen_type(int32 type) {
+app_state_find_screen_type(enum NcScreenType type) {
     return nc_screen_registry_find(&screen_registry, type);
 }
 

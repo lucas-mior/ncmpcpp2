@@ -553,7 +553,7 @@ tiny_editor_run_row(TinyTagEditorScreen *screen, int32 row) {
     }
 
     if (row == TINY_TAG_EDITOR_SAVE_ROW) {
-        int32 previous_type;
+        enum NcScreenType previous_type;
 
         tiny_editor_status_message(
             screen, STRLIT("Updating tags..."));

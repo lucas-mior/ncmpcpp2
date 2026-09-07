@@ -44,7 +44,7 @@ app_controller_unregister_screen(NcScreen *screen) {
 }
 
 NcScreen *
-app_controller_find_screen_type(int32 type) {
+app_controller_find_screen_type(enum NcScreenType type) {
     return app_state_find_screen_type(type);
 }
 

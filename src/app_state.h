@@ -11,7 +11,7 @@ NcScreen *app_state_get_locked_screen(void);
 bool app_state_last_switch_has_changed_screen(void);
 int32 app_state_register_screen(NcScreen *screen);
 int32 app_state_unregister_screen(NcScreen *screen);
-NcScreen *app_state_find_screen_type(int32 type);
+NcScreen *app_state_find_screen_type(enum NcScreenType type);
 int32 app_state_switch_to_screen(NcScreen *screen);
 int32 app_state_lock_current_screen(void);
 void app_state_unlock_screen(void);

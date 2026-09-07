@@ -6,7 +6,7 @@
 #include "c/ncm_c.h"
 #include "screens/nc_screens.h"
 
-int32
+enum NcScreenType
 screen_type_to_nc_type(enum ScreenType screen_type) {
     switch (screen_type) {
     #define NCM_SCREEN_TO_NC_CASE( \
@@ -28,7 +28,7 @@ screen_type_to_nc_type(enum ScreenType screen_type) {
 }
 
 enum ScreenType
-screen_type_from_nc_type(int32 nc_type) {
+screen_type_from_nc_type(enum NcScreenType nc_type) {
     switch (nc_type) {
     #define NCM_SCREEN_FROM_NC_CASE( \
         screen_type_value, nc_type_value, nc_value, alias, flags \

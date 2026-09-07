@@ -341,7 +341,7 @@
 /* screens/nc_screen.h */
 #define NC_SCREEN_DEFAULT_WINDOW_TIMEOUT 500
 
-enum {
+enum NcScreenType {
     NC_SCREEN_TYPE_UNKNOWN = 0,
     NCM_SCREEN_ALL_TYPES(NCM_SCREEN_NC_TYPE_ENUM_FIELD)
 };
@@ -406,7 +406,7 @@ struct NcScreen {
     const NcScreenOps *ops;
     NcScreenOps ops_storage;
     void *user;
-    int32 type;
+    enum NcScreenType type;
     bool has_to_be_resized;
     bool has_to_be_updated;
 };
@@ -422,8 +422,8 @@ struct NcScreenRegistry {
     int32 screens_len;
 };
 
-void nc_screen_init(NcScreen *, NcScreenCallbacks, void *, int32);
-void nc_screen_init_ops(NcScreen *, NcScreenOps, void *, int32);
+void nc_screen_init(NcScreen *, NcScreenCallbacks, void *, enum NcScreenType);
+void nc_screen_init_ops(NcScreen *, NcScreenOps, void *, enum NcScreenType);
 NcWindow *nc_screen_default_active_window(NcScreen *);
 void nc_screen_noop_refresh(NcScreen *);
 void nc_screen_noop_refresh_window(NcScreen *);
@@ -448,7 +448,7 @@ void nc_screen_switch_to(NcScreen *);
 void nc_screen_resize(NcScreen *);
 int32 nc_screen_window_timeout(NcScreen *);
 char *nc_screen_title(NcScreen *);
-int32 nc_screen_type(NcScreen *);
+enum NcScreenType nc_screen_type(NcScreen *);
 void nc_screen_mouse_button_pressed(NcScreen *, MEVENT);
 bool nc_screen_is_lockable(NcScreen *);
 bool nc_screen_is_mergable(NcScreen *);
@@ -465,7 +465,7 @@ void *nc_screen_user(NcScreen *);
 
 int32 nc_screen_registry_register(NcScreenRegistry *, NcScreen *);
 int32 nc_screen_registry_unregister(NcScreenRegistry *, NcScreen *);
-NcScreen *nc_screen_registry_find(NcScreenRegistry *, int32);
+NcScreen *nc_screen_registry_find(NcScreenRegistry *, enum NcScreenType);
 NcScreen *nc_screen_registry_current(NcScreenRegistry *);
 NcScreen *nc_screen_registry_previous(NcScreenRegistry *);
 NcScreen *nc_screen_registry_locked(NcScreenRegistry *);
@@ -492,8 +492,8 @@ void nc_screen_registry_resize_visible(NcScreenRegistry *);
 #define ENUM_FIELDS NCM_SCREEN_TYPE_ENUM_FIELDS
 #include "cbase/xenums.c"
 
-int32 screen_type_to_nc_type(enum ScreenType);
-enum ScreenType screen_type_from_nc_type(int32);
+enum NcScreenType screen_type_to_nc_type(enum ScreenType);
+enum ScreenType screen_type_from_nc_type(enum NcScreenType);
 bool screen_type_is_startup(enum ScreenType);
 int32 screen_type_parse_startup(char *, int32, enum ScreenType *);
 int32 screen_type_parse(char *, int32, enum ScreenType *);
@@ -518,8 +518,8 @@ typedef struct NcScrollpadScreen {
 } NcScrollpadScreen;
 
 void nc_scrollpad_screen_init(NcScrollpadScreen *, NcScreenOps, void *,
-                              int32 type, int32 start_x, int32 start_y,
-                              int32 width, int32 height);
+                              enum NcScreenType type, int32 start_x,
+                              int32 start_y, int32 width, int32 height);
 void nc_scrollpad_screen_set_geometry(NcScrollpadScreen *, int32 start_x,
                                       int32 start_y, int32 width, int32 height);
 void nc_scrollpad_screen_set_main_area(NcScrollpadScreen *, int32 start_x,

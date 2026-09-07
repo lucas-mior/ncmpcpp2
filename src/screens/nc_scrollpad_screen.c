@@ -8,8 +8,8 @@
 void
 nc_scrollpad_screen_init(NcScrollpadScreen *screen,
                          NcScreenOps callbacks, void *user,
-                         int32 type, int32 start_x, int32 start_y,
-                         int32 width, int32 height) {
+                         enum NcScreenType type, int32 start_x,
+                         int32 start_y, int32 width, int32 height) {
     nc_screen_init_ops(&screen->base, callbacks, user, type);
     nc_scrollpad_screen_set_geometry(screen,
                                      start_x,
