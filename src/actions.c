@@ -308,7 +308,7 @@ action_runtime_hook_denied(int32 result, bool *handled) {
 static bool
 action_runtime_current_screen_is(enum ScreenType type) {
     NcScreen *screen;
-    int32 nc_type;
+    enum NcScreenType nc_type;
 
     if ((screen = app_controller_current_screen()) == NULL) {
         return false;

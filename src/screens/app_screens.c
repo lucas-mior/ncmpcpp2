@@ -126,9 +126,10 @@ NCM_APP_SCREEN_INIT_FLAGS(NCM_APP_SCREEN_DECLARE_INIT_FLAG)
     XX(PROMPT_RESULT_ACCEPTED)
 #include "cbase/xenums.c"
 
-static void app_request_registered_resize(int32 type);
+static void app_request_registered_resize(enum NcScreenType type);
 static void app_screen_register_once(NcScreen *screen);
-static void app_screen_register_replacing(NcScreen *screen, int32 type);
+static void app_screen_register_replacing(NcScreen *screen,
+                                          enum NcScreenType type);
 static bool app_screen_is_current(NcScreen *screen);
 static void app_screen_switch_to(NcScreen *screen);
 static void app_screen_toggle_or_switch_to(NcScreen *screen);
@@ -997,7 +998,7 @@ app_screens_request_registered_resize(void) {
 
 NcScreen *
 app_screens_find_type(enum ScreenType screen_type) {
-    int32 type;
+    enum NcScreenType type;
 
     type = screen_type_to_nc_type(screen_type);
     if (type == NC_SCREEN_TYPE_UNKNOWN) {
@@ -1033,7 +1034,7 @@ app_screens_current_type(void) {
 }
 
 static void
-app_request_registered_resize(int32 type) {
+app_request_registered_resize(enum NcScreenType type) {
     NcScreen *screen;
 
     if ((screen = app_controller_find_screen_type(type))) {
@@ -1049,7 +1050,7 @@ app_screen_register_once(NcScreen *screen) {
 }
 
 static void
-app_screen_register_replacing(NcScreen *screen, int32 type) {
+app_screen_register_replacing(NcScreen *screen, enum NcScreenType type) {
     NcScreen *registered;
 
     registered = app_controller_find_screen_type(type);

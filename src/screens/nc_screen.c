@@ -145,7 +145,7 @@ nc_screen_noop_destroy(NcScreen *screen) {
 
 void
 nc_screen_init(NcScreen *screen, NcScreenCallbacks callbacks,
-               void *user, int32 type) {
+               void *user, enum NcScreenType type) {
     nc_screen_init_ops(screen, nc_screen_callbacks_ops, user, type);
     screen->callbacks = callbacks;
     return;
@@ -153,7 +153,7 @@ nc_screen_init(NcScreen *screen, NcScreenCallbacks callbacks,
 
 void
 nc_screen_init_ops(NcScreen *screen, NcScreenOps ops,
-                   void *user, int32 type) {
+                   void *user, enum NcScreenType type) {
     NcScreenCallbacks callbacks = {0};
 
     if (ops.active_window == NULL) {
@@ -288,7 +288,7 @@ nc_screen_title(NcScreen *screen) {
     return screen->ops->title(screen);
 }
 
-int32
+enum NcScreenType
 nc_screen_type(NcScreen *screen) {
     return screen->type;
 }
@@ -462,7 +462,7 @@ nc_screen_registry_unregister(NcScreenRegistry *registry,
 }
 
 NcScreen *
-nc_screen_registry_find(NcScreenRegistry *registry, int32 type) {
+nc_screen_registry_find(NcScreenRegistry *registry, enum NcScreenType type) {
     for (int32 i = 0; i < registry->screens_len; i += 1) {
         if (registry->screens[i]->type == type) {
             return registry->screens[i];

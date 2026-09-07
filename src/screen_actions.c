@@ -15,7 +15,7 @@ current_screen(void) {
 }
 
 static bool
-current_screen_is(int32 type) {
+current_screen_is(enum NcScreenType type) {
     NcScreen *screen;
 
     if ((screen = current_screen()) == NULL) {

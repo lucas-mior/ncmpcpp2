@@ -11,7 +11,7 @@ NcScreen *app_controller_locked_screen(void);
 bool app_controller_last_switch_has_changed_screen(void);
 int32 app_controller_register_screen(NcScreen  *);
 int32 app_controller_unregister_screen(NcScreen  *);
-NcScreen *app_controller_find_screen_type(int32 type);
+NcScreen *app_controller_find_screen_type(enum NcScreenType type);
 bool app_controller_is_screen_registered(NcScreen  *);
 bool app_controller_is_screen_visible(NcScreen  *);
 bool app_controller_is_current_screen(NcScreen  *);
