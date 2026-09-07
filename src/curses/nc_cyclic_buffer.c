@@ -302,8 +302,8 @@ nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
 
     string_characters = utf8_characters(string, string_len);
     separator_characters = utf8_characters(separator, separator_len);
-    start = nc_cyclic_normalize_start(
-        start_pos, string_characters + separator_characters);
+    start = nc_cyclic_normalize_start(start_pos,
+                                      string_characters + separator_characters);
 
     start_byte = utf8_byte_position(string, string_len, start);
     property_index = 0;
@@ -330,8 +330,8 @@ nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
     nc_cyclic_buffer_write_segment(buffer, window, 0, &property_index,
                                    &written_width, width);
 
-    nc_cyclic_increment_start(
-        start_pos, string_characters + separator_characters);
+    nc_cyclic_increment_start(start_pos,
+                              string_characters + separator_characters);
     return;
 }
 
