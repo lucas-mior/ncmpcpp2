@@ -312,7 +312,7 @@ static int32
 lastfm_buffer_find_unchecked(NcBuffer *buffer, char *pattern, int32 pattern_len,
                              NcmError *ncm_error) {
     LastfmFindState state;
-    NcmRegex regex;
+    NcmRegex regex = {0};
     char *data;
     int32 match_count;
     int32 status;
@@ -322,7 +322,6 @@ lastfm_buffer_find_unchecked(NcBuffer *buffer, char *pattern, int32 pattern_len,
         return ncm_error_ok(ncm_error);
     }
 
-    regex = (NcmRegex){0};
     if ((status = ncm_regex_compile(&regex, pattern, pattern_len,
                                     Config.regular_expressions,
                                     ncm_error)) < 0) {
