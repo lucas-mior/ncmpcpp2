@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_SETTINGS_TYPES_C)
-#define NCMPCPP_SETTINGS_TYPES_C
+#if !defined(SETTINGS_TYPES_C)
+#define SETTINGS_TYPES_C
 
 #include "cbase.h"
 
@@ -244,4 +244,4 @@ configuration_search_engine_default_mode(Configuration *config) {
     return (enum SearchEngineSearchMode)mode;
 }
 
-#endif /* NCMPCPP_SETTINGS_TYPES_C */
+#endif /* SETTINGS_TYPES_C */
