@@ -6,10 +6,10 @@
 #include "c/ncm_c.h"
 #include "settings.h"
 
-static int32 ncm_display_column_width(Column *column, int32 list_width,
+static int32 ncm_display_column_width(Column *, int32 list_width,
                                       int32 remained_width);
-static void ncm_display_append_spaces(StrBuilder *buffer, int32 count);
-static void ncm_display_append_nc_spaces(NcBuffer *buffer, int32 count);
+static void ncm_display_append_spaces(StrBuilder *, int32);
+static void ncm_display_append_nc_spaces(NcBuffer *, int32);
 
 static void
 ncm_display_append_basename(NcBuffer *buffer, char *path, int32 path_len) {

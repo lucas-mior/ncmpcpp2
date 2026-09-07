@@ -41,16 +41,16 @@ typedef struct SaveContext SaveContext;
 
 // callbacks
 static NcWindow *tag_edit_active_window(NcScreen *screen);
-static void tag_edit_refresh(NcScreen *screen);
-static void tag_edit_refresh_window(NcScreen *screen);
-static void tag_edit_scroll(NcScreen *screen, enum NcScroll where);
-static bool tag_edit_can_run_current(NcScreen *screen);
-static int32 tag_edit_run_current(NcScreen *screen);
-static void tag_edit_switch_to(NcScreen *screen);
-static void tag_edit_resize(NcScreen *screen);
-static char *tag_edit_title(NcScreen *screen);
-static void tag_edit_update(NcScreen *screen);
-static void tag_edit_destroy_callback(NcScreen *screen);
+static void tag_edit_refresh(NcScreen *);
+static void tag_edit_refresh_window(NcScreen *);
+static void tag_edit_scroll(NcScreen *, enum NcScroll);
+static bool tag_edit_can_run_current(NcScreen *);
+static int32 tag_edit_run_current(NcScreen *);
+static void tag_edit_switch_to(NcScreen *);
+static void tag_edit_resize(NcScreen *);
+static char *tag_edit_title(NcScreen *);
+static void tag_edit_update(NcScreen *);
+static void tag_edit_destroy_callback(NcScreen *);
 static void tag_edit_mouse_callback(NcScreen *, MEVENT);
 
 static void

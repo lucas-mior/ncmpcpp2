@@ -52,21 +52,20 @@ typedef struct NcmStatusInitHooks {
     void (*show_connected_message)(void *user);
 } NcmStatusInitHooks;
 
-void ncm_status_handle_server_error_value(NcmMpdClient *client, int32 code,
-                                          char *message, int32 message_len);
-void ncm_status_trace(NcmMpdClient *client, bool update_timer,
-                      bool update_window_timeout, NcmError *ncm_error);
+void ncm_status_handle_server_error_value(NcmMpdClient *, int32 code, char *,
+                                          int32 message_len);
+void ncm_status_trace(NcmMpdClient *, bool update_timer,
+                      bool update_window_timeout, NcmError *);
 void ncm_status_set_database_update_observer(void (*callback)(void *user),
                                              void *user);
 void ncm_status_set_playlist_update_observer(void (*callback)(void *user),
                                              void *user);
-int32 ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
-                                  NcmStatusHooks *hooks, NcmError *ncm_error);
-int32 ncm_status_update(NcmMpdClient *client, int32 event, NcmError *ncm_error);
-int32 ncm_status_update_full(NcmMpdClient *client, NcmStatusHooks *hooks,
-                             NcmError *ncm_error);
-int32 ncm_status_update_from_noidle(NcmMpdClient *client, NcmStatusHooks *hooks,
-                                    NcmError *ncm_error);
+int32 ncm_status_apply_mpd_status(NcmMpdStatus *, int32, NcmStatusHooks *,
+                                  NcmError *);
+int32 ncm_status_update(NcmMpdClient *, int32, NcmError *);
+int32 ncm_status_update_full(NcmMpdClient *, NcmStatusHooks *, NcmError *);
+int32 ncm_status_update_from_noidle(NcmMpdClient *, NcmStatusHooks *,
+                                    NcmError *);
 void ncm_status_clear(void);
 
 bool ncm_status_state_consume_is_enabled(void);
@@ -83,7 +82,7 @@ int32 ncm_status_state_total_time(void);
 int32 ncm_status_state_volume(void);
 
 void ncm_status_changes_player_state(void);
-void ncm_status_changes_elapsed_time(bool update_elapsed);
+void ncm_status_changes_elapsed_time(bool);
 void ncm_status_changes_flags(void);
 void ncm_status_changes_mixer(void);
 

@@ -126,16 +126,15 @@ NCM_APP_SCREEN_INIT_FLAGS(NCM_APP_SCREEN_DECLARE_INIT_FLAG)
     XX(PROMPT_RESULT_ACCEPTED)
 #include "cbase/xenums.c"
 
-static void app_request_registered_resize(enum NcScreenType type);
-static void app_screen_register_once(NcScreen *screen);
-static void app_screen_register_replacing(NcScreen *screen,
-                                          enum NcScreenType type);
-static bool app_screen_is_current(NcScreen *screen);
-static void app_screen_switch_to(NcScreen *screen);
-static void app_screen_toggle_or_switch_to(NcScreen *screen);
+static void app_request_registered_resize(enum NcScreenType);
+static void app_screen_register_once(NcScreen *);
+static void app_screen_register_replacing(NcScreen *, enum NcScreenType);
+static bool app_screen_is_current(NcScreen *);
+static void app_screen_switch_to(NcScreen *);
+static void app_screen_toggle_or_switch_to(NcScreen *);
 static NcBorder no_border(void);
-static void app_register_screen(NcScreen *screen);
-static void show_long_time(NcBuffer *buffer, int32 seconds);
+static void app_register_screen(NcScreen *);
+static void show_long_time(NcBuffer *, int32);
 
 #define NCM_APP_SCREEN_DIRECT_ACCESSOR(suffix, type, storage, base_expr) \
     type *                                                               \

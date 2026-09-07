@@ -5,15 +5,15 @@
 
 #include "c/ncm_c.h"
 
-static void ncm_app_array_song_destroy(void *item);
+static void ncm_app_array_song_destroy(void *);
 static int32 ncm_app_array_song_copy(void *dest, void *source);
 static void ncm_app_array_song_move(void *dest, void *source);
-static void ncm_app_array_directory_destroy(void *item);
+static void ncm_app_array_directory_destroy(void *);
 static int32 ncm_app_array_directory_copy(void *dest, void *source);
-static void ncm_app_array_playlist_destroy(void *item);
+static void ncm_app_array_playlist_destroy(void *);
 static int32 ncm_app_array_playlist_copy(void *dest, void *source);
-static void ncm_app_array_mpd_item_init(void *item);
-static void ncm_app_array_mpd_item_destroy(void *item);
+static void ncm_app_array_mpd_item_init(void *);
+static void ncm_app_array_mpd_item_destroy(void *);
 static int32 ncm_app_array_mpd_item_copy(void *dest, void *source);
 
 static NcmArrayItemCallbacks ncm_app_array_no_callbacks = {0};

@@ -5,11 +5,11 @@
 
 #include "screens/nc_screens.h"
 
-static void nc_song_info_switch_to(NcScreen *screen);
-static void nc_song_info_resize(NcScreen *screen);
-static void nc_song_info_mouse_button_pressed(NcScreen *screen, MEVENT event);
-static void nc_song_info_destroy_callback(NcScreen *screen);
-static void nc_song_info_display(NcSongInfoScreen *song_info);
+static void nc_song_info_switch_to(NcScreen *);
+static void nc_song_info_resize(NcScreen *);
+static void nc_song_info_mouse_button_pressed(NcScreen *, MEVENT);
+static void nc_song_info_destroy_callback(NcScreen *);
+static void nc_song_info_display(NcSongInfoScreen *);
 
 #define NC_SCREEN_IMPL_TYPE NcSongInfoScreen
 #define NC_SCREEN_IMPL_PREFIX nc_song_info

@@ -39,22 +39,20 @@ typedef struct LyricsFindState {
     NcBuffer *buffer;
 } LyricsFindState;
 
-static void lyrics_switch_to_callback(NcScreen *screen);
-static void lyrics_resize_callback(NcScreen *screen);
-static int32 lyrics_window_timeout_callback(NcScreen *screen);
-static char *lyrics_title_callback(NcScreen *screen);
-static void lyrics_update_callback(NcScreen *screen);
-static void lyrics_mouse_button_pressed_callback(NcScreen *screen,
-                                                 MEVENT event);
+static void lyrics_switch_to_callback(NcScreen *);
+static void lyrics_resize_callback(NcScreen *);
+static int32 lyrics_window_timeout_callback(NcScreen *);
+static char *lyrics_title_callback(NcScreen *);
+static void lyrics_update_callback(NcScreen *);
+static void lyrics_mouse_button_pressed_callback(NcScreen *, MEVENT);
 static int32 lyrics_screen_start_foreground_fetch(LyricsScreen *, NcmSong *,
-                                                  NcmLyricsFetcherDef *fetcher,
-                                                  StrBuilder *filename,
-                                                  NcmError *ncm_error);
-static bool lyrics_screen_update_sync_line_force(LyricsScreen *, bool force);
-static int32 lyrics_lrc_buffer_position(void *user);
-static void lyrics_lrc_buffer_append(void *user, char *data, int32 data_len);
-static void lyrics_screen_clear_lyrics_state(LyricsScreen *, LyricsMode mode);
-static void lyrics_remove_extension(StrBuilder *buffer);
+                                                  NcmLyricsFetcherDef *,
+                                                  StrBuilder *, NcmError *);
+static bool lyrics_screen_update_sync_line_force(LyricsScreen *, bool);
+static int32 lyrics_lrc_buffer_position(void *);
+static void lyrics_lrc_buffer_append(void *, char *, int32);
+static void lyrics_screen_clear_lyrics_state(LyricsScreen *, LyricsMode);
+static void lyrics_remove_extension(StrBuilder *);
 static int32 lyrics_filename_from_song_with_extension(StrBuilder *, NcmSong *,
                                                       char *music_dir,
                                                       int32 music_dir_len,
@@ -64,32 +62,31 @@ static int32 lyrics_filename_from_song_with_extension(StrBuilder *, NcmSong *,
                                                       bool win32_filename,
                                                       char *extension,
                                                       int32 extension_len);
-static int32 lyrics_filename_from_song(StrBuilder *filename, NcmSong *song,
+static int32 lyrics_filename_from_song(StrBuilder *, NcmSong *,
                                        char *music_dir, int32 music_dir_len,
                                        char *lyrics_dir, int32 lyrics_dir_len,
                                        bool store_in_song_dir,
                                        bool win32_filename);
-static int32 lyrics_preferred_filename_from_song(StrBuilder *filename,
-                                                 NcmSong *song, char *music_dir,
+static int32 lyrics_preferred_filename_from_song(StrBuilder *, NcmSong *,
+                                                 char *music_dir,
                                                  int32 music_dir_len,
                                                  char *lyrics_dir,
                                                  int32 lyrics_dir_len,
                                                  bool store_in_song_dir,
                                                  bool win32_filename);
-static LyricsJob *lyrics_job_create(LyricsScreen *screen, NcmSong *song,
-                                    NcmLyricsFetcherDef *fetcher, bool notify,
+static LyricsJob *lyrics_job_create(LyricsScreen *, NcmSong *,
+                                    NcmLyricsFetcherDef *, bool notify,
                                     bool background);
-static void lyrics_append_fetching(NcBuffer *buffer,
-                                   NcmLyricsFetcherDef *fetcher);
+static void lyrics_append_fetching(NcBuffer *, NcmLyricsFetcherDef *);
 static void lyrics_job_append_fetch_error(LyricsJob *, NcmLyricsResult *);
-static bool lyrics_job_is_current(LyricsJob *job);
-static int32 lyrics_job_run(void *user, NcmError *ncm_error);
-static void lyrics_job_complete(int32 status, NcmError *ncm_error, void *user);
-static void lyrics_job_destroy(void *user);
-static int32 lyrics_start_next_background(LyricsScreen *, NcmError *ncm_error);
-static bool lyrics_find_match_callback(int32 start, int32 len, void *user);
-static void lyrics_mouse_scroll(LyricsScreen *screen, enum NcScroll where);
-static void lyrics_display(LyricsScreen *screen);
+static bool lyrics_job_is_current(LyricsJob *);
+static int32 lyrics_job_run(void *, NcmError *);
+static void lyrics_job_complete(int32, NcmError *, void *);
+static void lyrics_job_destroy(void *);
+static int32 lyrics_start_next_background(LyricsScreen *, NcmError *);
+static bool lyrics_find_match_callback(int32 start, int32 len, void *);
+static void lyrics_mouse_scroll(LyricsScreen *, enum NcScroll);
+static void lyrics_display(LyricsScreen *);
 
 #define NC_SCREEN_IMPL_TYPE LyricsScreen
 #define NC_SCREEN_IMPL_PREFIX lyrics

@@ -10,7 +10,7 @@
 static NcWindow *nc_screen_adapter_active_window(NcScreen *);
 static void nc_screen_adapter_refresh(NcScreen *);
 static void nc_screen_adapter_refresh_window(NcScreen *);
-static void nc_screen_adapter_scroll(NcScreen *, enum NcScroll where);
+static void nc_screen_adapter_scroll(NcScreen *, enum NcScroll);
 static void nc_screen_adapter_list_change_finished(NcScreen *);
 static bool nc_screen_adapter_can_run_current(NcScreen *);
 static int32 nc_screen_adapter_run_current(NcScreen *);
@@ -19,7 +19,7 @@ static void nc_screen_adapter_resize(NcScreen *);
 static int32 nc_screen_adapter_window_timeout(NcScreen *);
 static char *nc_screen_adapter_title(NcScreen *);
 static void nc_screen_adapter_update(NcScreen *);
-static void nc_screen_adapter_mouse_button_pressed(NcScreen *, MEVENT event);
+static void nc_screen_adapter_mouse_button_pressed(NcScreen *, MEVENT);
 static bool nc_screen_adapter_is_lockable(NcScreen *);
 static bool nc_screen_adapter_is_mergable(NcScreen *);
 static void nc_screen_adapter_destroy(NcScreen *);

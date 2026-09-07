@@ -7,20 +7,20 @@
 
 #define NC_MENU_SCROLL_DEPTH_MARGIN 4
 
-static bool menu_is_separator(NcMenu *, void *item);
-static bool menu_is_selected(NcMenu *, void *item);
-static bool menu_is_inactive(NcMenu *, void *item);
-static bool menu_is_position_highlightable(int32 pos, void *user);
-static void menu_print_buffer(NcWindow *window, NcBuffer *buffer);
+static bool menu_is_separator(NcMenu *, void *);
+static bool menu_is_selected(NcMenu *, void *);
+static bool menu_is_inactive(NcMenu *, void *);
+static bool menu_is_position_highlightable(int32, void *);
+static void menu_print_buffer(NcWindow *, NcBuffer *);
 static void menu_copy_buffer(NcBuffer *dest, NcBuffer *source);
 static void *menu_construct_item(NcMenu *);
 
 static uint32 menu_default_item_flags(void);
-static uint32 menu_flags_for_item(NcMenu *, void *item);
-static uint32 *menu_flags_array(NcMenu *, enum NcMenuItemSource source);
-static int32 menu_item_index(NcMenu *, enum NcMenuItemSource, void *item);
+static uint32 menu_flags_for_item(NcMenu *, void *);
+static uint32 *menu_flags_array(NcMenu *, enum NcMenuItemSource);
+static int32 menu_item_index(NcMenu *, enum NcMenuItemSource, void *);
 static void menu_clamp_navigation(NcMenu *);
-static void menu_set_flags_for_item(NcMenu  *, void *item, uint32 flags);
+static void menu_set_flags_for_item(NcMenu *, void *, uint32);
 
 static void **
 menu_array(NcMenu *menu, enum NcMenuItemSource source) {

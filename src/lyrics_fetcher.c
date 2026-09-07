@@ -52,7 +52,7 @@ typedef struct LyricsDirectSlugPair {
     LyricsSlugProfile title;
 } LyricsDirectSlugPair;
 
-static void lyrics_fetcher_array_destroy_item(void *item);
+static void lyrics_fetcher_array_destroy_item(void *);
 
 static NcmArrayItemCallbacks lyrics_fetcher_callbacks = {
     .destroy = lyrics_fetcher_array_destroy_item,

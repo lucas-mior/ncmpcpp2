@@ -5,13 +5,11 @@
 
 #include "c/ncm_c.h"
 
-static enum NcmFormatResult ncm_format_render_list(NcmFormatExprList *list,
-                                                   NcmSong *song,
-                                                   NcmFormatCallbacks *cb,
+static enum NcmFormatResult ncm_format_render_list(NcmFormatExprList *,
+                                                   NcmSong *,
+                                                   NcmFormatCallbacks *,
                                                    void *left, void *right,
-                                                   uint32 flags,
-                                                   int32 *no_output,
-                                                   bool *switched);
+                                                   uint32, int32 *, bool *);
 
 static int32
 ncm_format_set_error(NcmError *ncm_error, char *message, int32 position) {

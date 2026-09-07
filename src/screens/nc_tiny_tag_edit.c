@@ -17,7 +17,7 @@ static void tiny_editor_switch_to(NcScreen *);
 static void tiny_editor_resize(NcScreen *);
 static char *tiny_editor_title(NcScreen *);
 static void tiny_editor_update(NcScreen *);
-static void tiny_editor_mouse_callback(NcScreen  *, MEVENT event);
+static void tiny_editor_mouse_callback(NcScreen *, MEVENT);
 
 #define NC_SCREEN_IMPL_TYPE TinyTagEditScreen
 #define NC_SCREEN_IMPL_PREFIX tiny_editor

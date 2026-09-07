@@ -15,10 +15,9 @@ typedef struct NcScrollpadWriteState {
     int32 property_count;
 } NcScrollpadWriteState;
 
-static int32 nc_scrollpad_i32(int32 value);
-static int32 nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
-                                       bool generate_height_only);
-static bool nc_scrollpad_is_space(char ch);
+static int32 nc_scrollpad_i32(int32);
+static int32 nc_scrollpad_write_buffer(NcScrollpadWriteState *, bool);
+static bool nc_scrollpad_is_space(char);
 
 void
 nc_scrollpad_init(NcScrollpad *scrollpad, int32 height) {

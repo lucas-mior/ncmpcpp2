@@ -11,22 +11,22 @@
 #include "statusbar.h"
 #include "ui_state.h"
 
-static void sort_dialog_refresh_rows(SortPlaylistDialog *dialog);
-static void sort_dialog_draw_row(NcMenu *menu, NcWindow *window,
-                                 void *item, int32 pos, void *user);
-static bool sort_dialog_can_run_current_callback(NcScreen *screen);
-static int32 sort_dialog_run_current_callback(NcScreen *screen);
-static void sort_dialog_switch_to_callback(NcScreen *screen);
-static void sort_dialog_resize_callback(NcScreen *screen);
-static char *sort_dialog_title_callback(NcScreen *screen);
-static void sort_dialog_update_callback(NcScreen *screen);
-static void sort_dialog_mouse_callback(NcScreen *screen, MEVENT event);
-static bool sort_dialog_position_is_sort_key(NcMenu *menu, int32 pos);
-static void sort_dialog_show_move_hint(void *user);
-static void sort_dialog_run_sort(void *user);
-static void sort_dialog_cancel(void *user);
-static void sort_dialog_apply_geometry(SortPlaylistDialog *dialog);
-static void sort_dialog_finish(SortPlaylistDialog *dialog);
+static void sort_dialog_refresh_rows(SortPlaylistDialog *);
+static void sort_dialog_draw_row(NcMenu *, NcWindow *, void *item, int32,
+                                 void *user);
+static bool sort_dialog_can_run_current_callback(NcScreen *);
+static int32 sort_dialog_run_current_callback(NcScreen *);
+static void sort_dialog_switch_to_callback(NcScreen *);
+static void sort_dialog_resize_callback(NcScreen *);
+static char *sort_dialog_title_callback(NcScreen *);
+static void sort_dialog_update_callback(NcScreen *);
+static void sort_dialog_mouse_callback(NcScreen *, MEVENT);
+static bool sort_dialog_position_is_sort_key(NcMenu *, int32);
+static void sort_dialog_show_move_hint(void *);
+static void sort_dialog_run_sort(void *);
+static void sort_dialog_cancel(void *);
+static void sort_dialog_apply_geometry(SortPlaylistDialog *);
+static void sort_dialog_finish(SortPlaylistDialog *);
 
 #define NC_SCREEN_IMPL_TYPE SortPlaylistDialog
 #define NC_SCREEN_IMPL_PREFIX sort_dialog

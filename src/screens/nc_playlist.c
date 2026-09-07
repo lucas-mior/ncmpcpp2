@@ -12,8 +12,7 @@
 #include "statusbar.h"
 #include "ui_state.h"
 
-static void playlist_scroll_lines(NcPlaylistScreen *screen,
-                                  enum NcScroll where);
+static void playlist_scroll_lines(NcPlaylistScreen *, enum NcScroll);
 
 void
 nc_playlist_screen_init(NcPlaylistScreen *screen,
@@ -155,46 +154,39 @@ playlist_scroll_lines(NcPlaylistScreen *screen, enum NcScroll where) {
     return;
 }
 
-static void playlist_display(PlaylistScreen *screen);
-static void playlist_switch_to(NcScreen *screen);
-static void playlist_resize(NcScreen *screen);
-static char *playlist_title(NcScreen *screen);
-static void playlist_update(NcScreen *screen);
-static void playlist_mouse_button_pressed(NcScreen *screen, MEVENT event);
+static void playlist_display(PlaylistScreen *);
+static void playlist_switch_to(NcScreen *);
+static void playlist_resize(NcScreen *);
+static char *playlist_title(NcScreen *);
+static void playlist_update(NcScreen *);
+static void playlist_mouse_button_pressed(NcScreen *, MEVENT);
 static NcMenuDisplayCallbacks playlist_display_callbacks(void);
 static NcMenuActionCallbacks playlist_action_callbacks(void);
-static void playlist_draw_song(NcMenu *menu, NcWindow *window,
-                               void *item, int32 pos, void *user);
-static void playlist_activate_song(NcMenu *menu, void *item,
-                                   int32 pos, void *user);
-static void playlist_print_buffer(NcWindow *window, NcBuffer *buffer);
-static bool playlist_song_is_now_playing(NcmSong *song);
-static NcMenu *playlist_storage_menu(PlaylistScreen *screen);
-static void playlist_build_mutable_song(
-    NcmSong *replacement, NcmSong *current, NcmMutableSong *edited);
-static void playlist_set_mutable_uri(NcmSong *song, NcmMutableSong *edited);
-static void playlist_refresh_stats(PlaylistScreen *screen);
-static void playlist_truncate_storage(PlaylistScreen *screen,
-                                      int32 playlist_length);
-static void playlist_apply_changed_song_to_storage(
-    PlaylistScreen *screen, NcmSong *song);
-static void playlist_apply_changed_songs(
-    PlaylistScreen *screen, NcmMpdSongList *songs, int32 playlist_length);
-static bool playlist_full_reload_is_required(PlaylistScreen *screen,
-                                        int32 version, int32 playlist_length,
-                                        NcmMpdSongList *changes);
-static bool playlist_append_selected(NcMenu *menu, NcmSongArray *songs);
-static void playlist_append_position(NcMenu *menu, int32 pos,
-                                     NcmSongArray *songs);
-static int32 playlist_set_one_priority(NcmSong *song, int32 idx, void *user);
-static bool playlist_song_matches_filter(NcMenu *menu, void *item, void *user);
-static bool playlist_song_matches(PlaylistScreen *screen,
-                                  NcmSong *song, NcmRegex *regex);
-static int32 playlist_search_menu(PlaylistScreen *screen,
-                                  NcMenu *menu, NcmRegex *regex,
-                                 bool forward, bool wrap, bool skip_current);
-static bool playlist_position_matches_search(NcMenu *menu, int32 pos,
-                                             void *user);
+static void playlist_draw_song(NcMenu *, NcWindow *, void *item, int32,
+                               void *user);
+static void playlist_activate_song(NcMenu *, void *item, int32, void *user);
+static void playlist_print_buffer(NcWindow *, NcBuffer *);
+static bool playlist_song_is_now_playing(NcmSong *);
+static NcMenu *playlist_storage_menu(PlaylistScreen *);
+static void playlist_build_mutable_song(NcmSong *replacement, NcmSong *current,
+                                        NcmMutableSong *);
+static void playlist_set_mutable_uri(NcmSong *, NcmMutableSong *);
+static void playlist_refresh_stats(PlaylistScreen *);
+static void playlist_truncate_storage(PlaylistScreen *, int32);
+static void playlist_apply_changed_song_to_storage(PlaylistScreen *, NcmSong *);
+static void playlist_apply_changed_songs(PlaylistScreen *, NcmMpdSongList *,
+                                         int32);
+static bool playlist_full_reload_is_required(PlaylistScreen *, int32 version,
+                                             int32 playlist_length,
+                                             NcmMpdSongList *);
+static bool playlist_append_selected(NcMenu *, NcmSongArray *);
+static void playlist_append_position(NcMenu *, int32, NcmSongArray *);
+static int32 playlist_set_one_priority(NcmSong *, int32, void *);
+static bool playlist_song_matches_filter(NcMenu *, void *item, void *user);
+static bool playlist_song_matches(PlaylistScreen *, NcmSong *, NcmRegex *);
+static int32 playlist_search_menu(PlaylistScreen *, NcMenu *, NcmRegex *,
+                                  bool forward, bool wrap, bool skip_current);
+static bool playlist_position_matches_search(NcMenu *, int32, void *);
 
 typedef struct PlaylistSearchContext {
     PlaylistScreen *screen;

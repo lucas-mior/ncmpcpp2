@@ -40,19 +40,17 @@ typedef struct NcmLastfmService {
     enum NcmLastfmServiceType type;
 } NcmLastfmService;
 
-void ncm_lastfm_result_destroy(NcmLastfmResult *result);
-void ncm_lastfm_result_clear(NcmLastfmResult *result);
-int32 ncm_lastfm_result_set(NcmLastfmResult *result, bool success,
-                            char *text, int32 text_len);
+void ncm_lastfm_result_destroy(NcmLastfmResult *);
+void ncm_lastfm_result_clear(NcmLastfmResult *);
+int32 ncm_lastfm_result_set(NcmLastfmResult *, bool, char *, int32);
 
-void ncm_lastfm_service_destroy(NcmLastfmService *service);
-int32 ncm_lastfm_artist_info_init(NcmLastfmService *service, char *artist,
+void ncm_lastfm_service_destroy(NcmLastfmService *);
+int32 ncm_lastfm_artist_info_init(NcmLastfmService *, char *artist,
                                   int32 artist_len, char *lang, int32 lang_len);
 bool ncm_lastfm_service_is_equal(NcmLastfmService *left,
                                  NcmLastfmService *right);
-char *ncm_lastfm_service_name(NcmLastfmService *service);
-enum NcmLastfmServiceType ncm_lastfm_service_type(NcmLastfmService *service);
-int32 ncm_lastfm_service_fetch(NcmLastfmService *service,
-                               NcmLastfmResult *result);
+char *ncm_lastfm_service_name(NcmLastfmService *);
+enum NcmLastfmServiceType ncm_lastfm_service_type(NcmLastfmService *);
+int32 ncm_lastfm_service_fetch(NcmLastfmService *, NcmLastfmResult *);
 
 #endif /* LASTFM_SERVICE_H */

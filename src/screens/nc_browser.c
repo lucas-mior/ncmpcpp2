@@ -13,12 +13,12 @@
 #include "title.h"
 #include "ui_state.h"
 
-static void browser_display(BrowserScreen *screen);
-static void browser_switch_to(NcScreen *screen);
-static void browser_resize(NcScreen *screen);
-static char *browser_title(NcScreen *screen);
-static void browser_update(NcScreen *screen);
-static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
+static void browser_display(BrowserScreen *);
+static void browser_switch_to(NcScreen *);
+static void browser_resize(NcScreen *);
+static char *browser_title(NcScreen *);
+static void browser_update(NcScreen *);
+static void browser_mouse_button_pressed(NcScreen *, MEVENT);
 
 #define NC_SCREEN_IMPL_TYPE BrowserScreen
 #define NC_SCREEN_IMPL_PREFIX browser
@@ -38,7 +38,7 @@ static void browser_mouse_button_pressed(NcScreen *screen, MEVENT event);
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
 
-static void browser_locate_last_directory(BrowserScreen *screen);
+static void browser_locate_last_directory(BrowserScreen *);
 static bool browser_string_views_matches(NcmStringView left,
                                          NcmStringView right);
 
