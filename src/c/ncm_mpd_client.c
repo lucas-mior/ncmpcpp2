@@ -729,19 +729,6 @@ ncm_mpd_client_set_replay_gain_mode(NcmMpdClient *client,
 }
 
 int32
-ncm_mpd_client_set_priority_id(NcmMpdClient *client, int32 id,
-                               int32 priority, NcmError *ncm_error) {
-    NCM_CLIENT_TRY(ncm_mpd_client_prechecks(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client,
-        ncm_mpd_connection_set_priority_id(&client->connection, id, priority,
-                                           client->command_list_active),
-        ncm_error);
-
-    return ncm_error_ok(ncm_error);
-}
-
-int32
 ncm_mpd_client_set_priority_song(NcmMpdClient *client, NcmSong *song,
                                  int32 priority, NcmError *ncm_error) {
     if (song == NULL) {
@@ -756,13 +743,6 @@ ncm_mpd_client_set_priority_song(NcmMpdClient *client, NcmSong *song,
             client->command_list_active), ncm_error);
 
     return ncm_error_ok(ncm_error);
-}
-
-int32
-ncm_mpd_client_add_song(NcmMpdClient *client, char *path, int32 pos,
-                        int32 *id, NcmError *ncm_error) {
-    NCM_CLIENT_TRY(ncm_mpd_client_prechecks(client, ncm_error));
-    return ncm_mpd_client_add_song_ready(client, path, pos, id, ncm_error);
 }
 
 int32
@@ -925,19 +905,6 @@ ncm_mpd_client_clear_playlist(NcmMpdClient *client, char *name,
 }
 
 int32
-ncm_mpd_client_add_to_playlist(NcmMpdClient *client, char *playlist,
-                               char *path, NcmError *ncm_error) {
-    NCM_CLIENT_TRY(ncm_mpd_client_prechecks(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client,
-        ncm_mpd_connection_add_to_playlist(&client->connection, playlist, path,
-                                           client->command_list_active),
-        ncm_error);
-
-    return ncm_error_ok(ncm_error);
-}
-
-int32
 ncm_mpd_client_add_song_to_playlist(NcmMpdClient *client,
                                     char *playlist, NcmSong *song,
                                     NcmError *ncm_error) {
@@ -1062,18 +1029,6 @@ ncm_mpd_client_get_list(NcmMpdClient *client, enum mpd_tag_type tag,
     NCM_CLIENT_TRY_MPD(
         client,
         ncm_mpd_connection_list_tag_values(&client->connection, tag, strings),
-        ncm_error);
-
-    return ncm_error_ok(ncm_error);
-}
-
-int32
-ncm_mpd_client_get_directory(NcmMpdClient *client, char *path,
-                             NcmMpdItemList *items, NcmError *ncm_error) {
-    NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client,
-        ncm_mpd_connection_get_directory(&client->connection, path, items),
         ncm_error);
 
     return ncm_error_ok(ncm_error);

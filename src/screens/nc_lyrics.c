@@ -1488,22 +1488,9 @@ lyrics_screen_filename(LyricsScreen *screen) {
     return &screen->filename;
 }
 
-LyricsMode
-lyrics_screen_mode(LyricsScreen *screen) {
-    return screen->mode;
-}
-
 NcmLrcDocument *
 lyrics_screen_lrc(LyricsScreen *screen) {
     return &screen->lrc;
-}
-
-int32
-lyrics_screen_active_lrc_line(LyricsScreen *screen) {
-    if (screen == NULL) {
-        return LYRICS_NO_ACTIVE_LINE;
-    }
-    return screen->active_lrc_line;
 }
 
 static bool
