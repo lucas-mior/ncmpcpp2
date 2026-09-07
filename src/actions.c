@@ -5126,8 +5126,8 @@ action_runtime_edit_library_album(void) {
         goto cleanup;
     }
     if ((new_album.len <= 0)
-        || STREQUAL(new_album.data, new_album.len, current_album.data,
-                    current_album.len)) {
+        || STREQUAL(new_album.data, new_album.len,
+                    current_album.data, current_album.len)) {
         status = 0;
         goto cleanup;
     }
