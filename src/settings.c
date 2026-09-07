@@ -566,27 +566,27 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
     return 0;
 }
 
-#define SETTINGS_PARSE_XENUM_VALUE( \
-    ENUM_PREFIX_, value, value_len, result, status \
-) \
-    do { \
-        (status) = -NCM_ERROR_PARSE; \
-        for (uint32 i = 0; i < CAT(ENUM_PREFIX_, COUNT); i += 1) { \
-            char *alias; \
-            int32 alias_len; \
-            ENUM_PREFIX_ candidate; \
- \
-            candidate = (ENUM_PREFIX_)i; \
-            alias_len = CAT(ENUM_PREFIX_, alias_len)(candidate, &alias); \
-            if (STREQUAL(value, value_len, alias, alias_len)) { \
-                *(result) = CAT(ENUM_PREFIX_, parse)(value, value_len); \
-                (status) = 0; \
-            } \
-            CAT(ENUM_PREFIX_, alias_free)(alias); \
-            if ((status) == 0) { \
-                break; \
-            } \
-        } \
+#define SETTINGS_PARSE_XENUM_VALUE(                                            \
+    ENUM_PREFIX_, value, value_len, result, status                             \
+)                                                                              \
+    do {                                                                       \
+        (status) = -NCM_ERROR_PARSE;                                           \
+        for (uint32 i = 0; i < CAT(ENUM_PREFIX_, COUNT); i += 1) {             \
+            char *alias;                                                       \
+            int32 alias_len;                                                   \
+            ENUM_PREFIX_ candidate;                                            \
+                                                                               \
+            candidate = (ENUM_PREFIX_)i;                                       \
+            alias_len = CAT(ENUM_PREFIX_, alias_len)(candidate, &alias);       \
+            if (STREQUAL(value, value_len, alias, alias_len)) {                \
+                *(result) = CAT(ENUM_PREFIX_, parse)(value, value_len);        \
+                (status) = 0;                                                  \
+            }                                                                  \
+            CAT(ENUM_PREFIX_, alias_free)(alias);                              \
+            if ((status) == 0) {                                               \
+                break;                                                         \
+            }                                                                  \
+        }                                                                      \
     } while (0)
 
 static int32
