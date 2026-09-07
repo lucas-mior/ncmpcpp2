@@ -103,8 +103,8 @@ visualizer_fft_reserve_bar_heights(VisualizerScreen *screen, int32 capacity) {
         }
         new_cap *= 2;
     }
-    fft->bar_heights = realloc2(fft->bar_heights, old_cap, new_cap,
-                                SIZEOF(*fft->bar_heights));
+    fft->bar_heights = realloc2(fft->bar_heights,
+                                old_cap, new_cap, SIZEOF(*fft->bar_heights));
     fft->bar_heights_cap = new_cap;
     return;
 }
