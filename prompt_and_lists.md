@@ -22,7 +22,85 @@ status = ncm_fs_rename(old_real_path.data, old_real_path.len,
 Only keep line break before the first argument on the very very rare occasion
 that it does not fit in a single line (80 column rule).
 
-
+- src/screens/screen_type.c
+- src/c/ncm_directory.c
+- src/c/ncm_sample_buffer.c
+- src/screens/nc_media_library.c
+- src/app_legacy_bridge.c
+- src/curses/nc_window.c
+- src/screens/nc_sel_items_adder.c
+- src/curses/nc_curses.c
+- src/c/ncm_html.c
+- src/app_controller.c
+- src/c/ncm_regex.c
+- src/c/ncm_path.c
+- src/status.c
+- src/c/ncm_mpd_item.c
+- src/screens/nc_screen_switcher.c
+- src/screens/nc_screens.c
+- src/c/ncm_comparators.c
+- src/c/ncm_mpd_client.c
+- src/c/ncm_fs.c
+- src/c/ncm_c.c
+- src/curses/nc_scrollpad.c
+- src/c/ncm_format.c
+- src/screen_actions.c
+- src/c/ncm_conversion.c
+- src/curses/nc_app_menus.c
+- src/global.c
+- src/screens/nc_playlist.c
+- src/screens/nc_server_info.c
+- src/screens/nc_lastfm.c
+- src/c/ncm_playlist_sort.c
+- src/screens/nc_playlist_edit.c
+- src/screens/nc_search_engine.c
+- src/c/ncm_lrc.c
+- src/lyrics_fetcher.c
+- src/c/ncm_string.c
+- src/screens/nc_tag_edit.c
+- src/c/ncm_type_conversions.c
+- src/helpers.c
+- src/curses/nc_cyclic_buffer.c
+- src/settings_types.c
+- src/curses/nc_menu.c
+- src/screens/nc_song_info.c
+- src/c/ncm_search_prompt.c
+- src/statusbar.c
+- src/screens/nc_scrollpad_screen.c
+- src/c/ncm_option_parser.c
+- src/main.c
+- src/curses/nc_formatted_color.c
+- src/actions.c
+- src/settings.c
+- src/screens/nc_browser.c
+- src/screens/nc_sort_playlist.c
+- src/screens/app_screens.c
+- src/screens/nc_visualizer.c
+- src/ui_state.c
+- src/c/ncm_enums.c
+- src/config.c
+- src/c/ncm_song.c
+- src/screens/nc_outputs.c
+- src/c/ncm_taglib.c
+- src/app_state.c
+- src/curses/nc_buffer.c
+- src/bindings.c
+- src/screens/nc_help.c
+- src/c/ncm_display.c
+- src/c/ncm_mpd_connection.c
+- src/c/ncm_utilities.c
+- src/c/ncm_playlist.c
+- src/c/ncm_mutable_song.c
+- src/c/ncm_tags.c
+- src/lastfm_service.c
+- src/c/ncm_job.c
+- src/screens/nc_tiny_tag_edit.c
+- src/title.c
+- src/c/ncm_app_arrays.c
+- src/screens/nc_lyrics.c
+- src/screens/nc_screen.c
+- src/curl_handle.c
+- src/c/ncm_error.c
 
 ## Utility function creep
 Functions that do the (almost) the same thing are redefined in different places.
