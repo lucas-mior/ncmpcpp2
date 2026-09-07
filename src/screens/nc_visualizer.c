@@ -1252,8 +1252,8 @@ visualizer_screen_split_stereo(VisualizerScreen *screen, int16 *samples,
 }
 
 void
-visualizer_screen_apply_auto_scale(VisualizerScreen *screen, int16 *samples,
-                                   int32 samples_len) {
+visualizer_screen_apply_auto_scale(VisualizerScreen *screen,
+                                   int16 *samples, int32 samples_len) {
     double scale;
     int32 scaled;
 
