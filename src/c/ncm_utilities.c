@@ -1,5 +1,5 @@
-#if !defined(NCM_UTILITIES_C )
-#define NCM_UTILITIES_C 
+#if !defined(NCM_UTILITIES_C)
+#define NCM_UTILITIES_C
 
 #include "cbase.h"
 
