@@ -351,7 +351,7 @@ nc_scrollpad_center_on_buffer_position(NcScrollpad *scrollpad,
 
     beginning = row - window->height/2;
     max_beginning = nc_scrollpad_max_beginning(scrollpad, window);
-    scrollpad->beginning = (int32)CLAMP(beginning, 0, max_beginning);
+    scrollpad->beginning = CLAMP(beginning, 0, max_beginning);
     return;
 }
 
