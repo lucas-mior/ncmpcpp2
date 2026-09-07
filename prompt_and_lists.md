@@ -2,7 +2,40 @@
 
 For the first of the problems below (excessive NULL checking),
 identify instances of it in the first file in the list below it. Then fix those
-instances and remove the file from the list.
+instances and remove the file from the list. If the first file in the list does
+not have the problem, try the next one without asking first.
+
+## Functions that are never called (dead code)
+
+## Excessive error checking
+## Utility function creep
+Functions that do the same thing are redefined in different
+
+## some unnecessary static function declarations at the top of the files
+## functions definitions could be reordered to not need declarations at the top
+
+## Style: lines broken prematurely
+
+## Style: checking return value after the call (call should be inside if().
+
+## Style: breaking function calls before the first argument and not alining
+This is bad:
+```c
+status = ncm_fs_rename(
+    old_real_path.data, old_real_path.len,
+    new_real_path.data, new_real_path.len, ncm_error);
+```
+Replace with:
+```c
+status = ncm_fs_rename(old_real_path.data, old_real_path.len,
+                       new_real_path.data, new_real_path.len,
+                       ncm_error);
+```
+
+## Strings unecessary conversion to and from StrBuilder
+Investigate:
+- ncm_conversion_copy_source()
+- there are multiple confusing string types
 
 ## Excessive NULL checking and error checking
 The source code in src/ is at paranoia levels of NULL pointer checking.  For
@@ -83,33 +116,3 @@ well).
 - src/screens/nc_screens.c
 - src/curses/nc_curses.c
 
-## Functions that are never called (dead code)
-## Excessive error checking
-## Utility function creep
-Functions that do the same thing are redefined in different
-
-## some unnecessary static function declarations at the top of the files
-## functions definitions could be reordered to not need declarations at the top
-
-## Style: lines broken prematurely
-
-## Style: checking return value after the call (call should be inside if().
-
-## Style: breaking function calls before the first argument and not alining
-This is bad:
-```c
-status = ncm_fs_rename(
-    old_real_path.data, old_real_path.len,
-    new_real_path.data, new_real_path.len, ncm_error);
-```
-Replace with:
-```c
-status = ncm_fs_rename(old_real_path.data, old_real_path.len,
-                       new_real_path.data, new_real_path.len,
-                       ncm_error);
-```
-
-## Strings unecessary conversion to and from StrBuilder
-Investigate:
-- ncm_conversion_copy_source()
-- there are multiple confusing string types
