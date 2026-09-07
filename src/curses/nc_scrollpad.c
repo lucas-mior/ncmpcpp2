@@ -22,11 +22,6 @@ nc_scrollpad_init(NcScrollpad *scrollpad, int32 height) {
     return;
 }
 
-static int32
-nc_scrollpad_i32(int32 value) {
-    return value;
-}
-
 void
 nc_scrollpad_refresh(NcScrollpad *scrollpad, NcWindow *window) {
     int32 start_y;
@@ -40,12 +35,12 @@ nc_scrollpad_refresh(NcScrollpad *scrollpad, NcWindow *window) {
         scrollpad->beginning = nc_scrollpad_max_beginning(scrollpad, window);
     }
 
-    start_y = nc_scrollpad_i32(window->start_y);
-    start_x = nc_scrollpad_i32(window->start_x);
-    end_y = nc_scrollpad_i32(window->start_y + window->height - 1);
-    end_x = nc_scrollpad_i32(window->start_x + window->width - 1);
+    start_y = window->start_y;
+    start_x = window->start_x;
+    end_y = window->start_y + window->height - 1;
+    end_x = window->start_x + window->width - 1;
 
-    prefresh(window->window, nc_scrollpad_i32(scrollpad->beginning), 0,
+    prefresh(window->window, scrollpad->beginning, 0,
              start_y, start_x, end_y, end_x);
     return;
 }
