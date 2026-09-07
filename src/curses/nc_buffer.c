@@ -283,8 +283,8 @@ nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property) {
     case NC_BUFFER_PROPERTY_FORMATTED_COLOR:
         formatted_color = &property->value.formatted_color;
         nc_window_push_color(window, formatted_color->color);
-        formats = nc_formatted_color_formats(formatted_color);
-        count = nc_formatted_color_format_count(formatted_color);
+        formats = formatted_color->formats;
+        count = ARRAY_LEN(formatted_color);
         for (int32 i = 0; i < count; i += 1) {
             nc_window_apply_format(window, formats[i]);
         }
@@ -294,8 +294,8 @@ nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property) {
         if (!nc_color_is_default(formatted_color->color)) {
             nc_window_push_color(window, nc_color_end());
         }
-        formats = nc_formatted_color_formats(formatted_color);
-        count = nc_formatted_color_format_count(formatted_color);
+        formats = formatted_color->formats;
+        count = ARRAY_LEN(formatted_color);
         for (int32 i = count - 1; i >= 0; i -= 1) {
             enum NcFormat format;
 

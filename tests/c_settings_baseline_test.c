@@ -587,12 +587,12 @@ test_color_options(void) {
         apply_state_flags_color, &config, "green:bu"));
     expected = nc_color_make(COLOR_GREEN, NC_COLOR_CURRENT, false, false);
     ASSERT(nc_color_is_equal(config.state_flags_color.color, expected));
-    ASSERT(nc_formatted_color_format_count(&config.state_flags_color) == 2);
+    ASSERT(ARRAY_LEN(&config.state_flags_color) == 2);
     ASSERT(config.state_flags_color.formats[0] == NC_FORMAT_BOLD);
     ASSERT(config.state_flags_color.formats[1] == NC_FORMAT_UNDERLINE);
     ASSERT(settings_test_apply(
         apply_state_flags_color, &config, "green:x") < 0);
-    ASSERT(nc_formatted_color_format_count(&config.state_flags_color) == 2);
+    ASSERT(ARRAY_LEN(&config.state_flags_color) == 2);
 
     ASSERT_ZERO(settings_test_apply(
         apply_window_border_color, &config, "cyan"));

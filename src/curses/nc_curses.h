@@ -273,8 +273,6 @@ void nc_formatted_color_copy(NcFormattedColor *dest, NcFormattedColor *source);
 void nc_formatted_color_move(NcFormattedColor *dest, NcFormattedColor *source);
 void nc_formatted_color_destroy(NcFormattedColor *);
 void nc_formatted_color_add_format(NcFormattedColor *, enum NcFormat);
-enum NcFormat *nc_formatted_color_formats(NcFormattedColor *);
-int32 nc_formatted_color_format_count(NcFormattedColor *);
 
 #define ENUM_NAME NcBufferPropertyType
 #define ENUM_PREFIX_ NC_BUFFER_PROPERTY_
