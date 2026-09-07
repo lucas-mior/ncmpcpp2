@@ -656,9 +656,9 @@ nc_screen_registry_is_visible(NcScreenRegistry *registry, NcScreen *screen) {
 }
 
 static void
-nc_screen_registry_each_visible_unchecked(
-    NcScreenRegistry *registry, NcScreenEachCallback *callback, void *user
-) {
+nc_screen_registry_each_visible_unchecked(NcScreenRegistry *registry,
+                                          NcScreenEachCallback *callback,
+                                          void *user) {
     ASSERT(callback != NULL);
 
     if (registry->locked_screen
