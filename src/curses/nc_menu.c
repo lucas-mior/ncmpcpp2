@@ -654,10 +654,8 @@ nc_menu_scroll(NcMenu *menu, int32 height, enum NcScroll where,
 }
 
 void
-nc_menu_scroll_selectable(NcMenu *menu, int32 height,
-                          enum NcScroll where) {
-    nc_menu_scroll(menu, height, where, menu_is_position_highlightable,
-                   menu);
+nc_menu_scroll_selectable(NcMenu *menu, int32 height, enum NcScroll where) {
+    nc_menu_scroll(menu, height, where, menu_is_position_highlightable, menu);
     return;
 }
 
