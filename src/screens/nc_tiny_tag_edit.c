@@ -686,9 +686,7 @@ tiny_editor_display(TinyTagEditScreen *editor) {
 
 static void
 tiny_editor_switch_to(NcScreen *screen) {
-    TinyTagEditScreen *editor;
-
-    editor = tiny_editor_from_screen(screen);
+    TinyTagEditScreen *editor = tiny_editor_from_screen(screen);
     editor->previous_screen = app_controller_previous_screen();
     ncm_title_draw_header(STRLIT("Tiny tag editor"));
     return;
