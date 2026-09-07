@@ -430,8 +430,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         && (row <= (int32)TINY_TAG_EDITOR_LAST_TAG_ROW)) {
         NcBuffer row_buffer = {0};
 
-        field = (enum NcmTagsField)(
-            row - (int32)TINY_TAG_EDITOR_FIRST_TAG_ROW);
+        field = (enum NcmTagsField)(row - (int32)TINY_TAG_EDITOR_FIRST_TAG_ROW);
         tag_value = ncm_mutable_song_tags_buffer(
             &screen->edited, field, screen->tag_separator.data,
             screen->tag_separator.len, screen->show_duplicate_tags);
