@@ -842,8 +842,7 @@ nc_screen_callbacks_update(NcScreen *screen) {
 }
 
 static void
-nc_screen_callbacks_mouse_button_pressed(NcScreen *screen,
-                                         MEVENT event) {
+nc_screen_callbacks_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     if (screen->callbacks.mouse_button_pressed == NULL) {
         nc_screen_noop_mouse_button_pressed(screen, event);
         return;
