@@ -192,8 +192,8 @@ visualizer_draw_character(VisualizerScreen *screen,
     nc_window_go_to_xy(&screen->window, x, y);
     if (color) {
         nc_window_push_color(&screen->window, color->color);
-        formats = nc_formatted_color_formats(color);
-        count = nc_formatted_color_format_count(color);
+        formats = color->formats;
+        count = ARRAY_LEN(color);
         for (int32 i = 0; i < count; i += 1) {
             nc_window_apply_format(&screen->window, formats[i]);
         }

@@ -21,8 +21,8 @@ title_apply_formatted_color(NcWindow *window, NcFormattedColor *color) {
     }
 
     nc_window_push_color(window, color->color);
-    formats = nc_formatted_color_formats(color);
-    count = nc_formatted_color_format_count(color);
+    formats = color->formats;
+    count = ARRAY_LEN(color);
     for (int32 i = 0; i < count; i += 1) {
         nc_window_apply_format(window, formats[i]);
     }
@@ -41,8 +41,8 @@ title_apply_formatted_color_end(NcWindow *window, NcFormattedColor *color) {
     if (!nc_color_is_default(color->color)) {
         nc_window_push_color(window, nc_color_end());
     }
-    formats = nc_formatted_color_formats(color);
-    count = nc_formatted_color_format_count(color);
+    formats = color->formats;
+    count = ARRAY_LEN(color);
     for (int32 i = count - 1; i >= 0; i -= 1) {
         nc_window_apply_format(window, nc_format_reverse(formats[i]));
     }

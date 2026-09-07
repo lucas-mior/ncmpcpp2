@@ -52,14 +52,4 @@ nc_formatted_color_add_format(NcFormattedColor *formatted_color,
     return;
 }
 
-enum NcFormat *
-nc_formatted_color_formats(NcFormattedColor *formatted_color) {
-    return formatted_color->formats;
-}
-
-int32
-nc_formatted_color_format_count(NcFormattedColor *formatted_color) {
-    return ARRAY_LEN(formatted_color->formats);
-}
-
 #endif /* NC_FORMATTED_COLOR_C */
