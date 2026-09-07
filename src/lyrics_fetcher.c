@@ -15,7 +15,7 @@
 
 #define LYRICS_SEARCH_MAX_CANDIDATES 8
 
-static NcmLyricsCurlPerformFn lyrics_test_perform;
+static NcmLyricsCurlPerformFn *lyrics_test_perform;
 static void *lyrics_test_user;
 
 static NcmArrayItemCallbacks lyrics_fetcher_callbacks;

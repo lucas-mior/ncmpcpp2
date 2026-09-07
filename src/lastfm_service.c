@@ -12,8 +12,8 @@
     "d94e5b6e26469a2d1ffae8ef20131b79&method="
 #define LASTFM_INVALID_RESPONSE "Invalid response"
 
-static NcmLastfmCurlPerformFn lastfm_test_perform;
-static NcmLastfmCurlEscapeFn lastfm_test_escape;
+static NcmLastfmCurlPerformFn *lastfm_test_perform;
+static NcmLastfmCurlEscapeFn *lastfm_test_escape;
 static void *lastfm_test_user;
 
 static void
