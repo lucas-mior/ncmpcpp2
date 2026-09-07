@@ -6,9 +6,6 @@ instances and remove the file from the list. If the first file in the list does
 not have the problem, try the next one without asking first.
 
 ## Functions that are never called (dead code)
-- src/c/ncm_fs.c
-- src/c/ncm_regex.c
-- src/c/ncm_taglib.c
 - src/c/ncm_error.c
 - src/c/ncm_path.c
 - src/c/ncm_option_parser.c

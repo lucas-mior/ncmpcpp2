@@ -193,50 +193,6 @@ ncm_taglib_file_audio_properties(NcmTaglibFile *file,
 }
 
 int32
-ncm_taglib_read_property(NcmTaglibFile *file, char *property,
-                         NcmTaglibValueCallback *callback, void *user) {
-#if defined(HAVE_TAGLIB_H)
-    TagLib_File *handle;
-    char **values;
-    int32 count;
-
-    if (file == NULL) {
-        return -EINVAL;
-    }
-    if ((handle = ncm_taglib_handle(file)) == NULL) {
-        return -EINVAL;
-    }
-    if (property == NULL) {
-        return -EINVAL;
-    }
-    if (callback == NULL) {
-        return -EINVAL;
-    }
-
-    if ((values = taglib_property_get(handle, property)) == NULL) {
-        return 0;
-    }
-
-    count = 0;
-    for (int32 i = 0; values[i] != NULL; i += 1) {
-        if (!ncm_taglib_value_is_empty(values[i])) {
-            callback(values[i], user);
-            count += 1;
-        }
-    }
-
-    taglib_property_free(values);
-    return count;
-#else
-    (void)file;
-    (void)property;
-    (void)callback;
-    (void)user;
-    return -NCM_ERROR_TAGLIB;
-#endif
-}
-
-int32
 ncm_taglib_read_mapped_properties(NcmTaglibFile *file,
                                   NcmTaglibPairCallback *callback, void *user) {
 #if defined(HAVE_TAGLIB_H)
