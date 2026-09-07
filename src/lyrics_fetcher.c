@@ -678,9 +678,8 @@ lyrics_append_slug_profile(StrBuilder *buffer, LyricsSlugProfile profile,
             sb_append_byte(buffer, separator);
         }
         {
-            bool has_folded_form;
+            bool has_folded_form = false;
 
-            has_folded_form = false;
             if (folded_profile) {
                 switch (rune) {
                 case 0x00aa:
