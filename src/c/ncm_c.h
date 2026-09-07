@@ -1396,8 +1396,6 @@ typedef struct NcmTaglibAudioProperties {
 } NcmTaglibAudioProperties;
 
 typedef void NcmTaglibPairCallback(char *name, char *value, void *);
-typedef void NcmTaglibValueCallback(char *, void *);
-
 int32 ncm_taglib_file_open(NcmTaglibFile *, char *);
 void ncm_taglib_file_close(NcmTaglibFile *);
 int32 ncm_taglib_file_save(NcmTaglibFile *);
@@ -1405,8 +1403,6 @@ int32 ncm_taglib_file_audio_properties(NcmTaglibFile *,
                                        NcmTaglibAudioProperties *);
 int32 ncm_taglib_read_mapped_properties(NcmTaglibFile *,
                                         NcmTaglibPairCallback *, void *);
-int32 ncm_taglib_read_property(NcmTaglibFile *, char *,
-                               NcmTaglibValueCallback *, void *);
 int32 ncm_taglib_clear_property(NcmTaglibFile *, char *);
 int32 ncm_taglib_append_property(NcmTaglibFile *, char *property, char *value);
 bool ncm_taglib_file_can_set_extended_tags(NcmTaglibFile *);
