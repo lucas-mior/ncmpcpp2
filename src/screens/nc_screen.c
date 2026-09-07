@@ -362,8 +362,7 @@ nc_screen_resize_params(NcScreen *screen) {
 }
 
 void
-nc_screen_get_resize_params(NcScreen *screen, int32 *x_offset,
-                            int32 *width) {
+nc_screen_get_resize_params(NcScreen *screen, int32 *x_offset, int32 *width) {
     NcScreenResizeParams params = nc_screen_resize_params(screen);
 
     if (x_offset) {
