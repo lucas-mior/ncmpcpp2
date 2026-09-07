@@ -466,10 +466,8 @@ void nc_screen_get_resize_params(NcScreen *, int32 *x_offset, int32 *width);
 void nc_screen_draw_vertical_separator(int32 x);
 void *nc_screen_user(NcScreen *screen);
 
-int32 nc_screen_registry_register(NcScreenRegistry *registry,
-                                  NcScreen *screen);
-int32 nc_screen_registry_unregister(NcScreenRegistry *registry,
-                                    NcScreen *screen);
+int32 nc_screen_registry_register(NcScreenRegistry *, NcScreen *);
+int32 nc_screen_registry_unregister(NcScreenRegistry *, NcScreen *);
 NcScreen *nc_screen_registry_find(NcScreenRegistry *registry, int32 type);
 NcScreen *nc_screen_registry_current(NcScreenRegistry *registry);
 NcScreen *nc_screen_registry_previous(NcScreenRegistry *registry);
