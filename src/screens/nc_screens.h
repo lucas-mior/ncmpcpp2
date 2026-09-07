@@ -39,7 +39,7 @@
       NCM_SCREEN_FLAG_STARTUP)
 #define NCM_SCREEN_TYPE_PLAYLIST_EDITOR_ENTRY(XX)                              \
     XX(NCM_SCREEN_TYPE_PLAYLIST_EDITOR, NC_SCREEN_TYPE_PLAYLIST_EDITOR,        \
-      8, playlist_editor, NCM_SCREEN_FLAG_STARTUP)
+      8, playlist_edit, NCM_SCREEN_FLAG_STARTUP)
 #define NCM_SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                                \
     XX(NCM_SCREEN_TYPE_SEARCH_ENGINE, NC_SCREEN_TYPE_SEARCH_ENGINE,            \
       9, search_engine, NCM_SCREEN_FLAG_STARTUP)
@@ -59,10 +59,10 @@
       NCM_SCREEN_FLAG_NONE)
 #define NCM_SCREEN_TYPE_TAG_EDITOR_ENTRY(XX)                                   \
     XX(NCM_SCREEN_TYPE_TAG_EDITOR, NC_SCREEN_TYPE_TAG_EDITOR, 14,              \
-      tag_editor, NCM_SCREEN_FLAG_STARTUP)
+      tag_edit, NCM_SCREEN_FLAG_STARTUP)
 #define NCM_SCREEN_TYPE_TINY_TAG_EDITOR_ENTRY(XX)                              \
     XX(NCM_SCREEN_TYPE_TINY_TAG_EDITOR, NC_SCREEN_TYPE_TINY_TAG_EDITOR,        \
-      15, tiny_tag_editor, NCM_SCREEN_FLAG_NONE)
+      15, tiny_tag_edit, NCM_SCREEN_FLAG_NONE)
 #define NCM_SCREEN_TYPE_VISUALIZER_ENTRY(XX)                                   \
     XX(NCM_SCREEN_TYPE_VISUALIZER, NC_SCREEN_TYPE_VISUALIZER, 16,              \
       visualizer, NCM_SCREEN_FLAG_STARTUP)
@@ -144,13 +144,13 @@
     XX(LyricsScreen, lyrics_screen)                            \
     XX(VisualizerScreen, visualizer_screen)                    \
     XX(PlaylistScreen, playlist_screen)                        \
-    XX(PlaylistEditorScreen, playlist_editor_screen)           \
+    XX(PlaylistEditScreen, playlist_edit_screen)           \
     XX(SelectedItemsAdderScreen, selected_items_adder_screen)  \
     XX(SortPlaylistDialog, sort_playlist_dialog)               \
     XX(SearchEngineScreen, search_engine_screen)               \
     XX(MediaLibraryScreen, media_library_screen)               \
-    XX(TagEditorScreen, tag_editor_screen)                     \
-    XX(TinyTagEditorScreen, tiny_tag_editor_screen)
+    XX(TagEditScreen, tag_edit_screen)                     \
+    XX(TinyTagEditScreen, tiny_tag_edit_screen)
 
 #define NCM_APP_SCREEN_WRAPPED_STORAGE_TYPES(XX)               \
     XX(HelpScreen, help_screen)                                \
@@ -163,13 +163,13 @@
     XX(lastfm_screen_initialized)                              \
     XX(lyrics_screen_initialized)                              \
     XX(visualizer_screen_initialized)                          \
-    XX(playlist_editor_screen_initialized)                     \
+    XX(playlist_edit_screen_initialized)                     \
     XX(selected_items_adder_screen_initialized)                \
     XX(sort_playlist_dialog_initialized)                       \
     XX(search_engine_screen_initialized)                       \
     XX(media_library_screen_initialized)                       \
-    XX(tag_editor_screen_initialized)                          \
-    XX(tiny_tag_editor_screen_initialized)                     \
+    XX(tag_edit_screen_initialized)                          \
+    XX(tiny_tag_edit_screen_initialized)                     \
     XX(playlist_screen_initialized)
 
 #define NCM_APP_SCREEN_DIRECT_ACCESSOR_TYPES(XX)                               \
@@ -181,8 +181,8 @@
       lyrics_screen_base(&lyrics_screen))                                      \
     XX(playlist, PlaylistScreen, playlist_screen,                              \
       playlist_screen_base(&playlist_screen))                                  \
-    XX(playlist_editor, PlaylistEditorScreen, playlist_editor_screen,          \
-      playlist_editor_screen_base(&playlist_editor_screen))                    \
+    XX(playlist_edit, PlaylistEditScreen, playlist_edit_screen,          \
+      playlist_edit_screen_base(&playlist_edit_screen))                    \
     XX(selected_items_adder, SelectedItemsAdderScreen,                         \
       selected_items_adder_screen,                                             \
       selected_items_adder_screen_base(&selected_items_adder_screen))          \
@@ -192,10 +192,10 @@
       search_engine_screen_base(&search_engine_screen))                        \
     XX(media_library, MediaLibraryScreen, media_library_screen,                \
       media_library_screen_base(&media_library_screen))                        \
-    XX(tag_editor, TagEditorScreen, tag_editor_screen,                         \
-      tag_editor_screen_base(&tag_editor_screen))                              \
-    XX(tiny_tag_editor, TinyTagEditorScreen, tiny_tag_editor_screen,           \
-      tiny_tag_editor_screen_base(&tiny_tag_editor_screen))
+    XX(tag_edit, TagEditScreen, tag_edit_screen,                         \
+      tag_edit_screen_base(&tag_edit_screen))                              \
+    XX(tiny_tag_edit, TinyTagEditScreen, tiny_tag_edit_screen,           \
+      tiny_tag_edit_screen_base(&tiny_tag_edit_screen))
 
 #define NCM_APP_SCREEN_WRAPPED_ACCESSOR_TYPES(XX)                              \
     XX(help, nc_help_screen_base(&help_screen.screen))                         \
@@ -212,11 +212,11 @@
     XX(lyrics)                                                                 \
     XX(visualizer)                                                             \
     XX(playlist)                                                               \
-    XX(playlist_editor)                                                        \
+    XX(playlist_edit)                                                        \
     XX(search_engine)                                                          \
     XX(media_library)                                                          \
-    XX(tag_editor)                                                             \
-    XX(tiny_tag_editor)                                                        \
+    XX(tag_edit)                                                             \
+    XX(tiny_tag_edit)                                                        \
     XX(song_info)                                                              \
     XX(server_info)                                                            \
     XX(outputs)
@@ -229,17 +229,17 @@
     XX(browser)                                                   \
     XX(help)                                                      \
     XX(playlist)                                                  \
-    XX(playlist_editor)                                           \
+    XX(playlist_edit)                                           \
     XX(selected_items_adder)                                      \
     XX(search_engine)                                             \
     XX(media_library)                                             \
-    XX(tag_editor)                                                \
+    XX(tag_edit)                                                \
     XX(song_info)                                                 \
     XX(server_info)                                               \
     XX(outputs)
 
 #define NCM_APP_SCREEN_REGISTER_SWITCH_TYPES(XX)                  \
-    XX(tiny_tag_editor)
+    XX(tiny_tag_edit)
 
 #define NCM_APP_SCREEN_IS_CURRENT_TYPES(XX)                       \
     XX(browser)                                                   \
@@ -248,13 +248,13 @@
     XX(lyrics)                                                    \
     XX(visualizer)                                                \
     XX(playlist)                                                  \
-    XX(playlist_editor)                                           \
+    XX(playlist_edit)                                           \
     XX(selected_items_adder)                                      \
     XX(sort_playlist_dialog)                                      \
     XX(search_engine)                                             \
     XX(media_library)                                             \
-    XX(tag_editor)                                                \
-    XX(tiny_tag_editor)                                           \
+    XX(tag_edit)                                                \
+    XX(tiny_tag_edit)                                           \
     XX(song_info)                                                 \
     XX(server_info)                                               \
     XX(outputs)
@@ -270,11 +270,11 @@
 
 #if defined(HAVE_TAGLIB_H)
 #define NCM_APP_SCREEN_ENABLED_TAG_EDITOR(XX)                   \
-    XX(tag_editor)                                              \
-    XX(tiny_tag_editor)
+    XX(tag_edit)                                              \
+    XX(tiny_tag_edit)
 #define NCM_APP_SCREEN_ENABLED_TAG_EDITOR_RESIZE(XX)            \
-    XX(tag_editor, NC_SCREEN_TYPE_TAG_EDITOR)                   \
-    XX(tiny_tag_editor, NC_SCREEN_TYPE_TINY_TAG_EDITOR)
+    XX(tag_edit, NC_SCREEN_TYPE_TAG_EDITOR)                   \
+    XX(tiny_tag_edit, NC_SCREEN_TYPE_TINY_TAG_EDITOR)
 #else
 #define NCM_APP_SCREEN_ENABLED_TAG_EDITOR(XX)
 #define NCM_APP_SCREEN_ENABLED_TAG_EDITOR_RESIZE(XX)
@@ -296,7 +296,7 @@
     XX(lyrics)                                                    \
     XX(media_library)                                             \
     XX(playlist)                                                  \
-    XX(playlist_editor)                                           \
+    XX(playlist_edit)                                           \
     XX(search_engine)                                             \
     XX(selected_items_adder)                                      \
     XX(server_info)                                               \
@@ -319,7 +319,7 @@
     NCM_APP_SCREEN_ENABLED_TAG_EDITOR(XX)                         \
     NCM_APP_SCREEN_ENABLED_OUTPUTS(XX)                            \
     XX(playlist)                                                  \
-    XX(playlist_editor)
+    XX(playlist_edit)
 
 #define NCM_APP_SCREEN_RESIZE_REQUEST_TYPES(XX)                   \
     XX(browser, NC_SCREEN_TYPE_BROWSER)                           \
@@ -328,7 +328,7 @@
     XX(lyrics, NC_SCREEN_TYPE_LYRICS)                             \
     XX(media_library, NC_SCREEN_TYPE_MEDIA_LIBRARY)               \
     XX(playlist, NC_SCREEN_TYPE_PLAYLIST)                         \
-    XX(playlist_editor, NC_SCREEN_TYPE_PLAYLIST_EDITOR)           \
+    XX(playlist_edit, NC_SCREEN_TYPE_PLAYLIST_EDITOR)           \
     XX(search_engine, NC_SCREEN_TYPE_SEARCH_ENGINE)               \
     XX(selected_items_adder, NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER) \
     XX(server_info, NC_SCREEN_TYPE_SERVER_INFO)                   \
@@ -1252,8 +1252,8 @@ int32 media_library_screen_add_item_to_playlist(MediaLibraryScreen *, bool,
 int32 media_library_screen_locate_song(MediaLibraryScreen *, NcmSong *,
                                        NcmError *);
 
-/* screens/nc_playlist_editor.h */
-#define ENUM_NAME PlaylistEditorColumn
+/* screens/nc_playlist_edit.h */
+#define ENUM_NAME PlaylistEditColumn
 #define ENUM_PREFIX_ PLAYLIST_EDITOR_COLUMN_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
@@ -1263,28 +1263,28 @@ int32 media_library_screen_locate_song(MediaLibraryScreen *, NcmSong *,
 
 #define PLAYLIST_EDITOR_FETCH_DELAY_MS 250
 
-#define ENUM_NAME PlaylistEditorCommandType
+#define ENUM_NAME PlaylistEditCommandType
 #define ENUM_PREFIX_ PLAYLIST_EDITOR_COMMAND_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(PLAYLIST_EDITOR_COMMAND_NONE, none)                                     \
-    XX(PLAYLIST_EDITOR_COMMAND_LOAD, Load)                                     \
-    XX(PLAYLIST_EDITOR_COMMAND_SAVE, Save)                                     \
-    XX(PLAYLIST_EDITOR_COMMAND_RENAME, Rename)                                 \
+#define ENUM_FIELDS                                  \
+    XX(PLAYLIST_EDITOR_COMMAND_NONE, none)           \
+    XX(PLAYLIST_EDITOR_COMMAND_LOAD, Load)           \
+    XX(PLAYLIST_EDITOR_COMMAND_SAVE, Save)           \
+    XX(PLAYLIST_EDITOR_COMMAND_RENAME, Rename)       \
     XX(PLAYLIST_EDITOR_COMMAND_DELETE, Delete)
 #include "cbase/xenums.c"
 
-typedef struct PlaylistEditorCommand {
-    enum PlaylistEditorCommandType type;
+typedef struct PlaylistEditCommand {
+    enum PlaylistEditCommandType type;
     char *playlist;
     char *target;
     int32 playlist_len;
     int32 playlist_cap;
     int32 target_len;
     int32 target_cap;
-} PlaylistEditorCommand;
+} PlaylistEditCommand;
 
-typedef struct PlaylistEditorScreen {
+typedef struct PlaylistEditScreen {
     NcScreen screen;
     NcPlaylistEntryMenu playlists;
     NcSongMenu content;
@@ -1330,59 +1330,59 @@ typedef struct PlaylistEditorScreen {
     bool displayed_playlist_valid;
     bool observed_playlist_valid;
     bool registered;
-} PlaylistEditorScreen;
+} PlaylistEditScreen;
 
-void playlist_editor_screen_init(PlaylistEditorScreen *, int32 start_x,
+void playlist_edit_screen_init(PlaylistEditScreen *, int32 start_x,
                                  int32 width, int32 main_start_y,
                                  int32 main_height, NcColor, NcBorder);
-void playlist_editor_screen_destroy(PlaylistEditorScreen *);
-NcScreen *playlist_editor_screen_base(PlaylistEditorScreen *);
+void playlist_edit_screen_destroy(PlaylistEditScreen *);
+NcScreen *playlist_edit_screen_base(PlaylistEditScreen *);
 
-NcPlaylistEntryMenu *playlist_editor_screen_playlists(PlaylistEditorScreen *);
-NcSongMenu *playlist_editor_screen_content(PlaylistEditorScreen *);
-NcMenu *playlist_editor_screen_active_menu(PlaylistEditorScreen *);
-NcWindow *playlist_editor_screen_active_window(PlaylistEditorScreen *);
+NcPlaylistEntryMenu *playlist_edit_screen_playlists(PlaylistEditScreen *);
+NcSongMenu *playlist_edit_screen_content(PlaylistEditScreen *);
+NcMenu *playlist_edit_screen_active_menu(PlaylistEditScreen *);
+NcWindow *playlist_edit_screen_active_window(PlaylistEditScreen *);
 
-void playlist_editor_screen_set_geometry(PlaylistEditorScreen *, int32 start_x,
+void playlist_edit_screen_set_geometry(PlaylistEditScreen *, int32 start_x,
                                          int32 width, int32 main_start_y,
                                          int32 main_height);
-void playlist_editor_screen_set_column_ratio(PlaylistEditorScreen *, int32 left,
+void playlist_edit_screen_set_column_ratio(PlaylistEditScreen *, int32 left,
                                              int32 right);
-bool playlist_editor_screen_can_move_to_previous_column(PlaylistEditorScreen *);
-bool playlist_editor_screen_can_move_to_next_column(PlaylistEditorScreen *);
-void playlist_editor_screen_previous_column(PlaylistEditorScreen *);
-void playlist_editor_screen_next_column(PlaylistEditorScreen *);
-int32 playlist_editor_screen_load_playlists(PlaylistEditorScreen *,
+bool playlist_edit_screen_can_move_to_previous_column(PlaylistEditScreen *);
+bool playlist_edit_screen_can_move_to_next_column(PlaylistEditScreen *);
+void playlist_edit_screen_previous_column(PlaylistEditScreen *);
+void playlist_edit_screen_next_column(PlaylistEditScreen *);
+int32 playlist_edit_screen_load_playlists(PlaylistEditScreen *,
                                             NcmMpdPlaylistList *);
-int32 playlist_editor_screen_reload_playlists_from_mpd(PlaylistEditorScreen *,
+int32 playlist_edit_screen_reload_playlists_from_mpd(PlaylistEditScreen *,
                                                        NcmMpdClient *,
                                                        NcmError *);
-int32 playlist_editor_screen_load_content(PlaylistEditorScreen *,
+int32 playlist_edit_screen_load_content(PlaylistEditScreen *,
                                           NcmMpdSongList *);
-int32 playlist_editor_screen_reload_content_from_mpd(
-    PlaylistEditorScreen *, NcmMpdClient *, NcmError *
+int32 playlist_edit_screen_reload_content_from_mpd(
+    PlaylistEditScreen *, NcmMpdClient *, NcmError *
 );
-int32 playlist_editor_screen_locate_playlist(PlaylistEditorScreen *,
+int32 playlist_edit_screen_locate_playlist(PlaylistEditScreen *,
                                              NcmMpdClient *, char *, int32,
                                              NcmError *);
-int32 playlist_editor_screen_locate_song(PlaylistEditorScreen *, NcmMpdClient *,
+int32 playlist_edit_screen_locate_song(PlaylistEditScreen *, NcmMpdClient *,
                                          NcmSong *, NcmError *);
-int32 playlist_editor_screen_current_playlist(PlaylistEditorScreen *,
+int32 playlist_edit_screen_current_playlist(PlaylistEditScreen *,
                                               NcmPlaylist *);
-int32 playlist_editor_screen_current_song(PlaylistEditorScreen *, NcmSong *);
-int32 playlist_editor_screen_current_content_song(PlaylistEditorScreen *,
+int32 playlist_edit_screen_current_song(PlaylistEditScreen *, NcmSong *);
+int32 playlist_edit_screen_current_content_song(PlaylistEditScreen *,
                                                   NcmSong *);
-int32 playlist_editor_screen_selected_playlist_count(PlaylistEditorScreen *);
-int32 playlist_editor_screen_selected_songs(PlaylistEditorScreen *,
+int32 playlist_edit_screen_selected_playlist_count(PlaylistEditScreen *);
+int32 playlist_edit_screen_selected_songs(PlaylistEditScreen *,
                                             NcmSongArray *);
-int32 playlist_editor_screen_apply_active_filter(PlaylistEditorScreen *, char *,
+int32 playlist_edit_screen_apply_active_filter(PlaylistEditScreen *, char *,
                                                  int32, uint32, NcmError *);
-int32 playlist_editor_screen_search_active(PlaylistEditorScreen *, char *,
+int32 playlist_edit_screen_search_active(PlaylistEditScreen *, char *,
                                            int32, uint32, bool forward,
                                            bool wrap, bool skip_current,
                                            NcmError *);
-void playlist_editor_screen_request_playlists_update(PlaylistEditorScreen *);
-void playlist_editor_screen_request_content_update(PlaylistEditorScreen *);
+void playlist_edit_screen_request_playlists_update(PlaylistEditScreen *);
+void playlist_edit_screen_request_content_update(PlaylistEditScreen *);
 
 /* screens/nc_playlist.h */
 typedef struct NcPlaylistScreen {
@@ -1679,57 +1679,57 @@ int32 sort_playlist_dialog_open(SortPlaylistDialog *, PlaylistScreen *,
 int32 sort_playlist_dialog_move_current_up(SortPlaylistDialog *);
 int32 sort_playlist_dialog_move_current_down(SortPlaylistDialog *);
 
-/* screens/nc_tag_editor.h */
-#define ENUM_NAME TagEditorColumn
+/* screens/nc_tag_edit.h */
+#define ENUM_NAME TagEditColumn
 #define ENUM_PREFIX_ TAG_EDITOR_COLUMN_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(TAG_EDITOR_COLUMN_DIRECTORIES, Directories)                             \
-    XX(TAG_EDITOR_COLUMN_TAG_TYPES, Tag types)                                 \
+#define ENUM_FIELDS                                                  \
+    XX(TAG_EDITOR_COLUMN_DIRECTORIES, Directories)                   \
+    XX(TAG_EDITOR_COLUMN_TAG_TYPES, Tag types)                       \
     XX(TAG_EDITOR_COLUMN_TAGS, Tags)
 #include "cbase/xenums.c"
 
-#define ENUM_NAME TagEditorParserMode
+#define ENUM_NAME TagEditParserMode
 #define ENUM_PREFIX_ TAG_EDITOR_PARSER_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(TAG_EDITOR_PARSER_NONE, Pattern)                                        \
-    XX(TAG_EDITOR_PARSER_TAGS_FROM_FILENAME, Get tags from filename)           \
+#define ENUM_FIELDS                                                  \
+    XX(TAG_EDITOR_PARSER_NONE, Pattern)                              \
+    XX(TAG_EDITOR_PARSER_TAGS_FROM_FILENAME, Get tags from filename) \
     XX(TAG_EDITOR_PARSER_RENAME_FILES, Rename files)
 #include "cbase/xenums.c"
 
-#define ENUM_NAME TagEditorFocus
+#define ENUM_NAME TagEditFocus
 #define ENUM_PREFIX_ TAG_EDITOR_FOCUS_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(TAG_EDITOR_FOCUS_DIRECTORIES, Directories)                              \
-    XX(TAG_EDITOR_FOCUS_TAG_TYPES, Tag types)                                  \
-    XX(TAG_EDITOR_FOCUS_TAGS, Tags)                                            \
-    XX(TAG_EDITOR_FOCUS_PARSER_CHOICE, Pattern)                                \
-    XX(TAG_EDITOR_FOCUS_PARSER_ACTIONS, Pattern actions)                       \
-    XX(TAG_EDITOR_FOCUS_PARSER_LEGEND, Legend)                                 \
+#define ENUM_FIELDS                                                  \
+    XX(TAG_EDITOR_FOCUS_DIRECTORIES, Directories)                    \
+    XX(TAG_EDITOR_FOCUS_TAG_TYPES, Tag types)                        \
+    XX(TAG_EDITOR_FOCUS_TAGS, Tags)                                  \
+    XX(TAG_EDITOR_FOCUS_PARSER_CHOICE, Pattern)                      \
+    XX(TAG_EDITOR_FOCUS_PARSER_ACTIONS, Pattern actions)             \
+    XX(TAG_EDITOR_FOCUS_PARSER_LEGEND, Legend)                       \
     XX(TAG_EDITOR_FOCUS_PARSER_PREVIEW, Preview)
 #include "cbase/xenums.c"
 
-#define ENUM_NAME TagEditorPromptResult
+#define ENUM_NAME TagEditPromptResult
 #define ENUM_PREFIX_ TAG_EDITOR_PROMPT_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(TAG_EDITOR_PROMPT_ERROR)                                                \
-    XX(TAG_EDITOR_PROMPT_ABORTED)                                              \
+#define ENUM_FIELDS                                                  \
+    XX(TAG_EDITOR_PROMPT_ERROR)                                      \
+    XX(TAG_EDITOR_PROMPT_ABORTED)                                    \
     XX(TAG_EDITOR_PROMPT_ACCEPTED)
 #include "cbase/xenums.c"
 
-typedef struct TagEditorHooks {
-    enum TagEditorPromptResult (*prompt)(void *, char *, int32, NcmStringView,
+typedef struct TagEditHooks {
+    enum TagEditPromptResult (*prompt)(void *, char *, int32, NcmStringView,
                                          StrBuilder *);
     bool (*confirm)(void *, char *, int32);
     void (*status_message)(void *, char *, int32);
     void (*update_directory)(void *, char *, int32);
     void *user;
-} TagEditorHooks;
+} TagEditHooks;
 
-typedef struct TagEditorScreen {
+typedef struct TagEditScreen {
     NcScreen screen;
     NcEditorPairMenu directories;
     NcEditorStringMenu tag_types;
@@ -1743,7 +1743,7 @@ typedef struct TagEditorScreen {
     NcWindow parser_dialog_window;
     NcWindow parser_window;
     NcWindow parser_helper_window;
-    TagEditorHooks hooks;
+    TagEditHooks hooks;
     StrBuilder current_dir;
     StrBuilder displayed_dir;
     StrBuilder observed_dir;
@@ -1788,15 +1788,15 @@ typedef struct TagEditorScreen {
     int32 parser_width_two;
     int32 parser_height;
     int32 parser_helper_start_x;
-    enum TagEditorColumn active_column;
+    enum TagEditColumn active_column;
     int32 last_directory_highlight;
     int32 last_tag_type_highlight;
     int32 last_known_directory_count;
     int32 last_known_tag_count;
     int32 window_timeout_ms;
 
-    enum TagEditorParserMode parser_mode;
-    enum TagEditorFocus active_focus;
+    enum TagEditParserMode parser_mode;
+    enum TagEditFocus active_focus;
     bool directories_update_requested;
     bool tags_update_requested;
     bool directory_filter_enabled;
@@ -1808,82 +1808,82 @@ typedef struct TagEditorScreen {
     bool displayed_dir_valid;
     bool observed_dir_valid;
     bool registered;
-} TagEditorScreen;
+} TagEditScreen;
 
-void tag_editor_screen_init(TagEditorScreen *, int32 start_x, int32 width,
+void tag_edit_screen_init(TagEditScreen *, int32 start_x, int32 width,
                             int32 main_start_y, int32 main_height, NcColor,
                             NcBorder);
-void tag_editor_screen_destroy(TagEditorScreen *);
-NcScreen *tag_editor_screen_base(TagEditorScreen *);
+void tag_edit_screen_destroy(TagEditScreen *);
+NcScreen *tag_edit_screen_base(TagEditScreen *);
 
-void tag_editor_screen_set_hooks(TagEditorScreen *, TagEditorHooks);
-NcMenu *tag_editor_screen_active_menu(TagEditorScreen *);
-NcWindow *tag_editor_screen_active_window(TagEditorScreen *);
-void tag_editor_screen_set_geometry(TagEditorScreen *, int32 start_x,
+void tag_edit_screen_set_hooks(TagEditScreen *, TagEditHooks);
+NcMenu *tag_edit_screen_active_menu(TagEditScreen *);
+NcWindow *tag_edit_screen_active_window(TagEditScreen *);
+void tag_edit_screen_set_geometry(TagEditScreen *, int32 start_x,
                                     int32 width, int32 main_start_y,
                                     int32 main_height);
-void tag_editor_screen_clear_directories(TagEditorScreen *);
-void tag_editor_screen_clear_stale_tags(TagEditorScreen *);
-void tag_editor_screen_finish_directory_change(TagEditorScreen *);
-void tag_editor_screen_set_current_dir(TagEditorScreen *, char *, int32);
-int32 tag_editor_screen_current_dir(TagEditorScreen *, NcmStringView *);
-int32 tag_editor_screen_current_directory_path(TagEditorScreen *,
+void tag_edit_screen_clear_directories(TagEditScreen *);
+void tag_edit_screen_clear_stale_tags(TagEditScreen *);
+void tag_edit_screen_finish_directory_change(TagEditScreen *);
+void tag_edit_screen_set_current_dir(TagEditScreen *, char *, int32);
+int32 tag_edit_screen_current_dir(TagEditScreen *, NcmStringView *);
+int32 tag_edit_screen_current_directory_path(TagEditScreen *,
                                                NcmStringView *);
-int32 tag_editor_screen_enter_directory(TagEditorScreen *);
-int32 tag_editor_screen_go_to_parent(TagEditorScreen *);
-int32 tag_editor_screen_locate_song(TagEditorScreen *, NcmSong *);
-bool tag_editor_screen_rename_directory_available(TagEditorScreen *, char *,
+int32 tag_edit_screen_enter_directory(TagEditScreen *);
+int32 tag_edit_screen_go_to_parent(TagEditScreen *);
+int32 tag_edit_screen_locate_song(TagEditScreen *, NcmSong *);
+bool tag_edit_screen_rename_directory_available(TagEditScreen *, char *,
                                                   int32);
-int32 tag_editor_screen_rename_current_directory(TagEditorScreen *, char *,
+int32 tag_edit_screen_rename_current_directory(TagEditScreen *, char *,
                                                  int32);
-void tag_editor_screen_add_directory(
-    TagEditorScreen *, char *label, int32 label_len, char *path, int32 path_len
+void tag_edit_screen_add_directory(
+    TagEditScreen *, char *label, int32 label_len, char *path, int32 path_len
 );
-void tag_editor_screen_load_songs(TagEditorScreen *, NcmSongArray *);
-void tag_editor_screen_add_mutable_song(TagEditorScreen *, NcmMutableSong *);
-int32 tag_editor_screen_selected_songs(TagEditorScreen *, NcmSongArray *);
-bool tag_editor_screen_previous_column_available(TagEditorScreen *);
-bool tag_editor_screen_next_column_available(TagEditorScreen *);
-void tag_editor_screen_previous_column(TagEditorScreen *);
-void tag_editor_screen_next_column(TagEditorScreen *);
-int32 tag_editor_screen_apply_tag_to_selection(TagEditorScreen *,
+void tag_edit_screen_load_songs(TagEditScreen *, NcmSongArray *);
+void tag_edit_screen_add_mutable_song(TagEditScreen *, NcmMutableSong *);
+int32 tag_edit_screen_selected_songs(TagEditScreen *, NcmSongArray *);
+bool tag_edit_screen_previous_column_available(TagEditScreen *);
+bool tag_edit_screen_next_column_available(TagEditScreen *);
+void tag_edit_screen_previous_column(TagEditScreen *);
+void tag_edit_screen_next_column(TagEditScreen *);
+int32 tag_edit_screen_apply_tag_to_selection(TagEditScreen *,
                                                enum NcmTagsField, char *value,
                                                int32 value_len, char *separator,
                                                int32 separator_len);
-int32 tag_editor_screen_number_tracks(TagEditorScreen *, bool);
-void tag_editor_screen_capitalize_first_letters(TagEditorScreen *);
-void tag_editor_screen_lower_all_letters(TagEditorScreen *);
-void tag_editor_screen_clear_modifications(TagEditorScreen *);
-int32 tag_editor_screen_save_modified(TagEditorScreen *, char *);
-bool tag_editor_screen_save_action_available(TagEditorScreen *);
-int32 tag_editor_screen_apply_directory_filter(TagEditorScreen *, char *, int32,
+int32 tag_edit_screen_number_tracks(TagEditScreen *, bool);
+void tag_edit_screen_capitalize_first_letters(TagEditScreen *);
+void tag_edit_screen_lower_all_letters(TagEditScreen *);
+void tag_edit_screen_clear_modifications(TagEditScreen *);
+int32 tag_edit_screen_save_modified(TagEditScreen *, char *);
+bool tag_edit_screen_save_action_available(TagEditScreen *);
+int32 tag_edit_screen_apply_directory_filter(TagEditScreen *, char *, int32,
                                                uint32, NcmError *);
-int32 tag_editor_screen_apply_tag_filter(TagEditorScreen *, char *, int32,
+int32 tag_edit_screen_apply_tag_filter(TagEditScreen *, char *, int32,
                                          uint32, NcmError *);
-int32 tag_editor_screen_search(TagEditorScreen *, char *, int32, bool forward,
+int32 tag_edit_screen_search(TagEditScreen *, char *, int32, bool forward,
                                bool wrap, bool skip_current, NcmError *);
-void tag_editor_screen_prepare_parser_rows(TagEditorScreen *,
-                                           enum TagEditorParserMode, char *,
+void tag_edit_screen_prepare_parser_rows(TagEditScreen *,
+                                           enum TagEditParserMode, char *,
                                            int32);
-void tag_editor_screen_show_parser_dialog(TagEditorScreen *);
-void tag_editor_screen_show_parser_actions(TagEditorScreen *,
-                                           enum TagEditorParserMode);
-void tag_editor_screen_show_parser_legend(TagEditorScreen *);
-void tag_editor_screen_show_parser_preview(TagEditorScreen *);
-void tag_editor_screen_close_parser(TagEditorScreen *);
-int32 tag_editor_parse_filename(NcmMutableSong *, char *, int32, bool,
+void tag_edit_screen_show_parser_dialog(TagEditScreen *);
+void tag_edit_screen_show_parser_actions(TagEditScreen *,
+                                           enum TagEditParserMode);
+void tag_edit_screen_show_parser_legend(TagEditScreen *);
+void tag_edit_screen_show_parser_preview(TagEditScreen *);
+void tag_edit_screen_close_parser(TagEditScreen *);
+int32 tag_edit_parse_filename(NcmMutableSong *, char *, int32, bool,
                                 StrBuilder *);
-int32 tag_editor_generate_filename(
+int32 tag_edit_generate_filename(
     NcmMutableSong *, char *, int32, StrBuilder *
 );
-int32 tag_editor_song_display_value(NcmMutableSong *, enum NcmTagsField,
+int32 tag_edit_song_display_value(NcmMutableSong *, enum NcmTagsField,
                                     StrBuilder *);
 
-/* screens/nc_tiny_tag_editor.h */
+/* screens/nc_tiny_tag_edit.h */
 #define TINY_TAG_EDITOR_TAG_ROW(FIELD) \
     ((int32)TINY_TAG_EDITOR_FIRST_TAG_ROW + (int32)(FIELD))
 
-enum TinyTagEditorRow {
+enum TinyTagEditRow {
     TINY_TAG_EDITOR_FILE_NAME_INFO_ROW,
     TINY_TAG_EDITOR_DIRECTORY_INFO_ROW,
     TINY_TAG_EDITOR_UNUSED_INFO_ROW,
@@ -1903,7 +1903,7 @@ enum TinyTagEditorRow {
     TINY_TAG_EDITOR_ROW_COUNT,
 };
 
-#define ENUM_NAME TinyTagEditorOpenResult
+#define ENUM_NAME TinyTagEditOpenResult
 #define ENUM_PREFIX_ TINY_TAG_EDITOR_OPEN_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
@@ -1915,7 +1915,7 @@ enum TinyTagEditorRow {
     XX(TINY_TAG_EDITOR_OPEN_PREPARE_FAILED)
 #include "cbase/xenums.c"
 
-#define ENUM_NAME TinyTagEditorPromptResult
+#define ENUM_NAME TinyTagEditPromptResult
 #define ENUM_PREFIX_ TINY_TAG_EDITOR_PROMPT_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
@@ -1924,8 +1924,8 @@ enum TinyTagEditorRow {
     XX(TINY_TAG_EDITOR_PROMPT_ACCEPTED)
 #include "cbase/xenums.c"
 
-typedef struct TinyTagEditorHooks {
-    enum TinyTagEditorPromptResult (*prompt)(void *, char *, int32,
+typedef struct TinyTagEditHooks {
+    enum TinyTagEditPromptResult (*prompt)(void *, char *, int32,
                                              NcmStringView, StrBuilder *);
     void (*status_message)(void *, char *, int32);
     int32 (*taglib_open)(void *, NcmTaglibFile *, char *, int32);
@@ -1939,13 +1939,13 @@ typedef struct TinyTagEditorHooks {
     void (*request_browser_update)(void *);
     void (*switch_to_screen)(void *, NcScreen *);
     void *user;
-} TinyTagEditorHooks;
+} TinyTagEditHooks;
 
-typedef struct TinyTagEditorScreen {
+typedef struct TinyTagEditScreen {
     NcScreen screen;
     NcEditorBufferMenu rows;
     NcWindow window;
-    TinyTagEditorHooks hooks;
+    TinyTagEditHooks hooks;
     NcmMutableSong edited;
     StrBuilder music_dir;
     StrBuilder tag_separator;
@@ -1959,25 +1959,25 @@ typedef struct TinyTagEditorScreen {
     bool has_edited;
     bool show_duplicate_tags;
     bool registered;
-} TinyTagEditorScreen;
+} TinyTagEditScreen;
 
-void tiny_tag_editor_screen_init(TinyTagEditorScreen *, int32 start_x,
+void tiny_tag_edit_screen_init(TinyTagEditScreen *, int32 start_x,
                                  int32 width, int32 main_start_y,
                                  int32 main_height, NcColor, NcBorder);
-void tiny_tag_editor_screen_destroy(TinyTagEditorScreen *);
-NcScreen *tiny_tag_editor_screen_base(TinyTagEditorScreen *);
+void tiny_tag_edit_screen_destroy(TinyTagEditScreen *);
+NcScreen *tiny_tag_edit_screen_base(TinyTagEditScreen *);
 
-void tiny_tag_editor_screen_set_hooks(
-    TinyTagEditorScreen *, TinyTagEditorHooks
+void tiny_tag_edit_screen_set_hooks(
+    TinyTagEditScreen *, TinyTagEditHooks
 );
-NcEditorBufferMenu *tiny_tag_editor_screen_rows(TinyTagEditorScreen *);
-enum TinyTagEditorOpenResult tiny_tag_editor_screen_open_song(
-    TinyTagEditorScreen *, NcmSong *, char *music_dir, int32 music_dir_len,
+NcEditorBufferMenu *tiny_tag_edit_screen_rows(TinyTagEditScreen *);
+enum TinyTagEditOpenResult tiny_tag_edit_screen_open_song(
+    TinyTagEditScreen *, NcmSong *, char *music_dir, int32 music_dir_len,
     char *tag_separator, int32 tag_separator_len, bool, StrBuilder *
 );
-int32 tiny_tag_editor_screen_run_row(TinyTagEditorScreen *, int32);
-int32 tiny_tag_editor_screen_run_current(TinyTagEditorScreen *);
-bool tiny_tag_editor_screen_action_runnable(TinyTagEditorScreen *);
+int32 tiny_tag_edit_screen_run_row(TinyTagEditScreen *, int32);
+int32 tiny_tag_edit_screen_run_current(TinyTagEditScreen *);
+bool tiny_tag_edit_screen_action_runnable(TinyTagEditScreen *);
 
 /* screens/nc_browser.h */
 typedef struct BrowserScreen {

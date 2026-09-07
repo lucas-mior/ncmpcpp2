@@ -33,9 +33,9 @@ current_screen_filter_buffer(void) {
         return &app_screen_browser()->filter_constraint;
     }
     if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)) {
-        PlaylistEditorScreen *screen;
+        PlaylistEditScreen *screen;
 
-        screen = app_screen_playlist_editor();
+        screen = app_screen_playlist_edit();
         if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
             return &screen->content_filter_constraint;
         }
@@ -50,7 +50,7 @@ current_screen_filter_buffer(void) {
     }
 #if defined(HAVE_TAGLIB_H)
     if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
-        TagEditorScreen *screen = app_screen_tag_editor();
+        TagEditScreen *screen = app_screen_tag_edit();
 
         if (screen->active_column == TAG_EDITOR_COLUMN_DIRECTORIES) {
             return &screen->directory_filter_constraint;
@@ -72,7 +72,7 @@ current_screen_search_buffer(void) {
         return &app_screen_browser()->search_constraint;
     }
     if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)) {
-        PlaylistEditorScreen *screen = app_screen_playlist_editor();
+        PlaylistEditScreen *screen = app_screen_playlist_edit();
 
         if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
             return &screen->content_search_constraint;
@@ -100,7 +100,7 @@ current_screen_search_buffer(void) {
     }
 #if defined(HAVE_TAGLIB_H)
     if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
-        TagEditorScreen *screen = app_screen_tag_editor();
+        TagEditScreen *screen = app_screen_tag_edit();
 
         if (screen->active_column == TAG_EDITOR_COLUMN_DIRECTORIES) {
             return &screen->directory_search_constraint;
@@ -134,7 +134,7 @@ current_screen_clear_current_search_constraint(void) {
         return;
     }
     if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)) {
-        PlaylistEditorScreen *screen = app_screen_playlist_editor();
+        PlaylistEditScreen *screen = app_screen_playlist_edit();
 
         if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
             screen->content_search_enabled = false;
@@ -147,7 +147,7 @@ current_screen_clear_current_search_constraint(void) {
     }
 #if defined(HAVE_TAGLIB_H)
     if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
-        TagEditorScreen *screen = app_screen_tag_editor();
+        TagEditScreen *screen = app_screen_tag_edit();
 
         if (screen->active_column == TAG_EDITOR_COLUMN_DIRECTORIES) {
             screen->directory_search_enabled = false;
@@ -204,8 +204,8 @@ current_screen_apply_filter(char *pattern, int32 pattern_len,
         status = browser_screen_apply_filter(
             app_screen_browser(), pattern, pattern_len, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)) {
-        status = playlist_editor_screen_apply_active_filter(
-            app_screen_playlist_editor(), pattern, pattern_len,
+        status = playlist_edit_screen_apply_active_filter(
+            app_screen_playlist_edit(), pattern, pattern_len,
             Config.regular_expressions, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)) {
         status = search_engine_screen_apply_filter(
@@ -215,15 +215,15 @@ current_screen_apply_filter(char *pattern, int32 pattern_len,
             app_screen_media_library(), pattern, pattern_len, ncm_error);
 #if defined(HAVE_TAGLIB_H)
     } else if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
-        TagEditorScreen *screen;
+        TagEditScreen *screen;
 
-        screen = app_screen_tag_editor();
+        screen = app_screen_tag_edit();
         if (screen->active_column == TAG_EDITOR_COLUMN_DIRECTORIES) {
-            status = tag_editor_screen_apply_directory_filter(
+            status = tag_edit_screen_apply_directory_filter(
                 screen, pattern, pattern_len, Config.regular_expressions,
                 ncm_error);
         } else if (screen->active_column == TAG_EDITOR_COLUMN_TAGS) {
-            status = tag_editor_screen_apply_tag_filter(
+            status = tag_edit_screen_apply_tag_filter(
                 screen, pattern, pattern_len, Config.regular_expressions,
                 ncm_error);
         }
@@ -260,7 +260,7 @@ current_screen_can_search(void) {
     }
     if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
 #if defined(HAVE_TAGLIB_H)
-        TagEditorScreen *screen = app_screen_tag_editor();
+        TagEditScreen *screen = app_screen_tag_edit();
         return screen->active_column != TAG_EDITOR_COLUMN_TAG_TYPES;
 #else
         return false;
@@ -297,8 +297,8 @@ current_screen_search(enum SearchDirection direction, char *pattern,
                                        pattern_len, forward, wrap,
                                        skip_current, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)) {
-        status = playlist_editor_screen_search_active(
-            app_screen_playlist_editor(), pattern, pattern_len,
+        status = playlist_edit_screen_search_active(
+            app_screen_playlist_edit(), pattern, pattern_len,
             Config.regular_expressions, forward, wrap, skip_current, ncm_error);
     } else if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)) {
         status = search_engine_screen_search(
@@ -323,7 +323,7 @@ current_screen_search(enum SearchDirection direction, char *pattern,
             Config.regular_expressions, forward, wrap, skip_current, ncm_error);
 #if defined(HAVE_TAGLIB_H)
     } else if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
-        status = tag_editor_screen_search(app_screen_tag_editor(),
+        status = tag_edit_screen_search(app_screen_tag_edit(),
                                           pattern, pattern_len, forward,
                                           wrap, skip_current, ncm_error);
 #endif

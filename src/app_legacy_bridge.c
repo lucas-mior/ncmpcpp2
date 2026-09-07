@@ -38,8 +38,8 @@ app_bridge_refresh_playlist_related_inactive_columns(void *user) {
         media_library_screen_refresh_inactive_songs(app_screen_media_library());
     }
 
-    if (app_controller_is_screen_visible(app_screen_playlist_editor_base())) {
-        nc_screen_refresh(app_screen_playlist_editor_base());
+    if (app_controller_is_screen_visible(app_screen_playlist_edit_base())) {
+        nc_screen_refresh(app_screen_playlist_edit_base());
     }
     return;
 }

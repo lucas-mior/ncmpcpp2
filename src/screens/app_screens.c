@@ -412,26 +412,26 @@ app_screen_playlist_init(void) {
 }
 
 void
-app_screen_playlist_editor_init(void) {
-    if (playlist_editor_screen_initialized) {
+app_screen_playlist_edit_init(void) {
+    if (playlist_edit_screen_initialized) {
         return;
     }
-    playlist_editor_screen_init(&playlist_editor_screen,
+    playlist_edit_screen_init(&playlist_edit_screen,
                                 0,
                                 ui_state_screen_width(),
                                 ui_state_main_start_y(),
                                 ui_state_main_height(),
                                 Config.main_window_color,
                                 no_border());
-    if ((Config.playlist_editor_column_width_ratio.len >= 2)
-        && (Config.playlist_editor_column_width_ratio.items[0] > 0)
-        && (Config.playlist_editor_column_width_ratio.items[1] > 0)) {
-        playlist_editor_screen_set_column_ratio(
-            &playlist_editor_screen,
-            Config.playlist_editor_column_width_ratio.items[0],
-            Config.playlist_editor_column_width_ratio.items[1]);
+    if ((Config.playlist_edit_column_width_ratio.len >= 2)
+        && (Config.playlist_edit_column_width_ratio.items[0] > 0)
+        && (Config.playlist_edit_column_width_ratio.items[1] > 0)) {
+        playlist_edit_screen_set_column_ratio(
+            &playlist_edit_screen,
+            Config.playlist_edit_column_width_ratio.items[0],
+            Config.playlist_edit_column_width_ratio.items[1]);
     }
-    playlist_editor_screen_initialized = true;
+    playlist_edit_screen_initialized = true;
     return;
 }
 
@@ -739,8 +739,8 @@ prompt_buffer(char *label, int32 label_len,
     return PROMPT_RESULT_ACCEPTED;
 }
 
-static enum TagEditorPromptResult
-tag_editor_hook_prompt(
+static enum TagEditPromptResult
+tag_edit_hook_prompt(
     void *user, char *label, int32 label_len, NcmStringView initial,
     StrBuilder *result
 ) {
@@ -759,7 +759,7 @@ tag_editor_hook_prompt(
 }
 
 static bool
-tag_editor_hook_confirm(
+tag_edit_hook_confirm(
     void *user, char *message, int32 message_len
 ) {
     NcmStatusbarScopedLock scoped_lock;
@@ -790,7 +790,7 @@ tag_editor_hook_confirm(
 }
 
 static void
-tag_editor_hook_status_message(
+tag_edit_hook_status_message(
     void *user, char *message, int32 message_len
 ) {
     (void)user;
@@ -800,7 +800,7 @@ tag_editor_hook_status_message(
 }
 
 static void
-tag_editor_hook_update_directory(
+tag_edit_hook_update_directory(
     void *user, char *directory, int32 directory_len
 ) {
     NcmError ncm_error = {0};
@@ -816,30 +816,30 @@ tag_editor_hook_update_directory(
 }
 
 void
-app_screen_tag_editor_init(void) {
-    TagEditorHooks hooks = {0};
+app_screen_tag_edit_init(void) {
+    TagEditHooks hooks = {0};
 
-    if (tag_editor_screen_initialized) {
+    if (tag_edit_screen_initialized) {
         return;
     }
 
-    tag_editor_screen_init(&tag_editor_screen, 0,
+    tag_edit_screen_init(&tag_edit_screen, 0,
                            ui_state_screen_width(),
                            ui_state_main_start_y(),
                            ui_state_main_height(),
                            Config.main_window_color,
                            no_border());
-    hooks.prompt = tag_editor_hook_prompt;
-    hooks.confirm = tag_editor_hook_confirm;
-    hooks.status_message = tag_editor_hook_status_message;
-    hooks.update_directory = tag_editor_hook_update_directory;
-    tag_editor_screen_set_hooks(&tag_editor_screen, hooks);
-    tag_editor_screen_initialized = true;
+    hooks.prompt = tag_edit_hook_prompt;
+    hooks.confirm = tag_edit_hook_confirm;
+    hooks.status_message = tag_edit_hook_status_message;
+    hooks.update_directory = tag_edit_hook_update_directory;
+    tag_edit_screen_set_hooks(&tag_edit_screen, hooks);
+    tag_edit_screen_initialized = true;
     return;
 }
 
-static enum TinyTagEditorPromptResult
-tiny_tag_editor_prompt(
+static enum TinyTagEditPromptResult
+tiny_tag_edit_prompt(
     void *user, char *label, int32 label_len, NcmStringView initial,
     StrBuilder *result
 ) {
@@ -858,7 +858,7 @@ tiny_tag_editor_prompt(
 }
 
 static void
-tiny_tag_editor_status_message(
+tiny_tag_edit_status_message(
     void *user, char *message, int32 message_len
 ) {
     (void)user;
@@ -868,7 +868,7 @@ tiny_tag_editor_status_message(
 }
 
 static void
-tiny_tag_editor_update_directory(
+tiny_tag_edit_update_directory(
     void *user, char *directory, int32 directory_len
 ) {
     NcmError ncm_error = {0};
@@ -884,7 +884,7 @@ tiny_tag_editor_update_directory(
 }
 
 static void
-tiny_tag_editor_update_playlist_song(
+tiny_tag_edit_update_playlist_song(
     void *user, NcmMutableSong *song
 ) {
     (void)user;
@@ -893,36 +893,36 @@ tiny_tag_editor_update_playlist_song(
 }
 
 static void
-tiny_tag_editor_request_browser_update(void *user) {
+tiny_tag_edit_request_browser_update(void *user) {
     (void)user;
     browser_screen_request_update(app_screen_browser());
     return;
 }
 
 void
-app_screen_tiny_tag_editor_init(void) {
-    TinyTagEditorHooks hooks = {0};
+app_screen_tiny_tag_edit_init(void) {
+    TinyTagEditHooks hooks = {0};
 
-    if (tiny_tag_editor_screen_initialized) {
+    if (tiny_tag_edit_screen_initialized) {
         return;
     }
 
-    tiny_tag_editor_screen_init(&tiny_tag_editor_screen, 0,
+    tiny_tag_edit_screen_init(&tiny_tag_edit_screen, 0,
                                 ui_state_screen_width(),
                                 ui_state_main_start_y(),
                                 ui_state_main_height(),
                                 Config.main_window_color,
                                 no_border());
-    hooks.prompt = tiny_tag_editor_prompt;
-    hooks.status_message = tiny_tag_editor_status_message;
-    hooks.update_directory = tiny_tag_editor_update_directory;
+    hooks.prompt = tiny_tag_edit_prompt;
+    hooks.status_message = tiny_tag_edit_status_message;
+    hooks.update_directory = tiny_tag_edit_update_directory;
     hooks.update_playlist_song =
-        tiny_tag_editor_update_playlist_song;
+        tiny_tag_edit_update_playlist_song;
     hooks.request_browser_update =
-        tiny_tag_editor_request_browser_update;
-    tiny_tag_editor_screen_set_hooks(
-        &tiny_tag_editor_screen, hooks);
-    tiny_tag_editor_screen_initialized = true;
+        tiny_tag_edit_request_browser_update;
+    tiny_tag_edit_screen_set_hooks(
+        &tiny_tag_edit_screen, hooks);
+    tiny_tag_edit_screen_initialized = true;
     return;
 }
 
