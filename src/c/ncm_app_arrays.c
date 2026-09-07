@@ -5,37 +5,7 @@
 
 #include "c/ncm_c.h"
 
-static void ncm_app_array_song_destroy(void *);
-static int32 ncm_app_array_song_copy(void *dest, void *source);
-static void ncm_app_array_song_move(void *dest, void *source);
-static void ncm_app_array_directory_destroy(void *);
-static int32 ncm_app_array_directory_copy(void *dest, void *source);
-static void ncm_app_array_playlist_destroy(void *);
-static int32 ncm_app_array_playlist_copy(void *dest, void *source);
-static void ncm_app_array_mpd_item_init(void *);
-static void ncm_app_array_mpd_item_destroy(void *);
-static int32 ncm_app_array_mpd_item_copy(void *dest, void *source);
-
 static NcmArrayItemCallbacks ncm_app_array_no_callbacks = {0};
-static NcmArrayItemCallbacks ncm_app_array_song_callbacks = {
-    .destroy = ncm_app_array_song_destroy,
-    .copy = ncm_app_array_song_copy,
-    .move = ncm_app_array_song_move,
-};
-static NcmArrayItemCallbacks ncm_app_array_directory_callbacks = {
-    .destroy = ncm_app_array_directory_destroy,
-    .copy = ncm_app_array_directory_copy,
-};
-static NcmArrayItemCallbacks ncm_app_array_playlist_callbacks = {
-    .destroy = ncm_app_array_playlist_destroy,
-    .copy = ncm_app_array_playlist_copy,
-};
-static NcmArrayItemCallbacks ncm_app_array_mpd_item_callbacks = {
-    .init = ncm_app_array_mpd_item_init,
-    .destroy = ncm_app_array_mpd_item_destroy,
-    .copy = ncm_app_array_mpd_item_copy,
-};
-
 static void
 ncm_app_array_song_destroy(void *item) {
     ncm_song_destroy(item);
@@ -53,6 +23,11 @@ ncm_app_array_song_move(void *dest, void *source) {
     return;
 }
 
+static NcmArrayItemCallbacks ncm_app_array_song_callbacks = {
+    .destroy = ncm_app_array_song_destroy,
+    .copy = ncm_app_array_song_copy,
+    .move = ncm_app_array_song_move,
+};
 static void
 ncm_app_array_directory_destroy(void *item) {
     ncm_directory_destroy(item);
@@ -64,6 +39,10 @@ ncm_app_array_directory_copy(void *dest, void *source) {
     return ncm_directory_copy(dest, source);
 }
 
+static NcmArrayItemCallbacks ncm_app_array_directory_callbacks = {
+    .destroy = ncm_app_array_directory_destroy,
+    .copy = ncm_app_array_directory_copy,
+};
 static void
 ncm_app_array_playlist_destroy(void *item) {
     ncm_playlist_destroy(item);
@@ -75,6 +54,10 @@ ncm_app_array_playlist_copy(void *dest, void *source) {
     return ncm_playlist_copy(dest, source);
 }
 
+static NcmArrayItemCallbacks ncm_app_array_playlist_callbacks = {
+    .destroy = ncm_app_array_playlist_destroy,
+    .copy = ncm_app_array_playlist_copy,
+};
 static void
 ncm_app_array_mpd_item_init(void *item) {
     ncm_mpd_item_init(item);
@@ -92,6 +75,12 @@ ncm_app_array_mpd_item_copy(void *dest, void *source) {
     return ncm_mpd_item_copy(dest, source);
 }
 
+static NcmArrayItemCallbacks ncm_app_array_mpd_item_callbacks = {
+    .init = ncm_app_array_mpd_item_init,
+    .destroy = ncm_app_array_mpd_item_destroy,
+    .copy = ncm_app_array_mpd_item_copy,
+};
+
 NCM_ARRAY_DEFINE_CLEAR(ncm_string_view_array,
                        NcmStringViewArray, &ncm_app_array_no_callbacks)
 NCM_ARRAY_DEFINE_DESTROY(ncm_string_view_array, NcmStringViewArray)
@@ -99,7 +88,6 @@ NCM_ARRAY_DEFINE_RESERVE(ncm_string_view_array, NcmStringViewArray)
 NCM_ARRAY_DEFINE_APPEND(ncm_string_view_array,
                         NcmStringViewArray, NcmStringView,
                         &ncm_app_array_no_callbacks)
-
 
 NCM_ARRAY_DEFINE_CLEAR(ncm_song_array,
                        NcmSongArray, &ncm_app_array_song_callbacks)

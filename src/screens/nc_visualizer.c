@@ -77,28 +77,271 @@ static int32 visualizer_smooth_flipped_char_lens[
 };
 #endif
 
-static void visualizer_refresh_screen(VisualizerScreen *);
-static void visualizer_switch_to_callback(NcScreen *);
-static void visualizer_resize_callback(NcScreen *);
-static int32 visualizer_window_timeout_callback(NcScreen *);
-static void visualizer_update_callback(NcScreen *);
-static enum VisualizerScreenType visualizer_next_type(
-    enum VisualizerScreenType);
-static int32 visualizer_system_open_fifo(void *, char *, int32);
-static int32 visualizer_system_open_udp(void *, char *location,
-                                        int32 location_len, char *port,
-                                        int32 port_len);
-static int32 visualizer_system_read_source(void *user, int32 fd, void *buffer,
-                                           int32 buffer_size);
-static void visualizer_system_close_source(void *, int32);
-static int32 visualizer_system_get_outputs(void *, NcmMpdOutputList *,
-                                           NcmError *);
-static int32 visualizer_system_disable_output(void *, int32, NcmError *);
-static int32 visualizer_system_enable_output(void *, int32, NcmError *);
-static void visualizer_system_sleep_microseconds(void *, int32);
-static void visualizer_reset_sample_clock(VisualizerScreen *);
 #if defined(HAVE_FFTW3_H)
-static void visualizer_fft_destroy(VisualizerScreen *);
+static void
+visualizer_refresh_screen(VisualizerScreen *screen) {
+    nc_window_display(visualizer_screen_window(screen));
+    return;
+}
+
+static void
+visualizer_fft_reserve_bar_heights(VisualizerScreen *screen, int32 capacity) {
+    VisualizerFftState *fft = &screen->fft;
+    int32 old_cap = fft->bar_heights_cap;
+    int32 new_cap = old_cap;
+
+    if (capacity <= fft->bar_heights_cap) {
+        return;
+    }
+    if (new_cap <= 0) {
+        new_cap = VISUALIZER_BAR_HEIGHTS_CAP;
+    }
+    while (new_cap < capacity) {
+        if (new_cap > INT32_MAX / 2) {
+            new_cap = capacity;
+            break;
+        }
+        new_cap *= 2;
+    }
+    fft->bar_heights = realloc2(fft->bar_heights, old_cap, new_cap,
+                                SIZEOF(*fft->bar_heights));
+    fft->bar_heights_cap = new_cap;
+    return;
+}
+
+static void
+visualizer_generate_frequency_space(VisualizerScreen *screen) {
+    VisualizerFftState *fft = &screen->fft;
+    double left_bins_value;
+    double scale;
+    int32 left_bins;
+    int32 width = nc_window_width(&screen->window);
+
+    fft->dft_frequency_space_len = 0;
+    if ((width <= 0) || (fft->hz_min <= 0.0) || (fft->hz_max <= fft->hz_min)) {
+        return;
+    }
+    if (width > fft->dft_frequency_space_cap) {
+        int32 old_cap = fft->dft_frequency_space_cap;
+        int32 new_cap = old_cap;
+
+        if (new_cap <= 0) {
+            new_cap = VISUALIZER_FREQ_SPACE_CAP;
+        }
+        while (new_cap < width) {
+            if (new_cap > INT32_MAX / 2) {
+                new_cap = width;
+                break;
+            }
+            new_cap *= 2;
+        }
+        fft->dft_frequency_space = realloc2(
+            fft->dft_frequency_space, old_cap, new_cap,
+            SIZEOF(*fft->dft_frequency_space));
+        fft->dft_frequency_space_cap = new_cap;
+    }
+
+    if (screen->spectrum_log_scale_x) {
+        double min_log;
+        double max_log;
+        double denominator;
+
+        min_log = log10(fft->hz_min);
+        max_log = log10(fft->hz_max);
+        denominator = min_log - max_log;
+        if (denominator == 0.0) {
+            return;
+        }
+        left_bins_value = (min_log - (double)width*min_log)
+                          /denominator;
+        if (left_bins_value < 0.0) {
+            left_bins_value = 0.0;
+        }
+        left_bins = (int32)left_bins_value;
+        denominator = (double)left_bins + (double)width - 1.0;
+        if (denominator <= 0.0) {
+            fft->dft_frequency_space[0] = fft->hz_min;
+            fft->dft_frequency_space_len = 1;
+            return;
+        }
+        scale = max_log/denominator;
+        for (int32 i = 0; i < width; i += 1) {
+            fft->dft_frequency_space[i] = pow(
+                10.0, (double)(left_bins + i)*scale);
+        }
+    } else {
+        double denominator;
+
+        denominator = fft->hz_min - fft->hz_max;
+        if (denominator == 0.0) {
+            return;
+        }
+        left_bins_value = (fft->hz_min - (double)width*fft->hz_min)
+                          /denominator;
+        if (left_bins_value < 0.0) {
+            left_bins_value = 0.0;
+        }
+        left_bins = (int32)left_bins_value;
+        denominator = (double)left_bins + (double)width - 1.0;
+        if (denominator <= 0.0) {
+            fft->dft_frequency_space[0] = fft->hz_min;
+            fft->dft_frequency_space_len = 1;
+            return;
+        }
+        scale = fft->hz_max/denominator;
+        for (int32 i = 0; i < width; i += 1) {
+            fft->dft_frequency_space[i] =
+                (double)(left_bins + i)*scale;
+        }
+    }
+    fft->dft_frequency_space_len = width;
+    return;
+}
+
+static void
+visualizer_prepare_drawing(VisualizerScreen *screen) {
+#if defined(HAVE_FFTW3_H)
+    int32 width = nc_window_width(&screen->window);
+
+    if (width > 0) {
+        visualizer_generate_frequency_space(screen);
+        visualizer_fft_reserve_bar_heights(screen, width);
+    }
+#else
+    (void)screen;
+#endif
+    return;
+}
+
+static void
+visualizer_switch_to_callback(NcScreen *screen) {
+    VisualizerScreen *visualizer = (VisualizerScreen *)screen;
+
+    if (visualizer->source_fd < 0) {
+        if (visualizer_screen_open_data_source(visualizer) >= 0) {
+            visualizer_screen_find_output_id(visualizer);
+        }
+    }
+    visualizer_screen_clear(visualizer);
+    visualizer->reset_output = true;
+    ncm_title_draw_header(STRLIT(VISUALIZER_TITLE));
+    visualizer_prepare_drawing(visualizer);
+    return;
+}
+
+static void
+visualizer_resize_callback(NcScreen *screen) {
+    VisualizerScreen *visualizer = (VisualizerScreen *)screen;
+    int32 x;
+    int32 width;
+
+    nc_screen_switcher_get_resize_params(screen, &x, &width, true);
+    visualizer_screen_set_geometry(visualizer, x, ui_state_main_start_y(),
+                                   width, ui_state_main_height());
+    visualizer_prepare_drawing(visualizer);
+    nc_screen_clear_resize_request(screen);
+    return;
+}
+
+static int32
+visualizer_window_timeout_callback(NcScreen *screen) {
+    VisualizerScreen *visualizer = (VisualizerScreen *)screen;
+
+    if ((visualizer->source_fd >= 0)
+        && (ncm_status_state_player() == NCM_STATUS_PLAYER_PLAY)) {
+        return 1000 / visualizer->fps;
+    }
+    return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
+}
+
+static void
+visualizer_update_callback(NcScreen *screen) {
+    VisualizerScreen *visualizer = (VisualizerScreen *)screen;
+    int32 new_samples;
+
+    if (visualizer->source_fd < 0) {
+        return;
+    }
+    if (visualizer->reset_output && (visualizer->output_id >= 0)) {
+        NcmError ncm_error;
+        int32 status;
+
+        if ((visualizer->data_source_hooks.disable_output == NULL)
+            || (visualizer->data_source_hooks.enable_output == NULL)) {
+            return;
+        }
+
+        ncm_error_clear(&ncm_error);
+        status = visualizer->data_source_hooks.disable_output(
+            visualizer->data_source_hooks.user,
+            visualizer->output_id, &ncm_error);
+        if (status < 0) {
+            StrBuilder message = {0};
+
+            SB_APPEND(&message, "Could not disable visualizer output: ");
+            SB_APPEND(&message, ncm_error.message,
+                      optional_strlen32(ncm_error.message));
+            ncm_statusbar_print(ncm_statusbar_message_delay_time(),
+                                message.data, message.len);
+            sb_free(&message);
+            return;
+        }
+        if (visualizer->data_source_hooks.sleep_microseconds) {
+            visualizer->data_source_hooks.sleep_microseconds(
+                visualizer->data_source_hooks.user, 50000);
+        }
+
+        ncm_error_clear(&ncm_error);
+        status = visualizer->data_source_hooks.enable_output(
+            visualizer->data_source_hooks.user,
+            visualizer->output_id, &ncm_error);
+        if (status < 0) {
+            StrBuilder message = {0};
+
+            SB_APPEND(&message, "Could not enable visualizer output: ");
+            SB_APPEND(&message, ncm_error.message,
+                      optional_strlen32(ncm_error.message));
+            ncm_statusbar_print(ncm_statusbar_message_delay_time(),
+                                message.data, message.len);
+            sb_free(&message);
+            return;
+        }
+        visualizer->reset_output = false;
+    }
+
+    if (visualizer->data_source_hooks.read_source != NULL) {
+        int32 buffer_size;
+        int32 bytes_read;
+        int32 samples_read;
+
+        buffer_size = visualizer->incoming_samples.cap
+                      *SIZEOF(*visualizer->incoming_samples.data);
+        bytes_read = visualizer->data_source_hooks.read_source(
+            visualizer->data_source_hooks.user, visualizer->source_fd,
+            visualizer->incoming_samples.data, buffer_size);
+        if (bytes_read > 0) {
+            samples_read = (int32)(bytes_read
+                /SIZEOF(*visualizer->incoming_samples.data));
+            if (samples_read > 0) {
+                visualizer_screen_push_samples(
+                    visualizer, visualizer->incoming_samples.data,
+                    samples_read);
+            }
+        }
+    }
+    new_samples = visualizer_screen_take_render_samples(
+        visualizer, visualizer->rendered_samples.data,
+        visualizer->rendered_samples.cap);
+    if (new_samples <= 0) {
+        return;
+    }
+
+    visualizer_screen_draw(visualizer, visualizer->rendered_samples.data,
+                           visualizer->rendered_samples.cap);
+    nc_window_refresh(&visualizer->window);
+    return;
+}
+
 #endif
 
 #define NC_SCREEN_IMPL_TYPE VisualizerScreen
@@ -118,6 +361,150 @@ static void visualizer_fft_destroy(VisualizerScreen *);
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
+static int32
+visualizer_system_open_fifo(void *user, char *location, int32 location_len) {
+    int32 error_code;
+    int32 fd;
+
+    (void)user;
+    if ((fd = open(location, O_RDONLY | O_NONBLOCK)) < 0) {
+        StrBuilder message = {0};
+        char *error_message;
+
+        error_code = errno;
+        if (error_code == 0) {
+            error_code = EIO;
+        }
+        error_message = strerror(error_code);
+        SB_APPEND(&message, "Couldn't open \"");
+        SB_APPEND(&message, location, location_len);
+        SB_APPEND(&message, "\" for reading PCM data: ");
+        SB_APPEND(&message, error_message, optional_strlen32(error_message));
+        ncm_statusbar_print(ncm_statusbar_message_delay_time(),
+                            message.data, message.len);
+        sb_free(&message);
+        return -error_code;
+    }
+    return fd;
+}
+
+static int32
+visualizer_system_open_udp(void *user, char *location, int32 location_len,
+                           char *port, int32 port_len) {
+    struct addrinfo hints = {0};
+    struct addrinfo *addresses;
+    struct addrinfo *address;
+    int32 error_code;
+    int32 status;
+    int32 fd;
+
+    (void)user;
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_DGRAM;
+    hints.ai_protocol = IPPROTO_UDP;
+
+    addresses = NULL;
+    if ((error_code = getaddrinfo(location, port, &hints, &addresses)) != 0) {
+        StrBuilder message = {0};
+        char *error_message;
+
+        error_message = (char *)gai_strerror(error_code);
+        SB_APPEND(&message, "Couldn't resolve \"");
+        SB_APPEND(&message, location, location_len);
+        SB_APPEND(&message, ":");
+        SB_APPEND(&message, port, port_len);
+        SB_APPEND(&message, "\": ");
+        SB_APPEND(&message, error_message, optional_strlen32(error_message));
+        ncm_statusbar_print(ncm_statusbar_message_delay_time(),
+                            message.data, message.len);
+        sb_free(&message);
+        return -NCM_ERROR_NETWORK;
+    }
+
+    status = -NCM_ERROR_NETWORK;
+    fd = -1;
+    for (address = addresses; address; address = address->ai_next) {
+        int32 socket_flags;
+
+        fd = socket(address->ai_family, address->ai_socktype,
+                    address->ai_protocol);
+        if (fd < 0) {
+            error_code = errno;
+            if (error_code == 0) {
+                error_code = EIO;
+            }
+            status = -error_code;
+            error("Creation of socket failed: %s\n", strerror(error_code));
+            continue;
+        }
+
+        socket_flags = fcntl(fd, F_GETFL, 0);
+        fcntl(fd, F_SETFL, socket_flags | O_NONBLOCK);
+        error_code = bind(fd, address->ai_addr, address->ai_addrlen);
+        if (error_code < 0) {
+            error_code = errno;
+            if (error_code == 0) {
+                error_code = EIO;
+            }
+            status = -error_code;
+            error("Binding a socket failed: %s\n", strerror(error_code));
+            close(fd);
+            fd = -1;
+            continue;
+        }
+        break;
+    }
+
+    freeaddrinfo(addresses);
+    if (fd < 0) {
+        return status;
+    }
+    return fd;
+}
+
+static int32
+visualizer_system_read_source(void *user, int32 fd, void *buffer,
+                              int32 buffer_size) {
+    (void)user;
+    return (int32)read64(fd, buffer, buffer_size);
+}
+
+static void
+visualizer_system_close_source(void *user, int32 fd) {
+    (void)user;
+    close(fd);
+    return;
+}
+
+static int32
+visualizer_system_get_outputs(void *user, NcmMpdOutputList *outputs,
+                              NcmError *ncm_error) {
+    NcmMpdClient *client = user;
+
+    return ncm_mpd_client_get_outputs(client, outputs, ncm_error);
+}
+
+static int32
+visualizer_system_disable_output(void *user, int32 id, NcmError *ncm_error) {
+    NcmMpdClient *client = user;
+
+    return ncm_mpd_client_disable_output(client, id, ncm_error);
+}
+
+static int32
+visualizer_system_enable_output(void *user, int32 id, NcmError *ncm_error) {
+    NcmMpdClient *client = user;
+
+    return ncm_mpd_client_enable_output(client, id, ncm_error);
+}
+
+static void
+visualizer_system_sleep_microseconds(void *user, int32 microseconds) {
+    (void)user;
+    sleep_us(microseconds);
+    return;
+}
+
 VisualizerDataSourceHooks
 visualizer_data_source_system_hooks(NcmMpdClient *client) {
     VisualizerDataSourceHooks hooks = {0};
@@ -231,30 +618,6 @@ visualizer_fft_destroy(VisualizerScreen *screen) {
     return;
 }
 
-static void
-visualizer_fft_reserve_bar_heights(VisualizerScreen *screen, int32 capacity) {
-    VisualizerFftState *fft = &screen->fft;
-    int32 old_cap = fft->bar_heights_cap;
-    int32 new_cap = old_cap;
-
-    if (capacity <= fft->bar_heights_cap) {
-        return;
-    }
-    if (new_cap <= 0) {
-        new_cap = VISUALIZER_BAR_HEIGHTS_CAP;
-    }
-    while (new_cap < capacity) {
-        if (new_cap > INT32_MAX / 2) {
-            new_cap = capacity;
-            break;
-        }
-        new_cap *= 2;
-    }
-    fft->bar_heights = realloc2(fft->bar_heights, old_cap, new_cap,
-                                SIZEOF(*fft->bar_heights));
-    fft->bar_heights_cap = new_cap;
-    return;
-}
 #endif
 
 void
@@ -418,6 +781,14 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
         return -NCM_ERROR_NOT_FOUND;
     }
     return 0;
+}
+
+static void
+visualizer_reset_sample_clock(VisualizerScreen *screen) {
+    screen->sample_clock = 0;
+    screen->sample_clock_frame_remainder = 0;
+    screen->sample_clock_initialized = false;
+    return;
 }
 
 void
@@ -765,19 +1136,30 @@ visualizer_screen_reset_auto_scale_multiplier(VisualizerScreen *screen) {
     return;
 }
 
+static enum VisualizerScreenType
+visualizer_next_type(enum VisualizerScreenType type) {
+    switch (type) {
+    case VISUALIZER_WAVE:
+        return VISUALIZER_WAVE_FILLED;
+    case VISUALIZER_WAVE_FILLED:
+#if defined(HAVE_FFTW3_H)
+        return VISUALIZER_FREQUENCY;
+    case VISUALIZER_FREQUENCY:
+#endif
+        return VISUALIZER_ELLIPSE;
+    case VISUALIZER_ELLIPSE:
+    case VISUALIZER_TYPE_COUNT:
+        return VISUALIZER_WAVE;
+    default:
+        return VISUALIZER_WAVE;
+    }
+}
+
 void
 visualizer_screen_toggle_type(VisualizerScreen *screen) {
     screen->visualization_type = visualizer_next_type(
         screen->visualization_type);
     visualizer_screen_init_visualization(screen);
-    return;
-}
-
-static void
-visualizer_reset_sample_clock(VisualizerScreen *screen) {
-    screen->sample_clock = 0;
-    screen->sample_clock_frame_remainder = 0;
-    screen->sample_clock_initialized = false;
     return;
 }
 
@@ -1029,94 +1411,6 @@ visualizer_draw_wave_filled(VisualizerScreen *screen,
 }
 
 #if defined(HAVE_FFTW3_H)
-static void
-visualizer_generate_frequency_space(VisualizerScreen *screen) {
-    VisualizerFftState *fft = &screen->fft;
-    double left_bins_value;
-    double scale;
-    int32 left_bins;
-    int32 width = nc_window_width(&screen->window);
-
-    fft->dft_frequency_space_len = 0;
-    if ((width <= 0) || (fft->hz_min <= 0.0) || (fft->hz_max <= fft->hz_min)) {
-        return;
-    }
-    if (width > fft->dft_frequency_space_cap) {
-        int32 old_cap = fft->dft_frequency_space_cap;
-        int32 new_cap = old_cap;
-
-        if (new_cap <= 0) {
-            new_cap = VISUALIZER_FREQ_SPACE_CAP;
-        }
-        while (new_cap < width) {
-            if (new_cap > INT32_MAX / 2) {
-                new_cap = width;
-                break;
-            }
-            new_cap *= 2;
-        }
-        fft->dft_frequency_space = realloc2(
-            fft->dft_frequency_space, old_cap, new_cap,
-            SIZEOF(*fft->dft_frequency_space));
-        fft->dft_frequency_space_cap = new_cap;
-    }
-
-    if (screen->spectrum_log_scale_x) {
-        double min_log;
-        double max_log;
-        double denominator;
-
-        min_log = log10(fft->hz_min);
-        max_log = log10(fft->hz_max);
-        denominator = min_log - max_log;
-        if (denominator == 0.0) {
-            return;
-        }
-        left_bins_value = (min_log - (double)width*min_log)
-                          /denominator;
-        if (left_bins_value < 0.0) {
-            left_bins_value = 0.0;
-        }
-        left_bins = (int32)left_bins_value;
-        denominator = (double)left_bins + (double)width - 1.0;
-        if (denominator <= 0.0) {
-            fft->dft_frequency_space[0] = fft->hz_min;
-            fft->dft_frequency_space_len = 1;
-            return;
-        }
-        scale = max_log/denominator;
-        for (int32 i = 0; i < width; i += 1) {
-            fft->dft_frequency_space[i] = pow(
-                10.0, (double)(left_bins + i)*scale);
-        }
-    } else {
-        double denominator;
-
-        denominator = fft->hz_min - fft->hz_max;
-        if (denominator == 0.0) {
-            return;
-        }
-        left_bins_value = (fft->hz_min - (double)width*fft->hz_min)
-                          /denominator;
-        if (left_bins_value < 0.0) {
-            left_bins_value = 0.0;
-        }
-        left_bins = (int32)left_bins_value;
-        denominator = (double)left_bins + (double)width - 1.0;
-        if (denominator <= 0.0) {
-            fft->dft_frequency_space[0] = fft->hz_min;
-            fft->dft_frequency_space_len = 1;
-            return;
-        }
-        scale = fft->hz_max/denominator;
-        for (int32 i = 0; i < width; i += 1) {
-            fft->dft_frequency_space[i] =
-                (double)(left_bins + i)*scale;
-        }
-    }
-    fft->dft_frequency_space_len = width;
-    return;
-}
 
 static double
 visualizer_bin_to_hz(VisualizerScreen *screen, int32 bin) {
@@ -1457,6 +1751,7 @@ visualizer_draw_frequency(VisualizerScreen *screen,
     }
     return;
 }
+
 #endif
 
 void
@@ -1611,319 +1906,6 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
         return;
     }
     return;
-}
-
-static int32
-visualizer_system_open_fifo(void *user, char *location, int32 location_len) {
-    int32 error_code;
-    int32 fd;
-
-    (void)user;
-    if ((fd = open(location, O_RDONLY | O_NONBLOCK)) < 0) {
-        StrBuilder message = {0};
-        char *error_message;
-
-        error_code = errno;
-        if (error_code == 0) {
-            error_code = EIO;
-        }
-        error_message = strerror(error_code);
-        SB_APPEND(&message, "Couldn't open \"");
-        SB_APPEND(&message, location, location_len);
-        SB_APPEND(&message, "\" for reading PCM data: ");
-        SB_APPEND(&message, error_message, optional_strlen32(error_message));
-        ncm_statusbar_print(ncm_statusbar_message_delay_time(),
-                            message.data, message.len);
-        sb_free(&message);
-        return -error_code;
-    }
-    return fd;
-}
-
-static int32
-visualizer_system_open_udp(void *user, char *location, int32 location_len,
-                           char *port, int32 port_len) {
-    struct addrinfo hints = {0};
-    struct addrinfo *addresses;
-    struct addrinfo *address;
-    int32 error_code;
-    int32 status;
-    int32 fd;
-
-    (void)user;
-    hints.ai_family = AF_UNSPEC;
-    hints.ai_socktype = SOCK_DGRAM;
-    hints.ai_protocol = IPPROTO_UDP;
-
-    addresses = NULL;
-    if ((error_code = getaddrinfo(location, port, &hints, &addresses)) != 0) {
-        StrBuilder message = {0};
-        char *error_message;
-
-        error_message = (char *)gai_strerror(error_code);
-        SB_APPEND(&message, "Couldn't resolve \"");
-        SB_APPEND(&message, location, location_len);
-        SB_APPEND(&message, ":");
-        SB_APPEND(&message, port, port_len);
-        SB_APPEND(&message, "\": ");
-        SB_APPEND(&message, error_message, optional_strlen32(error_message));
-        ncm_statusbar_print(ncm_statusbar_message_delay_time(),
-                            message.data, message.len);
-        sb_free(&message);
-        return -NCM_ERROR_NETWORK;
-    }
-
-    status = -NCM_ERROR_NETWORK;
-    fd = -1;
-    for (address = addresses; address; address = address->ai_next) {
-        int32 socket_flags;
-
-        fd = socket(address->ai_family, address->ai_socktype,
-                    address->ai_protocol);
-        if (fd < 0) {
-            error_code = errno;
-            if (error_code == 0) {
-                error_code = EIO;
-            }
-            status = -error_code;
-            error("Creation of socket failed: %s\n", strerror(error_code));
-            continue;
-        }
-
-        socket_flags = fcntl(fd, F_GETFL, 0);
-        fcntl(fd, F_SETFL, socket_flags | O_NONBLOCK);
-        error_code = bind(fd, address->ai_addr, address->ai_addrlen);
-        if (error_code < 0) {
-            error_code = errno;
-            if (error_code == 0) {
-                error_code = EIO;
-            }
-            status = -error_code;
-            error("Binding a socket failed: %s\n", strerror(error_code));
-            close(fd);
-            fd = -1;
-            continue;
-        }
-        break;
-    }
-
-    freeaddrinfo(addresses);
-    if (fd < 0) {
-        return status;
-    }
-    return fd;
-}
-
-static int32
-visualizer_system_read_source(void *user, int32 fd, void *buffer,
-                              int32 buffer_size) {
-    (void)user;
-    return (int32)read64(fd, buffer, buffer_size);
-}
-
-static void
-visualizer_system_close_source(void *user, int32 fd) {
-    (void)user;
-    close(fd);
-    return;
-}
-
-static int32
-visualizer_system_get_outputs(void *user, NcmMpdOutputList *outputs,
-                              NcmError *ncm_error) {
-    NcmMpdClient *client = user;
-
-    return ncm_mpd_client_get_outputs(client, outputs, ncm_error);
-}
-
-static int32
-visualizer_system_disable_output(void *user, int32 id, NcmError *ncm_error) {
-    NcmMpdClient *client = user;
-
-    return ncm_mpd_client_disable_output(client, id, ncm_error);
-}
-
-static int32
-visualizer_system_enable_output(void *user, int32 id, NcmError *ncm_error) {
-    NcmMpdClient *client = user;
-
-    return ncm_mpd_client_enable_output(client, id, ncm_error);
-}
-
-static void
-visualizer_system_sleep_microseconds(void *user, int32 microseconds) {
-    (void)user;
-    sleep_us(microseconds);
-    return;
-}
-
-static void
-visualizer_prepare_drawing(VisualizerScreen *screen) {
-#if defined(HAVE_FFTW3_H)
-    int32 width = nc_window_width(&screen->window);
-
-    if (width > 0) {
-        visualizer_generate_frequency_space(screen);
-        visualizer_fft_reserve_bar_heights(screen, width);
-    }
-#else
-    (void)screen;
-#endif
-    return;
-}
-
-static void
-visualizer_refresh_screen(VisualizerScreen *screen) {
-    nc_window_display(visualizer_screen_window(screen));
-    return;
-}
-
-static void
-visualizer_switch_to_callback(NcScreen *screen) {
-    VisualizerScreen *visualizer = visualizer_from_screen(screen);
-
-    if (visualizer->source_fd < 0) {
-        if (visualizer_screen_open_data_source(visualizer) >= 0) {
-            visualizer_screen_find_output_id(visualizer);
-        }
-    }
-    visualizer_screen_clear(visualizer);
-    visualizer->reset_output = true;
-    ncm_title_draw_header(STRLIT(VISUALIZER_TITLE));
-    visualizer_prepare_drawing(visualizer);
-    return;
-}
-
-static void
-visualizer_resize_callback(NcScreen *screen) {
-    VisualizerScreen *visualizer = visualizer_from_screen(screen);
-    int32 x;
-    int32 width;
-
-    nc_screen_switcher_get_resize_params(screen, &x, &width, true);
-    visualizer_screen_set_geometry(visualizer, x, ui_state_main_start_y(),
-                                   width, ui_state_main_height());
-    visualizer_prepare_drawing(visualizer);
-    nc_screen_clear_resize_request(screen);
-    return;
-}
-
-static int32
-visualizer_window_timeout_callback(NcScreen *screen) {
-    VisualizerScreen *visualizer = visualizer_from_screen(screen);
-
-    if ((visualizer->source_fd >= 0)
-        && (ncm_status_state_player() == NCM_STATUS_PLAYER_PLAY)) {
-        return 1000 / visualizer->fps;
-    }
-    return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
-}
-
-static void
-visualizer_update_callback(NcScreen *screen) {
-    VisualizerScreen *visualizer = visualizer_from_screen(screen);
-    int32 new_samples;
-
-    if (visualizer->source_fd < 0) {
-        return;
-    }
-    if (visualizer->reset_output && (visualizer->output_id >= 0)) {
-        NcmError ncm_error;
-        int32 status;
-
-        if ((visualizer->data_source_hooks.disable_output == NULL)
-            || (visualizer->data_source_hooks.enable_output == NULL)) {
-            return;
-        }
-
-        ncm_error_clear(&ncm_error);
-        status = visualizer->data_source_hooks.disable_output(
-            visualizer->data_source_hooks.user,
-            visualizer->output_id, &ncm_error);
-        if (status < 0) {
-            StrBuilder message = {0};
-
-            SB_APPEND(&message, "Could not disable visualizer output: ");
-            SB_APPEND(&message, ncm_error.message,
-                      optional_strlen32(ncm_error.message));
-            ncm_statusbar_print(ncm_statusbar_message_delay_time(),
-                                message.data, message.len);
-            sb_free(&message);
-            return;
-        }
-        if (visualizer->data_source_hooks.sleep_microseconds) {
-            visualizer->data_source_hooks.sleep_microseconds(
-                visualizer->data_source_hooks.user, 50000);
-        }
-
-        ncm_error_clear(&ncm_error);
-        status = visualizer->data_source_hooks.enable_output(
-            visualizer->data_source_hooks.user,
-            visualizer->output_id, &ncm_error);
-        if (status < 0) {
-            StrBuilder message = {0};
-
-            SB_APPEND(&message, "Could not enable visualizer output: ");
-            SB_APPEND(&message, ncm_error.message,
-                      optional_strlen32(ncm_error.message));
-            ncm_statusbar_print(ncm_statusbar_message_delay_time(),
-                                message.data, message.len);
-            sb_free(&message);
-            return;
-        }
-        visualizer->reset_output = false;
-    }
-
-    if (visualizer->data_source_hooks.read_source != NULL) {
-        int32 buffer_size;
-        int32 bytes_read;
-        int32 samples_read;
-
-        buffer_size = visualizer->incoming_samples.cap
-                      *SIZEOF(*visualizer->incoming_samples.data);
-        bytes_read = visualizer->data_source_hooks.read_source(
-            visualizer->data_source_hooks.user, visualizer->source_fd,
-            visualizer->incoming_samples.data, buffer_size);
-        if (bytes_read > 0) {
-            samples_read = (int32)(bytes_read
-                /SIZEOF(*visualizer->incoming_samples.data));
-            if (samples_read > 0) {
-                visualizer_screen_push_samples(
-                    visualizer, visualizer->incoming_samples.data,
-                    samples_read);
-            }
-        }
-    }
-    new_samples = visualizer_screen_take_render_samples(
-        visualizer, visualizer->rendered_samples.data,
-        visualizer->rendered_samples.cap);
-    if (new_samples <= 0) {
-        return;
-    }
-
-    visualizer_screen_draw(visualizer, visualizer->rendered_samples.data,
-                           visualizer->rendered_samples.cap);
-    nc_window_refresh(&visualizer->window);
-    return;
-}
-
-static enum VisualizerScreenType
-visualizer_next_type(enum VisualizerScreenType type) {
-    switch (type) {
-    case VISUALIZER_WAVE:
-        return VISUALIZER_WAVE_FILLED;
-    case VISUALIZER_WAVE_FILLED:
-#if defined(HAVE_FFTW3_H)
-        return VISUALIZER_FREQUENCY;
-    case VISUALIZER_FREQUENCY:
-#endif
-        return VISUALIZER_ELLIPSE;
-    case VISUALIZER_ELLIPSE:
-    case VISUALIZER_TYPE_COUNT:
-        return VISUALIZER_WAVE;
-    default:
-        return VISUALIZER_WAVE;
-    }
 }
 
 #endif /* NC_VISUALIZER_C */

@@ -5,178 +5,6 @@
 
 #include "curses/nc_curses.h"
 
-static int32 nc_cyclic_normalize_start(int32 *, int32);
-static void nc_cyclic_increment_start(int32 *, int32);
-static void nc_cyclic_text_append(StrBuilder *, char *, int32 string_len,
-                                  int32 start_byte, int32 *, int32 width);
-static void nc_cyclic_buffer_apply_properties(NcWindow *, NcBufferProperty *,
-                                              int32 property_count, int32 *,
-                                              int32 position, bool);
-static void nc_cyclic_buffer_write_segment(NcBuffer *, NcWindow *,
-                                           int32 start_byte,
-                                           int32 *property_index,
-                                           int32 *written_width, int32 width);
-static void nc_cyclic_window_write_text(NcWindow *, char *, int32 string_len,
-                                        int32 start_byte, int32 *, int32 width);
-
-void
-nc_cyclic_text_write(StrBuilder *output, char *string, int32 string_len,
-                     int32 *start_pos, int32 width, char *separator,
-                     int32 separator_len, bool scrolling_enabled) {
-    int32 string_width;
-    int32 start;
-    int32 start_byte;
-    int32 string_characters;
-    int32 separator_characters;
-    int32 written_width;
-
-    if ((output == NULL) || (start_pos == NULL)) {
-        return;
-    }
-    sb_clear(output);
-
-    if (string == NULL) {
-        string_len = 0;
-    }
-    if (string_len < 0) {
-        string_len = 0;
-    }
-    if (separator == NULL) {
-        separator_len = 0;
-    }
-    if (separator_len < 0) {
-        separator_len = 0;
-    }
-    if (width < 0) {
-        width = 0;
-    }
-
-    string_width = utf8_width(string, string_len);
-    if (!scrolling_enabled || (string_width <= width)) {
-        SB_APPEND(output, string, string_len);
-        return;
-    }
-
-    string_characters = utf8_characters(string, string_len);
-    separator_characters = utf8_characters(separator, separator_len);
-    start = nc_cyclic_normalize_start(
-        start_pos, string_characters + separator_characters);
-
-    start_byte = utf8_byte_position(string, string_len, start);
-    written_width = 0;
-    nc_cyclic_text_append(output, string, string_len, start_byte,
-                          &written_width, width);
-
-    if (start > string_characters) {
-        int32 separator_start;
-        int32 separator_byte;
-
-        separator_start = start - string_characters;
-        separator_byte = utf8_byte_position(separator, separator_len,
-                                            separator_start);
-        nc_cyclic_text_append(output, separator, separator_len,
-                              separator_byte, &written_width, width);
-    } else {
-        nc_cyclic_text_append(output, separator, separator_len, 0,
-                              &written_width, width);
-    }
-    nc_cyclic_text_append(output, string, string_len, 0, &written_width, width);
-
-    nc_cyclic_increment_start(
-        start_pos, string_characters + separator_characters);
-    return;
-}
-
-void
-nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
-                       int32 *start_pos, int32 width, char *separator,
-                       int32 separator_len) {
-    char *string;
-    int32 string_len;
-    int32 string_width;
-    int32 string_characters;
-    int32 separator_characters;
-    int32 start;
-    int32 start_byte;
-    int32 property_index;
-    int32 written_width;
-
-    if ((buffer == NULL) || (window == NULL) || (start_pos == NULL)) {
-        return;
-    }
-    if (separator == NULL) {
-        separator_len = 0;
-    }
-    if (separator_len < 0) {
-        separator_len = 0;
-    }
-    if (width < 0) {
-        width = 0;
-    }
-
-    string = nc_buffer_data(buffer);
-    string_len = buffer->len;
-    string_width = utf8_width(string, string_len);
-    if (string_width <= width) {
-        NcBufferProperty *properties = nc_buffer_properties(buffer);
-        int32 property_count = ARRAY_LEN(buffer->properties);
-        int32 byte = 0;
-
-        property_index = 0;
-        while (byte < string_len) {
-            int32 next_byte;
-
-            nc_cyclic_buffer_apply_properties(
-                window, properties, property_count, &property_index, byte,
-                true);
-            next_byte = utf8_next_position(string, string_len, byte);
-            nc_window_print_data(window, string + byte, next_byte - byte);
-            byte = next_byte;
-        }
-
-        nc_cyclic_buffer_apply_properties(
-            window, properties, property_count, &property_index, string_len,
-            true);
-        return;
-    }
-
-    string_characters = utf8_characters(string, string_len);
-    separator_characters = utf8_characters(separator, separator_len);
-    start = nc_cyclic_normalize_start(
-        start_pos, string_characters + separator_characters);
-
-    start_byte = utf8_byte_position(string, string_len, start);
-    property_index = 0;
-    written_width = 0;
-    nc_cyclic_buffer_apply_properties(
-        window, nc_buffer_properties(buffer),
-        ARRAY_LEN(buffer->properties), &property_index, start_byte, false);
-    nc_cyclic_buffer_write_segment(buffer, window, start_byte,
-                                   &property_index, &written_width, width);
-
-    if (start > string_characters) {
-        int32 separator_start;
-        int32 separator_byte;
-
-        separator_start = start - string_characters;
-        separator_byte = utf8_byte_position(separator, separator_len,
-                                            separator_start);
-        nc_cyclic_window_write_text(window, separator, separator_len,
-                                    separator_byte, &written_width, width);
-    } else {
-        nc_cyclic_window_write_text(window, separator, separator_len, 0,
-                                    &written_width, width);
-    }
-
-    property_index = 0;
-    nc_cyclic_buffer_write_segment(buffer, window, 0, &property_index,
-                                   &written_width, width);
-
-    nc_cyclic_increment_start(
-        start_pos, string_characters + separator_characters);
-    return;
-}
-
 static int32
 nc_cyclic_normalize_start(int32 *start_pos, int32 total_characters) {
     if (total_characters <= 0) {
@@ -254,6 +82,74 @@ nc_cyclic_text_append(StrBuilder *output, char *string, int32 string_len,
         *written_width += char_width;
         byte = next_byte;
     }
+    return;
+}
+
+void
+nc_cyclic_text_write(StrBuilder *output, char *string, int32 string_len,
+                     int32 *start_pos, int32 width, char *separator,
+                     int32 separator_len, bool scrolling_enabled) {
+    int32 string_width;
+    int32 start;
+    int32 start_byte;
+    int32 string_characters;
+    int32 separator_characters;
+    int32 written_width;
+
+    if ((output == NULL) || (start_pos == NULL)) {
+        return;
+    }
+    sb_clear(output);
+
+    if (string == NULL) {
+        string_len = 0;
+    }
+    if (string_len < 0) {
+        string_len = 0;
+    }
+    if (separator == NULL) {
+        separator_len = 0;
+    }
+    if (separator_len < 0) {
+        separator_len = 0;
+    }
+    if (width < 0) {
+        width = 0;
+    }
+
+    string_width = utf8_width(string, string_len);
+    if (!scrolling_enabled || (string_width <= width)) {
+        SB_APPEND(output, string, string_len);
+        return;
+    }
+
+    string_characters = utf8_characters(string, string_len);
+    separator_characters = utf8_characters(separator, separator_len);
+    start = nc_cyclic_normalize_start(
+        start_pos, string_characters + separator_characters);
+
+    start_byte = utf8_byte_position(string, string_len, start);
+    written_width = 0;
+    nc_cyclic_text_append(output, string, string_len, start_byte,
+                          &written_width, width);
+
+    if (start > string_characters) {
+        int32 separator_start;
+        int32 separator_byte;
+
+        separator_start = start - string_characters;
+        separator_byte = utf8_byte_position(separator, separator_len,
+                                            separator_start);
+        nc_cyclic_text_append(output, separator, separator_len,
+                              separator_byte, &written_width, width);
+    } else {
+        nc_cyclic_text_append(output, separator, separator_len, 0,
+                              &written_width, width);
+    }
+    nc_cyclic_text_append(output, string, string_len, 0, &written_width, width);
+
+    nc_cyclic_increment_start(
+        start_pos, string_characters + separator_characters);
     return;
 }
 
@@ -349,6 +245,96 @@ nc_cyclic_window_write_text(NcWindow *window, char *string, int32 string_len,
         *written_width += char_width;
         byte = next_byte;
     }
+    return;
+}
+
+void
+nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
+                       int32 *start_pos, int32 width, char *separator,
+                       int32 separator_len) {
+    char *string;
+    int32 string_len;
+    int32 string_width;
+    int32 string_characters;
+    int32 separator_characters;
+    int32 start;
+    int32 start_byte;
+    int32 property_index;
+    int32 written_width;
+
+    if ((buffer == NULL) || (window == NULL) || (start_pos == NULL)) {
+        return;
+    }
+    if (separator == NULL) {
+        separator_len = 0;
+    }
+    if (separator_len < 0) {
+        separator_len = 0;
+    }
+    if (width < 0) {
+        width = 0;
+    }
+
+    string = nc_buffer_data(buffer);
+    string_len = buffer->len;
+    string_width = utf8_width(string, string_len);
+    if (string_width <= width) {
+        NcBufferProperty *properties = nc_buffer_properties(buffer);
+        int32 property_count = ARRAY_LEN(buffer->properties);
+        int32 byte = 0;
+
+        property_index = 0;
+        while (byte < string_len) {
+            int32 next_byte;
+
+            nc_cyclic_buffer_apply_properties(
+                window, properties, property_count, &property_index, byte,
+                true);
+            next_byte = utf8_next_position(string, string_len, byte);
+            nc_window_print_data(window, string + byte, next_byte - byte);
+            byte = next_byte;
+        }
+
+        nc_cyclic_buffer_apply_properties(
+            window, properties, property_count, &property_index, string_len,
+            true);
+        return;
+    }
+
+    string_characters = utf8_characters(string, string_len);
+    separator_characters = utf8_characters(separator, separator_len);
+    start = nc_cyclic_normalize_start(
+        start_pos, string_characters + separator_characters);
+
+    start_byte = utf8_byte_position(string, string_len, start);
+    property_index = 0;
+    written_width = 0;
+    nc_cyclic_buffer_apply_properties(
+        window, nc_buffer_properties(buffer),
+        ARRAY_LEN(buffer->properties), &property_index, start_byte, false);
+    nc_cyclic_buffer_write_segment(buffer, window, start_byte,
+                                   &property_index, &written_width, width);
+
+    if (start > string_characters) {
+        int32 separator_start;
+        int32 separator_byte;
+
+        separator_start = start - string_characters;
+        separator_byte = utf8_byte_position(separator, separator_len,
+                                            separator_start);
+        nc_cyclic_window_write_text(window, separator, separator_len,
+                                    separator_byte, &written_width, width);
+    } else {
+        nc_cyclic_window_write_text(window, separator, separator_len, 0,
+                                    &written_width, width);
+    }
+
+    property_index = 0;
+    nc_cyclic_buffer_write_segment(buffer, window, 0, &property_index,
+                                   &written_width, width);
+
+    nc_cyclic_increment_start(
+        start_pos, string_characters + separator_characters);
     return;
 }
 

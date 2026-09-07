@@ -66,10 +66,6 @@ typedef struct StatusTimeoutContext {
     int32 timeout;
 } StatusTimeoutContext;
 
-static int32 status_player_state_string(char *, int32);
-static void status_draw_song_title(NcmSong *);
-static void status_reset_visualizer_for_player_event(int32);
-
 static NcmStatusHooks *
 status_active_hooks(NcmStatusHooks *hooks) {
     if (hooks) {
@@ -428,6 +424,16 @@ status_rebase_elapsed_time(int32 elapsed_time, int64 elapsed_time_ms) {
     return;
 }
 
+static void
+status_draw_song_title(NcmSong *song) {
+    StrBuilder title;
+
+    title = ncm_format_render_string(&Config.song_window_title_format, song);
+    ncm_window_title_set(title.data, title.len);
+    sb_free(&title);
+    return;
+}
+
 int32
 ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                             NcmStatusHooks *hooks, NcmError *ncm_error) {
@@ -760,6 +766,18 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
     return ncm_error_ok(ncm_error);
 }
 
+static void
+status_reset_visualizer_for_player_event(int32 event) {
+#if defined(ENABLE_VISUALIZER)
+    if ((event & MPD_IDLE_PLAYER) != 0) {
+        visualizer_screen_reset_audio_state(app_screen_visualizer());
+    }
+#else
+    (void)event;
+#endif
+    return;
+}
+
 int32
 ncm_status_update(NcmMpdClient *client, int32 event, NcmError *ncm_error) {
     NcmMpdStatus mpd_status;
@@ -907,6 +925,51 @@ ncm_status_state_total_time(void) {
 int32
 ncm_status_state_volume(void) {
     return status_volume;
+}
+
+static int32
+status_player_state_string(char *buffer, int32 buffer_cap) {
+    char *string = "";
+    int32 len;
+
+    switch (status_player_state) {
+    case NCM_STATUS_PLAYER_UNKNOWN:
+        if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
+            string = "[unknown]";
+        }
+        break;
+    case NCM_STATUS_PLAYER_PLAY:
+        if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
+            string = "[playing]";
+        } else {
+            string = "Playing:";
+        }
+        break;
+    case NCM_STATUS_PLAYER_PAUSE:
+        if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
+            string = "[paused]";
+        } else {
+            string = "Paused:";
+        }
+        break;
+    case NCM_STATUS_PLAYER_STOP:
+        if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
+            string = "[stopped]";
+        }
+        break;
+    default:
+        break;
+    }
+
+    len = optional_strlen32(string);
+    if (len >= buffer_cap) {
+        len = buffer_cap - 1;
+    }
+    if (len > 0) {
+        memcpy64(buffer, string, len);
+    }
+    buffer[len] = 0;
+    return len;
 }
 
 void
@@ -1061,73 +1124,6 @@ status_apply_formatted_color_end(NcWindow *window, NcFormattedColor *color) {
 static int32
 status_song_time_string(int32 length, char *buffer, int32 buffer_cap) {
     return ncm_helpers_show_song_time(length, buffer, buffer_cap);
-}
-
-static int32
-status_player_state_string(char *buffer, int32 buffer_cap) {
-    char *string = "";
-    int32 len;
-
-    switch (status_player_state) {
-    case NCM_STATUS_PLAYER_UNKNOWN:
-        if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
-            string = "[unknown]";
-        }
-        break;
-    case NCM_STATUS_PLAYER_PLAY:
-        if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
-            string = "[playing]";
-        } else {
-            string = "Playing:";
-        }
-        break;
-    case NCM_STATUS_PLAYER_PAUSE:
-        if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
-            string = "[paused]";
-        } else {
-            string = "Paused:";
-        }
-        break;
-    case NCM_STATUS_PLAYER_STOP:
-        if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
-            string = "[stopped]";
-        }
-        break;
-    default:
-        break;
-    }
-
-    len = optional_strlen32(string);
-    if (len >= buffer_cap) {
-        len = buffer_cap - 1;
-    }
-    if (len > 0) {
-        memcpy64(buffer, string, len);
-    }
-    buffer[len] = 0;
-    return len;
-}
-
-static void
-status_draw_song_title(NcmSong *song) {
-    StrBuilder title;
-
-    title = ncm_format_render_string(&Config.song_window_title_format, song);
-    ncm_window_title_set(title.data, title.len);
-    sb_free(&title);
-    return;
-}
-
-static void
-status_reset_visualizer_for_player_event(int32 event) {
-#if defined(ENABLE_VISUALIZER)
-    if ((event & MPD_IDLE_PLAYER) != 0) {
-        visualizer_screen_reset_audio_state(app_screen_visualizer());
-    }
-#else
-    (void)event;
-#endif
-    return;
 }
 
 static void

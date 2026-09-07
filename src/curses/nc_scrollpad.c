@@ -15,15 +15,16 @@ typedef struct NcScrollpadWriteState {
     int32 property_count;
 } NcScrollpadWriteState;
 
-static int32 nc_scrollpad_i32(int32);
-static int32 nc_scrollpad_write_buffer(NcScrollpadWriteState *, bool);
-static bool nc_scrollpad_is_space(char);
-
 void
 nc_scrollpad_init(NcScrollpad *scrollpad, int32 height) {
     scrollpad->beginning = 0;
     scrollpad->real_height = height;
     return;
+}
+
+static int32
+nc_scrollpad_i32(int32 value) {
+    return value;
 }
 
 void
@@ -101,6 +102,121 @@ nc_scrollpad_scroll(NcScrollpad *scrollpad, NcWindow *window,
         break;
     }
     return;
+}
+
+static void
+nc_scrollpad_load_properties(NcScrollpadWriteState *state) {
+    while ((state->property_index < state->property_count)
+           && (state->properties[state->property_index].position == state->i)) {
+        nc_buffer_apply_property(
+            state->window, &state->properties[state->property_index]);
+        state->property_index += 1;
+    }
+    return;
+}
+
+static bool
+nc_scrollpad_is_space(char ch) {
+    return iswspace((wint_t)(uint8)ch);
+}
+
+static void
+nc_scrollpad_write_word(NcScrollpadWriteState *state, bool load_properties) {
+    char *data;
+    int32 len;
+
+    data = nc_buffer_data(state->buffer);
+    len = state->buffer->len;
+    while ((state->i < len) && !nc_scrollpad_is_space(data[state->i])) {
+        if (load_properties) {
+            nc_scrollpad_load_properties(state);
+        }
+        nc_window_print_char(state->window, data[state->i]);
+        state->i += 1;
+    }
+    return;
+}
+
+static int32
+nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
+                          bool generate_height_only) {
+    char *data = nc_buffer_data(state->buffer);
+    int32 new_y;
+    int32 x;
+    int32 y;
+    int32 old_i;
+    int32 old_property_index;
+    int32 height;
+    int32 len;
+
+    state->i = 0;
+    state->property_index = 0;
+    len = state->buffer->len;
+    height = 1;
+    y = nc_window_get_y(state->window);
+
+    while (state->i < len) {
+        while ((state->i < len) && nc_scrollpad_is_space(data[state->i])) {
+            nc_scrollpad_load_properties(state);
+            nc_window_print_char(state->window, data[state->i]);
+            state->i += 1;
+        }
+
+        if (generate_height_only) {
+            new_y = nc_window_get_y(state->window);
+            height += new_y - y;
+        }
+
+        if (state->i >= len) {
+            break;
+        }
+
+        old_i = state->i;
+        old_property_index = state->property_index;
+        x = nc_window_get_x(state->window);
+        y = nc_window_get_y(state->window);
+
+        nc_scrollpad_write_word(state, false);
+
+        state->i = old_i;
+        state->property_index = old_property_index;
+
+        new_y = nc_window_get_y(state->window);
+        if (new_y != y) {
+            if (generate_height_only) {
+                height += 1;
+            } else {
+                nc_window_go_to_xy(state->window, x, y);
+                wclrtoeol(state->window->window);
+            }
+
+            y += 1;
+            nc_window_go_to_xy(state->window, 0, y);
+            nc_scrollpad_write_word(state, true);
+
+            if (generate_height_only) {
+                new_y = nc_window_get_y(state->window);
+                height += new_y - y;
+            }
+        } else {
+            nc_window_go_to_xy(state->window, x, y);
+            nc_scrollpad_write_word(state, true);
+        }
+
+        if (generate_height_only) {
+            nc_window_go_to_xy(state->window, nc_window_get_x(state->window),
+                               0);
+            y = 0;
+        }
+    }
+
+    while (state->property_index < state->property_count) {
+        nc_buffer_apply_property(
+            state->window, &state->properties[state->property_index]);
+        state->property_index += 1;
+    }
+
+    return height;
 }
 
 void
@@ -252,11 +368,6 @@ nc_scrollpad_reset(NcScrollpad *scrollpad) {
     return;
 }
 
-static int32
-nc_scrollpad_i32(int32 value) {
-    return value;
-}
-
 int32
 nc_scrollpad_max_beginning(NcScrollpad *scrollpad, NcWindow *window) {
     int32 result;
@@ -270,121 +381,6 @@ nc_scrollpad_max_beginning(NcScrollpad *scrollpad, NcWindow *window) {
         return 0;
     }
     return result;
-}
-
-static void
-nc_scrollpad_load_properties(NcScrollpadWriteState *state) {
-    while ((state->property_index < state->property_count)
-           && (state->properties[state->property_index].position == state->i)) {
-        nc_buffer_apply_property(
-            state->window, &state->properties[state->property_index]);
-        state->property_index += 1;
-    }
-    return;
-}
-
-static void
-nc_scrollpad_write_word(NcScrollpadWriteState *state, bool load_properties) {
-    char *data;
-    int32 len;
-
-    data = nc_buffer_data(state->buffer);
-    len = state->buffer->len;
-    while ((state->i < len) && !nc_scrollpad_is_space(data[state->i])) {
-        if (load_properties) {
-            nc_scrollpad_load_properties(state);
-        }
-        nc_window_print_char(state->window, data[state->i]);
-        state->i += 1;
-    }
-    return;
-}
-
-static int32
-nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
-                          bool generate_height_only) {
-    char *data = nc_buffer_data(state->buffer);
-    int32 new_y;
-    int32 x;
-    int32 y;
-    int32 old_i;
-    int32 old_property_index;
-    int32 height;
-    int32 len;
-
-    state->i = 0;
-    state->property_index = 0;
-    len = state->buffer->len;
-    height = 1;
-    y = nc_window_get_y(state->window);
-
-    while (state->i < len) {
-        while ((state->i < len) && nc_scrollpad_is_space(data[state->i])) {
-            nc_scrollpad_load_properties(state);
-            nc_window_print_char(state->window, data[state->i]);
-            state->i += 1;
-        }
-
-        if (generate_height_only) {
-            new_y = nc_window_get_y(state->window);
-            height += new_y - y;
-        }
-
-        if (state->i >= len) {
-            break;
-        }
-
-        old_i = state->i;
-        old_property_index = state->property_index;
-        x = nc_window_get_x(state->window);
-        y = nc_window_get_y(state->window);
-
-        nc_scrollpad_write_word(state, false);
-
-        state->i = old_i;
-        state->property_index = old_property_index;
-
-        new_y = nc_window_get_y(state->window);
-        if (new_y != y) {
-            if (generate_height_only) {
-                height += 1;
-            } else {
-                nc_window_go_to_xy(state->window, x, y);
-                wclrtoeol(state->window->window);
-            }
-
-            y += 1;
-            nc_window_go_to_xy(state->window, 0, y);
-            nc_scrollpad_write_word(state, true);
-
-            if (generate_height_only) {
-                new_y = nc_window_get_y(state->window);
-                height += new_y - y;
-            }
-        } else {
-            nc_window_go_to_xy(state->window, x, y);
-            nc_scrollpad_write_word(state, true);
-        }
-
-        if (generate_height_only) {
-            nc_window_go_to_xy(state->window, nc_window_get_x(state->window),
-                               0);
-            y = 0;
-        }
-    }
-
-    while (state->property_index < state->property_count) {
-        nc_buffer_apply_property(
-            state->window, &state->properties[state->property_index]);
-        state->property_index += 1;
-    }
-
-    return height;
-}
-
-static bool
-nc_scrollpad_is_space(char ch) {
-    return iswspace((wint_t)(uint8)ch);
 }
 
 #endif /* NC_SCROLLPAD_C */

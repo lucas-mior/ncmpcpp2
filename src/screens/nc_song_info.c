@@ -5,11 +5,77 @@
 
 #include "screens/nc_screens.h"
 
-static void nc_song_info_switch_to(NcScreen *);
-static void nc_song_info_resize(NcScreen *);
-static void nc_song_info_mouse_button_pressed(NcScreen *, MEVENT);
-static void nc_song_info_destroy_callback(NcScreen *);
-static void nc_song_info_display(NcSongInfoScreen *);
+static void
+nc_song_info_switch_to(NcScreen *screen) {
+    NcSongInfoScreen *song_info;
+
+    song_info = (NcSongInfoScreen *)screen;
+    if (song_info->hooks.switch_to) {
+        song_info->hooks.switch_to(song_info->hooks.user, song_info);
+    }
+    return;
+}
+
+static void
+nc_song_info_resize(NcScreen *screen) {
+    NcSongInfoScreen *song_info;
+
+    song_info = (NcSongInfoScreen *)screen;
+    if (song_info->hooks.resize_layout) {
+        song_info->hooks.resize_layout(song_info->hooks.user, song_info);
+    }
+    nc_scrollpad_resize(&song_info->scrollpad, &song_info->window,
+                        nc_song_info_screen_width(song_info),
+                        nc_song_info_screen_height(song_info));
+    nc_window_move_to(&song_info->window,
+                      nc_song_info_screen_start_x(song_info),
+                      nc_song_info_screen_start_y(song_info));
+    nc_scrollpad_flush(&song_info->scrollpad, &song_info->window,
+                       &song_info->buffer);
+    return;
+}
+
+static void
+nc_song_info_mouse_button_pressed(NcScreen *screen, MEVENT event) {
+    NcSongInfoScreen *song_info;
+    enum NcScroll where = NC_SCROLL_HOME;
+    bool do_scroll;
+
+    song_info = (NcSongInfoScreen *)screen;
+    do_scroll = true;
+    if (event.bstate & BUTTON5_PRESSED) {
+        where = NC_SCROLL_DOWN;
+    } else if (event.bstate & BUTTON4_PRESSED) {
+        where = NC_SCROLL_UP;
+    } else {
+        do_scroll = false;
+    }
+
+    if (do_scroll) {
+        for (int32 i = 0; i < song_info->lines_scrolled; i += 1) {
+            nc_scrollpad_scroll(&song_info->scrollpad, &song_info->window,
+                                where);
+        }
+    }
+    return;
+}
+
+static void
+nc_song_info_destroy_callback(NcScreen *screen) {
+    NcSongInfoScreen *song_info;
+
+    song_info = (NcSongInfoScreen *)screen;
+    if (song_info->hooks.destroy) {
+        song_info->hooks.destroy(song_info->hooks.user);
+    }
+    return;
+}
+
+static void
+nc_song_info_display(NcSongInfoScreen *song_info) {
+    nc_scrollpad_refresh(&song_info->scrollpad, &song_info->window);
+    return;
+}
 
 #define NC_SCREEN_IMPL_TYPE NcSongInfoScreen
 #define NC_SCREEN_IMPL_PREFIX nc_song_info
@@ -86,82 +152,6 @@ nc_song_info_screen_prepare_current(NcSongInfoScreen *screen) {
     nc_scrollpad_flush(&screen->scrollpad, &screen->window, &screen->buffer);
     nc_scrollpad_refresh(&screen->scrollpad, &screen->window);
     return 0;
-}
-
-static void
-nc_song_info_switch_to(NcScreen *screen) {
-    NcSongInfoScreen *song_info;
-
-    song_info = nc_song_info_from_screen(screen);
-    if (song_info->hooks.switch_to) {
-        song_info->hooks.switch_to(song_info->hooks.user, song_info);
-    }
-    return;
-}
-
-static void
-nc_song_info_resize(NcScreen *screen) {
-    NcSongInfoScreen *song_info;
-
-    song_info = nc_song_info_from_screen(screen);
-    if (song_info->hooks.resize_layout) {
-        song_info->hooks.resize_layout(song_info->hooks.user, song_info);
-    }
-    nc_scrollpad_resize(&song_info->scrollpad, &song_info->window,
-                        nc_song_info_screen_width(song_info),
-                        nc_song_info_screen_height(song_info));
-    nc_window_move_to(&song_info->window,
-                      nc_song_info_screen_start_x(song_info),
-                      nc_song_info_screen_start_y(song_info));
-    nc_scrollpad_flush(&song_info->scrollpad, &song_info->window,
-                       &song_info->buffer);
-    return;
-}
-
-
-
-static void
-nc_song_info_mouse_button_pressed(NcScreen *screen, MEVENT event) {
-    NcSongInfoScreen *song_info;
-    enum NcScroll where = NC_SCROLL_HOME;
-    bool do_scroll;
-
-    song_info = nc_song_info_from_screen(screen);
-    do_scroll = true;
-    if (event.bstate & BUTTON5_PRESSED) {
-        where = NC_SCROLL_DOWN;
-    } else if (event.bstate & BUTTON4_PRESSED) {
-        where = NC_SCROLL_UP;
-    } else {
-        do_scroll = false;
-    }
-
-    if (do_scroll) {
-        for (int32 i = 0; i < song_info->lines_scrolled; i += 1) {
-            nc_scrollpad_scroll(&song_info->scrollpad, &song_info->window,
-                                where);
-        }
-    }
-    return;
-}
-
-
-
-static void
-nc_song_info_destroy_callback(NcScreen *screen) {
-    NcSongInfoScreen *song_info;
-
-    song_info = nc_song_info_from_screen(screen);
-    if (song_info->hooks.destroy) {
-        song_info->hooks.destroy(song_info->hooks.user);
-    }
-    return;
-}
-
-static void
-nc_song_info_display(NcSongInfoScreen *song_info) {
-    nc_scrollpad_refresh(&song_info->scrollpad, &song_info->window);
-    return;
 }
 
 #endif /* NC_SONG_INFO_C */

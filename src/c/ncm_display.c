@@ -6,11 +6,6 @@
 #include "c/ncm_c.h"
 #include "settings.h"
 
-static int32 ncm_display_column_width(Column *, int32 list_width,
-                                      int32 remained_width);
-static void ncm_display_append_spaces(StrBuilder *, int32);
-static void ncm_display_append_nc_spaces(NcBuffer *, int32);
-
 static void
 ncm_display_append_basename(NcBuffer *buffer, char *path, int32 path_len) {
     int32 basename;
@@ -24,6 +19,30 @@ void
 ncm_display_song_row(NcBuffer *buffer, NcmFormatAst *format,
                      NcmSong *song, uint32 flags) {
     ncm_format_render_buffer(format, song, buffer, buffer, flags);
+    return;
+}
+
+static int32
+ncm_display_column_width(Column *column,
+                         int32 list_width, int32 remained_width) {
+    int32 width;
+
+    if (column->stretch_limit >= 0) {
+        width = remained_width - column->stretch_limit;
+    } else if (column->fixed) {
+        width = column->width;
+    } else {
+        width = column->width*list_width/100;
+    }
+
+    return width;
+}
+
+static void
+ncm_display_append_nc_spaces(NcBuffer *buffer, int32 count) {
+    for (int32 i = 0; i < count; i += 1) {
+        nc_buffer_append_char(buffer, ' ');
+    }
     return;
 }
 
@@ -111,6 +130,14 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
             remained_width -= width + 1;
             nc_buffer_append_char(buffer, ' ');
         }
+    }
+    return;
+}
+
+static void
+ncm_display_append_spaces(StrBuilder *buffer, int32 count) {
+    for (int32 i = 0; i < count; i += 1) {
+        sb_append_byte(buffer, ' ');
     }
     return;
 }
@@ -264,38 +291,6 @@ ncm_display_playlist_row(NcBuffer *buffer, NcmPlaylist *playlist,
         return;
     }
     ncm_display_append_basename(buffer, path.data, path.len);
-    return;
-}
-
-static int32
-ncm_display_column_width(Column *column,
-                         int32 list_width, int32 remained_width) {
-    int32 width;
-
-    if (column->stretch_limit >= 0) {
-        width = remained_width - column->stretch_limit;
-    } else if (column->fixed) {
-        width = column->width;
-    } else {
-        width = column->width*list_width/100;
-    }
-
-    return width;
-}
-
-static void
-ncm_display_append_nc_spaces(NcBuffer *buffer, int32 count) {
-    for (int32 i = 0; i < count; i += 1) {
-        nc_buffer_append_char(buffer, ' ');
-    }
-    return;
-}
-
-static void
-ncm_display_append_spaces(StrBuilder *buffer, int32 count) {
-    for (int32 i = 0; i < count; i += 1) {
-        sb_append_byte(buffer, ' ');
-    }
     return;
 }
 

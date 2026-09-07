@@ -13,18 +13,6 @@
 #include "ui_state.h"
 
 // callbacks
-static NcWindow *library_active_window(NcScreen *screen);
-static void library_refresh(NcScreen *);
-static void library_refresh_window(NcScreen *);
-static void library_scroll(NcScreen *, enum NcScroll);
-static void library_finish_list_change(NcScreen *);
-static void library_mouse_button_pressed(NcScreen *, MEVENT);
-static void library_switch_to(NcScreen *);
-static void library_resize(NcScreen *);
-static int32 library_window_timeout(NcScreen *);
-static char *library_title(NcScreen *);
-static void library_update(NcScreen *);
-static void library_destroy_callback(NcScreen *);
 
 static int32
 library_mpd_search_songs(void *user, MediaLibrarySongQuery *query,
@@ -258,12 +246,381 @@ library_update_titles(MediaLibraryScreen *screen, bool update_windows) {
     return;
 }
 
-static void library_request_all_updates(MediaLibraryScreen *);
-
 typedef struct MediaLibrarySearchContext {
     MediaLibraryScreen *screen;
     NcmRegex *regex;
 } MediaLibrarySearchContext;
+static MediaLibraryScreen *
+library_from_screen(NcScreen *screen) {
+    return nc_screen_user(screen);
+}
+
+static NcWindow *
+library_active_window(NcScreen *screen) {
+    return media_library_screen_active_window(library_from_screen(screen));
+}
+
+static void
+library_update_menu_highlights(MediaLibraryScreen *screen) {
+    NcMenu *tags;
+    NcMenu *albums;
+    NcMenu *songs;
+    NcMenu *active;
+
+    tags = nc_media_library_tag_menu_base(&screen->tags);
+    albums = nc_media_library_album_menu_base(&screen->albums);
+    songs = nc_media_library_song_menu_base(&screen->songs);
+
+    nc_menu_set_highlight_prefix(
+        tags, &Config.current_item_inactive_column_prefix);
+    nc_menu_set_highlight_suffix(
+        tags, &Config.current_item_inactive_column_suffix);
+    nc_menu_set_highlight_prefix(
+        albums, &Config.current_item_inactive_column_prefix);
+    nc_menu_set_highlight_suffix(
+        albums, &Config.current_item_inactive_column_suffix);
+    nc_menu_set_highlight_prefix(
+        songs, &Config.current_item_inactive_column_prefix);
+    nc_menu_set_highlight_suffix(
+        songs, &Config.current_item_inactive_column_suffix);
+
+    active = media_library_screen_active_menu(screen);
+    nc_menu_set_highlight_prefix(active, &Config.current_item_prefix);
+    nc_menu_set_highlight_suffix(active, &Config.current_item_suffix);
+    return;
+}
+
+static void
+library_refresh(NcScreen *screen) {
+    MediaLibraryScreen *library = library_from_screen(screen);
+    NcMenu *albums;
+
+    library_update_menu_highlights(library);
+    if (media_library_screen_column_is_visible(
+        library, MEDIA_LIBRARY_COLUMN_TAGS)) {
+        library_refresh_menu(nc_media_library_tag_menu_base(&library->tags),
+                             &library->tags_window);
+        nc_screen_draw_vertical_separator(
+            nc_window_start_x(&library->albums_window) - 1);
+    }
+
+    albums = nc_media_library_album_menu_base(&library->albums);
+    library_refresh_menu(albums, &library->albums_window);
+    if (nc_menu_item_count(albums) <= 0) {
+        nc_window_go_to_xy(&library->albums_window, 0, 0);
+        nc_window_print_data(&library->albums_window,
+                             STRLIT("No albums found."));
+        nc_window_refresh(&library->albums_window);
+    }
+    nc_screen_draw_vertical_separator(
+        nc_window_start_x(&library->songs_window) - 1);
+    library_refresh_menu(nc_media_library_song_menu_base(&library->songs),
+                         &library->songs_window);
+    return;
+}
+
+static void
+library_refresh_window(NcScreen *screen) {
+    library_refresh(screen);
+    return;
+}
+
+static void
+library_scroll(NcScreen *screen, enum NcScroll where) {
+    MediaLibraryScreen *library = library_from_screen(screen);
+
+    nc_menu_scroll_selectable(media_library_screen_active_menu(library),
+                              library->main_height, where);
+    return;
+}
+
+static void
+library_finish_list_change(NcScreen *screen) {
+    media_library_screen_finish_list_change(library_from_screen(screen));
+    return;
+}
+
+static void
+library_mouse_scroll(MediaLibraryScreen *screen, enum NcScroll where) {
+    enum NcScroll effective = where;
+    int32 count = Config.lines_scrolled;
+
+    if (Config.mouse_list_scroll_whole_page) {
+        if (where == NC_SCROLL_DOWN) {
+            effective = NC_SCROLL_PAGE_DOWN;
+        } else if (where == NC_SCROLL_UP) {
+            effective = NC_SCROLL_PAGE_UP;
+        }
+        count = 1;
+    }
+
+    for (int32 i = 0; i < count; i += 1) {
+        nc_menu_scroll_selectable(media_library_screen_active_menu(screen),
+                                  screen->main_height, effective);
+    }
+    return;
+}
+
+static void
+library_set_observed_album(MediaLibraryScreen *screen,
+                           NcMediaLibraryAlbumRow *album) {
+    nc_media_library_album_row_destroy(&screen->observed_album);
+    screen->observed_album = (NcMediaLibraryAlbumRow){0};
+    screen->observed_album_valid = false;
+    if (album) {
+        nc_media_library_album_row_copy(&screen->observed_album, album);
+        screen->observed_album_valid = true;
+    }
+    return;
+}
+
+static void
+library_restart_update_timer(MediaLibraryScreen *screen) {
+    screen->update_timer = global_timer;
+    return;
+}
+
+static int32
+library_mouse_select(MediaLibraryScreen *screen,
+                     enum MediaLibraryColumn column, NcMenu *menu,
+                     int32 y, bool right_click) {
+    NcmError ncm_error;
+    bool play;
+
+    if ((y < 0) || (y >= nc_menu_item_count(menu))) {
+        return 0;
+    }
+    if (nc_menu_goto_selectable(menu, y) < 0) {
+        return 0;
+    }
+    if (right_click) {
+        ncm_error_clear(&ncm_error);
+        play = screen->active_column == MEDIA_LIBRARY_COLUMN_SONGS;
+        if (media_library_screen_add_item_to_playlist(
+            screen, play, &ncm_error) < 0) {
+            if (ncm_error_is_set(&ncm_error)) {
+                ncm_statusbar_print_cstring(
+                    Config.message_delay_time, ncm_error.message);
+            }
+        }
+    }
+
+    if (column == MEDIA_LIBRARY_COLUMN_TAGS) {
+        nc_menu_clear_items(nc_media_library_album_menu_base(&screen->albums));
+        nc_menu_clear_items(nc_media_library_song_menu_base(&screen->songs));
+
+        screen->albums_update_request = true;
+        screen->songs_update_request = true;
+
+        library_set_observed_album(screen, NULL);
+        library_restart_update_timer(screen);
+        nc_screen_request_update(&screen->screen);
+    } else if (column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
+        nc_menu_clear_items(nc_media_library_song_menu_base(&screen->songs));
+        screen->songs_update_request = true;
+        library_restart_update_timer(screen);
+        nc_screen_request_update(&screen->screen);
+    }
+    return 1;
+}
+
+static void
+library_mouse_button_pressed(NcScreen *screen, MEVENT event) {
+    MediaLibraryScreen *library;
+    int32 x;
+    int32 y;
+
+    library = library_from_screen(screen);
+    x = event.x;
+    y = event.y;
+    if (media_library_screen_column_is_visible(
+        library, MEDIA_LIBRARY_COLUMN_TAGS)
+        && nc_window_has_coords(&library->tags_window, &x, &y)) {
+        media_library_screen_set_active_column(
+            library, MEDIA_LIBRARY_COLUMN_TAGS);
+        if (!((event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED))
+              && library_mouse_select(
+                  library, MEDIA_LIBRARY_COLUMN_TAGS,
+                  nc_media_library_tag_menu_base(&library->tags), y,
+                  (event.bstate & BUTTON3_PRESSED) != 0))) {
+            if (event.bstate & BUTTON5_PRESSED) {
+                library_mouse_scroll(library, NC_SCROLL_DOWN);
+            } else if (event.bstate & BUTTON4_PRESSED) {
+                library_mouse_scroll(library, NC_SCROLL_UP);
+            }
+        }
+        nc_screen_finish_list_change(screen);
+        return;
+    }
+
+    x = event.x;
+    y = event.y;
+    if (nc_window_has_coords(&library->albums_window, &x, &y)) {
+        media_library_screen_set_active_column(
+            library, MEDIA_LIBRARY_COLUMN_ALBUMS);
+        if (!((event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED))
+              && library_mouse_select(
+                  library, MEDIA_LIBRARY_COLUMN_ALBUMS,
+                  nc_media_library_album_menu_base(&library->albums), y,
+                  (event.bstate & BUTTON3_PRESSED) != 0))) {
+            if (event.bstate & BUTTON5_PRESSED) {
+                library_mouse_scroll(library, NC_SCROLL_DOWN);
+            } else if (event.bstate & BUTTON4_PRESSED) {
+                library_mouse_scroll(library, NC_SCROLL_UP);
+            }
+        }
+        nc_screen_finish_list_change(screen);
+        return;
+    }
+
+    x = event.x;
+    y = event.y;
+    if (nc_window_has_coords(&library->songs_window, &x, &y)) {
+        media_library_screen_set_active_column(library,
+                                               MEDIA_LIBRARY_COLUMN_SONGS);
+        if (!((event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED))
+              && library_mouse_select(
+                  library, MEDIA_LIBRARY_COLUMN_SONGS,
+                  nc_media_library_song_menu_base(&library->songs), y,
+                  (event.bstate & BUTTON3_PRESSED) != 0))) {
+            if (event.bstate & BUTTON5_PRESSED) {
+                library_mouse_scroll(library, NC_SCROLL_DOWN);
+            } else if (event.bstate & BUTTON4_PRESSED) {
+                library_mouse_scroll(library, NC_SCROLL_UP);
+            }
+        }
+        nc_screen_finish_list_change(screen);
+    }
+    return;
+}
+
+static void
+library_switch_to(NcScreen *screen) {
+    (void)screen;
+    return;
+}
+
+static void
+library_resize(NcScreen *screen) {
+    MediaLibraryScreen *library;
+    int32 x_offset;
+    int32 width;
+
+    library = library_from_screen(screen);
+    nc_screen_switcher_get_resize_params(screen, &x_offset, &width, true);
+    media_library_screen_set_geometry(
+        library, x_offset, width, ui_state_main_start_y(),
+        ui_state_main_height());
+    nc_screen_clear_resize_request(screen);
+    return;
+}
+
+static bool
+library_has_pending_albums(MediaLibraryScreen *screen) {
+    NcMenu *albums;
+
+    if ((screen->mode == MEDIA_LIBRARY_MODE_THREE_COLUMNS)
+        && (media_library_screen_current_tag(screen) == NULL)) {
+        return false;
+    }
+    albums = nc_media_library_album_menu_base(&screen->albums);
+    return screen->albums_update_request
+           || (nc_menu_all_item_count(albums) <= 0);
+}
+
+static bool
+library_has_pending_songs(MediaLibraryScreen *screen) {
+    NcMenu *songs;
+
+    if (media_library_screen_current_album(screen) == NULL) {
+        return false;
+    }
+    songs = nc_media_library_song_menu_base(&screen->songs);
+    return screen->songs_update_request
+           || (nc_menu_all_item_count(songs) <= 0);
+}
+
+static int32
+library_window_timeout(NcScreen *screen) {
+    MediaLibraryScreen *library;
+
+    library = library_from_screen(screen);
+    if (library_has_pending_albums(library)
+        || library_has_pending_songs(library)) {
+        return library->window_timeout_ms;
+    }
+    return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
+}
+
+static char *
+library_title(NcScreen *screen) {
+    (void)screen;
+    return "Media library";
+}
+
+static bool
+library_has_pending_tags(MediaLibraryScreen *screen) {
+    NcMenu *tags;
+
+    if (screen->mode != MEDIA_LIBRARY_MODE_THREE_COLUMNS) {
+        return false;
+    }
+    tags = nc_media_library_tag_menu_base(&screen->tags);
+    return screen->tags_update_request
+           || (nc_menu_all_item_count(tags) <= 0);
+}
+
+static bool
+library_has_fetch_delay_elapsed(MediaLibraryScreen *screen) {
+    ASSERT(screen != NULL);
+    if (screen->fetching_delay_ms < 0) {
+        return true;
+    }
+    return global_timer_elapsed_ms(screen->update_timer)
+           > screen->fetching_delay_ms;
+}
+
+static void
+library_update(NcScreen *screen) {
+    MediaLibraryScreen *library = library_from_screen(screen);
+    NcmError ncm_error;
+    bool update_due = false;
+    int32 status;
+
+    if (library_has_pending_tags(library)) {
+        update_due = true;
+    } else if (library_has_pending_albums(library)
+               && ((library->mode != MEDIA_LIBRARY_MODE_THREE_COLUMNS)
+                   || library->albums_update_request
+                   || library_has_fetch_delay_elapsed(library))) {
+        update_due = true;
+    } else if (library_has_pending_songs(library)
+               && (library->songs_update_request
+                   || library_has_fetch_delay_elapsed(library))) {
+        update_due = true;
+    }
+
+    ncm_error_clear(&ncm_error);
+
+    status = media_library_screen_update(library, &ncm_error);
+    if (status < 0) {
+        if (ncm_error_is_set(&ncm_error)) {
+            ncm_statusbar_print_cstring(Config.message_delay_time,
+                                        ncm_error.message);
+        }
+        return;
+    }
+    if (update_due) {
+        library_refresh(screen);
+    }
+    return;
+}
+
+static void
+library_destroy_callback(NcScreen *screen) {
+    media_library_screen_destroy(library_from_screen(screen));
+    return;
+}
 
 static NcScreenOps library_callbacks = {
     .active_window = library_active_window,
@@ -514,36 +871,6 @@ library_display_callbacks(MediaLibraryScreen *screen,
         break;
     }
     return callbacks;
-}
-
-static void
-library_update_menu_highlights(MediaLibraryScreen *screen) {
-    NcMenu *tags;
-    NcMenu *albums;
-    NcMenu *songs;
-    NcMenu *active;
-
-    tags = nc_media_library_tag_menu_base(&screen->tags);
-    albums = nc_media_library_album_menu_base(&screen->albums);
-    songs = nc_media_library_song_menu_base(&screen->songs);
-
-    nc_menu_set_highlight_prefix(
-        tags, &Config.current_item_inactive_column_prefix);
-    nc_menu_set_highlight_suffix(
-        tags, &Config.current_item_inactive_column_suffix);
-    nc_menu_set_highlight_prefix(
-        albums, &Config.current_item_inactive_column_prefix);
-    nc_menu_set_highlight_suffix(
-        albums, &Config.current_item_inactive_column_suffix);
-    nc_menu_set_highlight_prefix(
-        songs, &Config.current_item_inactive_column_prefix);
-    nc_menu_set_highlight_suffix(
-        songs, &Config.current_item_inactive_column_suffix);
-
-    active = media_library_screen_active_menu(screen);
-    nc_menu_set_highlight_prefix(active, &Config.current_item_prefix);
-    nc_menu_set_highlight_suffix(active, &Config.current_item_suffix);
-    return;
 }
 
 void
@@ -1565,19 +1892,6 @@ library_set_observed_tag(MediaLibraryScreen *screen,
 }
 
 static void
-library_set_observed_album(MediaLibraryScreen *screen,
-                           NcMediaLibraryAlbumRow *album) {
-    nc_media_library_album_row_destroy(&screen->observed_album);
-    screen->observed_album = (NcMediaLibraryAlbumRow){0};
-    screen->observed_album_valid = false;
-    if (album) {
-        nc_media_library_album_row_copy(&screen->observed_album, album);
-        screen->observed_album_valid = true;
-    }
-    return;
-}
-
-static void
 library_reset_observed_highlights(MediaLibraryScreen *screen) {
     library_set_observed_tag(screen, NULL);
     library_set_observed_album(screen, NULL);
@@ -1605,6 +1919,16 @@ media_library_screen_set_primary_tag_type(MediaLibraryScreen *screen,
     media_library_screen_request_tags_update(screen);
     nc_screen_finish_list_change(&screen->screen);
     return 0;
+}
+
+static void
+library_request_all_updates(MediaLibraryScreen *screen) {
+    ASSERT(screen != NULL);
+    screen->tags_update_request = true;
+    screen->albums_update_request = true;
+    screen->songs_update_request = true;
+    nc_screen_request_update(&screen->screen);
+    return;
 }
 
 void
@@ -2129,12 +2453,6 @@ library_album_identity_is_equal(NcMediaLibraryAlbumRow *left,
                        right->date, right->date_len);
 }
 
-static void
-library_restart_update_timer(MediaLibraryScreen *screen) {
-    screen->update_timer = global_timer;
-    return;
-}
-
 static bool
 library_tag_identity_is_equal(NcMediaLibraryTagRow *left,
                               NcMediaLibraryTagRow *right) {
@@ -2196,19 +2514,6 @@ media_library_screen_finish_list_change(MediaLibraryScreen *screen) {
     return;
 }
 
-static bool
-library_has_pending_albums(MediaLibraryScreen *screen) {
-    NcMenu *albums;
-
-    if ((screen->mode == MEDIA_LIBRARY_MODE_THREE_COLUMNS)
-        && (media_library_screen_current_tag(screen) == NULL)) {
-        return false;
-    }
-    albums = nc_media_library_album_menu_base(&screen->albums);
-    return screen->albums_update_request
-           || (nc_menu_all_item_count(albums) <= 0);
-}
-
 static void
 library_apply_column_filter(MediaLibraryScreen *screen,
                             enum MediaLibraryColumn column, NcMenu *menu) {
@@ -2245,40 +2550,6 @@ library_restore_highlight(NcMenu *menu, int32 highlight) {
     }
     nc_menu_goto_selectable(menu, highlight);
     return;
-}
-
-static bool
-library_has_pending_songs(MediaLibraryScreen *screen) {
-    NcMenu *songs;
-
-    if (media_library_screen_current_album(screen) == NULL) {
-        return false;
-    }
-    songs = nc_media_library_song_menu_base(&screen->songs);
-    return screen->songs_update_request
-           || (nc_menu_all_item_count(songs) <= 0);
-}
-
-static bool
-library_has_pending_tags(MediaLibraryScreen *screen) {
-    NcMenu *tags;
-
-    if (screen->mode != MEDIA_LIBRARY_MODE_THREE_COLUMNS) {
-        return false;
-    }
-    tags = nc_media_library_tag_menu_base(&screen->tags);
-    return screen->tags_update_request
-           || (nc_menu_all_item_count(tags) <= 0);
-}
-
-static bool
-library_has_fetch_delay_elapsed(MediaLibraryScreen *screen) {
-    ASSERT(screen != NULL);
-    if (screen->fetching_delay_ms < 0) {
-        return true;
-    }
-    return global_timer_elapsed_ms(screen->update_timer)
-           > screen->fetching_delay_ms;
 }
 
 int32
@@ -2610,16 +2881,6 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
         nc_screen_clear_update_request(&screen->screen);
     }
     return 0;
-}
-
-static void
-library_request_all_updates(MediaLibraryScreen *screen) {
-    ASSERT(screen != NULL);
-    screen->tags_update_request = true;
-    screen->albums_update_request = true;
-    screen->songs_update_request = true;
-    nc_screen_request_update(&screen->screen);
-    return;
 }
 
 static void
@@ -3160,282 +3421,6 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
     media_library_screen_set_active_column(screen, MEDIA_LIBRARY_COLUMN_SONGS);
     ncm_error_clear(ncm_error);
     return 0;
-}
-
-static MediaLibraryScreen *
-library_from_screen(NcScreen *screen) {
-    return nc_screen_user(screen);
-}
-
-static NcWindow *
-library_active_window(NcScreen *screen) {
-    return media_library_screen_active_window(library_from_screen(screen));
-}
-
-static void
-library_refresh(NcScreen *screen) {
-    MediaLibraryScreen *library = library_from_screen(screen);
-    NcMenu *albums;
-
-    library_update_menu_highlights(library);
-    if (media_library_screen_column_is_visible(
-        library, MEDIA_LIBRARY_COLUMN_TAGS)) {
-        library_refresh_menu(nc_media_library_tag_menu_base(&library->tags),
-                             &library->tags_window);
-        nc_screen_draw_vertical_separator(
-            nc_window_start_x(&library->albums_window) - 1);
-    }
-
-    albums = nc_media_library_album_menu_base(&library->albums);
-    library_refresh_menu(albums, &library->albums_window);
-    if (nc_menu_item_count(albums) <= 0) {
-        nc_window_go_to_xy(&library->albums_window, 0, 0);
-        nc_window_print_data(&library->albums_window,
-                             STRLIT("No albums found."));
-        nc_window_refresh(&library->albums_window);
-    }
-    nc_screen_draw_vertical_separator(
-        nc_window_start_x(&library->songs_window) - 1);
-    library_refresh_menu(nc_media_library_song_menu_base(&library->songs),
-                         &library->songs_window);
-    return;
-}
-
-static void
-library_refresh_window(NcScreen *screen) {
-    library_refresh(screen);
-    return;
-}
-
-static void
-library_scroll(NcScreen *screen, enum NcScroll where) {
-    MediaLibraryScreen *library = library_from_screen(screen);
-
-    nc_menu_scroll_selectable(media_library_screen_active_menu(library),
-                              library->main_height, where);
-    return;
-}
-
-static void
-library_finish_list_change(NcScreen *screen) {
-    media_library_screen_finish_list_change(library_from_screen(screen));
-    return;
-}
-
-static void
-library_mouse_scroll(MediaLibraryScreen *screen, enum NcScroll where) {
-    enum NcScroll effective = where;
-    int32 count = Config.lines_scrolled;
-
-    if (Config.mouse_list_scroll_whole_page) {
-        if (where == NC_SCROLL_DOWN) {
-            effective = NC_SCROLL_PAGE_DOWN;
-        } else if (where == NC_SCROLL_UP) {
-            effective = NC_SCROLL_PAGE_UP;
-        }
-        count = 1;
-    }
-
-    for (int32 i = 0; i < count; i += 1) {
-        nc_menu_scroll_selectable(media_library_screen_active_menu(screen),
-                                  screen->main_height, effective);
-    }
-    return;
-}
-
-static int32
-library_mouse_select(MediaLibraryScreen *screen,
-                     enum MediaLibraryColumn column, NcMenu *menu,
-                     int32 y, bool right_click) {
-    NcmError ncm_error;
-    bool play;
-
-    if ((y < 0) || (y >= nc_menu_item_count(menu))) {
-        return 0;
-    }
-    if (nc_menu_goto_selectable(menu, y) < 0) {
-        return 0;
-    }
-    if (right_click) {
-        ncm_error_clear(&ncm_error);
-        play = screen->active_column == MEDIA_LIBRARY_COLUMN_SONGS;
-        if (media_library_screen_add_item_to_playlist(
-            screen, play, &ncm_error) < 0) {
-            if (ncm_error_is_set(&ncm_error)) {
-                ncm_statusbar_print_cstring(
-                    Config.message_delay_time, ncm_error.message);
-            }
-        }
-    }
-
-    if (column == MEDIA_LIBRARY_COLUMN_TAGS) {
-        nc_menu_clear_items(nc_media_library_album_menu_base(&screen->albums));
-        nc_menu_clear_items(nc_media_library_song_menu_base(&screen->songs));
-
-        screen->albums_update_request = true;
-        screen->songs_update_request = true;
-
-        library_set_observed_album(screen, NULL);
-        library_restart_update_timer(screen);
-        nc_screen_request_update(&screen->screen);
-    } else if (column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
-        nc_menu_clear_items(nc_media_library_song_menu_base(&screen->songs));
-        screen->songs_update_request = true;
-        library_restart_update_timer(screen);
-        nc_screen_request_update(&screen->screen);
-    }
-    return 1;
-}
-
-static void
-library_mouse_button_pressed(NcScreen *screen, MEVENT event) {
-    MediaLibraryScreen *library;
-    int32 x;
-    int32 y;
-
-    library = library_from_screen(screen);
-    x = event.x;
-    y = event.y;
-    if (media_library_screen_column_is_visible(
-        library, MEDIA_LIBRARY_COLUMN_TAGS)
-        && nc_window_has_coords(&library->tags_window, &x, &y)) {
-        media_library_screen_set_active_column(
-            library, MEDIA_LIBRARY_COLUMN_TAGS);
-        if (!((event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED))
-              && library_mouse_select(
-                  library, MEDIA_LIBRARY_COLUMN_TAGS,
-                  nc_media_library_tag_menu_base(&library->tags), y,
-                  (event.bstate & BUTTON3_PRESSED) != 0))) {
-            if (event.bstate & BUTTON5_PRESSED) {
-                library_mouse_scroll(library, NC_SCROLL_DOWN);
-            } else if (event.bstate & BUTTON4_PRESSED) {
-                library_mouse_scroll(library, NC_SCROLL_UP);
-            }
-        }
-        nc_screen_finish_list_change(screen);
-        return;
-    }
-
-    x = event.x;
-    y = event.y;
-    if (nc_window_has_coords(&library->albums_window, &x, &y)) {
-        media_library_screen_set_active_column(
-            library, MEDIA_LIBRARY_COLUMN_ALBUMS);
-        if (!((event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED))
-              && library_mouse_select(
-                  library, MEDIA_LIBRARY_COLUMN_ALBUMS,
-                  nc_media_library_album_menu_base(&library->albums), y,
-                  (event.bstate & BUTTON3_PRESSED) != 0))) {
-            if (event.bstate & BUTTON5_PRESSED) {
-                library_mouse_scroll(library, NC_SCROLL_DOWN);
-            } else if (event.bstate & BUTTON4_PRESSED) {
-                library_mouse_scroll(library, NC_SCROLL_UP);
-            }
-        }
-        nc_screen_finish_list_change(screen);
-        return;
-    }
-
-    x = event.x;
-    y = event.y;
-    if (nc_window_has_coords(&library->songs_window, &x, &y)) {
-        media_library_screen_set_active_column(library,
-                                               MEDIA_LIBRARY_COLUMN_SONGS);
-        if (!((event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED))
-              && library_mouse_select(
-                  library, MEDIA_LIBRARY_COLUMN_SONGS,
-                  nc_media_library_song_menu_base(&library->songs), y,
-                  (event.bstate & BUTTON3_PRESSED) != 0))) {
-            if (event.bstate & BUTTON5_PRESSED) {
-                library_mouse_scroll(library, NC_SCROLL_DOWN);
-            } else if (event.bstate & BUTTON4_PRESSED) {
-                library_mouse_scroll(library, NC_SCROLL_UP);
-            }
-        }
-        nc_screen_finish_list_change(screen);
-    }
-    return;
-}
-
-static void
-library_switch_to(NcScreen *screen) {
-    (void)screen;
-    return;
-}
-
-static void
-library_resize(NcScreen *screen) {
-    MediaLibraryScreen *library;
-    int32 x_offset;
-    int32 width;
-
-    library = library_from_screen(screen);
-    nc_screen_switcher_get_resize_params(screen, &x_offset, &width, true);
-    media_library_screen_set_geometry(
-        library, x_offset, width, ui_state_main_start_y(),
-        ui_state_main_height());
-    nc_screen_clear_resize_request(screen);
-    return;
-}
-
-static int32
-library_window_timeout(NcScreen *screen) {
-    MediaLibraryScreen *library;
-
-    library = library_from_screen(screen);
-    if (library_has_pending_albums(library)
-        || library_has_pending_songs(library)) {
-        return library->window_timeout_ms;
-    }
-    return NC_SCREEN_DEFAULT_WINDOW_TIMEOUT;
-}
-
-static char *
-library_title(NcScreen *screen) {
-    (void)screen;
-    return "Media library";
-}
-
-static void
-library_update(NcScreen *screen) {
-    MediaLibraryScreen *library = library_from_screen(screen);
-    NcmError ncm_error;
-    bool update_due = false;
-    int32 status;
-
-    if (library_has_pending_tags(library)) {
-        update_due = true;
-    } else if (library_has_pending_albums(library)
-               && ((library->mode != MEDIA_LIBRARY_MODE_THREE_COLUMNS)
-                   || library->albums_update_request
-                   || library_has_fetch_delay_elapsed(library))) {
-        update_due = true;
-    } else if (library_has_pending_songs(library)
-               && (library->songs_update_request
-                   || library_has_fetch_delay_elapsed(library))) {
-        update_due = true;
-    }
-
-    ncm_error_clear(&ncm_error);
-
-    status = media_library_screen_update(library, &ncm_error);
-    if (status < 0) {
-        if (ncm_error_is_set(&ncm_error)) {
-            ncm_statusbar_print_cstring(Config.message_delay_time,
-                                        ncm_error.message);
-        }
-        return;
-    }
-    if (update_due) {
-        library_refresh(screen);
-    }
-    return;
-}
-
-static void
-library_destroy_callback(NcScreen *screen) {
-    media_library_screen_destroy(library_from_screen(screen));
-    return;
 }
 
 #endif /* NC_MEDIA_LIBRARY_C */
