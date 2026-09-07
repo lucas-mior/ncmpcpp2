@@ -342,10 +342,10 @@ nc_prompt_read_key(FILE *file) {
     do {
         char *line = rl_line_buffer;
         int32 x = nc_window_get_x(window);
+        void *user_data = nc_readline_state.should_continue_user_data;
 
         if ((nc_readline_state.should_continue != NULL)
-            && !nc_readline_state.should_continue(
-                line, nc_readline_state.should_continue_user_data)) {
+            && !nc_readline_state.should_continue(line, user_data)) {
             if (!RL_ISSTATE(RL_STATE_DISPATCHING)) {
                 rl_done = 1;
                 return EOF;
@@ -438,8 +438,8 @@ nc_prompt_display_string(void) {
     } else {
         int32 suffix_position;
 
-        suffix_position = utf8_suffix_width_position(
-            before_cursor, before_len, nc_readline_state.width);
+        suffix_position = utf8_suffix_width_position(before_cursor, before_len,
+                                                     nc_readline_state.width);
         cursor_pos = utf8_width(before_cursor + suffix_position,
                                 before_len - suffix_position);
         nc_prompt_print_data(before_cursor + suffix_position,
