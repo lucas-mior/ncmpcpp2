@@ -362,8 +362,7 @@ nc_screen_resize_params(NcScreen *screen) {
 }
 
 void
-nc_screen_get_resize_params(NcScreen *screen, int32 *x_offset,
-                            int32 *width) {
+nc_screen_get_resize_params(NcScreen *screen, int32 *x_offset, int32 *width) {
     NcScreenResizeParams params = nc_screen_resize_params(screen);
 
     if (x_offset) {
@@ -390,8 +389,7 @@ nc_screen_user(NcScreen *screen) {
 }
 
 static int32
-nc_screen_registry_index_of(NcScreenRegistry *registry,
-                            NcScreen *screen) {
+nc_screen_registry_index_of(NcScreenRegistry *registry, NcScreen *screen) {
     ASSERT(screen != NULL);
     for (int32 i = 0; i < registry->screens_len; i += 1) {
         if (registry->screens[i] == screen) {
@@ -429,8 +427,7 @@ nc_screen_registry_register(NcScreenRegistry *registry, NcScreen *screen) {
 }
 
 int32
-nc_screen_registry_unregister(NcScreenRegistry *registry,
-                              NcScreen *screen) {
+nc_screen_registry_unregister(NcScreenRegistry *registry, NcScreen *screen) {
     int32 index;
 
     if ((registry == NULL) || (screen == NULL)) {
