@@ -1456,10 +1456,8 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                     denominator = 1.0;
                 }
                 window = a0
-                         - a1*cos(2.0*VISUALIZER_PI*(double)i
-                                  /denominator)
-                         + a2*cos(4.0*VISUALIZER_PI*(double)i
-                                  /denominator);
+                         - a1*cos(2.0*VISUALIZER_PI*(double)i /denominator)
+                         + a2*cos(4.0*VISUALIZER_PI*(double)i /denominator);
                 fft->input[i] = window*(double)samples[i]
                                 /(double)VISUALIZER_MAX_SAMPLE;
             }
