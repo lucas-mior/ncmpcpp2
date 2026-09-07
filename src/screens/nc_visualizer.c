@@ -516,6 +516,7 @@ visualizer_data_source_system_hooks(NcmMpdClient *client) {
     hooks.enable_output = visualizer_system_enable_output;
     hooks.sleep_microseconds = visualizer_system_sleep_microseconds;
     hooks.user = client;
+
     return hooks;
 }
 
