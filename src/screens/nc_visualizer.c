@@ -1465,14 +1465,11 @@ visualizer_draw_frequency(VisualizerScreen *screen,
     }
     fftw_execute(fft->plan);
     for (int32 i = 0; i < fft->results_len; i += 1) {
-        double real;
-        double imaginary;
+        double real = fft->output[i][0];
+        double imag = fft->output[i][1];
 
-        real = fft->output[i][0];
-        imaginary = fft->output[i][1];
-        fft->freqs_mags[i] =
-            sqrt(real*real + imaginary*imaginary)
-            /(double)fft->dft_nonzero_size;
+        fft->freqs_mags[i] = sqrt(real*real + imag*imag)
+                             /(double)fft->dft_nonzero_size;
     }
 
     if (fft->dft_frequency_space_len != width) {
