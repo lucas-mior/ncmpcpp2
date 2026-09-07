@@ -5,12 +5,6 @@
 
 #include "c/ncm_c.h"
 
-static enum NcmFormatResult ncm_format_render_list(NcmFormatExprList *,
-                                                   NcmSong *,
-                                                   NcmFormatCallbacks *,
-                                                   void *left, void *right,
-                                                   uint32, int32 *, bool *);
-
 static int32
 ncm_format_set_error(NcmError *ncm_error, char *message, int32 position) {
     char buffer[256];
@@ -740,16 +734,51 @@ ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
         return NCM_FORMAT_RESULT_OK;
     case NCM_FORMAT_EXPR_GROUP:
         *no_output += 1;
-        result = ncm_format_render_list(&expr->value.list, song, cb, left,
-                                        right, flags, no_output, switched);
+        result = NCM_FORMAT_RESULT_EMPTY;
+        for (int32 i = 0; i < expr->value.list.len; i += 1) {
+            enum NcmFormatResult part;
+
+            part = ncm_format_render_expr(&expr->value.list.items[i],
+                                          song, cb, left, right, flags,
+                                          no_output, switched);
+            if ((result == NCM_FORMAT_RESULT_MISSING)
+                || (part == NCM_FORMAT_RESULT_MISSING)) {
+                result = NCM_FORMAT_RESULT_MISSING;
+            } else if ((result == NCM_FORMAT_RESULT_OK)
+                       || (part == NCM_FORMAT_RESULT_OK)) {
+                result = NCM_FORMAT_RESULT_OK;
+            } else {
+                result = NCM_FORMAT_RESULT_EMPTY;
+            }
+            if (result == NCM_FORMAT_RESULT_MISSING) {
+                break;
+            }
+        }
         *no_output -= 1;
         if (result == NCM_FORMAT_RESULT_MISSING) {
             return NCM_FORMAT_RESULT_EMPTY;
         }
         if ((*no_output <= 0) && (result == NCM_FORMAT_RESULT_OK)) {
-            result = ncm_format_render_list(&expr->value.list, song, cb,
-                                            left, right, flags, no_output,
-                                            switched);
+            result = NCM_FORMAT_RESULT_EMPTY;
+            for (int32 i = 0; i < expr->value.list.len; i += 1) {
+                enum NcmFormatResult part;
+
+                part = ncm_format_render_expr(&expr->value.list.items[i],
+                                              song, cb, left, right, flags,
+                                              no_output, switched);
+                if ((result == NCM_FORMAT_RESULT_MISSING)
+                    || (part == NCM_FORMAT_RESULT_MISSING)) {
+                    result = NCM_FORMAT_RESULT_MISSING;
+                } else if ((result == NCM_FORMAT_RESULT_OK)
+                           || (part == NCM_FORMAT_RESULT_OK)) {
+                    result = NCM_FORMAT_RESULT_OK;
+                } else {
+                    result = NCM_FORMAT_RESULT_EMPTY;
+                }
+                if (result == NCM_FORMAT_RESULT_MISSING) {
+                    break;
+                }
+            }
         }
         return result;
     case NCM_FORMAT_EXPR_FIRST_OF:

@@ -7,10 +7,64 @@
 #include "screens/nc_screens.h"
 #include "settings.h"
 
-static void nc_help_switch_to(NcScreen *);
-static void nc_help_resize(NcScreen *);
-static void nc_help_mouse_button_pressed(NcScreen *, MEVENT);
-static void nc_help_destroy_callback(NcScreen *);
+static void
+nc_help_switch_to(NcScreen *screen) {
+    NcHelpScreen *help = (NcHelpScreen *)screen;
+
+    if (help->hooks.switch_to) {
+        help->hooks.switch_to(help->hooks.user);
+    }
+    return;
+}
+
+static void
+nc_help_resize(NcScreen *screen) {
+    NcHelpScreen *help = (NcHelpScreen *)screen;
+
+    if (help->hooks.resize_layout) {
+        help->hooks.resize_layout(help->hooks.user, help);
+    }
+    nc_scrollpad_resize(&help->scrollpad, &help->window,
+                        nc_help_screen_width(help),
+                        nc_help_screen_height(help));
+    nc_window_move_to(&help->window, nc_help_screen_start_x(help),
+                      nc_help_screen_start_y(help));
+    nc_scrollpad_flush(&help->scrollpad, &help->window, &help->buffer);
+    if (help->hooks.resize_background) {
+        help->hooks.resize_background(help->hooks.user);
+    }
+    return;
+}
+
+static void
+nc_help_mouse_scroll(NcHelpScreen *help, enum NcScroll where) {
+    for (int32 i = 0; i < help->lines_scrolled; i += 1) {
+        nc_scrollpad_scroll(&help->scrollpad, &help->window, where);
+    }
+    return;
+}
+
+static void
+nc_help_mouse_button_pressed(NcScreen *screen, MEVENT event) {
+    NcHelpScreen *help = (NcHelpScreen *)screen;
+
+    if (event.bstate & BUTTON5_PRESSED) {
+        nc_help_mouse_scroll(help, NC_SCROLL_DOWN);
+    } else if (event.bstate & BUTTON4_PRESSED) {
+        nc_help_mouse_scroll(help, NC_SCROLL_UP);
+    }
+    return;
+}
+
+static void
+nc_help_destroy_callback(NcScreen *screen) {
+    NcHelpScreen *help = (NcHelpScreen *)screen;
+
+    if (help->hooks.destroy) {
+        help->hooks.destroy(help->hooks.user);
+    }
+    return;
+}
 
 #define NC_SCREEN_IMPL_TYPE NcHelpScreen
 #define NC_SCREEN_IMPL_PREFIX nc_help
@@ -155,65 +209,6 @@ nc_help_screen_clear_search(NcHelpScreen *screen) {
     sb_clear(&screen->search_constraint);
     nc_buffer_remove_properties(&screen->buffer, 0);
     nc_scrollpad_flush(&screen->scrollpad, &screen->window, &screen->buffer);
-    return;
-}
-
-static void
-nc_help_switch_to(NcScreen *screen) {
-    NcHelpScreen *help = nc_help_from_screen(screen);
-
-    if (help->hooks.switch_to) {
-        help->hooks.switch_to(help->hooks.user);
-    }
-    return;
-}
-
-static void
-nc_help_resize(NcScreen *screen) {
-    NcHelpScreen *help = nc_help_from_screen(screen);
-
-    if (help->hooks.resize_layout) {
-        help->hooks.resize_layout(help->hooks.user, help);
-    }
-    nc_scrollpad_resize(&help->scrollpad, &help->window,
-                        nc_help_screen_width(help),
-                        nc_help_screen_height(help));
-    nc_window_move_to(&help->window, nc_help_screen_start_x(help),
-                      nc_help_screen_start_y(help));
-    nc_scrollpad_flush(&help->scrollpad, &help->window, &help->buffer);
-    if (help->hooks.resize_background) {
-        help->hooks.resize_background(help->hooks.user);
-    }
-    return;
-}
-
-static void
-nc_help_mouse_scroll(NcHelpScreen *help, enum NcScroll where) {
-    for (int32 i = 0; i < help->lines_scrolled; i += 1) {
-        nc_scrollpad_scroll(&help->scrollpad, &help->window, where);
-    }
-    return;
-}
-
-static void
-nc_help_mouse_button_pressed(NcScreen *screen, MEVENT event) {
-    NcHelpScreen *help = nc_help_from_screen(screen);
-
-    if (event.bstate & BUTTON5_PRESSED) {
-        nc_help_mouse_scroll(help, NC_SCROLL_DOWN);
-    } else if (event.bstate & BUTTON4_PRESSED) {
-        nc_help_mouse_scroll(help, NC_SCROLL_UP);
-    }
-    return;
-}
-
-static void
-nc_help_destroy_callback(NcScreen *screen) {
-    NcHelpScreen *help = nc_help_from_screen(screen);
-
-    if (help->hooks.destroy) {
-        help->hooks.destroy(help->hooks.user);
-    }
     return;
 }
 

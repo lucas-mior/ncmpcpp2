@@ -101,6 +101,15 @@ NcmSongInfoMetadata ncm_song_info_tags[] = {
         .field = NCM_TAGS_FIELD_COUNT,
     },
 };
+static void
+app_request_registered_resize(enum NcScreenType type) {
+    NcScreen *screen;
+
+    if ((screen = app_controller_find_screen_type(type))) {
+        nc_screen_request_resize(screen);
+    }
+    return;
+}
 
 #define NCM_APP_SCREEN_DECLARE_STORAGE(type, name)                             \
     static type name;
@@ -126,16 +135,6 @@ NCM_APP_SCREEN_INIT_FLAGS(NCM_APP_SCREEN_DECLARE_INIT_FLAG)
     XX(PROMPT_RESULT_ACCEPTED)
 #include "cbase/xenums.c"
 
-static void app_request_registered_resize(enum NcScreenType);
-static void app_screen_register_once(NcScreen *);
-static void app_screen_register_replacing(NcScreen *, enum NcScreenType);
-static bool app_screen_is_current(NcScreen *);
-static void app_screen_switch_to(NcScreen *);
-static void app_screen_toggle_or_switch_to(NcScreen *);
-static NcBorder no_border(void);
-static void app_register_screen(NcScreen *);
-static void show_long_time(NcBuffer *, int32);
-
 #define NCM_APP_SCREEN_DIRECT_ACCESSOR(suffix, type, storage, base_expr) \
     type *                                                               \
     app_screen_##suffix(void) {                                          \
@@ -148,6 +147,50 @@ static void show_long_time(NcBuffer *, int32);
         app_screen_##suffix##_init();                                    \
         return base_expr;                                                \
     }
+
+static void
+app_register_screen(NcScreen *screen) {
+    if (!app_controller_is_screen_registered(screen)) {
+        ASSERT(app_controller_register_screen(screen) == 0);
+    }
+    return;
+}
+
+static void
+app_screen_register_once(NcScreen *screen) {
+    app_register_screen(screen);
+    return;
+}
+
+static void
+app_screen_register_replacing(NcScreen *screen, enum NcScreenType type) {
+    NcScreen *registered;
+
+    registered = app_controller_find_screen_type(type);
+    if (registered && (registered != screen)) {
+        ASSERT(app_controller_unregister_screen(registered) == 0);
+    }
+    app_register_screen(screen);
+    return;
+}
+
+static bool
+app_screen_is_current(NcScreen *screen) {
+    return nc_screen_switcher_is_current(screen);
+}
+
+static void
+app_screen_switch_to(NcScreen *screen) {
+    nc_screen_switcher_switch_to(screen, screen->has_to_be_resized);
+    return;
+}
+
+static NcBorder
+no_border(void) {
+    NcBorder border = {0};
+
+    return border;
+}
 
 NCM_APP_SCREEN_DIRECT_ACCESSOR_TYPES(NCM_APP_SCREEN_DIRECT_ACCESSOR)
 
@@ -275,6 +318,21 @@ app_screen_lastfm_init(void) {
                        ui_state_main_height(), Config.main_window_color,
                        no_border(), Config.lines_scrolled);
     lastfm_screen_initialized = true;
+    return;
+}
+
+static void
+app_screen_toggle_or_switch_to(NcScreen *screen) {
+    NcScreen *previous;
+
+    if (nc_screen_switcher_is_current(screen)) {
+        previous = nc_screen_switcher_previous();
+        if (previous && app_controller_is_screen_registered(previous)) {
+            app_screen_switch_to(previous);
+        }
+        return;
+    }
+    app_screen_switch_to(screen);
     return;
 }
 
@@ -965,80 +1023,11 @@ app_screens_current_type(void) {
 }
 
 static void
-app_request_registered_resize(enum NcScreenType type) {
-    NcScreen *screen;
-
-    if ((screen = app_controller_find_screen_type(type))) {
-        nc_screen_request_resize(screen);
-    }
-    return;
-}
-
-static void
-app_screen_register_once(NcScreen *screen) {
-    app_register_screen(screen);
-    return;
-}
-
-static void
-app_screen_register_replacing(NcScreen *screen, enum NcScreenType type) {
-    NcScreen *registered;
-
-    registered = app_controller_find_screen_type(type);
-    if (registered && (registered != screen)) {
-        ASSERT(app_controller_unregister_screen(registered) == 0);
-    }
-    app_register_screen(screen);
-    return;
-}
-
-static bool
-app_screen_is_current(NcScreen *screen) {
-    return nc_screen_switcher_is_current(screen);
-}
-
-static void
-app_screen_switch_to(NcScreen *screen) {
-    nc_screen_switcher_switch_to(screen, screen->has_to_be_resized);
-    return;
-}
-
-static void
-app_screen_toggle_or_switch_to(NcScreen *screen) {
-    NcScreen *previous;
-
-    if (nc_screen_switcher_is_current(screen)) {
-        previous = nc_screen_switcher_previous();
-        if (previous && app_controller_is_screen_registered(previous)) {
-            app_screen_switch_to(previous);
-        }
-        return;
-    }
-    app_screen_switch_to(screen);
-    return;
-}
-
-static NcBorder
-no_border(void) {
-    NcBorder border = {0};
-
-    return border;
-}
-
-static void
 draw_screen_header(NcScreen *screen) {
     char *title;
 
     title = nc_screen_title(screen);
     ncm_title_draw_header(title, optional_strlen32(title));
-    return;
-}
-
-static void
-app_register_screen(NcScreen *screen) {
-    if (!app_controller_is_screen_registered(screen)) {
-        ASSERT(app_controller_register_screen(screen) == 0);
-    }
     return;
 }
 
@@ -1431,6 +1420,36 @@ server_info_load_lists(void *user) {
     return;
 }
 
+static void
+show_long_time(NcBuffer *buffer, int32 seconds) {
+    int32 days;
+    int32 hours;
+    int32 minutes;
+
+    days = seconds / 86400;
+    seconds -= days*86400;
+    hours = seconds / 3600;
+    seconds -= hours*3600;
+    minutes = seconds / 60;
+    seconds -= minutes*60;
+
+    if (days > 0) {
+        nc_buffer_append_int64(buffer, days);
+        nc_buffer_append_cstring(buffer, "d ");
+    }
+    if ((days > 0) || (hours > 0)) {
+        nc_buffer_append_int64(buffer, hours);
+        nc_buffer_append_cstring(buffer, "h ");
+    }
+    if ((days > 0) || (hours > 0) || (minutes > 0)) {
+        nc_buffer_append_int64(buffer, minutes);
+        nc_buffer_append_cstring(buffer, "m ");
+    }
+    nc_buffer_append_int64(buffer, seconds);
+    nc_buffer_append_cstring(buffer, "s");
+    return;
+}
+
 static int32
 server_info_render(void *user, NcBuffer *buffer) {
     ServerInfoScreen *owner;
@@ -1682,36 +1701,6 @@ app_screen_song_info_init(void) {
                              Config.main_window_color, no_border(),
                              Config.lines_scrolled);
     song_info_screen.initialized = true;
-    return;
-}
-
-static void
-show_long_time(NcBuffer *buffer, int32 seconds) {
-    int32 days;
-    int32 hours;
-    int32 minutes;
-
-    days = seconds / 86400;
-    seconds -= days*86400;
-    hours = seconds / 3600;
-    seconds -= hours*3600;
-    minutes = seconds / 60;
-    seconds -= minutes*60;
-
-    if (days > 0) {
-        nc_buffer_append_int64(buffer, days);
-        nc_buffer_append_cstring(buffer, "d ");
-    }
-    if ((days > 0) || (hours > 0)) {
-        nc_buffer_append_int64(buffer, hours);
-        nc_buffer_append_cstring(buffer, "h ");
-    }
-    if ((days > 0) || (hours > 0) || (minutes > 0)) {
-        nc_buffer_append_int64(buffer, minutes);
-        nc_buffer_append_cstring(buffer, "m ");
-    }
-    nc_buffer_append_int64(buffer, seconds);
-    nc_buffer_append_cstring(buffer, "s");
     return;
 }
 

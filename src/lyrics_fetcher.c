@@ -52,7 +52,22 @@ typedef struct LyricsDirectSlugPair {
     LyricsSlugProfile title;
 } LyricsDirectSlugPair;
 
-static void lyrics_fetcher_array_destroy_item(void *);
+static void
+lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher) {
+    free2(fetcher->name, fetcher->name_len + 1);
+    fetcher->name = NULL;
+    fetcher->name_len = 0;
+    fetcher->type = NCM_LYRICS_FETCHER_UNKNOWN;
+    fetcher->enabled = false;
+    return;
+}
+
+static void
+lyrics_fetcher_array_destroy_item(void *item) {
+    ASSERT(item != NULL);
+    lyrics_fetcher_def_destroy(item);
+    return;
+}
 
 static NcmArrayItemCallbacks lyrics_fetcher_callbacks = {
     .destroy = lyrics_fetcher_array_destroy_item,
@@ -210,16 +225,6 @@ ncm_lyrics_result_set(NcmLyricsResult *result, bool success,
     }
     lyrics_result_set(result, success, text, text_len);
     return 0;
-}
-
-static void
-lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher) {
-    free2(fetcher->name, fetcher->name_len + 1);
-    fetcher->name = NULL;
-    fetcher->name_len = 0;
-    fetcher->type = NCM_LYRICS_FETCHER_UNKNOWN;
-    fetcher->enabled = false;
-    return;
 }
 
 void
@@ -553,13 +558,6 @@ ncm_lyrics_cleanup_html(StrBuilder *out, char *data, int32 data_len) {
     lyrics_append_clean_lines(out, stripped.data, stripped.len);
     sb_free(&stripped);
     sb_free(&unescaped);
-    return;
-}
-
-static void
-lyrics_fetcher_array_destroy_item(void *item) {
-    ASSERT(item != NULL);
-    lyrics_fetcher_def_destroy(item);
     return;
 }
 

@@ -11,8 +11,6 @@
 
 NcmBindingsConfiguration Bindings;
 
-static void ncm_bindings_error(NcmError *, char *, ...) ATTR_PRINTF(2, 3);
-
 static void
 ncm_bindings_error(NcmError *ncm_error, char *format, ...) {
     va_list args;

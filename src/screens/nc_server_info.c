@@ -5,12 +5,100 @@
 
 #include "screens/nc_screens.h"
 
-static void nc_server_info_switch_to(NcScreen *);
-static void nc_server_info_resize(NcScreen *);
-static char *nc_server_info_title(NcScreen *);
-static void nc_server_info_update(NcScreen *);
-static void nc_server_info_mouse_button_pressed(NcScreen *, MEVENT);
-static void nc_server_info_destroy_callback(NcScreen *);
+static void
+nc_server_info_switch_to(NcScreen *screen) {
+    NcServerInfoScreen *server_info;
+
+    server_info = (NcServerInfoScreen *)screen;
+    if (server_info->hooks.switch_to) {
+        server_info->hooks.switch_to(server_info->hooks.user);
+    }
+    if (server_info->hooks.load_lists) {
+        server_info->hooks.load_lists(server_info->hooks.user);
+    }
+    return;
+}
+
+static void
+nc_server_info_resize(NcScreen *screen) {
+    NcServerInfoScreen *server_info = (NcServerInfoScreen *)screen;
+
+    if (server_info->hooks.resize_layout) {
+        server_info->hooks.resize_layout(server_info->hooks.user);
+    }
+    nc_scrollpad_resize(&server_info->scrollpad, &server_info->window,
+                        nc_server_info_screen_width(server_info),
+                        nc_server_info_screen_height(server_info));
+    nc_window_move_to(&server_info->window,
+                      nc_server_info_screen_start_x(server_info),
+                      nc_server_info_screen_start_y(server_info));
+    nc_scrollpad_flush(&server_info->scrollpad, &server_info->window,
+                       &server_info->buffer);
+    if (server_info->hooks.resize_background) {
+        server_info->hooks.resize_background(server_info->hooks.user);
+    }
+    return;
+}
+
+static char *
+nc_server_info_title(NcScreen *screen) {
+    NcServerInfoScreen *server_info = (NcServerInfoScreen *)screen;
+
+    if (server_info->hooks.title == NULL) {
+        return NULL;
+    }
+    return server_info->hooks.title(server_info->hooks.user);
+}
+
+static void
+nc_server_info_update(NcScreen *screen) {
+    NcServerInfoScreen *server_info = (NcServerInfoScreen *)screen;
+    NcBuffer next_buffer;
+    int32 status;
+
+    if (server_info->hooks.render == NULL) {
+        return;
+    }
+    next_buffer = (NcBuffer){0};
+    status = server_info->hooks.render(server_info->hooks.user, &next_buffer);
+    if (status <= 0) {
+        nc_buffer_destroy(&next_buffer);
+        return;
+    }
+    nc_buffer_destroy(&server_info->buffer);
+    nc_buffer_move(&server_info->buffer, &next_buffer);
+    if (!nc_buffer_is_empty(&server_info->buffer)) {
+        nc_scrollpad_flush(&server_info->scrollpad, &server_info->window,
+                           &server_info->buffer);
+        nc_scrollpad_refresh(&server_info->scrollpad, &server_info->window);
+    }
+    return;
+}
+
+static void
+nc_server_info_mouse_button_pressed(NcScreen *screen, MEVENT event) {
+    NcServerInfoScreen *server_info = (NcServerInfoScreen *)screen;
+
+    if (event.bstate & BUTTON5_PRESSED) {
+        nc_scrollpad_scroll(&server_info->scrollpad, &server_info->window,
+                            NC_SCROLL_DOWN);
+    } else if (event.bstate & BUTTON4_PRESSED) {
+        nc_scrollpad_scroll(&server_info->scrollpad, &server_info->window,
+                            NC_SCROLL_UP);
+    }
+
+    return;
+}
+
+static void
+nc_server_info_destroy_callback(NcScreen *screen) {
+    NcServerInfoScreen *server_info = (NcServerInfoScreen *)screen;
+
+    if (server_info->hooks.destroy) {
+        server_info->hooks.destroy(server_info->hooks.user);
+    }
+    return;
+}
 
 #define NC_SCREEN_IMPL_TYPE NcServerInfoScreen
 #define NC_SCREEN_IMPL_PREFIX nc_server_info
@@ -58,104 +146,6 @@ nc_server_info_screen_set_dimensions(NcServerInfoScreen *screen,
     nc_scrollpad_screen_set_centered_box(&screen->scrollpad_screen, cols,
                                          lines, main_start_y, main_height, 6,
                                          10, 7, 10);
-    return;
-}
-
-static void
-nc_server_info_switch_to(NcScreen *screen) {
-    NcServerInfoScreen *server_info;
-
-    server_info = nc_server_info_from_screen(screen);
-    if (server_info->hooks.switch_to) {
-        server_info->hooks.switch_to(server_info->hooks.user);
-    }
-    if (server_info->hooks.load_lists) {
-        server_info->hooks.load_lists(server_info->hooks.user);
-    }
-    return;
-}
-
-static void
-nc_server_info_resize(NcScreen *screen) {
-    NcServerInfoScreen *server_info = nc_server_info_from_screen(screen);
-
-    if (server_info->hooks.resize_layout) {
-        server_info->hooks.resize_layout(server_info->hooks.user);
-    }
-    nc_scrollpad_resize(&server_info->scrollpad, &server_info->window,
-                        nc_server_info_screen_width(server_info),
-                        nc_server_info_screen_height(server_info));
-    nc_window_move_to(&server_info->window,
-                      nc_server_info_screen_start_x(server_info),
-                      nc_server_info_screen_start_y(server_info));
-    nc_scrollpad_flush(&server_info->scrollpad, &server_info->window,
-                       &server_info->buffer);
-    if (server_info->hooks.resize_background) {
-        server_info->hooks.resize_background(server_info->hooks.user);
-    }
-    return;
-}
-
-
-static char *
-nc_server_info_title(NcScreen *screen) {
-    NcServerInfoScreen *server_info = nc_server_info_from_screen(screen);
-
-    if (server_info->hooks.title == NULL) {
-        return NULL;
-    }
-    return server_info->hooks.title(server_info->hooks.user);
-}
-
-static void
-nc_server_info_update(NcScreen *screen) {
-    NcServerInfoScreen *server_info = nc_server_info_from_screen(screen);
-    NcBuffer next_buffer;
-    int32 status;
-
-    if (server_info->hooks.render == NULL) {
-        return;
-    }
-    next_buffer = (NcBuffer){0};
-    status = server_info->hooks.render(server_info->hooks.user, &next_buffer);
-    if (status <= 0) {
-        nc_buffer_destroy(&next_buffer);
-        return;
-    }
-    nc_buffer_destroy(&server_info->buffer);
-    nc_buffer_move(&server_info->buffer, &next_buffer);
-    if (!nc_buffer_is_empty(&server_info->buffer)) {
-        nc_scrollpad_flush(&server_info->scrollpad, &server_info->window,
-                           &server_info->buffer);
-        nc_scrollpad_refresh(&server_info->scrollpad, &server_info->window);
-    }
-    return;
-}
-
-static void
-nc_server_info_mouse_button_pressed(NcScreen *screen, MEVENT event) {
-    NcServerInfoScreen *server_info = nc_server_info_from_screen(screen);
-
-    if (event.bstate & BUTTON5_PRESSED) {
-        nc_scrollpad_scroll(&server_info->scrollpad, &server_info->window,
-                            NC_SCROLL_DOWN);
-    } else if (event.bstate & BUTTON4_PRESSED) {
-        nc_scrollpad_scroll(&server_info->scrollpad, &server_info->window,
-                            NC_SCROLL_UP);
-    }
-
-    return;
-}
-
-
-
-static void
-nc_server_info_destroy_callback(NcScreen *screen) {
-    NcServerInfoScreen *server_info = nc_server_info_from_screen(screen);
-
-    if (server_info->hooks.destroy) {
-        server_info->hooks.destroy(server_info->hooks.user);
-    }
     return;
 }
 
