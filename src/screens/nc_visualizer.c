@@ -1593,10 +1593,8 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                     double x_previous;
                     double h_previous;
 
-                    x_previous =
-                        fft->bar_heights[height_index - 1].column;
-                    h_previous =
-                        fft->bar_heights[height_index - 1].height;
+                    x_previous = fft->bar_heights[height_index - 1].column;
+                    h_previous = fft->bar_heights[height_index - 1].height;
                     if (x_next != x_previous) {
                         delta = (h_next - h_previous)
                                 /(x_next - x_previous);
@@ -1617,14 +1615,10 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                     double h01;
                     double h11;
 
-                    x_previous2 =
-                        fft->bar_heights[height_index - 2].column;
-                    h_previous2 =
-                        fft->bar_heights[height_index - 2].height;
-                    x_previous =
-                        fft->bar_heights[height_index - 1].column;
-                    h_previous =
-                        fft->bar_heights[height_index - 1].height;
+                    x_previous2 = fft->bar_heights[height_index - 2].column;
+                    h_previous2 = fft->bar_heights[height_index - 2].height;
+                    x_previous = fft->bar_heights[height_index - 1].column;
+                    h_previous = fft->bar_heights[height_index - 1].height;
                     x_next2 = fft->bar_heights[height_index + 1].column;
                     h_next2 = fft->bar_heights[height_index + 1].height;
                     if ((x_previous == x_previous2) || (x_next2 == x_next)
