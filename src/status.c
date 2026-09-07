@@ -477,7 +477,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         } else {
             browser_screen_request_update(app_screen_browser());
 #if defined(HAVE_TAGLIB_H)
-            tag_editor_screen_clear_directories(app_screen_tag_editor());
+            tag_edit_screen_clear_directories(app_screen_tag_edit());
 #endif
             media_library_screen_request_tags_update(
                 app_screen_media_library());
@@ -501,11 +501,11 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
             active_hooks->stored_playlists_changed(active_hooks->user);
         } else {
             BrowserScreen *browser;
-            PlaylistEditorScreen *editor;
+            PlaylistEditScreen *editor;
 
-            editor = app_screen_playlist_editor();
-            playlist_editor_screen_request_playlists_update(editor);
-            playlist_editor_screen_request_content_update(editor);
+            editor = app_screen_playlist_edit();
+            playlist_edit_screen_request_playlists_update(editor);
+            playlist_edit_screen_request_content_update(editor);
 
             if ((browser = app_screen_browser())
                 && !browser_screen_is_local(browser)
