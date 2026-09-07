@@ -1557,9 +1557,8 @@ visualizer_draw_frequency(VisualizerScreen *screen,
     }
 
     {
-        int32 height_index;
+        int32 height_index = 0;
 
-        height_index = 0;
         for (int32 x = 0; x < width; x += 1) {
             double h;
             int32 data_column = fft->bar_heights[height_index].column;
