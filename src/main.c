@@ -203,7 +203,7 @@ main(int32 argc, char **argv) {
             && (global_timer_elapsed_ms(connect_attempt) > 1000)) {
             connect_attempt = global_timer;
             ncmpcpp_status_clear();
-            nc_window_clear_fd_callbacks(app_footer_window);
+            ARRAY_CLEAR(app_footer_window->fd_callbacks);
             ncmpcpp_connect_or_report();
         }
 

@@ -242,7 +242,6 @@ void nc_window_recreate(NcWindow *, int32 width, int32 height);
 void nc_window_clear(NcWindow *);
 
 void nc_window_add_fd_callback(NcWindow *, int32, void (*)(void));
-void nc_window_clear_fd_callbacks(NcWindow *);
 bool nc_window_fd_callbacks_is_empty(NcWindow *);
 NcKey nc_window_read_key(NcWindow *);
 void nc_window_push_key(NcWindow *, NcKey);
