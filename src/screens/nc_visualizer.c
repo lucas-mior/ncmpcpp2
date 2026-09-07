@@ -317,7 +317,7 @@ visualizer_update_callback(NcScreen *screen) {
             visualizer->incoming_samples.data, buffer_size);
         if (bytes_read > 0) {
             samples_read = (int32)(bytes_read
-                /SIZEOF(*visualizer->incoming_samples.data));
+                                   /SIZEOF(*visualizer->incoming_samples.data));
             if (samples_read > 0) {
                 visualizer_screen_push_samples(
                     visualizer, visualizer->incoming_samples.data,
