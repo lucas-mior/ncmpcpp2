@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_LASTFM_SERVICE_H)
-#define NCMPCPP_LASTFM_SERVICE_H
+#if !defined(LASTFM_SERVICE_H)
+#define LASTFM_SERVICE_H
 
 #include "cbase.h"
 
@@ -55,4 +55,4 @@ enum NcmLastfmServiceType ncm_lastfm_service_type(NcmLastfmService *service);
 int32 ncm_lastfm_service_fetch(NcmLastfmService *service,
                                NcmLastfmResult *result);
 
-#endif /* NCMPCPP_LASTFM_SERVICE_H */
+#endif /* LASTFM_SERVICE_H */
