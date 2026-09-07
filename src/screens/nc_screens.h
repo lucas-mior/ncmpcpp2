@@ -222,24 +222,24 @@
     XX(server_info)                                                            \
     XX(outputs)
 
-#define NCM_APP_SCREEN_REPLACE_REGISTER_TYPES(XX)                              \
-    XX(selected_items_adder, NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER)              \
+#define NCM_APP_SCREEN_REPLACE_REGISTER_TYPES(XX)                 \
+    XX(selected_items_adder, NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER) \
     XX(sort_playlist_dialog, NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG)
 
-#define NCM_APP_SCREEN_SIMPLE_SWITCH_TYPES(XX)                                 \
-    XX(browser)                                                                \
-    XX(help)                                                                   \
-    XX(playlist)                                                               \
-    XX(playlist_editor)                                                        \
-    XX(selected_items_adder)                                                   \
-    XX(search_engine)                                                          \
-    XX(media_library)                                                          \
-    XX(tag_editor)                                                             \
-    XX(song_info)                                                              \
-    XX(server_info)                                                            \
+#define NCM_APP_SCREEN_SIMPLE_SWITCH_TYPES(XX)                    \
+    XX(browser)                                                   \
+    XX(help)                                                      \
+    XX(playlist)                                                  \
+    XX(playlist_editor)                                           \
+    XX(selected_items_adder)                                      \
+    XX(search_engine)                                             \
+    XX(media_library)                                             \
+    XX(tag_editor)                                                \
+    XX(song_info)                                                 \
+    XX(server_info)                                               \
     XX(outputs)
 
-#define NCM_APP_SCREEN_REGISTER_SWITCH_TYPES(XX)                               \
+#define NCM_APP_SCREEN_REGISTER_SWITCH_TYPES(XX)                  \
     XX(tiny_tag_editor)
 
 #define NCM_APP_SCREEN_IS_CURRENT_TYPES(XX)                                    \
