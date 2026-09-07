@@ -902,12 +902,6 @@ nc_window_add_fd_callback(NcWindow *window,
     return;
 }
 
-void
-nc_window_clear_fd_callbacks(NcWindow *window) {
-    ARRAY_CLEAR(window->fd_callbacks);
-    return;
-}
-
 bool
 nc_window_fd_callbacks_is_empty(NcWindow *window) {
     return ARRAY_LEN(window->fd_callbacks) <= 0;
