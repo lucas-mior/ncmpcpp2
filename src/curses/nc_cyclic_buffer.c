@@ -209,8 +209,7 @@ nc_cyclic_buffer_write_segment(NcBuffer *buffer, NcWindow *window,
     }
 
     nc_cyclic_buffer_apply_properties(window,
-                                      properties, property_len,
-                                      property_index,
+                                      properties, property_len, property_index,
                                       string_len, true);
     return;
 }
