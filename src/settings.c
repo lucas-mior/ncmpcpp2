@@ -639,9 +639,7 @@ static int32
 settings_append_formatted_color(void *context, char *item, int32 item_len,
                                 NcmError *ncm_error) {
     NcmFormattedColorArray *array = context;
-    NcFormattedColor *dest;
-
-    dest = ncm_formatted_color_array_append(array);
+    NcFormattedColor *dest = ncm_formatted_color_array_append(array);
     return settings_parse_formatted_color(item, item_len, dest, ncm_error);
 }
 
