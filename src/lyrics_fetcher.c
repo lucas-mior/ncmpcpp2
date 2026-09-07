@@ -2040,9 +2040,8 @@ cleanup:
 
 static LyricsSlugProfile
 lyrics_direct_legacy_slug_profile(LyricsSlugProfile profile) {
-    LyricsSlugProfile legacy_profile;
+    LyricsSlugProfile legacy_profile = profile;
 
-    legacy_profile = profile;
     switch (profile) {
     case LYRICS_SLUG_PROFILE_COMPACT_FOLDED:
         legacy_profile = LYRICS_SLUG_PROFILE_COMPACT_PERCENT;
@@ -2060,6 +2059,7 @@ lyrics_direct_legacy_slug_profile(LyricsSlugProfile profile) {
     default:
         break;
     }
+
     return legacy_profile;
 }
 
