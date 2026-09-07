@@ -57,9 +57,7 @@ static bool lyrics_screen_update_sync_line_force(
     bool force);
 static int32 lyrics_lrc_buffer_position(void *user);
 static void lyrics_lrc_buffer_append(void *user, char *data, int32 data_len);
-static void lyrics_screen_clear_lyrics_state(
-    LyricsScreen *screen,
-    LyricsMode mode);
+static void lyrics_screen_clear_lyrics_state(LyricsScreen *, LyricsMode mode);
 static void lyrics_remove_extension(StrBuilder *buffer);
 static int32 lyrics_filename_from_song_with_extension(
     StrBuilder *filename,
