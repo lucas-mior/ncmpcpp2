@@ -1012,8 +1012,8 @@ static int32
 lyrics_find_ignore_case(char *data, int32 data_len, char *needle,
                         int32 needle_len, int32 start) {
     for (int32 i = start; i + needle_len <= data_len; i += 1) {
-        if (lyrics_starts_with_ignore_case(data + i, data_len - i, needle,
-                                           needle_len)) {
+        if (lyrics_starts_with_ignore_case(data + i, data_len - i,
+                                           needle, needle_len)) {
             return i;
         }
     }
