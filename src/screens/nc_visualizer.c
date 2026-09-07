@@ -1229,8 +1229,8 @@ visualizer_screen_take_render_samples(VisualizerScreen *screen, int16 *dest,
 }
 
 int32
-visualizer_screen_split_stereo(VisualizerScreen *screen, int16 *samples,
-                               int32 samples_len) {
+visualizer_screen_split_stereo(VisualizerScreen *screen,
+                               int16 *samples, int32 samples_len) {
     int32 pairs;
 
     screen->left_ch.len = 0;
