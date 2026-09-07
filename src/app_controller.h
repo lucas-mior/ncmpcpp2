@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_APP_CONTROLLER_H)
-#define NCMPCPP_APP_CONTROLLER_H
+#if !defined(APP_CONTROLLER_H)
+#define APP_CONTROLLER_H
 
 #include "cbase.h"
 
@@ -37,4 +37,4 @@ void app_controller_resize_visible_screens(void);
 void app_controller_scroll_current_screen(enum NcScroll where);
 void app_controller_mouse_button_pressed_current(MEVENT event);
 
-#endif /* NCMPCPP_APP_CONTROLLER_H */
+#endif /* APP_CONTROLLER_H */
