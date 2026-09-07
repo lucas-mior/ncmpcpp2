@@ -315,12 +315,10 @@ nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
                                    &property_index, &written_width, width);
 
     if (start > string_characters) {
-        int32 separator_start;
-        int32 separator_byte;
+        int32 separator_start = start - string_characters;
+        int32 separator_byte = utf8_byte_position(separator, separator_len,
+                                                  separator_start);
 
-        separator_start = start - string_characters;
-        separator_byte = utf8_byte_position(separator, separator_len,
-                                            separator_start);
         nc_cyclic_window_write_text(window, separator, separator_len,
                                     separator_byte, &written_width, width);
     } else {
