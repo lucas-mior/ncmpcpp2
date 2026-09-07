@@ -842,8 +842,7 @@ settings_append_lyrics_fetcher(void *context, char *item, int32 item_len,
     NcmLyricsFetcherRegistry *registry = context;
     int32 status;
 
-    status = ncm_lyrics_fetcher_registry_append_name(registry,
-                                                      item, item_len);
+    status = ncm_lyrics_fetcher_registry_append_name(registry, item, item_len);
     if (status < 0) {
         return settings_error(ncm_error, STRLIT("unknown lyrics fetcher"));
     }
