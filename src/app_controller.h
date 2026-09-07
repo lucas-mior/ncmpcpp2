@@ -15,9 +15,8 @@ NcScreen *app_controller_find_screen_type(int32 type);
 bool app_controller_is_screen_registered(NcScreen  *);
 bool app_controller_is_screen_visible(NcScreen  *);
 bool app_controller_is_current_screen(NcScreen  *);
-NcScreenResizeParams
-app_controller_screen_resize_params(NcScreen  *,
-                                    bool adjust_locked_screen);
+NcScreenResizeParams app_controller_screen_resize_params(NcScreen  *,
+                                                         bool adjust_locked);
 void app_controller_request_current_screen_resize(void);
 void app_controller_request_current_screen_update(void);
 void app_controller_each_visible_screen(NcScreenEachCallback callback,
