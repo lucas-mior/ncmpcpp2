@@ -1873,17 +1873,12 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
         angle_multiplier = 2.0*VISUALIZER_PI/(double)samples_len;
 
         for (int32 i = 0; i < samples_len; i += 1) {
-            double angle;
-            double max_radius;
-            double radius;
-            int32 x;
-            int32 y;
+            double angle = (double)i*angle_multiplier;
+            int32 x = (int32)((double)half_width*cos(angle));
+            int32 y = (int32)((double)ellipse_half_height*sin(angle));
+            double max_radius = sqrt(SQUARE((double)x) + SQUARE((double)y));
+            double radius = fabs((double)samples[i])/32768.0;
 
-            angle = (double)i*angle_multiplier;
-            x = (int32)((double)half_width*cos(angle));
-            y = (int32)((double)ellipse_half_height*sin(angle));
-            max_radius = sqrt(SQUARE((double)x) + SQUARE((double)y));
-            radius = fabs((double)samples[i])/32768.0;
             x = (int32)((double)x*radius);
             y = (int32)((double)y*radius);
 
