@@ -1083,8 +1083,8 @@ configuration_apply_runtime(Configuration *config, NcmMpdClient *client,
                  NcmError *ncm_error) {                                        \
         ENUM_PREFIX_ parsed = (ENUM_PREFIX_)0;                                 \
         int32 status;                                                          \
-        SETTINGS_PARSE_XENUM_VALUE(                                            \
-            ENUM_PREFIX_, value, value_len, &parsed, status);                  \
+        SETTINGS_PARSE_XENUM_VALUE(ENUM_PREFIX_, value, value_len,             \
+                                   &parsed, status);                           \
         if (status < 0) {                                                      \
             return settings_invalid_value(ncm_error, value, value_len);        \
         }                                                                      \
