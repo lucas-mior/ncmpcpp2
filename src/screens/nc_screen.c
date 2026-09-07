@@ -562,8 +562,7 @@ nc_screen_registry_resize_params(NcScreenRegistry *registry,
 }
 
 int32
-nc_screen_registry_switch_to(NcScreenRegistry *registry,
-                             NcScreen *screen) {
+nc_screen_registry_switch_to(NcScreenRegistry *registry, NcScreen *screen) {
     bool is_screen_mergable;
 
     if ((registry == NULL) || (screen == NULL)) {
