@@ -195,8 +195,9 @@ nc_cyclic_buffer_write_segment(NcBuffer *buffer, NcWindow *window,
         int32 char_width;
         int32 next_byte;
 
-        nc_cyclic_buffer_apply_properties(
-            window, properties, property_count, property_index, byte, true);
+        nc_cyclic_buffer_apply_properties(window,
+                                          properties, property_count,
+                                          property_index, byte, true);
         next_byte = nc_cyclic_next_position(string, string_len, byte,
                                             &char_width);
         if ((*written_width + char_width) > width) {
