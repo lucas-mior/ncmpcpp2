@@ -1245,13 +1245,10 @@ lyrics_url_path_ends_with(char *url, int32 url_len, int32 path_start,
 static bool
 lyrics_url_path_has_segments(char *url, int32 url_len, int32 path_start,
                              int32 min_segments) {
-    int32 path_end;
-    int32 segments;
-    bool in_segment;
+    int32 path_end = lyrics_url_path_end(url, url_len, path_start);
+    int32 segments = 0;
+    bool in_segment = false;
 
-    path_end = lyrics_url_path_end(url, url_len, path_start);
-    segments = 0;
-    in_segment = false;
     for (int32 i = path_start; i < path_end; i += 1) {
         if (url[i] == '/') {
             if (in_segment) {
