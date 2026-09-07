@@ -474,13 +474,11 @@ NcScreen *nc_screen_registry_previous(NcScreenRegistry *);
 NcScreen *nc_screen_registry_locked(NcScreenRegistry *);
 bool nc_screen_registry_is_registered(NcScreenRegistry *, NcScreen *);
 bool nc_screen_registry_is_current(NcScreenRegistry *, NcScreen *);
-void nc_screen_registry_request_resize_current(
-    NcScreenRegistry *registry);
-void nc_screen_registry_request_update_current(
-    NcScreenRegistry *registry);
-NcScreenResizeParams nc_screen_registry_resize_params(
-    NcScreenRegistry *registry, NcScreen *screen,
-    bool adjust_locked_screen);
+void nc_screen_registry_request_resize_current(NcScreenRegistry *registry);
+void nc_screen_registry_request_update_current(NcScreenRegistry *registry);
+NcScreenResizeParams nc_screen_registry_resize_params(NcScreenRegistry *,
+                                                      NcScreen *,
+                                                      bool adjust_locked);
 int32 nc_screen_registry_switch_to(NcScreenRegistry *registry,
                                    NcScreen *screen);
 int32 nc_screen_registry_lock_current(NcScreenRegistry *registry);
