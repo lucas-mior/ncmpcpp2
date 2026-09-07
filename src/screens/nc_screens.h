@@ -108,34 +108,34 @@
   #define NCM_SCREEN_ENABLED_VISUALIZER_TYPES(XX)
 #endif
 
-#define NCM_SCREEN_TYPES(XX)                                                   \
-    NCM_SCREEN_TYPE_BROWSER_ENTRY(XX)                                          \
-    NCM_SCREEN_TYPE_HELP_ENTRY(XX)                                             \
-    NCM_SCREEN_TYPE_LASTFM_ENTRY(XX)                                           \
-    NCM_SCREEN_TYPE_LYRICS_ENTRY(XX)                                           \
-    NCM_SCREEN_TYPE_MEDIA_LIBRARY_ENTRY(XX)                                    \
-    NCM_SCREEN_ENABLED_OUTPUTS_TYPES(XX)                                       \
-    NCM_SCREEN_TYPE_PLAYLIST_ENTRY(XX)                                         \
-    NCM_SCREEN_TYPE_PLAYLIST_EDITOR_ENTRY(XX)                                  \
-    NCM_SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                                    \
-    NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER_ENTRY(XX)                             \
-    NCM_SCREEN_TYPE_SERVER_INFO_ENTRY(XX)                                      \
-    NCM_SCREEN_TYPE_SONG_INFO_ENTRY(XX)                                        \
-    NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)                             \
-    NCM_SCREEN_ENABLED_TAG_EDITOR_TYPES(XX)                                    \
+#define NCM_SCREEN_TYPES(XX)                           \
+    NCM_SCREEN_TYPE_BROWSER_ENTRY(XX)                  \
+    NCM_SCREEN_TYPE_HELP_ENTRY(XX)                     \
+    NCM_SCREEN_TYPE_LASTFM_ENTRY(XX)                   \
+    NCM_SCREEN_TYPE_LYRICS_ENTRY(XX)                   \
+    NCM_SCREEN_TYPE_MEDIA_LIBRARY_ENTRY(XX)            \
+    NCM_SCREEN_ENABLED_OUTPUTS_TYPES(XX)               \
+    NCM_SCREEN_TYPE_PLAYLIST_ENTRY(XX)                 \
+    NCM_SCREEN_TYPE_PLAYLIST_EDITOR_ENTRY(XX)          \
+    NCM_SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)            \
+    NCM_SCREEN_TYPE_SELECTED_ITEMS_ADDER_ENTRY(XX)     \
+    NCM_SCREEN_TYPE_SERVER_INFO_ENTRY(XX)              \
+    NCM_SCREEN_TYPE_SONG_INFO_ENTRY(XX)                \
+    NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)     \
+    NCM_SCREEN_ENABLED_TAG_EDITOR_TYPES(XX)            \
     NCM_SCREEN_ENABLED_VISUALIZER_TYPES(XX)
 
-#define NCM_SCREEN_NC_TYPE_ENUM_FIELD(                                         \
-    screen_type, nc_type, nc_value, alias, flags                               \
-)                                                                              \
+#define NCM_SCREEN_NC_TYPE_ENUM_FIELD(                 \
+    screen_type, nc_type, nc_value, alias, flags       \
+)                                                      \
     nc_type = nc_value,
 
-#define NCM_SCREEN_TYPE_XENUM_FIELD(                                           \
-    screen_type, nc_type, nc_value, alias, flags                               \
-)                                                                              \
+#define NCM_SCREEN_TYPE_XENUM_FIELD(                   \
+    screen_type, nc_type, nc_value, alias, flags       \
+)                                                      \
     XX(screen_type, alias)
 
-#define NCM_SCREEN_TYPE_ENUM_FIELDS                                            \
+#define NCM_SCREEN_TYPE_ENUM_FIELDS                    \
     NCM_SCREEN_TYPES(NCM_SCREEN_TYPE_XENUM_FIELD)
 
 
