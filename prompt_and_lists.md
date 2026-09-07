@@ -56,18 +56,6 @@ not have the problem, try the next one without asking first.
 - src/c/ncm_playlist.c
 - src/global.c
 
-## Utility function creep
-Functions that do the (almost) the same thing are redefined in different places.
-
-## unnecessary static function declarations at the top of the files
-Reorder them and delete the standalone declaration on the top of the .c file.
-
-## functions definitions could be reordered to not need declarations at the top
-
-## Style: lines broken prematurely
-
-## Style: checking return value after the call (call should be inside if().
-
 ## Style: breaking function calls before the first argument and not alining
 This is bad:
 ```c
@@ -81,6 +69,18 @@ status = ncm_fs_rename(old_real_path.data, old_real_path.len,
                        new_real_path.data, new_real_path.len,
                        ncm_error);
 ```
+
+## Utility function creep
+Functions that do the (almost) the same thing are redefined in different places.
+
+## unnecessary static function declarations at the top of the files
+Reorder them and delete the standalone declaration on the top of the .c file.
+
+## functions definitions could be reordered to not need declarations at the top
+
+## Style: lines broken prematurely
+
+## Style: checking return value after the call (call should be inside if().
 
 ## Strings unecessary conversion to and from StrBuilder
 Investigate:
