@@ -439,7 +439,6 @@ void nc_menu_clear_filtered_items(NcMenu *);
 void nc_menu_apply_filter(NcMenu *);
 void nc_menu_show_all_items(NcMenu *);
 bool nc_menu_is_filtered(NcMenu *);
-bool nc_menu_is_empty(NcMenu *);
 bool nc_menu_position_is_selectable(NcMenu *, int32);
 bool nc_menu_position_is_separator(NcMenu *, int32);
 bool nc_menu_position_is_inactive(NcMenu *, int32);

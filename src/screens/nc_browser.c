@@ -1153,7 +1153,7 @@ browser_screen_selected_songs(BrowserScreen *screen,
     }
 
     menu = browser_screen_menu(screen);
-    if (nc_menu_is_empty(menu)) {
+    if (nc_menu_item_count(menu) <= 0) {
         return 0;
     }
 
@@ -1296,7 +1296,7 @@ browser_screen_delete_items(BrowserScreen *screen,
     }
 
     menu = browser_screen_menu(screen);
-    if (nc_menu_is_empty(menu)) {
+    if (nc_menu_item_count(menu) <= 0) {
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("no browser item selected"));
     }
@@ -2036,7 +2036,7 @@ browser_switch_to(NcScreen *screen) {
     BrowserScreen *browser = browser_from_screen(screen);
 
     nc_screen_switcher_finish_switch(screen);
-    if (nc_menu_is_empty(browser_screen_menu(browser))) {
+    if (nc_menu_item_count(browser_screen_menu(browser)) <= 0) {
         browser_screen_request_update(browser);
     }
     browser->redraw_header = true;
@@ -2141,7 +2141,7 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     int32 x = event.x;
     int32 y = event.y;
 
-    if (nc_menu_is_empty(menu)) {
+    if (nc_menu_item_count(menu) <= 0) {
         return;
     }
 

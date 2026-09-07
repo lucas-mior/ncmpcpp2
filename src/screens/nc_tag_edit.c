@@ -1622,7 +1622,7 @@ tag_edit_screen_selected_songs(TagEditScreen *screen,
 
     menu = nc_tag_row_menu_base(&screen->tags);
     if (!nc_menu_has_selected(menu)) {
-        if (nc_menu_is_empty(menu)) {
+        if (nc_menu_item_count(menu) <= 0) {
             return 0;
         }
         tag_edit_copy_selected_song_at(screen, songs,
@@ -1645,18 +1645,19 @@ tag_edit_screen_previous_column_available(TagEditScreen *screen) {
         return false;
     }
     if (screen->active_focus == TAG_EDIT_FOCUS_TAGS) {
-        return !nc_menu_is_empty(
-            nc_editor_string_menu_base(&screen->tag_types));
+        return nc_menu_item_count(
+                   nc_editor_string_menu_base(&screen->tag_types)) > 0;
     }
     if (screen->active_focus == TAG_EDIT_FOCUS_TAG_TYPES) {
-        if (nc_menu_is_empty(nc_editor_pair_menu_base(&screen->directories))) {
+        if (nc_menu_item_count(nc_editor_pair_menu_base(
+                &screen->directories)) <= 0) {
             return false;
         }
         return true;
     }
     if (tag_edit_focus_is_parser_helper(screen->active_focus)) {
-        return !nc_menu_is_empty(nc_editor_string_menu_base(
-            &screen->parser_actions));
+        return nc_menu_item_count(nc_editor_string_menu_base(
+                   &screen->parser_actions)) > 0;
     }
     return false;
 }
@@ -1670,14 +1671,15 @@ tag_edit_screen_next_column_available(TagEditScreen *screen) {
         return false;
     }
     if (screen->active_focus == TAG_EDIT_FOCUS_DIRECTORIES) {
-        return !nc_menu_is_empty(
-                   nc_editor_string_menu_base(&screen->tag_types))
-               && !nc_menu_is_empty(nc_tag_row_menu_base(&screen->tags));
+        return (nc_menu_item_count(
+                    nc_editor_string_menu_base(&screen->tag_types)) > 0)
+               && (nc_menu_item_count(nc_tag_row_menu_base(
+                       &screen->tags)) > 0);
     }
     if (screen->active_focus == TAG_EDIT_FOCUS_TAG_TYPES) {
         tag_types = nc_editor_string_menu_base(&screen->tag_types);
         choice = nc_menu_highlight(tag_types);
-        return !nc_menu_is_empty(nc_tag_row_menu_base(&screen->tags))
+        return (nc_menu_item_count(nc_tag_row_menu_base(&screen->tags)) > 0)
                && (((choice >= 0) && (choice < 11)) || (choice == 12));
     }
     if (screen->active_focus == TAG_EDIT_FOCUS_PARSER_ACTIONS) {
@@ -2434,7 +2436,8 @@ tag_edit_screen_prepare_parser_rows(TagEditScreen *screen,
 
 void
 tag_edit_screen_show_parser_dialog(TagEditScreen *screen) {
-    if (nc_menu_is_empty(nc_editor_string_menu_base(&screen->parser_dialog))) {
+    if (nc_menu_item_count(nc_editor_string_menu_base(
+            &screen->parser_dialog)) <= 0) {
         tag_edit_screen_prepare_parser_rows(screen,
                                               TAG_EDIT_PARSER_NONE,
                                               NULL, 0);
@@ -2987,13 +2990,13 @@ tag_edit_can_run_current(NcScreen *screen) {
                    >= (int32)TAG_EDIT_PARSER_ACTION_RECENT_START;
         }
     case TAG_EDIT_FOCUS_TAG_TYPES:
-        if (nc_menu_is_empty(nc_tag_row_menu_base(&editor->tags))) {
+        if (nc_menu_item_count(nc_tag_row_menu_base(&editor->tags)) <= 0) {
             return false;
         }
         return tag_edit_current_tag_type_action(editor, &field)
                != TAG_EDIT_TAG_TYPE_ACTION_NONE;
     case TAG_EDIT_FOCUS_TAGS:
-        if (nc_menu_is_empty(nc_tag_row_menu_base(&editor->tags))) {
+        if (nc_menu_item_count(nc_tag_row_menu_base(&editor->tags)) <= 0) {
             return false;
         }
         switch (tag_edit_current_tag_type_action(editor, &field)) {
@@ -3590,8 +3593,8 @@ tag_edit_update(NcScreen *screen) {
     tag_edit_screen_finish_directory_change(editor);
     ncm_error_clear(&ncm_error);
     if (editor->directories_update_requested
-        || nc_menu_is_empty(
-            nc_editor_pair_menu_base(&editor->directories))) {
+        || (nc_menu_item_count(
+                nc_editor_pair_menu_base(&editor->directories)) <= 0)) {
         status = tag_edit_reload_directories_from_mpd(
             editor, &global_mpd, &ncm_error);
         if (status < 0) {
@@ -3609,7 +3612,8 @@ tag_edit_update(NcScreen *screen) {
     if (continue_update) {
         tag_edit_screen_finish_directory_change(editor);
         if (!editor->tags_update_requested
-            && !nc_menu_is_empty(nc_tag_row_menu_base(&editor->tags))) {
+            && (nc_menu_item_count(nc_tag_row_menu_base(
+                    &editor->tags)) > 0)) {
             tag_edit_update_titles(editor, true);
             continue_update = false;
         }

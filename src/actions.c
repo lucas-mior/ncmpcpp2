@@ -808,7 +808,7 @@ action_runtime_menu_has_items(void) {
     if ((menu = action_runtime_current_menu()) == NULL) {
         return false;
     }
-    return !nc_menu_is_empty(menu);
+    return nc_menu_item_count(menu) > 0;
 }
 
 static bool
@@ -2125,7 +2125,7 @@ action_runtime_tag_scroll_available(enum NcmSongGetter getter) {
     bool available;
 
     if (((menu = action_runtime_current_tag_scroll_menu()) == NULL)
-        || nc_menu_is_empty(menu)) {
+        || (nc_menu_item_count(menu) <= 0)) {
         return false;
     }
 
@@ -2147,7 +2147,7 @@ action_runtime_scroll_by_tag(enum NcmSongGetter getter, bool down) {
     bool same;
 
     if (((menu = action_runtime_current_tag_scroll_menu()) == NULL)
-        || nc_menu_is_empty(menu)) {
+        || (nc_menu_item_count(menu) <= 0)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -2613,7 +2613,7 @@ action_runtime_delete_browser_items(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     if (((menu = browser_screen_menu(screen)) == NULL)
-        || nc_menu_is_empty(menu)) {
+        || (nc_menu_item_count(menu) <= 0)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     if (!Config.allow_for_physical_item_deletion) {
@@ -3660,7 +3660,7 @@ action_runtime_select_album(void) {
     bool equal;
 
     if (((menu = action_runtime_current_tag_scroll_menu()) == NULL)
-        || nc_menu_is_empty(menu)) {
+        || (nc_menu_item_count(menu) <= 0)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -3722,7 +3722,7 @@ action_runtime_select_found_items(void) {
     }
 
     if (((menu = action_runtime_current_menu()) == NULL)
-        || nc_menu_is_empty(menu)) {
+        || (nc_menu_item_count(menu) <= 0)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -5849,7 +5849,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
             return false;
         }
         if (((menu = action_runtime_current_menu()) == NULL)
-            || nc_menu_is_empty(menu)) {
+            || (nc_menu_item_count(menu) <= 0)) {
             return false;
         }
         return ncm_menu_find_full_selected_range(

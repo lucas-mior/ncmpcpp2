@@ -108,7 +108,7 @@ nc_playlist_screen_mouse_button_pressed(NcPlaylistScreen *screen,
     if (screen->menu == NULL) {
         return;
     }
-    if (nc_menu_is_empty(screen->menu)) {
+    if (nc_menu_item_count(screen->menu) <= 0) {
         return;
     }
 

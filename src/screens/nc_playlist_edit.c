@@ -1494,8 +1494,9 @@ playlist_edit_timeout_callback(NcScreen *screen) {
 
     editor = playlist_edit_from_screen(screen);
     if ((editor->fetching_delay_ms >= 0)
-        && nc_menu_is_empty(nc_song_menu_base(&editor->content))
-        && (nc_menu_is_empty(nc_playlist_entry_menu_base(&editor->playlists))
+        && (nc_menu_item_count(nc_song_menu_base(&editor->content)) <= 0)
+        && ((nc_menu_item_count(nc_playlist_entry_menu_base(
+                 &editor->playlists)) <= 0)
             || !playlist_edit_displayed_playlist_is_current(editor))) {
         return editor->window_timeout_ms;
     }
@@ -1525,8 +1526,8 @@ playlist_edit_update_callback(NcScreen *screen) {
     changed = 0;
     ncm_error_clear(&ncm_error);
     if (editor->playlists_update_requested
-        || nc_menu_is_empty(nc_playlist_entry_menu_base(
-            &editor->playlists))) {
+        || (nc_menu_item_count(nc_playlist_entry_menu_base(
+                &editor->playlists)) <= 0)) {
         status = playlist_edit_screen_reload_playlists_from_mpd(
             editor, &global_mpd, &ncm_error);
         if (status < 0) {
@@ -1543,7 +1544,7 @@ playlist_edit_update_callback(NcScreen *screen) {
     playlist_edit_finish_playlist_change(editor);
     content_fetch_due = false;
     playlists = nc_playlist_entry_menu_base(&editor->playlists);
-    if (!nc_menu_is_empty(playlists)) {
+    if (nc_menu_item_count(playlists) > 0) {
         content = nc_song_menu_base(&editor->content);
         displayed_playlist_is_current =
             playlist_edit_displayed_playlist_is_current(editor);
@@ -1553,7 +1554,7 @@ playlist_edit_update_callback(NcScreen *screen) {
         } else if (!displayed_playlist_is_current
                    && !((editor->last_known_content_count == 0)
                         && editor->displayed_playlist_valid)
-                   && nc_menu_is_empty(content)) {
+                   && (nc_menu_item_count(content) <= 0)) {
             if (editor->fetching_delay_ms < 0) {
                 content_fetch_due = true;
             } else {
