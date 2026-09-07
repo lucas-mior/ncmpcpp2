@@ -10,8 +10,6 @@
 #include "settings.h"
 #include "title.h"
 
-#define SETTINGS_LINE_CAP 16384
-
 Configuration Config;
 
 typedef int32 (*SettingsApplyFn)(Configuration *config,
@@ -1298,35 +1296,37 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
     configuration_clear(config);
     for (int32 i = 0; i < config_paths->len; i += 1) {
         NcmStringView path = config_paths->items[i];
-        FILE *file;
         StrBuilder path_buffer = {0};
-        char line[SETTINGS_LINE_CAP];
+        char *content;
+        char *line;
+        char *content_end;
+        int32 content_len;
 
         if (!ncm_fs_path_is_existing(path.data, path.len)) {
             continue;
         }
 
         SB_APPEND(&path_buffer, path.data, path.len);
-        if ((file = fopen(path_buffer.data, "r")) == NULL) {
+        if ((content_len = read_entire_file(path_buffer.data,
+                                            &content)) < 0) {
             char message[256];
-            int32 saved_errno;
+            int32 error_code;
             int32 len;
 
-            saved_errno = errno;
+            error_code = -content_len;
             len = SNPRINTF(
                 message,
-                "failed to open configuration file '%.*s': %s",
-                path.len, path.data, strerror(saved_errno));
+                "failed to read configuration file '%.*s': %s",
+                path.len, path.data, strerror(error_code));
             if (len < 0) {
                 ncm_error_set_status(
-                    ncm_error, -saved_errno,
-                    STRLIT("failed to open configuration file"));
+                    ncm_error, content_len,
+                    STRLIT("failed to read configuration file"));
             } else {
                 if (len >= SIZEOF(message)) {
                     len = SIZEOF(message) - 1;
                 }
-                ncm_error_set_status(ncm_error, -saved_errno,
-                                     message, len);
+                ncm_error_set_status(ncm_error, content_len, message, len);
             }
             status = settings_report_or_ignore(ncm_error, ignore_errors);
             sb_free(&path_buffer);
@@ -1340,27 +1340,40 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
             error2("Reading configuration from %s...\n",
                    path_buffer.data);
         }
-        while (fgets(line, SIZEOF(line), file)) {
+        content_end = content + content_len;
+        line = content;
+        while (line < content_end) {
             NcmOptionLine parsed;
-            int32 line_len = strlen32(line);
+            char *current_line;
+            char *line_end;
+            char *next;
+            int32 line_len;
             uint32 option_index = SETTINGS_OPTION_COUNT;
             bool has_option;
 
+            current_line = line;
+            if ((line_end = memchr64(line, '\n', content_end - line))) {
+                line_len = (int32)(line_end - line);
+                next = line_end + 1;
+            } else {
+                line_len = (int32)(content_end - line);
+                next = content_end;
+            }
+            line = next;
             while (
                 (line_len > 0)
-                && ((line[line_len - 1] == '\n')
-                    || (line[line_len - 1] == '\r'))) {
+                && ((current_line[line_len - 1] == '\n')
+                    || (current_line[line_len - 1] == '\r'))) {
                 line_len -= 1;
-                line[line_len] = '\0';
             }
-            status = ncm_option_parser_parse_line(line, line_len, &parsed,
-                                                  &has_option);
+            status = ncm_option_parser_parse_line(
+                current_line, line_len, &parsed, &has_option);
             if (status < 0) {
-                settings_invalid_value(ncm_error, line, line_len);
+                settings_invalid_value(ncm_error, current_line, line_len);
                 status = settings_report_or_ignore(ncm_error,
                                                    ignore_errors);
                 if (status < 0) {
-                    fclose(file);
+                    free2(content, content_len + 1);
                     sb_free(&path_buffer);
                     return status;
                 }
@@ -1397,7 +1410,7 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                 status = settings_report_or_ignore(ncm_error,
                                                    ignore_errors);
                 if (status < 0) {
-                    fclose(file);
+                    free2(content, content_len + 1);
                     sb_free(&path_buffer);
                     return status;
                 }
@@ -1418,7 +1431,7 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                 status = settings_report_or_ignore(ncm_error,
                                                    ignore_errors);
                 if (status < 0) {
-                    fclose(file);
+                    free2(content, content_len + 1);
                     sb_free(&path_buffer);
                     return status;
                 }
@@ -1430,12 +1443,12 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                 parsed.value, parsed.value_len,
                 false, ignore_errors, ncm_error);
             if (status < 0) {
-                fclose(file);
+                free2(content, content_len + 1);
                 sb_free(&path_buffer);
                 return status;
             }
         }
-        fclose(file);
+        free2(content, content_len + 1);
         sb_free(&path_buffer);
     }
 
