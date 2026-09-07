@@ -70,10 +70,10 @@ tiny_editor_draw_row(NcMenu *menu, NcWindow *window, void *item,
 }
 
 void
-tiny_tag_edit_screen_init(
-    TinyTagEditScreen *screen, int32 start_x, int32 width,
-    int32 main_start_y, int32 main_height, NcColor color, NcBorder border
-) {
+tiny_tag_edit_screen_init(TinyTagEditScreen *screen,
+                          int32 start_x, int32 width,
+                          int32 main_start_y, int32 main_height,
+                          NcColor color, NcBorder border) {
     NcMenuDisplayCallbacks display_callbacks = {0};
     NcMenu *menu;
 
@@ -128,9 +128,8 @@ tiny_tag_edit_screen_destroy(TinyTagEditScreen *screen) {
 }
 
 void
-tiny_tag_edit_screen_set_hooks(
-    TinyTagEditScreen *screen, TinyTagEditHooks hooks
-) {
+tiny_tag_edit_screen_set_hooks(TinyTagEditScreen *screen,
+                               TinyTagEditHooks hooks) {
     if (screen == NULL) {
         return;
     }
@@ -158,8 +157,7 @@ tiny_editor_buffer_key_value(NcBuffer *buffer, char *key, int32 key_len,
 }
 
 static void
-tiny_editor_add_row(TinyTagEditScreen *screen, NcBuffer *buffer,
-                    uint32 flags) {
+tiny_editor_add_row(TinyTagEditScreen *screen, NcBuffer *buffer, uint32 flags) {
     nc_editor_buffer_menu_add_with_flags(&screen->rows, buffer, flags);
     return;
 }
@@ -178,11 +176,10 @@ tiny_editor_buffer_key_uint(NcBuffer *buffer, char *key, int32 key_len,
 }
 
 static void
-tiny_editor_buffer_mutable_tag(
-    NcBuffer *buffer, NcmMutableSong *song, enum NcmTagsField field,
-    char *tag_separator, int32 tag_separator_len,
-    bool show_duplicate_tags
-) {
+tiny_editor_buffer_mutable_tag(NcBuffer *buffer, NcmMutableSong *song,
+                               enum NcmTagsField field,
+                               char *tag_separator, int32 tag_separator_len,
+                               bool show_duplicate_tags) {
     StrBuilder value;
     char *name;
     int32 name_len;
@@ -198,11 +195,10 @@ tiny_editor_buffer_mutable_tag(
 }
 
 enum TinyTagEditOpenResult
-tiny_tag_edit_screen_open_song(
-    TinyTagEditScreen *screen, NcmSong *song,
-    char *music_dir, int32 music_dir_len, char *tag_separator,
-    int32 tag_separator_len, bool show_duplicate_tags, StrBuilder *path
-) {
+tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
+                               char *music_dir, int32 music_dir_len,
+                               char *tag_separator, int32 tag_separator_len,
+                               bool show_duplicate_tags, StrBuilder *path) {
     NcmMutableSong edited = {0};
     NcmTaglibAudioProperties properties = {0};
     NcmTaglibFile file;
