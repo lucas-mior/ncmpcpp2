@@ -1,90 +1,90 @@
 # Prompt
 
-For the first of the problems below (excessive NULL checking),
+For the first of the problems below (Functions that are never called),
 identify instances of it in the first file in the list below it. Then fix those
 instances and remove the file from the list. If the first file in the list does
 not have the problem, try the next one without asking first.
 
 ## Functions that are never called (dead code)
-src/screens/nc_screens.c
-src/c/ncm_mutable_song.c
-src/c/ncm_html.c
-src/screens/nc_visualizer.c
-src/c/ncm_string.c
-src/screens/nc_server_info.c
-src/bindings.c
-src/screens/nc_media_library.c
-src/c/ncm_format.c
-src/settings.c
-src/config.c
-src/screens/nc_scrollpad_screen.c
-src/screens/nc_screen_switcher.c
-src/screens/nc_tiny_tag_edit.c
-src/screens/nc_screen.c
-src/curses/nc_scrollpad.c
-src/screens/nc_help.c
-src/c/ncm_mpd_connection.c
-src/screens/nc_playlist_edit.c
-src/screens/nc_lastfm.c
-src/c/ncm_c.c
-src/c/ncm_enums.c
-src/c/ncm_tags.c
-src/c/ncm_conversion.c
-src/status.c
-src/screens/screen_type.c
-src/app_legacy_bridge.c
-src/c/ncm_song.c
-src/actions.c
-src/c/ncm_lrc.c
-src/c/ncm_fs.c
-src/c/ncm_regex.c
-src/c/ncm_taglib.c
-src/c/ncm_error.c
-src/c/ncm_path.c
-src/c/ncm_option_parser.c
-src/c/ncm_mpd_item.c
-src/curses/nc_formatted_color.c
-src/c/ncm_display.c
-src/main.c
-src/lyrics_fetcher.c
-src/lastfm_service.c
-src/screens/nc_playlist.c
-src/curses/nc_curses.c
-src/c/ncm_playlist_sort.c
-src/c/ncm_directory.c
-src/c/ncm_sample_buffer.c
-src/c/ncm_app_arrays.c
-src/curses/nc_app_menus.c
-src/screens/app_screens.c
-src/statusbar.c
-src/screens/nc_lyrics.c
-src/curses/nc_buffer.c
-src/c/ncm_comparators.c
-src/screens/nc_sort_playlist.c
-src/c/ncm_utilities.c
-src/c/ncm_job.c
-src/c/ncm_mpd_client.c
-src/screens/nc_song_info.c
-src/screen_actions.c
-src/c/ncm_type_conversions.c
-src/curses/nc_cyclic_buffer.c
-src/title.c
-src/helpers.c
-src/curses/nc_menu.c
-src/screens/nc_sel_items_adder.c
-src/ui_state.c
-src/screens/nc_browser.c
-src/c/ncm_search_prompt.c
-src/app_controller.c
-src/curl_handle.c
-src/settings_types.c
-src/screens/nc_tag_edit.c
-src/screens/nc_outputs.c
-src/screens/nc_search_engine.c
-src/app_state.c
-src/curses/nc_window.c
-src/c/ncm_playlist.c
-src/global.c
+- src/screens/nc_screens.c
+- src/c/ncm_mutable_song.c
+- src/c/ncm_html.c
+- src/screens/nc_visualizer.c
+- src/c/ncm_string.c
+- src/screens/nc_server_info.c
+- src/bindings.c
+- src/screens/nc_media_library.c
+- src/c/ncm_format.c
+- src/settings.c
+- src/config.c
+- src/screens/nc_scrollpad_screen.c
+- src/screens/nc_screen_switcher.c
+- src/screens/nc_tiny_tag_edit.c
+- src/screens/nc_screen.c
+- src/curses/nc_scrollpad.c
+- src/screens/nc_help.c
+- src/c/ncm_mpd_connection.c
+- src/screens/nc_playlist_edit.c
+- src/screens/nc_lastfm.c
+- src/c/ncm_c.c
+- src/c/ncm_enums.c
+- src/c/ncm_tags.c
+- src/c/ncm_conversion.c
+- src/status.c
+- src/screens/screen_type.c
+- src/app_legacy_bridge.c
+- src/c/ncm_song.c
+- src/actions.c
+- src/c/ncm_lrc.c
+- src/c/ncm_fs.c
+- src/c/ncm_regex.c
+- src/c/ncm_taglib.c
+- src/c/ncm_error.c
+- src/c/ncm_path.c
+- src/c/ncm_option_parser.c
+- src/c/ncm_mpd_item.c
+- src/curses/nc_formatted_color.c
+- src/c/ncm_display.c
+- src/main.c
+- src/lyrics_fetcher.c
+- src/lastfm_service.c
+- src/screens/nc_playlist.c
+- src/curses/nc_curses.c
+- src/c/ncm_playlist_sort.c
+- src/c/ncm_directory.c
+- src/c/ncm_sample_buffer.c
+- src/c/ncm_app_arrays.c
+- src/curses/nc_app_menus.c
+- src/screens/app_screens.c
+- src/statusbar.c
+- src/screens/nc_lyrics.c
+- src/curses/nc_buffer.c
+- src/c/ncm_comparators.c
+- src/screens/nc_sort_playlist.c
+- src/c/ncm_utilities.c
+- src/c/ncm_job.c
+- src/c/ncm_mpd_client.c
+- src/screens/nc_song_info.c
+- src/screen_actions.c
+- src/c/ncm_type_conversions.c
+- src/curses/nc_cyclic_buffer.c
+- src/title.c
+- src/helpers.c
+- src/curses/nc_menu.c
+- src/screens/nc_sel_items_adder.c
+- src/ui_state.c
+- src/screens/nc_browser.c
+- src/c/ncm_search_prompt.c
+- src/app_controller.c
+- src/curl_handle.c
+- src/settings_types.c
+- src/screens/nc_tag_edit.c
+- src/screens/nc_outputs.c
+- src/screens/nc_search_engine.c
+- src/app_state.c
+- src/curses/nc_window.c
+- src/c/ncm_playlist.c
+- src/global.c
 
 ## Utility function creep
 Functions that do the (almost) the same thing are redefined in different places.
