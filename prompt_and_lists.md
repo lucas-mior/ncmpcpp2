@@ -1,11 +1,12 @@
 # Prompt
 
-For the first of the problems below (Functions that are never called),
-identify instances of it in the first file in the list below it. Then fix those
-instances and remove the file from the list. If the first file in the list does
-not have the problem, try the next one without asking first.
+For the first of the problems below (breaking function calls before the first
+argument and not aligning), identify instances of it in the first file in the
+list below it. Then fix those instances and remove the file from the list. If
+the first file in the list does not have the problem, try the next one without
+asking first.
 
-## Style: breaking function calls before the first argument and not alining
+## breaking function calls before the first argument and not aligning
 This is bad:
 ```c
 status = ncm_fs_rename(
@@ -20,6 +21,8 @@ status = ncm_fs_rename(old_real_path.data, old_real_path.len,
 ```
 Only keep line break before the first argument on the very very rare occasion
 that it does not fit in a single line (80 column rule).
+
+
 
 ## Utility function creep
 Functions that do the (almost) the same thing are redefined in different places.
