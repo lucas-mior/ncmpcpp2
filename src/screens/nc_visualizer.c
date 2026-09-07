@@ -1211,8 +1211,8 @@ visualizer_screen_requested_samples(VisualizerScreen *screen) {
 }
 
 void
-visualizer_screen_push_samples(VisualizerScreen *screen, int16 *samples,
-                               int32 samples_len) {
+visualizer_screen_push_samples(VisualizerScreen *screen,
+                               int16 *samples, int32 samples_len) {
     visualizer_screen_apply_auto_scale(screen, samples, samples_len);
     ncm_sample_buffer_put(&screen->buffered_samples, samples, samples_len);
     return;
