@@ -29,7 +29,7 @@ nc_scrollpad_refresh(NcScrollpad *scrollpad, NcWindow *window) {
     int32 end_y;
     int32 end_x;
 
-    ASSERT(scrollpad->real_height >= window->height);
+    ASSERT_MORE_EQUAL(scrollpad->real_height, window->height);
 
     if (scrollpad->beginning > nc_scrollpad_max_beginning(scrollpad, window)) {
         scrollpad->beginning = nc_scrollpad_max_beginning(scrollpad, window);
