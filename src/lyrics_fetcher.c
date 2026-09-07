@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_LYRICS_FETCHER_C)
-#define NCMPCPP_LYRICS_FETCHER_C
+#if !defined(LYRICS_FETCHER_C)
+#define LYRICS_FETCHER_C
 
 #include "cbase.h"
 
@@ -2818,4 +2818,4 @@ ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
     return status;
 }
 
-#endif /* NCMPCPP_LYRICS_FETCHER_C */
+#endif /* LYRICS_FETCHER_C */
