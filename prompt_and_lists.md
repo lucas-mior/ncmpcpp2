@@ -8,7 +8,7 @@ not have the problem, try the next one without asking first.
 ## Functions that are never called (dead code)
 
 ## Utility function creep
-Functions that do the same thing are redefined in different
+Functions that do the same thing are redefined in different places
 
 ## some unnecessary static function declarations at the top of the files
 ## functions definitions could be reordered to not need declarations at the top
