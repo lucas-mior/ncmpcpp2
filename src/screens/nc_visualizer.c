@@ -1805,17 +1805,12 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
                               + screen->point_char_offset;
             int32 character_len = screen->point_char_len;
             int32 width = nc_window_width(&screen->window);
-            int32 left_half_width;
-            int32 right_half_width;
-            int32 top_half_height;
-            int32 bottom_half_height;
-            int32 radius;
+            int32 left_half_width = width / 2;
+            int32 right_half_width = width - left_half_width;
+            int32 top_half_height = half_height;
+            int32 bottom_half_height = height - half_height;
+            int32 radius = 2*screen->visualizer_colors_len;
 
-            left_half_width = width / 2;
-            right_half_width = width - left_half_width;
-            top_half_height = half_height;
-            bottom_half_height = height - half_height;
-            radius = 2*screen->visualizer_colors_len;
             for (int32 i = 0; i < channel_samples; i += 1) {
                 double distance;
                 int32 x;
