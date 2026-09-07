@@ -270,7 +270,6 @@ nc_buffer_remove_properties(NcBuffer *buffer, int64 id) {
 void
 nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property) {
     NcFormattedColor *formatted_color;
-    enum NcFormat *formats;
     int32 count;
 
     switch (property->type) {
@@ -283,10 +282,9 @@ nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property) {
     case NC_BUFFER_PROPERTY_FORMATTED_COLOR:
         formatted_color = &property->value.formatted_color;
         nc_window_push_color(window, formatted_color->color);
-        formats = formatted_color->formats;
         count = ARRAY_LEN(formatted_color);
         for (int32 i = 0; i < count; i += 1) {
-            nc_window_apply_format(window, formats[i]);
+            nc_window_apply_format(window, formatted_color->formats[i]);
         }
         break;
     case NC_BUFFER_PROPERTY_FORMATTED_COLOR_END:
@@ -294,12 +292,11 @@ nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property) {
         if (!nc_color_is_default(formatted_color->color)) {
             nc_window_push_color(window, nc_color_end());
         }
-        formats = formatted_color->formats;
         count = ARRAY_LEN(formatted_color);
         for (int32 i = count - 1; i >= 0; i -= 1) {
             enum NcFormat format;
 
-            switch (formats[i]) {
+            switch (formatted_color->formats[i]) {
             case NC_FORMAT_BOLD:
                 format = NC_FORMAT_NO_BOLD;
                 break;
