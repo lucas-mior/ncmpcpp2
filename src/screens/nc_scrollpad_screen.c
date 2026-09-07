@@ -11,11 +11,7 @@ nc_scrollpad_screen_init(NcScrollpadScreen *screen,
                          enum NcScreenType type, int32 start_x,
                          int32 start_y, int32 width, int32 height) {
     nc_screen_init_ops(&screen->base, callbacks, user, type);
-    nc_scrollpad_screen_set_geometry(screen,
-                                     start_x,
-                                     start_y,
-                                     width,
-                                     height);
+    nc_scrollpad_screen_set_geometry(screen, start_x, start_y, width, height);
     return;
 }
 
@@ -34,10 +30,7 @@ void
 nc_scrollpad_screen_set_main_area(NcScrollpadScreen *screen,
                                   int32 start_x, int32 width,
                                   int32 main_start_y, int32 main_height) {
-    nc_scrollpad_screen_set_geometry(screen,
-                                     start_x,
-                                     main_start_y,
-                                     width,
+    nc_scrollpad_screen_set_geometry(screen, start_x, main_start_y, width,
                                      main_height);
     return;
 }
@@ -45,12 +38,9 @@ nc_scrollpad_screen_set_main_area(NcScrollpadScreen *screen,
 void
 nc_scrollpad_screen_set_centered_box(NcScrollpadScreen *screen,
                                      int32 cols, int32 lines,
-                                     int32 main_start_y,
-                                     int32 main_height,
-                                     int32 width_num,
-                                     int32 width_den,
-                                     int32 height_num,
-                                     int32 height_den) {
+                                     int32 main_start_y, int32 main_height,
+                                     int32 width_num, int32 width_den,
+                                     int32 height_num, int32 height_den) {
     int32 max_height;
     int32 width;
     int32 height;
@@ -66,11 +56,7 @@ nc_scrollpad_screen_set_centered_box(NcScrollpadScreen *screen,
     }
     start_x = (cols - width)/2;
     start_y = (main_height - height)/2 + main_start_y;
-    nc_scrollpad_screen_set_geometry(screen,
-                                     start_x,
-                                     start_y,
-                                     width,
-                                     height);
+    nc_scrollpad_screen_set_geometry(screen, start_x, start_y, width, height);
     return;
 }
 

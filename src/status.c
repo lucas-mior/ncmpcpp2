@@ -262,8 +262,7 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
                             NcScreen *playlist_screen2
                                 = app_screen_playlist_base();
 
-                            if (highlighted
-                                && app_controller_is_screen_visible(
+                            if (highlighted && app_controller_is_screen_visible(
                                     playlist_screen2)) {
                                 nc_screen_refresh(playlist_screen2);
                             }
@@ -471,8 +470,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
     status_volume = mpd_status->volume;
 
     if ((event & MPD_IDLE_DATABASE) != 0) {
-        if (active_hooks
-            && active_hooks->database_changed) {
+        if (active_hooks && active_hooks->database_changed) {
             active_hooks->database_changed(active_hooks->user);
         } else {
             browser_screen_request_update(app_screen_browser());
@@ -496,8 +494,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
     }
 
     if ((event & MPD_IDLE_STORED_PLAYLIST) != 0) {
-        if (active_hooks
-            && active_hooks->stored_playlists_changed) {
+        if (active_hooks && active_hooks->stored_playlists_changed) {
             active_hooks->stored_playlists_changed(active_hooks->user);
         } else {
             BrowserScreen *browser;
@@ -514,8 +511,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
             }
             if (status_ui_hooks_set
                 && status_ui_hooks.stored_playlists_changed) {
-                status_ui_hooks.stored_playlists_changed(
-                    status_ui_hooks.user);
+                status_ui_hooks.stored_playlists_changed(status_ui_hooks.user);
             }
         }
     }
@@ -523,8 +519,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
     if ((event & MPD_IDLE_PLAYLIST) != 0) {
         previous_playlist_version = status_playlist_version;
         status_playlist_version = mpd_status->queue_version;
-        if (active_hooks
-            && active_hooks->playlist_changed) {
+        if (active_hooks && active_hooks->playlist_changed) {
             active_hooks->playlist_changed(previous_playlist_version,
                                            active_hooks->user);
         } else {
@@ -547,16 +542,14 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
     }
 
     if ((event & MPD_IDLE_PLAYER) != 0) {
-        if (active_hooks
-            && active_hooks->player_state_changed) {
+        if (active_hooks && active_hooks->player_state_changed) {
             active_hooks->player_state_changed(active_hooks->user);
         } else {
             ncm_status_changes_player_state();
         }
 
         if (status_current_song_id != mpd_status->song_id) {
-            if (active_hooks
-                && active_hooks->song_id_changed) {
+            if (active_hooks && active_hooks->song_id_changed) {
                 active_hooks->song_id_changed(mpd_status->song_id,
                                               active_hooks->user);
             } else {
@@ -571,8 +564,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                 visualizer_screen_reset_auto_scale_multiplier(
                     app_screen_visualizer());
 #endif
-                if (status_ui_hooks_set
-                    && status_ui_hooks.song_id_changed) {
+                if (status_ui_hooks_set && status_ui_hooks.song_id_changed) {
                     status_ui_hooks.song_id_changed(
                         mpd_status->song_id, status_ui_hooks.user);
                 }
@@ -1006,21 +998,18 @@ ncm_status_changes_player_state(void) {
         if ((state_window = ui_state_header_window())) {
             nc_window_go_to_xy(state_window, 0, 1);
             nc_window_apply_format(state_window, NC_FORMAT_BOLD);
-            nc_window_print_data(state_window, player_state,
-                                 player_state_len);
+            nc_window_print_data(state_window, player_state, player_state_len);
             nc_window_apply_format(state_window, NC_FORMAT_NO_BOLD);
             nc_window_refresh(state_window);
         }
         break;
     case NCM_DESIGN_CLASSIC:
         state_window = ui_state_footer_window();
-        if ((state_window != NULL)
-            && ncm_statusbar_is_unlocked()
+        if ((state_window != NULL) && ncm_statusbar_is_unlocked()
             && Config.statusbar_visibility) {
             nc_window_go_to_xy(state_window, 0, 1);
             if (player_state_len == 0) {
-                nc_window_apply_term_manip(state_window,
-                                           NC_TERM_CLEAR_TO_EOL);
+                nc_window_apply_term_manip(state_window, NC_TERM_CLEAR_TO_EOL);
             } else {
                 nc_window_apply_format(state_window, NC_FORMAT_BOLD);
                 nc_window_print_data(state_window, player_state,
@@ -1132,8 +1121,7 @@ static void
 status_reset_visualizer_for_player_event(int32 event) {
 #if defined(ENABLE_VISUALIZER)
     if ((event & MPD_IDLE_PLAYER) != 0) {
-        visualizer_screen_reset_audio_state(
-            app_screen_visualizer());
+        visualizer_screen_reset_audio_state(app_screen_visualizer());
     }
 #else
     (void)event;
@@ -1207,11 +1195,9 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
             elapsed_ms = status_elapsed_time_ms_now();
             status_rebase_elapsed_time(status_elapsed_time + 1, elapsed_ms);
         } else {
-            if (ncm_mpd_client_get_status(&global_mpd, &mpd_status,
-                                          NULL) < 0) {
+            if (ncm_mpd_client_get_status(&global_mpd, &mpd_status, NULL) < 0) {
                 elapsed_ms = status_elapsed_time_ms_now();
-                status_rebase_elapsed_time(status_elapsed_time + 1,
-                                           elapsed_ms);
+                status_rebase_elapsed_time(status_elapsed_time + 1, elapsed_ms);
             } else {
                 status_rebase_elapsed_time(mpd_status.elapsed_time,
                                            mpd_status.elapsed_time_ms);
@@ -1254,8 +1240,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
     switch (Config.user_interface) {
     case NCM_DESIGN_CLASSIC:
         footer = ui_state_footer_window();
-        if ((footer != NULL)
-            && Config.statusbar_visibility
+        if ((footer != NULL) && Config.statusbar_visibility
             && ncm_statusbar_is_unlocked()) {
             NcBuffer rendered_song = {0};
             StrBuilder tracklength = {0};
@@ -1270,8 +1255,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
 
             nc_window_go_to_xy(footer, 0, 1);
             nc_window_apply_term_manip(footer, NC_TERM_CLEAR_TO_EOL);
-            status_apply_formatted_color(footer,
-                                         &Config.player_state_color);
+            status_apply_formatted_color(footer, &Config.player_state_color);
             nc_window_print_data(footer, player_state, player_state_len);
             status_apply_formatted_color_end(footer,
                                              &Config.player_state_color);
@@ -1292,8 +1276,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
                 track_x = 0;
             }
             nc_window_go_to_xy(footer, track_x, 1);
-            status_apply_formatted_color(footer,
-                                         &Config.statusbar_time_color);
+            status_apply_formatted_color(footer, &Config.statusbar_time_color);
             nc_window_print_data(footer, tracklength.data, tracklength.len);
             status_apply_formatted_color_end(footer,
                                              &Config.statusbar_time_color);
@@ -1354,8 +1337,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
                 nc_window_apply_term_manip(header, NC_TERM_CLEAR_TO_EOL);
                 status_apply_formatted_color(
                     header, &Config.statusbar_time_color);
-                nc_window_print_data(header, tracklength.data,
-                                     tracklength.len);
+                nc_window_print_data(header, tracklength.data, tracklength.len);
                 status_apply_formatted_color_end(
                     header, &Config.statusbar_time_color);
             }
@@ -1372,8 +1354,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
 
             nc_window_go_to_xy(header, 0, 1);
             nc_window_apply_term_manip(header, NC_TERM_CLEAR_TO_EOL);
-            status_apply_formatted_color(header,
-                                         &Config.player_state_color);
+            status_apply_formatted_color(header, &Config.player_state_color);
             nc_window_print_data(header, player_state, player_state_len);
             status_apply_formatted_color_end(header,
                                              &Config.player_state_color);
@@ -1530,8 +1511,7 @@ ncm_status_changes_mixer(void) {
     int32 volume_len;
     int32 volume_x;
 
-    if (!Config.display_volume_level
-        || (!Config.header_visibility
+    if (!Config.display_volume_level || (!Config.header_visibility
             && (Config.user_interface == NCM_DESIGN_CLASSIC))) {
         return;
     }

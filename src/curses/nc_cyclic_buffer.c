@@ -7,8 +7,7 @@
 
 static int32 nc_cyclic_normalize_start(int32 *start_pos,
                                        int32 total_characters);
-static void nc_cyclic_increment_start(int32 *start_pos,
-                                      int32 total_characters);
+static void nc_cyclic_increment_start(int32 *start_pos, int32 total_characters);
 static void nc_cyclic_text_append(StrBuilder *output, char *string,
                                   int32 string_len, int32 start_byte,
                                   int32 *written_width, int32 width);
@@ -18,12 +17,10 @@ static void nc_cyclic_buffer_apply_properties(NcWindow *window,
                                               int32 *property_index,
                                               int32 position,
                                               bool include_position);
-static void nc_cyclic_buffer_write_segment(NcBuffer *buffer,
-                                           NcWindow *window,
+static void nc_cyclic_buffer_write_segment(NcBuffer *buffer, NcWindow *window,
                                            int32 start_byte,
                                            int32 *property_index,
-                                           int32 *written_width,
-                                           int32 width);
+                                           int32 *written_width, int32 width);
 static void nc_cyclic_window_write_text(NcWindow *window, char *string,
                                         int32 string_len, int32 start_byte,
                                         int32 *written_width, int32 width);
@@ -89,8 +86,7 @@ nc_cyclic_text_write(StrBuilder *output, char *string, int32 string_len,
         nc_cyclic_text_append(output, separator, separator_len, 0,
                               &written_width, width);
     }
-    nc_cyclic_text_append(output, string, string_len, 0,
-                          &written_width, width);
+    nc_cyclic_text_append(output, string, string_len, 0, &written_width, width);
 
     nc_cyclic_increment_start(
         start_pos, string_characters + separator_characters);
@@ -160,11 +156,9 @@ nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
     written_width = 0;
     nc_cyclic_buffer_apply_properties(
         window, nc_buffer_properties(buffer),
-        ARRAY_LEN(buffer->properties), &property_index, start_byte,
-        false);
+        ARRAY_LEN(buffer->properties), &property_index, start_byte, false);
     nc_cyclic_buffer_write_segment(buffer, window, start_byte,
-                                   &property_index, &written_width,
-                                   width);
+                                   &property_index, &written_width, width);
 
     if (start > string_characters) {
         int32 separator_start;
@@ -174,8 +168,7 @@ nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
         separator_byte = utf8_byte_position(separator, separator_len,
                                             separator_start);
         nc_cyclic_window_write_text(window, separator, separator_len,
-                                    separator_byte, &written_width,
-                                    width);
+                                    separator_byte, &written_width, width);
     } else {
         nc_cyclic_window_write_text(window, separator, separator_len, 0,
                                     &written_width, width);
@@ -240,8 +233,7 @@ nc_cyclic_next_position(char *string, int32 string_len, int32 byte,
 
 static void
 nc_cyclic_text_append(StrBuilder *output, char *string, int32 string_len,
-                      int32 start_byte, int32 *written_width,
-                      int32 width) {
+                      int32 start_byte, int32 *written_width, int32 width) {
     int32 byte;
 
     if (string_len <= 0) {
@@ -274,10 +266,8 @@ nc_cyclic_text_append(StrBuilder *output, char *string, int32 string_len,
 static void
 nc_cyclic_buffer_apply_properties(NcWindow *window,
                                   NcBufferProperty *properties,
-                                  int32 property_count,
-                                  int32 *property_index,
-                                  int32 position,
-                                  bool include_position) {
+                                  int32 property_count, int32 *property_index,
+                                  int32 position, bool include_position) {
     while (*property_index < property_count) {
         bool should_apply;
 
@@ -319,8 +309,7 @@ nc_cyclic_buffer_write_segment(NcBuffer *buffer, NcWindow *window,
         int32 next_byte;
 
         nc_cyclic_buffer_apply_properties(
-            window, properties, property_count, property_index, byte,
-            true);
+            window, properties, property_count, property_index, byte, true);
         next_byte = nc_cyclic_next_position(string, string_len, byte,
                                             &char_width);
         if ((*written_width + char_width) > width) {
@@ -332,8 +321,7 @@ nc_cyclic_buffer_write_segment(NcBuffer *buffer, NcWindow *window,
     }
 
     nc_cyclic_buffer_apply_properties(
-        window, properties, property_count, property_index, string_len,
-        true);
+        window, properties, property_count, property_index, string_len, true);
     return;
 }
 

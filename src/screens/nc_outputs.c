@@ -7,8 +7,7 @@
 
 static void nc_outputs_switch_to(NcScreen *screen);
 static void nc_outputs_resize(NcScreen *screen);
-static void nc_outputs_mouse_button_pressed(NcScreen *screen,
-                                            MEVENT event);
+static void nc_outputs_mouse_button_pressed(NcScreen *screen, MEVENT event);
 static void nc_outputs_destroy_callback(NcScreen *screen);
 static void nc_outputs_item_construct(void *dest, void *user);
 static void nc_outputs_item_copy(void *dest, void *source, void *user);
@@ -44,48 +43,30 @@ static void nc_outputs_draw_item(NcMenu *menu, NcWindow *window,
 #include "screens/nc_screen_impl_template.h"
 
 void
-nc_outputs_screen_init(NcOutputsScreen *screen,
-                       NcOutputsHooks hooks,
+nc_outputs_screen_init(NcOutputsScreen *screen, NcOutputsHooks hooks,
                        int32 start_x, int32 width,
                        int32 main_start_y, int32 main_height,
-                       NcColor color, NcBorder border,
-                       int32 lines_scrolled,
+                       NcColor color, NcBorder border, int32 lines_scrolled,
                        bool mouse_scroll_whole_page) {
     screen->hooks = hooks;
     screen->lines_scrolled = lines_scrolled;
     screen->mouse_scroll_whole_page = mouse_scroll_whole_page;
-    nc_scrollpad_screen_init(&screen->menu_screen,
-                             nc_outputs_ops,
-                             hooks.user,
-                             NC_SCREEN_TYPE_OUTPUTS,
-                             0,
-                             0,
-                             0,
-                             0);
-    nc_outputs_screen_set_geometry(screen,
-                                   start_x,
-                                   width,
-                                   main_start_y,
+    nc_scrollpad_screen_init(&screen->menu_screen, nc_outputs_ops,
+                             hooks.user, NC_SCREEN_TYPE_OUTPUTS, 0, 0, 0, 0);
+    nc_outputs_screen_set_geometry(screen, start_x, width, main_start_y,
                                    main_height);
-    nc_window_init(&screen->window,
-                   nc_outputs_screen_start_x(screen),
+    nc_window_init(&screen->window, nc_outputs_screen_start_x(screen),
                    nc_outputs_screen_start_y(screen),
                    nc_outputs_screen_width(screen),
-                   nc_outputs_screen_height(screen),
-                   STRLIT(""),
-                   color,
-                   border);
+                   nc_outputs_screen_height(screen), STRLIT(""), color, border);
     screen->menu = (NcMenu){0};
     nc_menu_set_item_callbacks(&screen->menu, (NcMenuItemCallbacks){
         .item_size = SIZEOF(NcOutputsItem),
-        .construct = nc_outputs_item_construct,
-        .copy = nc_outputs_item_copy,
-        .destroy = nc_outputs_item_destroy,
-        .user = NULL,
+        .construct = nc_outputs_item_construct, .copy = nc_outputs_item_copy,
+        .destroy = nc_outputs_item_destroy, .user = NULL,
     });
     nc_menu_set_display_callbacks(&screen->menu, (NcMenuDisplayCallbacks){
-        .draw = nc_outputs_draw_item,
-        .user = NULL,
+        .draw = nc_outputs_draw_item, .user = NULL,
     });
     nc_menu_set_cyclic_scrolling(&screen->menu, false);
     nc_menu_set_centered_cursor(&screen->menu, false);
@@ -96,11 +77,8 @@ void
 nc_outputs_screen_set_geometry(NcOutputsScreen *screen,
                                int32 start_x, int32 width,
                                int32 main_start_y, int32 main_height) {
-    nc_scrollpad_screen_set_main_area(&screen->menu_screen,
-                                      start_x,
-                                      width,
-                                      main_start_y,
-                                      main_height);
+    nc_scrollpad_screen_set_main_area(&screen->menu_screen, start_x,
+                                      width, main_start_y, main_height);
     return;
 }
 
@@ -135,11 +113,8 @@ nc_outputs_screen_clear_outputs(NcOutputsScreen *screen) {
 }
 
 void
-nc_outputs_screen_add_output(NcOutputsScreen *screen,
-                             int32 id,
-                             char *name,
-                             int32 name_len,
-                             bool enabled) {
+nc_outputs_screen_add_output(NcOutputsScreen *screen, int32 id,
+                             char *name, int32 name_len, bool enabled) {
     NcOutputsItem item;
 
     item.name = name;
@@ -166,10 +141,8 @@ nc_outputs_screen_toggle_current(NcOutputsScreen *screen) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    status = screen->hooks.toggle_output(screen->hooks.user,
-                                         output->id,
-                                         output->enabled,
-                                         output->name,
+    status = screen->hooks.toggle_output(screen->hooks.user, output->id,
+                                         output->enabled, output->name,
                                          output->name_len);
     if (status < 0) {
         return status;
@@ -199,11 +172,9 @@ nc_outputs_resize(NcScreen *screen) {
     if (outputs->hooks.resize_layout) {
         outputs->hooks.resize_layout(outputs->hooks.user, outputs);
     }
-    nc_window_resize(&outputs->window,
-                     nc_outputs_screen_width(outputs),
+    nc_window_resize(&outputs->window, nc_outputs_screen_width(outputs),
                      nc_outputs_screen_height(outputs));
-    nc_window_move_to(&outputs->window,
-                      nc_outputs_screen_start_x(outputs),
+    nc_window_move_to(&outputs->window, nc_outputs_screen_start_x(outputs),
                       nc_outputs_screen_start_y(outputs));
     if (outputs->hooks.resize_background) {
         outputs->hooks.resize_background(outputs->hooks.user);
@@ -219,8 +190,7 @@ nc_outputs_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     int32 y;
 
     outputs = nc_outputs_from_screen(screen);
-    if ((event.bstate & BUTTON5_PRESSED)
-        || (event.bstate & BUTTON4_PRESSED)) {
+    if ((event.bstate & BUTTON5_PRESSED) || (event.bstate & BUTTON4_PRESSED)) {
         enum NcScroll scroll;
         int32 count;
 
@@ -252,14 +222,12 @@ nc_outputs_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     x = event.x;
     y = event.y;
     if ((nc_menu_item_count(&outputs->menu) <= 0)
-        || !nc_window_has_coords(&outputs->window, &x, &y)
-        || (y < 0)
+        || !nc_window_has_coords(&outputs->window, &x, &y) || (y < 0)
         || (y >= nc_menu_item_count(&outputs->menu))) {
         return;
     }
 
-    if ((event.bstate & BUTTON1_PRESSED)
-        || (event.bstate & BUTTON3_PRESSED)) {
+    if ((event.bstate & BUTTON1_PRESSED) || (event.bstate & BUTTON3_PRESSED)) {
         (void)nc_menu_goto_selectable(&outputs->menu, y);
         if (event.bstate & BUTTON3_PRESSED) {
             (void)nc_outputs_screen_toggle_current(outputs);
@@ -303,9 +271,7 @@ nc_outputs_item_copy(void *dest, void *source, void *user) {
     dest_item->name = NULL;
     if (source_item->name_len > 0) {
         dest_item->name = malloc2(source_item->name_len + 1);
-        memcpy64(dest_item->name,
-                 source_item->name,
-                 source_item->name_len);
+        memcpy64(dest_item->name, source_item->name, source_item->name_len);
         dest_item->name[source_item->name_len] = '\0';
     }
     return;

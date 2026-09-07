@@ -112,12 +112,9 @@ ncm_playlist_sort_indices(NcmPlaylistSortContext *context,
 }
 
 int32
-ncm_playlist_sort_range(
-    NcmSongArray *songs, int32 start_position,
-    enum NcmSongGetter *getters, int32 getters_len,
-    bool ignore_leading_the, NcmMpdClient *client,
-    NcmError *ncm_error
-) {
+ncm_playlist_sort_range(NcmSongArray *songs, int32 start_position,
+                        enum NcmSongGetter *getters, int32 getters_len,
+    bool ignore_leading_the, NcmMpdClient *client, NcmError *ncm_error) {
     NcmPlaylistSortPlan plan = {0};
     NcmPlaylistSortContext context = {
         .songs = songs,
@@ -142,8 +139,7 @@ ncm_playlist_sort_range(
                                   STRLIT("invalid song count"));
     }
     if ((songs->len > 0) && (songs->items == NULL)) {
-        return ncm_error_set_code(ncm_error, EINVAL,
-                                  STRLIT("missing songs"));
+        return ncm_error_set_code(ncm_error, EINVAL, STRLIT("missing songs"));
     }
     if (start_position < 0) {
         return ncm_error_set_code(ncm_error, EINVAL,

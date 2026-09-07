@@ -238,8 +238,7 @@ ncm_taglib_read_property(NcmTaglibFile *file, char *property,
 
 int32
 ncm_taglib_read_mapped_properties(NcmTaglibFile *file,
-                                  NcmTaglibPairCallback *callback,
-                                  void *user) {
+                                  NcmTaglibPairCallback *callback, void *user) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
     int32 count;

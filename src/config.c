@@ -189,8 +189,7 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
                 char message[192];
                 int32 len;
 
-                len = SNPRINTF(message,
-                               "unexpected positional argument '%s'",
+                len = SNPRINTF(message, "unexpected positional argument '%s'",
                                argv[i + 1]);
                 return ncm_error_set_status(ncm_error, -EINVAL, message, len);
             }
@@ -256,9 +255,8 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
                 if (value != NULL) {
                     configuration_copy_string(&options->current_song_format,
                                               value, value_len);
-                } else if ((i + 1 < argc)
-                           && !((strlen32(argv[i + 1]) > 1)
-                                && (argv[i + 1][0] == '-'))) {
+                } else if ((i + 1 < argc) && !((strlen32(argv[i + 1]) > 1)
+                                               && (argv[i + 1][0] == '-'))) {
                     i += 1;
                     configuration_copy_string(&options->current_song_format,
                                               argv[i], strlen32(argv[i]));
@@ -316,8 +314,7 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
 
             all_flags = true;
             for (int32 j = 1; j < arg_len; j += 1) {
-                if ((arg[j] != '?') && (arg[j] != 'v')
-                    && (arg[j] != 'q')) {
+                if ((arg[j] != '?') && (arg[j] != 'v') && (arg[j] != 'q')) {
                     all_flags = false;
                     break;
                 }
@@ -776,8 +773,7 @@ configure(int32 argc, char **argv) {
                                                      &ncm_error);
         }
         if ((status >= 0) && !ncm_song_is_empty(&song)) {
-            status = ncm_format_parse(&format,
-                                      options.current_song_format.data,
+            status = ncm_format_parse(&format, options.current_song_format.data,
                                       options.current_song_format.len,
                                       NCM_FORMAT_FLAG_TAG, &ncm_error);
             if (status >= 0) {

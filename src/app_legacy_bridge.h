@@ -35,8 +35,7 @@ void ncmpcpp_set_noidle_status_callback(void);
 bool ncmpcpp_mpd_is_connected(void);
 void ncmpcpp_connect_or_report(void);
 void ncmpcpp_status_clear(void);
-int32 ncmpcpp_update_environment(bool update_timer,
-                                 bool refresh_window,
+int32 ncmpcpp_update_environment(bool update_timer, bool refresh_window,
                                  bool mpd_sync);
 int32 ncmpcpp_execute_binding(NcmBinding *);
 int32 ncmpcpp_execute_action(enum NcmActionType);

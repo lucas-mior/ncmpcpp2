@@ -115,12 +115,10 @@ void configuration_clear(Configuration *config);
 int32 configuration_validate(Configuration *config, NcmError *ncm_error);
 double configuration_locked_screen_width_fraction(Configuration *config);
 enum SearchEngineSearchMode configuration_search_engine_default_mode(
-    Configuration *config
-);
+    Configuration *config);
 int32 configuration_read(Configuration *config,
                          NcmStringViewArray *config_paths,
-                         bool ignore_errors, bool quiet,
-                         NcmError *ncm_error);
+                         bool ignore_errors, bool quiet, NcmError *ncm_error);
 int32 configuration_apply_runtime(Configuration *config,
                                   NcmMpdClient *client, bool quiet,
                                   NcmError *ncm_error);

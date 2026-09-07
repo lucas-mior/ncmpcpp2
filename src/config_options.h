@@ -110,8 +110,7 @@ XX_STARTUP_SCREEN(startup_screen, "playlist")
 
 /* Optional enum-backed settings. */
 XX_OPTIONAL_STARTUP_SCREEN(startup_slave_screen, "",
-                           has_startup_slave_screen_type,
-                           NCM_SCREEN_TYPE_COUNT)
+                           has_startup_slave_screen_type, NCM_SCREEN_TYPE_COUNT)
 
 /* Color-backed settings. */
 XX_FORMATTED_COLOR(empty_tag_color, "cyan")
@@ -177,8 +176,7 @@ XX_RATIO(playlist_edit_column_width_ratio, "1:2", 2)
 /* Custom/multi-field settings. */
 XX_COLUMNS(song_columns_list_format,
            "(20)[]{a} (6f)[green]{NE} (50)[white]{t|f:Title}"
-           " (20)[cyan]{b} (7f)[magenta]{l}",
-           song_columns_mode_format)
+           " (20)[cyan]{b} (7f)[magenta]{l}", song_columns_mode_format)
 
 /* Named bool-backed settings. */
 XX_NAMED_BOOL(default_place_to_search_in, "database", "database", "playlist")

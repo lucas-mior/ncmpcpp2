@@ -23,8 +23,7 @@ ncm_song_needs_numeric_zero(char *tag, int32 tag_len) {
 
 static int32
 ncm_song_format_numeric_tag_prefix(char *buffer, int32 buffer_cap,
-                                   char *tag, int32 tag_len,
-                                   int32 copy_len) {
+                                   char *tag, int32 tag_len, int32 copy_len) {
     int32 out;
 
     ASSERT((buffer != NULL) && (buffer_cap > 0));
@@ -411,8 +410,7 @@ ncm_song_has_tag_view_unchecked(NcmSong *song, enum mpd_tag_type tag,
 }
 
 static bool
-ncm_song_has_uri_view_unchecked(NcmSong *song, int32 idx,
-                                NcmStringView *view) {
+ncm_song_has_uri_view_unchecked(NcmSong *song, int32 idx, NcmStringView *view) {
     ncm_string_view_clear(view);
     if (idx != 0) {
         return false;

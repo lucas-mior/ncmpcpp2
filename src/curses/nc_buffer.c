@@ -216,8 +216,7 @@ nc_buffer_add_format(NcBuffer *buffer, int32 position,
 
 void
 nc_buffer_add_formatted_color(NcBuffer *buffer, int32 position,
-                              NcFormattedColor *formatted_color,
-                              int64 id) {
+                              NcFormattedColor *formatted_color, int64 id) {
     NcBufferProperty property;
 
     nc_formatted_color_copy(&property.value.formatted_color, formatted_color);
@@ -231,8 +230,7 @@ nc_buffer_add_formatted_color(NcBuffer *buffer, int32 position,
 
 void
 nc_buffer_add_formatted_color_end(NcBuffer *buffer, int32 position,
-                                  NcFormattedColor *formatted_color,
-                                  int64 id) {
+                                  NcFormattedColor *formatted_color, int64 id) {
     NcBufferProperty property;
 
     nc_formatted_color_copy(&property.value.formatted_color, formatted_color);

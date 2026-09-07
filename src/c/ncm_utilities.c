@@ -61,8 +61,7 @@ ncm_run_external_command(char *command, int32 command_len,
                          bool block, NcmError *ncm_error) {
     int32 status;
 
-    return ncm_system_command(command, command_len,
-                              block, &status, ncm_error);
+    return ncm_system_command(command, command_len, block, &status, ncm_error);
 }
 
 int32

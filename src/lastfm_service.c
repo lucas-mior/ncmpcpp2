@@ -65,8 +65,7 @@ static void
 lastfm_service_destroy_unchecked(NcmLastfmService *service) {
     stupid_string_free(&service->artist, &service->artist_len,
                           &service->artist_cap);
-    stupid_string_free(&service->lang, &service->lang_len,
-                          &service->lang_cap);
+    stupid_string_free(&service->lang, &service->lang_len, &service->lang_cap);
     service->type = NCM_LASTFM_SERVICE_NONE;
     return;
 }
@@ -114,8 +113,7 @@ ncm_lastfm_service_is_equal(NcmLastfmService *left, NcmLastfmService *right) {
 
 char *
 ncm_lastfm_service_name(NcmLastfmService *service) {
-    if (service
-        && (service->type == NCM_LASTFM_SERVICE_ARTIST_INFO)) {
+    if (service && (service->type == NCM_LASTFM_SERVICE_ARTIST_INFO)) {
         return "Artist info";
     }
     return "Last.fm";
@@ -162,10 +160,8 @@ lastfm_find(char *data, int32 data_len, char *needle, int32 needle_len,
 }
 
 static int32
-lastfm_extract_between(StrBuilder *out,
-                       char *data, int32 data_len,
-                       char *start, int32 start_len,
-                       char *end, int32 end_len) {
+lastfm_extract_between(StrBuilder *out, char *data, int32 data_len,
+                       char *start, int32 start_len, char *end, int32 end_len) {
     int32 a;
     int32 b;
 
@@ -321,16 +317,14 @@ ncm_lastfm_service_fetch(NcmLastfmService *service, NcmLastfmResult *result) {
         status = lastfm_test_perform(&data, url.data, url.len, NULL, 0,
                                      false, 10, lastfm_test_user);
     } else {
-        status = ncm_curl_perform(&data, url.data, url.len, NULL, 0,
-                                  false, 10);
+        status = ncm_curl_perform(&data, url.data, url.len, NULL, 0, false, 10);
     }
     if (status < 0) {
         message = "Network error";
         if (status == -ETIMEDOUT) {
             message = "Request timed out";
         }
-        lastfm_result_set_unchecked(result, false,
-                                    message, strlen32(message));
+        lastfm_result_set_unchecked(result, false, message, strlen32(message));
         goto cleanup;
     }
     {
@@ -352,8 +346,7 @@ ncm_lastfm_service_fetch(NcmLastfmService *service, NcmLastfmResult *result) {
         }
     }
     if (lastfm_extract_between(&content, data.data, data.len,
-                               STRLIT("<content>"),
-                               STRLIT("</content>")) < 0) {
+                               STRLIT("<content>"), STRLIT("</content>")) < 0) {
         lastfm_result_set_unchecked(result, false,
                                     STRLIT(LASTFM_INVALID_RESPONSE));
         goto cleanup;
@@ -371,8 +364,7 @@ ncm_lastfm_service_fetch(NcmLastfmService *service, NcmLastfmResult *result) {
                            STRLIT("<similar>"), STRLIT("</similar>"),
                            STRLIT("\n\nSimilar artists:\n"));
     lastfm_append_similars(&output, data.data, data.len, STRLIT("<tags>"),
-                           STRLIT("</tags>"),
-                           STRLIT("\n\nSimilar tags:\n"));
+                           STRLIT("</tags>"), STRLIT("\n\nSimilar tags:\n"));
     if (lastfm_extract_between(&original_link, data.data, data.len,
                                STRLIT("<url>"), STRLIT("</url>")) == 0) {
         StrBuilder clean_url = {0};

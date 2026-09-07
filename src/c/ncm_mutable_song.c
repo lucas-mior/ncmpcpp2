@@ -98,8 +98,7 @@ ncm_mutable_song_add_tag(NcmMutableSong *song, enum NcmTagsField field,
 
 static void
 ncm_mutable_song_set_original_tag_unchecked(NcmMutableSong *song,
-                                            enum NcmTagsField field,
-                                            int32 idx,
+                                            enum NcmTagsField field, int32 idx,
                                             char *value, int32 value_len) {
     NcmMutableSongTag *tag;
 
@@ -124,15 +123,13 @@ ncm_mutable_song_set_tag_unchecked(NcmMutableSong *song,
         tag = ncm_mutable_song_add_tag(song, field, idx);
     }
 
-    if (optional_strequal(tag->original, tag->original_len,
-                          value, value_len)) {
+    if (optional_strequal(tag->original, tag->original_len, value, value_len)) {
         ncm_mutable_song_free_string(&tag->value, &tag->value_len);
         tag->modified = false;
         return;
     }
 
-    ncm_mutable_song_set_string(&tag->value, &tag->value_len,
-                                value, value_len);
+    ncm_mutable_song_set_string(&tag->value, &tag->value_len, value, value_len);
     tag->modified = true;
     return;
 }
@@ -237,8 +234,7 @@ ncm_mutable_song_copy(NcmMutableSong *dest, NcmMutableSong *source) {
                                     source_tag->original,
                                     source_tag->original_len);
         ncm_mutable_song_set_string(&tag->value, &tag->value_len,
-                                    source_tag->value,
-                                    source_tag->value_len);
+                                    source_tag->value, source_tag->value_len);
     }
 
     ncm_mutable_song_destroy_unchecked(dest);
@@ -501,8 +497,7 @@ ncm_mutable_song_get_tag_buffer(NcmMutableSong *song,
 }
 
 StrBuilder
-ncm_mutable_song_tags_buffer(NcmMutableSong *song,
-                             enum NcmTagsField field,
+ncm_mutable_song_tags_buffer(NcmMutableSong *song, enum NcmTagsField field,
                              char *separator, int32 separator_len,
                              bool show_duplicates) {
     StrBuilder result = {0};

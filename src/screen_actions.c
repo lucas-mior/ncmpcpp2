@@ -255,8 +255,7 @@ current_screen_current_search_constraint(void) {
 bool
 current_screen_can_search(void) {
     if (current_screen_is(NC_SCREEN_TYPE_SEARCH_ENGINE)) {
-        return search_engine_screen_can_search(
-            app_screen_search_engine());
+        return search_engine_screen_can_search(app_screen_search_engine());
     }
     if (current_screen_is(NC_SCREEN_TYPE_TAG_EDIT)) {
 #if defined(HAVE_TAGLIB_H)

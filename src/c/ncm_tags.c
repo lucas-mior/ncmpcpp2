@@ -69,8 +69,7 @@ ncm_tags_set_attribute(struct mpd_song *song, char *name, char *value) {
 }
 
 enum NcmTagsReadResult
-ncm_tags_read_lyrics(char *path, NcmTagsValueCallback *callback,
-                     void *user) {
+ncm_tags_read_lyrics(char *path, NcmTagsValueCallback *callback, void *user) {
     NcmTaglibFile file = {0};
     NcmTagsForwardContext context;
     int32 count;
