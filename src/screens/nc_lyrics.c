@@ -46,12 +46,11 @@ static char *lyrics_title_callback(NcScreen *screen);
 static void lyrics_update_callback(NcScreen *screen);
 static void lyrics_mouse_button_pressed_callback(NcScreen *screen,
                                                  MEVENT event);
-static int32 lyrics_screen_start_foreground_fetch(
-    LyricsScreen *screen,
-    NcmSong *song,
-    NcmLyricsFetcherDef *fetcher,
-    StrBuilder *filename,
-    NcmError *ncm_error);
+static int32 lyrics_screen_start_foreground_fetch(LyricsScreen *,
+                                                  NcmSong *,
+                                                  NcmLyricsFetcherDef *fetcher,
+                                                  StrBuilder *filename,
+                                                  NcmError *ncm_error);
 static bool lyrics_screen_update_sync_line_force(LyricsScreen *, bool force);
 static int32 lyrics_lrc_buffer_position(void *user);
 static void lyrics_lrc_buffer_append(void *user, char *data, int32 data_len);
