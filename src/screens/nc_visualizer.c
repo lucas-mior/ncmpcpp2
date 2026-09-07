@@ -1229,8 +1229,8 @@ visualizer_screen_take_render_samples(VisualizerScreen *screen, int16 *dest,
 }
 
 int32
-visualizer_screen_split_stereo(VisualizerScreen *screen, int16 *samples,
-                               int32 samples_len) {
+visualizer_screen_split_stereo(VisualizerScreen *screen,
+                               int16 *samples, int32 samples_len) {
     int32 pairs;
 
     screen->left_ch.len = 0;
@@ -1297,8 +1297,7 @@ static void
 visualizer_draw_wave(VisualizerScreen *screen,
                      int16 *samples, int32 samples_len,
                      int32 y_offset, int32 height) {
-    char *character = screen->visualizer_chars.data
-                      + screen->point_char_offset;
+    char *character = screen->visualizer_chars.data + screen->point_char_offset;
     int32 character_len = screen->point_char_len;
     int32 width = nc_window_width(&screen->window);
     int32 half_height;
@@ -1685,11 +1684,9 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                             character_len =
                                 visualizer_smooth_flipped_char_lens[index];
                         } else {
-                            index = VISUALIZER_SMOOTH_CHAR_COUNT
-                                    - index - 2;
+                            index = VISUALIZER_SMOOTH_CHAR_COUNT - index - 2;
                             character = visualizer_smooth_chars[index];
-                            character_len =
-                                visualizer_smooth_char_lens[index];
+                            character_len = visualizer_smooth_char_lens[index];
                             reverse = true;
                         }
                     } else {
