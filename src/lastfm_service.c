@@ -303,7 +303,7 @@ ncm_lastfm_service_fetch(NcmLastfmService *service, NcmLastfmResult *result) {
         return 0;
     }
 
-    SB_APPEND(&url, STRLIT(LASTFM_API_URL));
+    SB_APPEND(&url, LASTFM_API_URL);
     SB_APPEND(&url, "artist.getinfo&artist=");
     status = lastfm_append_escaped(&url, service->artist, service->artist_len);
     if (status < 0) {
