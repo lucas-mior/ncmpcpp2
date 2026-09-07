@@ -1052,12 +1052,8 @@ int32 ncm_mpd_client_set_replay_gain_mode(NcmMpdClient *,
                                           enum NcmMpdReplayGainMode,
                                           NcmError *);
 
-int32 ncm_mpd_client_set_priority_id(NcmMpdClient *, int32 id, int32 priority,
-                                     NcmError *);
 int32 ncm_mpd_client_set_priority_song(NcmMpdClient *, NcmSong *, int32,
                                        NcmError *);
-int32 ncm_mpd_client_add_song(NcmMpdClient *, char *, int32, int32 *,
-                              NcmError *);
 int32 ncm_mpd_client_add_song_value(NcmMpdClient *, NcmSong *, int32, int32 *,
                                     NcmError *);
 int32 ncm_mpd_client_add_song_list(NcmMpdClient *, NcmMpdSongList *, int32,
@@ -1075,8 +1071,6 @@ int32 ncm_mpd_client_delete_playlist(NcmMpdClient *, char *, NcmError *);
 int32 ncm_mpd_client_load_playlist(NcmMpdClient *, char *, bool *, NcmError *);
 int32 ncm_mpd_client_save_playlist(NcmMpdClient *, char *, NcmError *);
 int32 ncm_mpd_client_clear_playlist(NcmMpdClient *, char *, NcmError *);
-int32 ncm_mpd_client_add_to_playlist(NcmMpdClient *, char *playlist,
-                                     char *path, NcmError *);
 int32 ncm_mpd_client_add_song_to_playlist(NcmMpdClient *, char *, NcmSong *,
                                           NcmError *);
 int32 ncm_mpd_client_playlist_move(NcmMpdClient *, char *, int32 from,
@@ -1097,8 +1091,6 @@ int32 ncm_mpd_client_get_playlists(NcmMpdClient *, NcmMpdPlaylistList *,
                                    NcmError *);
 int32 ncm_mpd_client_get_list(NcmMpdClient *, enum mpd_tag_type,
                               NcmStringViewList *, NcmError *);
-int32 ncm_mpd_client_get_directory(NcmMpdClient *, char *, NcmMpdItemList *,
-                                   NcmError *);
 int32 ncm_mpd_client_get_directory_recursive(NcmMpdClient *, char *,
                                              NcmMpdSongList *, NcmError *);
 int32 ncm_mpd_client_get_songs(NcmMpdClient *, char *, NcmMpdSongList *,
