@@ -177,11 +177,10 @@ tiny_editor_buffer_key_uint(NcBuffer *buffer, char *key, int32 key_len,
 }
 
 static void
-tiny_editor_buffer_mutable_tag(
-    NcBuffer *buffer, NcmMutableSong *song, enum NcmTagsField field,
-    char *tag_separator, int32 tag_separator_len,
-    bool show_duplicate_tags
-) {
+tiny_editor_buffer_mutable_tag(NcBuffer *buffer, NcmMutableSong *song,
+                               enum NcmTagsField field,
+                               char *tag_separator, int32 tag_separator_len,
+                               bool show_duplicate_tags) {
     StrBuilder value;
     char *name;
     int32 name_len;
