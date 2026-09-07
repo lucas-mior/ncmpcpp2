@@ -206,7 +206,7 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
                                 char *lang, int32 lang_len,
                                 NcmError *ncm_error) {
     LastfmJob *job;
-    NcmLastfmService candidate;
+    NcmLastfmService candidate = {0};
     char *title;
     int32 status;
 
@@ -215,7 +215,6 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
                                     STRLIT("missing artist"));
     }
 
-    candidate = (NcmLastfmService){0};
     ncm_lastfm_artist_info_init(&candidate, artist, artist_len,
                                 lang, lang_len);
     if (screen->has_service
