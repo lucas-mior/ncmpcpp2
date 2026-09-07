@@ -222,7 +222,6 @@ ncm_status_handle_server_error_value(NcmMpdClient *client, int32 code,
 void
 ncm_status_trace(NcmMpdClient *client, bool update_timer,
                  bool update_window_timeout, NcmError *ncm_error) {
-    StatusTimeoutContext timeout_context = {0};
     NcmStatusHooks *hooks;
     NcWindow *footer;
 
@@ -360,6 +359,7 @@ ncm_status_trace(NcmMpdClient *client, bool update_timer,
     }
 
     if (update_window_timeout) {
+        StatusTimeoutContext timeout_context = {0};
         timeout_context.timeout = INT_MAX;
         app_controller_each_visible_screen(status_update_timeout_from_screen,
                                            &timeout_context);
