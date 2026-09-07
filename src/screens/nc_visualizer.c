@@ -1433,9 +1433,6 @@ visualizer_draw_frequency(VisualizerScreen *screen,
 
     {
         double alpha;
-        double a0;
-        double a1;
-        double a2;
         int32 used_samples;
 
         memset64(fft->input, 0, fft->dft_total_size*SIZEOF(*fft->input));
@@ -1448,9 +1445,9 @@ visualizer_draw_frequency(VisualizerScreen *screen,
         }
         if (used_samples > 0) {
             alpha = 0.16;
-            a0 = (1.0 - alpha)/2.0;
-            a1 = 0.5;
-            a2 = alpha/2.0;
+            double a0 = (1.0 - alpha)/2.0;
+            double a1 = 0.5;
+            double a2 = alpha/2.0;
             for (int32 i = 0; i < used_samples; i += 1) {
                 double window;
                 double denominator;
