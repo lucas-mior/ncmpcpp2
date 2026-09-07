@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_SETTINGS_H)
-#define NCMPCPP_SETTINGS_H
+#if !defined(SETTINGS_H)
+#define SETTINGS_H
 
 #include "cbase.h"
 
@@ -127,4 +127,4 @@ int32 configuration_apply_runtime(Configuration *config,
 
 extern Configuration Config;
 
-#endif /* NCMPCPP_SETTINGS_H */
+#endif /* SETTINGS_H */
