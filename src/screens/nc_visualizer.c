@@ -167,9 +167,8 @@ visualizer_generate_frequency_space(VisualizerScreen *screen) {
                 10.0, (double)(left_bins + i)*scale);
         }
     } else {
-        double denominator;
+        double denominator = fft->hz_min - fft->hz_max;
 
-        denominator = fft->hz_min - fft->hz_max;
         if (denominator == 0.0) {
             return;
         }
