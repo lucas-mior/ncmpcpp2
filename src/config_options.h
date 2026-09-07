@@ -94,34 +94,24 @@ XX_BOOL(colors_enabled, "yes")
 
 /* Ordinary enum-backed settings. */
 #if defined(HAVE_FFTW3_H)
-XX_ENUM(visualizer_type, enum VisualizerType, "spectrum",
-        ncm_visualizer_type_parse)
+XX_ENUM(visualizer_type, NCM_VISUALIZER_TYPE_, "spectrum")
 #else
-XX_ENUM(visualizer_type, enum VisualizerType, "ellipse",
-        ncm_visualizer_type_parse)
+XX_ENUM(visualizer_type, NCM_VISUALIZER_TYPE_, "ellipse")
 #endif
-XX_ENUM(browser_sort_mode, enum SortMode, "type",
-        settings_parse_browser_sort_mode)
-XX_ENUM(playlist_display_mode, enum DisplayMode, "columns",
-        ncm_display_mode_parse)
-XX_ENUM(browser_display_mode, enum DisplayMode, "classic",
-        ncm_display_mode_parse)
-XX_ENUM(search_engine_display_mode, enum DisplayMode, "classic",
-        ncm_display_mode_parse)
-XX_ENUM(playlist_editor_display_mode, enum DisplayMode, "classic",
-        ncm_display_mode_parse)
-XX_ENUM(user_interface, enum Design, "classic", ncm_design_parse)
-XX_ENUM(media_library_primary_tag, enum mpd_tag_type, "artist",
-        settings_parse_media_library_primary_tag)
-XX_ENUM(space_add_mode, enum SpaceAddMode, "add_remove",
-        ncm_space_add_mode_parse)
-XX_ENUM(startup_screen, enum ScreenType, "playlist",
-        screen_type_parse_startup)
+XX_ENUM(browser_sort_mode, NCM_SORT_MODE_, "type")
+XX_ENUM(playlist_display_mode, NCM_DISPLAY_MODE_, "columns")
+XX_ENUM(browser_display_mode, NCM_DISPLAY_MODE_, "classic")
+XX_ENUM(search_engine_display_mode, NCM_DISPLAY_MODE_, "classic")
+XX_ENUM(playlist_editor_display_mode, NCM_DISPLAY_MODE_, "classic")
+XX_ENUM(user_interface, NCM_DESIGN_, "classic")
+XX_MPD_TAG(media_library_primary_tag, "artist")
+XX_ENUM(space_add_mode, NCM_SPACE_ADD_MODE_, "add_remove")
+XX_STARTUP_SCREEN(startup_screen, "playlist")
 
 /* Optional enum-backed settings. */
-XX_OPTIONAL_ENUM(startup_slave_screen, enum ScreenType, "",
-                 screen_type_parse_startup,
-                 has_startup_slave_screen_type, NCM_SCREEN_TYPE_COUNT)
+XX_OPTIONAL_STARTUP_SCREEN(startup_slave_screen, "",
+                           has_startup_slave_screen_type,
+                           NCM_SCREEN_TYPE_COUNT)
 
 /* Color-backed settings. */
 XX_FORMATTED_COLOR(empty_tag_color, "cyan")
