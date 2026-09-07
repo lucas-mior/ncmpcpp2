@@ -422,7 +422,17 @@ side withtout going over 80 columns, put them in separate lines.
 In standalone declarations, if one is needed at all, put all in one line. Break
 long lines so the 80-character limit rule is followed.
 Functions declarations: add parameter names only when there are two or more
-parameters of the same type.
+parameters of that type:
+```c
+// bad
+void my_function(MyStruct *, int32, int32);
+
+// bad
+void my_function(MyStruct *struct, int32 x, int32 y);
+
+// good
+void my_function(MyStruct *, int32 x, int32 y);
+```
 
 Prefer to break after an argument than before the equal sign, specially if the
 first argument fits in the first line:
