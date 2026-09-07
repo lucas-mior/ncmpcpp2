@@ -12,7 +12,7 @@
 
 Configuration Config;
 
-typedef int32 (*SettingsApplyFn)(Configuration *config,
+typedef int32 (SettingsApplyFn)(Configuration *config,
                                 char *value, int32 value_len,
                                 NcmError *ncm_error);
 
@@ -25,7 +25,7 @@ typedef struct SettingsOption {
     char *default_value;
     int32 name_len;
     int32 default_value_len;
-    SettingsApplyFn apply;
+    SettingsApplyFn *apply;
 } SettingsOption;
 
 #define SETTINGS_ASSERT_FIELD_TYPE(NAME, TYPE)                                 \
