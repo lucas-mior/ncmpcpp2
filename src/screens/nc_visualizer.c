@@ -1614,13 +1614,12 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                     } else {
                         double m0 = (h_prev - h_prev2) /(x_prev - x_prev2);
                         double m1 = (h_next2 - h_next)/(x_next2 - x_next);
-                        double t;
+                        double t = ((double)x - x_prev) /(x_next - x_prev);
                         double h00;
                         double h10;
                         double h01;
                         double h11;
 
-                        t = ((double)x - x_prev) /(x_next - x_prev);
                         h00 = 2.0*t*t*t - 3.0*t*t + 1.0;
                         h10 = t*t*t - 2.0*t*t + t;
                         h01 = -2.0*t*t*t + 3.0*t*t;
