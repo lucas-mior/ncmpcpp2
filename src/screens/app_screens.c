@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_APP_SCREENS_C)
-#define NCMPCPP_APP_SCREENS_C
+#if !defined(APP_SCREENS_C)
+#define APP_SCREENS_C
 
 #include "cbase.h"
 
@@ -1831,4 +1831,4 @@ show_long_time(NcBuffer *buffer, int32 seconds) {
     return;
 }
 
-#endif /* NCMPCPP_APP_SCREENS_C */
+#endif /* APP_SCREENS_C */

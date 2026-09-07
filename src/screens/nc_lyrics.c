@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_LYRICS_C)
-#define NCMPCPP_NC_LYRICS_C
+#if !defined(NC_LYRICS_C)
+#define NC_LYRICS_C
 
 #include "cbase.h"
 
@@ -1838,4 +1838,4 @@ lyrics_start_next_background(LyricsScreen *screen,
     return 0;
 }
 
-#endif /* NCMPCPP_NC_LYRICS_C */
+#endif /* NC_LYRICS_C */

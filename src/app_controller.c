@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_APP_CONTROLLER_C)
-#define NCMPCPP_APP_CONTROLLER_C
+#if !defined(APP_CONTROLLER_C)
+#define APP_CONTROLLER_C
 
 #include "cbase.h"
 
@@ -201,4 +201,4 @@ app_controller_mouse_button_pressed_current(MEVENT event) {
     return;
 }
 
-#endif /* NCMPCPP_APP_CONTROLLER_C */
+#endif /* APP_CONTROLLER_C */

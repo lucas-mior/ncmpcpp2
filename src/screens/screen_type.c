@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_SCREEN_TYPE_C)
-#define NCMPCPP_SCREEN_TYPE_C
+#if !defined(SCREEN_TYPE_C)
+#define SCREEN_TYPE_C
 
 #include "cbase.h"
 
@@ -104,4 +104,4 @@ screen_type_parse(char *string, int32 string_len,
     return screen_type_parse_checked(string, string_len, false, screen_type);
 }
 
-#endif /* NCMPCPP_SCREEN_TYPE_C */
+#endif /* SCREEN_TYPE_C */

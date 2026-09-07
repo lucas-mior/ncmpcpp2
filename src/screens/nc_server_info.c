@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_SERVER_INFO_C)
-#define NCMPCPP_NC_SERVER_INFO_C
+#if !defined(NC_SERVER_INFO_C)
+#define NC_SERVER_INFO_C
 
 #include "cbase.h"
 
@@ -189,4 +189,4 @@ nc_server_info_destroy_callback(NcScreen *screen) {
     return;
 }
 
-#endif /* NCMPCPP_NC_SERVER_INFO_C */
+#endif /* NC_SERVER_INFO_C */

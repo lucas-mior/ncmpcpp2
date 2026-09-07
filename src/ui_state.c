@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_UI_STATE_C)
-#define NCMPCPP_UI_STATE_C
+#if !defined(UI_STATE_C)
+#define UI_STATE_C
 
 #include "cbase.h"
 
@@ -116,4 +116,4 @@ ui_state_statusbar_visibility_is_baseline(void) {
     return statusbar_visibility_baseline;
 }
 
-#endif /* NCMPCPP_UI_STATE_C */
+#endif /* UI_STATE_C */

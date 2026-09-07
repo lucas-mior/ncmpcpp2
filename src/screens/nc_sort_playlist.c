@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_SORT_PLAYLIST_C)
-#define NCMPCPP_NC_SORT_PLAYLIST_C
+#if !defined(NC_SORT_PLAYLIST_C)
+#define NC_SORT_PLAYLIST_C
 
 #include "cbase.h"
 
@@ -543,4 +543,4 @@ sort_dialog_finish(SortPlaylistDialog *dialog) {
     return;
 }
 
-#endif /* NCMPCPP_NC_SORT_PLAYLIST_C */
+#endif /* NC_SORT_PLAYLIST_C */

@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_SCREEN_C)
-#define NCMPCPP_NC_SCREEN_C
+#if !defined(NC_SCREEN_C)
+#define NC_SCREEN_C
 
 #include "cbase.h"
 
@@ -887,4 +887,4 @@ nc_screen_run_current_is_available(NcScreen *screen) {
     return screen->ops->run_current != nc_screen_default_run_current;
 }
 
-#endif /* NCMPCPP_NC_SCREEN_C */
+#endif /* NC_SCREEN_C */

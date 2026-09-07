@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_MEDIA_LIBRARY_C)
-#define NCMPCPP_NC_MEDIA_LIBRARY_C
+#if !defined(NC_MEDIA_LIBRARY_C)
+#define NC_MEDIA_LIBRARY_C
 
 #include "cbase.h"
 
@@ -3553,4 +3553,4 @@ library_destroy_callback(NcScreen *screen) {
     return;
 }
 
-#endif /* NCMPCPP_NC_MEDIA_LIBRARY_C */
+#endif /* NC_MEDIA_LIBRARY_C */

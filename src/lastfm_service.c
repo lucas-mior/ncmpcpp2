@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_LASTFM_SERVICE_C)
-#define NCMPCPP_LASTFM_SERVICE_C
+#if !defined(LASTFM_SERVICE_C)
+#define LASTFM_SERVICE_C
 
 #include "cbase.h"
 
@@ -397,4 +397,4 @@ cleanup:
     return status;
 }
 
-#endif /* NCMPCPP_LASTFM_SERVICE_C */
+#endif /* LASTFM_SERVICE_C */

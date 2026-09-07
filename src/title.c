@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_TITLE_C)
-#define NCMPCPP_TITLE_C
+#if !defined(TITLE_C)
+#define TITLE_C
 
 #include "cbase.h"
 
@@ -202,4 +202,4 @@ ncm_title_draw_current_header(void) {
     return;
 }
 
-#endif /* NCMPCPP_TITLE_C */
+#endif /* TITLE_C */

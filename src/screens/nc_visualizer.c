@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_VISUALIZER_C)
-#define NCMPCPP_NC_VISUALIZER_C
+#if !defined(NC_VISUALIZER_C)
+#define NC_VISUALIZER_C
 
 #include "cbase.h"
 
@@ -1968,4 +1968,4 @@ visualizer_next_type(enum VisualizerScreenType type) {
     }
 }
 
-#endif /* NCMPCPP_NC_VISUALIZER_C */
+#endif /* NC_VISUALIZER_C */

@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_HELP_C)
-#define NCMPCPP_NC_HELP_C
+#if !defined(NC_HELP_C)
+#define NC_HELP_C
 
 #include "cbase.h"
 
@@ -230,4 +230,4 @@ nc_help_destroy_callback(NcScreen *screen) {
     return;
 }
 
-#endif /* NCMPCPP_NC_HELP_C */
+#endif /* NC_HELP_C */

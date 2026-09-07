@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_CONFIG_H)
-#define NCMPCPP_CONFIG_H
+#if !defined(CONFIG_H)
+#define CONFIG_H
 
 #include "cbase.h"
 
@@ -29,4 +29,4 @@
 #define PACKAGE_VERSION "0.10.2_dev"
 #define VERSION "0.10.2_dev"
 
-#endif /* NCMPCPP_CONFIG_H */
+#endif /* CONFIG_H */

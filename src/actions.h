@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_ACTIONS_H)
-#define NCMPCPP_ACTIONS_H
+#if !defined(ACTIONS_H)
+#define ACTIONS_H
 
 #include "cbase.h"
 
@@ -191,4 +191,4 @@ bool ncm_action_immediate_command_prompt_should_stop(StrBuilder *previous,
                                                      char *text,
                                                      int32 text_len);
 
-#endif /* NCMPCPP_ACTIONS_H */
+#endif /* ACTIONS_H */

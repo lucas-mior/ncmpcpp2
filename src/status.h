@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_STATUS_H)
-#define NCMPCPP_STATUS_H
+#if !defined(STATUS_H)
+#define STATUS_H
 
 #include "cbase.h"
 
@@ -90,4 +90,4 @@ void ncm_status_changes_elapsed_time(bool update_elapsed);
 void ncm_status_changes_flags(void);
 void ncm_status_changes_mixer(void);
 
-#endif /* NCMPCPP_STATUS_H */
+#endif /* STATUS_H */

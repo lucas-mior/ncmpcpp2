@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_SCREEN_ACTIONS_C)
-#define NCMPCPP_SCREEN_ACTIONS_C
+#if !defined(SCREEN_ACTIONS_C)
+#define SCREEN_ACTIONS_C
 
 #include "cbase.h"
 
@@ -350,4 +350,4 @@ current_screen_clear_search_constraint(void) {
     return;
 }
 
-#endif /* NCMPCPP_SCREEN_ACTIONS_C */
+#endif /* SCREEN_ACTIONS_C */

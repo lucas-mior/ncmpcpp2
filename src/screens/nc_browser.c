@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_BROWSER_C)
-#define NCMPCPP_NC_BROWSER_C
+#if !defined(NC_BROWSER_C)
+#define NC_BROWSER_C
 
 #include "cbase.h"
 
@@ -2210,4 +2210,4 @@ browser_string_views_matches(NcmStringView left,
     return STREQUAL(left.data, left.len, right.data, right.len);
 }
 
-#endif /* NCMPCPP_NC_BROWSER_C */
+#endif /* NC_BROWSER_C */

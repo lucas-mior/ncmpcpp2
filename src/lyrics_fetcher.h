@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_LYRICS_FETCHER_H)
-#define NCMPCPP_LYRICS_FETCHER_H
+#if !defined(LYRICS_FETCHER_H)
+#define LYRICS_FETCHER_H
 
 #include "cbase.h"
 
@@ -91,4 +91,4 @@ int32 ncm_lyrics_fetcher_build_url(NcmLyricsFetcherDef *fetcher,
                                    int32 title_len);
 void ncm_lyrics_cleanup_html(StrBuilder *out, char *data, int32 data_len);
 
-#endif /* NCMPCPP_LYRICS_FETCHER_H */
+#endif /* LYRICS_FETCHER_H */

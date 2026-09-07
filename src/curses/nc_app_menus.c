@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_APP_MENUS_C)
-#define NCMPCPP_NC_APP_MENUS_C
+#if !defined(NC_APP_MENUS_C)
+#define NC_APP_MENUS_C
 
 #include "cbase.h"
 
@@ -647,4 +647,4 @@ NC_TYPED_MENU_DEFINE_ITEM_AT(NcEditorBufferMenu,
 #undef NC_TYPED_MENU_DEFINE_CURRENT
 #undef NC_TYPED_MENU_DEFINE_COMMON
 
-#endif /* NCMPCPP_NC_APP_MENUS_C */
+#endif /* NC_APP_MENUS_C */

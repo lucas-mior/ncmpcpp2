@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_CURL_HANDLE_C)
-#define NCMPCPP_CURL_HANDLE_C
+#if !defined(CURL_HANDLE_C)
+#define CURL_HANDLE_C
 
 #include "cbase.h"
 
@@ -118,4 +118,4 @@ ncm_curl_escape(StrBuilder *out, char *string, int32 string_len) {
     return 0;
 }
 
-#endif /* NCMPCPP_CURL_HANDLE_C */
+#endif /* CURL_HANDLE_C */

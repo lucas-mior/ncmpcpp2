@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_PLAYLIST_C)
-#define NCMPCPP_NC_PLAYLIST_C
+#if !defined(NC_PLAYLIST_C)
+#define NC_PLAYLIST_C
 
 #include "cbase.h"
 
@@ -1412,4 +1412,4 @@ playlist_set_one_priority(NcmSong *song, int32 idx, void *user) {
                                             context->ncm_error);
 }
 
-#endif /* NCMPCPP_NC_PLAYLIST_C */
+#endif /* NC_PLAYLIST_C */

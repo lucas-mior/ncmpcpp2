@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_FORMATTED_COLOR_C)
-#define NCMPCPP_NC_FORMATTED_COLOR_C
+#if !defined(NC_FORMATTED_COLOR_C)
+#define NC_FORMATTED_COLOR_C
 
 #include "cbase.h"
 
@@ -62,4 +62,4 @@ nc_formatted_color_format_count(NcFormattedColor *formatted_color) {
     return ARRAY_LEN(formatted_color->formats);
 }
 
-#endif /* NCMPCPP_NC_FORMATTED_COLOR_C */
+#endif /* NC_FORMATTED_COLOR_C */

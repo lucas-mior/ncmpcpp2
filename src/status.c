@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_STATUS_C)
-#define NCMPCPP_STATUS_C
+#if !defined(STATUS_C)
+#define STATUS_C
 
 #include "cbase.h"
 
@@ -1576,4 +1576,4 @@ ncm_status_changes_mixer(void) {
     return;
 }
 
-#endif /* NCMPCPP_STATUS_C */
+#endif /* STATUS_C */
