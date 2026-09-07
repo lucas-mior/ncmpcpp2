@@ -680,8 +680,7 @@ tiny_editor_display(TinyTagEditScreen *editor) {
     menu = nc_editor_buffer_menu_base(&editor->rows);
     nc_menu_prepare_refresh(menu, editor->main_height, NULL, NULL);
     nc_window_display(&editor->window);
-    nc_menu_refresh(menu, &editor->window, editor->width,
-                    editor->main_height);
+    nc_menu_refresh(menu, &editor->window, editor->width, editor->main_height);
 
     return;
 }
