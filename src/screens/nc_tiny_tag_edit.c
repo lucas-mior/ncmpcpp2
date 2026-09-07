@@ -413,8 +413,6 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
     enum TinyTagEditPromptResult prompt_result;
     enum NcmTagsField field;
     NcmStringView initial;
-    char *field_name;
-    int32 field_name_len;
     NcmStringView current_name;
     StrBuilder input = {0};
     StrBuilder tag_value;
@@ -428,6 +426,8 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
 
     if ((row >= (int32)TINY_TAG_EDITOR_FIRST_TAG_ROW)
         && (row <= (int32)TINY_TAG_EDITOR_LAST_TAG_ROW)) {
+        char *field_name;
+        int32 field_name_len;
         NcBuffer row_buffer = {0};
 
         field = (enum NcmTagsField)(row - (int32)TINY_TAG_EDITOR_FIRST_TAG_ROW);
