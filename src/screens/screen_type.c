@@ -48,49 +48,60 @@ screen_type_from_nc_type(int32 nc_type) {
     return NCM_SCREEN_TYPE_COUNT;
 }
 
-int32
-screen_type_parse_startup(char *string, int32 string_len,
+bool
+screen_type_is_startup(enum ScreenType screen_type) {
+    switch (screen_type) {
+    #define NCM_SCREEN_STARTUP_CASE( \
+        screen_type_value, nc_type, nc_value, alias, flags \
+    ) \
+        case screen_type_value: \
+            return (flags & NCM_SCREEN_FLAG_STARTUP) != 0;
+
+    NCM_SCREEN_TYPES(NCM_SCREEN_STARTUP_CASE)
+
+    #undef NCM_SCREEN_STARTUP_CASE
+    case NCM_SCREEN_TYPE_COUNT:
+        break;
+    default:
+        break;
+    }
+
+    return false;
+}
+
+static int32
+screen_type_parse_checked(char *string, int32 string_len, bool startup_only,
                           enum ScreenType *screen_type) {
     if ((string == NULL) || (string_len < 0) || (screen_type == NULL)) {
         return -EINVAL;
     }
 
-    #define NCM_SCREEN_PARSE_STARTUP( \
+    #define NCM_SCREEN_PARSE_CHECKED( \
         screen_type_value, nc_type, nc_value, alias, flags \
     ) \
-        if (((flags & NCM_SCREEN_FLAG_STARTUP) != 0) \
+        if ((!startup_only || ((flags & NCM_SCREEN_FLAG_STARTUP) != 0)) \
             && STREQUAL(string, string_len, #alias)) { \
-            *screen_type = screen_type_value; \
+            *screen_type = NCM_SCREEN_TYPE_parse(string, string_len); \
             return 0; \
         }
 
-    NCM_SCREEN_TYPES(NCM_SCREEN_PARSE_STARTUP)
+    NCM_SCREEN_TYPES(NCM_SCREEN_PARSE_CHECKED)
 
-    #undef NCM_SCREEN_PARSE_STARTUP
+    #undef NCM_SCREEN_PARSE_CHECKED
     *screen_type = NCM_SCREEN_TYPE_COUNT;
     return -NCM_ERROR_PARSE;
 }
 
 int32
+screen_type_parse_startup(char *string, int32 string_len,
+                          enum ScreenType *screen_type) {
+    return screen_type_parse_checked(string, string_len, true, screen_type);
+}
+
+int32
 screen_type_parse(char *string, int32 string_len,
                   enum ScreenType *screen_type) {
-    if ((string == NULL) || (string_len < 0) || (screen_type == NULL)) {
-        return -EINVAL;
-    }
-
-    #define NCM_SCREEN_PARSE( \
-        screen_type_value, nc_type, nc_value, alias, flags \
-    ) \
-        if (STREQUAL(string, string_len, #alias)) { \
-            *screen_type = screen_type_value; \
-            return 0; \
-        }
-
-    NCM_SCREEN_TYPES(NCM_SCREEN_PARSE)
-
-    #undef NCM_SCREEN_PARSE
-    *screen_type = NCM_SCREEN_TYPE_COUNT;
-    return -NCM_ERROR_PARSE;
+    return screen_type_parse_checked(string, string_len, false, screen_type);
 }
 
 #endif /* NCMPCPP_SCREEN_TYPE_C */

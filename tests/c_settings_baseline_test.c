@@ -79,12 +79,16 @@ settings_assert_generated_empty(Configuration *config) {
     ASSERT(config->NAME == 0);
 #define XX_DOUBLE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     ASSERT(config->NAME == 0);
-#define XX_ENUM(NAME, C_TYPE, DEFAULT_VALUE, PARSER) \
-    ASSERT(config->NAME == (C_TYPE)0);
-#define XX_OPTIONAL_ENUM( \
-    NAME, C_TYPE, DEFAULT_VALUE, PARSER, PRESENT_FIELD, UNSET_VALUE \
+#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT_VALUE) \
+    ASSERT(config->NAME == (ENUM_PREFIX_)0);
+#define XX_MPD_TAG(NAME, DEFAULT_VALUE) \
+    ASSERT(config->NAME == MPD_TAG_UNKNOWN);
+#define XX_STARTUP_SCREEN(NAME, DEFAULT_VALUE) \
+    ASSERT(config->NAME == NCM_SCREEN_TYPE_COUNT);
+#define XX_OPTIONAL_STARTUP_SCREEN( \
+    NAME, DEFAULT_VALUE, PRESENT_FIELD, UNSET_VALUE \
 ) \
-    ASSERT(config->NAME == (C_TYPE)(UNSET_VALUE)); \
+    ASSERT(config->NAME == (NCM_SCREEN_TYPE_)(UNSET_VALUE)); \
     ASSERT(!config->PRESENT_FIELD);
 #define XX_COLOR(NAME, DEFAULT_VALUE) \
     ASSERT(nc_color_is_default(config->NAME));
@@ -508,7 +512,7 @@ test_enum_options(void) {
     configuration_init(&config);
 
     ASSERT_ZERO(settings_test_apply(
-        apply_browser_sort_mode, &config, "noop"));
+        apply_browser_sort_mode, &config, "none"));
     ASSERT(config.browser_sort_mode == NCM_SORT_MODE_NONE);
     ASSERT(settings_test_apply(
         apply_browser_sort_mode, &config, "invalid") < 0);
