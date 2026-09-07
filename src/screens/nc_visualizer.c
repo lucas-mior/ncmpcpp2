@@ -326,14 +326,14 @@ visualizer_update_callback(NcScreen *screen) {
         }
     }
     new_samples = visualizer_screen_take_render_samples(
-        visualizer, visualizer->rendered_samples.data,
-        visualizer->rendered_samples.cap);
+        visualizer, visualizer->samples_rendered.data,
+        visualizer->samples_rendered.cap);
     if (new_samples <= 0) {
         return;
     }
 
-    visualizer_screen_draw(visualizer, visualizer->rendered_samples.data,
-                           visualizer->rendered_samples.cap);
+    visualizer_screen_draw(visualizer, visualizer->samples_rendered.data,
+                           visualizer->samples_rendered.cap);
     nc_window_refresh(&visualizer->window);
     return;
 }
@@ -933,7 +933,7 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
 
     screen->samples_in = (NcmSampleBuffer){0};
     screen->samples_buf = (NcmSampleBuffer){0};
-    screen->rendered_samples = (NcmSampleBuffer){0};
+    screen->samples_rendered = (NcmSampleBuffer){0};
     screen->left_ch = (NcmSampleBuffer){0};
     screen->right_ch = (NcmSampleBuffer){0};
 
@@ -1014,7 +1014,7 @@ visualizer_screen_destroy(VisualizerScreen *screen) {
 
     ncm_sample_buffer_destroy(&screen->right_ch);
     ncm_sample_buffer_destroy(&screen->left_ch);
-    ncm_sample_buffer_destroy(&screen->rendered_samples);
+    ncm_sample_buffer_destroy(&screen->samples_rendered);
     ncm_sample_buffer_destroy(&screen->samples_buf);
     ncm_sample_buffer_destroy(&screen->samples_in);
     visualizer_destroy_colors(screen);
@@ -1048,7 +1048,7 @@ visualizer_screen_set_geometry(VisualizerScreen *screen,
 void
 visualizer_screen_init_visualization(VisualizerScreen *screen) {
     double samples_per_column;
-    int32 rendered_samples;
+    int32 samples_rendered;
     int32 samples_in;
     int32 width;
     int32 rendered_cap;
@@ -1065,31 +1065,31 @@ visualizer_screen_init_visualization(VisualizerScreen *screen) {
     case VISUALIZER_WAVE_FILLED:
         samples_per_column = ceil(
             (double)screen->sample_rate / (double)screen->fps / (double)width);
-        rendered_samples = (int32)samples_per_column*width*10;
+        samples_rendered = (int32)samples_per_column*width*10;
         break;
 #if defined(HAVE_FFTW3_H)
     case VISUALIZER_FREQUENCY:
-        rendered_samples = screen->fft.dft_nonzero_size;
+        samples_rendered = screen->fft.dft_nonzero_size;
         break;
 #endif
     case VISUALIZER_ELLIPSE:
-        rendered_samples = screen->sample_rate / 30;
+        samples_rendered = screen->sample_rate / 30;
         break;
     case VISUALIZER_TYPE_COUNT:
     default:
         screen->visualization_type = VISUALIZER_WAVE;
         samples_per_column = ceil(
             (double)screen->sample_rate / (double)screen->fps / (double)width);
-        rendered_samples = (int32)samples_per_column*width*10;
+        samples_rendered = (int32)samples_per_column*width*10;
         break;
     }
 
     samples_in = screen->sample_rate / 2;
     if (screen->stereo) {
-        rendered_samples *= 2;
+        samples_rendered *= 2;
         samples_in *= 2;
     }
-    rendered_cap = rendered_samples;
+    rendered_cap = samples_rendered;
     incoming_cap = samples_in;
     channel_cap = 0;
     if (screen->stereo) {
@@ -1098,11 +1098,11 @@ visualizer_screen_init_visualization(VisualizerScreen *screen) {
 
     ncm_sample_buffer_resize(&screen->samples_in, incoming_cap);
     ncm_sample_buffer_resize(&screen->samples_buf, incoming_cap);
-    ncm_sample_buffer_resize(&screen->rendered_samples, rendered_cap);
+    ncm_sample_buffer_resize(&screen->samples_rendered, rendered_cap);
     ncm_sample_buffer_resize(&screen->left_ch, channel_cap);
     ncm_sample_buffer_resize(&screen->right_ch, channel_cap);
-    memset64(screen->rendered_samples.data, 0,
-             rendered_cap*SIZEOF(*screen->rendered_samples.data));
+    memset64(screen->samples_rendered.data, 0,
+             rendered_cap*SIZEOF(*screen->samples_rendered.data));
     return;
 }
 
@@ -1110,14 +1110,14 @@ void
 visualizer_screen_reset_audio_state(VisualizerScreen *screen) {
     screen->samples_in.len = 0;
     screen->samples_buf.len = 0;
-    screen->rendered_samples.len = 0;
+    screen->samples_rendered.len = 0;
     screen->left_ch.len = 0;
     screen->right_ch.len = 0;
 
-    if (screen->rendered_samples.cap > 0) {
-        int64 cap = screen->rendered_samples.cap;
-        memset64(screen->rendered_samples.data, 0,
-                 cap*SIZEOF(*screen->rendered_samples.data));
+    if (screen->samples_rendered.cap > 0) {
+        int64 cap = screen->samples_rendered.cap;
+        memset64(screen->samples_rendered.data, 0,
+                 cap*SIZEOF(*screen->samples_rendered.data));
     }
 
     visualizer_screen_drain_data_source(screen);
