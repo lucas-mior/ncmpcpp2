@@ -20,7 +20,8 @@ status = ncm_fs_rename(old_real_path.data, old_real_path.len,
                        ncm_error);
 ```
 Only keep line break before the first argument on the very very rare occasion
-that it does not fit in a single line (80 column rule).
+that it does not fit in a single line (80 column rule). Remember to try to keep
+associated pointer + len pairs together.
 
 - src/screens/screen_type.c
 - src/c/ncm_directory.c
