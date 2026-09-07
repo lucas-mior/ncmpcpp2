@@ -97,15 +97,11 @@ static void lyrics_job_append_fetch_error(LyricsJob *job,
                                           NcmLyricsResult *result);
 static bool lyrics_job_is_current(LyricsJob *job);
 static int32 lyrics_job_run(void *user, NcmError *ncm_error);
-static void lyrics_job_complete(int32 status, NcmError *ncm_error,
-                                void *user);
+static void lyrics_job_complete(int32 status, NcmError *ncm_error, void *user);
 static void lyrics_job_destroy(void *user);
-static int32 lyrics_start_next_background(LyricsScreen *screen,
-                                          NcmError *ncm_error);
-static bool lyrics_find_match_callback(int32 start, int32 len,
-                                       void *user);
-static void lyrics_mouse_scroll(LyricsScreen *screen,
-                                enum NcScroll where);
+static int32 lyrics_start_next_background(LyricsScreen *, NcmError *ncm_error);
+static bool lyrics_find_match_callback(int32 start, int32 len, void *user);
+static void lyrics_mouse_scroll(LyricsScreen *screen, enum NcScroll where);
 static void lyrics_display(LyricsScreen *screen);
 
 #define NC_SCREEN_IMPL_TYPE LyricsScreen
