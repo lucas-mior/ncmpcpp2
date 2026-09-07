@@ -59,7 +59,7 @@ nc_scrollpad_scroll(NcScrollpad *scrollpad, NcWindow *window,
                     enum NcScroll where) {
     int32 max_beginning;
 
-    ASSERT(scrollpad->real_height >= window->height);
+    ASSERT_MORE_EQUAL(scrollpad->real_height, window->height);
 
     max_beginning = nc_scrollpad_max_beginning(scrollpad, window);
     switch (where) {
