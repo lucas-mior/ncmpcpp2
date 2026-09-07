@@ -607,8 +607,7 @@ configure(int32 argc, char **argv) {
             printf("%.*s", path->len, path->data);
         }
         printf("\n");
-        printf("      --ignore-config-errors   "
-               "ignore unknown and invalid ");
+        printf("      --ignore-config-errors   " "ignore unknown and invalid ");
         printf("options in configuration files\n");
         printf("      --test-lyrics-fetchers   "
                "check if lyrics fetchers work\n");

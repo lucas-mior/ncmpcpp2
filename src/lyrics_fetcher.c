@@ -2251,8 +2251,7 @@ lyrics_collect_direct_urls(NcmLyricsFetcherDef *fetcher,
 static bool
 lyrics_url_is_http(char *url, int32 url_len) {
     return lyrics_starts_with_ignore_case(url, url_len, STRLIT("http://"))
-           || lyrics_starts_with_ignore_case(
-               url, url_len, STRLIT("https://"));
+           || lyrics_starts_with_ignore_case(url, url_len, STRLIT("https://"));
 }
 
 static int32

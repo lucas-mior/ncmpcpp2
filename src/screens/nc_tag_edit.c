@@ -2588,8 +2588,7 @@ tag_edit_parse_filename(NcmMutableSong *song, char *mask,
             if (literal_len <= 0) {
                 found = file_pos;
             } else {
-                for (int32 i = file_pos; i + literal_len <= file.len;
-                     i += 1) {
+                for (int32 i = file_pos; i + literal_len <= file.len; i += 1) {
                     if (STREQUAL(file.data + i, literal_len,
                                  mask + next_mask_pos, literal_len)) {
                         found = i;
@@ -3407,8 +3406,7 @@ tag_edit_run_current(NcScreen *screen) {
                     sb_free(&first);
                     existing = tag_edit_find_recent_pattern(
                         editor, editor->pattern.data, editor->pattern.len);
-                    for (int32 i = 0; i < editor->recent_patterns.len;
-                         i += 1) {
+                    for (int32 i = 0; i < editor->recent_patterns.len; i += 1) {
                         if (i == existing) {
                             continue;
                         }

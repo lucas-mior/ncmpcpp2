@@ -714,8 +714,7 @@ adder_add_to_current_playlist(SelectedItemsAdderScreen *screen, int32 position
 
     if (first < screen->selected_songs.len) {
         if (position == -1) {
-            for (int32 i = first + 1;
-                 i < screen->selected_songs.len; i += 1) {
+            for (int32 i = first + 1; i < screen->selected_songs.len; i += 1) {
                 if (!adder_try_add_current_song(
                     screen, &screen->selected_songs.items[i], -1,
                     &added, &success)) {
@@ -724,8 +723,7 @@ adder_add_to_current_playlist(SelectedItemsAdderScreen *screen, int32 position
             }
         } else {
             insert_position = position + 1;
-            for (int32 i = screen->selected_songs.len - 1;
-                 i > first; i -= 1) {
+            for (int32 i = screen->selected_songs.len - 1; i > first; i -= 1) {
                 if (!adder_try_add_current_song(
                     screen, &screen->selected_songs.items[i],
                     insert_position, &added, &success)) {

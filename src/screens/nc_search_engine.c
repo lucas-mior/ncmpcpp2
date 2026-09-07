@@ -596,15 +596,13 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
 
             exact_match = screen->search_mode
                           == SEARCH_ENGINE_SEARCH_MODE_EXACT;
-            for (int32 i = 0;
-                 i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+            for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
                 regexes[i] = (NcmRegex){0};
             }
 
             status = 0;
             if (!exact_match) {
-                for (int32 i = 0;
-                     i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+                for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
                     if (screen->constraints[i].len <= 0) {
                         continue;
                     }
@@ -703,8 +701,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                 }
             }
 
-            for (int32 i = 0;
-                 i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+            for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
                 ncm_regex_destroy(&regexes[i]);
             }
             if (status == 0) {
