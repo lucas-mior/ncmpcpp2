@@ -1,5 +1,5 @@
-#if !defined(NC_TINY_TAG_EDITOR_C)
-#define NC_TINY_TAG_EDITOR_C
+#if !defined(NC_TINY_TAG_EDIT_C)
+#define NC_TINY_TAG_EDIT_C
 
 #include "cbase.h"
 
@@ -105,7 +105,7 @@ tiny_tag_edit_screen_init(
     screen->registered = false;
 
     nc_screen_init_ops(&screen->screen, tiny_editor_ops, screen,
-                       NC_SCREEN_TYPE_TINY_TAG_EDITOR);
+                       NC_SCREEN_TYPE_TINY_TAG_EDIT);
     return;
 }
 
@@ -221,13 +221,13 @@ tiny_tag_edit_screen_open_song(
         || (music_dir_len < 0) || (tag_separator_len < 0)
         || ((music_dir_len > 0) && (music_dir == NULL))
         || ((tag_separator_len > 0) && (tag_separator == NULL))) {
-        return TINY_TAG_EDITOR_OPEN_INVALID_ARGUMENT;
+        return TINY_TAG_EDIT_OPEN_INVALID_ARGUMENT;
     }
     if (ncm_song_is_stream(song)) {
-        return TINY_TAG_EDITOR_OPEN_STREAM;
+        return TINY_TAG_EDIT_OPEN_STREAM;
     }
     if (ncm_song_is_from_database(song) && (music_dir_len <= 0)) {
-        return TINY_TAG_EDITOR_OPEN_MISSING_MUSIC_DIRECTORY;
+        return TINY_TAG_EDIT_OPEN_MISSING_MUSIC_DIRECTORY;
     }
     sb_set(&screen->music_dir, music_dir, music_dir_len);
     sb_set(&screen->tag_separator, tag_separator, tag_separator_len);
@@ -236,7 +236,7 @@ tiny_tag_edit_screen_open_song(
     status = ncm_mutable_song_load_originals_from_song(&edited, song);
     if (status < 0) {
         ncm_mutable_song_destroy(&edited);
-        return TINY_TAG_EDITOR_OPEN_PREPARE_FAILED;
+        return TINY_TAG_EDIT_OPEN_PREPARE_FAILED;
     }
     edited.duration = ncm_song_duration(song);
     edited.mtime = (int32)ncm_song_mtime(song);
@@ -263,7 +263,7 @@ tiny_tag_edit_screen_open_song(
         }
         screen->has_edited = false;
         nc_menu_clear_items(nc_editor_buffer_menu_base(&screen->rows));
-        return TINY_TAG_EDITOR_OPEN_UNREADABLE_FILE;
+        return TINY_TAG_EDIT_OPEN_UNREADABLE_FILE;
     }
 
     if (screen->hooks.taglib_audio_properties) {
@@ -373,14 +373,14 @@ tiny_tag_edit_screen_open_song(
     nc_buffer_destroy(&row);
 
     nc_menu_highlight_position(nc_editor_buffer_menu_base(&screen->rows),
-                               TINY_TAG_EDITOR_FIRST_TAG_ROW,
+                               TINY_TAG_EDIT_FIRST_TAG_ROW,
                                screen->main_height);
     if (screen->hooks.taglib_close) {
         screen->hooks.taglib_close(screen->hooks.user, &file);
     } else {
         ncm_taglib_file_close(&file);
     }
-    return TINY_TAG_EDITOR_OPEN_SUCCESS;
+    return TINY_TAG_EDIT_OPEN_SUCCESS;
 }
 
 static void
@@ -424,13 +424,13 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
 
     menu = nc_editor_buffer_menu_base(&screen->rows);
 
-    if ((row >= (int32)TINY_TAG_EDITOR_FIRST_TAG_ROW)
-        && (row <= (int32)TINY_TAG_EDITOR_LAST_TAG_ROW)) {
+    if ((row >= (int32)TINY_TAG_EDIT_FIRST_TAG_ROW)
+        && (row <= (int32)TINY_TAG_EDIT_LAST_TAG_ROW)) {
         char *field_name;
         int32 field_name_len;
         NcBuffer row_buffer = {0};
 
-        field = (enum NcmTagsField)(row - (int32)TINY_TAG_EDITOR_FIRST_TAG_ROW);
+        field = (enum NcmTagsField)(row - (int32)TINY_TAG_EDIT_FIRST_TAG_ROW);
         tag_value = ncm_mutable_song_tags_buffer(
             &screen->edited, field, screen->tag_separator.data,
             screen->tag_separator.len, screen->show_duplicate_tags);
@@ -438,20 +438,20 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         initial.len = tag_value.len;
         field_name_len = NCM_TAGS_FIELD_alias_len(field, &field_name);
         if (screen->hooks.prompt == NULL) {
-            prompt_result = TINY_TAG_EDITOR_PROMPT_ERROR;
+            prompt_result = TINY_TAG_EDIT_PROMPT_ERROR;
         } else {
             prompt_result = screen->hooks.prompt(
                 screen->hooks.user, field_name, field_name_len, initial,
                 &input);
         }
         sb_free(&tag_value);
-        if (prompt_result == TINY_TAG_EDITOR_PROMPT_ABORTED) {
+        if (prompt_result == TINY_TAG_EDIT_PROMPT_ABORTED) {
             tiny_editor_status_message(
                 screen, STRLIT("Action aborted"));
             sb_free(&input);
             return -NCM_ERROR_CANCELLED;
         }
-        if (prompt_result != TINY_TAG_EDITOR_PROMPT_ACCEPTED) {
+        if (prompt_result != TINY_TAG_EDIT_PROMPT_ACCEPTED) {
             sb_free(&input);
             return -NCM_ERROR_UNAVAILABLE;
         }
@@ -466,12 +466,12 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
             screen->tag_separator.data, screen->tag_separator.len,
             screen->show_duplicate_tags);
         nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL,
-                             TINY_TAG_EDITOR_TAG_ROW(field), &row_buffer);
+                             TINY_TAG_EDIT_TAG_ROW(field), &row_buffer);
         nc_buffer_destroy(&row_buffer);
         return 0;
     }
 
-    if (row == TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW) {
+    if (row == TINY_TAG_EDIT_FILE_NAME_EDIT_ROW) {
         NcmStringView name;
         NcBuffer row_buffer = {0};
         StrBuilder new_name = {0};
@@ -493,19 +493,19 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         }
 
         if (screen->hooks.prompt == NULL) {
-            prompt_result = TINY_TAG_EDITOR_PROMPT_ERROR;
+            prompt_result = TINY_TAG_EDIT_PROMPT_ERROR;
         } else {
             prompt_result = screen->hooks.prompt(
                 screen->hooks.user, STRLIT("Filename"), initial,
                 &input);
         }
-        if (prompt_result == TINY_TAG_EDITOR_PROMPT_ABORTED) {
+        if (prompt_result == TINY_TAG_EDIT_PROMPT_ABORTED) {
             tiny_editor_status_message(
                 screen, STRLIT("Action aborted"));
             sb_free(&input);
             return -NCM_ERROR_CANCELLED;
         }
-        if (prompt_result != TINY_TAG_EDITOR_PROMPT_ACCEPTED) {
+        if (prompt_result != TINY_TAG_EDIT_PROMPT_ACCEPTED) {
             sb_free(&input);
             return -NCM_ERROR_UNAVAILABLE;
         }
@@ -543,13 +543,13 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         tiny_editor_buffer_key_value(
             &row_buffer, STRLIT("Filename"), name.data, name.len);
         nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL,
-                             TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW,
+                             TINY_TAG_EDIT_FILE_NAME_EDIT_ROW,
                              &row_buffer);
         nc_buffer_destroy(&row_buffer);
         return 0;
     }
 
-    if (row == TINY_TAG_EDITOR_SAVE_ROW) {
+    if (row == TINY_TAG_EDIT_SAVE_ROW) {
         enum NcScreenType previous_type;
 
         tiny_editor_status_message(
@@ -592,7 +592,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         return tiny_editor_finish(screen);
     }
 
-    if (row == TINY_TAG_EDITOR_CANCEL_ROW) {
+    if (row == TINY_TAG_EDIT_CANCEL_ROW) {
         return tiny_editor_finish(screen);
     }
     return -NCM_ERROR_UNAVAILABLE;
@@ -773,4 +773,4 @@ tiny_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     return;
 }
 
-#endif /* NC_TINY_TAG_EDITOR_C */
+#endif /* NC_TINY_TAG_EDIT_C */

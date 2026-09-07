@@ -65,7 +65,7 @@ XX(jump_to_parent_directory, JUMP_TO_PARENT_DIRECTORY)                         \
 XX(jump_to_playing_song, JUMP_TO_PLAYING_SONG)                                 \
 XX(jump_to_playlist_edit, JUMP_TO_PLAYLIST_EDITOR)                           \
 XX(jump_to_position_in_song, JUMP_TO_POSITION_IN_SONG)                         \
-XX(jump_to_tag_edit, JUMP_TO_TAG_EDITOR)                                     \
+XX(jump_to_tag_edit, JUMP_TO_TAG_EDIT)                                     \
 XX(load, LOAD)                                                                 \
 XX(master_screen, MASTER_SCREEN)                                               \
 XX(mouse_event, MOUSE_EVENT)                                                   \
@@ -125,7 +125,7 @@ XX(show_playlist_edit, SHOW_PLAYLIST_EDITOR)                                 \
 XX(show_search_engine, SHOW_SEARCH_ENGINE)                                     \
 XX(show_server_info, SHOW_SERVER_INFO)                                         \
 XX(show_song_info, SHOW_SONG_INFO)                                             \
-XX(show_tag_edit, SHOW_TAG_EDITOR)                                           \
+XX(show_tag_edit, SHOW_TAG_EDIT)                                           \
 XX(show_visualizer, SHOW_VISUALIZER)                                           \
 XX(shuffle, SHUFFLE)                                                           \
 XX(slave_screen, SLAVE_SCREEN)                                                 \
@@ -385,11 +385,11 @@ action_runtime_switch_to_screen(enum ScreenType type) {
         app_screen_sort_playlist_dialog_register();
         return app_screen_sort_playlist_dialog_switch_to();
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TAG_EDIT:
         app_screen_tag_edit_register();
         app_screen_tag_edit_switch_to();
         return 0;
-    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TINY_TAG_EDIT:
         app_screen_tiny_tag_edit_register();
         app_screen_tiny_tag_edit_switch_to();
         return 0;
@@ -699,7 +699,7 @@ action_runtime_update_database(void) {
     }
 
 #if defined(HAVE_TAGLIB_H)
-    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDIT)) {
         if (tag_edit_screen_current_dir(app_screen_tag_edit(),
                                           &view) == 0) {
             path = view.data;
@@ -776,9 +776,9 @@ action_runtime_current_menu(void) {
         return nc_editor_sort_menu_base(sort_playlist_dialog_menu(
             app_screen_sort_playlist_dialog()));
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TAG_EDIT:
         return tag_edit_screen_active_menu(app_screen_tag_edit());
-    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TINY_TAG_EDIT:
         return nc_editor_buffer_menu_base(tiny_tag_edit_screen_rows(
             app_screen_tiny_tag_edit()));
 #endif
@@ -1873,7 +1873,7 @@ action_runtime_current_menu_height(void) {
         window = media_library_screen_active_window(app_screen_media_library());
         break;
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TAG_EDIT:
         window = tag_edit_screen_active_window(app_screen_tag_edit());
         break;
 #endif
@@ -1888,7 +1888,7 @@ action_runtime_current_menu_height(void) {
     case NCM_SCREEN_TYPE_SONG_INFO:
     case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TINY_TAG_EDIT:
 #endif
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
@@ -1980,9 +1980,9 @@ action_runtime_current_tag_scroll_menu(void) {
         return media_library_screen_active_menu(media_library);
     }
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TAG_EDIT:
         if (app_screen_tag_edit()->active_focus
-            != TAG_EDITOR_FOCUS_TAGS) {
+            != TAG_EDIT_FOCUS_TAGS) {
             return NULL;
         }
         return tag_edit_screen_active_menu(app_screen_tag_edit());
@@ -1998,7 +1998,7 @@ action_runtime_current_tag_scroll_menu(void) {
     case NCM_SCREEN_TYPE_SONG_INFO:
     case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TINY_TAG_EDIT:
 #endif
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
@@ -2072,12 +2072,12 @@ action_runtime_song_tag_at(int32 pos, enum NcmSongGetter getter,
         *tag = action_runtime_song_tag_buffer(song, getter);
         return 0;
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TAG_EDITOR: {
+    case NCM_SCREEN_TYPE_TAG_EDIT: {
         NcmMutableSong *mutable_song;
         enum NcmTagsField field;
 
         if (app_screen_tag_edit()->active_focus
-            != TAG_EDITOR_FOCUS_TAGS) {
+            != TAG_EDIT_FOCUS_TAGS) {
             return -NCM_ERROR_UNAVAILABLE;
         }
         field = ncm_song_getter_to_tags_field(getter);
@@ -2105,7 +2105,7 @@ action_runtime_song_tag_at(int32 pos, enum NcmSongGetter getter,
     case NCM_SCREEN_TYPE_SONG_INFO:
     case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TINY_TAG_EDIT:
 #endif
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
@@ -2206,7 +2206,7 @@ action_runtime_selected_songs(NcmSongArray *songs) {
         return media_library_screen_selected_songs(
             app_screen_media_library(), songs);
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TAG_EDIT:
         return tag_edit_screen_selected_songs(
             app_screen_tag_edit(), songs);
 #endif
@@ -2221,7 +2221,7 @@ action_runtime_selected_songs(NcmSongArray *songs) {
     case NCM_SCREEN_TYPE_SERVER_INFO:
     case NCM_SCREEN_TYPE_SONG_INFO:
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TINY_TAG_EDIT:
 #endif
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
@@ -2287,8 +2287,8 @@ action_runtime_current_song(NcmSong *song) {
     case NCM_SCREEN_TYPE_SERVER_INFO:
     case NCM_SCREEN_TYPE_SONG_INFO:
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TAG_EDITOR:
-    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TAG_EDIT:
+    case NCM_SCREEN_TYPE_TINY_TAG_EDIT:
 #endif
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
@@ -3774,7 +3774,7 @@ action_runtime_previous_column_available(void) {
         return playlist_edit_screen_can_move_to_previous_column(
             app_screen_playlist_edit());
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TAG_EDIT:
         return tag_edit_screen_previous_column_available(
             app_screen_tag_edit());
 #endif
@@ -3792,7 +3792,7 @@ action_runtime_previous_column_available(void) {
     case NCM_SCREEN_TYPE_SONG_INFO:
     case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TINY_TAG_EDIT:
 #endif
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
@@ -3814,7 +3814,7 @@ action_runtime_next_column_available(void) {
         return playlist_edit_screen_can_move_to_next_column(
             app_screen_playlist_edit());
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TAG_EDIT:
         return tag_edit_screen_next_column_available(
             app_screen_tag_edit());
 #endif
@@ -3832,7 +3832,7 @@ action_runtime_next_column_available(void) {
     case NCM_SCREEN_TYPE_SONG_INFO:
     case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TINY_TAG_EDIT:
 #endif
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
@@ -3857,7 +3857,7 @@ action_runtime_previous_column(void) {
         playlist_edit_screen_previous_column(app_screen_playlist_edit());
         return 0;
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TAG_EDIT:
         tag_edit_screen_previous_column(app_screen_tag_edit());
         return 0;
 #endif
@@ -3875,7 +3875,7 @@ action_runtime_previous_column(void) {
     case NCM_SCREEN_TYPE_SONG_INFO:
     case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TINY_TAG_EDIT:
 #endif
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
@@ -3900,7 +3900,7 @@ action_runtime_next_column(void) {
         playlist_edit_screen_next_column(app_screen_playlist_edit());
         return 0;
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TAG_EDIT:
         tag_edit_screen_next_column(app_screen_tag_edit());
         return 0;
 #endif
@@ -3918,7 +3918,7 @@ action_runtime_next_column(void) {
     case NCM_SCREEN_TYPE_SONG_INFO:
     case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TINY_TAG_EDIT:
 #endif
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
@@ -3936,7 +3936,7 @@ action_runtime_enter_directory(void) {
         return browser_screen_enter_directory(app_screen_browser());
     }
 #if defined(HAVE_TAGLIB_H)
-    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDIT)) {
         return tag_edit_screen_enter_directory(
             app_screen_tag_edit());
     }
@@ -3950,7 +3950,7 @@ action_runtime_jump_to_parent_directory(void) {
         return browser_screen_go_to_parent(app_screen_browser());
     }
 #if defined(HAVE_TAGLIB_H)
-    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDIT)) {
         return tag_edit_screen_go_to_parent(app_screen_tag_edit());
     }
 #endif
@@ -4170,7 +4170,7 @@ action_runtime_jump_to_tag_edit(void) {
         status = -NCM_ERROR_UNAVAILABLE;
     }
     if (status == 0) {
-        status = action_runtime_switch_to_screen(NCM_SCREEN_TYPE_TAG_EDITOR);
+        status = action_runtime_switch_to_screen(NCM_SCREEN_TYPE_TAG_EDIT);
     }
     if (status == 0) {
         status = tag_edit_screen_locate_song(app_screen_tag_edit(), &song);
@@ -4224,7 +4224,7 @@ action_runtime_edit_directory_name(void) {
     }
 
 #if defined(HAVE_TAGLIB_H)
-    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDIT)) {
         return tag_edit_screen_rename_current_directory(
             app_screen_tag_edit(), Config.mpd_music_dir,
             Config.mpd_music_dir_len);
@@ -4387,8 +4387,8 @@ action_runtime_toggle_display_mode(void) {
     case NCM_SCREEN_TYPE_SONG_INFO:
     case NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
 #if defined(HAVE_TAGLIB_H)
-    case NCM_SCREEN_TYPE_TAG_EDITOR:
-    case NCM_SCREEN_TYPE_TINY_TAG_EDITOR:
+    case NCM_SCREEN_TYPE_TAG_EDIT:
+    case NCM_SCREEN_TYPE_TINY_TAG_EDIT:
 #endif
 #if defined(ENABLE_VISUALIZER)
     case NCM_SCREEN_TYPE_VISUALIZER:
@@ -4614,7 +4614,7 @@ action_runtime_toggle_replay_gain_mode(void) {
 static int32
 action_runtime_save_tag_changes(void) {
 #if defined(HAVE_TAGLIB_H)
-    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDIT)) {
         if (!tag_edit_screen_save_action_available(
             app_screen_tag_edit())) {
             return -NCM_ERROR_UNAVAILABLE;
@@ -4622,9 +4622,9 @@ action_runtime_save_tag_changes(void) {
         return tag_edit_screen_save_modified(
             app_screen_tag_edit(), Config.mpd_music_dir);
     }
-    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
+    if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDIT)) {
         return tiny_tag_edit_screen_run_row(
-            app_screen_tiny_tag_edit(), TINY_TAG_EDITOR_SAVE_ROW);
+            app_screen_tiny_tag_edit(), TINY_TAG_EDIT_SAVE_ROW);
     }
 #endif
     return -NCM_ERROR_UNAVAILABLE;
@@ -4655,21 +4655,21 @@ ncm_action_edit_song(NcmSong *song) {
         Config.mpd_music_dir_len, Config.tags_separator,
         Config.tags_separator_len, Config.show_duplicate_tags, &path);
     switch (open_result) {
-    case TINY_TAG_EDITOR_OPEN_SUCCESS:
+    case TINY_TAG_EDIT_OPEN_SUCCESS:
         status = action_runtime_switch_to_screen(
-            NCM_SCREEN_TYPE_TINY_TAG_EDITOR);
+            NCM_SCREEN_TYPE_TINY_TAG_EDIT);
         break;
-    case TINY_TAG_EDITOR_OPEN_STREAM:
+    case TINY_TAG_EDIT_OPEN_STREAM:
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Streams can't be edited");
         break;
-    case TINY_TAG_EDITOR_OPEN_MISSING_MUSIC_DIRECTORY:
+    case TINY_TAG_EDIT_OPEN_MISSING_MUSIC_DIRECTORY:
         ncm_statusbar_print_cstring(
             Config.message_delay_time,
             "Proper mpd_music_dir variable has to be set in "
             "configuration file");
         break;
-    case TINY_TAG_EDITOR_OPEN_UNREADABLE_FILE:
+    case TINY_TAG_EDIT_OPEN_UNREADABLE_FILE:
         path_width = COLS - STRLIT_LEN("Couldn't read file \"\"");
         if (path_width < 0) {
             path_width = 0;
@@ -4678,12 +4678,12 @@ ncm_action_edit_song(NcmSong *song) {
         action_runtime_print_message(STRLIT("Couldn't read file \""),
                                      path.data, path_len, STRLIT("\""));
         break;
-    case TINY_TAG_EDITOR_OPEN_INVALID_ARGUMENT:
-    case TINY_TAG_EDITOR_OPEN_PREPARE_FAILED:
+    case TINY_TAG_EDIT_OPEN_INVALID_ARGUMENT:
+    case TINY_TAG_EDIT_OPEN_PREPARE_FAILED:
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Couldn't prepare tiny tag editor");
         break;
-    case TINY_TAG_EDITOR_OPEN_COUNT:
+    case TINY_TAG_EDIT_OPEN_COUNT:
     default:
         break;
     }
@@ -5576,7 +5576,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
             return false;
         }
 #if defined(HAVE_TAGLIB_H)
-        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDIT)) {
             return false;
         }
 #endif
@@ -5586,7 +5586,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
             return false;
         }
 #if defined(HAVE_TAGLIB_H)
-        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDIT)) {
             return false;
         }
 #endif
@@ -5596,14 +5596,14 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
             return false;
         }
 #if defined(HAVE_TAGLIB_H)
-        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDIT)) {
             return false;
         }
 #endif
         return true;
     case NCM_ACTION_SHOW_SERVER_INFO:
 #if defined(HAVE_TAGLIB_H)
-        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDIT)) {
             return false;
         }
 #endif
@@ -5615,7 +5615,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
             return false;
         }
 #if defined(HAVE_TAGLIB_H)
-        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDIT)) {
             return false;
         }
 #endif
@@ -5625,7 +5625,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
             return true;
         }
 #if defined(HAVE_TAGLIB_H)
-        return action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR);
+        return action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDIT);
 #else
         return false;
 #endif
@@ -5764,19 +5764,19 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
                && (ncm_status_state_current_song_position() >= 0);
     case NCM_ACTION_SAVE_TAG_CHANGES:
 #if defined(HAVE_TAGLIB_H)
-        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDIT)) {
             return tag_edit_screen_save_action_available(
                 app_screen_tag_edit());
         }
         return action_runtime_current_screen_is(
-            NCM_SCREEN_TYPE_TINY_TAG_EDITOR);
+            NCM_SCREEN_TYPE_TINY_TAG_EDIT);
 #else
         return false;
 #endif
     case NCM_ACTION_ENTER_DIRECTORY:
         return action_runtime_current_screen_is(NCM_SCREEN_TYPE_BROWSER)
 #if defined(HAVE_TAGLIB_H)
-               || action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)
+               || action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDIT)
 #endif
             ;
     case NCM_ACTION_EDIT_SONG:
@@ -5800,7 +5800,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         return true;
     case NCM_ACTION_JUMP_TO_MEDIA_LIBRARY:
         return action_runtime_has_current_song();
-    case NCM_ACTION_JUMP_TO_TAG_EDITOR:
+    case NCM_ACTION_JUMP_TO_TAG_EDIT:
 #if defined(HAVE_TAGLIB_H)
         return (Config.mpd_music_dir_len > 0)
                && action_runtime_has_current_song();
@@ -5892,7 +5892,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
             return false;
         }
 #if defined(HAVE_TAGLIB_H)
-        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDIT)) {
             return false;
         }
 #endif
@@ -5912,7 +5912,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
             return false;
         }
 #if defined(HAVE_TAGLIB_H)
-        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDITOR)) {
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDIT)) {
             return false;
         }
 #endif
@@ -5926,7 +5926,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
 #else
         return false;
 #endif
-    case NCM_ACTION_SHOW_TAG_EDITOR:
+    case NCM_ACTION_SHOW_TAG_EDIT:
 #if defined(HAVE_TAGLIB_H)
         return true;
 #else
@@ -6006,7 +6006,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
                 app_screen_browser());
         }
 #if defined(HAVE_TAGLIB_H)
-        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDITOR)) {
+        if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TAG_EDIT)) {
             return tag_edit_screen_rename_directory_available(
                 app_screen_tag_edit(), Config.mpd_music_dir,
                 Config.mpd_music_dir_len);
@@ -6241,7 +6241,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
         return action_runtime_jump_to_playlist_edit();
     case NCM_ACTION_TOGGLE_SCREEN_LOCK:
         return action_runtime_toggle_screen_lock();
-    case NCM_ACTION_JUMP_TO_TAG_EDITOR:
+    case NCM_ACTION_JUMP_TO_TAG_EDIT:
         return action_runtime_jump_to_tag_edit();
     case NCM_ACTION_JUMP_TO_POSITION_IN_SONG:
         return action_runtime_jump_to_position_in_song();
@@ -6403,9 +6403,9 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
 #else
         return -NCM_ERROR_UNAVAILABLE;
 #endif
-    case NCM_ACTION_SHOW_TAG_EDITOR:
+    case NCM_ACTION_SHOW_TAG_EDIT:
 #if defined(HAVE_TAGLIB_H)
-        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_TAG_EDITOR);
+        return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_TAG_EDIT);
 #else
         return -NCM_ERROR_UNAVAILABLE;
 #endif

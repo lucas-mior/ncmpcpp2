@@ -57,11 +57,11 @@
     XX(NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG,                                   \
       NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG, 13, sort_playlist_dialog,           \
       NCM_SCREEN_FLAG_NONE)
-#define NCM_SCREEN_TYPE_TAG_EDITOR_ENTRY(XX)                                   \
-    XX(NCM_SCREEN_TYPE_TAG_EDITOR, NC_SCREEN_TYPE_TAG_EDITOR, 14,              \
+#define NCM_SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                   \
+    XX(NCM_SCREEN_TYPE_TAG_EDIT, NC_SCREEN_TYPE_TAG_EDIT, 14,              \
       tag_edit, NCM_SCREEN_FLAG_STARTUP)
-#define NCM_SCREEN_TYPE_TINY_TAG_EDITOR_ENTRY(XX)                              \
-    XX(NCM_SCREEN_TYPE_TINY_TAG_EDITOR, NC_SCREEN_TYPE_TINY_TAG_EDITOR,        \
+#define NCM_SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)                              \
+    XX(NCM_SCREEN_TYPE_TINY_TAG_EDIT, NC_SCREEN_TYPE_TINY_TAG_EDIT,        \
       15, tiny_tag_edit, NCM_SCREEN_FLAG_NONE)
 #define NCM_SCREEN_TYPE_VISUALIZER_ENTRY(XX)                                   \
     XX(NCM_SCREEN_TYPE_VISUALIZER, NC_SCREEN_TYPE_VISUALIZER, 16,              \
@@ -81,8 +81,8 @@
     NCM_SCREEN_TYPE_SERVER_INFO_ENTRY(XX)                                      \
     NCM_SCREEN_TYPE_SONG_INFO_ENTRY(XX)                                        \
     NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)                             \
-    NCM_SCREEN_TYPE_TAG_EDITOR_ENTRY(XX)                                       \
-    NCM_SCREEN_TYPE_TINY_TAG_EDITOR_ENTRY(XX)                                  \
+    NCM_SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                       \
+    NCM_SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)                                  \
     NCM_SCREEN_TYPE_VISUALIZER_ENTRY(XX)
 
 #if defined(ENABLE_OUTPUTS)
@@ -93,11 +93,11 @@
 #endif
 
 #if defined(HAVE_TAGLIB_H)
-#define NCM_SCREEN_ENABLED_TAG_EDITOR_TYPES(XX)                              \
-    NCM_SCREEN_TYPE_TAG_EDITOR_ENTRY(XX)                                     \
-    NCM_SCREEN_TYPE_TINY_TAG_EDITOR_ENTRY(XX)
+#define NCM_SCREEN_ENABLED_TAG_EDIT_TYPES(XX)                              \
+    NCM_SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                     \
+    NCM_SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)
 #else
-#define NCM_SCREEN_ENABLED_TAG_EDITOR_TYPES(XX)
+#define NCM_SCREEN_ENABLED_TAG_EDIT_TYPES(XX)
 #endif
 
 #if defined(ENABLE_VISUALIZER)
@@ -121,7 +121,7 @@
     NCM_SCREEN_TYPE_SERVER_INFO_ENTRY(XX)              \
     NCM_SCREEN_TYPE_SONG_INFO_ENTRY(XX)                \
     NCM_SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)     \
-    NCM_SCREEN_ENABLED_TAG_EDITOR_TYPES(XX)            \
+    NCM_SCREEN_ENABLED_TAG_EDIT_TYPES(XX)            \
     NCM_SCREEN_ENABLED_VISUALIZER_TYPES(XX)
 
 #define NCM_SCREEN_NC_TYPE_ENUM_FIELD(                 \
@@ -269,15 +269,15 @@
 #endif
 
 #if defined(HAVE_TAGLIB_H)
-#define NCM_APP_SCREEN_ENABLED_TAG_EDITOR(XX)                   \
+#define NCM_APP_SCREEN_ENABLED_TAG_EDIT(XX)                   \
     XX(tag_edit)                                              \
     XX(tiny_tag_edit)
-#define NCM_APP_SCREEN_ENABLED_TAG_EDITOR_RESIZE(XX)            \
-    XX(tag_edit, NC_SCREEN_TYPE_TAG_EDITOR)                   \
-    XX(tiny_tag_edit, NC_SCREEN_TYPE_TINY_TAG_EDITOR)
+#define NCM_APP_SCREEN_ENABLED_TAG_EDIT_RESIZE(XX)            \
+    XX(tag_edit, NC_SCREEN_TYPE_TAG_EDIT)                   \
+    XX(tiny_tag_edit, NC_SCREEN_TYPE_TINY_TAG_EDIT)
 #else
-#define NCM_APP_SCREEN_ENABLED_TAG_EDITOR(XX)
-#define NCM_APP_SCREEN_ENABLED_TAG_EDITOR_RESIZE(XX)
+#define NCM_APP_SCREEN_ENABLED_TAG_EDIT(XX)
+#define NCM_APP_SCREEN_ENABLED_TAG_EDIT_RESIZE(XX)
 #endif
 
 #if defined(ENABLE_VISUALIZER)
@@ -302,7 +302,7 @@
     XX(server_info)                                               \
     XX(song_info)                                                 \
     XX(sort_playlist_dialog)                                      \
-    NCM_APP_SCREEN_ENABLED_TAG_EDITOR(XX)                         \
+    NCM_APP_SCREEN_ENABLED_TAG_EDIT(XX)                         \
     NCM_APP_SCREEN_ENABLED_VISUALIZER(XX)                         \
     NCM_APP_SCREEN_ENABLED_OUTPUTS(XX)
 
@@ -316,7 +316,7 @@
     XX(song_info)                                                 \
     XX(server_info)                                               \
     NCM_APP_SCREEN_ENABLED_VISUALIZER(XX)                         \
-    NCM_APP_SCREEN_ENABLED_TAG_EDITOR(XX)                         \
+    NCM_APP_SCREEN_ENABLED_TAG_EDIT(XX)                         \
     NCM_APP_SCREEN_ENABLED_OUTPUTS(XX)                            \
     XX(playlist)                                                  \
     XX(playlist_edit)
@@ -334,7 +334,7 @@
     XX(server_info, NC_SCREEN_TYPE_SERVER_INFO)                   \
     XX(song_info, NC_SCREEN_TYPE_SONG_INFO)                       \
     XX(sort_playlist_dialog, NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG) \
-    NCM_APP_SCREEN_ENABLED_TAG_EDITOR_RESIZE(XX)                  \
+    NCM_APP_SCREEN_ENABLED_TAG_EDIT_RESIZE(XX)                  \
     NCM_APP_SCREEN_ENABLED_VISUALIZER_RESIZE(XX)                  \
     NCM_APP_SCREEN_ENABLED_OUTPUTS_RESIZE(XX)
 
@@ -1681,43 +1681,43 @@ int32 sort_playlist_dialog_move_current_down(SortPlaylistDialog *);
 
 /* screens/nc_tag_edit.h */
 #define ENUM_NAME TagEditColumn
-#define ENUM_PREFIX_ TAG_EDITOR_COLUMN_
+#define ENUM_PREFIX_ TAG_EDIT_COLUMN_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                  \
-    XX(TAG_EDITOR_COLUMN_DIRECTORIES, Directories)                   \
-    XX(TAG_EDITOR_COLUMN_TAG_TYPES, Tag types)                       \
-    XX(TAG_EDITOR_COLUMN_TAGS, Tags)
+    XX(TAG_EDIT_COLUMN_DIRECTORIES, Directories)                   \
+    XX(TAG_EDIT_COLUMN_TAG_TYPES, Tag types)                       \
+    XX(TAG_EDIT_COLUMN_TAGS, Tags)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME TagEditParserMode
-#define ENUM_PREFIX_ TAG_EDITOR_PARSER_
+#define ENUM_PREFIX_ TAG_EDIT_PARSER_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                  \
-    XX(TAG_EDITOR_PARSER_NONE, Pattern)                              \
-    XX(TAG_EDITOR_PARSER_TAGS_FROM_FILENAME, Get tags from filename) \
-    XX(TAG_EDITOR_PARSER_RENAME_FILES, Rename files)
+    XX(TAG_EDIT_PARSER_NONE, Pattern)                              \
+    XX(TAG_EDIT_PARSER_TAGS_FROM_FILENAME, Get tags from filename) \
+    XX(TAG_EDIT_PARSER_RENAME_FILES, Rename files)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME TagEditFocus
-#define ENUM_PREFIX_ TAG_EDITOR_FOCUS_
+#define ENUM_PREFIX_ TAG_EDIT_FOCUS_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                  \
-    XX(TAG_EDITOR_FOCUS_DIRECTORIES, Directories)                    \
-    XX(TAG_EDITOR_FOCUS_TAG_TYPES, Tag types)                        \
-    XX(TAG_EDITOR_FOCUS_TAGS, Tags)                                  \
-    XX(TAG_EDITOR_FOCUS_PARSER_CHOICE, Pattern)                      \
-    XX(TAG_EDITOR_FOCUS_PARSER_ACTIONS, Pattern actions)             \
-    XX(TAG_EDITOR_FOCUS_PARSER_LEGEND, Legend)                       \
-    XX(TAG_EDITOR_FOCUS_PARSER_PREVIEW, Preview)
+    XX(TAG_EDIT_FOCUS_DIRECTORIES, Directories)                    \
+    XX(TAG_EDIT_FOCUS_TAG_TYPES, Tag types)                        \
+    XX(TAG_EDIT_FOCUS_TAGS, Tags)                                  \
+    XX(TAG_EDIT_FOCUS_PARSER_CHOICE, Pattern)                      \
+    XX(TAG_EDIT_FOCUS_PARSER_ACTIONS, Pattern actions)             \
+    XX(TAG_EDIT_FOCUS_PARSER_LEGEND, Legend)                       \
+    XX(TAG_EDIT_FOCUS_PARSER_PREVIEW, Preview)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME TagEditPromptResult
-#define ENUM_PREFIX_ TAG_EDITOR_PROMPT_
+#define ENUM_PREFIX_ TAG_EDIT_PROMPT_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                  \
-    XX(TAG_EDITOR_PROMPT_ERROR)                                      \
-    XX(TAG_EDITOR_PROMPT_ABORTED)                                    \
-    XX(TAG_EDITOR_PROMPT_ACCEPTED)
+    XX(TAG_EDIT_PROMPT_ERROR)                                      \
+    XX(TAG_EDIT_PROMPT_ABORTED)                                    \
+    XX(TAG_EDIT_PROMPT_ACCEPTED)
 #include "cbase/xenums.c"
 
 typedef struct TagEditHooks {
@@ -1880,48 +1880,48 @@ int32 tag_edit_song_display_value(NcmMutableSong *, enum NcmTagsField,
                                     StrBuilder *);
 
 /* screens/nc_tiny_tag_edit.h */
-#define TINY_TAG_EDITOR_TAG_ROW(FIELD) \
-    ((int32)TINY_TAG_EDITOR_FIRST_TAG_ROW + (int32)(FIELD))
+#define TINY_TAG_EDIT_TAG_ROW(FIELD) \
+    ((int32)TINY_TAG_EDIT_FIRST_TAG_ROW + (int32)(FIELD))
 
 enum TinyTagEditRow {
-    TINY_TAG_EDITOR_FILE_NAME_INFO_ROW,
-    TINY_TAG_EDITOR_DIRECTORY_INFO_ROW,
-    TINY_TAG_EDITOR_UNUSED_INFO_ROW,
-    TINY_TAG_EDITOR_LENGTH_INFO_ROW,
-    TINY_TAG_EDITOR_BITRATE_INFO_ROW,
-    TINY_TAG_EDITOR_SAMPLE_RATE_INFO_ROW,
-    TINY_TAG_EDITOR_CHANNELS_INFO_ROW,
-    TINY_TAG_EDITOR_FIRST_SEPARATOR_ROW,
-    TINY_TAG_EDITOR_FIRST_TAG_ROW,
-    TINY_TAG_EDITOR_LAST_TAG_ROW = TINY_TAG_EDITOR_FIRST_TAG_ROW
+    TINY_TAG_EDIT_FILE_NAME_INFO_ROW,
+    TINY_TAG_EDIT_DIRECTORY_INFO_ROW,
+    TINY_TAG_EDIT_UNUSED_INFO_ROW,
+    TINY_TAG_EDIT_LENGTH_INFO_ROW,
+    TINY_TAG_EDIT_BITRATE_INFO_ROW,
+    TINY_TAG_EDIT_SAMPLE_RATE_INFO_ROW,
+    TINY_TAG_EDIT_CHANNELS_INFO_ROW,
+    TINY_TAG_EDIT_FIRST_SEPARATOR_ROW,
+    TINY_TAG_EDIT_FIRST_TAG_ROW,
+    TINY_TAG_EDIT_LAST_TAG_ROW = TINY_TAG_EDIT_FIRST_TAG_ROW
                                    + NCM_TAGS_FIELD_COUNT - 1,
-    TINY_TAG_EDITOR_SECOND_SEPARATOR_ROW,
-    TINY_TAG_EDITOR_FILE_NAME_EDIT_ROW,
-    TINY_TAG_EDITOR_THIRD_SEPARATOR_ROW,
-    TINY_TAG_EDITOR_SAVE_ROW,
-    TINY_TAG_EDITOR_CANCEL_ROW,
-    TINY_TAG_EDITOR_ROW_COUNT,
+    TINY_TAG_EDIT_SECOND_SEPARATOR_ROW,
+    TINY_TAG_EDIT_FILE_NAME_EDIT_ROW,
+    TINY_TAG_EDIT_THIRD_SEPARATOR_ROW,
+    TINY_TAG_EDIT_SAVE_ROW,
+    TINY_TAG_EDIT_CANCEL_ROW,
+    TINY_TAG_EDIT_ROW_COUNT,
 };
 
 #define ENUM_NAME TinyTagEditOpenResult
-#define ENUM_PREFIX_ TINY_TAG_EDITOR_OPEN_
+#define ENUM_PREFIX_ TINY_TAG_EDIT_OPEN_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(TINY_TAG_EDITOR_OPEN_SUCCESS)                                           \
-    XX(TINY_TAG_EDITOR_OPEN_INVALID_ARGUMENT)                                  \
-    XX(TINY_TAG_EDITOR_OPEN_STREAM)                                            \
-    XX(TINY_TAG_EDITOR_OPEN_MISSING_MUSIC_DIRECTORY)                           \
-    XX(TINY_TAG_EDITOR_OPEN_UNREADABLE_FILE)                                   \
-    XX(TINY_TAG_EDITOR_OPEN_PREPARE_FAILED)
+    XX(TINY_TAG_EDIT_OPEN_SUCCESS)                                           \
+    XX(TINY_TAG_EDIT_OPEN_INVALID_ARGUMENT)                                  \
+    XX(TINY_TAG_EDIT_OPEN_STREAM)                                            \
+    XX(TINY_TAG_EDIT_OPEN_MISSING_MUSIC_DIRECTORY)                           \
+    XX(TINY_TAG_EDIT_OPEN_UNREADABLE_FILE)                                   \
+    XX(TINY_TAG_EDIT_OPEN_PREPARE_FAILED)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME TinyTagEditPromptResult
-#define ENUM_PREFIX_ TINY_TAG_EDITOR_PROMPT_
+#define ENUM_PREFIX_ TINY_TAG_EDIT_PROMPT_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(TINY_TAG_EDITOR_PROMPT_ERROR)                                           \
-    XX(TINY_TAG_EDITOR_PROMPT_ABORTED)                                         \
-    XX(TINY_TAG_EDITOR_PROMPT_ACCEPTED)
+    XX(TINY_TAG_EDIT_PROMPT_ERROR)                                           \
+    XX(TINY_TAG_EDIT_PROMPT_ABORTED)                                         \
+    XX(TINY_TAG_EDIT_PROMPT_ACCEPTED)
 #include "cbase/xenums.c"
 
 typedef struct TinyTagEditHooks {

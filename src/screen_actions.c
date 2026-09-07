@@ -49,13 +49,13 @@ current_screen_filter_buffer(void) {
             app_screen_media_library());
     }
 #if defined(HAVE_TAGLIB_H)
-    if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
+    if (current_screen_is(NC_SCREEN_TYPE_TAG_EDIT)) {
         TagEditScreen *screen = app_screen_tag_edit();
 
-        if (screen->active_column == TAG_EDITOR_COLUMN_DIRECTORIES) {
+        if (screen->active_column == TAG_EDIT_COLUMN_DIRECTORIES) {
             return &screen->directory_filter_constraint;
         }
-        if (screen->active_column == TAG_EDITOR_COLUMN_TAGS) {
+        if (screen->active_column == TAG_EDIT_COLUMN_TAGS) {
             return &screen->tag_filter_constraint;
         }
     }
@@ -99,13 +99,13 @@ current_screen_search_buffer(void) {
         return &app_screen_selected_items_adder()->search_constraint;
     }
 #if defined(HAVE_TAGLIB_H)
-    if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
+    if (current_screen_is(NC_SCREEN_TYPE_TAG_EDIT)) {
         TagEditScreen *screen = app_screen_tag_edit();
 
-        if (screen->active_column == TAG_EDITOR_COLUMN_DIRECTORIES) {
+        if (screen->active_column == TAG_EDIT_COLUMN_DIRECTORIES) {
             return &screen->directory_search_constraint;
         }
-        if (screen->active_column == TAG_EDITOR_COLUMN_TAGS) {
+        if (screen->active_column == TAG_EDIT_COLUMN_TAGS) {
             return &screen->tag_search_constraint;
         }
     }
@@ -146,13 +146,13 @@ current_screen_clear_current_search_constraint(void) {
         return;
     }
 #if defined(HAVE_TAGLIB_H)
-    if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
+    if (current_screen_is(NC_SCREEN_TYPE_TAG_EDIT)) {
         TagEditScreen *screen = app_screen_tag_edit();
 
-        if (screen->active_column == TAG_EDITOR_COLUMN_DIRECTORIES) {
+        if (screen->active_column == TAG_EDIT_COLUMN_DIRECTORIES) {
             screen->directory_search_enabled = false;
             sb_clear(&screen->directory_search_constraint);
-        } else if (screen->active_column == TAG_EDITOR_COLUMN_TAGS) {
+        } else if (screen->active_column == TAG_EDIT_COLUMN_TAGS) {
             screen->tag_search_enabled = false;
             sb_clear(&screen->tag_search_constraint);
         }
@@ -214,15 +214,15 @@ current_screen_apply_filter(char *pattern, int32 pattern_len,
         status = media_library_screen_apply_filter(
             app_screen_media_library(), pattern, pattern_len, ncm_error);
 #if defined(HAVE_TAGLIB_H)
-    } else if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
+    } else if (current_screen_is(NC_SCREEN_TYPE_TAG_EDIT)) {
         TagEditScreen *screen;
 
         screen = app_screen_tag_edit();
-        if (screen->active_column == TAG_EDITOR_COLUMN_DIRECTORIES) {
+        if (screen->active_column == TAG_EDIT_COLUMN_DIRECTORIES) {
             status = tag_edit_screen_apply_directory_filter(
                 screen, pattern, pattern_len, Config.regular_expressions,
                 ncm_error);
-        } else if (screen->active_column == TAG_EDITOR_COLUMN_TAGS) {
+        } else if (screen->active_column == TAG_EDIT_COLUMN_TAGS) {
             status = tag_edit_screen_apply_tag_filter(
                 screen, pattern, pattern_len, Config.regular_expressions,
                 ncm_error);
@@ -258,10 +258,10 @@ current_screen_can_search(void) {
         return search_engine_screen_can_search(
             app_screen_search_engine());
     }
-    if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
+    if (current_screen_is(NC_SCREEN_TYPE_TAG_EDIT)) {
 #if defined(HAVE_TAGLIB_H)
         TagEditScreen *screen = app_screen_tag_edit();
-        return screen->active_column != TAG_EDITOR_COLUMN_TAG_TYPES;
+        return screen->active_column != TAG_EDIT_COLUMN_TAG_TYPES;
 #else
         return false;
 #endif
@@ -322,7 +322,7 @@ current_screen_search(enum SearchDirection direction, char *pattern,
             app_screen_selected_items_adder(), pattern, pattern_len,
             Config.regular_expressions, forward, wrap, skip_current, ncm_error);
 #if defined(HAVE_TAGLIB_H)
-    } else if (current_screen_is(NC_SCREEN_TYPE_TAG_EDITOR)) {
+    } else if (current_screen_is(NC_SCREEN_TYPE_TAG_EDIT)) {
         status = tag_edit_screen_search(app_screen_tag_edit(),
                                           pattern, pattern_len, forward,
                                           wrap, skip_current, ncm_error);

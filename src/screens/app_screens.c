@@ -750,12 +750,12 @@ tag_edit_hook_prompt(
     prompt_result = prompt_buffer(label, label_len, initial,
                                   result, true);
     if (prompt_result == PROMPT_RESULT_ACCEPTED) {
-        return TAG_EDITOR_PROMPT_ACCEPTED;
+        return TAG_EDIT_PROMPT_ACCEPTED;
     }
     if (prompt_result == PROMPT_RESULT_ABORTED) {
-        return TAG_EDITOR_PROMPT_ABORTED;
+        return TAG_EDIT_PROMPT_ABORTED;
     }
-    return TAG_EDITOR_PROMPT_ERROR;
+    return TAG_EDIT_PROMPT_ERROR;
 }
 
 static bool
@@ -849,12 +849,12 @@ tiny_tag_edit_prompt(
     prompt_result = prompt_buffer(label, label_len, initial,
                                   result, true);
     if (prompt_result == PROMPT_RESULT_ACCEPTED) {
-        return TINY_TAG_EDITOR_PROMPT_ACCEPTED;
+        return TINY_TAG_EDIT_PROMPT_ACCEPTED;
     }
     if (prompt_result == PROMPT_RESULT_ABORTED) {
-        return TINY_TAG_EDITOR_PROMPT_ABORTED;
+        return TINY_TAG_EDIT_PROMPT_ABORTED;
     }
-    return TINY_TAG_EDITOR_PROMPT_ERROR;
+    return TINY_TAG_EDIT_PROMPT_ERROR;
 }
 
 static void
@@ -1264,7 +1264,7 @@ help_render(void *user, NcBuffer *buffer) {
                             "Show music visualizer");
 #endif
 #if defined(HAVE_TAGLIB_H)
-    append_help(buffer, NCM_ACTION_SHOW_TAG_EDITOR,
+    append_help(buffer, NCM_ACTION_SHOW_TAG_EDIT,
                             "Show tag editor");
 #endif
 
