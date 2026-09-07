@@ -1173,7 +1173,7 @@ lyrics_title_callback(NcScreen *screen) {
     LyricsScreen *lyrics = lyrics_from_screen(screen);
 
     sb_clear(&lyrics->title);
-    SB_APPEND(&lyrics->title, STRLIT(LYRICS_TITLE));
+    SB_APPEND(&lyrics->title, LYRICS_TITLE);
     if (!lyrics->has_song || ncm_song_is_empty(&lyrics->song)) {
         return lyrics->title.data;
     }
