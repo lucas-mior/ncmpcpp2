@@ -52,9 +52,7 @@ static int32 lyrics_screen_start_foreground_fetch(
     NcmLyricsFetcherDef *fetcher,
     StrBuilder *filename,
     NcmError *ncm_error);
-static bool lyrics_screen_update_sync_line_force(
-    LyricsScreen *screen,
-    bool force);
+static bool lyrics_screen_update_sync_line_force(LyricsScreen *, bool force);
 static int32 lyrics_lrc_buffer_position(void *user);
 static void lyrics_lrc_buffer_append(void *user, char *data, int32 data_len);
 static void lyrics_screen_clear_lyrics_state(LyricsScreen *, LyricsMode mode);
