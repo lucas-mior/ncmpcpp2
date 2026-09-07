@@ -679,8 +679,7 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
         int32 next;
         int32 parsed_width;
 
-        width = ncm_string_get_enclosed(value, value_len, '(', ')', pos,
-                                        &next);
+        width = ncm_string_get_enclosed(value, value_len, '(', ')', pos, &next);
         if (width.len <= 0) {
             sb_free(&width);
             sb_free(&color);
@@ -688,8 +687,7 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
             break;
         }
         pos = next;
-        color = ncm_string_get_enclosed(value, value_len, '[', ']', pos,
-                                        &next);
+        color = ncm_string_get_enclosed(value, value_len, '[', ']', pos, &next);
         pos = next;
         tag = ncm_string_get_enclosed(value, value_len, '{', '}', pos, &next);
         pos = next;
@@ -844,8 +842,7 @@ settings_append_lyrics_fetcher(void *context, char *item, int32 item_len,
     NcmLyricsFetcherRegistry *registry = context;
     int32 status;
 
-    status = ncm_lyrics_fetcher_registry_append_name(registry,
-                                                      item, item_len);
+    status = ncm_lyrics_fetcher_registry_append_name(registry, item, item_len);
     if (status < 0) {
         return settings_error(ncm_error, STRLIT("unknown lyrics fetcher"));
     }
