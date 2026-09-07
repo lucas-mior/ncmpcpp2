@@ -1590,11 +1590,9 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                     }
                     h = h_next - delta*(x_next - x);
                 } else if (height_index == 1) {
-                    double x_prev;
-                    double h_prev;
+                    double x_prev = fft->bar_heights[height_index - 1].column;
+                    double h_prev = fft->bar_heights[height_index - 1].height;
 
-                    x_prev = fft->bar_heights[height_index - 1].column;
-                    h_prev = fft->bar_heights[height_index - 1].height;
                     if (x_next != x_prev) {
                         delta = (h_next - h_prev)
                                 /(x_next - x_prev);
