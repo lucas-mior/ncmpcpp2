@@ -59,14 +59,16 @@ static int32 lyrics_lrc_buffer_position(void *user);
 static void lyrics_lrc_buffer_append(void *user, char *data, int32 data_len);
 static void lyrics_screen_clear_lyrics_state(LyricsScreen *, LyricsMode mode);
 static void lyrics_remove_extension(StrBuilder *buffer);
-static int32 lyrics_filename_from_song_with_extension(
-    StrBuilder *filename,
-    NcmSong *song,
-    char *music_dir, int32 music_dir_len,
-    char *lyrics_dir, int32 lyrics_dir_len,
-    bool store_in_song_dir,
-    bool win32_filename,
-    char *extension, int32 extension_len);
+static int32 lyrics_filename_from_song_with_extension(StrBuilder *,
+                                                      NcmSong *,
+                                                      char *music_dir,
+                                                      int32 music_dir_len,
+                                                      char *lyrics_dir,
+                                                      int32 lyrics_dir_len,
+                                                      bool store_in_song_dir,
+                                                      bool win32_filename,
+                                                      char *extension,
+                                                      int32 extension_len);
 static int32 lyrics_filename_from_song(StrBuilder *filename,
                                        NcmSong *song,
                                        char *music_dir,
