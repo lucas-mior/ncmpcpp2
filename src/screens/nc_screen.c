@@ -638,8 +638,7 @@ nc_screen_registry_unlock(NcScreenRegistry *registry) {
 }
 
 bool
-nc_screen_registry_is_visible(NcScreenRegistry *registry,
-                              NcScreen *screen) {
+nc_screen_registry_is_visible(NcScreenRegistry *registry, NcScreen *screen) {
     if (screen == NULL) {
         return false;
     }
