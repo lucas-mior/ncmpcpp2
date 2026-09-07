@@ -225,7 +225,7 @@ nc_scrollpad_flush(NcScrollpad *scrollpad, NcWindow *window, NcBuffer *buffer) {
     state.property_index = 0;
     state.property_count = ARRAY_LEN(buffer->properties);
 
-    scrollpad->real_height = nc_scrollpad_write_buffer(&state, true);;
+    scrollpad->real_height = nc_scrollpad_write_buffer(&state, true);
     if (scrollpad->real_height < window->height) {
         scrollpad->real_height = window->height;
     }
