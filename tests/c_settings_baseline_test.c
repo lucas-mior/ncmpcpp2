@@ -232,7 +232,7 @@ test_declared_defaults_and_cleanup(void) {
     ASSERT(config.playlist_display_mode == NCM_DISPLAY_MODE_COLUMNS);
     ASSERT(config.browser_display_mode == NCM_DISPLAY_MODE_CLASSIC);
     ASSERT(config.search_engine_display_mode == NCM_DISPLAY_MODE_CLASSIC);
-    ASSERT(config.playlist_editor_display_mode == NCM_DISPLAY_MODE_CLASSIC);
+    ASSERT(config.playlist_edit_display_mode == NCM_DISPLAY_MODE_CLASSIC);
     ASSERT(config.user_interface == NCM_DESIGN_CLASSIC);
     ASSERT(config.media_library_primary_tag == MPD_TAG_ARTIST);
     ASSERT(config.space_add_mode == NCM_SPACE_ADD_MODE_ADD_REMOVE);
