@@ -17,13 +17,10 @@ static void *menu_construct_item(NcMenu *menu);
 
 static uint32 menu_default_item_flags(void);
 static uint32 menu_flags_for_item(NcMenu *menu, void *item);
-static uint32 *menu_flags_array(NcMenu *menu,
-                                enum NcMenuItemSource source);
-static int32 menu_item_index(NcMenu *menu, enum NcMenuItemSource source,
-                             void *item);
+static uint32 *menu_flags_array(NcMenu *menu, enum NcMenuItemSource source);
+static int32 menu_item_index(NcMenu *, enum NcMenuItemSource, void *item);
 static void menu_clamp_navigation(NcMenu *menu);
-static void menu_set_flags_for_item(NcMenu *menu, void *item,
-                                    uint32 flags);
+static void menu_set_flags_for_item(NcMenu *menu, void *item, uint32 flags);
 
 static void **
 menu_array(NcMenu *menu, enum NcMenuItemSource source) {
