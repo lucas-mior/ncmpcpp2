@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_CONFIGURATION_H)
-#define NCMPCPP_CONFIGURATION_H
+#if !defined(CONFIGURATION_H)
+#define CONFIGURATION_H
 
 #include "cbase.h"
 
@@ -40,4 +40,4 @@ int32 configuration_discover_default_paths(StrBuilderArray *config_paths,
                                            NcmError *ncm_error);
 int32 configure(int32 argc, char **argv);
 
-#endif /* NCMPCPP_CONFIGURATION_H */
+#endif /* CONFIGURATION_H */
