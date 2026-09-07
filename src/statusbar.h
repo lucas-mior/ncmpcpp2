@@ -25,8 +25,7 @@ void ncm_statusbar_print(int32 delay_seconds, char *message, int32 message_len);
 void ncm_statusbar_print_cstring(int32 delay_seconds, char *message);
 void ncm_statusbar_mpd_idle_callback(void);
 bool ncm_statusbar_prompt_should_continue(char *string, int32 string_len);
-int32 ncm_statusbar_prompt_return_one_of(NcWindow *window, char *values,
-                                         int32 values_len, char *result);
+int32 ncm_statusbar_prompt_return_one_of(NcWindow *, char *, int32, char *);
 int32 ncm_statusbar_message_delay_time(void);
 
 #endif /* NCMPCPP_STATUSBAR_H */
