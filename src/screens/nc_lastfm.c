@@ -508,9 +508,8 @@ lastfm_job_complete(int32 status, NcmError *ncm_error, void *user) {
         }
     } else {
         NcBuffer *buffer = &screen->buffer;
-        NcColor red;
+        NcColor red = nc_color_make(COLOR_RED, NC_COLOR_CURRENT, false, false);
 
-        red = nc_color_make(COLOR_RED, NC_COLOR_CURRENT, false, false);
         nc_buffer_append_char(buffer, ' ');
         nc_buffer_add_color(buffer, buffer->len, red,
                             LASTFM_DEFAULT_PROPERTY_ID);
