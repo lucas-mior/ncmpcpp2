@@ -5348,11 +5348,10 @@ action_runtime_edit_lyrics(void) {
 
 static int32
 action_runtime_fetch_lyrics_background(void) {
-    NcmSongArray songs;
+    NcmSongArray songs = {0};
     NcmError ncm_error;
     int32 status;
 
-    songs = (NcmSongArray){0};
     if ((action_runtime_selected_songs(&songs) < 0) || (songs.len <= 0)) {
         ncm_song_array_destroy(&songs);
         return -NCM_ERROR_UNAVAILABLE;
