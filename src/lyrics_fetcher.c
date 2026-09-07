@@ -434,8 +434,7 @@ lyrics_fetcher_build_url(NcmLyricsFetcherDef *fetcher, StrBuilder *url,
     int32 domain_len;
 
     sb_clear(url);
-    SB_APPEND(url,
-              "https://www.google.com/search?hl=en&q=");
+    SB_APPEND(url, "https://www.google.com/search?hl=en&q=");
     if (fetcher->type == NCM_LYRICS_FETCHER_INTERNET) {
         SB_APPEND(url, "lyrics+");
     } else {
