@@ -480,11 +480,9 @@ ncm_lyrics_fetcher_build_url(NcmLyricsFetcherDef *fetcher, StrBuilder *url,
 
 static void
 lyrics_trim_view(char **data, int32 *len) {
-    char *text;
-    int32 text_len;
+    char *text = *data;
+    int32 text_len = *len;
 
-    text = *data;
-    text_len = *len;
     while ((text_len > 0)
            && ((text[0] == ' ') || (text[0] == '\t') || (text[0] == '\r')
                || (text[0] == '\n'))) {
