@@ -163,56 +163,56 @@ ncm_display_column_title(StrBuilder *buffer, struct Column *columns,
                 }
                 switch (column->type[j]) {
                 case 'l':
-                    SB_APPEND(&name, STRLIT("Time"));
+                    SB_APPEND(&name, "Time");
                     break;
                 case 'f':
-                    SB_APPEND(&name, STRLIT("Filename"));
+                    SB_APPEND(&name, "Filename");
                     break;
                 case 'D':
-                    SB_APPEND(&name, STRLIT("Directory"));
+                    SB_APPEND(&name, "Directory");
                     break;
                 case 'F':
-                    SB_APPEND(&name, STRLIT("Filepath"));
+                    SB_APPEND(&name, "Filepath");
                     break;
                 case 'a':
-                    SB_APPEND(&name, STRLIT("Artist"));
+                    SB_APPEND(&name, "Artist");
                     break;
                 case 'A':
-                    SB_APPEND(&name, STRLIT("Album Artist"));
+                    SB_APPEND(&name, "Album Artist");
                     break;
                 case 't':
-                    SB_APPEND(&name, STRLIT("Title"));
+                    SB_APPEND(&name, "Title");
                     break;
                 case 'b':
-                    SB_APPEND(&name, STRLIT("Album"));
+                    SB_APPEND(&name, "Album");
                     break;
                 case 'y':
-                    SB_APPEND(&name, STRLIT("Date"));
+                    SB_APPEND(&name, "Date");
                     break;
                 case 'n':
                 case 'N':
-                    SB_APPEND(&name, STRLIT("Track"));
+                    SB_APPEND(&name, "Track");
                     break;
                 case 'g':
-                    SB_APPEND(&name, STRLIT("Genre"));
+                    SB_APPEND(&name, "Genre");
                     break;
                 case 'c':
-                    SB_APPEND(&name, STRLIT("Composer"));
+                    SB_APPEND(&name, "Composer");
                     break;
                 case 'p':
-                    SB_APPEND(&name, STRLIT("Performer"));
+                    SB_APPEND(&name, "Performer");
                     break;
                 case 'd':
-                    SB_APPEND(&name, STRLIT("Disc"));
+                    SB_APPEND(&name, "Disc");
                     break;
                 case 'C':
-                    SB_APPEND(&name, STRLIT("Comment"));
+                    SB_APPEND(&name, "Comment");
                     break;
                 case 'P':
-                    SB_APPEND(&name, STRLIT("Priority"));
+                    SB_APPEND(&name, "Priority");
                     break;
                 default:
-                    SB_APPEND(&name, STRLIT("?"));
+                    SB_APPEND(&name, "?");
                     break;
                 }
             }
