@@ -70,10 +70,10 @@ tiny_editor_draw_row(NcMenu *menu, NcWindow *window, void *item,
 }
 
 void
-tiny_tag_edit_screen_init(
-    TinyTagEditScreen *screen, int32 start_x, int32 width,
-    int32 main_start_y, int32 main_height, NcColor color, NcBorder border
-) {
+tiny_tag_edit_screen_init(TinyTagEditScreen *screen,
+                          int32 start_x, int32 width,
+                          int32 main_start_y, int32 main_height,
+                          NcColor color, NcBorder border) {
     NcMenuDisplayCallbacks display_callbacks = {0};
     NcMenu *menu;
 
