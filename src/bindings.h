@@ -56,20 +56,20 @@ typedef struct NcmBindingSlice {
     int32 len;
 } NcmBindingSlice;
 
-typedef int32 (*NcmBindingActionRunner)(NcmBindingAction *action, void *user);
-typedef bool (*NcmBindingCanRunActionFn)(enum NcmActionType type, void *user);
-typedef int32 (*NcmBindingRunActionFn)(enum NcmActionType type, void *user);
-typedef bool (*NcmBindingCurrentScreenIsFn)(enum ScreenType, void *user);
-typedef void (*NcmBindingPushKeyFn)(NcKey key, void *user);
-typedef int32 (*NcmBindingRunExternalCommandFn)(char *, int32, void *user);
+typedef int32 (NcmBindingActionRunner)(NcmBindingAction *action, void *user);
+typedef bool (NcmBindingCanRunActionFn)(enum NcmActionType type, void *user);
+typedef int32 (NcmBindingRunActionFn)(enum NcmActionType type, void *user);
+typedef bool (NcmBindingCurrentScreenIsFn)(enum ScreenType, void *user);
+typedef void (NcmBindingPushKeyFn)(NcKey key, void *user);
+typedef int32 (NcmBindingRunExternalCommandFn)(char *, int32, void *user);
 
 typedef struct NcmBindingRuntime {
-    NcmBindingCanRunActionFn can_run_action;
-    NcmBindingRunActionFn run_action;
-    NcmBindingCurrentScreenIsFn current_screen_is;
-    NcmBindingPushKeyFn push_key;
-    NcmBindingRunExternalCommandFn run_external_command;
-    NcmBindingRunExternalCommandFn run_external_console_command;
+    NcmBindingCanRunActionFn *can_run_action;
+    NcmBindingRunActionFn *run_action;
+    NcmBindingCurrentScreenIsFn *current_screen_is;
+    NcmBindingPushKeyFn *push_key;
+    NcmBindingRunExternalCommandFn *run_external_command;
+    NcmBindingRunExternalCommandFn *run_external_console_command;
     void *user;
 } NcmBindingRuntime;
 

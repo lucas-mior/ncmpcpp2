@@ -57,7 +57,7 @@ typedef struct NcmLyricsFetcherRegistry {
     NcmLyricsFetcherArray fetchers;
 } NcmLyricsFetcherRegistry;
 
-typedef int32 (*NcmLyricsCurlPerformFn)(StrBuilder *data, char *url,
+typedef int32 (NcmLyricsCurlPerformFn)(StrBuilder *data, char *url,
                                          int32 url_len, char *referer,
                                          int32 referer_len,
                                          bool follow_redirect,

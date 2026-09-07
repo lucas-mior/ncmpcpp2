@@ -137,18 +137,18 @@ enum NcmActionType {
     NCM_ACTION_LAST,
 };
 
-typedef bool (*NcmActionCanRunFn)(void *user);
-typedef int32 (*NcmActionRunFn)(void *user);
+typedef bool (NcmActionCanRunFn)(void *user);
+typedef int32 (NcmActionRunFn)(void *user);
 
 #define NCM_ACTION_RUNTIME_DEFER 0
 #define NCM_ACTION_RUNTIME_ALLOW 1
 #define NCM_ACTION_RUNTIME_DENY -1
 
-typedef int32 (*NcmActionRuntimeHook)(enum NcmActionType type, void *user);
+typedef int32 (NcmActionRuntimeHook)(enum NcmActionType type, void *user);
 
 typedef struct NcmActionRuntime {
-    NcmActionRuntimeHook can_run_hook;
-    NcmActionRuntimeHook run_hook;
+    NcmActionRuntimeHook *can_run_hook;
+    NcmActionRuntimeHook *run_hook;
     void *user;
     bool exit_requested;
 } NcmActionRuntime;
@@ -171,8 +171,8 @@ typedef struct NcmActionDef {
     int32 name_len;
 
     enum NcmActionType type;
-    NcmActionCanRunFn can_run;
-    NcmActionRunFn run;
+    NcmActionCanRunFn *can_run;
+    NcmActionRunFn *run;
 } NcmActionDef;
 
 NcmActionDef *ncm_action_table_get(NcmActionDef *defs, int32 defs_len,
