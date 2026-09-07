@@ -49,8 +49,9 @@ ncm_path_expand_home(StrBuilder *path, NcmError *ncm_error) {
     }
 
     if (((home = getenv("HOME")) == NULL) || (home[0] == '\0')) {
-        return ncm_error_set_status(
-            ncm_error, -ENOENT, STRLIT("HOME environment variable is not set"));
+        return ncm_error_set_status(ncm_error, -ENOENT,
+                                    STRLIT("HOME environment variable "
+                                           "is not set"));
     }
 
     home_len = 0;
