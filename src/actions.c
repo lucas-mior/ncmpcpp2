@@ -5147,7 +5147,7 @@ action_runtime_edit_library_album(void) {
         NcmSong *song = &songs.items[i];
         NcmStringView directory;
         NcmStringView uri;
-        NcmTaglibFile file;
+        NcmTaglibFile file = {0};
 
         action_runtime_print_updating_song(song);
         sb_clear(&path);
@@ -5166,7 +5166,6 @@ action_runtime_edit_library_album(void) {
             }
         }
 
-        file = (NcmTaglibFile){0};
         status = ncm_taglib_file_open(&file, path.data);
         if (status < 0) {
             action_runtime_print_album_file_error(
