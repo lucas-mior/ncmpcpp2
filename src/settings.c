@@ -679,8 +679,7 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
         int32 next;
         int32 parsed_width;
 
-        width = ncm_string_get_enclosed(value, value_len, '(', ')', pos,
-                                        &next);
+        width = ncm_string_get_enclosed(value, value_len, '(', ')', pos, &next);
         if (width.len <= 0) {
             sb_free(&width);
             sb_free(&color);
@@ -688,8 +687,7 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
             break;
         }
         pos = next;
-        color = ncm_string_get_enclosed(value, value_len, '[', ']', pos,
-                                        &next);
+        color = ncm_string_get_enclosed(value, value_len, '[', ']', pos, &next);
         pos = next;
         tag = ncm_string_get_enclosed(value, value_len, '{', '}', pos, &next);
         pos = next;
