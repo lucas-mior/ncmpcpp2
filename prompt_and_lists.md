@@ -10,7 +10,9 @@ not have the problem, try the next one without asking first.
 ## Utility function creep
 Functions that do the (almost) the same thing are redefined in different places.
 
-## some unnecessary static function declarations at the top of the files
+## unnecessary static function declarations at the top of the files
+Reorder them and delete the standalone declaration on the top of the .c file.
+
 ## functions definitions could be reordered to not need declarations at the top
 
 ## Style: lines broken prematurely
