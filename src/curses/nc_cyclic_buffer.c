@@ -302,8 +302,8 @@ nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
 
     string_characters = utf8_characters(string, string_len);
     separator_characters = utf8_characters(separator, separator_len);
-    start = nc_cyclic_normalize_start(
-        start_pos, string_characters + separator_characters);
+    start = nc_cyclic_normalize_start(start_pos,
+                                      string_characters + separator_characters);
 
     start_byte = utf8_byte_position(string, string_len, start);
     property_index = 0;
