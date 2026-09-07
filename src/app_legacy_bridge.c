@@ -289,8 +289,8 @@ ncmpcpp_current_screen_type(void) {
 
 void
 ncmpcpp_set_noidle_status_callback(void) {
-    ncm_mpd_client_set_noidle_callback(
-        &global_mpd, app_bridge_noidle_status_update, NULL);
+    ncm_mpd_client_set_noidle_callback(&global_mpd,
+                                       app_bridge_noidle_status_update, NULL);
     return;
 }
 
