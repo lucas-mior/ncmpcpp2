@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_SETTINGS_C)
-#define NCMPCPP_SETTINGS_C
+#if !defined(SETTINGS_C)
+#define SETTINGS_C
 
 #include "cbase.h"
 
@@ -1460,4 +1460,4 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
     return 0;
 }
 
-#endif /* NCMPCPP_SETTINGS_C */
+#endif /* SETTINGS_C */
