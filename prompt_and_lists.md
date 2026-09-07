@@ -66,8 +66,8 @@ status = ncm_fs_rename(old_real_path.data, old_real_path.len,
                        new_real_path.data, new_real_path.len,
                        ncm_error);
 ```
-Only break line before the first argument on the very very rare occasion that
-it does not fit in a single line (80 column rule).
+Only keep line break before the first argument on the very very rare occasion
+that it does not fit in a single line (80 column rule).
 
 ## Utility function creep
 Functions that do the (almost) the same thing are redefined in different places.
