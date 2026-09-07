@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_APP_BRIDGE_H)
-#define NCMPCPP_APP_BRIDGE_H
+#if !defined(APP_BRIDGE_H)
+#define APP_BRIDGE_H
 
 #include "cbase.h"
 
@@ -42,4 +42,4 @@ int32 ncmpcpp_execute_binding(NcmBinding *);
 int32 ncmpcpp_execute_action(enum NcmActionType);
 bool ncmpcpp_has_exit_request(void);
 
-#endif /* NCMPCPP_APP_BRIDGE_H */
+#endif /* APP_BRIDGE_H */
