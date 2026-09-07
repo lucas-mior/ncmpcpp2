@@ -112,7 +112,7 @@ ncm_sample_buffer_resize(NcmSampleBuffer *buffer, int32 cap) {
                                 buffer->cap, cap, SIZEOF(*buffer->data));
     }
     buffer->cap = cap;
-    (buffer)->len = 0;
+    buffer->len = 0;
     return;
 }
 
