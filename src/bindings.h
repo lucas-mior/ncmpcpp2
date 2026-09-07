@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_BINDINGS_H)
-#define NCMPCPP_BINDINGS_H
+#if !defined(BINDINGS_H)
+#define BINDINGS_H
 
 #include "cbase.h"
 
@@ -134,4 +134,4 @@ NcKey ncm_bindings_string_to_key(char *string, int32 string_len);
 NcKey ncm_read_key(NcWindow *window);
 int32 ncm_bindings_key_name(NcKey key, char *buffer, int32 buffer_len);
 
-#endif /* NCMPCPP_BINDINGS_H */
+#endif /* BINDINGS_H */
