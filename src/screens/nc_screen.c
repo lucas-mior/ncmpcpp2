@@ -427,8 +427,7 @@ nc_screen_registry_register(NcScreenRegistry *registry, NcScreen *screen) {
 }
 
 int32
-nc_screen_registry_unregister(NcScreenRegistry *registry,
-                              NcScreen *screen) {
+nc_screen_registry_unregister(NcScreenRegistry *registry, NcScreen *screen) {
     int32 index;
 
     if ((registry == NULL) || (screen == NULL)) {
