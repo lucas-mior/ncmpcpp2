@@ -608,7 +608,7 @@ tiny_editor_action_runnable(TinyTagEditScreen *screen) {
         return false;
     }
     menu = nc_editor_buffer_menu_base(&screen->rows);
-    if (nc_menu_is_empty(menu)) {
+    if (nc_menu_item_count(menu) <= 0) {
         return false;
     }
     row = tiny_editor_current_row(screen);

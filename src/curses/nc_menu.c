@@ -857,11 +857,6 @@ nc_menu_is_filtered(NcMenu *menu) {
 }
 
 bool
-nc_menu_is_empty(NcMenu *menu) {
-    return nc_menu_item_count(menu) <= 0;
-}
-
-bool
 nc_menu_position_is_selectable(NcMenu *menu, int32 pos) {
     if ((pos < 0) || (pos >= nc_menu_item_count(menu))) {
         return false;
@@ -1021,7 +1016,7 @@ nc_menu_active_item_at(NcMenu *menu, int32 pos) {
 
 void *
 nc_menu_current_item(NcMenu *menu) {
-    if (nc_menu_is_empty(menu)) {
+    if (nc_menu_item_count(menu) <= 0) {
         return NULL;
     }
     return nc_menu_active_item_at(menu, nc_menu_highlight(menu));

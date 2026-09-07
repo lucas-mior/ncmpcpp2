@@ -251,7 +251,7 @@ nc_outputs_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 
     x = event.x;
     y = event.y;
-    if (nc_menu_is_empty(&outputs->menu)
+    if ((nc_menu_item_count(&outputs->menu) <= 0)
         || !nc_window_has_coords(&outputs->window, &x, &y)
         || (y < 0)
         || (y >= nc_menu_item_count(&outputs->menu))) {

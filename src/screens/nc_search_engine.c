@@ -434,7 +434,7 @@ search_engine_screen_can_run_current(SearchEngineScreen *screen) {
     }
 
     menu = search_engine_screen_menu(screen);
-    if (nc_menu_is_empty(menu)) {
+    if (nc_menu_item_count(menu) <= 0) {
         return false;
     }
     pos = nc_menu_highlight(menu);

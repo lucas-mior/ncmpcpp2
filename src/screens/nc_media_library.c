@@ -855,7 +855,7 @@ media_library_screen_has_available_item(MediaLibraryScreen *screen) {
     if ((menu = media_library_screen_active_menu(screen)) == NULL) {
         return false;
     }
-    return !nc_menu_is_empty(menu);
+    return nc_menu_item_count(menu) > 0;
 }
 
 int32
@@ -3058,7 +3058,7 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
     songs_menu = nc_media_library_song_menu_base(&screen->songs);
     if (screen->mode == MEDIA_LIBRARY_MODE_THREE_COLUMNS) {
         library_clear_column_filter(screen, MEDIA_LIBRARY_COLUMN_TAGS);
-        if (nc_menu_is_empty(tags_menu)) {
+        if (nc_menu_item_count(tags_menu) <= 0) {
             media_library_screen_request_tags_update(screen);
             status = media_library_screen_update(screen, ncm_error);
             if (status < 0) {
@@ -3111,7 +3111,7 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
     }
 
     library_clear_column_filter(screen, MEDIA_LIBRARY_COLUMN_ALBUMS);
-    if (nc_menu_is_empty(albums_menu)) {
+    if (nc_menu_item_count(albums_menu) <= 0) {
         media_library_screen_request_albums_update(screen);
         status = media_library_screen_update(screen, ncm_error);
         if (status < 0) {
@@ -3120,7 +3120,7 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
     }
 
     if ((screen->mode == MEDIA_LIBRARY_MODE_THREE_COLUMNS)
-        && nc_menu_is_empty(albums_menu)) {
+        && (nc_menu_item_count(albums_menu) <= 0)) {
         media_library_screen_set_active_column(
             screen, MEDIA_LIBRARY_COLUMN_TAGS);
         return ncm_error_set_status(
@@ -3242,7 +3242,7 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
     if (status < 0) {
         return status;
     }
-    if (nc_menu_is_empty(songs_menu)) {
+    if (nc_menu_item_count(songs_menu) <= 0) {
         nc_menu_clear_items(albums_menu);
         media_library_screen_set_active_column(screen,
                                                MEDIA_LIBRARY_COLUMN_ALBUMS);
@@ -3304,7 +3304,7 @@ library_refresh(NcScreen *screen) {
 
     albums = nc_media_library_album_menu_base(&library->albums);
     library_refresh_menu(albums, &library->albums_window);
-    if (nc_menu_is_empty(albums)) {
+    if (nc_menu_item_count(albums) <= 0) {
         nc_window_go_to_xy(&library->albums_window, 0, 0);
         nc_window_print_data(&library->albums_window,
                              STRLIT("No albums found."));
