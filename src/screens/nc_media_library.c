@@ -766,12 +766,12 @@ library_draw_song(NcMenu *menu, NcWindow *window,
     {
         NcBufferProperty *properties = nc_buffer_properties(&text);
         char *data = nc_buffer_data(&text);
-        int32 property_count = ARRAY_LEN(text.properties);
+        int32 property_len = ARRAY_LEN(text.properties);
         int32 property_index = 0;
         int32 len = text.len;
 
         for (int32 i = 0;; i += 1) {
-            while ((property_index < property_count)
+            while ((property_index < property_len)
                    && (properties[property_index].position == i)) {
                 nc_buffer_apply_property(window, &properties[property_index]);
                 property_index += 1;

@@ -12,7 +12,7 @@ typedef struct NcScrollpadWriteState {
 
     int32 i;
     int32 property_index;
-    int32 property_count;
+    int32 property_len;
 } NcScrollpadWriteState;
 
 void
@@ -101,7 +101,7 @@ nc_scrollpad_scroll(NcScrollpad *scrollpad, NcWindow *window,
 
 static void
 nc_scrollpad_load_properties(NcScrollpadWriteState *state) {
-    while ((state->property_index < state->property_count)
+    while ((state->property_index < state->property_len)
            && (state->properties[state->property_index].position == state->i)) {
         nc_buffer_apply_property(
             state->window, &state->properties[state->property_index]);
@@ -205,7 +205,7 @@ nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
         }
     }
 
-    while (state->property_index < state->property_count) {
+    while (state->property_index < state->property_len) {
         nc_buffer_apply_property(
             state->window, &state->properties[state->property_index]);
         state->property_index += 1;
@@ -223,7 +223,7 @@ nc_scrollpad_flush(NcScrollpad *scrollpad, NcWindow *window, NcBuffer *buffer) {
     state.window = window;
     state.i = 0;
     state.property_index = 0;
-    state.property_count = ARRAY_LEN(buffer->properties);
+    state.property_len = ARRAY_LEN(buffer->properties);
 
     scrollpad->real_height = nc_scrollpad_write_buffer(&state, true);
     if (scrollpad->real_height < window->height) {
@@ -237,7 +237,7 @@ nc_scrollpad_flush(NcScrollpad *scrollpad, NcWindow *window, NcBuffer *buffer) {
 
     state.i = 0;
     state.property_index = 0;
-    state.property_count = ARRAY_LEN(buffer->properties);
+    state.property_len = ARRAY_LEN(buffer->properties);
     state.properties = nc_buffer_properties(buffer);
     nc_scrollpad_write_buffer(&state, false);
     return;
