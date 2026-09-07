@@ -1328,13 +1328,13 @@ lyrics_url_best_slug_score(NcmLyricsFetcherDef *fetcher,
             StrBuilder slug = {0};
             char *segment = url + segment_start;
             int32 segment_len = i - segment_start;
-            int32 score;
+            int32 score = 0;
 
             lyrics_trim_url_segment_suffix(&segment, &segment_len,
                                            STRLIT(".html"));
             lyrics_trim_url_segment_suffix(&segment, &segment_len,
                                            STRLIT("-lyrics"));
-            score = 0;
+
             if (segment_len > 0) {
                 lyrics_percent_decode(&decoded, segment, segment_len);
                 if (lyrics_append_slug(&slug, fetcher->type, decoded.data,
