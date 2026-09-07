@@ -20,14 +20,14 @@ int32 ncmpcpp_footer_start_y(void);
 
 NcWindow *ncmpcpp_window_create(int32 start_x, int32 start_y,
                                 int32 width, int32 height, NcColor color);
-void ncmpcpp_window_display(NcWindow *window);
-void ncmpcpp_window_destroy(NcWindow *window);
+void ncmpcpp_window_display(NcWindow *);
+void ncmpcpp_window_destroy(NcWindow *);
 
 void ncmpcpp_init_screens(void);
 void ncmpcpp_resize_screen(bool reload_main_window);
 void ncmpcpp_playlist_switch_to(void);
 void ncmpcpp_playlist_enable_highlighting_if_current(void);
-int32 ncmpcpp_switch_to_screen_type(enum ScreenType screen_type);
+int32 ncmpcpp_switch_to_screen_type(enum ScreenType);
 int32 ncmpcpp_lock_current_screen(void);
 enum ScreenType ncmpcpp_current_screen_type(void);
 
@@ -35,10 +35,11 @@ void ncmpcpp_set_noidle_status_callback(void);
 bool ncmpcpp_mpd_is_connected(void);
 void ncmpcpp_connect_or_report(void);
 void ncmpcpp_status_clear(void);
-int32 ncmpcpp_update_environment(bool update_timer, bool refresh_window,
+int32 ncmpcpp_update_environment(bool update_timer,
+                                 bool refresh_window,
                                  bool mpd_sync);
-int32 ncmpcpp_execute_binding(NcmBinding *binding);
-int32 ncmpcpp_execute_action(enum NcmActionType type);
+int32 ncmpcpp_execute_binding(NcmBinding *);
+int32 ncmpcpp_execute_action(enum NcmActionType);
 bool ncmpcpp_has_exit_request(void);
 
 #endif /* NCMPCPP_APP_BRIDGE_H */
