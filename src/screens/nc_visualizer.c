@@ -1219,11 +1219,9 @@ visualizer_screen_push_samples(VisualizerScreen *screen, int16 *samples,
 }
 
 int32
-visualizer_screen_take_render_samples(VisualizerScreen *screen, int16 *dest,
-                                      int32 dest_len) {
-    int32 requested;
-
-    requested = visualizer_screen_requested_samples(screen);
+visualizer_screen_take_render_samples(VisualizerScreen *screen,
+                                      int16 *dest, int32 dest_len) {
+    int32 requested = visualizer_screen_requested_samples(screen);
     return ncm_sample_buffer_get_clamped(&screen->buffered_samples,
                                          requested, dest, dest_len);
 }
