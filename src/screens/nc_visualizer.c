@@ -319,9 +319,9 @@ visualizer_update_callback(NcScreen *screen) {
             samples_read = (int32)(bytes_read
                                    /SIZEOF(*visualizer->samples_in.data));
             if (samples_read > 0) {
-                visualizer_screen_push_samples(
-                    visualizer, visualizer->samples_in.data,
-                    samples_read);
+                visualizer_screen_push_samples(visualizer,
+                                               visualizer->samples_in.data,
+                                               samples_read);
             }
         }
     }
