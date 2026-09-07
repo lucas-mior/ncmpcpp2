@@ -897,8 +897,8 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
 
     screen->visualizer_colors = NULL;
     screen->visualizer_colors_len = 0;
-    visualizer_screen_init_data_source(screen, source_location,
-                                       source_location_len);
+    visualizer_screen_init_data_source(screen,
+                                       source_location, source_location_len);
     sb_set(&screen->output_name, output_name, output_name_len);
     {
         int32 next;
