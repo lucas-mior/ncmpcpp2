@@ -310,17 +310,17 @@ visualizer_update_callback(NcScreen *screen) {
         int32 bytes_read;
         int32 samples_read;
 
-        buffer_size = visualizer->incoming_samples.cap
-                      *SIZEOF(*visualizer->incoming_samples.data);
+        buffer_size = visualizer->samples_in.cap
+                      *SIZEOF(*visualizer->samples_in.data);
         bytes_read = visualizer->data_source_hooks.read_source(
             visualizer->data_source_hooks.user, visualizer->source_fd,
-            visualizer->incoming_samples.data, buffer_size);
+            visualizer->samples_in.data, buffer_size);
         if (bytes_read > 0) {
             samples_read = (int32)(bytes_read
-                                   /SIZEOF(*visualizer->incoming_samples.data));
+                                   /SIZEOF(*visualizer->samples_in.data));
             if (samples_read > 0) {
                 visualizer_screen_push_samples(
-                    visualizer, visualizer->incoming_samples.data,
+                    visualizer, visualizer->samples_in.data,
                     samples_read);
             }
         }
@@ -708,13 +708,13 @@ visualizer_screen_drain_data_source(VisualizerScreen *screen) {
         || (screen->data_source_hooks.read_source == NULL)) {
         return 0;
     }
-    buffer_size = screen->incoming_samples.cap
-                  *SIZEOF(*screen->incoming_samples.data);
+    buffer_size = screen->samples_in.cap
+                  *SIZEOF(*screen->samples_in.data);
     total_read = 0;
     do {
         bytes_read = screen->data_source_hooks.read_source(
             screen->data_source_hooks.user, screen->source_fd,
-            screen->incoming_samples.data, buffer_size);
+            screen->samples_in.data, buffer_size);
         if (bytes_read > 0) {
             total_read += bytes_read;
         }
@@ -931,7 +931,7 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
     }
     screen->data_source_hooks = data_source_hooks;
 
-    screen->incoming_samples = (NcmSampleBuffer){0};
+    screen->samples_in = (NcmSampleBuffer){0};
     screen->buffered_samples = (NcmSampleBuffer){0};
     screen->rendered_samples = (NcmSampleBuffer){0};
     screen->left_ch = (NcmSampleBuffer){0};
@@ -1016,7 +1016,7 @@ visualizer_screen_destroy(VisualizerScreen *screen) {
     ncm_sample_buffer_destroy(&screen->left_ch);
     ncm_sample_buffer_destroy(&screen->rendered_samples);
     ncm_sample_buffer_destroy(&screen->buffered_samples);
-    ncm_sample_buffer_destroy(&screen->incoming_samples);
+    ncm_sample_buffer_destroy(&screen->samples_in);
     visualizer_destroy_colors(screen);
     sb_free(&screen->visualizer_chars);
     sb_free(&screen->output_name);
@@ -1049,7 +1049,7 @@ void
 visualizer_screen_init_visualization(VisualizerScreen *screen) {
     double samples_per_column;
     int32 rendered_samples;
-    int32 incoming_samples;
+    int32 samples_in;
     int32 width;
     int32 rendered_cap;
     int32 incoming_cap;
@@ -1084,19 +1084,19 @@ visualizer_screen_init_visualization(VisualizerScreen *screen) {
         break;
     }
 
-    incoming_samples = screen->sample_rate / 2;
+    samples_in = screen->sample_rate / 2;
     if (screen->stereo) {
         rendered_samples *= 2;
-        incoming_samples *= 2;
+        samples_in *= 2;
     }
     rendered_cap = rendered_samples;
-    incoming_cap = incoming_samples;
+    incoming_cap = samples_in;
     channel_cap = 0;
     if (screen->stereo) {
         channel_cap = rendered_cap / 2;
     }
 
-    ncm_sample_buffer_resize(&screen->incoming_samples, incoming_cap);
+    ncm_sample_buffer_resize(&screen->samples_in, incoming_cap);
     ncm_sample_buffer_resize(&screen->buffered_samples, incoming_cap);
     ncm_sample_buffer_resize(&screen->rendered_samples, rendered_cap);
     ncm_sample_buffer_resize(&screen->left_ch, channel_cap);
@@ -1108,7 +1108,7 @@ visualizer_screen_init_visualization(VisualizerScreen *screen) {
 
 void
 visualizer_screen_reset_audio_state(VisualizerScreen *screen) {
-    screen->incoming_samples.len = 0;
+    screen->samples_in.len = 0;
     screen->buffered_samples.len = 0;
     screen->rendered_samples.len = 0;
     screen->left_ch.len = 0;
