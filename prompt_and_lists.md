@@ -23,7 +23,6 @@ Only keep line break before the first argument on the very very rare occasion
 that it does not fit in a single line (80 column rule). Remember to try to keep
 associated pointer + len pairs together.
 
-- src/screens/nc_sel_items_adder.c
 - src/curses/nc_curses.c
 - src/c/ncm_html.c
 - src/app_controller.c
