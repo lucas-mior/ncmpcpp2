@@ -940,7 +940,7 @@ typedef struct VisualizerScreen {
     NcFormattedColor *visualizer_colors;
     VisualizerDataSourceHooks data_source_hooks;
 
-    NcmSampleBuffer incoming_samples;
+    NcmSampleBuffer samples_in;
     NcmSampleBuffer buffered_samples;
     NcmSampleBuffer rendered_samples;
     NcmSampleBuffer left_ch;
