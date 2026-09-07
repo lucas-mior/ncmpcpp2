@@ -5388,7 +5388,7 @@ action_runtime_refetch_lyrics(void) {
 
 static int32
 action_runtime_show_lyrics(void) {
-    NcmSong song;
+    NcmSong song = {0};
     NcmSong *lyrics_song;
     NcmError ncm_error;
     int32 status;
@@ -5397,7 +5397,6 @@ action_runtime_show_lyrics(void) {
         return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_LYRICS);
     }
 
-    song = (NcmSong){0};
     status = action_runtime_current_song(&song);
     if (status == 0) {
         if (((lyrics_song = lyrics_screen_song(app_screen_lyrics())) == NULL)
