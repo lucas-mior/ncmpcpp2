@@ -285,32 +285,29 @@ test_runtime_application_is_separate(void) {
                     "before-password"));
     ASSERT(global_mpd.timeout_ms == 4321);
 
-    ASSERT_ZERO(settings_test_apply(
-        apply_mpd_host, &config, "after-host"));
+    ASSERT_ZERO(settings_test_apply(apply_mpd_host, &config, "after-host"));
     ASSERT_ZERO(settings_test_apply(apply_mpd_port, &config, "4567"));
-    ASSERT_ZERO(settings_test_apply(
-        apply_mpd_password, &config, "after-password"));
-    ASSERT_ZERO(settings_test_apply(
-        apply_mpd_connection_timeout, &config, "9"));
-    ASSERT_ZERO(settings_test_apply(
-        apply_enable_window_title, &config, "yes"));
+    ASSERT_ZERO(settings_test_apply(apply_mpd_password, &config,
+                                    "after-password"));
+    ASSERT_ZERO(settings_test_apply(apply_mpd_connection_timeout,
+                                    &config, "9"));
+    ASSERT_ZERO(settings_test_apply(apply_enable_window_title, &config, "yes"));
 
     ASSERT(config.enable_window_title);
-    ASSERT(STREQUAL(global_mpd.host.data, global_mpd.host.len,
-                    "before-host"));
+    ASSERT(STREQUAL(global_mpd.host.data, global_mpd.host.len, "before-host"));
     ASSERT(global_mpd.port == 1234);
-    ASSERT(STREQUAL(global_mpd.password.data, global_mpd.password.len,
-                    "before-password"));
+    ASSERT_EQUAL(global_mpd.password.data, global_mpd.password.len,
+                 "before-password");
     ASSERT(global_mpd.timeout_ms == 4321);
 
-    ASSERT_ZERO(configuration_apply_runtime(
-        &config, &global_mpd, true, &ncm_error));
+    ASSERT_ZERO(configuration_apply_runtime(&config, &global_mpd, true,
+                                            &ncm_error));
     ASSERT(config.enable_window_title);
     ASSERT(!window_title_enabled);
-    ASSERT(STREQUAL(global_mpd.host.data, global_mpd.host.len, "after-host"));
+    ASSERT_EQUAL(global_mpd.host.data, global_mpd.host.len, "after-host");
     ASSERT(global_mpd.port == 4567);
-    ASSERT(STREQUAL(global_mpd.password.data, global_mpd.password.len,
-                    "after-password"));
+    ASSERT_EQUAL(global_mpd.password.data, global_mpd.password.len,
+                 "after-password"));
     ASSERT(global_mpd.timeout_ms == 9000);
 
     if (had_term) {
