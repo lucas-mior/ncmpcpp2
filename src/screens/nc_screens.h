@@ -139,38 +139,38 @@
     NCM_SCREEN_TYPES(NCM_SCREEN_TYPE_XENUM_FIELD)
 
 
-#define NCM_APP_SCREEN_DIRECT_STORAGE_TYPES(XX)                                \
-    XX(BrowserScreen, browser_screen)                                          \
-    XX(LastfmScreen, lastfm_screen)                                            \
-    XX(LyricsScreen, lyrics_screen)                                            \
-    XX(VisualizerScreen, visualizer_screen)                                    \
-    XX(PlaylistScreen, playlist_screen)                                        \
-    XX(PlaylistEditorScreen, playlist_editor_screen)                           \
-    XX(SelectedItemsAdderScreen, selected_items_adder_screen)                  \
-    XX(SortPlaylistDialog, sort_playlist_dialog)                               \
-    XX(SearchEngineScreen, search_engine_screen)                               \
-    XX(MediaLibraryScreen, media_library_screen)                               \
-    XX(TagEditorScreen, tag_editor_screen)                                     \
+#define NCM_APP_SCREEN_DIRECT_STORAGE_TYPES(XX)                \
+    XX(BrowserScreen, browser_screen)                          \
+    XX(LastfmScreen, lastfm_screen)                            \
+    XX(LyricsScreen, lyrics_screen)                            \
+    XX(VisualizerScreen, visualizer_screen)                    \
+    XX(PlaylistScreen, playlist_screen)                        \
+    XX(PlaylistEditorScreen, playlist_editor_screen)           \
+    XX(SelectedItemsAdderScreen, selected_items_adder_screen)  \
+    XX(SortPlaylistDialog, sort_playlist_dialog)               \
+    XX(SearchEngineScreen, search_engine_screen)               \
+    XX(MediaLibraryScreen, media_library_screen)               \
+    XX(TagEditorScreen, tag_editor_screen)                     \
     XX(TinyTagEditorScreen, tiny_tag_editor_screen)
 
-#define NCM_APP_SCREEN_WRAPPED_STORAGE_TYPES(XX)                               \
-    XX(HelpScreen, help_screen)                                                \
-    XX(OutputsScreen, outputs_screen)                                          \
-    XX(ServerInfoScreen, server_info_screen)                                   \
+#define NCM_APP_SCREEN_WRAPPED_STORAGE_TYPES(XX)               \
+    XX(HelpScreen, help_screen)                                \
+    XX(OutputsScreen, outputs_screen)                          \
+    XX(ServerInfoScreen, server_info_screen)                   \
     XX(SongInfoScreen, song_info_screen)
 
-#define NCM_APP_SCREEN_INIT_FLAGS(XX)                                          \
-    XX(browser_screen_initialized)                                             \
-    XX(lastfm_screen_initialized)                                              \
-    XX(lyrics_screen_initialized)                                              \
-    XX(visualizer_screen_initialized)                                          \
-    XX(playlist_editor_screen_initialized)                                     \
-    XX(selected_items_adder_screen_initialized)                                \
-    XX(sort_playlist_dialog_initialized)                                       \
-    XX(search_engine_screen_initialized)                                       \
-    XX(media_library_screen_initialized)                                       \
-    XX(tag_editor_screen_initialized)                                          \
-    XX(tiny_tag_editor_screen_initialized)                                     \
+#define NCM_APP_SCREEN_INIT_FLAGS(XX)                          \
+    XX(browser_screen_initialized)                             \
+    XX(lastfm_screen_initialized)                              \
+    XX(lyrics_screen_initialized)                              \
+    XX(visualizer_screen_initialized)                          \
+    XX(playlist_editor_screen_initialized)                     \
+    XX(selected_items_adder_screen_initialized)                \
+    XX(sort_playlist_dialog_initialized)                       \
+    XX(search_engine_screen_initialized)                       \
+    XX(media_library_screen_initialized)                       \
+    XX(tag_editor_screen_initialized)                          \
+    XX(tiny_tag_editor_screen_initialized)                     \
     XX(playlist_screen_initialized)
 
 #define NCM_APP_SCREEN_DIRECT_ACCESSOR_TYPES(XX)                               \
