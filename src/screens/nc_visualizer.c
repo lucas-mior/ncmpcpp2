@@ -1114,10 +1114,12 @@ visualizer_screen_reset_audio_state(VisualizerScreen *screen) {
     screen->rendered_samples.len = 0;
     screen->left_channel.len = 0;
     screen->right_channel.len = 0;
+
     if (screen->rendered_samples.cap > 0) {
         memset64(screen->rendered_samples.data, 0, screen->rendered_samples.cap
                  *SIZEOF(*screen->rendered_samples.data));
     }
+
     visualizer_screen_drain_data_source(screen);
     visualizer_reset_sample_clock(screen);
     return;
