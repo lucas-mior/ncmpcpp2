@@ -241,10 +241,8 @@ lyrics_provider_profile(enum NcmLyricsFetcherType type) {
 static int32
 lyrics_fetcher_def_set_name(NcmLyricsFetcherDef *fetcher,
                             char *name, int32 name_len) {
-    LyricsProviderProfile *profile;
-    enum NcmLyricsFetcherType type;
+    enum NcmLyricsFetcherType type = NCM_LYRICS_FETCHER_UNKNOWN;
 
-    type = NCM_LYRICS_FETCHER_UNKNOWN;
     if (STREQUAL(name, name_len, "amalgama")
         || STREQUAL(name, name_len, "amalgamalab")
         || STREQUAL(name, name_len, "amalgama-lab")
@@ -286,15 +284,16 @@ lyrics_fetcher_def_set_name(NcmLyricsFetcherDef *fetcher,
         return -NCM_ERROR_NOT_FOUND;
     }
 
-    profile = lyrics_provider_profile(type);
-
-    lyrics_fetcher_def_destroy(fetcher);
-    *fetcher = (NcmLyricsFetcherDef){0};
-    fetcher->type = type;
-    fetcher->enabled = true;
-    fetcher->name = xstrndup(profile->name, profile->name_len);
-    fetcher->name_len = profile->name_len;
-    return 0;
+    {
+        LyricsProviderProfile *profile = lyrics_provider_profile(type);
+        lyrics_fetcher_def_destroy(fetcher);
+        *fetcher = (NcmLyricsFetcherDef){0};
+        fetcher->type = type;
+        fetcher->enabled = true;
+        fetcher->name = xstrndup(profile->name, profile->name_len);
+        fetcher->name_len = profile->name_len;
+        return 0;
+    }
 }
 
 int32
