@@ -127,8 +127,7 @@ ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
     switch (source->kind) {
     case NCM_MPD_ITEM_SONG:
         replacement.value.song = (NcmSong){0};
-        status = ncm_song_copy(&replacement.value.song,
-                               &source->value.song);
+        status = ncm_song_copy(&replacement.value.song, &source->value.song);
         break;
     case NCM_MPD_ITEM_DIRECTORY:
         replacement.value.directory = (NcmDirectory){0};
@@ -156,8 +155,7 @@ ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
 }
 
 int32
-ncm_mpd_item_from_entity_copy(NcmMpdItem *item,
-                              struct mpd_entity *entity) {
+ncm_mpd_item_from_entity_copy(NcmMpdItem *item, struct mpd_entity *entity) {
     if (item == NULL) {
         return -EINVAL;
     }

@@ -165,13 +165,12 @@ ncm_binding_append_action(NcmBinding *binding, NcmBindingAction *action) {
     copy.screen_type = action->screen_type;
     if (action->argument_len > 0) {
         copy.argument = ncm_string_copy(action->argument, action->argument_len,
-                                       &copy.argument_cap);
+                                        &copy.argument_cap);
         copy.argument_len = action->argument_len;
     }
     if (action->keys_len > 0) {
         copy.keys = malloc2(action->keys_len*SIZEOF(*copy.keys));
-        memcpy64(copy.keys, action->keys,
-                 action->keys_len*SIZEOF(*copy.keys));
+        memcpy64(copy.keys, action->keys, action->keys_len*SIZEOF(*copy.keys));
         copy.keys_len = action->keys_len;
     }
 
@@ -667,8 +666,7 @@ ncm_bindings_command_index(NcmBindingsConfiguration *bindings, char *name,
     at = ncm_bindings_command_lower_bound(bindings, name, name_len);
     if ((at >= bindings->commands_len)
         || !STREQUAL(bindings->commands[at].name,
-                     bindings->commands[at].name_len,
-                     name, name_len)) {
+                     bindings->commands[at].name_len, name, name_len)) {
         return -1;
     }
     return at;
@@ -869,8 +867,7 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
             at = ncm_bindings_command_lower_bound(bindings, command.name,
                                                   command.name_len);
             if (at < bindings->commands_len) {
-                memmove64(bindings->commands + at + 1,
-                          bindings->commands + at,
+                memmove64(bindings->commands + at + 1, bindings->commands + at,
                           (bindings->commands_len - at)
                               *SIZEOF(*bindings->commands));
             }
@@ -959,16 +956,14 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                         code = EIO;
                     }
                     ncm_bindings_error(ncm_error, "%.*s:%d: read error: %s",
-                                       path_len, path, line_no,
-                                       strerror(code));
+                                       path_len, path, line_no, strerror(code));
                     status = -code;
                     break;
                 }
                 last_line = true;
             } else if (next != '\n') {
                 error("Bindings configuration line %d in '%.*s' is too "
-                      "long.\n",
-                    line_no, path_len, path);
+                      "long.\n", line_no, path_len, path);
                 fatal(EXIT_FAILURE);
             }
         }
@@ -978,8 +973,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
         }
         start = ncm_trim_start(line, len);
 
-        if ((len - start >= 11)
-            && STREQUAL(line + start, 11, "def_command")) {
+        if ((len - start >= 11) && STREQUAL(line + start, 11, "def_command")) {
             status = ncm_bindings_finalize_definition(
                 bindings, in_progress, &actions, key, key_name, key_name_len,
                 command_name, command_name_len, command_immediate, ncm_error);
@@ -1026,8 +1020,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                 break;
             }
             in_progress = IN_PROGRESS_COMMAND;
-        } else if ((len - start >= 7)
-                   && STREQUAL(line + start, 7, "def_key")) {
+        } else if ((len - start >= 7) && STREQUAL(line + start, 7, "def_key")) {
             status = ncm_bindings_finalize_definition(
                 bindings, in_progress, &actions, key, key_name, key_name_len,
                 command_name, command_name_len, command_immediate, ncm_error);
@@ -1090,8 +1083,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             } else if (ncm_extract_enclosed(line + action_start + name_len,
                                             action_len - name_len,
                                             '"', '"', &argument) < 0) {
-                ncm_bindings_error(ncm_error,
-                                   "missing quoted argument: '%.*s'",
+                ncm_bindings_error(ncm_error, "missing quoted argument: '%.*s'",
                                    action_len, line + action_start);
                 status = -NCM_ERROR_PARSE;
             } else if (STREQUAL(line + action_start, name_len,
@@ -1101,8 +1093,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                 action_key = ncm_bindings_string_to_key(argument.data,
                                                         argument.len);
                 if (action_key == NC_KEY_NONE) {
-                    ncm_bindings_error(ncm_error,
-                                       "invalid character passed to "
+                    ncm_bindings_error(ncm_error, "invalid character passed to "
                                        "push_character: '%.*s'",
                                        argument.len, argument.data);
                     status = -NCM_ERROR_PARSE;
@@ -1116,8 +1107,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             } else if (STREQUAL(line + action_start, name_len,
                                 "push_characters")) {
                 if (argument.len <= 0) {
-                    ncm_bindings_error(ncm_error,
-                                       "empty argument passed to "
+                    ncm_bindings_error(ncm_error, "empty argument passed to "
                                        "push_characters");
                     status = -NCM_ERROR_PARSE;
                 } else {
@@ -1134,8 +1124,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                                 "require_screen")) {
                 if (screen_type_parse(argument.data, argument.len,
                                       &action.screen_type) < 0) {
-                    ncm_bindings_error(ncm_error,
-                                       "unknown screen passed to "
+                    ncm_bindings_error(ncm_error, "unknown screen passed to "
                                        "require_screen: '%.*s'",
                                        argument.len, argument.data);
                     status = -NCM_ERROR_PARSE;
@@ -1147,8 +1136,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                                 "require_runnable")) {
                 if (ncm_action_type_parse(argument.data, argument.len,
                                           &action.type) < 0) {
-                    ncm_bindings_error(ncm_error,
-                                       "unknown action passed to "
+                    ncm_bindings_error(ncm_error, "unknown action passed to "
                                        "require_runnable: '%.*s'",
                                        argument.len, argument.data);
                     status = -NCM_ERROR_PARSE;
@@ -1159,8 +1147,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             } else if (STREQUAL(line + action_start, name_len,
                                 "run_external_command")) {
                 if (argument.len <= 0) {
-                    ncm_bindings_error(ncm_error,
-                                       "empty command passed to "
+                    ncm_bindings_error(ncm_error, "empty command passed to "
                                        "run_external_command");
                     status = -NCM_ERROR_PARSE;
                 } else {
@@ -1174,8 +1161,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             } else if (STREQUAL(line + action_start, name_len,
                                 "run_external_console_command")) {
                 if (argument.len <= 0) {
-                    ncm_bindings_error(ncm_error,
-                                       "empty command passed to "
+                    ncm_bindings_error(ncm_error, "empty command passed to "
                                        "run_external_console_command");
                     status = -NCM_ERROR_PARSE;
                 } else {
@@ -1232,8 +1218,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
 }
 
 void
-ncm_bindings_configuration_generate_defaults(
-    NcmBindingsConfiguration *bindings
+ncm_bindings_configuration_generate_defaults(NcmBindingsConfiguration *bindings
 ) {
     NcmBinding binding;
 

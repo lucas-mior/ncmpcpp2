@@ -43,8 +43,7 @@ ncm_conversion_set_parse_error(NcmError *ncm_error, char *source,
     char message[256];
     int32 len;
 
-    len = SNPRINTF(message,
-                   "conversion failed for '%.*s'", source_len, source);
+    len = SNPRINTF(message, "conversion failed for '%.*s'", source_len, source);
     return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE, message, len);
 }
 
@@ -70,8 +69,7 @@ ncm_parse_int64(char *source, int32 source_len, int32 *out,
     }
 
     if (buffer.len <= 0) {
-        status = ncm_conversion_set_parse_error(
-            ncm_error, source, source_len);
+        status = ncm_conversion_set_parse_error(ncm_error, source, source_len);
         sb_free(&buffer);
         return status;
     }
@@ -97,8 +95,7 @@ ncm_parse_int64(char *source, int32 source_len, int32 *out,
         *out = (int32)value;
         status = ncm_error_ok(ncm_error);
     } else {
-        status = ncm_conversion_set_parse_error(
-            ncm_error, source, source_len);
+        status = ncm_conversion_set_parse_error(ncm_error, source, source_len);
     }
 
     sb_free(&buffer);
@@ -149,8 +146,7 @@ ncm_parse_double(char *source, int32 source_len, double *out,
     }
 
     if (buffer.len <= 0) {
-        status = ncm_conversion_set_parse_error(
-            ncm_error, source, source_len);
+        status = ncm_conversion_set_parse_error(ncm_error, source, source_len);
         sb_free(&buffer);
         return status;
     }
@@ -164,8 +160,7 @@ ncm_parse_double(char *source, int32 source_len, double *out,
         *out = value;
         status = ncm_error_ok(ncm_error);
     } else {
-        status = ncm_conversion_set_parse_error(
-            ncm_error, source, source_len);
+        status = ncm_conversion_set_parse_error(ncm_error, source, source_len);
     }
 
     sb_free(&buffer);

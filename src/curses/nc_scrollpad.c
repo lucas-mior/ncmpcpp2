@@ -36,10 +36,8 @@ nc_scrollpad_refresh(NcScrollpad *scrollpad, NcWindow *window) {
 
     ASSERT(scrollpad->real_height >= window->height);
 
-    if (scrollpad->beginning > nc_scrollpad_max_beginning(scrollpad,
-                                                          window)) {
-        scrollpad->beginning = nc_scrollpad_max_beginning(scrollpad,
-                                                          window);
+    if (scrollpad->beginning > nc_scrollpad_max_beginning(scrollpad, window)) {
+        scrollpad->beginning = nc_scrollpad_max_beginning(scrollpad, window);
     }
 
     start_y = nc_scrollpad_i32(window->start_y);
@@ -107,8 +105,7 @@ nc_scrollpad_scroll(NcScrollpad *scrollpad, NcWindow *window,
 }
 
 void
-nc_scrollpad_flush(NcScrollpad *scrollpad, NcWindow *window,
-                   NcBuffer *buffer) {
+nc_scrollpad_flush(NcScrollpad *scrollpad, NcWindow *window, NcBuffer *buffer) {
     NcScrollpadWriteState state;
     int32 height;
 
@@ -221,12 +218,9 @@ nc_scrollpad_buffer_position_row(NcBuffer *buffer, int32 width,
 }
 
 void
-nc_scrollpad_center_on_buffer_position(
-    NcScrollpad *scrollpad,
-    NcWindow *window,
-    NcBuffer *buffer,
-    int32 position
-) {
+nc_scrollpad_center_on_buffer_position(NcScrollpad *scrollpad,
+                                       NcWindow *window, NcBuffer *buffer,
+    int32 position) {
     int32 max_beginning;
     int32 height;
     int32 row;
@@ -282,8 +276,7 @@ nc_scrollpad_max_beginning(NcScrollpad *scrollpad, NcWindow *window) {
 static void
 nc_scrollpad_load_properties(NcScrollpadWriteState *state) {
     while ((state->property_index < state->property_count)
-           && (state->properties[state->property_index].position
-               == state->i)) {
+           && (state->properties[state->property_index].position == state->i)) {
         nc_buffer_apply_property(
             state->window, &state->properties[state->property_index]);
         state->property_index += 1;
@@ -292,8 +285,7 @@ nc_scrollpad_load_properties(NcScrollpadWriteState *state) {
 }
 
 static void
-nc_scrollpad_write_word(NcScrollpadWriteState *state,
-                        bool load_properties) {
+nc_scrollpad_write_word(NcScrollpadWriteState *state, bool load_properties) {
     char *data;
     int32 len;
 

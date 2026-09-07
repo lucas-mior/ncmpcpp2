@@ -274,8 +274,7 @@ nc_color_pair_number(NcColor color) {
             if (color_pair_counter >= COLOR_PAIRS) {
                 result = 0;
             } else {
-                init_pair((int16)color_pair_counter,
-                          (int16)color.foreground,
+                init_pair((int16)color_pair_counter, (int16)color.foreground,
                           (int16)color.background);
                 color_pair_map[result] = color_pair_counter;
                 color_pair_counter += 1;
@@ -715,8 +714,7 @@ nc_window_set_base_color(NcWindow *window, NcColor color) {
     if (nc_color_has_current_background(color)) {
         window->base_color = nc_color_make(color.foreground,
                                            NC_COLOR_TRANSPARENT,
-                                           color.is_default,
-                                           color.is_end);
+                                           color.is_default, color.is_end);
     } else {
         window->base_color = color;
     }
@@ -831,8 +829,7 @@ nc_window_refresh_border(NcWindow *window) {
 
 void
 nc_window_refresh(NcWindow *window) {
-    prefresh(window->window, 0, 0,
-             window->start_y, window->start_x,
+    prefresh(window->window, 0, 0, window->start_y, window->start_x,
              window->start_y + window->height - 1,
              window->start_x + window->width - 1);
     return;
@@ -853,8 +850,7 @@ nc_window_move_to(NcWindow *window, int32 new_x, int32 new_y) {
 }
 
 void
-nc_window_adjust_dimensions(NcWindow *window,
-                            int32 width, int32 height) {
+nc_window_adjust_dimensions(NcWindow *window, int32 width, int32 height) {
     if (window->border.enabled) {
         if (width >= 2) {
             width -= 2;
@@ -892,8 +888,7 @@ nc_window_clear(NcWindow *window) {
 }
 
 void
-nc_window_add_fd_callback(NcWindow *window,
-                          int32 fd, void (*callback)(void)) {
+nc_window_add_fd_callback(NcWindow *window, int32 fd, void (*callback)(void)) {
     NcFdCallback item;
 
     item.callback = callback;
@@ -1110,8 +1105,7 @@ nc_window_get_input_char(NcWindow *window, int32 key) {
 
                     modifier = nc_xterm_modifier_key(local_key);
                     local_key = wgetch(window->window);
-                    if ((local_key != '~')
-                        || ((key != 2) && (key != 3)
+                    if ((local_key != '~') || ((key != 2) && (key != 3)
                             && (key != 5) && (key != 6))) {
                         return NC_KEY_NONE;
                     }
@@ -1346,8 +1340,7 @@ nc_window_prompt(NcWindow *window, NcPrompt *prompt, char **result) {
         requested_width = -1;
     }
 
-    getyx(window->window, nc_readline_state.start_y,
-          nc_readline_state.start_x);
+    getyx(window->window, nc_readline_state.start_y, nc_readline_state.start_x);
     available_width = window->width - nc_readline_state.start_x - 1;
     if (available_width < 0) {
         available_width = 0;
@@ -1595,8 +1588,7 @@ nc_window_push_color(NcWindow *window, NcColor color) {
             ARRAY_HEADER(window->color_stack)->count -= 1;
         }
         if (ARRAY_LEN(window->color_stack) > 0) {
-            nc_window_set_color(window,
-                                window->color_stack[
+            nc_window_set_color(window, window->color_stack[
                                 ARRAY_LEN(window->color_stack) - 1]);
         } else {
             nc_window_set_color(window, window->base_color);

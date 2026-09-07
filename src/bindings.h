@@ -99,9 +99,9 @@ bool ncm_binding_runtime_current_screen_is(enum ScreenType screen_type,
                                            void *user);
 void ncm_binding_runtime_push_key(NcKey key, void *user);
 int32 ncm_binding_runtime_run_external_command(char *command, int32 command_len,
-                                              void *user);
+                                               void *user);
 int32 ncm_binding_runtime_run_external_console_command(char *command,
-                                                      int32 command_len,
+                                                       int32 command_len,
                                                       void *user);
 NcmBindingRuntime *ncm_binding_default_runtime(void);
 bool ncm_binding_can_execute_default(NcmBinding *binding);

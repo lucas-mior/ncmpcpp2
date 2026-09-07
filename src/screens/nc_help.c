@@ -30,39 +30,29 @@ static void nc_help_destroy_callback(NcScreen *screen);
 #include "screens/nc_screen_impl_template.h"
 
 void
-nc_help_screen_init(NcHelpScreen *screen,
-                    NcHelpHooks hooks,
+nc_help_screen_init(NcHelpScreen *screen, NcHelpHooks hooks,
                     int32 start_x, int32 width,
                     int32 main_start_y, int32 main_height,
-                    NcColor color, NcBorder border,
-                    int32 lines_scrolled) {
+                    NcColor color, NcBorder border, int32 lines_scrolled) {
     screen->hooks = hooks;
     screen->lines_scrolled = lines_scrolled;
-    nc_scrollpad_screen_init(&screen->scrollpad_screen,
-                             nc_help_ops,
-                             hooks.user,
-                             NC_SCREEN_TYPE_HELP,
-                             0, 0, 0, 0);
+    nc_scrollpad_screen_init(&screen->scrollpad_screen, nc_help_ops,
+                             hooks.user, NC_SCREEN_TYPE_HELP, 0, 0, 0, 0);
     screen->buffer = (NcBuffer){0};
     screen->search_constraint = (StrBuilder){0};
     nc_help_screen_set_geometry(screen, start_x, width, main_start_y,
                                 main_height);
-    nc_window_init(&screen->window,
-                   nc_help_screen_start_x(screen),
-                   nc_help_screen_start_y(screen),
-                   nc_help_screen_width(screen),
-                   nc_help_screen_height(screen),
-                   STRLIT(""), color, border);
+    nc_window_init(&screen->window, nc_help_screen_start_x(screen),
+                   nc_help_screen_start_y(screen), nc_help_screen_width(screen),
+                   nc_help_screen_height(screen), STRLIT(""), color, border);
     nc_scrollpad_init(&screen->scrollpad, nc_window_height(&screen->window));
     return;
 }
 
 void
-nc_help_screen_set_geometry(NcHelpScreen *screen,
-                            int32 start_x, int32 width,
+nc_help_screen_set_geometry(NcHelpScreen *screen, int32 start_x, int32 width,
                             int32 main_start_y, int32 main_height) {
-    nc_scrollpad_screen_set_main_area(&screen->scrollpad_screen,
-                                      start_x, width,
+    nc_scrollpad_screen_set_main_area(&screen->scrollpad_screen, start_x, width,
                                       main_start_y, main_height);
     return;
 }
@@ -111,8 +101,7 @@ nc_help_find_match_callback(int32 start, int32 len, void *user) {
 }
 
 int32
-nc_help_screen_find(NcHelpScreen *screen,
-                    char *pattern, int32 pattern_len,
+nc_help_screen_find(NcHelpScreen *screen, char *pattern, int32 pattern_len,
                     NcmError *ncm_error) {
     NcmRegex regex;
     char *data;
@@ -186,12 +175,10 @@ nc_help_resize(NcScreen *screen) {
     if (help->hooks.resize_layout) {
         help->hooks.resize_layout(help->hooks.user, help);
     }
-    nc_scrollpad_resize(&help->scrollpad,
-                        &help->window,
+    nc_scrollpad_resize(&help->scrollpad, &help->window,
                         nc_help_screen_width(help),
                         nc_help_screen_height(help));
-    nc_window_move_to(&help->window,
-                      nc_help_screen_start_x(help),
+    nc_window_move_to(&help->window, nc_help_screen_start_x(help),
                       nc_help_screen_start_y(help));
     nc_scrollpad_flush(&help->scrollpad, &help->window, &help->buffer);
     if (help->hooks.resize_background) {

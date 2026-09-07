@@ -134,16 +134,12 @@ ncm_option_parser_yes_no(char *value, int32 value_len, bool *result) {
         return -EINVAL;
     }
 
-    if ((value_len == 3)
-        && (value[0] == 'y')
-        && (value[1] == 'e')
-        && (value[2] == 's')) {
+    if ((value_len == 3) && (value[0] == 'y')
+        && (value[1] == 'e') && (value[2] == 's')) {
         *result = true;
         return 0;
     }
-    if ((value_len == 2)
-        && (value[0] == 'n')
-        && (value[1] == 'o')) {
+    if ((value_len == 2) && (value[0] == 'n') && (value[1] == 'o')) {
         *result = false;
         return 0;
     }

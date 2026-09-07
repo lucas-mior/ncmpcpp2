@@ -7,8 +7,7 @@
 
 static void nc_song_info_switch_to(NcScreen *screen);
 static void nc_song_info_resize(NcScreen *screen);
-static void nc_song_info_mouse_button_pressed(NcScreen *screen,
-                                              MEVENT event);
+static void nc_song_info_mouse_button_pressed(NcScreen *screen, MEVENT event);
 static void nc_song_info_destroy_callback(NcScreen *screen);
 static void nc_song_info_display(NcSongInfoScreen *song_info);
 
@@ -28,51 +27,32 @@ static void nc_song_info_display(NcSongInfoScreen *song_info);
 #include "screens/nc_screen_impl_template.h"
 
 void
-nc_song_info_screen_init(NcSongInfoScreen *screen,
-                         NcSongInfoHooks hooks,
+nc_song_info_screen_init(NcSongInfoScreen *screen, NcSongInfoHooks hooks,
                          int32 start_x, int32 width,
                          int32 main_start_y, int32 main_height,
-                         NcColor color, NcBorder border,
-                         int32 lines_scrolled) {
+                         NcColor color, NcBorder border, int32 lines_scrolled) {
     screen->hooks = hooks;
     screen->lines_scrolled = lines_scrolled;
-    nc_scrollpad_screen_init(&screen->scrollpad_screen,
-                             nc_song_info_ops,
-                             hooks.user,
-                             NC_SCREEN_TYPE_SONG_INFO,
-                             0,
-                             0,
-                             0,
-                             0);
+    nc_scrollpad_screen_init(&screen->scrollpad_screen, nc_song_info_ops,
+                             hooks.user, NC_SCREEN_TYPE_SONG_INFO, 0, 0, 0, 0);
     screen->buffer = (NcBuffer){0};
-    nc_song_info_screen_set_geometry(screen,
-                                     start_x,
-                                     width,
-                                     main_start_y,
+    nc_song_info_screen_set_geometry(screen, start_x, width, main_start_y,
                                      main_height);
-    nc_window_init(&screen->window,
-                   nc_song_info_screen_start_x(screen),
+    nc_window_init(&screen->window, nc_song_info_screen_start_x(screen),
                    nc_song_info_screen_start_y(screen),
                    nc_song_info_screen_width(screen),
-                   nc_song_info_screen_height(screen),
-                   STRLIT(""),
-                   color,
-                   border);
-    nc_scrollpad_init(&screen->scrollpad,
-                      nc_window_height(&screen->window));
+                   nc_song_info_screen_height(screen), STRLIT(""),
+                   color, border);
+    nc_scrollpad_init(&screen->scrollpad, nc_window_height(&screen->window));
     return;
 }
 
 void
 nc_song_info_screen_set_geometry(NcSongInfoScreen *screen,
-                                 int32 start_x, int32 width,
-                                 int32 main_start_y,
+                                 int32 start_x, int32 width, int32 main_start_y,
                                  int32 main_height) {
-    nc_scrollpad_screen_set_main_area(&screen->scrollpad_screen,
-                                      start_x,
-                                      width,
-                                      main_start_y,
-                                      main_height);
+    nc_scrollpad_screen_set_main_area(&screen->scrollpad_screen, start_x,
+                                      width, main_start_y, main_height);
     return;
 }
 
@@ -103,9 +83,7 @@ nc_song_info_screen_prepare_current(NcSongInfoScreen *screen) {
     nc_buffer_move(&screen->buffer, &next_buffer);
     nc_scrollpad_reset(&screen->scrollpad);
     nc_window_clear(&screen->window);
-    nc_scrollpad_flush(&screen->scrollpad,
-                       &screen->window,
-                       &screen->buffer);
+    nc_scrollpad_flush(&screen->scrollpad, &screen->window, &screen->buffer);
     nc_scrollpad_refresh(&screen->scrollpad, &screen->window);
     return 0;
 }
@@ -129,15 +107,13 @@ nc_song_info_resize(NcScreen *screen) {
     if (song_info->hooks.resize_layout) {
         song_info->hooks.resize_layout(song_info->hooks.user, song_info);
     }
-    nc_scrollpad_resize(&song_info->scrollpad,
-                        &song_info->window,
+    nc_scrollpad_resize(&song_info->scrollpad, &song_info->window,
                         nc_song_info_screen_width(song_info),
                         nc_song_info_screen_height(song_info));
     nc_window_move_to(&song_info->window,
                       nc_song_info_screen_start_x(song_info),
                       nc_song_info_screen_start_y(song_info));
-    nc_scrollpad_flush(&song_info->scrollpad,
-                       &song_info->window,
+    nc_scrollpad_flush(&song_info->scrollpad, &song_info->window,
                        &song_info->buffer);
     return;
 }
@@ -162,8 +138,7 @@ nc_song_info_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 
     if (do_scroll) {
         for (int32 i = 0; i < song_info->lines_scrolled; i += 1) {
-            nc_scrollpad_scroll(&song_info->scrollpad,
-                                &song_info->window,
+            nc_scrollpad_scroll(&song_info->scrollpad, &song_info->window,
                                 where);
         }
     }

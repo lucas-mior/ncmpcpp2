@@ -52,8 +52,7 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
         int32 width;
 
         column = &columns[i];
-        width = ncm_display_column_width(column, list_width,
-                                         remained_width);
+        width = ncm_display_column_width(column, list_width, remained_width);
         if (width <= 0) {
             continue;
         }
@@ -82,8 +81,7 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
             }
         }
         if ((value.len == 0) && column->display_empty_tag
-            && Config.empty_tag_marker
-            && (Config.empty_tag_marker_len > 0)) {
+            && Config.empty_tag_marker && (Config.empty_tag_marker_len > 0)) {
             SB_APPEND(&value,
                       Config.empty_tag_marker, Config.empty_tag_marker_len);
         }
@@ -95,8 +93,7 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
         }
 
         if (use_colors && !nc_color_is_default(column->color)) {
-            nc_buffer_add_color(buffer, buffer->len,
-                                column->color, 0);
+            nc_buffer_add_color(buffer, buffer->len, column->color, 0);
         }
         if (column->right_alignment) {
             ncm_display_append_nc_spaces(buffer, padding);
@@ -106,8 +103,7 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
             ncm_display_append_nc_spaces(buffer, padding);
         }
         if (use_colors && !nc_color_is_default(column->color)) {
-            nc_buffer_add_color(buffer, buffer->len,
-                                nc_color_end(), 0);
+            nc_buffer_add_color(buffer, buffer->len, nc_color_end(), 0);
         }
         sb_free(&value);
 

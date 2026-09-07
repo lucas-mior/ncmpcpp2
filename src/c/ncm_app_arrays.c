@@ -93,80 +93,64 @@ ncm_app_array_mpd_item_copy(void *dest, void *source) {
 }
 
 NCM_ARRAY_DEFINE_CLEAR(ncm_string_view_array,
-                       NcmStringViewArray,
-                       &ncm_app_array_no_callbacks)
+                       NcmStringViewArray, &ncm_app_array_no_callbacks)
 NCM_ARRAY_DEFINE_DESTROY(ncm_string_view_array, NcmStringViewArray)
 NCM_ARRAY_DEFINE_RESERVE(ncm_string_view_array, NcmStringViewArray)
 NCM_ARRAY_DEFINE_APPEND(ncm_string_view_array,
-                        NcmStringViewArray,
-                        NcmStringView,
+                        NcmStringViewArray, NcmStringView,
                         &ncm_app_array_no_callbacks)
 
 
 NCM_ARRAY_DEFINE_CLEAR(ncm_song_array,
-                       NcmSongArray,
-                       &ncm_app_array_song_callbacks)
+                       NcmSongArray, &ncm_app_array_song_callbacks)
 NCM_ARRAY_DEFINE_DESTROY(ncm_song_array, NcmSongArray)
 NCM_ARRAY_DEFINE_COPY(ncm_song_array, NcmSongArray)
 NCM_ARRAY_DEFINE_MOVE(ncm_song_array, NcmSongArray)
 NCM_ARRAY_DEFINE_RESERVE(ncm_song_array, NcmSongArray)
 NCM_ARRAY_DEFINE_APPEND(ncm_song_array,
-                        NcmSongArray,
-                        NcmSong,
-                        &ncm_app_array_song_callbacks)
+                        NcmSongArray, NcmSong, &ncm_app_array_song_callbacks)
 NCM_ARRAY_DEFINE_APPEND_COPY(ncm_song_array,
-                             NcmSongArray,
-                             NcmSong,
+                             NcmSongArray, NcmSong,
                              &ncm_app_array_song_callbacks)
 NCM_ARRAY_DEFINE_APPEND_MOVE(ncm_song_array,
-                             NcmSongArray,
-                             NcmSong,
+                             NcmSongArray, NcmSong,
                              &ncm_app_array_song_callbacks)
 
 NCM_ARRAY_DEFINE_CLEAR(ncm_directory_array,
-                       NcmDirectoryArray,
-                       &ncm_app_array_directory_callbacks)
+                       NcmDirectoryArray, &ncm_app_array_directory_callbacks)
 NCM_ARRAY_DEFINE_DESTROY(ncm_directory_array, NcmDirectoryArray)
 NCM_ARRAY_DEFINE_COPY(ncm_directory_array, NcmDirectoryArray)
 NCM_ARRAY_DEFINE_MOVE(ncm_directory_array, NcmDirectoryArray)
 NCM_ARRAY_DEFINE_RESERVE(ncm_directory_array, NcmDirectoryArray)
 NCM_ARRAY_DEFINE_APPEND(ncm_directory_array,
-                        NcmDirectoryArray,
-                        NcmDirectory,
+                        NcmDirectoryArray, NcmDirectory,
                         &ncm_app_array_directory_callbacks)
 NCM_ARRAY_DEFINE_APPEND_COPY(ncm_directory_array,
-                             NcmDirectoryArray,
-                             NcmDirectory,
+                             NcmDirectoryArray, NcmDirectory,
                              &ncm_app_array_directory_callbacks)
 
 NCM_ARRAY_DEFINE_CLEAR(ncm_playlist_array,
-                       NcmPlaylistArray,
-                       &ncm_app_array_playlist_callbacks)
+                       NcmPlaylistArray, &ncm_app_array_playlist_callbacks)
 NCM_ARRAY_DEFINE_DESTROY(ncm_playlist_array, NcmPlaylistArray)
 NCM_ARRAY_DEFINE_MOVE(ncm_playlist_array, NcmPlaylistArray)
 NCM_ARRAY_DEFINE_RESERVE(ncm_playlist_array, NcmPlaylistArray)
 NCM_ARRAY_DEFINE_APPEND(ncm_playlist_array,
-                        NcmPlaylistArray,
-                        NcmPlaylist,
+                        NcmPlaylistArray, NcmPlaylist,
                         &ncm_app_array_playlist_callbacks)
 NCM_ARRAY_DEFINE_APPEND_COPY(ncm_playlist_array,
-                             NcmPlaylistArray,
-                             NcmPlaylist,
+                             NcmPlaylistArray, NcmPlaylist,
                              &ncm_app_array_playlist_callbacks)
 
 NCM_ARRAY_DEFINE_CLEAR(ncm_mpd_item_array,
-                       NcmMpdItemArray,
-                       &ncm_app_array_mpd_item_callbacks)
+                       NcmMpdItemArray, &ncm_app_array_mpd_item_callbacks)
 NCM_ARRAY_DEFINE_DESTROY(ncm_mpd_item_array, NcmMpdItemArray)
 NCM_ARRAY_DEFINE_MOVE(ncm_mpd_item_array, NcmMpdItemArray)
 NCM_ARRAY_DEFINE_RESERVE(ncm_mpd_item_array, NcmMpdItemArray)
 NCM_ARRAY_DEFINE_APPEND(ncm_mpd_item_array,
-                        NcmMpdItemArray,
-                        NcmMpdItem,
+                        NcmMpdItemArray, NcmMpdItem,
                         &ncm_app_array_mpd_item_callbacks)
 NCM_ARRAY_DEFINE_APPEND_COPY(ncm_mpd_item_array,
-                             NcmMpdItemArray,
-                             NcmMpdItem,
+                             NcmMpdItemArray, NcmMpdItem,
                              &ncm_app_array_mpd_item_callbacks)
 
 #endif /* NCM_APP_ARRAYS_C */

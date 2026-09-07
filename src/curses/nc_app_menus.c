@@ -135,8 +135,7 @@ nc_editor_action_row_destroy(NcEditorActionRow *row) {
     if (row == NULL) {
         return;
     }
-    stupid_string_free(&row->label, &row->label_len,
-                                 &row->label_cap);
+    stupid_string_free(&row->label, &row->label_len, &row->label_cap);
     row->run = NULL;
     row->user = NULL;
     return;
@@ -276,8 +275,7 @@ nc_media_library_tag_menu_item_destroy(void *item, void *user) {
 }
 
 static void
-nc_media_library_album_menu_item_copy(void *dest, void *source,
-                                      void *user) {
+nc_media_library_album_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
     nc_media_library_album_row_copy(dest, source);
     return;
@@ -504,41 +502,31 @@ NC_TYPED_MENU_DEFINE_ITEM_AT(NcSongMenu, nc_song_menu, NcmSong)
 NC_TYPED_MENU_DEFINE_CURRENT(NcSongMenu, nc_song_menu, NcmSong)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcBrowserEntryMenu,
-                            nc_browser_entry_menu,
-                            ncm_mpd_item_menu_callbacks)
+                            nc_browser_entry_menu, ncm_mpd_item_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD(NcBrowserEntryMenu, nc_browser_entry_menu, NcmMpdItem)
 NC_TYPED_MENU_DEFINE_CURRENT(NcBrowserEntryMenu,
-                             nc_browser_entry_menu,
-                             NcmMpdItem)
+                             nc_browser_entry_menu, NcmMpdItem)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcPlaylistEntryMenu,
-                            nc_playlist_entry_menu,
-                            ncm_playlist_menu_callbacks)
+                            nc_playlist_entry_menu, ncm_playlist_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD(NcPlaylistEntryMenu,
-                         nc_playlist_entry_menu,
-                         NcmPlaylist)
+                         nc_playlist_entry_menu, NcmPlaylist)
 NC_TYPED_MENU_DEFINE_ITEM_AT(NcPlaylistEntryMenu,
-                             nc_playlist_entry_menu,
-                             NcmPlaylist)
+                             nc_playlist_entry_menu, NcmPlaylist)
 NC_TYPED_MENU_DEFINE_CURRENT(NcPlaylistEntryMenu,
-                             nc_playlist_entry_menu,
-                             NcmPlaylist)
+                             nc_playlist_entry_menu, NcmPlaylist)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcTagRowMenu,
-                            nc_tag_row_menu,
-                            ncm_mutable_song_menu_callbacks)
+                            nc_tag_row_menu, ncm_mutable_song_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD(NcTagRowMenu, nc_tag_row_menu, NcmMutableSong)
 NC_TYPED_MENU_DEFINE_CURRENT(NcTagRowMenu, nc_tag_row_menu, NcmMutableSong)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcSearchRowMenu,
-                            nc_search_row_menu,
-                            nc_search_row_menu_callbacks)
+                            nc_search_row_menu, nc_search_row_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD_WITH_FLAGS(NcSearchRowMenu,
-                                    nc_search_row_menu,
-                                    NcSearchRow)
+                                    nc_search_row_menu, NcSearchRow)
 NC_TYPED_MENU_DEFINE_INSERT_WITH_FLAGS(NcSearchRowMenu,
-                                       nc_search_row_menu,
-                                       NcSearchRow)
+                                       nc_search_row_menu, NcSearchRow)
 NC_TYPED_MENU_DEFINE_ITEM_AT(NcSearchRowMenu, nc_search_row_menu, NcSearchRow)
 NC_TYPED_MENU_DEFINE_CURRENT(NcSearchRowMenu, nc_search_row_menu, NcSearchRow)
 
@@ -546,21 +534,17 @@ NC_TYPED_MENU_DEFINE_COMMON(NcMediaLibraryTagMenu,
                             nc_media_library_tag_menu,
                             nc_media_library_tag_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD(NcMediaLibraryTagMenu,
-                         nc_media_library_tag_menu,
-                         NcMediaLibraryTagRow)
+                         nc_media_library_tag_menu, NcMediaLibraryTagRow)
 NC_TYPED_MENU_DEFINE_ITEM_AT(NcMediaLibraryTagMenu,
-                             nc_media_library_tag_menu,
-                             NcMediaLibraryTagRow)
+                             nc_media_library_tag_menu, NcMediaLibraryTagRow)
 NC_TYPED_MENU_DEFINE_CURRENT(NcMediaLibraryTagMenu,
-                             nc_media_library_tag_menu,
-                             NcMediaLibraryTagRow)
+                             nc_media_library_tag_menu, NcMediaLibraryTagRow)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcMediaLibraryAlbumMenu,
                             nc_media_library_album_menu,
                             nc_media_library_album_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD(NcMediaLibraryAlbumMenu,
-                         nc_media_library_album_menu,
-                         NcMediaLibraryAlbumRow)
+                         nc_media_library_album_menu, NcMediaLibraryAlbumRow)
 NC_TYPED_MENU_DEFINE_ADD_WITH_FLAGS(NcMediaLibraryAlbumMenu,
                                     nc_media_library_album_menu,
                                     NcMediaLibraryAlbumRow)
@@ -572,69 +556,52 @@ NC_TYPED_MENU_DEFINE_CURRENT(NcMediaLibraryAlbumMenu,
                              NcMediaLibraryAlbumRow)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcMediaLibrarySongMenu,
-                            nc_media_library_song_menu,
-                            ncm_song_menu_callbacks)
+                            nc_media_library_song_menu, ncm_song_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD(NcMediaLibrarySongMenu,
-                         nc_media_library_song_menu,
-                         NcmSong)
+                         nc_media_library_song_menu, NcmSong)
 NC_TYPED_MENU_DEFINE_ITEM_AT(NcMediaLibrarySongMenu,
-                             nc_media_library_song_menu,
-                             NcmSong)
+                             nc_media_library_song_menu, NcmSong)
 NC_TYPED_MENU_DEFINE_CURRENT(NcMediaLibrarySongMenu,
-                             nc_media_library_song_menu,
-                             NcmSong)
+                             nc_media_library_song_menu, NcmSong)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcEditorStringMenu,
-                            nc_editor_string_menu,
-                            str_builder_menu_callbacks)
+                            nc_editor_string_menu, str_builder_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD_WITH_FLAGS(NcEditorStringMenu,
-                                    nc_editor_string_menu,
-                                    StrBuilder)
+                                    nc_editor_string_menu, StrBuilder)
 NC_TYPED_MENU_DEFINE_ADD_SEPARATOR(NcEditorStringMenu, nc_editor_string_menu)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcEditorPairMenu,
                             nc_editor_pair_menu,
                             str_builder_pair_menu_callbacks)
-NC_TYPED_MENU_DEFINE_ADD(NcEditorPairMenu,
-                         nc_editor_pair_menu,
-                         StrBuilderPair)
+NC_TYPED_MENU_DEFINE_ADD(NcEditorPairMenu, nc_editor_pair_menu, StrBuilderPair)
 NC_TYPED_MENU_DEFINE_CURRENT(NcEditorPairMenu,
-                             nc_editor_pair_menu,
-                             StrBuilderPair)
+                             nc_editor_pair_menu, StrBuilderPair)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcEditorActionMenu,
                             nc_editor_action_menu,
                             nc_editor_action_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD(NcEditorActionMenu,
-                         nc_editor_action_menu,
-                         NcEditorActionRow)
+                         nc_editor_action_menu, NcEditorActionRow)
 NC_TYPED_MENU_DEFINE_ADD_SEPARATOR(NcEditorActionMenu, nc_editor_action_menu)
 NC_TYPED_MENU_DEFINE_ITEM_AT(NcEditorActionMenu,
-                             nc_editor_action_menu,
-                             NcEditorActionRow)
+                             nc_editor_action_menu, NcEditorActionRow)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcEditorSortMenu,
-                            nc_editor_sort_menu,
-                            nc_editor_sort_menu_callbacks)
+                            nc_editor_sort_menu, nc_editor_sort_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD(NcEditorSortMenu, nc_editor_sort_menu, NcEditorSortRow)
 NC_TYPED_MENU_DEFINE_ADD_SEPARATOR(NcEditorSortMenu, nc_editor_sort_menu)
 NC_TYPED_MENU_DEFINE_ITEM_AT(NcEditorSortMenu,
-                             nc_editor_sort_menu,
-                             NcEditorSortRow)
+                             nc_editor_sort_menu, NcEditorSortRow)
 NC_TYPED_MENU_DEFINE_CURRENT(NcEditorSortMenu,
-                             nc_editor_sort_menu,
-                             NcEditorSortRow)
+                             nc_editor_sort_menu, NcEditorSortRow)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcEditorBufferMenu,
-                            nc_editor_buffer_menu,
-                            nc_buffer_menu_callbacks)
+                            nc_editor_buffer_menu, nc_buffer_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD_WITH_FLAGS(NcEditorBufferMenu,
-                                    nc_editor_buffer_menu,
-                                    NcBuffer)
+                                    nc_editor_buffer_menu, NcBuffer)
 NC_TYPED_MENU_DEFINE_ADD_SEPARATOR(NcEditorBufferMenu, nc_editor_buffer_menu)
 NC_TYPED_MENU_DEFINE_ITEM_AT(NcEditorBufferMenu,
-                             nc_editor_buffer_menu,
-                             NcBuffer)
+                             nc_editor_buffer_menu, NcBuffer)
 
 #undef NC_TYPED_MENU_DEFINE_INIT
 #undef NC_TYPED_MENU_DEFINE_DESTROY

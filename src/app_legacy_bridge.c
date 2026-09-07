@@ -182,8 +182,7 @@ NcWindow *
 ncmpcpp_window_create(int32 start_x, int32 start_y,
                       int32 width, int32 height, NcColor color) {
     NcWindow *window = malloc2(SIZEOF(*window));
-    nc_window_init(window,
-                   start_x, start_y, width, height,
+    nc_window_init(window, start_x, start_y, width, height,
                    STRLIT(""), color, nc_border_none());
     return window;
 }
@@ -237,8 +236,7 @@ ncmpcpp_resize_screen(bool reload_main_window) {
     app_controller_resize_visible_screens();
 
     header = ui_state_header_window();
-    if (header
-        && (Config.header_visibility
+    if (header && (Config.header_visibility
             || (Config.user_interface == NCM_DESIGN_ALTERNATIVE))) {
         nc_window_resize(header, COLS, ncmpcpp_header_height());
     }
@@ -361,8 +359,7 @@ ncmpcpp_update_environment(bool update_timer, bool refresh_window,
 
     if (mpd_sync) {
         ncm_error_clear(&ncm_error);
-        status = ncm_status_update_from_noidle(&global_mpd, NULL,
-                                               &ncm_error);
+        status = ncm_status_update_from_noidle(&global_mpd, NULL, &ncm_error);
         if (status < 0) {
             return status;
         }

@@ -8,8 +8,7 @@
 static enum NcmFormatResult ncm_format_render_list(NcmFormatExprList *list,
                                                    NcmSong *song,
                                                    NcmFormatCallbacks *cb,
-                                                   void *left,
-                                                   void *right,
+                                                   void *left, void *right,
                                                    uint32 flags,
                                                    int32 *no_output,
                                                    bool *switched);
@@ -62,13 +61,11 @@ ncm_format_parse_color_component(char *data, int32 data_len,
         *result = COLOR_WHITE;
         return 0;
     }
-    if (background
-        && STREQUAL(data, data_len, "transparent")) {
+    if (background && STREQUAL(data, data_len, "transparent")) {
         *result = -1;
         return 0;
     }
-    if (background
-        && STREQUAL(data, data_len, "current")) {
+    if (background && STREQUAL(data, data_len, "current")) {
         *result = -2;
         return 0;
     }
@@ -407,8 +404,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                     }
                 }
             }
-        } else if ((flags & (NCM_FORMAT_FLAG_COLOR
-                             |NCM_FORMAT_FLAG_FORMAT
+        } else if ((flags & (NCM_FORMAT_FLAG_COLOR |NCM_FORMAT_FLAG_FORMAT
                              |NCM_FORMAT_FLAG_OUTPUT_SWITCH))
                    && (data[i] == '$')) {
             NcmFormatExpr *expr;
@@ -683,8 +679,7 @@ ncm_format_render_tag(NcmSong *song, NcmFormatSongTag *tag) {
 
 static void
 ncm_format_emit_text(NcmFormatCallbacks *cb, void *user,
-                     char *data, int32 data_len,
-                     NcmFormatSongTag *tag) {
+                     char *data, int32 data_len, NcmFormatSongTag *tag) {
     if (cb && cb->text && (data_len > 0)) {
         cb->text(user, data, data_len, tag);
     }
@@ -693,10 +688,8 @@ ncm_format_emit_text(NcmFormatCallbacks *cb, void *user,
 
 static enum NcmFormatResult
 ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
-                       NcmFormatCallbacks *cb,
-                       void *left, void *right,
-                       uint32 flags,
-                       int32 *no_output, bool *switched) {
+                       NcmFormatCallbacks *cb, void *left, void *right,
+                       uint32 flags, int32 *no_output, bool *switched) {
     void *output = left;
     StrBuilder tag;
     enum NcmFormatResult result;
@@ -789,8 +782,7 @@ ncm_format_render_list(NcmFormatExprList *list, NcmSong *song,
     for (int32 i = 0; i < list->len; i += 1) {
         enum NcmFormatResult part = ncm_format_render_expr(&list->items[i],
                                                            song, cb,
-                                                           left, right,
-                                                           flags,
+                                                           left, right, flags,
                                                            no_output, switched);
 
         if ((result == NCM_FORMAT_RESULT_MISSING)
@@ -843,8 +835,7 @@ ncm_format_buffer_color(void *user, NcColor color) {
 static void
 ncm_format_buffer_format(void *user, enum NcFormat format) {
     NcBuffer *buffer = user;
-    nc_buffer_add_format(buffer, buffer->len,
-                         format, MAXOF((int64)0));
+    nc_buffer_add_format(buffer, buffer->len, format, MAXOF((int64)0));
     return;
 }
 
@@ -879,8 +870,7 @@ ncm_format_render_string(NcmFormatAst *ast, NcmSong *song) {
     callbacks.color = NULL;
     callbacks.format = NULL;
 
-    ncm_format_render(ast, song,
-                      &callbacks, &result, &result,
+    ncm_format_render(ast, song, &callbacks, &result, &result,
                       NCM_FORMAT_FLAG_TAG);
 
     return result;

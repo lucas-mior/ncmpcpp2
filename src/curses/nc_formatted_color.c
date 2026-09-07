@@ -21,8 +21,7 @@ nc_formatted_color_init_color(NcFormattedColor *formatted_color,
 }
 
 void
-nc_formatted_color_copy(NcFormattedColor *dest,
-                        NcFormattedColor *source) {
+nc_formatted_color_copy(NcFormattedColor *dest, NcFormattedColor *source) {
     nc_formatted_color_init_color(dest, source->color);
     for (int32 i = 0; i < ARRAY_LEN(source->formats); i += 1) {
         ARRAY_PUSH(dest->formats, source->formats[i]);
@@ -31,8 +30,7 @@ nc_formatted_color_copy(NcFormattedColor *dest,
 }
 
 void
-nc_formatted_color_move(NcFormattedColor *dest,
-                        NcFormattedColor *source) {
+nc_formatted_color_move(NcFormattedColor *dest, NcFormattedColor *source) {
     *dest = *source;
     nc_formatted_color_init(source);
     return;

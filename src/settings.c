@@ -16,8 +16,7 @@ typedef int32 (SettingsApplyFn)(Configuration *config,
                                 char *value, int32 value_len,
                                 NcmError *ncm_error);
 
-typedef int32 (SettingsListItemFn)(void *context,
-                                   char *item, int32 item_len,
+typedef int32 (SettingsListItemFn)(void *context, char *item, int32 item_len,
                                    NcmError *ncm_error);
 
 typedef struct SettingsOption {
@@ -168,8 +167,7 @@ settings_parse_path_common(char **result, int32 *result_len,
 
 static int32
 settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
-                        int32 *width, bool keep_existing,
-                        NcmError *ncm_error) {
+                        int32 *width, bool keep_existing, NcmError *ncm_error) {
     NcmFormatAst ast = {0};
     NcBuffer tmp = {0};
     int32 status;
@@ -187,8 +185,7 @@ settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
         return status;
     }
 
-    ncm_format_render_buffer(&ast, NULL, &tmp, NULL,
-                             NCM_FORMAT_FLAG_COLOR
+    ncm_format_render_buffer(&ast, NULL, &tmp, NULL, NCM_FORMAT_FLAG_COLOR
                              | NCM_FORMAT_FLAG_FORMAT);
     nc_buffer_destroy(buffer);
     nc_buffer_move(buffer, &tmp);
@@ -214,8 +211,7 @@ settings_parse_bool(char *value, int32 value_len, bool *result,
 
 static int32
 settings_parse_int_range(char *value, int32 value_len, int32 *result,
-                         int32 minimum, int32 maximum,
-                         NcmError *ncm_error) {
+                         int32 minimum, int32 maximum, NcmError *ncm_error) {
     llong parsed;
     int32 status;
 
@@ -370,8 +366,7 @@ settings_parse_color(char *value, int32 value_len, NcColor *color,
 
 static int32
 settings_parse_formatted_color(char *value, int32 value_len,
-                               NcFormattedColor *color,
-                               NcmError *ncm_error) {
+                               NcFormattedColor *color, NcmError *ncm_error) {
     int32 colon;
     int32 status;
     NcColor base;
@@ -588,8 +583,7 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
 
 static int32
 settings_parse_startup_screen(char *value, int32 value_len,
-                              NCM_SCREEN_TYPE_ *screen,
-                              NcmError *ncm_error) {
+                              NCM_SCREEN_TYPE_ *screen, NcmError *ncm_error) {
     NCM_SCREEN_TYPE_ parsed = NCM_SCREEN_TYPE_COUNT;
     int32 status;
 
@@ -661,8 +655,7 @@ settings_parse_format(NcmFormatAst *format, char *value, int32 value_len,
 
 static int32
 settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
-                       char *value, int32 value_len,
-                       NcmError *ncm_error) {
+                       char *value, int32 value_len, NcmError *ncm_error) {
     int32 pos;
     int32 last_relative;
     int32 stretch_limit;
@@ -747,8 +740,7 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
                         char *new_data = malloc2(new_cap);
 
                         if (column->type_len > 0) {
-                            memcpy64(new_data, column->type,
-                                     column->type_len);
+                            memcpy64(new_data, column->type, column->type_len);
                         }
                         new_data[column->type_len] = ch;
                         new_data[new_len] = '\0';
@@ -866,8 +858,7 @@ settings_append_screen(void *context, char *item, int32 item_len,
     enum ScreenType screen;
     int32 status;
 
-    status = settings_parse_startup_screen(item, item_len, &screen,
-                                           ncm_error);
+    status = settings_parse_startup_screen(item, item_len, &screen, ncm_error);
     if (status < 0) {
         return status;
     }
@@ -878,8 +869,7 @@ settings_append_screen(void *context, char *item, int32 item_len,
 
 static int32
 settings_parse_screen_list(ScreenTypeArray *array, bool *previous,
-                           char *value, int32 value_len,
-                           NcmError *ncm_error) {
+                           char *value, int32 value_len, NcmError *ncm_error) {
     if (STREQUAL(value, value_len, "previous")) {
         *previous = true;
         screen_type_array_clear(array);
@@ -948,8 +938,7 @@ settings_apply_option(Configuration *config, SettingsOption option,
         }
 
         len = SNPRINTF(message, "error while %s option \"%.*s\": %.*s",
-                       phase, option.name_len, option.name,
-                       detail_len, detail);
+                       phase, option.name_len, option.name, detail_len, detail);
         if (len < 0) {
             ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
                                  STRLIT("error while processing option"));
@@ -960,8 +949,7 @@ settings_apply_option(Configuration *config, SettingsOption option,
             if (ncm_error_is_set(&cause)) {
                 ncm_error_set(ncm_error, cause.code, message, len);
             } else {
-                ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
-                                     message, len);
+                ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE, message, len);
             }
         }
         return settings_report_or_ignore(ncm_error, ignore_errors);
@@ -979,8 +967,7 @@ configuration_validate(Configuration *config, NcmError *ncm_error) {
     if (config->visualizer_spectrum_hz_max
         <= config->visualizer_spectrum_hz_min) {
         return settings_error(
-            ncm_error,
-            STRLIT("visualizer_spectrum_hz_max must be greater than "
+            ncm_error, STRLIT("visualizer_spectrum_hz_max must be greater than "
                    "visualizer_spectrum_hz_min"));
     }
     return ncm_error_ok(ncm_error);
@@ -1302,16 +1289,14 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
         }
 
         SB_APPEND(&path_buffer, path.data, path.len);
-        if ((content_len = read_entire_file(path_buffer.data,
-                                            &content)) < 0) {
+        if ((content_len = read_entire_file(path_buffer.data, &content)) < 0) {
             char message[256];
             int32 error_code;
             int32 len;
 
             error_code = -content_len;
-            len = SNPRINTF(
-                message,
-                "failed to read configuration file '%.*s': %s",
+            len = SNPRINTF(message,
+                           "failed to read configuration file '%.*s': %s",
                 path.len, path.data, strerror(error_code));
             if (len < 0) {
                 ncm_error_set_status(
@@ -1332,8 +1317,7 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
         }
 
         if (!quiet) {
-            error2("Reading configuration from %s...\n",
-                   path_buffer.data);
+            error2("Reading configuration from %s...\n", path_buffer.data);
         }
         content_end = content + content_len;
         line = content;
@@ -1355,18 +1339,16 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                 next = content_end;
             }
             line = next;
-            while (
-                (line_len > 0)
-                && ((current_line[line_len - 1] == '\n')
-                    || (current_line[line_len - 1] == '\r'))) {
+            while ((line_len > 0)
+                   && ((current_line[line_len - 1] == '\n')
+                       || (current_line[line_len - 1] == '\r'))) {
                 line_len -= 1;
             }
             status = ncm_option_parser_parse_line(
                 current_line, line_len, &parsed, &has_option);
             if (status < 0) {
                 settings_invalid_value(ncm_error, current_line, line_len);
-                status = settings_report_or_ignore(ncm_error,
-                                                   ignore_errors);
+                status = settings_report_or_ignore(ncm_error, ignore_errors);
                 if (status < 0) {
                     free2(content, content_len + 1);
                     sb_free(&path_buffer);
@@ -1402,8 +1384,7 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                     ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
                                          message, len);
                 }
-                status = settings_report_or_ignore(ncm_error,
-                                                   ignore_errors);
+                status = settings_report_or_ignore(ncm_error, ignore_errors);
                 if (status < 0) {
                     free2(content, content_len + 1);
                     sb_free(&path_buffer);
@@ -1415,16 +1396,13 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                 char message[256];
                 int32 len;
 
-                len = SNPRINTF(
-                    message,
-                    "error while processing option \"%.*s\": "
+                len = SNPRINTF(message,
+                               "error while processing option \"%.*s\": "
                     "option already set",
                     ncmpcpp_options[option_index].name_len,
                     ncmpcpp_options[option_index].name);
-                ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
-                                     message, len);
-                status = settings_report_or_ignore(ncm_error,
-                                                   ignore_errors);
+                ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE, message, len);
+                status = settings_report_or_ignore(ncm_error, ignore_errors);
                 if (status < 0) {
                     free2(content, content_len + 1);
                     sb_free(&path_buffer);

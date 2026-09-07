@@ -169,8 +169,7 @@ NC_SCREEN_IMPL_SCROLL(NcScreen *screen, enum NcScroll where) {
     NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
 
     nc_scrollpad_scroll(&impl->NC_SCREEN_IMPL_SCROLLPAD_FIELD,
-                        NC_SCREEN_IMPL_WINDOW(impl),
-                        where);
+                        NC_SCREEN_IMPL_WINDOW(impl), where);
     return;
 }
 #elif defined(NC_SCREEN_IMPL_SCROLL_MENU)
@@ -179,8 +178,7 @@ NC_SCREEN_IMPL_SCROLL(NcScreen *screen, enum NcScroll where) {
     NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
 
     nc_menu_scroll_selectable(NC_SCREEN_IMPL_SCROLL_MENU(impl),
-                              NC_SCREEN_IMPL_SCROLL_HEIGHT(impl),
-                              where);
+                              NC_SCREEN_IMPL_SCROLL_HEIGHT(impl), where);
     return;
 }
 #endif

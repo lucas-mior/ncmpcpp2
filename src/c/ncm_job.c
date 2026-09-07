@@ -142,8 +142,7 @@ ncm_job_queue_start(NcmJobQueue *queue, NcmError *ncm_error) {
         char message[256];
         int32 message_len;
 
-        message_len = SNPRINTF(message, "pthread_create: %s",
-                               strerror(code));
+        message_len = SNPRINTF(message, "pthread_create: %s", strerror(code));
         ncm_error_set(ncm_error, code, message, message_len);
         return -code;
     }

@@ -70,8 +70,7 @@ tiny_editor_draw_row(NcMenu *menu, NcWindow *window, void *item,
 }
 
 void
-tiny_tag_edit_screen_init(TinyTagEditScreen *screen,
-                          int32 start_x, int32 width,
+tiny_tag_edit_screen_init(TinyTagEditScreen *screen, int32 start_x, int32 width,
                           int32 main_start_y, int32 main_height,
                           NcColor color, NcBorder border) {
     NcMenuDisplayCallbacks display_callbacks = {0};
@@ -280,8 +279,7 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     nc_menu_clear_items(nc_editor_buffer_menu_base(&screen->rows));
 
     row = (NcBuffer){0};
-    tiny_editor_buffer_key_value(&row, STRLIT("Filename"),
-                                 screen->edited.name,
+    tiny_editor_buffer_key_value(&row, STRLIT("Filename"), screen->edited.name,
                                  screen->edited.name_len);
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
     nc_buffer_clear(&row);
@@ -311,8 +309,7 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     nc_buffer_clear(&row);
 
     tiny_editor_buffer_key_uint(
-        &row, STRLIT("Bitrate"), (uint32)properties.bitrate,
-        STRLIT(" kbps"));
+        &row, STRLIT("Bitrate"), (uint32)properties.bitrate, STRLIT(" kbps"));
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
     nc_buffer_clear(&row);
 
@@ -352,8 +349,7 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
 
     nc_editor_buffer_menu_add_separator(&screen->rows);
     row = (NcBuffer){0};
-    tiny_editor_buffer_key_value(&row, STRLIT("Filename"),
-                                 screen->edited.name,
+    tiny_editor_buffer_key_value(&row, STRLIT("Filename"), screen->edited.name,
                                  screen->edited.name_len);
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_SELECTABLE);
     nc_buffer_destroy(&row);
@@ -400,8 +396,7 @@ tiny_editor_finish(TinyTagEditScreen *screen) {
         screen->hooks.switch_to_screen(screen->hooks.user, previous);
         return 0;
     }
-    return nc_screen_switcher_switch_to(
-        previous, previous->has_to_be_resized);
+    return nc_screen_switcher_switch_to(previous, previous->has_to_be_resized);
 }
 
 static int32
@@ -442,8 +437,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         }
         sb_free(&tag_value);
         if (prompt_result == TINY_TAG_EDIT_PROMPT_ABORTED) {
-            tiny_editor_status_message(
-                screen, STRLIT("Action aborted"));
+            tiny_editor_status_message(screen, STRLIT("Action aborted"));
             sb_free(&input);
             return -NCM_ERROR_CANCELLED;
         }
@@ -492,12 +486,10 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
             prompt_result = TINY_TAG_EDIT_PROMPT_ERROR;
         } else {
             prompt_result = screen->hooks.prompt(
-                screen->hooks.user, STRLIT("Filename"), initial,
-                &input);
+                screen->hooks.user, STRLIT("Filename"), initial, &input);
         }
         if (prompt_result == TINY_TAG_EDIT_PROMPT_ABORTED) {
-            tiny_editor_status_message(
-                screen, STRLIT("Action aborted"));
+            tiny_editor_status_message(screen, STRLIT("Action aborted"));
             sb_free(&input);
             return -NCM_ERROR_CANCELLED;
         }
@@ -539,8 +531,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         tiny_editor_buffer_key_value(
             &row_buffer, STRLIT("Filename"), name.data, name.len);
         nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL,
-                             TINY_TAG_EDIT_FILE_NAME_EDIT_ROW,
-                             &row_buffer);
+                             TINY_TAG_EDIT_FILE_NAME_EDIT_ROW, &row_buffer);
         nc_buffer_destroy(&row_buffer);
         return 0;
     }
@@ -548,12 +539,10 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
     if (row == TINY_TAG_EDIT_SAVE_ROW) {
         enum NcScreenType previous_type;
 
-        tiny_editor_status_message(
-            screen, STRLIT("Updating tags..."));
+        tiny_editor_status_message(screen, STRLIT("Updating tags..."));
         if (screen->hooks.write_song) {
             status = screen->hooks.write_song(
-                screen->hooks.user, &screen->edited,
-                screen->music_dir.data);
+                screen->hooks.user, &screen->edited, screen->music_dir.data);
         } else {
             status = ncm_mutable_song_write(
                 &screen->edited, screen->music_dir.data);

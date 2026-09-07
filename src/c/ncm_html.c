@@ -48,9 +48,7 @@ ncm_html_unescape_utf8(char *data, int32 data_len) {
         bool replaced;
 
         replaced = false;
-        if (((i + 3) < data_len)
-            && (data[i] == '&')
-            && (data[i + 1] == '#')) {
+        if (((i + 3) < data_len) && (data[i] == '&') && (data[i + 1] == '#')) {
             entity_start = i + 2;
             entity_end = entity_start;
             while ((entity_end < data_len) && (data[entity_end] != ';')) {
@@ -67,8 +65,7 @@ ncm_html_unescape_utf8(char *data, int32 data_len) {
                 start = 0;
                 base = 10;
                 valid_number = entity_len > 0;
-                if ((entity_len >= 2)
-                    && ((data[entity_start] == 'x')
+                if ((entity_len >= 2) && ((data[entity_start] == 'x')
                         || (data[entity_start] == 'X'))) {
                     start = 1;
                     base = 16;
@@ -99,8 +96,7 @@ ncm_html_unescape_utf8(char *data, int32 data_len) {
                         digit = -1;
                     }
 
-                    if ((digit < 0)
-                        || (value > ((0x10ffffu - (uint32)digit)
+                    if ((digit < 0) || (value > ((0x10ffffu - (uint32)digit)
                                      / (uint32)base))) {
                         valid_number = false;
                     } else {
@@ -110,8 +106,7 @@ ncm_html_unescape_utf8(char *data, int32 data_len) {
 
                 if (valid_number) {
                     rune = value;
-                    encoded_len = utf8_encode(rune, encoded,
-                                              SIZEOF(encoded));
+                    encoded_len = utf8_encode(rune, encoded, SIZEOF(encoded));
                     if (encoded_len > 0) {
                         SB_APPEND(&out, encoded, encoded_len);
                         i = entity_end + 1;

@@ -153,8 +153,7 @@ ncm_string_shared_directory(char *left, int32 left_len,
 }
 
 StrBuilder
-ncm_string_get_enclosed(char *string, int32 string_len,
-                        char open, char close,
+ncm_string_get_enclosed(char *string, int32 string_len, char open, char close,
                         int32 start, int32 *pos) {
     StrBuilder result = {0};
     int32 i;
@@ -185,8 +184,7 @@ ncm_string_get_enclosed(char *string, int32 string_len,
 
     i += 1;
     while ((i < string_len) && (string[i] != close)) {
-        if ((string[i] == '\\')
-            && (i + 1 < string_len)
+        if ((string[i] == '\\') && (i + 1 < string_len)
             && ((string[i + 1] == '\\') || (string[i + 1] == close))) {
             i += 1;
         }
@@ -240,8 +238,7 @@ ncm_string_remove_chars(char *string, int32 *string_len,
 }
 
 void
-ncm_string_remove_invalid_filename_chars(char *filename,
-                                         int32 *filename_len,
+ncm_string_remove_invalid_filename_chars(char *filename, int32 *filename_len,
                                          bool win32_compatible) {
     char win32_unallowed_chars[] = "\"*/:<>?\\|";
     char unix_unallowed_chars[] = "/";
@@ -262,8 +259,7 @@ ncm_string_remove_invalid_filename_chars(char *filename,
 }
 
 void
-ncm_string_append_shell_escaped_single_quotes(StrBuilder *buffer,
-                                              char *string,
+ncm_string_append_shell_escaped_single_quotes(StrBuilder *buffer, char *string,
                                               int32 string_len) {
     for (int32 i = 0; i < string_len; i += 1) {
         if (string[i] == '\'') {

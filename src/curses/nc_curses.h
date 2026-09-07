@@ -318,8 +318,7 @@ void nc_buffer_append_int64(NcBuffer *, int64);
 
 void nc_buffer_add_color(NcBuffer *, int32, NcColor, int64);
 void nc_buffer_add_format(NcBuffer *, int32, enum NcFormat, int64);
-void nc_buffer_add_formatted_color(
-    NcBuffer *, int32, NcFormattedColor *, int64
+void nc_buffer_add_formatted_color(NcBuffer *, int32, NcFormattedColor *, int64
 );
 void nc_buffer_add_formatted_color_end(NcBuffer *, int32, NcFormattedColor *,
                                        int64);
@@ -574,63 +573,42 @@ NC_TYPED_MENU_DECLARE_CURRENT(NcSongMenu, nc_song_menu, NcmSong);
 
 NC_TYPED_MENU_DECLARE_COMMON(NcBrowserEntryMenu, nc_browser_entry_menu);
 NC_TYPED_MENU_DECLARE_ADD(NcBrowserEntryMenu,
-                          nc_browser_entry_menu,
-                          NcmMpdItem);
+                          nc_browser_entry_menu, NcmMpdItem);
 NC_TYPED_MENU_DECLARE_CURRENT(NcBrowserEntryMenu,
-                              nc_browser_entry_menu,
-                              NcmMpdItem);
+                              nc_browser_entry_menu, NcmMpdItem);
 
-NC_TYPED_MENU_DECLARE_COMMON(NcPlaylistEntryMenu,
-                             nc_playlist_entry_menu);
+NC_TYPED_MENU_DECLARE_COMMON(NcPlaylistEntryMenu, nc_playlist_entry_menu);
 NC_TYPED_MENU_DECLARE_ADD(NcPlaylistEntryMenu,
-                          nc_playlist_entry_menu,
-                          NcmPlaylist);
+                          nc_playlist_entry_menu, NcmPlaylist);
 NC_TYPED_MENU_DECLARE_ITEM_AT(NcPlaylistEntryMenu,
-                              nc_playlist_entry_menu,
-                              NcmPlaylist);
+                              nc_playlist_entry_menu, NcmPlaylist);
 NC_TYPED_MENU_DECLARE_CURRENT(NcPlaylistEntryMenu,
-                              nc_playlist_entry_menu,
-                              NcmPlaylist);
+                              nc_playlist_entry_menu, NcmPlaylist);
 
 NC_TYPED_MENU_DECLARE_COMMON(NcTagRowMenu, nc_tag_row_menu);
-NC_TYPED_MENU_DECLARE_ADD(NcTagRowMenu,
-                          nc_tag_row_menu,
-                          NcmMutableSong);
-NC_TYPED_MENU_DECLARE_CURRENT(NcTagRowMenu,
-                              nc_tag_row_menu,
-                              NcmMutableSong);
+NC_TYPED_MENU_DECLARE_ADD(NcTagRowMenu, nc_tag_row_menu, NcmMutableSong);
+NC_TYPED_MENU_DECLARE_CURRENT(NcTagRowMenu, nc_tag_row_menu, NcmMutableSong);
 
 NC_TYPED_MENU_DECLARE_COMMON(NcSearchRowMenu, nc_search_row_menu);
 NC_TYPED_MENU_DECLARE_ADD_WITH_FLAGS(NcSearchRowMenu,
-                                     nc_search_row_menu,
-                                     NcSearchRow);
+                                     nc_search_row_menu, NcSearchRow);
 NC_TYPED_MENU_DECLARE_INSERT_WITH_FLAGS(NcSearchRowMenu,
-                                        nc_search_row_menu,
-                                        NcSearchRow);
-NC_TYPED_MENU_DECLARE_ITEM_AT(NcSearchRowMenu,
-                              nc_search_row_menu,
-                              NcSearchRow);
-NC_TYPED_MENU_DECLARE_CURRENT(NcSearchRowMenu,
-                              nc_search_row_menu,
-                              NcSearchRow);
+                                        nc_search_row_menu, NcSearchRow);
+NC_TYPED_MENU_DECLARE_ITEM_AT(NcSearchRowMenu, nc_search_row_menu, NcSearchRow);
+NC_TYPED_MENU_DECLARE_CURRENT(NcSearchRowMenu, nc_search_row_menu, NcSearchRow);
 
-NC_TYPED_MENU_DECLARE_COMMON(NcMediaLibraryTagMenu,
-                             nc_media_library_tag_menu);
+NC_TYPED_MENU_DECLARE_COMMON(NcMediaLibraryTagMenu, nc_media_library_tag_menu);
 NC_TYPED_MENU_DECLARE_ADD(NcMediaLibraryTagMenu,
-                          nc_media_library_tag_menu,
-                          NcMediaLibraryTagRow);
+                          nc_media_library_tag_menu, NcMediaLibraryTagRow);
 NC_TYPED_MENU_DECLARE_ITEM_AT(NcMediaLibraryTagMenu,
-                              nc_media_library_tag_menu,
-                              NcMediaLibraryTagRow);
+                              nc_media_library_tag_menu, NcMediaLibraryTagRow);
 NC_TYPED_MENU_DECLARE_CURRENT(NcMediaLibraryTagMenu,
-                              nc_media_library_tag_menu,
-                              NcMediaLibraryTagRow);
+                              nc_media_library_tag_menu, NcMediaLibraryTagRow);
 
 NC_TYPED_MENU_DECLARE_COMMON(NcMediaLibraryAlbumMenu,
                              nc_media_library_album_menu);
 NC_TYPED_MENU_DECLARE_ADD(NcMediaLibraryAlbumMenu,
-                          nc_media_library_album_menu,
-                          NcMediaLibraryAlbumRow);
+                          nc_media_library_album_menu, NcMediaLibraryAlbumRow);
 NC_TYPED_MENU_DECLARE_ADD_WITH_FLAGS(NcMediaLibraryAlbumMenu,
                                      nc_media_library_album_menu,
                                      NcMediaLibraryAlbumRow);
@@ -644,65 +622,45 @@ NC_TYPED_MENU_DECLARE_CURRENT(NcMediaLibraryAlbumMenu,
 NC_TYPED_MENU_DECLARE_COMMON(NcMediaLibrarySongMenu,
                              nc_media_library_song_menu);
 NC_TYPED_MENU_DECLARE_ADD(NcMediaLibrarySongMenu,
-                          nc_media_library_song_menu,
-                          NcmSong);
+                          nc_media_library_song_menu, NcmSong);
 NC_TYPED_MENU_DECLARE_ITEM_AT(NcMediaLibrarySongMenu,
-                              nc_media_library_song_menu,
-                              NcmSong);
+                              nc_media_library_song_menu, NcmSong);
 NC_TYPED_MENU_DECLARE_CURRENT(NcMediaLibrarySongMenu,
-                              nc_media_library_song_menu,
-                              NcmSong);
+                              nc_media_library_song_menu, NcmSong);
 
-NC_TYPED_MENU_DECLARE_COMMON(NcEditorStringMenu,
-                             nc_editor_string_menu);
+NC_TYPED_MENU_DECLARE_COMMON(NcEditorStringMenu, nc_editor_string_menu);
 NC_TYPED_MENU_DECLARE_ADD_WITH_FLAGS(NcEditorStringMenu,
-                                     nc_editor_string_menu,
-                                     StrBuilder);
-NC_TYPED_MENU_DECLARE_ADD_SEPARATOR(NcEditorStringMenu,
-                                    nc_editor_string_menu);
+                                     nc_editor_string_menu, StrBuilder);
+NC_TYPED_MENU_DECLARE_ADD_SEPARATOR(NcEditorStringMenu, nc_editor_string_menu);
 
 NC_TYPED_MENU_DECLARE_COMMON(NcEditorPairMenu, nc_editor_pair_menu);
 NC_TYPED_MENU_DECLARE_ADD(NcEditorPairMenu,
-                          nc_editor_pair_menu,
-                          StrBuilderPair);
+                          nc_editor_pair_menu, StrBuilderPair);
 NC_TYPED_MENU_DECLARE_CURRENT(NcEditorPairMenu,
-                              nc_editor_pair_menu,
-                              StrBuilderPair);
+                              nc_editor_pair_menu, StrBuilderPair);
 
-NC_TYPED_MENU_DECLARE_COMMON(NcEditorActionMenu,
-                             nc_editor_action_menu);
+NC_TYPED_MENU_DECLARE_COMMON(NcEditorActionMenu, nc_editor_action_menu);
 NC_TYPED_MENU_DECLARE_ADD(NcEditorActionMenu,
-                          nc_editor_action_menu,
-                          NcEditorActionRow);
-NC_TYPED_MENU_DECLARE_ADD_SEPARATOR(NcEditorActionMenu,
-                                    nc_editor_action_menu);
+                          nc_editor_action_menu, NcEditorActionRow);
+NC_TYPED_MENU_DECLARE_ADD_SEPARATOR(NcEditorActionMenu, nc_editor_action_menu);
 NC_TYPED_MENU_DECLARE_ITEM_AT(NcEditorActionMenu,
-                              nc_editor_action_menu,
-                              NcEditorActionRow);
+                              nc_editor_action_menu, NcEditorActionRow);
 
 NC_TYPED_MENU_DECLARE_COMMON(NcEditorSortMenu, nc_editor_sort_menu);
 NC_TYPED_MENU_DECLARE_ADD(NcEditorSortMenu,
-                          nc_editor_sort_menu,
-                          NcEditorSortRow);
-NC_TYPED_MENU_DECLARE_ADD_SEPARATOR(NcEditorSortMenu,
-                                    nc_editor_sort_menu);
+                          nc_editor_sort_menu, NcEditorSortRow);
+NC_TYPED_MENU_DECLARE_ADD_SEPARATOR(NcEditorSortMenu, nc_editor_sort_menu);
 NC_TYPED_MENU_DECLARE_ITEM_AT(NcEditorSortMenu,
-                              nc_editor_sort_menu,
-                              NcEditorSortRow);
+                              nc_editor_sort_menu, NcEditorSortRow);
 NC_TYPED_MENU_DECLARE_CURRENT(NcEditorSortMenu,
-                              nc_editor_sort_menu,
-                              NcEditorSortRow);
+                              nc_editor_sort_menu, NcEditorSortRow);
 
-NC_TYPED_MENU_DECLARE_COMMON(NcEditorBufferMenu,
-                             nc_editor_buffer_menu);
+NC_TYPED_MENU_DECLARE_COMMON(NcEditorBufferMenu, nc_editor_buffer_menu);
 NC_TYPED_MENU_DECLARE_ADD_WITH_FLAGS(NcEditorBufferMenu,
-                                     nc_editor_buffer_menu,
-                                     NcBuffer);
-NC_TYPED_MENU_DECLARE_ADD_SEPARATOR(NcEditorBufferMenu,
-                                    nc_editor_buffer_menu);
+                                     nc_editor_buffer_menu, NcBuffer);
+NC_TYPED_MENU_DECLARE_ADD_SEPARATOR(NcEditorBufferMenu, nc_editor_buffer_menu);
 NC_TYPED_MENU_DECLARE_ITEM_AT(NcEditorBufferMenu,
-                              nc_editor_buffer_menu,
-                              NcBuffer);
+                              nc_editor_buffer_menu, NcBuffer);
 
 #undef NC_TYPED_MENU_DECLARE_TYPE
 #undef NC_TYPED_MENU_DECLARE_INIT

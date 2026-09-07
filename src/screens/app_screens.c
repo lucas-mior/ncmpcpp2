@@ -239,16 +239,12 @@ app_screen_browser_init(void) {
         return;
     }
 
-    browser_screen_init(&browser_screen,
-                        0,
-                        ui_state_screen_width(),
-                        ui_state_main_start_y(),
-                        ui_state_main_height(),
-                        Config.main_window_color,
+    browser_screen_init(&browser_screen, 0,
+                        ui_state_screen_width(), ui_state_main_start_y(),
+                        ui_state_main_height(), Config.main_window_color,
                         no_border());
-    browser_screen_set_mouse_config(
-        &browser_screen, Config.lines_scrolled,
-        Config.mouse_list_scroll_whole_page);
+    browser_screen_set_mouse_config(&browser_screen, Config.lines_scrolled,
+                                    Config.mouse_list_scroll_whole_page);
     browser_screen_set_display_mode(
         &browser_screen, Config.browser_display_mode);
     browser_screen_initialized = true;
@@ -275,14 +271,10 @@ app_screen_lastfm_init(void) {
         return;
     }
 
-    lastfm_screen_init(&lastfm_screen,
-                       0,
-                       ui_state_screen_width(),
-                       ui_state_main_start_y(),
-                       ui_state_main_height(),
-                       Config.main_window_color,
-                       no_border(),
-                       Config.lines_scrolled);
+    lastfm_screen_init(&lastfm_screen, 0,
+                       ui_state_screen_width(), ui_state_main_start_y(),
+                       ui_state_main_height(), Config.main_window_color,
+                       no_border(), Config.lines_scrolled);
     lastfm_screen_initialized = true;
     return;
 }
@@ -300,14 +292,10 @@ app_screen_lyrics_init(void) {
         return;
     }
 
-    lyrics_screen_init(&lyrics_screen,
-                       0,
-                       ui_state_screen_width(),
-                       ui_state_main_start_y(),
-                       ui_state_main_height(),
-                       Config.main_window_color,
-                       no_border(),
-                       Config.lines_scrolled);
+    lyrics_screen_init(&lyrics_screen, 0,
+                       ui_state_screen_width(), ui_state_main_start_y(),
+                       ui_state_main_height(), Config.main_window_color,
+                       no_border(), Config.lines_scrolled);
     lyrics_screen_initialized = true;
     return;
 }
@@ -363,14 +351,10 @@ app_screen_visualizer_init(void) {
     visualizer_config.spectrum_log_scale_y =
         Config.visualizer_spectrum_log_scale_y;
 
-    visualizer_screen_init(&visualizer_screen,
-                           0,
-                           ui_state_main_start_y(),
-                           ui_state_screen_width(),
-                           ui_state_main_height(),
-                           Config.main_window_color,
-                           no_border(),
-                           &visualizer_config);
+    visualizer_screen_init(&visualizer_screen, 0,
+                           ui_state_main_start_y(), ui_state_screen_width(),
+                           ui_state_main_height(), Config.main_window_color,
+                           no_border(), &visualizer_config);
     visualizer_screen_initialized = true;
 #endif
     return;
@@ -398,16 +382,12 @@ app_screen_playlist_init(void) {
         return;
     }
 
-    playlist_screen_init(&playlist_screen,
-                         0,
-                         ui_state_screen_width(),
-                         ui_state_main_start_y(),
-                         ui_state_main_height(),
-                         Config.main_window_color,
+    playlist_screen_init(&playlist_screen, 0,
+                         ui_state_screen_width(), ui_state_main_start_y(),
+                         ui_state_main_height(), Config.main_window_color,
                          no_border());
-    playlist_screen_set_mouse_config(
-        &playlist_screen, Config.lines_scrolled,
-        Config.mouse_list_scroll_whole_page);
+    playlist_screen_set_mouse_config(&playlist_screen, Config.lines_scrolled,
+                                     Config.mouse_list_scroll_whole_page);
     playlist_screen_initialized = true;
     return;
 }
@@ -417,13 +397,9 @@ app_screen_playlist_edit_init(void) {
     if (playlist_edit_screen_initialized) {
         return;
     }
-    playlist_edit_screen_init(&playlist_edit_screen,
-                                0,
-                                ui_state_screen_width(),
-                                ui_state_main_start_y(),
-                                ui_state_main_height(),
-                                Config.main_window_color,
-                                no_border());
+    playlist_edit_screen_init(&playlist_edit_screen, 0, ui_state_screen_width(),
+                                ui_state_main_start_y(), ui_state_main_height(),
+                                Config.main_window_color, no_border());
     if ((Config.playlist_edit_column_width_ratio.len >= 2)
         && (Config.playlist_edit_column_width_ratio.items[0] > 0)
         && (Config.playlist_edit_column_width_ratio.items[1] > 0)) {
@@ -450,8 +426,7 @@ app_screen_selected_items_adder_init(void) {
 }
 
 int32
-app_screen_selected_items_adder_open(NcmSongArray *songs,
-                                     NcmError *ncm_error) {
+app_screen_selected_items_adder_open(NcmSongArray *songs, NcmError *ncm_error) {
     app_screen_selected_items_adder_register();
     return selected_items_adder_screen_open(
         app_screen_selected_items_adder(), songs,
@@ -463,8 +438,7 @@ app_screen_sort_playlist_dialog_init(void) {
     if (sort_playlist_dialog_initialized) {
         return;
     }
-    sort_playlist_dialog_init(&sort_playlist_dialog, 0,
-                              ui_state_main_start_y(),
+    sort_playlist_dialog_init(&sort_playlist_dialog, 0, ui_state_main_start_y(),
                               30, ui_state_main_height(),
                               Config.main_window_color,
                               Config.window_border_color);
@@ -478,9 +452,8 @@ app_screen_sort_playlist_dialog_switch_to(void) {
     int32 status;
 
     ncm_error_clear(&ncm_error);
-    status = sort_playlist_dialog_open(
-        app_screen_sort_playlist_dialog(),
-        app_screen_playlist(), &global_mpd,
+    status = sort_playlist_dialog_open(app_screen_sort_playlist_dialog(),
+                                       app_screen_playlist(), &global_mpd,
         Config.ignore_leading_the, &ncm_error);
     if ((status < 0) && ncm_error_is_set(&ncm_error)) {
         ncm_statusbar_print_cstring(
@@ -490,8 +463,7 @@ app_screen_sort_playlist_dialog_switch_to(void) {
 }
 
 static int32
-search_list_database_songs(
-    void *user, NcmSongArray *songs, NcmError *ncm_error
+search_list_database_songs(void *user, NcmSongArray *songs, NcmError *ncm_error
 ) {
     NcmMpdSongList source = {0};
     int32 status;
@@ -510,9 +482,7 @@ search_list_database_songs(
 }
 
 static int32
-search_snapshot_playlist(
-    void *user, NcmSongArray *songs, NcmError *ncm_error
-) {
+search_snapshot_playlist(void *user, NcmSongArray *songs, NcmError *ncm_error) {
     PlaylistScreen *playlist;
     NcSongMenu *song_menu;
     NcMenu *menu;
@@ -543,8 +513,7 @@ search_prompt_should_continue(char *text, void *user) {
 static enum SearchEnginePromptResult
 search_prompt_constraint(
     void *user, char *label, int32 label_len, StrBuilder *initial,
-    StrBuilder *result
-) {
+    StrBuilder *result) {
     NcmStatusbarScopedLock scoped_lock;
     enum NcPromptStatus status;
     NcPrompt prompt = {0};
@@ -589,28 +558,21 @@ search_prompt_constraint(
 }
 
 static void
-search_status_message(
-    void *user, char *message, int32 message_len
-) {
+search_status_message(void *user, char *message, int32 message_len) {
     (void)user;
-    ncm_statusbar_print(Config.message_delay_time,
-                        message, message_len);
+    ncm_statusbar_print(Config.message_delay_time, message, message_len);
     return;
 }
 
 static int32
-search_add_song(
-    void *user, NcmSong *song, bool play, NcmError *ncm_error
-) {
+search_add_song(void *user, NcmSong *song, bool play, NcmError *ncm_error) {
     (void)user;
     (void)ncm_error;
     return ncm_action_add_song_to_playlist(song, play, -1);
 }
 
 static int32
-search_format_song(
-    void *user, NcmSong *song, StrBuilder *text
-) {
+search_format_song(void *user, NcmSong *song, StrBuilder *text) {
     SearchEngineScreen *screen;
 
     screen = user;
@@ -627,12 +589,9 @@ app_screen_search_engine_init(void) {
         return;
     }
 
-    search_engine_screen_init(&search_engine_screen,
-                              0,
-                              ui_state_screen_width(),
-                              ui_state_main_start_y(),
-                              ui_state_main_height(),
-                              Config.main_window_color,
+    search_engine_screen_init(&search_engine_screen, 0,
+                              ui_state_screen_width(), ui_state_main_start_y(),
+                              ui_state_main_height(), Config.main_window_color,
                               no_border());
 
     mode = SEARCH_ENGINE_SEARCH_MODE_LITERAL;
@@ -671,12 +630,9 @@ app_screen_media_library_init(void) {
     }
 
     hooks = media_library_mpd_hooks(&global_mpd);
-    media_library_screen_init(&media_library_screen, hooks,
-                              0,
-                              ui_state_screen_width(),
-                              ui_state_main_start_y(),
-                              ui_state_main_height(),
-                              Config.main_window_color,
+    media_library_screen_init(&media_library_screen, hooks, 0,
+                              ui_state_screen_width(), ui_state_main_start_y(),
+                              ui_state_main_height(), Config.main_window_color,
                               no_border());
     media_library_screen_initialized = true;
     return;
@@ -690,8 +646,7 @@ statusbar_prompt_should_continue(char *text, void *user) {
 
 static enum PromptResult
 prompt_buffer(char *label, int32 label_len,
-              NcmStringView initial, StrBuilder *result,
-              bool bold_label) {
+              NcmStringView initial, StrBuilder *result, bool bold_label) {
     NcmStatusbarScopedLock scoped_lock;
     enum NcPromptStatus status;
     NcPrompt prompt = {0};
@@ -743,13 +698,11 @@ prompt_buffer(char *label, int32 label_len,
 static enum TagEditPromptResult
 tag_edit_hook_prompt(
     void *user, char *label, int32 label_len, NcmStringView initial,
-    StrBuilder *result
-) {
+    StrBuilder *result) {
     enum PromptResult prompt_result;
 
     (void)user;
-    prompt_result = prompt_buffer(label, label_len, initial,
-                                  result, true);
+    prompt_result = prompt_buffer(label, label_len, initial, result, true);
     if (prompt_result == PROMPT_RESULT_ACCEPTED) {
         return TAG_EDIT_PROMPT_ACCEPTED;
     }
@@ -760,9 +713,7 @@ tag_edit_hook_prompt(
 }
 
 static bool
-tag_edit_hook_confirm(
-    void *user, char *message, int32 message_len
-) {
+tag_edit_hook_confirm(void *user, char *message, int32 message_len) {
     NcmStatusbarScopedLock scoped_lock;
     NcWindow *window;
     char values[2];
@@ -791,18 +742,14 @@ tag_edit_hook_confirm(
 }
 
 static void
-tag_edit_hook_status_message(
-    void *user, char *message, int32 message_len
-) {
+tag_edit_hook_status_message(void *user, char *message, int32 message_len) {
     (void)user;
-    ncm_statusbar_print(Config.message_delay_time,
-                        message, message_len);
+    ncm_statusbar_print(Config.message_delay_time, message, message_len);
     return;
 }
 
 static void
-tag_edit_hook_update_directory(
-    void *user, char *directory, int32 directory_len
+tag_edit_hook_update_directory(void *user, char *directory, int32 directory_len
 ) {
     NcmError ncm_error = {0};
 
@@ -824,12 +771,9 @@ app_screen_tag_edit_init(void) {
         return;
     }
 
-    tag_edit_screen_init(&tag_edit_screen, 0,
-                           ui_state_screen_width(),
-                           ui_state_main_start_y(),
-                           ui_state_main_height(),
-                           Config.main_window_color,
-                           no_border());
+    tag_edit_screen_init(&tag_edit_screen, 0, ui_state_screen_width(),
+                           ui_state_main_start_y(), ui_state_main_height(),
+                           Config.main_window_color, no_border());
     hooks.prompt = tag_edit_hook_prompt;
     hooks.confirm = tag_edit_hook_confirm;
     hooks.status_message = tag_edit_hook_status_message;
@@ -842,13 +786,11 @@ app_screen_tag_edit_init(void) {
 static enum TinyTagEditPromptResult
 tiny_tag_edit_prompt(
     void *user, char *label, int32 label_len, NcmStringView initial,
-    StrBuilder *result
-) {
+    StrBuilder *result) {
     enum PromptResult prompt_result;
 
     (void)user;
-    prompt_result = prompt_buffer(label, label_len, initial,
-                                  result, true);
+    prompt_result = prompt_buffer(label, label_len, initial, result, true);
     if (prompt_result == PROMPT_RESULT_ACCEPTED) {
         return TINY_TAG_EDIT_PROMPT_ACCEPTED;
     }
@@ -859,18 +801,14 @@ tiny_tag_edit_prompt(
 }
 
 static void
-tiny_tag_edit_status_message(
-    void *user, char *message, int32 message_len
-) {
+tiny_tag_edit_status_message(void *user, char *message, int32 message_len) {
     (void)user;
-    ncm_statusbar_print(Config.message_delay_time,
-                        message, message_len);
+    ncm_statusbar_print(Config.message_delay_time, message, message_len);
     return;
 }
 
 static void
-tiny_tag_edit_update_directory(
-    void *user, char *directory, int32 directory_len
+tiny_tag_edit_update_directory(void *user, char *directory, int32 directory_len
 ) {
     NcmError ncm_error = {0};
 
@@ -885,9 +823,7 @@ tiny_tag_edit_update_directory(
 }
 
 static void
-tiny_tag_edit_update_playlist_song(
-    void *user, NcmMutableSong *song
-) {
+tiny_tag_edit_update_playlist_song(void *user, NcmMutableSong *song) {
     (void)user;
     playlist_screen_update_current_mutable_song(app_screen_playlist(), song);
     return;
@@ -908,12 +844,9 @@ app_screen_tiny_tag_edit_init(void) {
         return;
     }
 
-    tiny_tag_edit_screen_init(&tiny_tag_edit_screen, 0,
-                                ui_state_screen_width(),
-                                ui_state_main_start_y(),
-                                ui_state_main_height(),
-                                Config.main_window_color,
-                                no_border());
+    tiny_tag_edit_screen_init(&tiny_tag_edit_screen, 0, ui_state_screen_width(),
+                                ui_state_main_start_y(), ui_state_main_height(),
+                                Config.main_window_color, no_border());
     hooks.prompt = tiny_tag_edit_prompt;
     hooks.status_message = tiny_tag_edit_status_message;
     hooks.update_directory = tiny_tag_edit_update_directory;
@@ -921,8 +854,7 @@ app_screen_tiny_tag_edit_init(void) {
         tiny_tag_edit_update_playlist_song;
     hooks.request_browser_update =
         tiny_tag_edit_request_browser_update;
-    tiny_tag_edit_screen_set_hooks(
-        &tiny_tag_edit_screen, hooks);
+    tiny_tag_edit_screen_set_hooks(&tiny_tag_edit_screen, hooks);
     tiny_tag_edit_screen_initialized = true;
     return;
 }
@@ -1015,8 +947,7 @@ app_screens_switch_to_type(enum ScreenType screen_type) {
     if ((screen = app_screens_find_type(screen_type)) == NULL) {
         return -ENOENT;
     }
-    return nc_screen_switcher_switch_to(screen,
-                                        screen->has_to_be_resized);
+    return nc_screen_switcher_switch_to(screen, screen->has_to_be_resized);
 }
 
 int32
@@ -1166,8 +1097,7 @@ append_song_tag(NcBuffer *buffer, StrBuilder *tag) {
 }
 
 static void
-append_song_key_value(NcBuffer *buffer, char *key,
-                      StrBuilder *value,
+append_song_key_value(NcBuffer *buffer, char *key, StrBuilder *value,
                       bool empty_as_missing) {
     append_format(buffer, NC_FORMAT_BOLD);
     append_formatted_color(buffer, &Config.color1);
@@ -1236,38 +1166,29 @@ help_render(void *user, NcBuffer *buffer) {
     nc_buffer_append_cstring(buffer, "\n  Keys - Movement\n\n");
     append_format(buffer, NC_FORMAT_NO_BOLD);
     append_help(buffer, NCM_ACTION_SCROLL_UP, "Move cursor up");
-    append_help(buffer, NCM_ACTION_SCROLL_DOWN,
-                            "Move cursor down");
+    append_help(buffer, NCM_ACTION_SCROLL_DOWN, "Move cursor down");
     append_help(buffer, NCM_ACTION_PAGE_UP, "Page up");
     append_help(buffer, NCM_ACTION_PAGE_DOWN, "Page down");
     append_help(buffer, NCM_ACTION_MOVE_HOME, "Home");
     append_help(buffer, NCM_ACTION_MOVE_END, "End");
     append_help(buffer, NCM_ACTION_NEXT_SCREEN, "Next screen");
-    append_help(buffer, NCM_ACTION_PREVIOUS_SCREEN,
-                            "Previous screen");
+    append_help(buffer, NCM_ACTION_PREVIOUS_SCREEN, "Previous screen");
     append_help(buffer, NCM_ACTION_SHOW_HELP, "Show help");
-    append_help(buffer, NCM_ACTION_SHOW_PLAYLIST,
-                            "Show playlist");
+    append_help(buffer, NCM_ACTION_SHOW_PLAYLIST, "Show playlist");
     append_help(buffer, NCM_ACTION_SHOW_BROWSER, "Show browser");
-    append_help(buffer, NCM_ACTION_SHOW_SEARCH_ENGINE,
-                            "Show search engine");
-    append_help(buffer, NCM_ACTION_SHOW_MEDIA_LIBRARY,
-                            "Show media library");
+    append_help(buffer, NCM_ACTION_SHOW_SEARCH_ENGINE, "Show search engine");
+    append_help(buffer, NCM_ACTION_SHOW_MEDIA_LIBRARY, "Show media library");
     append_help(buffer, NCM_ACTION_SHOW_PLAYLIST_EDITOR,
                             "Show playlist editor");
-    append_help(buffer, NCM_ACTION_SHOW_SERVER_INFO,
-                            "Show server info");
+    append_help(buffer, NCM_ACTION_SHOW_SERVER_INFO, "Show server info");
 #if defined(ENABLE_OUTPUTS)
-    append_help(buffer, NCM_ACTION_SHOW_OUTPUTS,
-                            "Show outputs");
+    append_help(buffer, NCM_ACTION_SHOW_OUTPUTS, "Show outputs");
 #endif
 #if defined(ENABLE_VISUALIZER)
-    append_help(buffer, NCM_ACTION_SHOW_VISUALIZER,
-                            "Show music visualizer");
+    append_help(buffer, NCM_ACTION_SHOW_VISUALIZER, "Show music visualizer");
 #endif
 #if defined(HAVE_TAGLIB_H)
-    append_help(buffer, NCM_ACTION_SHOW_TAG_EDIT,
-                            "Show tag editor");
+    append_help(buffer, NCM_ACTION_SHOW_TAG_EDIT, "Show tag editor");
 #endif
 
     append_format(buffer, NC_FORMAT_BOLD);
@@ -1307,10 +1228,7 @@ help_resize(void *user, NcHelpScreen *screen) {
 
     (void)user;
     resize_main_area(nc_help_screen_base(screen), &x, &width);
-    nc_help_screen_set_geometry(screen,
-                                x,
-                                width,
-                                ui_state_main_start_y(),
+    nc_help_screen_set_geometry(screen, x, width, ui_state_main_start_y(),
                                 ui_state_main_height());
     return;
 }
@@ -1337,14 +1255,9 @@ app_screen_help_init(void) {
     hooks.resize_layout = help_resize;
     hooks.destroy = help_destroy;
     hooks.user = &help_screen;
-    nc_help_screen_init(&help_screen.screen,
-                        hooks,
-                        0,
-                        ui_state_screen_width(),
-                        ui_state_main_start_y(),
-                        ui_state_main_height(),
-                        Config.main_window_color,
-                        no_border(),
+    nc_help_screen_init(&help_screen.screen, hooks, 0, ui_state_screen_width(),
+                        ui_state_main_start_y(), ui_state_main_height(),
+                        Config.main_window_color, no_border(),
                         Config.lines_scrolled);
     help_screen.initialized = true;
     nc_help_screen_reload(&help_screen.screen);
@@ -1376,10 +1289,8 @@ outputs_fetch(void *user, NcOutputsScreen *screen) {
         NcmMpdOutput *output;
 
         output = outputs.items + i;
-        nc_outputs_screen_add_output(screen,
-                                     output->id,
-                                     output->name,
-                                     output->name_len,
+        nc_outputs_screen_add_output(screen, output->id,
+                                     output->name, output->name_len,
                                      output->enabled);
     }
     ncm_mpd_output_list_destroy(&outputs);
@@ -1391,8 +1302,7 @@ outputs_fetch(void *user, NcOutputsScreen *screen) {
 }
 
 static int32
-outputs_toggle(void *user, int32 id, bool enabled,
-               char *name, int32 name_len) {
+outputs_toggle(void *user, int32 id, bool enabled, char *name, int32 name_len) {
 #if defined(ENABLE_OUTPUTS)
     NcmError ncm_error;
     int32 status;
@@ -1456,10 +1366,7 @@ outputs_resize(void *user, NcOutputsScreen *screen) {
 
     (void)user;
     resize_main_area(nc_outputs_screen_base(screen), &x, &width);
-    nc_outputs_screen_set_geometry(screen,
-                                   x,
-                                   width,
-                                   ui_state_main_start_y(),
+    nc_outputs_screen_set_geometry(screen, x, width, ui_state_main_start_y(),
                                    ui_state_main_height());
     return;
 }
@@ -1492,14 +1399,10 @@ app_screen_outputs_init(void) {
     hooks.resize_layout = outputs_resize;
     hooks.destroy = outputs_destroy;
     hooks.user = &outputs_screen;
-    nc_outputs_screen_init(&outputs_screen.screen,
-                           hooks,
-                           0,
-                           ui_state_screen_width(),
-                           ui_state_main_start_y(),
-                           ui_state_main_height(),
-                           Config.main_window_color,
-                           Config.window_border_color,
+    nc_outputs_screen_init(&outputs_screen.screen, hooks,
+                           0, ui_state_screen_width(),
+                           ui_state_main_start_y(), ui_state_main_height(),
+                           Config.main_window_color, Config.window_border_color,
                            Config.lines_scrolled,
                            Config.mouse_list_scroll_whole_page);
     prefix = (NcBuffer){0};
@@ -1522,13 +1425,10 @@ server_info_load_lists(void *user) {
 
     owner = user;
     ncm_error_clear(&ncm_error);
-    ncm_mpd_client_get_url_handlers(&global_mpd,
-                                    &owner->url_handlers,
+    ncm_mpd_client_get_url_handlers(&global_mpd, &owner->url_handlers,
                                     &ncm_error);
     ncm_error_clear(&ncm_error);
-    ncm_mpd_client_get_tag_types(&global_mpd,
-                                 &owner->tag_types,
-                                 &ncm_error);
+    ncm_mpd_client_get_tag_types(&global_mpd, &owner->tag_types, &ncm_error);
     return;
 }
 
@@ -1663,12 +1563,10 @@ app_screen_server_info_init(void) {
     hooks.user = &server_info_screen;
     server_info_screen.url_handlers = (NcmStringViewList){0};
     server_info_screen.tag_types = (NcmStringViewList){0};
-    nc_server_info_screen_init(&server_info_screen.screen,
-                               hooks,
+    nc_server_info_screen_init(&server_info_screen.screen, hooks,
                                ui_state_screen_width(),
                                ui_state_screen_height(),
-                               ui_state_main_start_y(),
-                               ui_state_main_height(),
+                               ui_state_main_start_y(), ui_state_main_height(),
                                Config.main_window_color,
                                Config.window_border_color);
     server_info_screen.initialized = true;
@@ -1676,8 +1574,7 @@ app_screen_server_info_init(void) {
 }
 
 static int32
-song_info_render(void *user, NcSongInfoScreen *screen,
-                 NcBuffer *buffer) {
+song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
     SongInfoScreen *owner = user;
     StrBuilder value;
 
@@ -1686,22 +1583,16 @@ song_info_render(void *user, NcSongInfoScreen *screen,
         return 0;
     }
 
-    value = ncm_song_getter_buffer(&owner->song,
-                                   NCM_SONG_GETTER_NAME,
-                                   0);
+    value = ncm_song_getter_buffer(&owner->song, NCM_SONG_GETTER_NAME, 0);
     append_song_key_value(buffer, "Filename", &value, false);
     sb_free(&value);
 
-    value = ncm_song_getter_buffer(&owner->song,
-                                   NCM_SONG_GETTER_DIRECTORY,
-                                   0);
+    value = ncm_song_getter_buffer(&owner->song, NCM_SONG_GETTER_DIRECTORY, 0);
     append_song_key_value(buffer, "Directory", &value, true);
     sb_free(&value);
     nc_buffer_append_cstring(buffer, "\n");
 
-    value = ncm_song_getter_buffer(&owner->song,
-                                   NCM_SONG_GETTER_LENGTH,
-                                   0);
+    value = ncm_song_getter_buffer(&owner->song, NCM_SONG_GETTER_LENGTH, 0);
     append_song_key_value(buffer, "Length", &value, false);
     sb_free(&value);
 
@@ -1712,8 +1603,7 @@ song_info_render(void *user, NcSongInfoScreen *screen,
         nc_buffer_append_cstring(buffer, ":");
         append_format(buffer, NC_FORMAT_NO_BOLD);
         nc_buffer_append_cstring(buffer, " ");
-        value = ncm_song_tags_buffer(&owner->song,
-                                     ncm_song_info_tags[i].get,
+        value = ncm_song_tags_buffer(&owner->song, ncm_song_info_tags[i].get,
                                      Config.tags_separator,
                                      Config.tags_separator_len,
                                      Config.show_duplicate_tags);
@@ -1731,8 +1621,7 @@ song_info_switch_to(void *user, NcSongInfoScreen *screen) {
     ncm_error_clear(&ncm_error);
     ncm_song_destroy(&owner->song);
     owner->song = (NcmSong){0};
-    owner->has_song = ncm_mpd_client_get_current_song(&global_mpd,
-                                                      &owner->song,
+    owner->has_song = ncm_mpd_client_get_current_song(&global_mpd, &owner->song,
                                                       &ncm_error) == 0;
     if (!owner->has_song) {
         StrBuilder message = {0};
@@ -1758,10 +1647,7 @@ song_info_resize(void *user, NcSongInfoScreen *screen) {
 
     (void)user;
     resize_main_area(nc_song_info_screen_base(screen), &x, &width);
-    nc_song_info_screen_set_geometry(screen,
-                                     x,
-                                     width,
-                                     ui_state_main_start_y(),
+    nc_song_info_screen_set_geometry(screen, x, width, ui_state_main_start_y(),
                                      ui_state_main_height());
     return;
 }
@@ -1791,14 +1677,10 @@ app_screen_song_info_init(void) {
     hooks.destroy = song_info_destroy;
     hooks.user = &song_info_screen;
     song_info_screen.song = (NcmSong){0};
-    nc_song_info_screen_init(&song_info_screen.screen,
-                             hooks,
-                             0,
-                             ui_state_screen_width(),
-                             ui_state_main_start_y(),
-                             ui_state_main_height(),
-                             Config.main_window_color,
-                             no_border(),
+    nc_song_info_screen_init(&song_info_screen.screen, hooks,
+                             0, ui_state_screen_width(),
+                             ui_state_main_start_y(), ui_state_main_height(),
+                             Config.main_window_color, no_border(),
                              Config.lines_scrolled);
     song_info_screen.initialized = true;
     return;

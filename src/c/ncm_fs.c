@@ -125,8 +125,7 @@ ncm_fs_unlink(char *path, int32 path_len, NcmError *ncm_error) {
 
 int32
 ncm_fs_rename(char *old_path, int32 old_path_len,
-              char *new_path, int32 new_path_len,
-              NcmError *ncm_error) {
+              char *new_path, int32 new_path_len, NcmError *ncm_error) {
     char *old_copy = NULL;
     char *new_copy = NULL;
     int32 code;
@@ -187,8 +186,7 @@ ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *ncm_error) {
 }
 
 int32
-ncm_fs_directory_open(NcmFsDirectory *directory,
-                      char *path, int32 path_len,
+ncm_fs_directory_open(NcmFsDirectory *directory, char *path, int32 path_len,
                       NcmError *ncm_error) {
     DIR *dir;
     char *path_copy;

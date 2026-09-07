@@ -63,8 +63,7 @@ ncm_playlist_copy(NcmPlaylist *dest, NcmPlaylist *source) {
 }
 
 int32
-ncm_playlist_from_mpd_playlist(NcmPlaylist *dest,
-                               struct mpd_playlist *source) {
+ncm_playlist_from_mpd_playlist(NcmPlaylist *dest, struct mpd_playlist *source) {
     char *path;
     int32 path_len;
     time_t last_modified;

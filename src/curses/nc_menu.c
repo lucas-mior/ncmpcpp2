@@ -249,8 +249,7 @@ scroll_internal(NcMenu *menu, int32 height, enum NcScroll where,
         }
         break;
     case NC_SCROLL_PAGE_DOWN:
-        if (menu->cyclic_scroll_enabled
-            && (menu->highlight == max_highlight)) {
+        if (menu->cyclic_scroll_enabled && (menu->highlight == max_highlight)) {
             scroll_internal(menu, height, NC_SCROLL_HOME, is_highlightable,
                             user, depth + 1);
             return;
@@ -569,8 +568,7 @@ nc_menu_prepare_refresh(NcMenu *menu, int32 height,
         menu->highlight = 0;
     }
 
-    if (!menu_is_highlightable(menu, menu->highlight, is_highlightable,
-                               user)) {
+    if (!menu_is_highlightable(menu, menu->highlight, is_highlightable, user)) {
         nc_menu_scroll(menu, height, NC_SCROLL_UP, is_highlightable, user);
         if (!menu_is_highlightable(menu, menu->highlight, is_highlightable,
                                    user)) {
@@ -728,8 +726,7 @@ nc_menu_insert_item_with_flags(NcMenu *menu, int32 pos, void *item,
     if (pos < count) {
         memmove64(&menu->all_items[pos + 1], &menu->all_items[pos],
                   (count - pos)*SIZEOF(*menu->all_items));
-        memmove64(&menu->all_item_flags[pos + 1],
-                  &menu->all_item_flags[pos],
+        memmove64(&menu->all_item_flags[pos + 1], &menu->all_item_flags[pos],
                   (count - pos)*SIZEOF(*menu->all_item_flags));
     }
     menu->all_items[pos] = new_item;
@@ -740,8 +737,7 @@ nc_menu_insert_item_with_flags(NcMenu *menu, int32 pos, void *item,
 }
 
 int32
-nc_menu_remove_item(NcMenu *menu, enum NcMenuItemSource source,
-                    int32 pos) {
+nc_menu_remove_item(NcMenu *menu, enum NcMenuItemSource source, int32 pos) {
     void **items = menu_array(menu, source);
     uint32 *flags = menu_flags_array(menu, source);
     int32 count = menu_array_count(menu, source);
