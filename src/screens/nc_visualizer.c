@@ -1488,11 +1488,9 @@ visualizer_draw_frequency(VisualizerScreen *screen,
         current_bin += 1;
     }
     for (int32 x = 0; x < width; x += 1) {
-        double bar_height;
-        int32 count;
+        double bar_height = 0.0;
+        int32 count = 0;
 
-        bar_height = 0.0;
-        count = 0;
         while ((current_bin < fft->results_len)
                && (visualizer_bin_to_hz(screen, current_bin)
                    < fft->dft_frequency_space[x])) {
