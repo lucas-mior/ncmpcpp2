@@ -128,9 +128,8 @@ tiny_tag_edit_screen_destroy(TinyTagEditScreen *screen) {
 }
 
 void
-tiny_tag_edit_screen_set_hooks(
-    TinyTagEditScreen *screen, TinyTagEditHooks hooks
-) {
+tiny_tag_edit_screen_set_hooks(TinyTagEditScreen *screen,
+                               TinyTagEditHooks hooks) {
     if (screen == NULL) {
         return;
     }
