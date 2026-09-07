@@ -676,8 +676,6 @@ int32 ncm_sample_buffer_put(NcmSampleBuffer *, int16 *, int32);
 int32 ncm_sample_buffer_get_clamped(NcmSampleBuffer *, int32 samples_len,
                                     int16 *, int32 dest_len);
 void ncm_sample_buffer_resize(NcmSampleBuffer *, int32);
-void ncm_sample_buffer_clear(NcmSampleBuffer *);
-int32 ncm_sample_buffer_capacity(NcmSampleBuffer *);
 
 NCM_ARRAY_DECLARE_TYPE(NcmStringViewArray, NcmStringView)
 NCM_ARRAY_DECLARE_CLEAR(ncm_string_view_array, NcmStringViewArray)

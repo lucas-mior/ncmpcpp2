@@ -709,7 +709,7 @@ visualizer_screen_drain_data_source(VisualizerScreen *screen) {
         || (screen->data_source_hooks.read_source == NULL)) {
         return 0;
     }
-    buffer_size = ncm_sample_buffer_capacity(&screen->incoming_samples)
+    buffer_size = screen->incoming_samples.cap
                   *SIZEOF(*screen->incoming_samples.data);
     total_read = 0;
     do {
@@ -1109,11 +1109,11 @@ visualizer_screen_init_visualization(VisualizerScreen *screen) {
 
 void
 visualizer_screen_reset_audio_state(VisualizerScreen *screen) {
-    ncm_sample_buffer_clear(&screen->incoming_samples);
-    ncm_sample_buffer_clear(&screen->buffered_samples);
-    ncm_sample_buffer_clear(&screen->rendered_samples);
-    ncm_sample_buffer_clear(&screen->left_channel);
-    ncm_sample_buffer_clear(&screen->right_channel);
+    (&screen->incoming_samples)->len = 0;
+    (&screen->buffered_samples)->len = 0;
+    (&screen->rendered_samples)->len = 0;
+    (&screen->left_channel)->len = 0;
+    (&screen->right_channel)->len = 0;
     if (screen->rendered_samples.cap > 0) {
         memset64(screen->rendered_samples.data, 0, screen->rendered_samples.cap
                  *SIZEOF(*screen->rendered_samples.data));
@@ -1232,13 +1232,13 @@ visualizer_screen_split_stereo(VisualizerScreen *screen, int16 *samples,
                                int32 samples_len) {
     int32 pairs;
 
-    ncm_sample_buffer_clear(&screen->left_channel);
-    ncm_sample_buffer_clear(&screen->right_channel);
+    (&screen->left_channel)->len = 0;
+    (&screen->right_channel)->len = 0;
     pairs = samples_len / 2;
-    if (pairs > ncm_sample_buffer_capacity(&screen->left_channel)) {
+    if (pairs > (&screen->left_channel)->cap) {
         ncm_sample_buffer_resize(&screen->left_channel, pairs);
     }
-    if (pairs > ncm_sample_buffer_capacity(&screen->right_channel)) {
+    if (pairs > (&screen->right_channel)->cap) {
         ncm_sample_buffer_resize(&screen->right_channel, pairs);
     }
     for (int32 i = 0; i < pairs; i += 1) {
