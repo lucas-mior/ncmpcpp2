@@ -2774,15 +2774,14 @@ lyrics_set_internet_result(NcmLyricsFetcherDef *fetcher,
                            char *artist, int32 artist_len,
                            char *title, int32 title_len) {
     StrBuilder url = {0};
-    StrBuilder message = {0};
+    StrBuilder msg = {0};
 
     lyrics_fetcher_build_url(fetcher, &url, artist, artist_len,
                              title, title_len);
-    SB_APPEND(&message,
-              "The following search may contain lyrics for this song: ");
-    SB_APPEND(&message, url.data, url.len);
-    lyrics_result_set(result, false, message.data, message.len);
-    sb_free(&message);
+    SB_APPEND(&msg, "The following search may contain lyrics for this song: ");
+    SB_APPEND(&msg, url.data, url.len);
+    lyrics_result_set(result, false, msg.data, msg.len);
+    sb_free(&msg);
     sb_free(&url);
     return;
 }
