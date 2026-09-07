@@ -1562,9 +1562,8 @@ visualizer_draw_frequency(VisualizerScreen *screen,
         height_index = 0;
         for (int32 x = 0; x < width; x += 1) {
             double h;
-            int32 data_column;
+            int32 data_column = fft->bar_heights[height_index].column;
 
-            data_column = fft->bar_heights[height_index].column;
             if (x == data_column) {
                 h = fft->bar_heights[height_index].height;
                 if (height_index < fft->bar_heights_len - 1) {
