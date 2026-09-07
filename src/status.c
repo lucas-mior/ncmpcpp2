@@ -222,10 +222,8 @@ ncm_status_handle_server_error_value(NcmMpdClient *client, int32 code,
 void
 ncm_status_trace(NcmMpdClient *client, bool update_timer,
                  bool update_window_timeout, NcmError *ncm_error) {
-    NcmStatusHooks *hooks;
     NcWindow *footer;
-
-    hooks = status_active_hooks(NULL);
+    NcmStatusHooks *hooks = status_active_hooks(NULL);
 
     if (update_timer) {
         global_timer_update();
