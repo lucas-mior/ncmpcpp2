@@ -919,9 +919,8 @@ int32 ncm_mpd_song_list_to_song_array(NcmMpdSongList *, NcmSongArray *);
 void ncm_mpd_item_list_destroy(NcmMpdItemList *);
 void ncm_mpd_item_list_clear(NcmMpdItemList *);
 int32 ncm_mpd_item_list_to_item_array(NcmMpdItemList *, NcmMpdItemArray *);
-int32 ncm_mpd_item_list_to_directory_array(
-    NcmMpdItemList *, NcmDirectoryArray *
-);
+int32 ncm_mpd_item_list_to_directory_array(NcmMpdItemList *,
+                                           NcmDirectoryArray *);
 
 void ncm_mpd_string_list_destroy(NcmStringViewList *);
 void ncm_mpd_string_list_clear(NcmStringViewList *);
