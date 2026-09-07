@@ -595,8 +595,8 @@ settings_parse_startup_screen(char *value, int32 value_len,
     NCM_SCREEN_TYPE_ parsed = NCM_SCREEN_TYPE_COUNT;
     int32 status;
 
-    SETTINGS_PARSE_XENUM_VALUE(
-        NCM_SCREEN_TYPE_, value, value_len, &parsed, status);
+    SETTINGS_PARSE_XENUM_VALUE(NCM_SCREEN_TYPE_, value, value_len,
+                               &parsed, status);
     if (status < 0) {
         return settings_invalid_value(ncm_error, value, value_len);
     }
