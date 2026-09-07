@@ -197,11 +197,10 @@ tiny_editor_buffer_mutable_tag(
 }
 
 enum TinyTagEditOpenResult
-tiny_tag_edit_screen_open_song(
-    TinyTagEditScreen *screen, NcmSong *song,
-    char *music_dir, int32 music_dir_len, char *tag_separator,
-    int32 tag_separator_len, bool show_duplicate_tags, StrBuilder *path
-) {
+tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
+                               char *music_dir, int32 music_dir_len,
+                               char *tag_separator, int32 tag_separator_len,
+                               bool show_duplicate_tags, StrBuilder *path) {
     NcmMutableSong edited = {0};
     NcmTaglibAudioProperties properties = {0};
     NcmTaglibFile file;
