@@ -172,7 +172,8 @@ NCM_APP_SCREEN_WRAPPED_ACCESSOR_TYPES(NCM_APP_SCREEN_DEFINE_WRAPPED_ACCESSOR)
         return expr;                                                        \
     }
 
-NCM_APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(NCM_APP_SCREEN_TYPED_WRAPPED_ACCESSOR)
+NCM_APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(
+    NCM_APP_SCREEN_TYPED_WRAPPED_ACCESSOR)
 
 #undef NCM_APP_SCREEN_TYPED_WRAPPED_ACCESSOR
 
@@ -1155,7 +1156,8 @@ static void
 append_song_tag(NcBuffer *buffer, StrBuilder *tag) {
     if (tag->len <= 0) {
         append_formatted_color(buffer, &Config.empty_tag_color);
-        append_data(buffer, Config.empty_tag_marker, Config.empty_tag_marker_len);
+        append_data(buffer,
+                    Config.empty_tag_marker, Config.empty_tag_marker_len);
         append_formatted_color_end(buffer, &Config.empty_tag_color);
         return;
     }

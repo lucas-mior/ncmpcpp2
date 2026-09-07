@@ -766,7 +766,8 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
     screen->result_rows_present = true;
     screen->result_count = songs.len;
 
-    screen->constraints_locked = Config.block_search_constraints_change_if_items_found;
+    screen->constraints_locked =
+        Config.block_search_constraints_change_if_items_found;
     menu = search_engine_screen_menu(screen);
     if (nc_menu_all_item_count(menu)
         > SEARCH_ENGINE_SEARCH_BUTTON_ROW) {
@@ -1272,12 +1273,14 @@ search_build_constraint_row(SearchEngineScreen *screen, int32 idx,
         nc_buffer_append_data(buffer, value->data, value->len);
         return;
     }
-    if ((Config.empty_tag_marker == NULL) || (Config.empty_tag_marker_len <= 0)) {
+    if ((Config.empty_tag_marker == NULL)
+        || (Config.empty_tag_marker_len <= 0)) {
         return;
     }
     nc_buffer_add_formatted_color(
         buffer, buffer->len, &Config.empty_tag_color, 0);
-    nc_buffer_append_data(buffer, Config.empty_tag_marker, Config.empty_tag_marker_len);
+    nc_buffer_append_data(buffer,
+                          Config.empty_tag_marker, Config.empty_tag_marker_len);
     nc_buffer_add_formatted_color_end(
         buffer, buffer->len, &Config.empty_tag_color, 0);
     return;

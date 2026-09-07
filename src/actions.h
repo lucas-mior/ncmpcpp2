@@ -158,7 +158,8 @@ bool ncm_action_runtime_exit_requested(NcmActionRuntime *runtime);
 void ncm_action_runtime_request_exit(NcmActionRuntime *runtime);
 bool ncm_action_runtime_can_run(NcmActionRuntime *runtime,
                                 enum NcmActionType type);
-int32 ncm_action_runtime_run(NcmActionRuntime *runtime, enum NcmActionType type);
+int32 ncm_action_runtime_run(NcmActionRuntime *runtime,
+                             enum NcmActionType type);
 int32 ncm_action_edit_song(NcmSong *song);
 int32 ncm_action_show_visualizer(void);
 int32 ncm_action_toggle_visualization_type(void);

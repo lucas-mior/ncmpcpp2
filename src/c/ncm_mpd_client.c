@@ -535,8 +535,7 @@ ncm_mpd_client_play_id(NcmMpdClient *client, int32 id, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
     NCM_CLIENT_TRY_MPD(
         client,
-        ncm_mpd_connection_play_id(&client->connection, id),
-        ncm_error);
+        ncm_mpd_connection_play_id(&client->connection, id), ncm_error);
 
     return ncm_error_ok(ncm_error);
 }

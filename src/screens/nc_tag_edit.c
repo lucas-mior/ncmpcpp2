@@ -98,10 +98,10 @@ tag_edit_draw_tag(NcMenu *menu, NcWindow *window, void *item,
             song, field, Config.tags_separator, Config.tags_separator_len,
             Config.show_duplicate_tags);
         if (tag.len <= 0) {
-            tag_edit_append_formatted_color(&buffer,
-                                              &Config.empty_tag_color);
+            tag_edit_append_formatted_color(&buffer, &Config.empty_tag_color);
             nc_buffer_append_data(&buffer,
-                                  Config.empty_tag_marker, Config.empty_tag_marker_len);
+                                  Config.empty_tag_marker,
+                                  Config.empty_tag_marker_len);
             tag_edit_append_formatted_color_end(
                 &buffer, &Config.empty_tag_color);
         } else {
@@ -319,7 +319,8 @@ tag_edit_tag_matches_regex(TagEditScreen *screen,
 
     tag_edit_song_display_value(song, field, &buffer);
     if (buffer.len <= 0) {
-        SB_APPEND(&buffer, Config.empty_tag_marker, Config.empty_tag_marker_len);
+        SB_APPEND(&buffer,
+                  Config.empty_tag_marker, Config.empty_tag_marker_len);
     }
     found = ncm_regex_matches(regex, buffer.data, buffer.len);
     sb_free(&buffer);

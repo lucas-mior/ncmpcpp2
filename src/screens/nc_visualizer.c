@@ -536,8 +536,7 @@ visualizer_screen_init(VisualizerScreen *screen,
     nc_screen_init_ops(&screen->screen, visualizer_ops, screen,
                        NC_SCREEN_TYPE_VISUALIZER);
     nc_window_init(&screen->window, start_x, start_y, width, height,
-                   STRLIT(""),
-                   color, border);
+                   STRLIT(""), color, border);
 
     screen->source_location = (StrBuilder){0};
     screen->source_port = (StrBuilder){0};

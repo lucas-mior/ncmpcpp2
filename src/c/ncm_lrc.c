@@ -477,8 +477,7 @@ ncm_lrc_parse(NcmLrcDocument *document,
     if (parsed.entries_len > 1) {
         qsort64(parsed.entries,
                 parsed.entries_len,
-                SIZEOF(*parsed.entries),
-                ncm_lrc_entry_compare);
+                SIZEOF(*parsed.entries), ncm_lrc_entry_compare);
     }
 
     ncm_lrc_document_destroy_unchecked(document);
