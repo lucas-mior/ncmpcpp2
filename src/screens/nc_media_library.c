@@ -2726,7 +2726,7 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
             for (int32 i = 0; i < albums.len; i += 1) {
                 MediaLibraryAlbumItem *album_item = &albums.items[i];
                 NcMediaLibraryAlbumRow *row = &album_item->row;
-                int32 menu_flags = album_item->menu_flags;
+                uint32 menu_flags = album_item->menu_flags;
 
                 nc_media_library_album_menu_add_with_flags(&replacement, row,
                                                            menu_flags);
