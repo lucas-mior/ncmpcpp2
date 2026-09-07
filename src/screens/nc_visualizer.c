@@ -142,13 +142,10 @@ visualizer_generate_frequency_space(VisualizerScreen *screen) {
     }
 
     if (screen->spectrum_log_scale_x) {
-        double min_log;
-        double max_log;
-        double denominator;
+        double min_log = log10(fft->hz_min);
+        double max_log = log10(fft->hz_max);
+        double denominator = min_log - max_log;
 
-        min_log = log10(fft->hz_min);
-        max_log = log10(fft->hz_max);
-        denominator = min_log - max_log;
         if (denominator == 0.0) {
             return;
         }
