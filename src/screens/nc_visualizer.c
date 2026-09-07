@@ -1601,19 +1601,13 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                     }
                     h = h_next - delta*(x_next - x);
                 } else if (height_index < fft->bar_heights_len - 1) {
-                    double x_prev2;
-                    double h_prev2;
-                    double x_prev;
-                    double h_prev;
-                    double x_next2;
-                    double h_next2;
+                    double x_prev2 = fft->bar_heights[height_index - 2].column;
+                    double h_prev2 = fft->bar_heights[height_index - 2].height;
+                    double x_prev = fft->bar_heights[height_index - 1].column;
+                    double h_prev = fft->bar_heights[height_index - 1].height;
+                    double x_next2 = fft->bar_heights[height_index + 1].column;
+                    double h_next2 = fft->bar_heights[height_index + 1].height;
 
-                    x_prev2 = fft->bar_heights[height_index - 2].column;
-                    h_prev2 = fft->bar_heights[height_index - 2].height;
-                    x_prev = fft->bar_heights[height_index - 1].column;
-                    h_prev = fft->bar_heights[height_index - 1].height;
-                    x_next2 = fft->bar_heights[height_index + 1].column;
-                    h_next2 = fft->bar_heights[height_index + 1].height;
                     if ((x_prev == x_prev2) || (x_next2 == x_next)
                         || (x_next == x_prev)) {
                         h = h_next;
