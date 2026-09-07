@@ -455,17 +455,14 @@ int32 nc_screen_type(NcScreen *screen);
 void nc_screen_mouse_button_pressed(NcScreen *screen, MEVENT event);
 bool nc_screen_is_lockable(NcScreen *screen);
 bool nc_screen_is_mergable(NcScreen *screen);
-void nc_screen_set_has_to_be_resized(NcScreen *screen,
-                                     bool has_to_be_resized);
-void nc_screen_set_has_to_be_updated(NcScreen *screen,
-                                     bool has_to_be_updated);
+void nc_screen_set_has_to_be_resized(NcScreen *screen, bool has_to_be_resized);
+void nc_screen_set_has_to_be_updated(NcScreen *screen, bool has_to_be_updated);
 void nc_screen_request_resize(NcScreen *screen);
 void nc_screen_request_update(NcScreen *screen);
 void nc_screen_clear_resize_request(NcScreen *screen);
 void nc_screen_clear_update_request(NcScreen *screen);
 NcScreenResizeParams nc_screen_resize_params(NcScreen *screen);
-void nc_screen_get_resize_params(NcScreen *screen, int32 *x_offset,
-                                 int32 *width);
+void nc_screen_get_resize_params(NcScreen *, int32 *x_offset, int32 *width);
 void nc_screen_draw_vertical_separator(int32 x);
 void *nc_screen_user(NcScreen *screen);
 
