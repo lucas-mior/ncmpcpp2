@@ -8,10 +8,8 @@
 static int32
 ncm_format_set_error(NcmError *ncm_error, char *message, int32 position) {
     char buffer[256];
-    int32 len;
-
-    len = SNPRINTF(buffer,
-                   "format error: %s at position %d", message, position);
+    int32 len = SNPRINTF(buffer,
+                         "format error: %s at position %d", message, position);
     return ncm_error_set_code(ncm_error, NCM_ERROR_PARSE, buffer, len);
 }
 
