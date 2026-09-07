@@ -1507,9 +1507,8 @@ visualizer_draw_frequency(VisualizerScreen *screen,
 
         bar_height /= count;
         if (screen->spectrum_log_scale_y) {
-            double dynamic_range;
+            double dynamic_range = fft->dynamic_range;
 
-            dynamic_range = fft->dynamic_range;
             if (dynamic_range == 0.0) {
                 dynamic_range = 1.0;
             }
