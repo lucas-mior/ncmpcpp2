@@ -157,8 +157,7 @@ tiny_editor_buffer_key_value(NcBuffer *buffer, char *key, int32 key_len,
 }
 
 static void
-tiny_editor_add_row(TinyTagEditScreen *screen, NcBuffer *buffer,
-                    uint32 flags) {
+tiny_editor_add_row(TinyTagEditScreen *screen, NcBuffer *buffer, uint32 flags) {
     nc_editor_buffer_menu_add_with_flags(&screen->rows, buffer, flags);
     return;
 }
