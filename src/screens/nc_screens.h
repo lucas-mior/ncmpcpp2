@@ -942,7 +942,7 @@ typedef struct VisualizerScreen {
 
     NcmSampleBuffer samples_in;
     NcmSampleBuffer samples_buf;
-    NcmSampleBuffer rendered_samples;
+    NcmSampleBuffer samples_rendered;
     NcmSampleBuffer left_ch;
     NcmSampleBuffer right_ch;
 
