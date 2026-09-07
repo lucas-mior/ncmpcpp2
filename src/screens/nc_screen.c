@@ -487,8 +487,7 @@ nc_screen_registry_locked(NcScreenRegistry *registry) {
 }
 
 bool
-nc_screen_registry_is_registered(NcScreenRegistry *registry,
-                                 NcScreen *screen) {
+nc_screen_registry_is_registered(NcScreenRegistry *registry, NcScreen *screen) {
     if (screen == NULL) {
         return false;
     }
@@ -496,8 +495,7 @@ nc_screen_registry_is_registered(NcScreenRegistry *registry,
 }
 
 bool
-nc_screen_registry_is_current(NcScreenRegistry *registry,
-                              NcScreen *screen) {
+nc_screen_registry_is_current(NcScreenRegistry *registry, NcScreen *screen) {
     return registry->current_screen == screen;
 }
 
@@ -564,8 +562,7 @@ nc_screen_registry_resize_params(NcScreenRegistry *registry,
 }
 
 int32
-nc_screen_registry_switch_to(NcScreenRegistry *registry,
-                             NcScreen *screen) {
+nc_screen_registry_switch_to(NcScreenRegistry *registry, NcScreen *screen) {
     bool is_screen_mergable;
 
     if ((registry == NULL) || (screen == NULL)) {
@@ -641,8 +638,7 @@ nc_screen_registry_unlock(NcScreenRegistry *registry) {
 }
 
 bool
-nc_screen_registry_is_visible(NcScreenRegistry *registry,
-                              NcScreen *screen) {
+nc_screen_registry_is_visible(NcScreenRegistry *registry, NcScreen *screen) {
     if (screen == NULL) {
         return false;
     }
@@ -660,9 +656,9 @@ nc_screen_registry_is_visible(NcScreenRegistry *registry,
 }
 
 static void
-nc_screen_registry_each_visible_unchecked(
-    NcScreenRegistry *registry, NcScreenEachCallback *callback, void *user
-) {
+nc_screen_registry_each_visible_unchecked(NcScreenRegistry *registry,
+                                          NcScreenEachCallback *callback,
+                                          void *user) {
     ASSERT(callback != NULL);
 
     if (registry->locked_screen
@@ -846,8 +842,7 @@ nc_screen_callbacks_update(NcScreen *screen) {
 }
 
 static void
-nc_screen_callbacks_mouse_button_pressed(NcScreen *screen,
-                                         MEVENT event) {
+nc_screen_callbacks_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     if (screen->callbacks.mouse_button_pressed == NULL) {
         nc_screen_noop_mouse_button_pressed(screen, event);
         return;
