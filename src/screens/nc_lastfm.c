@@ -29,10 +29,8 @@ static void lastfm_switch_to_callback(NcScreen *screen);
 static void lastfm_resize_callback(NcScreen *screen);
 static char *lastfm_title_callback(NcScreen *screen);
 static void lastfm_update_callback(NcScreen *screen);
-static void lastfm_mouse_button_pressed_callback(NcScreen *screen,
-                                                 MEVENT event);
-static void lastfm_set_title(LastfmScreen *screen, char *title,
-                             int32 title_len);
+static void lastfm_mouse_button_pressed_callback(NcScreen *, MEVENT event);
+static void lastfm_set_title(LastfmScreen *, char *title, int32 title_len);
 static int32 lastfm_job_run(void *user, NcmError *ncm_error);
 static void lastfm_job_complete(int32 status, NcmError *ncm_error, void *user);
 static void lastfm_job_destroy(void *user);
