@@ -487,8 +487,7 @@ nc_screen_registry_locked(NcScreenRegistry *registry) {
 }
 
 bool
-nc_screen_registry_is_registered(NcScreenRegistry *registry,
-                                 NcScreen *screen) {
+nc_screen_registry_is_registered(NcScreenRegistry *registry, NcScreen *screen) {
     if (screen == NULL) {
         return false;
     }
@@ -496,8 +495,7 @@ nc_screen_registry_is_registered(NcScreenRegistry *registry,
 }
 
 bool
-nc_screen_registry_is_current(NcScreenRegistry *registry,
-                              NcScreen *screen) {
+nc_screen_registry_is_current(NcScreenRegistry *registry, NcScreen *screen) {
     return registry->current_screen == screen;
 }
 
