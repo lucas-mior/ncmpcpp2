@@ -421,8 +421,8 @@ side withtout going over 80 columns, put them in separate lines.
 
 In standalone declarations, if one is needed at all, put all in one line. Break
 long lines so the 80-character limit rule is followed.
-Functions declarations must contain the parameter names, except when there is
-only a single struct/enum/union or pointer to struct/enum/union parameter.
+Functions declarations: add parameter names only when there are two or more
+parameters of the same type.
 
 Prefer to break after an argument than before the equal sign, specially if the
 first argument fits in the first line:
