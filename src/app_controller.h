@@ -19,8 +19,7 @@ NcScreenResizeParams app_controller_screen_resize_params(NcScreen  *,
                                                          bool adjust_locked);
 void app_controller_request_current_screen_resize(void);
 void app_controller_request_current_screen_update(void);
-void app_controller_each_visible_screen(NcScreenEachCallback callback,
-                                        void *user);
+void app_controller_each_visible_screen(NcScreenEachCallback, void *user);
 int32 app_controller_switch_to_screen(NcScreen  *);
 int32 app_controller_lock_current_screen(void);
 void app_controller_unlock_screen(void);
