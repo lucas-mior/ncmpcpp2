@@ -382,7 +382,7 @@ nc_prompt_read_key(FILE *file) {
                 return EOF;
             }
         }
-        if (!nc_window_fd_callbacks_is_empty(window)) {
+        if (ARRAY_LEN(window->fd_callbacks) > 0) {
             nc_window_go_to_xy(window, x, nc_readline_state.start_y);
             nc_window_refresh(window);
         }
@@ -900,11 +900,6 @@ nc_window_add_fd_callback(NcWindow *window,
     item.fd = fd;
     ARRAY_PUSH(window->fd_callbacks, item);
     return;
-}
-
-bool
-nc_window_fd_callbacks_is_empty(NcWindow *window) {
-    return ARRAY_LEN(window->fd_callbacks) <= 0;
 }
 
 static NcKey
