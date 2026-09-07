@@ -1237,10 +1237,10 @@ visualizer_screen_split_stereo(VisualizerScreen *screen, int16 *samples,
     screen->left_channel.len = 0;
     screen->right_channel.len = 0;
     pairs = samples_len / 2;
-    if (pairs > (&screen->left_channel)->cap) {
+    if (pairs > screen->left_channel.cap) {
         ncm_sample_buffer_resize(&screen->left_channel, pairs);
     }
-    if (pairs > (&screen->right_channel)->cap) {
+    if (pairs > screen->right_channel.cap) {
         ncm_sample_buffer_resize(&screen->right_channel, pairs);
     }
     for (int32 i = 0; i < pairs; i += 1) {
