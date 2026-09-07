@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_SCREEN_ACTIONS_H)
-#define NCMPCPP_SCREEN_ACTIONS_H
+#if !defined(SCREEN_ACTIONS_H)
+#define SCREEN_ACTIONS_H
 
 #include "cbase.h"
 
@@ -16,4 +16,4 @@ int32 current_screen_search(enum SearchDirection direction, char *pattern,
                             NcmError *ncm_error);
 void current_screen_clear_search_constraint(void);
 
-#endif /* NCMPCPP_SCREEN_ACTIONS_H */
+#endif /* SCREEN_ACTIONS_H */
