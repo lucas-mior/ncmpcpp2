@@ -388,8 +388,7 @@ tiny_editor_status_message(
     TinyTagEditScreen *screen, char *message, int32 message_len
 ) {
     if (screen->hooks.status_message) {
-        screen->hooks.status_message(screen->hooks.user, message,
-                                     message_len);
+        screen->hooks.status_message(screen->hooks.user, message, message_len);
     }
     return;
 }
