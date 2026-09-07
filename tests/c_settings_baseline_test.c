@@ -150,13 +150,13 @@ settings_assert_generated_empty(Configuration *config) {
 static void
 test_generated_option_identity(void) {
 #define XX_OPTION(NAME, DEFAULT_VALUE, ...) \
-    ASSERT(STREQUAL( \
+    ASSERT_EQUAL( \
         ncmpcpp_options[SETTINGS_OPTION_##NAME].name, \
-        ncmpcpp_options[SETTINGS_OPTION_##NAME].name_len, #NAME)); \
-    ASSERT(STREQUAL( \
+        ncmpcpp_options[SETTINGS_OPTION_##NAME].name_len, #NAME); \
+    ASSERT_EQUAL( \
         ncmpcpp_options[SETTINGS_OPTION_##NAME].default_value, \
         ncmpcpp_options[SETTINGS_OPTION_##NAME].default_value_len, \
-        DEFAULT_VALUE)); \
+        DEFAULT_VALUE); \
     ASSERT(ncmpcpp_options[SETTINGS_OPTION_##NAME].apply == apply_##NAME);
 #include "config_options_pass.h"
 
@@ -278,11 +278,11 @@ test_runtime_application_is_separate(void) {
 
     ASSERT_ZERO(configuration_read(&config, &paths, false, true, &ncm_error));
     ASSERT(config.enable_window_title);
-    ASSERT(STREQUAL(global_mpd.host.data, global_mpd.host.len,
-                    "before-host"));
+    ASSERT_EQUAL(global_mpd.host.data, global_mpd.host.len,
+                 "before-host");
     ASSERT(global_mpd.port == 1234);
-    ASSERT(STREQUAL(global_mpd.password.data, global_mpd.password.len,
-                    "before-password"));
+    ASSERT_EQUAL(global_mpd.password.data, global_mpd.password.len,
+                 "before-password");
     ASSERT(global_mpd.timeout_ms == 4321);
 
     ASSERT_ZERO(settings_test_apply(apply_mpd_host, &config, "after-host"));
@@ -294,7 +294,7 @@ test_runtime_application_is_separate(void) {
     ASSERT_ZERO(settings_test_apply(apply_enable_window_title, &config, "yes"));
 
     ASSERT(config.enable_window_title);
-    ASSERT(STREQUAL(global_mpd.host.data, global_mpd.host.len, "before-host"));
+    ASSERT_EQUAL(global_mpd.host.data, global_mpd.host.len, "before-host");
     ASSERT(global_mpd.port == 1234);
     ASSERT_EQUAL(global_mpd.password.data, global_mpd.password.len,
                  "before-password");
@@ -369,15 +369,15 @@ test_configuration_options_apply_runtime_precedence(void) {
     SB_APPEND(config_path, path, strlen32(path));
 
     ASSERT_ZERO(ncm_configuration_options_apply(&options, &ncm_error));
-    ASSERT(STREQUAL(global_mpd.host.data, global_mpd.host.len, "config-host"));
+    ASSERT_EQUAL(global_mpd.host.data, global_mpd.host.len, "config-host");
     ASSERT(global_mpd.port == 1111);
-    ASSERT(STREQUAL(global_mpd.password.data, global_mpd.password.len,
-                    "config-password"));
+    ASSERT_EQUAL(global_mpd.password.data, global_mpd.password.len,
+                 "config-password");
     ASSERT(global_mpd.timeout_ms == 7000);
-    ASSERT(STREQUAL(Config.mpd_host, Config.mpd_host_len, "config-host"));
+    ASSERT_EQUAL(Config.mpd_host, Config.mpd_host_len, "config-host");
     ASSERT(Config.mpd_port == 1111);
-    ASSERT(STREQUAL(Config.mpd_password, Config.mpd_password_len,
-                    "config-password"));
+    ASSERT_EQUAL(Config.mpd_password, Config.mpd_password_len,
+                 "config-password");
     ASSERT(Config.mpd_connection_timeout == 7);
     ASSERT(!window_title_enabled);
 
@@ -385,15 +385,15 @@ test_configuration_options_apply_runtime_precedence(void) {
     ASSERT_ZERO(setenv("MPD_PORT", "2222", 1));
     ncm_error_clear(&ncm_error);
     ASSERT_ZERO(ncm_configuration_options_apply(&options, &ncm_error));
-    ASSERT(STREQUAL(global_mpd.host.data, global_mpd.host.len, "env-host"));
+    ASSERT_EQUAL(global_mpd.host.data, global_mpd.host.len, "env-host");
     ASSERT(global_mpd.port == 2222);
-    ASSERT(STREQUAL(global_mpd.password.data, global_mpd.password.len,
-                    "config-password"));
+    ASSERT_EQUAL(global_mpd.password.data, global_mpd.password.len,
+                 "config-password");
     ASSERT(global_mpd.timeout_ms == 7000);
-    ASSERT(STREQUAL(Config.mpd_host, Config.mpd_host_len, "config-host"));
+    ASSERT_EQUAL(Config.mpd_host, Config.mpd_host_len, "config-host");
     ASSERT(Config.mpd_port == 1111);
-    ASSERT(STREQUAL(Config.mpd_password, Config.mpd_password_len,
-                    "config-password"));
+    ASSERT_EQUAL(Config.mpd_password, Config.mpd_password_len,
+                 "config-password");
     ASSERT(Config.mpd_connection_timeout == 7);
 
     sb_clear(&options.host);
@@ -403,15 +403,15 @@ test_configuration_options_apply_runtime_precedence(void) {
     options.port_provided = true;
     ncm_error_clear(&ncm_error);
     ASSERT_ZERO(ncm_configuration_options_apply(&options, &ncm_error));
-    ASSERT(STREQUAL(global_mpd.host.data, global_mpd.host.len, "cli-host"));
+    ASSERT_EQUAL(global_mpd.host.data, global_mpd.host.len, "cli-host");
     ASSERT(global_mpd.port == 3333);
-    ASSERT(STREQUAL(global_mpd.password.data, global_mpd.password.len,
-                    "config-password"));
+    ASSERT_EQUAL(global_mpd.password.data, global_mpd.password.len,
+                 "config-password");
     ASSERT(global_mpd.timeout_ms == 7000);
-    ASSERT(STREQUAL(Config.mpd_host, Config.mpd_host_len, "config-host"));
+    ASSERT_EQUAL(Config.mpd_host, Config.mpd_host_len, "config-host");
     ASSERT(Config.mpd_port == 1111);
-    ASSERT(STREQUAL(Config.mpd_password, Config.mpd_password_len,
-                    "config-password"));
+    ASSERT_EQUAL(Config.mpd_password, Config.mpd_password_len,
+                 "config-password");
     ASSERT(Config.mpd_connection_timeout == 7);
 
     if (had_host) {
@@ -495,8 +495,8 @@ test_numeric_boundaries(void) {
     ASSERT(config.search_engine_default_search_mode == 3);
 
     ASSERT_ZERO(settings_test_apply(apply_system_encoding, &config, "UTF-8"));
-    ASSERT(STREQUAL(config.system_encoding, config.system_encoding_len,
-                    "UTF-8"));
+    ASSERT_EQUAL(config.system_encoding, config.system_encoding_len,
+                 "UTF-8");
 
     configuration_destroy(&config);
     return;
@@ -584,12 +584,12 @@ test_color_options(void) {
         apply_state_flags_color, &config, "green:bu"));
     expected = nc_color_make(COLOR_GREEN, NC_COLOR_CURRENT, false, false);
     ASSERT(nc_color_is_equal(config.state_flags_color.color, expected));
-    ASSERT(ARRAY_LEN(&config.state_flags_color) == 2);
+    ASSERT(ARRAY_LEN(config.state_flags_color.formats) == 2);
     ASSERT(config.state_flags_color.formats[0] == NC_FORMAT_BOLD);
     ASSERT(config.state_flags_color.formats[1] == NC_FORMAT_UNDERLINE);
     ASSERT(settings_test_apply(
         apply_state_flags_color, &config, "green:x") < 0);
-    ASSERT(ARRAY_LEN(&config.state_flags_color) == 2);
+    ASSERT(ARRAY_LEN(config.state_flags_color.formats) == 2);
 
     ASSERT_ZERO(settings_test_apply(
         apply_window_border_color, &config, "cyan"));
@@ -651,22 +651,22 @@ test_buffer_and_look_options(void) {
 
     ASSERT_ZERO(settings_test_apply(
         apply_selected_item_prefix, &config, "selected"));
-    ASSERT(STREQUAL(config.selected_item_prefix.data,
-                    config.selected_item_prefix.len, "selected"));
+    ASSERT_EQUAL(config.selected_item_prefix.data,
+                 config.selected_item_prefix.len, "selected");
     ASSERT(config.selected_item_prefix_length == 8);
 
     ASSERT_ZERO(settings_test_apply(
         apply_current_item_prefix, &config, "first"));
     ASSERT_ZERO(settings_test_apply(
         apply_current_item_prefix, &config, "second"));
-    ASSERT(STREQUAL(config.current_item_prefix.data,
-                    config.current_item_prefix.len, "first"));
+    ASSERT_EQUAL(config.current_item_prefix.data,
+                 config.current_item_prefix.len, "first");
     ASSERT(config.current_item_prefix_length == 5);
 
     ASSERT_ZERO(settings_test_apply(
         apply_browser_playlist_prefix, &config, "playlist "));
-    ASSERT(STREQUAL(config.browser_playlist_prefix.data,
-                    config.browser_playlist_prefix.len, "playlist "));
+    ASSERT_EQUAL(config.browser_playlist_prefix.data,
+                 config.browser_playlist_prefix.len, "playlist ");
 
     ASSERT_ZERO(settings_test_apply(apply_visualizer_look, &config, "ab"));
     ASSERT(config.visualizer_look.len == 2);
@@ -790,15 +790,15 @@ test_remaining_generated_options(void) {
     ASSERT(config.song_columns_list_format.len == 2);
     ASSERT(config.song_columns_list_format.items[0].width == 10);
     ASSERT(config.song_columns_list_format.items[0].stretch_limit == 5);
-    ASSERT(STREQUAL(config.song_columns_list_format.items[0].name,
-                    config.song_columns_list_format.items[0].name_len,
-                    "Artist"));
+    ASSERT_EQUAL(config.song_columns_list_format.items[0].name,
+                 config.song_columns_list_format.items[0].name_len,
+                 "Artist");
     ASSERT(config.song_columns_list_format.items[1].fixed);
     ASSERT(config.song_columns_list_format.items[1].right_alignment);
     ASSERT(!config.song_columns_list_format.items[1].display_empty_tag);
-    ASSERT(STREQUAL(config.song_columns_list_format.items[1].name,
-                    config.song_columns_list_format.items[1].name_len,
-                    "Title"));
+    ASSERT_EQUAL(config.song_columns_list_format.items[1].name,
+                 config.song_columns_list_format.items[1].name_len,
+                 "Title");
     ASSERT(settings_test_apply(
         apply_song_columns_list_format, &config, "invalid") < 0);
     ASSERT(config.song_columns_list_format.len == 0);

@@ -358,25 +358,6 @@ typedef struct NcScreenResizeParams {
     int32 width;
 } NcScreenResizeParams;
 
-typedef struct NcScreenCallbacks {
-    NcWindow *(*active_window)(NcScreen *);
-    void (*refresh)(NcScreen *);
-    void (*refresh_window)(NcScreen *);
-    void (*scroll)(NcScreen *, enum NcScroll);
-    void (*list_change_finished)(NcScreen *);
-    bool (*can_run_current)(NcScreen *);
-    int32 (*run_current)(NcScreen *);
-    void (*switch_to)(NcScreen *);
-    void (*resize)(NcScreen *);
-    int32 (*window_timeout)(NcScreen *);
-    char *(*title)(NcScreen *);
-    void (*update)(NcScreen *);
-    void (*mouse_button_pressed)(NcScreen *, MEVENT);
-    bool (*is_lockable)(NcScreen *);
-    bool (*is_mergable)(NcScreen *);
-    void (*destroy)(NcScreen *);
-} NcScreenCallbacks;
-
 typedef struct NcScreenOps {
     NcWindow *(*active_window)(NcScreen *);
     void (*refresh)(NcScreen *);
@@ -402,7 +383,6 @@ typedef struct NcScreenOps {
 } NcScreenOps;
 
 struct NcScreen {
-    NcScreenCallbacks callbacks;
     const NcScreenOps *ops;
     NcScreenOps ops_storage;
     void *user;
@@ -422,7 +402,6 @@ struct NcScreenRegistry {
     int32 screens_len;
 };
 
-void nc_screen_init(NcScreen *, NcScreenCallbacks, void *, enum NcScreenType);
 void nc_screen_init_ops(NcScreen *, NcScreenOps, void *, enum NcScreenType);
 NcWindow *nc_screen_default_active_window(NcScreen *);
 void nc_screen_noop_refresh(NcScreen *);
@@ -606,7 +585,6 @@ void nc_lastfm_screen_init(NcLastfmScreen *, NcScreenOps, void *,
 void nc_lastfm_screen_set_geometry(NcLastfmScreen *, int32 start_x,
                                    int32 width, int32 main_start_y,
                                    int32 main_height);
-NcScreen *nc_lastfm_screen_base(NcLastfmScreen *);
 int32 nc_lastfm_screen_start_x(NcLastfmScreen *);
 int32 nc_lastfm_screen_start_y(NcLastfmScreen *);
 int32 nc_lastfm_screen_width(NcLastfmScreen *);
@@ -617,7 +595,6 @@ void lastfm_screen_init(LastfmScreen *, int32 start_x, int32 width,
                         NcBorder, int32 lines_scrolled);
 void lastfm_screen_destroy(LastfmScreen *);
 NcScreen *lastfm_screen_base(LastfmScreen *);
-NcWindow *lastfm_screen_window(LastfmScreen *);
 void lastfm_screen_set_geometry(LastfmScreen *, int32 start_x, int32 width,
                                 int32 main_start_y, int32 main_height);
 int32 lastfm_screen_queue_artist_info(LastfmScreen *, char *artist,
@@ -626,8 +603,6 @@ int32 lastfm_screen_queue_artist_info(LastfmScreen *, char *artist,
 int32 lastfm_screen_dispatch_jobs(LastfmScreen *);
 void lastfm_screen_update(LastfmScreen *);
 char *lastfm_screen_title(LastfmScreen *);
-int32 lastfm_screen_take_refresh_request(LastfmScreen *);
-int32 lastfm_buffer_find(NcBuffer *, char *, int32, NcmError *);
 int32 lastfm_screen_find(LastfmScreen *, char *, int32, NcmError *);
 
 /* screens/nc_lyrics.h */
@@ -1961,8 +1936,6 @@ enum TinyTagEditOpenResult tiny_tag_edit_screen_open_song(
     TinyTagEditScreen *, NcmSong *, char *music_dir, int32 music_dir_len,
     char *tag_separator, int32 tag_separator_len, bool, StrBuilder *);
 int32 tiny_tag_edit_screen_run_row(TinyTagEditScreen *, int32);
-int32 tiny_tag_edit_screen_run_current(TinyTagEditScreen *);
-bool tiny_tag_edit_screen_action_runnable(TinyTagEditScreen *);
 
 /* screens/nc_browser.h */
 typedef struct BrowserScreen {

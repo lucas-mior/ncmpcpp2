@@ -72,15 +72,6 @@ struct mpd_song;
     XX(NCM_TAGS_FIELD_COMMENT, Comment)
 #include "cbase/xenums.c"
 
-#define ENUM_NAME NcmTagsReadResult
-#define ENUM_PREFIX_ NCM_TAGS_READ_
-#define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                      \
-    XX(NCM_TAGS_READ_OK)                 \
-    XX(NCM_TAGS_READ_OPEN_FAILED)        \
-    XX(NCM_TAGS_READ_NOT_FOUND)
-#include "cbase/xenums.c"
-
 typedef struct NcmTagsReplayGainInfo {
     NcmStringView reference_loudness;
     NcmStringView track_gain;
@@ -89,13 +80,10 @@ typedef struct NcmTagsReplayGainInfo {
     NcmStringView album_peak;
 } NcmTagsReplayGainInfo;
 
-typedef void NcmTagsValueCallback(char *, int32, void *);
 typedef bool NcmTagsGetFieldCallback(enum NcmTagsField, int32, NcmStringView *,
                                      void *);
 
 void ncm_tags_set_attribute(struct mpd_song *, char *name, char *value);
-enum NcmTagsReadResult ncm_tags_read_lyrics(char *, NcmTagsValueCallback *,
-                                            void *);
 int32 ncm_tags_read_song(struct mpd_song *);
 int32 ncm_tags_write(char *music_dir, char *uri, bool, char *directory,
                      char *new_name, NcmTagsGetFieldCallback *, void *);
@@ -252,13 +240,6 @@ void ncm_mutable_song_destroy(NcmMutableSong *);
 int32 ncm_mutable_song_copy(NcmMutableSong *dest, NcmMutableSong *source);
 void ncm_mutable_song_move(NcmMutableSong *dest, NcmMutableSong *source);
 
-int32 ncm_mutable_song_set_uri(NcmMutableSong *, char *, int32);
-int32 ncm_mutable_song_set_directory(NcmMutableSong *, char *, int32);
-int32 ncm_mutable_song_set_name(NcmMutableSong *, char *, int32);
-void ncm_mutable_song_set_from_database(NcmMutableSong *, bool);
-
-int32 ncm_mutable_song_set_original_tag(NcmMutableSong *, enum NcmTagsField,
-                                        int32 idx, char *, int32 value_len);
 int32 ncm_mutable_song_set_tag(NcmMutableSong *, enum NcmTagsField, int32 idx,
                                char *, int32 value_len);
 int32 ncm_mutable_song_set_tags(NcmMutableSong *, enum NcmTagsField,
@@ -275,9 +256,7 @@ int32 ncm_mutable_song_load_originals_from_song(NcmMutableSong *, NcmSong *);
 int32 ncm_mutable_song_set_new_name(NcmMutableSong *, char *, int32);
 bool ncm_mutable_song_has_new_name_view(NcmMutableSong *, NcmStringView *);
 
-void ncm_mutable_song_set_duration(NcmMutableSong *, int32);
 int32 ncm_mutable_song_duration(NcmMutableSong *);
-void ncm_mutable_song_set_mtime(NcmMutableSong *, int32);
 int32 ncm_mutable_song_mtime(NcmMutableSong *);
 
 bool ncm_mutable_song_is_modified(NcmMutableSong *);
@@ -1331,7 +1310,6 @@ typedef struct NcmLrcRenderTarget {
 void ncm_lrc_document_clear(NcmLrcDocument *);
 void ncm_lrc_document_destroy(NcmLrcDocument *);
 int32 ncm_lrc_parse(NcmLrcDocument *, char *, int32, NcmError *);
-NcmStringView ncm_lrc_entry_text(NcmLrcDocument *, NcmLrcEntry *);
 int32 ncm_lrc_document_render_plain(NcmLrcDocument *, NcmLrcRenderTarget *);
 int32 ncm_lrc_document_entry_at_time(NcmLrcDocument *, int64);
 int32 ncm_lrc_document_next_entry_after_time(NcmLrcDocument *, int64);
@@ -1508,8 +1486,6 @@ typedef struct NcmFormatCallbacks {
     void (*format)(void *, enum NcFormat);
 } NcmFormatCallbacks;
 
-void ncm_format_expr_list_destroy(NcmFormatExprList *);
-void ncm_format_expr_list_clear(NcmFormatExprList *);
 void ncm_format_expr_list_move(NcmFormatExprList *dest,
                                NcmFormatExprList *source);
 NcmFormatExpr *ncm_format_expr_list_append(NcmFormatExprList *);
@@ -1526,7 +1502,6 @@ void ncm_format_render(NcmFormatAst *, NcmSong *, NcmFormatCallbacks *,
 void ncm_format_render_buffer(NcmFormatAst *, NcmSong *, NcBuffer *buffer,
                               NcBuffer *right_aligned, uint32);
 StrBuilder ncm_format_render_string(NcmFormatAst *, NcmSong *);
-StrBuilder ncm_format_render_tag(NcmSong *, NcmFormatSongTag *);
 
 struct Column;
 

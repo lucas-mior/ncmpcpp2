@@ -260,11 +260,6 @@ ncm_action_can_run(enum NcmActionType type, void *user) {
     return ncm_action_def_can_run(ncm_action_get(type), user);
 }
 
-int32
-ncm_action_run(enum NcmActionType type, void *user) {
-    return ncm_action_def_run(ncm_action_get(type), user);
-}
-
 static NcmActionRuntime action_global_runtime;
 static bool action_global_runtime_initialized;
 

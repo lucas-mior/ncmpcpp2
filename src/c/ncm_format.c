@@ -137,31 +137,11 @@ ncm_format_expr_list_clear_unchecked(NcmFormatExprList *list) {
     return;
 }
 
-void
-ncm_format_expr_list_clear(NcmFormatExprList *list) {
-    if (list == NULL) {
-        return;
-    }
-
-    ncm_format_expr_list_clear_unchecked(list);
-    return;
-}
-
 static void
 ncm_format_expr_list_destroy_unchecked(NcmFormatExprList *list) {
     ncm_format_expr_list_clear_unchecked(list);
     free2(list->items, list->cap*SIZEOF(*list->items));
     *list = (NcmFormatExprList){0};
-    return;
-}
-
-void
-ncm_format_expr_list_destroy(NcmFormatExprList *list) {
-    if (list == NULL) {
-        return;
-    }
-
-    ncm_format_expr_list_destroy_unchecked(list);
     return;
 }
 
@@ -658,15 +638,6 @@ ncm_format_render_tag_unchecked(NcmSong *song, NcmFormatSongTag *tag) {
     }
 
     return result;
-}
-
-StrBuilder
-ncm_format_render_tag(NcmSong *song, NcmFormatSongTag *tag) {
-    if ((song == NULL) || (tag == NULL)) {
-        return (StrBuilder){0};
-    }
-
-    return ncm_format_render_tag_unchecked(song, tag);
 }
 
 static void

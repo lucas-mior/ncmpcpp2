@@ -263,92 +263,6 @@ ncm_mutable_song_move(NcmMutableSong *dest, NcmMutableSong *source) {
 }
 
 int32
-ncm_mutable_song_set_uri(NcmMutableSong *song, char *uri, int32 uri_len) {
-    if (song == NULL) {
-        return -EINVAL;
-    }
-    if (uri_len < 0) {
-        return -EINVAL;
-    }
-    if ((uri == NULL) && (uri_len > 0)) {
-        return -EINVAL;
-    }
-
-    ncm_mutable_song_set_string(&song->uri, &song->uri_len, uri, uri_len);
-    return 0;
-}
-
-int32
-ncm_mutable_song_set_directory(NcmMutableSong *song, char *directory,
-                                int32 directory_len) {
-    if (song == NULL) {
-        return -EINVAL;
-    }
-    if (directory_len < 0) {
-        return -EINVAL;
-    }
-    if ((directory == NULL) && (directory_len > 0)) {
-        return -EINVAL;
-    }
-
-    ncm_mutable_song_set_string(&song->directory, &song->directory_len,
-                                directory, directory_len);
-    return 0;
-}
-
-int32
-ncm_mutable_song_set_name(NcmMutableSong *song, char *name, int32 name_len) {
-    if (song == NULL) {
-        return -EINVAL;
-    }
-    if (name_len < 0) {
-        return -EINVAL;
-    }
-    if ((name == NULL) && (name_len > 0)) {
-        return -EINVAL;
-    }
-
-    ncm_mutable_song_set_string(&song->name, &song->name_len, name, name_len);
-    return 0;
-}
-
-void
-ncm_mutable_song_set_from_database(NcmMutableSong *song,
-                                   bool is_from_database) {
-    if (song == NULL) {
-        return;
-    }
-
-    song->is_from_database = is_from_database;
-    return;
-}
-
-int32
-ncm_mutable_song_set_original_tag(NcmMutableSong *song,
-                                  enum NcmTagsField field, int32 idx,
-                                  char *value, int32 value_len) {
-    if (song == NULL) {
-        return -EINVAL;
-    }
-    if (idx < 0) {
-        return -EINVAL;
-    }
-    if (field >= NCM_TAGS_FIELD_COUNT) {
-        return -EINVAL;
-    }
-    if (value_len < 0) {
-        return -EINVAL;
-    }
-    if ((value == NULL) && (value_len > 0)) {
-        return -EINVAL;
-    }
-
-    ncm_mutable_song_set_original_tag_unchecked(song, field, idx,
-                                                value, value_len);
-    return 0;
-}
-
-int32
 ncm_mutable_song_set_tag(NcmMutableSong *song, enum NcmTagsField field,
                          int32 idx, char *value, int32 value_len) {
     if (song == NULL) {
@@ -651,16 +565,6 @@ ncm_mutable_song_has_new_name_view(NcmMutableSong *song, NcmStringView *view) {
     return true;
 }
 
-void
-ncm_mutable_song_set_duration(NcmMutableSong *song, int32 duration) {
-    if (song == NULL) {
-        return;
-    }
-
-    song->duration = duration;
-    return;
-}
-
 int32
 ncm_mutable_song_duration(NcmMutableSong *song) {
     if (song == NULL) {
@@ -668,16 +572,6 @@ ncm_mutable_song_duration(NcmMutableSong *song) {
     }
 
     return song->duration;
-}
-
-void
-ncm_mutable_song_set_mtime(NcmMutableSong *song, int32 mtime) {
-    if (song == NULL) {
-        return;
-    }
-
-    song->mtime = mtime;
-    return;
 }
 
 int32
