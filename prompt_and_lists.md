@@ -7,7 +7,6 @@ not have the problem, try the next one without asking first.
 
 ## Functions that are never called (dead code)
 
-## Excessive error checking
 ## Utility function creep
 Functions that do the same thing are redefined in different
 
