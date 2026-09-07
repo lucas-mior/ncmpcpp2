@@ -468,14 +468,12 @@ void *nc_screen_user(NcScreen *screen);
 
 int32 nc_screen_registry_register(NcScreenRegistry *, NcScreen *);
 int32 nc_screen_registry_unregister(NcScreenRegistry *, NcScreen *);
-NcScreen *nc_screen_registry_find(NcScreenRegistry *registry, int32 type);
-NcScreen *nc_screen_registry_current(NcScreenRegistry *registry);
-NcScreen *nc_screen_registry_previous(NcScreenRegistry *registry);
-NcScreen *nc_screen_registry_locked(NcScreenRegistry *registry);
-bool nc_screen_registry_is_registered(NcScreenRegistry *registry,
-                                      NcScreen *screen);
-bool nc_screen_registry_is_current(NcScreenRegistry *registry,
-                                   NcScreen *screen);
+NcScreen *nc_screen_registry_find(NcScreenRegistry *, int32 type);
+NcScreen *nc_screen_registry_current(NcScreenRegistry *);
+NcScreen *nc_screen_registry_previous(NcScreenRegistry *);
+NcScreen *nc_screen_registry_locked(NcScreenRegistry *);
+bool nc_screen_registry_is_registered(NcScreenRegistry *, NcScreen *);
+bool nc_screen_registry_is_current(NcScreenRegistry *, NcScreen *);
 void nc_screen_registry_request_resize_current(
     NcScreenRegistry *registry);
 void nc_screen_registry_request_update_current(
