@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_SCROLLPAD_C)
-#define NCMPCPP_NC_SCROLLPAD_C
+#if !defined(NC_SCROLLPAD_C)
+#define NC_SCROLLPAD_C
 
 #include "cbase.h"
 
@@ -396,4 +396,4 @@ nc_scrollpad_is_space(char ch) {
     return iswspace((wint_t)(uint8)ch);
 }
 
-#endif /* NCMPCPP_NC_SCROLLPAD_C */
+#endif /* NC_SCROLLPAD_C */

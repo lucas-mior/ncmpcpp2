@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_APP_BRIDGE_C)
-#define NCMPCPP_APP_BRIDGE_C
+#if !defined(APP_BRIDGE_C)
+#define APP_BRIDGE_C
 
 #include "cbase.h"
 
@@ -391,4 +391,4 @@ ncmpcpp_has_exit_request(void) {
     return ncm_action_runtime_exit_requested(NULL);
 }
 
-#endif /* NCMPCPP_APP_BRIDGE_C */
+#endif /* APP_BRIDGE_C */

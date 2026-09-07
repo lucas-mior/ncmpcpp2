@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_SCREENS_H)
-#define NCMPCPP_NC_SCREENS_H
+#if !defined(NC_SCREENS_H)
+#define NC_SCREENS_H
 
 #include "cbase.h"
 
@@ -2136,4 +2136,4 @@ void app_screen_outputs_toggle(void);
 void app_screen_outputs_fetch_list(void);
 void app_screen_outputs_refresh_if_visible(void);
 
-#endif /* NCMPCPP_NC_SCREENS_H */
+#endif /* NC_SCREENS_H */

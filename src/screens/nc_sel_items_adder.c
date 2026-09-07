@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_SEL_ITEMS_ADDER_C)
-#define NCMPCPP_NC_SEL_ITEMS_ADDER_C
+#if !defined(NC_SEL_ITEMS_ADDER_C)
+#define NC_SEL_ITEMS_ADDER_C
 
 #include "cbase.h"
 
@@ -1091,4 +1091,4 @@ adder_finish(SelectedItemsAdderScreen *screen) {
     return;
 }
 
-#endif /* NCMPCPP_NC_SEL_ITEMS_ADDER_C */
+#endif /* NC_SEL_ITEMS_ADDER_C */

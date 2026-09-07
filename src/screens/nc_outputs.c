@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_OUTPUTS_C)
-#define NCMPCPP_NC_OUTPUTS_C
+#if !defined(NC_OUTPUTS_C)
+#define NC_OUTPUTS_C
 
 #include "cbase.h"
 
@@ -342,4 +342,4 @@ nc_outputs_draw_item(NcMenu *menu, NcWindow *window,
 }
 
 
-#endif /* NCMPCPP_NC_OUTPUTS_C */
+#endif /* NC_OUTPUTS_C */

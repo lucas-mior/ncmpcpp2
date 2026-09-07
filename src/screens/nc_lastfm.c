@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_LASTFM_C)
-#define NCMPCPP_NC_LASTFM_C
+#if !defined(NC_LASTFM_C)
+#define NC_LASTFM_C
 
 #include "cbase.h"
 
@@ -594,4 +594,4 @@ lastfm_flush(LastfmScreen *screen) {
     return;
 }
 
-#endif /* NCMPCPP_NC_LASTFM_C */
+#endif /* NC_LASTFM_C */

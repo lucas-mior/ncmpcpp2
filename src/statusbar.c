@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_STATUSBAR_C)
-#define NCMPCPP_STATUSBAR_C
+#if !defined(STATUSBAR_C)
+#define STATUSBAR_C
 
 #include "cbase.h"
 
@@ -386,4 +386,4 @@ ncm_statusbar_prompt_return_one_of(NcWindow *window, char *values,
     }
 }
 
-#endif /* NCMPCPP_STATUSBAR_C */
+#endif /* STATUSBAR_C */

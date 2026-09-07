@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_APP_STATE_H)
-#define NCMPCPP_APP_STATE_H
+#if !defined(APP_STATE_H)
+#define APP_STATE_H
 
 #include "cbase.h"
 
@@ -31,4 +31,4 @@ void app_state_update_visible_screens(void);
 void app_state_resize_current_screen(void);
 void app_state_resize_visible_screens(void);
 
-#endif /* NCMPCPP_APP_STATE_H */
+#endif /* APP_STATE_H */

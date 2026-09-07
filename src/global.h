@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_GLOBAL_H)
-#define NCMPCPP_GLOBAL_H
+#if !defined(GLOBAL_H)
+#define GLOBAL_H
 
 #include "cbase.h"
 
@@ -21,4 +21,4 @@ void global_volume_state_append(char *string, int32 string_len);
 char *global_volume_state_cstr(void);
 int32 global_volume_state_len(void);
 
-#endif /* NCMPCPP_GLOBAL_H */
+#endif /* GLOBAL_H */

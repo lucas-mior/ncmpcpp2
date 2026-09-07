@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_SONG_INFO_C)
-#define NCMPCPP_NC_SONG_INFO_C
+#if !defined(NC_SONG_INFO_C)
+#define NC_SONG_INFO_C
 
 #include "cbase.h"
 
@@ -189,4 +189,4 @@ nc_song_info_display(NcSongInfoScreen *song_info) {
     return;
 }
 
-#endif /* NCMPCPP_NC_SONG_INFO_C */
+#endif /* NC_SONG_INFO_C */

@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_HELPERS_C)
-#define NCMPCPP_HELPERS_C
+#if !defined(HELPERS_C)
+#define HELPERS_C
 
 #include "cbase.h"
 
@@ -174,4 +174,4 @@ ncm_menu_find_full_selected_range(NcMenu *menu, enum NcMenuItemSource source,
     return 0;
 }
 
-#endif /* NCMPCPP_HELPERS_C */
+#endif /* HELPERS_C */

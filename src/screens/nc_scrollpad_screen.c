@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_SCROLLPAD_SCREEN_C)
-#define NCMPCPP_NC_SCROLLPAD_SCREEN_C
+#if !defined(NC_SCROLLPAD_SCREEN_C)
+#define NC_SCROLLPAD_SCREEN_C
 
 #include "cbase.h"
 
@@ -99,4 +99,4 @@ nc_scrollpad_screen_height(NcScrollpadScreen *screen) {
     return screen->height;
 }
 
-#endif /* NCMPCPP_NC_SCROLLPAD_SCREEN_C */
+#endif /* NC_SCROLLPAD_SCREEN_C */

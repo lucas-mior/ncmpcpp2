@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_ACTIONS_C)
-#define NCMPCPP_ACTIONS_C
+#if !defined(ACTIONS_C)
+#define ACTIONS_C
 
 #include "cbase.h"
 
@@ -6537,4 +6537,4 @@ ncm_action_runtime_run(NcmActionRuntime *runtime, enum NcmActionType type) {
     return action_runtime_builtin_run(runtime, type);
 }
 
-#endif /* NCMPCPP_ACTIONS_C */
+#endif /* ACTIONS_C */

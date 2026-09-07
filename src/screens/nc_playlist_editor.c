@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_PLAYLIST_EDITOR_C)
-#define NCMPCPP_NC_PLAYLIST_EDITOR_C
+#if !defined(NC_PLAYLIST_EDITOR_C)
+#define NC_PLAYLIST_EDITOR_C
 
 #include "cbase.h"
 
@@ -1813,4 +1813,4 @@ content_draw_callback(NcMenu *menu, NcWindow *window, void *item,
     return;
 }
 
-#endif /* NCMPCPP_NC_PLAYLIST_EDITOR_C */
+#endif /* NC_PLAYLIST_EDITOR_C */

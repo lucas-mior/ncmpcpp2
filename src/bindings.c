@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_BINDINGS_C)
-#define NCMPCPP_BINDINGS_C
+#if !defined(BINDINGS_C)
+#define BINDINGS_C
 
 #include "cbase.h"
 
@@ -1403,4 +1403,4 @@ ncm_bindings_configuration_get(NcmBindingsConfiguration *bindings, NcKey key,
     return result->len;
 }
 
-#endif /* NCMPCPP_BINDINGS_C */
+#endif /* BINDINGS_C */

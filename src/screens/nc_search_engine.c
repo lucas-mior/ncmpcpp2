@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_SEARCH_ENGINE_C)
-#define NCMPCPP_NC_SEARCH_ENGINE_C
+#if !defined(NC_SEARCH_ENGINE_C)
+#define NC_SEARCH_ENGINE_C
 
 #include "cbase.h"
 
@@ -1558,4 +1558,4 @@ search_copy_song_at(SearchEngineScreen *screen,
     return;
 }
 
-#endif /* NCMPCPP_NC_SEARCH_ENGINE_C */
+#endif /* NC_SEARCH_ENGINE_C */

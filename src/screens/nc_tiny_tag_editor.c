@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_NC_TINY_TAG_EDITOR_C)
-#define NCMPCPP_NC_TINY_TAG_EDITOR_C
+#if !defined(NC_TINY_TAG_EDITOR_C)
+#define NC_TINY_TAG_EDITOR_C
 
 #include "cbase.h"
 
@@ -780,4 +780,4 @@ tiny_editor_mouse_callback(NcScreen *screen, MEVENT event) {
     return;
 }
 
-#endif /* NCMPCPP_NC_TINY_TAG_EDITOR_C */
+#endif /* NC_TINY_TAG_EDITOR_C */
