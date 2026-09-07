@@ -1,5 +1,5 @@
-#if !defined(NCMPCPP_STATUSBAR_H)
-#define NCMPCPP_STATUSBAR_H
+#if !defined(STATUSBAR_H)
+#define STATUSBAR_H
 
 #include "cbase.h"
 
@@ -28,4 +28,4 @@ bool ncm_statusbar_prompt_should_continue(char *string, int32 string_len);
 int32 ncm_statusbar_prompt_return_one_of(NcWindow *, char *, int32, char *);
 int32 ncm_statusbar_message_delay_time(void);
 
-#endif /* NCMPCPP_STATUSBAR_H */
+#endif /* STATUSBAR_H */
