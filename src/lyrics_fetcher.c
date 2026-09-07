@@ -1326,12 +1326,10 @@ lyrics_url_best_slug_score(NcmLyricsFetcherDef *fetcher,
         if (segment_start >= 0) {
             StrBuilder decoded = {0};
             StrBuilder slug = {0};
-            char *segment;
-            int32 segment_len;
+            char *segment = url + segment_start;
+            int32 segment_len = i - segment_start;
             int32 score;
 
-            segment = url + segment_start;
-            segment_len = i - segment_start;
             lyrics_trim_url_segment_suffix(&segment, &segment_len,
                                            STRLIT(".html"));
             lyrics_trim_url_segment_suffix(&segment, &segment_len,
