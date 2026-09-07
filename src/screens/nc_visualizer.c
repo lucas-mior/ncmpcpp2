@@ -357,6 +357,7 @@ visualizer_update_callback(NcScreen *screen) {
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
+
 static int32
 visualizer_system_open_fifo(void *user, char *location, int32 location_len) {
     int32 error_code;
