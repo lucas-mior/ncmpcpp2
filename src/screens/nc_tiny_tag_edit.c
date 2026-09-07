@@ -384,9 +384,8 @@ tiny_tag_edit_screen_open_song(
 }
 
 static void
-tiny_editor_status_message(
-    TinyTagEditScreen *screen, char *message, int32 message_len
-) {
+tiny_editor_status_message(TinyTagEditScreen *screen,
+                           char *message, int32 message_len) {
     if (screen->hooks.status_message) {
         screen->hooks.status_message(screen->hooks.user, message, message_len);
     }
