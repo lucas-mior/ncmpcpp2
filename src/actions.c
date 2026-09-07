@@ -5419,8 +5419,8 @@ action_runtime_show_lyrics(void) {
 
 static int32
 action_runtime_show_artist_info(void) {
-    NcmSong song;
-    NcmStringView artist;
+    NcmSong song = {0};
+    NcmStringView artist = {0};
     NcmError ncm_error;
     char *media_library_artist = NULL;
     int32 media_library_artist_len = 0;
@@ -5431,7 +5431,6 @@ action_runtime_show_artist_info(void) {
         return action_runtime_switch_to_screen(NCM_SCREEN_TYPE_LASTFM);
     }
 
-    artist = (NcmStringView){0};
     if (action_runtime_media_library_current_artist_tag(
         &media_library_artist, &media_library_artist_len)) {
         artist.data = media_library_artist;
@@ -5439,7 +5438,6 @@ action_runtime_show_artist_info(void) {
         has_artist = true;
     }
 
-    song = (NcmSong){0};
     if (!has_artist) {
         if (action_runtime_current_song(&song) < 0) {
             ncm_song_destroy(&song);
