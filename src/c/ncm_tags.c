@@ -7,34 +7,9 @@
 
 #include "c/ncm_c.h"
 
-typedef struct NcmTagsFirstPropertyContext {
-    NcmStringView *value;
-    bool found;
-} NcmTagsFirstPropertyContext;
-
-typedef struct NcmTagsForwardContext {
-    NcmTagsValueCallback *callback;
-    void *user;
-} NcmTagsForwardContext;
-
 typedef struct NcmTagsMappedContext {
     struct mpd_song *song;
 } NcmTagsMappedContext;
-
-static void
-ncm_tags_forward_value_callback(char *value, void *user) {
-    NcmTagsForwardContext *context;
-
-    if ((context = user) == NULL) {
-        return;
-    }
-    if (context->callback == NULL) {
-        return;
-    }
-
-    context->callback(value, optional_strlen32(value), context->user);
-    return;
-}
 
 static void
 ncm_tags_mapped_property_callback(char *name, char *value, void *user) {
@@ -66,45 +41,6 @@ ncm_tags_set_attribute(struct mpd_song *song, char *name, char *value) {
     pair.value = value;
     mpd_song_feed(song, &pair);
     return;
-}
-
-enum NcmTagsReadResult
-ncm_tags_read_lyrics(char *path, NcmTagsValueCallback *callback, void *user) {
-    NcmTaglibFile file = {0};
-    NcmTagsForwardContext context;
-    int32 count;
-
-    if (callback == NULL) {
-        return NCM_TAGS_READ_NOT_FOUND;
-    }
-
-    if (ncm_taglib_file_open(&file, path) < 0) {
-        return NCM_TAGS_READ_OPEN_FAILED;
-    }
-
-    context.callback = callback;
-    context.user = user;
-    if ((count = ncm_taglib_read_property(&file, "LYRICS",
-                                          ncm_tags_forward_value_callback,
-                                          &context)) < 0) {
-        ncm_taglib_file_close(&file);
-        return NCM_TAGS_READ_OPEN_FAILED;
-    }
-    if (count == 0) {
-        count = ncm_taglib_read_property(&file, "UNSYNCEDLYRICS",
-                                         ncm_tags_forward_value_callback,
-                                         &context);
-        if (count < 0) {
-            ncm_taglib_file_close(&file);
-            return NCM_TAGS_READ_OPEN_FAILED;
-        }
-    }
-
-    ncm_taglib_file_close(&file);
-    if (count > 0) {
-        return NCM_TAGS_READ_OK;
-    }
-    return NCM_TAGS_READ_NOT_FOUND;
 }
 
 int32

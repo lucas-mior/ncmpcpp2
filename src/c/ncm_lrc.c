@@ -488,24 +488,6 @@ ncm_lrc_entry_text_unchecked(NcmLrcDocument *document, NcmLrcEntry *entry) {
     return view;
 }
 
-NcmStringView
-ncm_lrc_entry_text(NcmLrcDocument *document, NcmLrcEntry *entry) {
-    if ((document == NULL) || (entry == NULL)) {
-        return (NcmStringView){0};
-    }
-    if ((entry->text_start < 0) || (entry->text_len < 0)) {
-        return (NcmStringView){0};
-    }
-    if ((entry->text_start + entry->text_len) > document->text.len) {
-        return (NcmStringView){0};
-    }
-    if ((entry->text_len > 0) && (document->text.data == NULL)) {
-        return (NcmStringView){0};
-    }
-
-    return ncm_lrc_entry_text_unchecked(document, entry);
-}
-
 static void
 ncm_lrc_document_clear_buffer_positions(NcmLrcDocument *document) {
     ASSERT(document != NULL);

@@ -730,23 +730,5 @@ tiny_tag_edit_screen_run_row(TinyTagEditScreen *screen, int32 row) {
     return tiny_editor_run_row(screen, row);
 }
 
-int32
-tiny_tag_edit_screen_run_current(TinyTagEditScreen *screen) {
-    if (screen == NULL) {
-        return -EINVAL;
-    }
-    if (!tiny_editor_action_runnable(screen)) {
-        return -NCM_ERROR_UNAVAILABLE;
-    }
-    return tiny_editor_run_row(screen, tiny_editor_current_row(screen));
-}
-
-bool
-tiny_tag_edit_screen_action_runnable(TinyTagEditScreen *screen) {
-    if (screen == NULL) {
-        return false;
-    }
-    return tiny_editor_action_runnable(screen);
-}
 
 #endif /* NC_TINY_TAG_EDIT_C */

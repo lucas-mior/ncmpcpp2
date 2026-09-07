@@ -183,7 +183,6 @@ int32 ncm_action_type_parse(char *, int32, enum NcmActionType *);
 bool ncm_action_def_can_run(NcmActionDef *, void *);
 int32 ncm_action_def_run(NcmActionDef *, void *);
 bool ncm_action_can_run(enum NcmActionType, void *);
-int32 ncm_action_run(enum NcmActionType, void *);
 bool ncm_action_immediate_command_prompt_should_stop(StrBuilder *, char *,
                                                      int32);
 

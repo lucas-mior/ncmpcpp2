@@ -124,11 +124,6 @@ nc_lastfm_screen_set_geometry(NcLastfmScreen *screen,
     return;
 }
 
-NcScreen *
-nc_lastfm_screen_base(NcLastfmScreen *screen) {
-    return nc_scrollpad_screen_base(&screen->scrollpad_screen);
-}
-
 int32
 nc_lastfm_screen_start_x(NcLastfmScreen *screen) {
     return nc_scrollpad_screen_start_x(&screen->scrollpad_screen);
@@ -223,11 +218,6 @@ lastfm_screen_destroy(LastfmScreen *screen) {
     screen->initialized = false;
 
     return;
-}
-
-NcWindow *
-lastfm_screen_window(LastfmScreen *screen) {
-    return &screen->window;
 }
 
 void
@@ -439,17 +429,6 @@ lastfm_screen_title(LastfmScreen *screen) {
     return screen->title;
 }
 
-int32
-lastfm_screen_take_refresh_request(LastfmScreen *screen) {
-    if (screen == NULL) {
-        return -EINVAL;
-    }
-    if (lastfm_take_refresh_request(screen)) {
-        return 1;
-    }
-    return 0;
-}
-
 static bool
 lastfm_find_match_callback(int32 start, int32 len, void *user) {
     LastfmFindState *state = user;
@@ -495,17 +474,6 @@ lastfm_buffer_find_unchecked(NcBuffer *buffer, char *pattern, int32 pattern_len,
         return 1;
     }
     return 0;
-}
-
-int32
-lastfm_buffer_find(NcBuffer *buffer, char *pattern,
-                   int32 pattern_len, NcmError *ncm_error) {
-    if (buffer == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing Last.fm buffer"));
-    }
-    return lastfm_buffer_find_unchecked(buffer, pattern,
-                                        pattern_len, ncm_error);
 }
 
 static void
