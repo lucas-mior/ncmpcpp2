@@ -943,8 +943,8 @@ typedef struct VisualizerScreen {
     NcmSampleBuffer incoming_samples;
     NcmSampleBuffer buffered_samples;
     NcmSampleBuffer rendered_samples;
-    NcmSampleBuffer left_channel;
-    NcmSampleBuffer right_channel;
+    NcmSampleBuffer left_ch;
+    NcmSampleBuffer right_ch;
 
 #if defined(HAVE_FFTW3_H)
     VisualizerFftState fft;

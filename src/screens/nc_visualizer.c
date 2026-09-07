@@ -935,8 +935,8 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
     screen->incoming_samples = (NcmSampleBuffer){0};
     screen->buffered_samples = (NcmSampleBuffer){0};
     screen->rendered_samples = (NcmSampleBuffer){0};
-    screen->left_channel = (NcmSampleBuffer){0};
-    screen->right_channel = (NcmSampleBuffer){0};
+    screen->left_ch = (NcmSampleBuffer){0};
+    screen->right_ch = (NcmSampleBuffer){0};
 
 #if defined(HAVE_FFTW3_H)
     {
@@ -1013,8 +1013,8 @@ visualizer_screen_destroy(VisualizerScreen *screen) {
     visualizer_fft_destroy(screen);
 #endif
 
-    ncm_sample_buffer_destroy(&screen->right_channel);
-    ncm_sample_buffer_destroy(&screen->left_channel);
+    ncm_sample_buffer_destroy(&screen->right_ch);
+    ncm_sample_buffer_destroy(&screen->left_ch);
     ncm_sample_buffer_destroy(&screen->rendered_samples);
     ncm_sample_buffer_destroy(&screen->buffered_samples);
     ncm_sample_buffer_destroy(&screen->incoming_samples);
@@ -1100,8 +1100,8 @@ visualizer_screen_init_visualization(VisualizerScreen *screen) {
     ncm_sample_buffer_resize(&screen->incoming_samples, incoming_cap);
     ncm_sample_buffer_resize(&screen->buffered_samples, incoming_cap);
     ncm_sample_buffer_resize(&screen->rendered_samples, rendered_cap);
-    ncm_sample_buffer_resize(&screen->left_channel, channel_cap);
-    ncm_sample_buffer_resize(&screen->right_channel, channel_cap);
+    ncm_sample_buffer_resize(&screen->left_ch, channel_cap);
+    ncm_sample_buffer_resize(&screen->right_ch, channel_cap);
     memset64(screen->rendered_samples.data, 0,
              rendered_cap*SIZEOF(*screen->rendered_samples.data));
     return;
@@ -1112,8 +1112,8 @@ visualizer_screen_reset_audio_state(VisualizerScreen *screen) {
     screen->incoming_samples.len = 0;
     screen->buffered_samples.len = 0;
     screen->rendered_samples.len = 0;
-    screen->left_channel.len = 0;
-    screen->right_channel.len = 0;
+    screen->left_ch.len = 0;
+    screen->right_ch.len = 0;
 
     if (screen->rendered_samples.cap > 0) {
         memset64(screen->rendered_samples.data, 0, screen->rendered_samples.cap
@@ -1234,22 +1234,20 @@ visualizer_screen_split_stereo(VisualizerScreen *screen, int16 *samples,
                                int32 samples_len) {
     int32 pairs;
 
-    screen->left_channel.len = 0;
-    screen->right_channel.len = 0;
+    screen->left_ch.len = 0;
+    screen->right_ch.len = 0;
     pairs = samples_len / 2;
-    if (pairs > screen->left_channel.cap) {
-        ncm_sample_buffer_resize(&screen->left_channel, pairs);
+    if (pairs > screen->left_ch.cap) {
+        ncm_sample_buffer_resize(&screen->left_ch, pairs);
     }
-    if (pairs > screen->right_channel.cap) {
-        ncm_sample_buffer_resize(&screen->right_channel, pairs);
+    if (pairs > screen->right_ch.cap) {
+        ncm_sample_buffer_resize(&screen->right_ch, pairs);
     }
     for (int32 i = 0; i < pairs; i += 1) {
-        screen->left_channel.data[screen->left_channel.len] =
-            samples[i*2];
-        screen->left_channel.len += 1;
-        screen->right_channel.data[screen->right_channel.len] =
-            samples[i*2 + 1];
-        screen->right_channel.len += 1;
+        screen->left_ch.data[screen->left_ch.len] = samples[i*2];
+        screen->left_ch.len += 1;
+        screen->right_ch.data[screen->right_ch.len] = samples[i*2 + 1];
+        screen->right_ch.len += 1;
     }
     return pairs;
 }
@@ -1778,27 +1776,27 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
         half_height = height / 2;
         switch (screen->visualization_type) {
         case VISUALIZER_WAVE:
-            visualizer_draw_wave(screen, screen->left_channel.data,
+            visualizer_draw_wave(screen, screen->left_ch.data,
                                  channel_samples, 0, half_height);
-            visualizer_draw_wave(screen, screen->right_channel.data,
+            visualizer_draw_wave(screen, screen->right_ch.data,
                                  channel_samples, half_height,
                                  height - half_height);
             break;
         case VISUALIZER_WAVE_FILLED:
             visualizer_draw_wave_filled(
-                screen, screen->left_channel.data, channel_samples,
+                screen, screen->left_ch.data, channel_samples,
                 0, half_height);
             visualizer_draw_wave_filled(
-                screen, screen->right_channel.data, channel_samples,
+                screen, screen->right_ch.data, channel_samples,
                 half_height, height - half_height);
             break;
 #if defined(HAVE_FFTW3_H)
         case VISUALIZER_FREQUENCY:
             visualizer_draw_frequency(
-                screen, screen->left_channel.data, channel_samples,
+                screen, screen->left_ch.data, channel_samples,
                 0, half_height);
             visualizer_draw_frequency(
-                screen, screen->right_channel.data, channel_samples,
+                screen, screen->right_ch.data, channel_samples,
                 half_height, height - half_height);
             break;
 #endif
@@ -1823,18 +1821,18 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
                 int32 x;
                 int32 y;
 
-                if (screen->left_channel.data[i] < 0) {
-                    x = (int32)((double)screen->left_channel.data[i]
+                if (screen->left_ch.data[i] < 0) {
+                    x = (int32)((double)screen->left_ch.data[i]
                                 /32768.0*(double)left_half_width);
                 } else {
-                    x = (int32)((double)screen->left_channel.data[i]
+                    x = (int32)((double)screen->left_ch.data[i]
                                 /32768.0*(double)right_half_width);
                 }
-                if (screen->right_channel.data[i] < 0) {
-                    y = (int32)((double)screen->right_channel.data[i]
+                if (screen->right_ch.data[i] < 0) {
+                    y = (int32)((double)screen->right_ch.data[i]
                                 /32768.0*(double)top_half_height);
                 } else {
-                    y = (int32)((double)screen->right_channel.data[i]
+                    y = (int32)((double)screen->right_ch.data[i]
                                 /32768.0*(double)bottom_half_height);
                 }
                 distance = sqrt((double)x*(double)x + 4.0*(double)y*(double)y);
