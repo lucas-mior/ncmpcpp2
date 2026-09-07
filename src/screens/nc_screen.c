@@ -389,8 +389,7 @@ nc_screen_user(NcScreen *screen) {
 }
 
 static int32
-nc_screen_registry_index_of(NcScreenRegistry *registry,
-                            NcScreen *screen) {
+nc_screen_registry_index_of(NcScreenRegistry *registry, NcScreen *screen) {
     ASSERT(screen != NULL);
     for (int32 i = 0; i < registry->screens_len; i += 1) {
         if (registry->screens[i] == screen) {
