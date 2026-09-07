@@ -93,8 +93,7 @@ static LyricsJob *lyrics_job_create(LyricsScreen *screen,
                                     bool background);
 static void lyrics_append_fetching(NcBuffer *buffer,
                                    NcmLyricsFetcherDef *fetcher);
-static void lyrics_job_append_fetch_error(LyricsJob *job,
-                                          NcmLyricsResult *result);
+static void lyrics_job_append_fetch_error(LyricsJob *, NcmLyricsResult *);
 static bool lyrics_job_is_current(LyricsJob *job);
 static int32 lyrics_job_run(void *user, NcmError *ncm_error);
 static void lyrics_job_complete(int32 status, NcmError *ncm_error, void *user);
