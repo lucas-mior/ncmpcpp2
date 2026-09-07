@@ -509,8 +509,7 @@ NcScreen *nc_screen_switcher_current(void);
 NcScreen *nc_screen_switcher_previous(void);
 bool nc_screen_switcher_is_current(NcScreen *screen);
 bool nc_screen_switcher_is_visible(NcScreen *screen);
-int32 nc_screen_switcher_switch_to(NcScreen *screen,
-                                   bool has_to_be_resized);
+int32 nc_screen_switcher_switch_to(NcScreen *screen, bool has_to_be_resized);
 void nc_screen_switcher_finish_switch(NcScreen *screen);
 void nc_screen_switcher_get_resize_params(NcScreen *screen,
                                           int32 *x_offset, int32 *width,
