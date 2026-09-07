@@ -1669,10 +1669,8 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                     if (x_next == x_prev) {
                         h = h_next;
                     } else {
-                        slope = (h_next - h_prev)
-                                /(x_next - x_prev);
-                        h = h_prev
-                            + slope*((double)x - x_prev);
+                        slope = (h_next - h_prev) /(x_next - x_prev);
+                        h = h_prev + slope*((double)x - x_prev);
                     }
                 } else {
                     h = h_next;
