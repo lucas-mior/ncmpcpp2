@@ -390,7 +390,6 @@ visualizer_system_open_udp(void *user, char *location, int32 location_len,
                            char *port, int32 port_len) {
     struct addrinfo hints = {0};
     struct addrinfo *addresses;
-    struct addrinfo *address;
     int32 error_code;
     int32 status;
     int32 fd;
@@ -420,7 +419,9 @@ visualizer_system_open_udp(void *user, char *location, int32 location_len,
 
     status = -NCM_ERROR_NETWORK;
     fd = -1;
-    for (address = addresses; address; address = address->ai_next) {
+    for (struct addrinfo *address = addresses;
+         address;
+         address = address->ai_next) {
         int32 socket_flags;
 
         fd = socket(address->ai_family, address->ai_socktype,
