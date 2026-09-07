@@ -351,7 +351,7 @@ enum {
 typedef struct NcScreen NcScreen;
 typedef struct NcScreenRegistry NcScreenRegistry;
 typedef struct NcScreenResizeParams NcScreenResizeParams;
-typedef void NcScreenEachCallback(NcScreen *, void *user);
+typedef void NcScreenEachCallback(NcScreen *, void *);
 
 typedef struct NcScreenResizeParams {
     int32 x_offset;
@@ -362,7 +362,7 @@ typedef struct NcScreenCallbacks {
     NcWindow *(*active_window)(NcScreen *);
     void (*refresh)(NcScreen *);
     void (*refresh_window)(NcScreen *);
-    void (*scroll)(NcScreen *, enum NcScroll where);
+    void (*scroll)(NcScreen *, enum NcScroll);
     void (*list_change_finished)(NcScreen *);
     bool (*can_run_current)(NcScreen *);
     int32 (*run_current)(NcScreen *);
@@ -371,7 +371,7 @@ typedef struct NcScreenCallbacks {
     int32 (*window_timeout)(NcScreen *);
     char *(*title)(NcScreen *);
     void (*update)(NcScreen *);
-    void (*mouse_button_pressed)(NcScreen *, MEVENT event);
+    void (*mouse_button_pressed)(NcScreen *, MEVENT);
     bool (*is_lockable)(NcScreen *);
     bool (*is_mergable)(NcScreen *);
     void (*destroy)(NcScreen *);
@@ -381,7 +381,7 @@ typedef struct NcScreenOps {
     NcWindow *(*active_window)(NcScreen *);
     void (*refresh)(NcScreen *);
     void (*refresh_window)(NcScreen *);
-    void (*scroll)(NcScreen *, enum NcScroll where);
+    void (*scroll)(NcScreen *, enum NcScroll);
     void (*list_change_finished)(NcScreen *);
     bool (*can_run_current)(NcScreen *);
     int32 (*run_current)(NcScreen *);
@@ -390,7 +390,7 @@ typedef struct NcScreenOps {
     int32 (*window_timeout_callback)(NcScreen *);
     char *(*title)(NcScreen *);
     void (*update)(NcScreen *);
-    void (*mouse_button_pressed)(NcScreen *, MEVENT event);
+    void (*mouse_button_pressed)(NcScreen *, MEVENT);
     bool (*is_lockable_callback)(NcScreen *);
     bool (*is_mergable_callback)(NcScreen *);
     void (*destroy)(NcScreen *);
@@ -422,14 +422,12 @@ struct NcScreenRegistry {
     int32 screens_len;
 };
 
-void nc_screen_init(NcScreen *, NcScreenCallbacks callbacks,
-                    void *user, int32 type);
-void nc_screen_init_ops(NcScreen *, NcScreenOps ops,
-                        void *user, int32 type);
+void nc_screen_init(NcScreen *, NcScreenCallbacks, void *, int32);
+void nc_screen_init_ops(NcScreen *, NcScreenOps, void *, int32);
 NcWindow *nc_screen_default_active_window(NcScreen *);
 void nc_screen_noop_refresh(NcScreen *);
 void nc_screen_noop_refresh_window(NcScreen *);
-void nc_screen_noop_scroll(NcScreen *, enum NcScroll where);
+void nc_screen_noop_scroll(NcScreen *, enum NcScroll);
 void nc_screen_noop_list_change_finished(NcScreen *);
 bool nc_screen_default_can_run_current(NcScreen *);
 int32 nc_screen_default_run_current(NcScreen *);
@@ -437,12 +435,12 @@ void nc_screen_noop_switch_to(NcScreen *);
 void nc_screen_noop_resize(NcScreen *);
 char *nc_screen_default_title(NcScreen *);
 void nc_screen_noop_update(NcScreen *);
-void nc_screen_noop_mouse_button_pressed(NcScreen *, MEVENT event);
+void nc_screen_noop_mouse_button_pressed(NcScreen *, MEVENT);
 void nc_screen_noop_destroy(NcScreen *);
 NcWindow *nc_screen_active_window(NcScreen *);
 void nc_screen_refresh(NcScreen *);
 void nc_screen_refresh_window(NcScreen *);
-void nc_screen_scroll(NcScreen *, enum NcScroll where);
+void nc_screen_scroll(NcScreen *, enum NcScroll);
 void nc_screen_finish_list_change(NcScreen *);
 bool nc_screen_can_run_current(NcScreen *);
 int32 nc_screen_run_current(NcScreen *);
@@ -451,42 +449,41 @@ void nc_screen_resize(NcScreen *);
 int32 nc_screen_window_timeout(NcScreen *);
 char *nc_screen_title(NcScreen *);
 int32 nc_screen_type(NcScreen *);
-void nc_screen_mouse_button_pressed(NcScreen *, MEVENT event);
+void nc_screen_mouse_button_pressed(NcScreen *, MEVENT);
 bool nc_screen_is_lockable(NcScreen *);
 bool nc_screen_is_mergable(NcScreen *);
-void nc_screen_set_has_to_be_resized(NcScreen *, bool has_to_be_resized);
-void nc_screen_set_has_to_be_updated(NcScreen *, bool has_to_be_updated);
+void nc_screen_set_has_to_be_resized(NcScreen *, bool);
+void nc_screen_set_has_to_be_updated(NcScreen *, bool);
 void nc_screen_request_resize(NcScreen *);
 void nc_screen_request_update(NcScreen *);
 void nc_screen_clear_resize_request(NcScreen *);
 void nc_screen_clear_update_request(NcScreen *);
 NcScreenResizeParams nc_screen_resize_params(NcScreen *);
 void nc_screen_get_resize_params(NcScreen *, int32 *x_offset, int32 *width);
-void nc_screen_draw_vertical_separator(int32 x);
+void nc_screen_draw_vertical_separator(int32);
 void *nc_screen_user(NcScreen *);
 
 int32 nc_screen_registry_register(NcScreenRegistry *, NcScreen *);
 int32 nc_screen_registry_unregister(NcScreenRegistry *, NcScreen *);
-NcScreen *nc_screen_registry_find(NcScreenRegistry *, int32 type);
+NcScreen *nc_screen_registry_find(NcScreenRegistry *, int32);
 NcScreen *nc_screen_registry_current(NcScreenRegistry *);
 NcScreen *nc_screen_registry_previous(NcScreenRegistry *);
 NcScreen *nc_screen_registry_locked(NcScreenRegistry *);
 bool nc_screen_registry_is_registered(NcScreenRegistry *, NcScreen *);
 bool nc_screen_registry_is_current(NcScreenRegistry *, NcScreen *);
-void nc_screen_registry_request_resize_current(NcScreenRegistry *registry);
-void nc_screen_registry_request_update_current(NcScreenRegistry *registry);
+void nc_screen_registry_request_resize_current(NcScreenRegistry *);
+void nc_screen_registry_request_update_current(NcScreenRegistry *);
 NcScreenResizeParams nc_screen_registry_resize_params(NcScreenRegistry *,
-                                                      NcScreen *,
-                                                      bool adjust_locked);
+                                                      NcScreen *, bool);
 int32 nc_screen_registry_switch_to(NcScreenRegistry *, NcScreen *);
-int32 nc_screen_registry_lock_current(NcScreenRegistry *registry);
-void nc_screen_registry_unlock(NcScreenRegistry *registry);
+int32 nc_screen_registry_lock_current(NcScreenRegistry *);
+void nc_screen_registry_unlock(NcScreenRegistry *);
 bool nc_screen_registry_is_visible(NcScreenRegistry *, NcScreen *);
-void nc_screen_registry_each_visible(NcScreenRegistry *registry,
-                                     NcScreenEachCallback *, void *user);
-void nc_screen_registry_update_visible(NcScreenRegistry *registry);
-void nc_screen_registry_resize_current(NcScreenRegistry *registry);
-void nc_screen_registry_resize_visible(NcScreenRegistry *registry);
+void nc_screen_registry_each_visible(NcScreenRegistry *, NcScreenEachCallback *,
+                                     void *);
+void nc_screen_registry_update_visible(NcScreenRegistry *);
+void nc_screen_registry_resize_current(NcScreenRegistry *);
+void nc_screen_registry_resize_visible(NcScreenRegistry *);
 
 /* screens/screen_type.h */
 #define ENUM_NAME ScreenType
@@ -495,24 +492,20 @@ void nc_screen_registry_resize_visible(NcScreenRegistry *registry);
 #define ENUM_FIELDS NCM_SCREEN_TYPE_ENUM_FIELDS
 #include "cbase/xenums.c"
 
-int32 screen_type_to_nc_type(enum ScreenType screen_type);
-enum ScreenType screen_type_from_nc_type(int32 nc_type);
-bool screen_type_is_startup(enum ScreenType screen_type);
-int32 screen_type_parse_startup(char *string, int32 string_len,
-                                enum ScreenType *screen_type);
-int32 screen_type_parse(char *string, int32 string_len,
-                        enum ScreenType *screen_type);
+int32 screen_type_to_nc_type(enum ScreenType);
+enum ScreenType screen_type_from_nc_type(int32);
+bool screen_type_is_startup(enum ScreenType);
+int32 screen_type_parse_startup(char *, int32, enum ScreenType *);
+int32 screen_type_parse(char *, int32, enum ScreenType *);
 
-/* screens/screen_switcher.h */
-NcScreen *nc_screen_switcher_current(void);
+/* screens/screen_switcher.h */ NcScreen *nc_screen_switcher_current(void);
 NcScreen *nc_screen_switcher_previous(void);
 bool nc_screen_switcher_is_current(NcScreen *);
 bool nc_screen_switcher_is_visible(NcScreen *);
-int32 nc_screen_switcher_switch_to(NcScreen *, bool has_to_be_resized);
+int32 nc_screen_switcher_switch_to(NcScreen *, bool);
 void nc_screen_switcher_finish_switch(NcScreen *);
-void nc_screen_switcher_get_resize_params(NcScreen *,
-                                          int32 *x_offset, int32 *width,
-                                          bool adjust_locked_screen);
+void nc_screen_switcher_get_resize_params(NcScreen *, int32 *x_offset,
+                                          int32 *width, bool);
 
 /* screens/nc_scrollpad_screen.h */
 typedef struct NcScrollpadScreen {
@@ -524,24 +517,18 @@ typedef struct NcScrollpadScreen {
     int32 height;
 } NcScrollpadScreen;
 
-void nc_scrollpad_screen_init(NcScrollpadScreen *,
-                              NcScreenOps callbacks, void *user,
+void nc_scrollpad_screen_init(NcScrollpadScreen *, NcScreenOps, void *,
                               int32 type, int32 start_x, int32 start_y,
                               int32 width, int32 height);
-void nc_scrollpad_screen_set_geometry(NcScrollpadScreen *,
-                                      int32 start_x, int32 start_y,
-                                      int32 width, int32 height);
-void nc_scrollpad_screen_set_main_area(NcScrollpadScreen *,
-                                       int32 start_x, int32 width,
-                                       int32 main_start_y,
+void nc_scrollpad_screen_set_geometry(NcScrollpadScreen *, int32 start_x,
+                                      int32 start_y, int32 width, int32 height);
+void nc_scrollpad_screen_set_main_area(NcScrollpadScreen *, int32 start_x,
+                                       int32 width, int32 main_start_y,
                                        int32 main_height);
-void nc_scrollpad_screen_set_centered_box(NcScrollpadScreen *,
-                                          int32 cols, int32 lines,
-                                          int32 main_start_y,
-                                          int32 main_height,
-                                          int32 width_num,
-                                          int32 width_den,
-                                          int32 height_num,
+void nc_scrollpad_screen_set_centered_box(NcScrollpadScreen *, int32 cols,
+                                          int32 lines, int32 main_start_y,
+                                          int32 main_height, int32 width_num,
+                                          int32 width_den, int32 height_num,
                                           int32 height_den);
 NcScreen *nc_scrollpad_screen_base(NcScrollpadScreen *);
 int32 nc_scrollpad_screen_start_x(NcScrollpadScreen *);
@@ -553,11 +540,11 @@ int32 nc_scrollpad_screen_height(NcScrollpadScreen *);
 typedef struct NcHelpScreen NcHelpScreen;
 
 typedef struct NcHelpHooks {
-    int32 (*render)(void *user, NcBuffer *buffer);
-    void (*switch_to)(void *user);
-    void (*resize_layout)(void *user, NcHelpScreen *screen);
-    void (*resize_background)(void *user);
-    void (*destroy)(void *user);
+    int32 (*render)(void *, NcBuffer *);
+    void (*switch_to)(void *);
+    void (*resize_layout)(void *, NcHelpScreen *);
+    void (*resize_background)(void *);
+    void (*destroy)(void *);
     void *user;
 } NcHelpHooks;
 
@@ -572,19 +559,13 @@ struct NcHelpScreen {
     int32 lines_scrolled;
 };
 
-void nc_help_screen_init(NcHelpScreen *,
-                         NcHelpHooks hooks,
-                         int32 start_x, int32 width,
-                         int32 main_start_y, int32 main_height,
-                         NcColor color, NcBorder border,
-                         int32 lines_scrolled);
-void nc_help_screen_set_geometry(NcHelpScreen *,
-                                 int32 start_x, int32 width,
-                                 int32 main_start_y,
-                                 int32 main_height);
+void nc_help_screen_init(NcHelpScreen *, NcHelpHooks, int32 start_x,
+                         int32 width, int32 main_start_y, int32 main_height,
+                         NcColor, NcBorder, int32 lines_scrolled);
+void nc_help_screen_set_geometry(NcHelpScreen *, int32 start_x, int32 width,
+                                 int32 main_start_y, int32 main_height);
 int32 nc_help_screen_reload(NcHelpScreen *);
-int32 nc_help_screen_find(NcHelpScreen *, char *pattern,
-                          int32 pattern_len, NcmError *ncm_error);
+int32 nc_help_screen_find(NcHelpScreen *, char *, int32, NcmError *);
 void nc_help_screen_clear_search(NcHelpScreen *);
 NcScreen *nc_help_screen_base(NcHelpScreen *);
 int32 nc_help_screen_start_x(NcHelpScreen *);
@@ -619,45 +600,33 @@ typedef struct LastfmScreen {
     bool initialized;
 } LastfmScreen;
 
-void nc_lastfm_screen_init(NcLastfmScreen *,
-                           NcScreenOps callbacks, void *user,
-                           int32 start_x, int32 width,
-                           int32 main_start_y, int32 main_height);
-void nc_lastfm_screen_set_geometry(NcLastfmScreen *,
-                                   int32 start_x, int32 width,
-                                   int32 main_start_y,
-                                   int32 main_height);
+void nc_lastfm_screen_init(NcLastfmScreen *, NcScreenOps, void *, int32 start_x,
+                           int32 width, int32 main_start_y, int32 main_height);
+void nc_lastfm_screen_set_geometry(NcLastfmScreen *, int32 start_x, int32 width,
+                                   int32 main_start_y, int32 main_height);
 NcScreen *nc_lastfm_screen_base(NcLastfmScreen *);
 int32 nc_lastfm_screen_start_x(NcLastfmScreen *);
 int32 nc_lastfm_screen_start_y(NcLastfmScreen *);
 int32 nc_lastfm_screen_width(NcLastfmScreen *);
 int32 nc_lastfm_screen_height(NcLastfmScreen *);
 
-void lastfm_screen_init(LastfmScreen *,
-                        int32 start_x, int32 width,
-                        int32 main_start_y, int32 main_height,
-                        NcColor color, NcBorder border,
-                        int32 lines_scrolled);
+void lastfm_screen_init(LastfmScreen *, int32 start_x, int32 width,
+                        int32 main_start_y, int32 main_height, NcColor,
+                        NcBorder, int32 lines_scrolled);
 void lastfm_screen_destroy(LastfmScreen *);
 NcScreen *lastfm_screen_base(LastfmScreen *);
 NcWindow *lastfm_screen_window(LastfmScreen *);
-void lastfm_screen_set_geometry(LastfmScreen *,
-                                int32 start_x, int32 width,
-                                int32 main_start_y,
-                                int32 main_height);
-int32 lastfm_screen_queue_artist_info(LastfmScreen *,
-                                      char *artist, int32 artist_len,
-                                      char *lang, int32 lang_len,
-                                      NcmError *ncm_error);
+void lastfm_screen_set_geometry(LastfmScreen *, int32 start_x, int32 width,
+                                int32 main_start_y, int32 main_height);
+int32 lastfm_screen_queue_artist_info(LastfmScreen *, char *artist,
+                                      int32 artist_len, char *lang,
+                                      int32 lang_len, NcmError *);
 int32 lastfm_screen_dispatch_jobs(LastfmScreen *);
 void lastfm_screen_update(LastfmScreen *);
 char *lastfm_screen_title(LastfmScreen *);
 int32 lastfm_screen_take_refresh_request(LastfmScreen *);
-int32 lastfm_buffer_find(NcBuffer *buffer, char *pattern,
-                         int32 pattern_len, NcmError *ncm_error);
-int32 lastfm_screen_find(LastfmScreen *,
-                         char *pattern, int32 pattern_len,
-                         NcmError *ncm_error);
+int32 lastfm_buffer_find(NcBuffer *, char *, int32, NcmError *);
+int32 lastfm_screen_find(LastfmScreen *, char *, int32, NcmError *);
 
 /* screens/nc_lyrics.h */
 #include "lyrics_fetcher.h"
@@ -709,12 +678,9 @@ typedef struct LyricsScreen {
     bool initialized;
 } LyricsScreen;
 
-void nc_lyrics_screen_init(NcLyricsScreen *,
-                           NcScreenOps callbacks, void *user,
-                           int32 start_x, int32 width,
-                           int32 main_start_y, int32 main_height);
-void nc_lyrics_screen_set_geometry(NcLyricsScreen *,
-                                   int32 start_x, int32 width,
+void nc_lyrics_screen_init(NcLyricsScreen *, NcScreenOps, void *, int32 start_x,
+                           int32 width, int32 main_start_y, int32 main_height);
+void nc_lyrics_screen_set_geometry(NcLyricsScreen *, int32 start_x, int32 width,
                                    int32 main_start_y, int32 main_height);
 NcScreen *nc_lyrics_screen_base(NcLyricsScreen *);
 int32 nc_lyrics_screen_start_x(NcLyricsScreen *);
@@ -725,81 +691,57 @@ void nc_lyrics_screen_request_refresh(NcLyricsScreen *);
 int32 nc_lyrics_screen_take_refresh_request(NcLyricsScreen *);
 void nc_lyrics_screen_reset_scroll_begin(NcLyricsScreen *);
 int32 nc_lyrics_screen_scroll_begin(NcLyricsScreen *);
-void nc_lyrics_screen_set_scroll_begin(NcLyricsScreen *,
-                                       int32 scroll_begin);
+void nc_lyrics_screen_set_scroll_begin(NcLyricsScreen *, int32);
 
-void lyrics_queued_song_destroy(LyricsQueuedSong *queued);
-void lyrics_queued_song_move(LyricsQueuedSong *dest,
-                             LyricsQueuedSong *source);
+void lyrics_queued_song_destroy(LyricsQueuedSong *);
+void lyrics_queued_song_move(LyricsQueuedSong *dest, LyricsQueuedSong *source);
 
-void lyrics_screen_init(LyricsScreen *,
-                        int32 start_x, int32 width,
-                        int32 main_start_y, int32 main_height,
-                        NcColor color, NcBorder border,
-                        int32 lines_scrolled);
+void lyrics_screen_init(LyricsScreen *, int32 start_x, int32 width,
+                        int32 main_start_y, int32 main_height, NcColor,
+                        NcBorder, int32 lines_scrolled);
 void lyrics_screen_destroy(LyricsScreen *);
 NcScreen *lyrics_screen_base(LyricsScreen *);
 NcWindow *lyrics_screen_window(LyricsScreen *);
-void lyrics_screen_set_geometry(LyricsScreen *,
-                                int32 start_x, int32 width,
-                                int32 main_start_y,
-                                int32 main_height);
-int32 lyrics_screen_build_filename(LyricsScreen *,
-                                  NcmSong *song,
-                                  char *music_dir,
-                                  int32 music_dir_len,
-                                  char *lyrics_dir,
-                                  int32 lyrics_dir_len,
-                                  bool store_in_song_dir,
-                                  bool win32_filename);
-int32 lyrics_screen_load_file(LyricsScreen *,
-                             char *filename, int32 filename_len,
-                             NcmError *ncm_error);
-int32 lyrics_screen_save_file(LyricsScreen *,
-                             char *filename, int32 filename_len,
-                             char *lyrics, int32 lyrics_len,
-                             NcmError *ncm_error);
-int32 lyrics_screen_fetch(LyricsScreen *,
-                         NcmSong *song,
-                         NcmLyricsFetcherDef *fetcher,
-                         NcmError *ncm_error);
-int32 lyrics_screen_fetch_in_background(LyricsScreen *,
-                                       NcmSong *song,
-                                       bool notify,
-                                       NcmError *ncm_error);
+void lyrics_screen_set_geometry(LyricsScreen *, int32 start_x, int32 width,
+                                int32 main_start_y, int32 main_height);
+int32 lyrics_screen_build_filename(LyricsScreen *, NcmSong *, char *music_dir,
+                                   int32 music_dir_len, char *lyrics_dir,
+                                   int32 lyrics_dir_len, bool store_in_song_dir,
+                                   bool win32_filename);
+int32 lyrics_screen_load_file(LyricsScreen *, char *, int32, NcmError *);
+int32 lyrics_screen_save_file(LyricsScreen *, char *filename,
+                              int32 filename_len, char *lyrics,
+                              int32 lyrics_len, NcmError *);
+int32 lyrics_screen_fetch(LyricsScreen *, NcmSong *, NcmLyricsFetcherDef *,
+                          NcmError *);
+int32 lyrics_screen_fetch_in_background(LyricsScreen *, NcmSong *, bool,
+                                        NcmError *);
 int32 lyrics_screen_dispatch_jobs(LyricsScreen *);
 void lyrics_screen_update(LyricsScreen *);
-void lyrics_screen_refetch_current(LyricsScreen *,
-                                   NcmError *ncm_error);
-NcmLyricsFetcherDef *lyrics_screen_toggle_fetcher(
-    LyricsScreen *screen, NcmLyricsFetcherRegistry *registry);
-int32 lyrics_screen_try_take_consumer_message(
-    LyricsScreen *screen, StrBuilder *message);
+void lyrics_screen_refetch_current(LyricsScreen *, NcmError *);
+NcmLyricsFetcherDef *lyrics_screen_toggle_fetcher(LyricsScreen *,
+                                                  NcmLyricsFetcherRegistry *);
+int32 lyrics_screen_try_take_consumer_message(LyricsScreen *, StrBuilder *);
 NcmSong *lyrics_screen_song(LyricsScreen *);
 StrBuilder *lyrics_screen_filename(LyricsScreen *);
 LyricsMode lyrics_screen_mode(LyricsScreen *);
 NcmLrcDocument *lyrics_screen_lrc(LyricsScreen *);
 int32 lyrics_screen_active_lrc_line(LyricsScreen *);
-int32 lyrics_buffer_find(NcBuffer *buffer, char *pattern,
-                         int32 pattern_len, NcmError *ncm_error);
-void lyrics_buffer_clear_sync_highlight(NcBuffer *buffer);
-void lyrics_buffer_highlight_sync_line(NcBuffer *buffer,
-                                       int32 start, int32 end);
-int32 lyrics_screen_find(LyricsScreen *,
-                         char *pattern, int32 pattern_len,
-                         NcmError *ncm_error);
+int32 lyrics_buffer_find(NcBuffer *, char *, int32, NcmError *);
+void lyrics_buffer_clear_sync_highlight(NcBuffer *);
+void lyrics_buffer_highlight_sync_line(NcBuffer *, int32 start, int32 end);
+int32 lyrics_screen_find(LyricsScreen *, char *, int32, NcmError *);
 
 /* screens/nc_outputs.h */
 typedef struct NcOutputsScreen NcOutputsScreen;
 
 typedef struct NcOutputsHooks {
-    void (*fetch_outputs)(void *user, NcOutputsScreen *screen);
-    int32 (*toggle_output)(void *user, int32 id, bool enabled,
-                             char *name, int32 name_len);
-    void (*switch_to)(void *user);
-    void (*resize_layout)(void *user, NcOutputsScreen *screen);
-    void (*resize_background)(void *user);
-    void (*destroy)(void *user);
+    void (*fetch_outputs)(void *, NcOutputsScreen *);
+    int32 (*toggle_output)(void *, int32 id, bool, char *, int32 name_len);
+    void (*switch_to)(void *);
+    void (*resize_layout)(void *, NcOutputsScreen *);
+    void (*resize_background)(void *);
+    void (*destroy)(void *);
     void *user;
 } NcOutputsHooks;
 
@@ -819,28 +761,18 @@ struct NcOutputsScreen {
     bool mouse_scroll_whole_page;
 };
 
-void nc_outputs_screen_init(NcOutputsScreen *,
-                            NcOutputsHooks hooks,
-                            int32 start_x, int32 width,
-                            int32 main_start_y, int32 main_height,
-                            NcColor color, NcBorder border,
-                            int32 lines_scrolled,
-                            bool mouse_scroll_whole_page);
-void nc_outputs_screen_set_geometry(NcOutputsScreen *,
-                                    int32 start_x, int32 width,
-                                    int32 main_start_y,
+void nc_outputs_screen_init(NcOutputsScreen *, NcOutputsHooks, int32 start_x,
+                            int32 width, int32 main_start_y, int32 main_height,
+                            NcColor, NcBorder, int32 lines_scrolled, bool);
+void nc_outputs_screen_set_geometry(NcOutputsScreen *, int32 start_x,
+                                    int32 width, int32 main_start_y,
                                     int32 main_height);
-void nc_outputs_screen_set_highlight_prefix(NcOutputsScreen *,
-                                            NcBuffer *buffer);
-void nc_outputs_screen_set_highlight_suffix(NcOutputsScreen *,
-                                            NcBuffer *buffer);
+void nc_outputs_screen_set_highlight_prefix(NcOutputsScreen *, NcBuffer *);
+void nc_outputs_screen_set_highlight_suffix(NcOutputsScreen *, NcBuffer *);
 void nc_outputs_screen_fetch_list(NcOutputsScreen *);
 void nc_outputs_screen_clear_outputs(NcOutputsScreen *);
-void nc_outputs_screen_add_output(NcOutputsScreen *,
-                                  int32 id,
-                                  char *name,
-                                  int32 name_len,
-                                  bool enabled);
+void nc_outputs_screen_add_output(NcOutputsScreen *, int32 id, char *,
+                                  int32 name_len, bool);
 int32 nc_outputs_screen_toggle_current(NcOutputsScreen *);
 NcScreen *nc_outputs_screen_base(NcOutputsScreen *);
 int32 nc_outputs_screen_start_x(NcOutputsScreen *);
@@ -852,10 +784,10 @@ int32 nc_outputs_screen_height(NcOutputsScreen *);
 typedef struct NcSongInfoScreen NcSongInfoScreen;
 
 typedef struct NcSongInfoHooks {
-    int32 (*render)(void *user, NcSongInfoScreen *screen, NcBuffer *buffer);
-    void (*switch_to)(void *user, NcSongInfoScreen *screen);
-    void (*resize_layout)(void *user, NcSongInfoScreen *screen);
-    void (*destroy)(void *user);
+    int32 (*render)(void *, NcSongInfoScreen *, NcBuffer *);
+    void (*switch_to)(void *, NcSongInfoScreen *);
+    void (*resize_layout)(void *, NcSongInfoScreen *);
+    void (*destroy)(void *);
     void *user;
 } NcSongInfoHooks;
 
@@ -869,15 +801,12 @@ struct NcSongInfoScreen {
     int32 lines_scrolled;
 };
 
-void nc_song_info_screen_init(NcSongInfoScreen *,
-                              NcSongInfoHooks hooks,
-                              int32 start_x, int32 width,
-                              int32 main_start_y, int32 main_height,
-                              NcColor color, NcBorder border,
+void nc_song_info_screen_init(NcSongInfoScreen *, NcSongInfoHooks,
+                              int32 start_x, int32 width, int32 main_start_y,
+                              int32 main_height, NcColor, NcBorder,
                               int32 lines_scrolled);
-void nc_song_info_screen_set_geometry(NcSongInfoScreen *,
-                                      int32 start_x, int32 width,
-                                      int32 main_start_y,
+void nc_song_info_screen_set_geometry(NcSongInfoScreen *, int32 start_x,
+                                      int32 width, int32 main_start_y,
                                       int32 main_height);
 int32 nc_song_info_screen_prepare_current(NcSongInfoScreen *);
 NcScreen *nc_song_info_screen_base(NcSongInfoScreen *);
@@ -888,13 +817,13 @@ int32 nc_song_info_screen_height(NcSongInfoScreen *);
 
 /* screens/nc_server_info.h */
 typedef struct NcServerInfoHooks {
-    void (*load_lists)(void *user);
-    int32 (*render)(void *user, NcBuffer *buffer);
-    void (*switch_to)(void *user);
-    void (*resize_layout)(void *user);
-    void (*resize_background)(void *user);
-    char *(*title)(void *user);
-    void (*destroy)(void *user);
+    void (*load_lists)(void *);
+    int32 (*render)(void *, NcBuffer *);
+    void (*switch_to)(void *);
+    void (*resize_layout)(void *);
+    void (*resize_background)(void *);
+    char *(*title)(void *);
+    void (*destroy)(void *);
     void *user;
 } NcServerInfoHooks;
 
@@ -906,15 +835,11 @@ typedef struct NcServerInfoScreen {
     NcServerInfoHooks hooks;
 } NcServerInfoScreen;
 
-void nc_server_info_screen_init(NcServerInfoScreen *,
-                                NcServerInfoHooks hooks,
-                                int32 cols, int32 lines,
-                                int32 main_start_y,
-                                int32 main_height,
-                                NcColor color, NcBorder border);
-void nc_server_info_screen_set_dimensions(NcServerInfoScreen *,
-                                          int32 cols, int32 lines,
-                                          int32 main_start_y,
+void nc_server_info_screen_init(NcServerInfoScreen *, NcServerInfoHooks,
+                                int32 cols, int32 lines, int32 main_start_y,
+                                int32 main_height, NcColor, NcBorder);
+void nc_server_info_screen_set_dimensions(NcServerInfoScreen *, int32 cols,
+                                          int32 lines, int32 main_start_y,
                                           int32 main_height);
 NcScreen *nc_server_info_screen_base(NcServerInfoScreen *);
 int32 nc_server_info_screen_width(NcServerInfoScreen *);
@@ -956,19 +881,15 @@ struct NcmMpdClient;
 struct NcmMpdOutputList;
 
 typedef struct VisualizerDataSourceHooks {
-    int32 (*open_fifo)(void *user, char *location, int32 location_len);
-    int32 (*open_udp)(void *user, char *location, int32 location_len,
-                      char *port, int32 port_len);
+    int32 (*open_fifo)(void *, char *, int32);
+    int32 (*open_udp)(void *, char *location, int32 location_len, char *port,
+                      int32 port_len);
     int32 (*read_source)(void *user, int32 fd, void *buffer, int32 buffer_size);
-    void (*close_source)(void *user, int32 fd);
-    int32 (*get_outputs)(void *user,
-                         struct NcmMpdOutputList *outputs,
-                         struct NcmError *ncm_error);
-    int32 (*disable_output)(void *user, int32 id,
-                            struct NcmError *ncm_error);
-    int32 (*enable_output)(void *user, int32 id,
-                           struct NcmError *ncm_error);
-    void (*sleep_microseconds)(void *user, int32 microseconds);
+    void (*close_source)(void *, int32);
+    int32 (*get_outputs)(void *, struct NcmMpdOutputList *, struct NcmError *);
+    int32 (*disable_output)(void *, int32, struct NcmError *);
+    int32 (*enable_output)(void *, int32, struct NcmError *);
+    void (*sleep_microseconds)(void *, int32);
     void *user;
 } VisualizerDataSourceHooks;
 
@@ -1078,46 +999,34 @@ typedef struct VisualizerScreen {
     bool initialized;
 } VisualizerScreen;
 
-void visualizer_screen_init(VisualizerScreen *,
-                            int32 start_x, int32 start_y,
-                            int32 width, int32 height,
-                            NcColor color, NcBorder border,
-                            VisualizerScreenConfig *config);
+void visualizer_screen_init(VisualizerScreen *, int32 start_x, int32 start_y,
+                            int32 width, int32 height, NcColor, NcBorder,
+                            VisualizerScreenConfig *);
 void visualizer_screen_destroy(VisualizerScreen *);
 VisualizerDataSourceHooks visualizer_data_source_system_hooks(
-    struct NcmMpdClient *client);
-void visualizer_screen_init_data_source(VisualizerScreen *,
-                                        char *source_location,
-                                        int32 source_location_len);
+    struct NcmMpdClient *
+);
+void visualizer_screen_init_data_source(VisualizerScreen *, char *, int32);
 int32 visualizer_screen_open_data_source(VisualizerScreen *);
 void visualizer_screen_close_data_source(VisualizerScreen *);
 int32 visualizer_screen_drain_data_source(VisualizerScreen *);
 int32 visualizer_screen_find_output_id(VisualizerScreen *);
 NcScreen *visualizer_screen_base(VisualizerScreen *);
 NcWindow *visualizer_screen_window(VisualizerScreen *);
-void visualizer_screen_set_geometry(VisualizerScreen *,
-                                    int32 start_x, int32 start_y,
-                                    int32 width, int32 height);
+void visualizer_screen_set_geometry(VisualizerScreen *, int32 start_x,
+                                    int32 start_y, int32 width, int32 height);
 void visualizer_screen_init_visualization(VisualizerScreen *);
 void visualizer_screen_clear(VisualizerScreen *);
 void visualizer_screen_reset_audio_state(VisualizerScreen *);
 void visualizer_screen_reset_auto_scale_multiplier(VisualizerScreen *);
 void visualizer_screen_toggle_type(VisualizerScreen *);
 int32 visualizer_screen_requested_samples(VisualizerScreen *);
-void visualizer_screen_push_samples(VisualizerScreen *,
-                                    int16 *samples,
-                                    int32 samples_len);
-int32 visualizer_screen_take_render_samples(
-    VisualizerScreen *screen, int16 *dest, int32 dest_len);
-int32 visualizer_screen_split_stereo(VisualizerScreen *,
-                                     int16 *samples,
-                                     int32 samples_len);
-void visualizer_screen_apply_auto_scale(VisualizerScreen *,
-                                        int16 *samples,
-                                        int32 samples_len);
-void visualizer_screen_draw(VisualizerScreen *,
-                            int16 *samples, int32 samples_len);
-int16 visualizer_clamp_sample(int32 sample);
+void visualizer_screen_push_samples(VisualizerScreen *, int16 *, int32);
+int32 visualizer_screen_take_render_samples(VisualizerScreen *, int16 *, int32);
+int32 visualizer_screen_split_stereo(VisualizerScreen *, int16 *, int32);
+void visualizer_screen_apply_auto_scale(VisualizerScreen *, int16 *, int32);
+void visualizer_screen_draw(VisualizerScreen *, int16 *, int32);
+int16 visualizer_clamp_sample(int32);
 
 /* screens/nc_media_library.h */
 #define MEDIA_LIBRARY_FETCH_DELAY_MS 250
@@ -1193,16 +1102,13 @@ typedef struct MediaLibraryColumnState {
 } MediaLibraryColumnState;
 
 typedef struct MediaLibraryHooks {
-    int32 (*list_tags)(void *user, enum mpd_tag_type tag_type,
-                       NcmStringViewList *tags, NcmError *ncm_error);
-    int32 (*list_all_songs)(void *user, NcmMpdSongList *songs,
-                            NcmError *ncm_error);
-    int32 (*search_songs)(void *user,
-                          MediaLibrarySongQuery *query,
-                          NcmMpdSongList *songs, NcmError *ncm_error);
-    int32 (*add_songs)(void *user, NcmSongArray *songs, bool play,
-                       NcmError *ncm_error);
-    void (*destroy)(void *user);
+    int32 (*list_tags)(void *, enum mpd_tag_type, NcmStringViewList *,
+                       NcmError *);
+    int32 (*list_all_songs)(void *, NcmMpdSongList *, NcmError *);
+    int32 (*search_songs)(void *, MediaLibrarySongQuery *, NcmMpdSongList *,
+                          NcmError *);
+    int32 (*add_songs)(void *, NcmSongArray *, bool, NcmError *);
+    void (*destroy)(void *);
     void *user;
 } MediaLibraryHooks;
 
@@ -1244,135 +1150,107 @@ typedef struct MediaLibraryScreen {
     bool registered;
 } MediaLibraryScreen;
 
-MediaLibraryHooks media_library_mpd_hooks(
-    NcmMpdClient *client);
-void media_library_screen_init(MediaLibraryScreen *,
-                               MediaLibraryHooks hooks,
-                               int32 start_x, int32 width,
-                               int32 main_start_y,
-                               int32 main_height, NcColor color,
-                               NcBorder border);
+MediaLibraryHooks media_library_mpd_hooks(NcmMpdClient *);
+void media_library_screen_init(MediaLibraryScreen *, MediaLibraryHooks,
+                               int32 start_x, int32 width, int32 main_start_y,
+                               int32 main_height, NcColor, NcBorder);
 void media_library_screen_destroy(MediaLibraryScreen *);
 NcScreen *media_library_screen_base(MediaLibraryScreen *);
-NcMenu *media_library_screen_active_menu(
-    MediaLibraryScreen *screen);
-NcWindow *media_library_screen_active_window(
-    MediaLibraryScreen *screen);
-void media_library_screen_set_geometry(
-    MediaLibraryScreen *screen, int32 start_x, int32 width,
-    int32 main_start_y, int32 main_height);
+NcMenu *media_library_screen_active_menu(MediaLibraryScreen *);
+NcWindow *media_library_screen_active_window(MediaLibraryScreen *);
+void media_library_screen_set_geometry(MediaLibraryScreen *, int32 start_x,
+                                       int32 width, int32 main_start_y,
+                                       int32 main_height);
 
 int32 media_library_screen_column_count(MediaLibraryScreen *);
-int32 media_library_screen_set_mode(MediaLibraryScreen *,
-                                   enum MediaLibraryMode mode);
+int32 media_library_screen_set_mode(
+    MediaLibraryScreen *, enum MediaLibraryMode
+);
 
-int32 media_library_screen_toggle_mode(
-    MediaLibraryScreen *screen, enum MediaLibraryMode *mode);
+int32 media_library_screen_toggle_mode(MediaLibraryScreen *,
+                                       enum MediaLibraryMode *);
 enum MediaLibraryColumn media_library_screen_active_column(
-    MediaLibraryScreen *screen);
-bool media_library_screen_has_available_item(
-    MediaLibraryScreen *screen);
-int32 media_library_screen_set_active_column(
-    MediaLibraryScreen *screen,
-    enum MediaLibraryColumn column);
-bool media_library_screen_column_is_visible(
-    MediaLibraryScreen *screen,
-    enum MediaLibraryColumn column);
+    MediaLibraryScreen *
+);
+bool media_library_screen_has_available_item(MediaLibraryScreen *);
+int32 media_library_screen_set_active_column(MediaLibraryScreen *,
+                                             enum MediaLibraryColumn);
+bool media_library_screen_column_is_visible(MediaLibraryScreen *,
+                                            enum MediaLibraryColumn);
 MediaLibraryColumnState *media_library_screen_column_state(
-    MediaLibraryScreen *screen,
-    enum MediaLibraryColumn column);
-StrBuilder *media_library_screen_active_filter_constraint(
-    MediaLibraryScreen *screen);
-StrBuilder *media_library_screen_active_search_constraint(
-    MediaLibraryScreen *screen);
-NcMediaLibraryTagRow *media_library_screen_current_tag(
-    MediaLibraryScreen *screen);
+    MediaLibraryScreen *, enum MediaLibraryColumn
+);
+StrBuilder *media_library_screen_active_filter_constraint(MediaLibraryScreen *);
+StrBuilder *media_library_screen_active_search_constraint(MediaLibraryScreen *);
+NcMediaLibraryTagRow *media_library_screen_current_tag(MediaLibraryScreen *);
 NcMediaLibraryAlbumRow *media_library_screen_current_album(
-    MediaLibraryScreen *screen);
+    MediaLibraryScreen *
+);
 
-bool media_library_screen_has_current_primary_tag_value(
-    MediaLibraryScreen *screen, char **value, int32 *value_len);
-bool media_library_screen_has_current_album_value(
-    MediaLibraryScreen *screen, char **album, int32 *album_len);
-void media_library_screen_format_tag_row(
-    MediaLibraryScreen *screen, NcMediaLibraryTagRow *row,
-    StrBuilder *output);
-void media_library_screen_format_album_row(
-    MediaLibraryScreen *screen, NcMediaLibraryAlbumRow *row,
-    StrBuilder *output);
-void media_library_screen_format_song_row(
-    MediaLibraryScreen *screen, NcmSong *song, NcBuffer *output);
+bool media_library_screen_has_current_primary_tag_value(MediaLibraryScreen *,
+                                                        char **, int32 *);
+bool media_library_screen_has_current_album_value(MediaLibraryScreen *, char **,
+                                                  int32 *);
+void media_library_screen_format_tag_row(MediaLibraryScreen *,
+                                         NcMediaLibraryTagRow *, StrBuilder *);
+void media_library_screen_format_album_row(MediaLibraryScreen *,
+                                           NcMediaLibraryAlbumRow *,
+                                           StrBuilder *);
+void media_library_screen_format_song_row(MediaLibraryScreen *, NcmSong *,
+                                          NcBuffer *);
 
-int32 media_library_tags_from_strings(
-    MediaLibraryTagArray *tags, NcmStringViewList *strings);
-int32 media_library_tags_from_songs(
-    MediaLibraryTagArray *tags, NcmMpdSongList *songs,
-    enum mpd_tag_type primary_tag);
-int32 media_library_albums_from_songs(
-    MediaLibraryAlbumArray *albums, NcmMpdSongList *songs,
-    enum MediaLibraryMode mode, enum mpd_tag_type primary_tag,
-    char *selected_tag, int32 selected_tag_len);
-int32 media_library_songs_from_list(
-    NcmSongArray *songs, NcmMpdSongList *source);
+int32 media_library_tags_from_strings(MediaLibraryTagArray *,
+                                      NcmStringViewList *);
+int32 media_library_tags_from_songs(MediaLibraryTagArray *, NcmMpdSongList *,
+                                    enum mpd_tag_type);
+int32 media_library_albums_from_songs(MediaLibraryAlbumArray *,
+                                      NcmMpdSongList *, enum MediaLibraryMode,
+                                      enum mpd_tag_type, char *, int32);
+int32 media_library_songs_from_list(NcmSongArray *, NcmMpdSongList *);
 
-int32 media_library_screen_toggle_sort_mode(MediaLibraryScreen *,
-                                             bool *enabled);
+int32 media_library_screen_toggle_sort_mode(MediaLibraryScreen *, bool *);
 int32 media_library_screen_set_primary_tag_type(MediaLibraryScreen *,
-                                               enum mpd_tag_type tag_type);
+                                                enum mpd_tag_type);
 void media_library_screen_request_database_update(MediaLibraryScreen *);
 int32 media_library_screen_refresh_inactive_songs(MediaLibraryScreen *);
 
-bool media_library_screen_can_move_to_previous_column(
-    MediaLibraryScreen *screen);
-bool media_library_screen_can_move_to_next_column(
-    MediaLibraryScreen *screen);
+bool media_library_screen_can_move_to_previous_column(MediaLibraryScreen *);
+bool media_library_screen_can_move_to_next_column(MediaLibraryScreen *);
 void media_library_screen_previous_column(MediaLibraryScreen *);
 void media_library_screen_next_column(MediaLibraryScreen *);
 void media_library_screen_clear(MediaLibraryScreen *);
-int32 media_library_screen_current_song(MediaLibraryScreen *,
-                                       NcmSong *song);
-int32 media_library_screen_selected_songs(MediaLibraryScreen *,
-                                         NcmSongArray *songs);
+int32 media_library_screen_current_song(MediaLibraryScreen *, NcmSong *);
+int32 media_library_screen_selected_songs(MediaLibraryScreen *, NcmSongArray *);
 int32 media_library_screen_selected_songs_checked(MediaLibraryScreen *,
-                                                 NcmSongArray *songs,
-                                                 NcmError *ncm_error);
+                                                  NcmSongArray *, NcmError *);
 int32 media_library_screen_copy_visible_songs(MediaLibraryScreen *,
-                                             NcmSongArray *songs,
-                                             NcmError *ncm_error);
-int32 media_library_screen_apply_filter(MediaLibraryScreen *,
-                                        char *pattern, int32 pattern_len,
-                                        NcmError *ncm_error);
+                                              NcmSongArray *, NcmError *);
+int32 media_library_screen_apply_filter(MediaLibraryScreen *, char *, int32,
+                                        NcmError *);
 void media_library_screen_clear_filter(MediaLibraryScreen *);
-int32 media_library_screen_search(MediaLibraryScreen *,
-                                  char *pattern, int32 pattern_len,
+int32 media_library_screen_search(MediaLibraryScreen *, char *, int32,
                                   bool forward, bool wrap, bool skip_current,
-                                  NcmError *ncm_error);
+                                  NcmError *);
 void media_library_screen_clear_search(MediaLibraryScreen *);
 void media_library_screen_request_tags_update(MediaLibraryScreen *);
 void media_library_screen_request_albums_update(MediaLibraryScreen *);
 void media_library_screen_request_songs_update(MediaLibraryScreen *);
 void media_library_screen_finish_list_change(MediaLibraryScreen *);
-int32 media_library_screen_update(MediaLibraryScreen *,
-                                 NcmError *ncm_error);
+int32 media_library_screen_update(MediaLibraryScreen *, NcmError *);
 
-int32 media_library_screen_list_tags(MediaLibraryScreen *,
-                                       enum mpd_tag_type tag_type,
-                                       NcmStringViewList *tags,
-                                       NcmError *ncm_error);
+int32 media_library_screen_list_tags(MediaLibraryScreen *, enum mpd_tag_type,
+                                     NcmStringViewList *, NcmError *);
 int32 media_library_screen_list_all_songs(MediaLibraryScreen *,
-                                         NcmMpdSongList *songs,
-                                         NcmError *ncm_error);
+                                          NcmMpdSongList *, NcmError *);
 int32 media_library_screen_search_songs(MediaLibraryScreen *,
-                                       MediaLibrarySongQuery *query,
-                                       NcmMpdSongList *songs,
-                                       NcmError *ncm_error);
-int32 media_library_screen_add_songs(MediaLibraryScreen *,
-                                    NcmSongArray *songs, bool play,
-                                    NcmError *ncm_error);
-int32 media_library_screen_add_item_to_playlist(
-    MediaLibraryScreen *screen, bool play, NcmError *ncm_error);
-int32 media_library_screen_locate_song(MediaLibraryScreen *,
-                                      NcmSong *song, NcmError *ncm_error);
+                                        MediaLibrarySongQuery *,
+                                        NcmMpdSongList *, NcmError *);
+int32 media_library_screen_add_songs(MediaLibraryScreen *, NcmSongArray *, bool,
+                                     NcmError *);
+int32 media_library_screen_add_item_to_playlist(MediaLibraryScreen *, bool,
+                                                NcmError *);
+int32 media_library_screen_locate_song(MediaLibraryScreen *, NcmSong *,
+                                       NcmError *);
 
 /* screens/nc_playlist_editor.h */
 #define ENUM_NAME PlaylistEditorColumn
@@ -1454,73 +1332,57 @@ typedef struct PlaylistEditorScreen {
     bool registered;
 } PlaylistEditorScreen;
 
-void playlist_editor_screen_init(PlaylistEditorScreen *,
-                                 int32 start_x, int32 width,
-                                 int32 main_start_y,
-                                 int32 main_height,
-                                 NcColor color, NcBorder border);
+void playlist_editor_screen_init(PlaylistEditorScreen *, int32 start_x,
+                                 int32 width, int32 main_start_y,
+                                 int32 main_height, NcColor, NcBorder);
 void playlist_editor_screen_destroy(PlaylistEditorScreen *);
 NcScreen *playlist_editor_screen_base(PlaylistEditorScreen *);
 
-NcPlaylistEntryMenu *playlist_editor_screen_playlists(
-    PlaylistEditorScreen *screen);
-NcSongMenu *playlist_editor_screen_content(
-    PlaylistEditorScreen *screen);
-NcMenu *playlist_editor_screen_active_menu(
-    PlaylistEditorScreen *screen);
-NcWindow *playlist_editor_screen_active_window(
-    PlaylistEditorScreen *screen);
+NcPlaylistEntryMenu *playlist_editor_screen_playlists(PlaylistEditorScreen *);
+NcSongMenu *playlist_editor_screen_content(PlaylistEditorScreen *);
+NcMenu *playlist_editor_screen_active_menu(PlaylistEditorScreen *);
+NcWindow *playlist_editor_screen_active_window(PlaylistEditorScreen *);
 
-void playlist_editor_screen_set_geometry(
-    PlaylistEditorScreen *screen, int32 start_x, int32 width,
-    int32 main_start_y, int32 main_height);
-void playlist_editor_screen_set_column_ratio(
-    PlaylistEditorScreen *screen, int32 left, int32 right);
-bool playlist_editor_screen_can_move_to_previous_column(
-    PlaylistEditorScreen *screen);
-bool playlist_editor_screen_can_move_to_next_column(
-    PlaylistEditorScreen *screen);
-void playlist_editor_screen_previous_column(
-    PlaylistEditorScreen *screen);
-void playlist_editor_screen_next_column(
-    PlaylistEditorScreen *screen);
-int32 playlist_editor_screen_load_playlists(
-    PlaylistEditorScreen *screen, NcmMpdPlaylistList *playlists);
-int32 playlist_editor_screen_reload_playlists_from_mpd(
-    PlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmError *ncm_error);
-int32 playlist_editor_screen_load_content(
-    PlaylistEditorScreen *screen, NcmMpdSongList *songs);
+void playlist_editor_screen_set_geometry(PlaylistEditorScreen *, int32 start_x,
+                                         int32 width, int32 main_start_y,
+                                         int32 main_height);
+void playlist_editor_screen_set_column_ratio(PlaylistEditorScreen *, int32 left,
+                                             int32 right);
+bool playlist_editor_screen_can_move_to_previous_column(PlaylistEditorScreen *);
+bool playlist_editor_screen_can_move_to_next_column(PlaylistEditorScreen *);
+void playlist_editor_screen_previous_column(PlaylistEditorScreen *);
+void playlist_editor_screen_next_column(PlaylistEditorScreen *);
+int32 playlist_editor_screen_load_playlists(PlaylistEditorScreen *,
+                                            NcmMpdPlaylistList *);
+int32 playlist_editor_screen_reload_playlists_from_mpd(PlaylistEditorScreen *,
+                                                       NcmMpdClient *,
+                                                       NcmError *);
+int32 playlist_editor_screen_load_content(PlaylistEditorScreen *,
+                                          NcmMpdSongList *);
 int32 playlist_editor_screen_reload_content_from_mpd(
-    PlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmError *ncm_error);
-int32 playlist_editor_screen_locate_playlist(
-    PlaylistEditorScreen *screen, NcmMpdClient *client,
-    char *path, int32 path_len, NcmError *ncm_error);
-int32 playlist_editor_screen_locate_song(
-    PlaylistEditorScreen *screen, NcmMpdClient *client,
-    NcmSong *song, NcmError *ncm_error);
-int32 playlist_editor_screen_current_playlist(
-    PlaylistEditorScreen *screen, NcmPlaylist *playlist);
-int32 playlist_editor_screen_current_song(
-    PlaylistEditorScreen *screen, NcmSong *song);
-int32 playlist_editor_screen_current_content_song(
-    PlaylistEditorScreen *screen, NcmSong *song);
-int32 playlist_editor_screen_selected_playlist_count(
-    PlaylistEditorScreen *screen);
-int32 playlist_editor_screen_selected_songs(
-    PlaylistEditorScreen *screen, NcmSongArray *songs);
-int32 playlist_editor_screen_apply_active_filter(
-    PlaylistEditorScreen *screen, char *pattern, int32 pattern_len,
-    uint32 regex_flags, NcmError *ncm_error);
-int32 playlist_editor_screen_search_active(
-    PlaylistEditorScreen *screen, char *pattern, int32 pattern_len,
-    uint32 regex_flags, bool forward, bool wrap, bool skip_current,
-    NcmError *ncm_error);
-void playlist_editor_screen_request_playlists_update(
-    PlaylistEditorScreen *screen);
-void playlist_editor_screen_request_content_update(
-    PlaylistEditorScreen *screen);
+    PlaylistEditorScreen *, NcmMpdClient *, NcmError *
+);
+int32 playlist_editor_screen_locate_playlist(PlaylistEditorScreen *,
+                                             NcmMpdClient *, char *, int32,
+                                             NcmError *);
+int32 playlist_editor_screen_locate_song(PlaylistEditorScreen *, NcmMpdClient *,
+                                         NcmSong *, NcmError *);
+int32 playlist_editor_screen_current_playlist(PlaylistEditorScreen *,
+                                              NcmPlaylist *);
+int32 playlist_editor_screen_current_song(PlaylistEditorScreen *, NcmSong *);
+int32 playlist_editor_screen_current_content_song(PlaylistEditorScreen *,
+                                                  NcmSong *);
+int32 playlist_editor_screen_selected_playlist_count(PlaylistEditorScreen *);
+int32 playlist_editor_screen_selected_songs(PlaylistEditorScreen *,
+                                            NcmSongArray *);
+int32 playlist_editor_screen_apply_active_filter(PlaylistEditorScreen *, char *,
+                                                 int32, uint32, NcmError *);
+int32 playlist_editor_screen_search_active(PlaylistEditorScreen *, char *,
+                                           int32, uint32, bool forward,
+                                           bool wrap, bool skip_current,
+                                           NcmError *);
+void playlist_editor_screen_request_playlists_update(PlaylistEditorScreen *);
+void playlist_editor_screen_request_content_update(PlaylistEditorScreen *);
 
 /* screens/nc_playlist.h */
 typedef struct NcPlaylistScreen {
@@ -1557,32 +1419,25 @@ typedef struct PlaylistScreen {
     bool highlighting_requested;
 } PlaylistScreen;
 
-void nc_playlist_screen_init(NcPlaylistScreen *,
-                             NcScreenOps callbacks, void *user,
-                             NcMenu *menu, int32 start_x, int32 width,
-                             int32 main_start_y, int32 main_height);
-void nc_playlist_screen_set_geometry(NcPlaylistScreen *,
-                                     int32 start_x, int32 width,
-                                     int32 main_start_y,
+void nc_playlist_screen_init(NcPlaylistScreen *, NcScreenOps, void *, NcMenu *,
+                             int32 start_x, int32 width, int32 main_start_y,
+                             int32 main_height);
+void nc_playlist_screen_set_geometry(NcPlaylistScreen *, int32 start_x,
+                                     int32 width, int32 main_start_y,
                                      int32 main_height);
-void nc_playlist_screen_set_menu(NcPlaylistScreen *, NcMenu *menu);
-void nc_playlist_screen_set_mouse_config(NcPlaylistScreen *,
-                                         int32 lines_scrolled,
-                                         bool scroll_whole_page);
+void nc_playlist_screen_set_menu(NcPlaylistScreen *, NcMenu *);
+void nc_playlist_screen_set_mouse_config(NcPlaylistScreen *, int32, bool);
 NcScreen *nc_playlist_screen_base(NcPlaylistScreen *);
 NcMenu *nc_playlist_screen_menu(NcPlaylistScreen *);
 int32 nc_playlist_screen_height(NcPlaylistScreen *);
-void nc_playlist_screen_scroll(NcPlaylistScreen *,
-                               enum NcScroll where);
-int32 nc_playlist_screen_goto_y(NcPlaylistScreen *, int32 y);
+void nc_playlist_screen_scroll(NcPlaylistScreen *, enum NcScroll);
+int32 nc_playlist_screen_goto_y(NcPlaylistScreen *, int32);
 int32 nc_playlist_screen_activate_current(NcPlaylistScreen *);
-void nc_playlist_screen_mouse_button_pressed(NcPlaylistScreen *,
-                                             MEVENT event);
+void nc_playlist_screen_mouse_button_pressed(NcPlaylistScreen *, MEVENT);
 
-void playlist_screen_init(PlaylistScreen *,
-                          int32 start_x, int32 width,
-                          int32 main_start_y, int32 main_height,
-                          NcColor color, NcBorder border);
+void playlist_screen_init(PlaylistScreen *, int32 start_x, int32 width,
+                          int32 main_start_y, int32 main_height, NcColor,
+                          NcBorder);
 void playlist_screen_destroy(PlaylistScreen *);
 int32 playlist_screen_unregister(PlaylistScreen *);
 NcScreen *playlist_screen_base(PlaylistScreen *);
@@ -1591,53 +1446,33 @@ NcSongMenu *playlist_screen_song_menu(PlaylistScreen *);
 NcMenu *playlist_screen_menu(PlaylistScreen *);
 NcWindow *playlist_screen_window(PlaylistScreen *);
 void playlist_screen_update_column_title(PlaylistScreen *);
-void playlist_screen_set_geometry(PlaylistScreen *,
-                                  int32 start_x, int32 width,
-                                  int32 main_start_y,
-                                  int32 main_height);
-void playlist_screen_set_mouse_config(PlaylistScreen *,
-                                      int32 lines_scrolled,
-                                      bool scroll_whole_page);
-void playlist_screen_set_highlighting(PlaylistScreen *,
-                                      bool enabled);
+void playlist_screen_set_geometry(PlaylistScreen *, int32 start_x, int32 width,
+                                  int32 main_start_y, int32 main_height);
+void playlist_screen_set_mouse_config(PlaylistScreen *, int32, bool);
+void playlist_screen_set_highlighting(PlaylistScreen *, bool);
 bool playlist_screen_is_highlighting(PlaylistScreen *);
 void playlist_screen_request_highlighting(PlaylistScreen *);
 void playlist_screen_clear(PlaylistScreen *);
-int32 playlist_screen_reload_from_mpd(PlaylistScreen *,
-                                     NcmMpdClient *client,
-                                     int32 version,
-                                     int32 playlist_length,
-                                     NcmError *ncm_error);
+int32 playlist_screen_reload_from_mpd(PlaylistScreen *, NcmMpdClient *,
+                                      int32 version, int32 playlist_length,
+                                      NcmError *);
 int32 playlist_screen_song_count(PlaylistScreen *);
 bool playlist_screen_is_empty(PlaylistScreen *);
-int32 playlist_screen_current_song(PlaylistScreen *,
-                                   NcmSong *song);
+int32 playlist_screen_current_song(PlaylistScreen *, NcmSong *);
 int32 playlist_screen_update_current_mutable_song(PlaylistScreen *,
-                                                 NcmMutableSong *song);
-int32 playlist_screen_now_playing_song(PlaylistScreen *,
-                                       int32 position,
-                                       NcmSong *song);
-int32 playlist_screen_locate_position(PlaylistScreen *,
-                                     int32 position);
-int32 playlist_screen_selected_songs(PlaylistScreen *,
-                                    NcmSongArray *songs);
+                                                  NcmMutableSong *);
+int32 playlist_screen_now_playing_song(PlaylistScreen *, int32, NcmSong *);
+int32 playlist_screen_locate_position(PlaylistScreen *, int32);
+int32 playlist_screen_selected_songs(PlaylistScreen *, NcmSongArray *);
 bool playlist_screen_has_sortable_range(PlaylistScreen *);
-int32 playlist_screen_copy_sort_range(PlaylistScreen *,
-                                     NcmSongArray *songs,
-                                     int32 *start_position,
-                                     NcmError *ncm_error);
-int32 playlist_screen_apply_filter(PlaylistScreen *,
-                                   char *pattern, int32 pattern_len,
-                                   NcmError *ncm_error);
+int32 playlist_screen_copy_sort_range(PlaylistScreen *, NcmSongArray *, int32 *,
+                                      NcmError *);
+int32 playlist_screen_apply_filter(PlaylistScreen *, char *, int32, NcmError *);
 void playlist_screen_clear_filter(PlaylistScreen *);
-int32 playlist_screen_search(PlaylistScreen *,
-                             char *pattern, int32 pattern_len,
-                             bool forward, bool wrap,
-                             bool skip_current, NcmError *ncm_error);
-int32 playlist_screen_set_selected_priority(PlaylistScreen *,
-                                           NcmMpdClient *client,
-                                           int32 priority,
-                                           NcmError *ncm_error);
+int32 playlist_screen_search(PlaylistScreen *, char *, int32, bool forward,
+                             bool wrap, bool skip_current, NcmError *);
+int32 playlist_screen_set_selected_priority(PlaylistScreen *, NcmMpdClient *,
+                                            int32, NcmError *);
 void playlist_screen_reload_total_length(PlaylistScreen *);
 void playlist_screen_reload_remaining(PlaylistScreen *);
 
@@ -1677,17 +1512,14 @@ void playlist_screen_reload_remaining(PlaylistScreen *);
 
 typedef struct SearchEngineHooks {
     NcmMpdClient *client;
-    int32 (*list_database_songs)(void *user, NcmSongArray *songs,
-                                 NcmError *ncm_error);
-    int32 (*snapshot_playlist)(void *user, NcmSongArray *songs,
-                               NcmError *ncm_error);
-    enum SearchEnginePromptResult (*prompt_constraint)(
-        void *user, char *label, int32 label_len, StrBuilder *initial,
-        StrBuilder *result);
-    void (*status_message)(void *user, char *message, int32 message_len);
-    int32 (*add_song)(void *user, NcmSong *song, bool play,
-                      NcmError *ncm_error);
-    int32 (*format_song)(void *user, NcmSong *song, StrBuilder *text);
+    int32 (*list_database_songs)(void *, NcmSongArray *, NcmError *);
+    int32 (*snapshot_playlist)(void *, NcmSongArray *, NcmError *);
+    enum SearchEnginePromptResult (*prompt_constraint)(void *, char *, int32,
+                                                       StrBuilder *initial,
+                                                       StrBuilder *result);
+    void (*status_message)(void *, char *, int32);
+    int32 (*add_song)(void *, NcmSong *, bool, NcmError *);
+    int32 (*format_song)(void *, NcmSong *, StrBuilder *);
     void *user;
 } SearchEngineHooks;
 
@@ -1722,63 +1554,41 @@ typedef struct SearchEngineScreen {
     bool registered;
 } SearchEngineScreen;
 
-void search_engine_screen_init(SearchEngineScreen *,
-                               int32 start_x, int32 width,
-                               int32 main_start_y,
-                               int32 main_height, NcColor color,
-                               NcBorder border);
+void search_engine_screen_init(SearchEngineScreen *, int32 start_x, int32 width,
+                               int32 main_start_y, int32 main_height, NcColor,
+                               NcBorder);
 void search_engine_screen_destroy(SearchEngineScreen *);
 NcScreen *search_engine_screen_base(SearchEngineScreen *);
 NcMenu *search_engine_screen_menu(SearchEngineScreen *);
 NcWindow *search_engine_screen_window(SearchEngineScreen *);
-void search_engine_screen_set_mouse_config(
-    SearchEngineScreen *screen, int32 lines_scrolled,
-    bool whole_page);
-bool search_engine_screen_has_locked_constraints(
-    SearchEngineScreen *screen);
-int32 search_engine_screen_format_song_text(
-    SearchEngineScreen *screen, NcmSong *song, StrBuilder *text);
-void search_engine_screen_update_column_title(
-    SearchEngineScreen *screen);
-void search_engine_screen_prepare_static_rows(
-    SearchEngineScreen *screen);
-int32 search_engine_screen_update_search_source_row(
-    SearchEngineScreen *screen);
+void search_engine_screen_set_mouse_config(SearchEngineScreen *, int32, bool);
+bool search_engine_screen_has_locked_constraints(SearchEngineScreen *);
+int32 search_engine_screen_format_song_text(SearchEngineScreen *, NcmSong *,
+                                            StrBuilder *);
+void search_engine_screen_update_column_title(SearchEngineScreen *);
+void search_engine_screen_prepare_static_rows(SearchEngineScreen *);
+int32 search_engine_screen_update_search_source_row(SearchEngineScreen *);
 void search_engine_screen_reset(SearchEngineScreen *);
-int32 search_engine_screen_add_buffer_with_flags(
-    SearchEngineScreen *screen, NcBuffer *buffer, uint32 flags);
-int32 search_engine_screen_set_search_mode(
-    SearchEngineScreen *screen,
-    enum SearchEngineSearchMode mode);
-void search_engine_screen_set_search_source(
-    SearchEngineScreen *screen, bool search_in_database);
-void search_engine_screen_set_hooks(
-    SearchEngineScreen *screen, SearchEngineHooks hooks);
-void search_engine_screen_status_message(
-    SearchEngineScreen *screen, char *message, int32 message_len);
-bool search_engine_screen_can_run_current(
-    SearchEngineScreen *screen);
-int32 search_engine_screen_start_searching(
-    SearchEngineScreen *screen, NcmMpdClient *client,
-    NcmError *ncm_error);
-enum DisplayMode search_engine_screen_toggle_display_mode(
-    SearchEngineScreen *screen);
-bool search_engine_screen_can_search(
-    SearchEngineScreen *screen);
-int32 search_engine_screen_current_song(
-    SearchEngineScreen *screen, NcmSong *song);
-int32 search_engine_screen_selected_songs(
-    SearchEngineScreen *screen, NcmSongArray *songs);
-int32 search_engine_screen_apply_filter(
-    SearchEngineScreen *screen, char *pattern, int32 pattern_len,
-    NcmError *ncm_error);
-void search_engine_screen_clear_filter(
-    SearchEngineScreen *screen);
-int32 search_engine_screen_search(SearchEngineScreen *,
-                                  char *pattern, int32 pattern_len,
-                                  bool forward, bool wrap,
-                                  bool skip_current,
-                                  NcmError *ncm_error);
+int32 search_engine_screen_add_buffer_with_flags(SearchEngineScreen *,
+                                                 NcBuffer *, uint32);
+int32 search_engine_screen_set_search_mode(SearchEngineScreen *,
+                                           enum SearchEngineSearchMode);
+void search_engine_screen_set_search_source(SearchEngineScreen *, bool);
+void search_engine_screen_set_hooks(SearchEngineScreen *, SearchEngineHooks);
+void search_engine_screen_status_message(SearchEngineScreen *, char *, int32);
+bool search_engine_screen_can_run_current(SearchEngineScreen *);
+int32 search_engine_screen_start_searching(SearchEngineScreen *, NcmMpdClient *,
+                                           NcmError *);
+enum DisplayMode search_engine_screen_toggle_display_mode(SearchEngineScreen *);
+bool search_engine_screen_can_search(SearchEngineScreen *);
+int32 search_engine_screen_current_song(SearchEngineScreen *, NcmSong *);
+int32 search_engine_screen_selected_songs(SearchEngineScreen *, NcmSongArray *);
+int32 search_engine_screen_apply_filter(SearchEngineScreen *, char *, int32,
+                                        NcmError *);
+void search_engine_screen_clear_filter(SearchEngineScreen *);
+int32 search_engine_screen_search(SearchEngineScreen *, char *, int32,
+                                  bool forward, bool wrap, bool skip_current,
+                                  NcmError *);
 
 /* screens/nc_sel_items_adder.h */
 typedef struct PlaylistScreen PlaylistScreen;
@@ -1816,26 +1626,23 @@ typedef struct SelectedItemsAdderScreen {
     bool ready;
 } SelectedItemsAdderScreen;
 
-void selected_items_adder_screen_init(
-    SelectedItemsAdderScreen *screen, int32 start_x, int32 start_y,
-    int32 width, int32 height, NcColor color, NcBorder border);
+void selected_items_adder_screen_init(SelectedItemsAdderScreen *, int32 start_x,
+                                      int32 start_y, int32 width, int32 height,
+                                      NcColor, NcBorder);
 void selected_items_adder_screen_destroy(SelectedItemsAdderScreen *);
 NcScreen *selected_items_adder_screen_base(SelectedItemsAdderScreen *);
 NcMenu *selected_items_adder_screen_active_menu(SelectedItemsAdderScreen *);
 NcWindow *selected_items_adder_screen_active_window(SelectedItemsAdderScreen *);
 int32 selected_items_adder_screen_open(SelectedItemsAdderScreen *,
-                                       NcmSongArray *songs,
-                                       PlaylistScreen *playlist,
-                                       NcmMpdClient *client,
-                                       NcmError *ncm_error);
-int32 selected_items_adder_screen_run_current(
-    SelectedItemsAdderScreen *screen);
+                                       NcmSongArray *, PlaylistScreen *,
+                                       NcmMpdClient *, NcmError *);
+int32 selected_items_adder_screen_run_current(SelectedItemsAdderScreen *);
 int32 selected_items_adder_screen_return_to_previous(
-    SelectedItemsAdderScreen *screen);
-int32 selected_items_adder_screen_search(
-    SelectedItemsAdderScreen *screen, char *pattern,
-    int32 pattern_len, uint32 regex_flags, bool forward, bool wrap,
-    bool skip_current, NcmError *ncm_error);
+    SelectedItemsAdderScreen *
+);
+int32 selected_items_adder_screen_search(SelectedItemsAdderScreen *, char *,
+                                         int32, uint32, bool forward, bool wrap,
+                                         bool skip_current, NcmError *);
 
 /* screens/nc_sort_playlist.h */
 typedef struct NcmMpdClient NcmMpdClient;
@@ -1861,18 +1668,16 @@ typedef struct SortPlaylistDialog {
     bool ready;
 } SortPlaylistDialog;
 
-void sort_playlist_dialog_init(SortPlaylistDialog *dialog,
-                               int32 start_x, int32 start_y,
-                               int32 width, int32 height,
-                               NcColor color, NcBorder border);
-void sort_playlist_dialog_destroy(SortPlaylistDialog *dialog);
-NcScreen *sort_playlist_dialog_base(SortPlaylistDialog *dialog);
-NcEditorSortMenu *sort_playlist_dialog_menu(SortPlaylistDialog *dialog);
-int32 sort_playlist_dialog_open(
-    SortPlaylistDialog *dialog, PlaylistScreen *playlist,
-    NcmMpdClient *client, bool ignore_leading_the, NcmError *ncm_error);
-int32 sort_playlist_dialog_move_current_up(SortPlaylistDialog *dialog);
-int32 sort_playlist_dialog_move_current_down(SortPlaylistDialog *dialog);
+void sort_playlist_dialog_init(SortPlaylistDialog *, int32 start_x,
+                               int32 start_y, int32 width, int32 height,
+                               NcColor, NcBorder);
+void sort_playlist_dialog_destroy(SortPlaylistDialog *);
+NcScreen *sort_playlist_dialog_base(SortPlaylistDialog *);
+NcEditorSortMenu *sort_playlist_dialog_menu(SortPlaylistDialog *);
+int32 sort_playlist_dialog_open(SortPlaylistDialog *, PlaylistScreen *,
+                                NcmMpdClient *, bool, NcmError *);
+int32 sort_playlist_dialog_move_current_up(SortPlaylistDialog *);
+int32 sort_playlist_dialog_move_current_down(SortPlaylistDialog *);
 
 /* screens/nc_tag_editor.h */
 #define ENUM_NAME TagEditorColumn
@@ -1916,13 +1721,11 @@ int32 sort_playlist_dialog_move_current_down(SortPlaylistDialog *dialog);
 #include "cbase/xenums.c"
 
 typedef struct TagEditorHooks {
-    enum TagEditorPromptResult (*prompt)(
-        void *user, char *label, int32 label_len, NcmStringView initial,
-        StrBuilder *result);
-    bool (*confirm)(void *user, char *message, int32 message_len);
-    void (*status_message)(void *user, char *message, int32 message_len);
-    void (*update_directory)(void *user, char *directory,
-                             int32 directory_len);
+    enum TagEditorPromptResult (*prompt)(void *, char *, int32, NcmStringView,
+                                         StrBuilder *);
+    bool (*confirm)(void *, char *, int32);
+    void (*status_message)(void *, char *, int32);
+    void (*update_directory)(void *, char *, int32);
     void *user;
 } TagEditorHooks;
 
@@ -2007,91 +1810,74 @@ typedef struct TagEditorScreen {
     bool registered;
 } TagEditorScreen;
 
-void tag_editor_screen_init(TagEditorScreen *,
-                            int32 start_x, int32 width,
-                            int32 main_start_y,
-                            int32 main_height, NcColor color,
-                            NcBorder border);
+void tag_editor_screen_init(TagEditorScreen *, int32 start_x, int32 width,
+                            int32 main_start_y, int32 main_height, NcColor,
+                            NcBorder);
 void tag_editor_screen_destroy(TagEditorScreen *);
 NcScreen *tag_editor_screen_base(TagEditorScreen *);
 
-void tag_editor_screen_set_hooks(TagEditorScreen *,
-                                 TagEditorHooks hooks);
+void tag_editor_screen_set_hooks(TagEditorScreen *, TagEditorHooks);
 NcMenu *tag_editor_screen_active_menu(TagEditorScreen *);
 NcWindow *tag_editor_screen_active_window(TagEditorScreen *);
-void tag_editor_screen_set_geometry(TagEditorScreen *,
-                                    int32 start_x, int32 width,
-                                    int32 main_start_y,
+void tag_editor_screen_set_geometry(TagEditorScreen *, int32 start_x,
+                                    int32 width, int32 main_start_y,
                                     int32 main_height);
 void tag_editor_screen_clear_directories(TagEditorScreen *);
 void tag_editor_screen_clear_stale_tags(TagEditorScreen *);
 void tag_editor_screen_finish_directory_change(TagEditorScreen *);
-void tag_editor_screen_set_current_dir(TagEditorScreen *,
-                                       char *dir, int32 dir_len);
-int32 tag_editor_screen_current_dir(TagEditorScreen *,
-                                    NcmStringView *view);
-int32 tag_editor_screen_current_directory_path(
-    TagEditorScreen *screen, NcmStringView *view);
+void tag_editor_screen_set_current_dir(TagEditorScreen *, char *, int32);
+int32 tag_editor_screen_current_dir(TagEditorScreen *, NcmStringView *);
+int32 tag_editor_screen_current_directory_path(TagEditorScreen *,
+                                               NcmStringView *);
 int32 tag_editor_screen_enter_directory(TagEditorScreen *);
 int32 tag_editor_screen_go_to_parent(TagEditorScreen *);
-int32 tag_editor_screen_locate_song(TagEditorScreen *,
-                                    NcmSong *song);
-bool tag_editor_screen_rename_directory_available(
-    TagEditorScreen *screen, char *music_dir, int32 music_dir_len);
-int32 tag_editor_screen_rename_current_directory(
-    TagEditorScreen *screen, char *music_dir, int32 music_dir_len);
-void tag_editor_screen_add_directory(TagEditorScreen *,
-                                     char *label, int32 label_len,
-                                     char *path, int32 path_len);
-void tag_editor_screen_load_songs(TagEditorScreen *,
-                                  NcmSongArray *songs);
-void tag_editor_screen_add_mutable_song(TagEditorScreen *,
-                                        NcmMutableSong *song);
-int32 tag_editor_screen_selected_songs(TagEditorScreen *,
-                                       NcmSongArray *songs);
+int32 tag_editor_screen_locate_song(TagEditorScreen *, NcmSong *);
+bool tag_editor_screen_rename_directory_available(TagEditorScreen *, char *,
+                                                  int32);
+int32 tag_editor_screen_rename_current_directory(TagEditorScreen *, char *,
+                                                 int32);
+void tag_editor_screen_add_directory(
+    TagEditorScreen *, char *label, int32 label_len, char *path, int32 path_len
+);
+void tag_editor_screen_load_songs(TagEditorScreen *, NcmSongArray *);
+void tag_editor_screen_add_mutable_song(TagEditorScreen *, NcmMutableSong *);
+int32 tag_editor_screen_selected_songs(TagEditorScreen *, NcmSongArray *);
 bool tag_editor_screen_previous_column_available(TagEditorScreen *);
 bool tag_editor_screen_next_column_available(TagEditorScreen *);
 void tag_editor_screen_previous_column(TagEditorScreen *);
 void tag_editor_screen_next_column(TagEditorScreen *);
-int32 tag_editor_screen_apply_tag_to_selection(
-    TagEditorScreen *screen, enum NcmTagsField field, char *value,
-    int32 value_len, char *separator, int32 separator_len);
-int32 tag_editor_screen_number_tracks(TagEditorScreen *,
-                                      bool extended);
-void tag_editor_screen_capitalize_first_letters(
-    TagEditorScreen *screen);
+int32 tag_editor_screen_apply_tag_to_selection(TagEditorScreen *,
+                                               enum NcmTagsField, char *value,
+                                               int32 value_len, char *separator,
+                                               int32 separator_len);
+int32 tag_editor_screen_number_tracks(TagEditorScreen *, bool);
+void tag_editor_screen_capitalize_first_letters(TagEditorScreen *);
 void tag_editor_screen_lower_all_letters(TagEditorScreen *);
 void tag_editor_screen_clear_modifications(TagEditorScreen *);
-int32 tag_editor_screen_save_modified(TagEditorScreen *,
-                                      char *music_dir);
+int32 tag_editor_screen_save_modified(TagEditorScreen *, char *);
 bool tag_editor_screen_save_action_available(TagEditorScreen *);
-int32 tag_editor_screen_apply_directory_filter(
-    TagEditorScreen *screen, char *pattern, int32 pattern_len,
-    uint32 regex_flags, NcmError *ncm_error);
-int32 tag_editor_screen_apply_tag_filter(
-    TagEditorScreen *screen, char *pattern, int32 pattern_len,
-    uint32 regex_flags, NcmError *ncm_error);
-int32 tag_editor_screen_search(
-    TagEditorScreen *screen, char *pattern, int32 pattern_len,
-    bool forward, bool wrap, bool skip_current, NcmError *ncm_error);
-void tag_editor_screen_prepare_parser_rows(
-    TagEditorScreen *screen, enum TagEditorParserMode mode,
-    char *pattern, int32 pattern_len);
+int32 tag_editor_screen_apply_directory_filter(TagEditorScreen *, char *, int32,
+                                               uint32, NcmError *);
+int32 tag_editor_screen_apply_tag_filter(TagEditorScreen *, char *, int32,
+                                         uint32, NcmError *);
+int32 tag_editor_screen_search(TagEditorScreen *, char *, int32, bool forward,
+                               bool wrap, bool skip_current, NcmError *);
+void tag_editor_screen_prepare_parser_rows(TagEditorScreen *,
+                                           enum TagEditorParserMode, char *,
+                                           int32);
 void tag_editor_screen_show_parser_dialog(TagEditorScreen *);
-void tag_editor_screen_show_parser_actions(
-    TagEditorScreen *screen, enum TagEditorParserMode mode);
+void tag_editor_screen_show_parser_actions(TagEditorScreen *,
+                                           enum TagEditorParserMode);
 void tag_editor_screen_show_parser_legend(TagEditorScreen *);
 void tag_editor_screen_show_parser_preview(TagEditorScreen *);
 void tag_editor_screen_close_parser(TagEditorScreen *);
-int32 tag_editor_parse_filename(NcmMutableSong *song, char *mask,
-                                int32 mask_len, bool preview,
-                                StrBuilder *preview_buffer);
-int32 tag_editor_generate_filename(NcmMutableSong *song,
-                                   char *pattern, int32 pattern_len,
-                                   StrBuilder *filename);
-int32 tag_editor_song_display_value(NcmMutableSong *song,
-                                    enum NcmTagsField field,
-                                    StrBuilder *buffer);
+int32 tag_editor_parse_filename(NcmMutableSong *, char *, int32, bool,
+                                StrBuilder *);
+int32 tag_editor_generate_filename(
+    NcmMutableSong *, char *, int32, StrBuilder *
+);
+int32 tag_editor_song_display_value(NcmMutableSong *, enum NcmTagsField,
+                                    StrBuilder *);
 
 /* screens/nc_tiny_tag_editor.h */
 #define TINY_TAG_EDITOR_TAG_ROW(FIELD) \
@@ -2139,23 +1925,19 @@ enum TinyTagEditorRow {
 #include "cbase/xenums.c"
 
 typedef struct TinyTagEditorHooks {
-    enum TinyTagEditorPromptResult (*prompt)(
-        void *user, char *label, int32 label_len, NcmStringView initial,
-        StrBuilder *result);
-    void (*status_message)(void *user, char *message, int32 message_len);
-    int32 (*taglib_open)(void *user, NcmTaglibFile *file, char *path,
-                          int32 path_len);
-    int32 (*taglib_audio_properties)(
-        void *user, NcmTaglibFile *file,
-        NcmTaglibAudioProperties *properties);
-    bool (*taglib_file_can_set_extended_tags)(void *user, NcmTaglibFile *file);
-    void (*taglib_close)(void *user, NcmTaglibFile *file);
-    int32 (*write_song)(void *user, NcmMutableSong *song, char *music_dir);
-    void (*update_directory)(void *user, char *directory,
-                             int32 directory_len);
-    void (*update_playlist_song)(void *user, NcmMutableSong *song);
-    void (*request_browser_update)(void *user);
-    void (*switch_to_screen)(void *user, NcScreen *screen);
+    enum TinyTagEditorPromptResult (*prompt)(void *, char *, int32,
+                                             NcmStringView, StrBuilder *);
+    void (*status_message)(void *, char *, int32);
+    int32 (*taglib_open)(void *, NcmTaglibFile *, char *, int32);
+    int32 (*taglib_audio_properties)(void *, NcmTaglibFile *,
+                                     NcmTaglibAudioProperties *);
+    bool (*taglib_file_can_set_extended_tags)(void *, NcmTaglibFile *);
+    void (*taglib_close)(void *, NcmTaglibFile *);
+    int32 (*write_song)(void *, NcmMutableSong *, char *);
+    void (*update_directory)(void *, char *, int32);
+    void (*update_playlist_song)(void *, NcmMutableSong *);
+    void (*request_browser_update)(void *);
+    void (*switch_to_screen)(void *, NcScreen *);
     void *user;
 } TinyTagEditorHooks;
 
@@ -2179,29 +1961,23 @@ typedef struct TinyTagEditorScreen {
     bool registered;
 } TinyTagEditorScreen;
 
-void tiny_tag_editor_screen_init(
-    TinyTagEditorScreen *screen, int32 start_x, int32 width,
-    int32 main_start_y, int32 main_height, NcColor color, NcBorder border);
-void tiny_tag_editor_screen_destroy(
-    TinyTagEditorScreen *screen);
-NcScreen *tiny_tag_editor_screen_base(
-    TinyTagEditorScreen *screen);
+void tiny_tag_editor_screen_init(TinyTagEditorScreen *, int32 start_x,
+                                 int32 width, int32 main_start_y,
+                                 int32 main_height, NcColor, NcBorder);
+void tiny_tag_editor_screen_destroy(TinyTagEditorScreen *);
+NcScreen *tiny_tag_editor_screen_base(TinyTagEditorScreen *);
 
 void tiny_tag_editor_screen_set_hooks(
-    TinyTagEditorScreen *screen, TinyTagEditorHooks hooks);
-NcEditorBufferMenu *tiny_tag_editor_screen_rows(
-    TinyTagEditorScreen *screen);
-enum TinyTagEditorOpenResult
-tiny_tag_editor_screen_open_song(
-    TinyTagEditorScreen *screen, NcmSong *song,
-    char *music_dir, int32 music_dir_len, char *tag_separator,
-    int32 tag_separator_len, bool show_duplicate_tags, StrBuilder *path);
-int32 tiny_tag_editor_screen_run_row(
-    TinyTagEditorScreen *screen, int32 row);
-int32 tiny_tag_editor_screen_run_current(
-    TinyTagEditorScreen *screen);
-bool tiny_tag_editor_screen_action_runnable(
-    TinyTagEditorScreen *screen);
+    TinyTagEditorScreen *, TinyTagEditorHooks
+);
+NcEditorBufferMenu *tiny_tag_editor_screen_rows(TinyTagEditorScreen *);
+enum TinyTagEditorOpenResult tiny_tag_editor_screen_open_song(
+    TinyTagEditorScreen *, NcmSong *, char *music_dir, int32 music_dir_len,
+    char *tag_separator, int32 tag_separator_len, bool, StrBuilder *
+);
+int32 tiny_tag_editor_screen_run_row(TinyTagEditorScreen *, int32);
+int32 tiny_tag_editor_screen_run_current(TinyTagEditorScreen *);
+bool tiny_tag_editor_screen_action_runnable(TinyTagEditorScreen *);
 
 /* screens/nc_browser.h */
 typedef struct BrowserScreen {
@@ -2237,80 +2013,56 @@ typedef struct BrowserScreen {
     bool registered;
 } BrowserScreen;
 
-void browser_screen_init(BrowserScreen *,
-                         int32 start_x, int32 width,
-                         int32 main_start_y, int32 main_height,
-                         NcColor color, NcBorder border);
+void browser_screen_init(BrowserScreen *, int32 start_x, int32 width,
+                         int32 main_start_y, int32 main_height, NcColor,
+                         NcBorder);
 void browser_screen_destroy(BrowserScreen *);
 NcScreen *browser_screen_base(BrowserScreen *);
-NcBrowserEntryMenu *browser_screen_entries(
-    BrowserScreen *screen);
+NcBrowserEntryMenu *browser_screen_entries(BrowserScreen *);
 NcMenu *browser_screen_menu(BrowserScreen *);
 NcWindow *browser_screen_window(BrowserScreen *);
-void browser_screen_set_mouse_config(BrowserScreen *,
-                                     int32 lines_scrolled,
-                                     bool scroll_whole_page);
+void browser_screen_set_mouse_config(BrowserScreen *, int32, bool);
 void browser_screen_clear(BrowserScreen *);
-void browser_screen_add_item_move(BrowserScreen *,
-                                  NcmMpdItem *item);
+void browser_screen_add_item_move(BrowserScreen *, NcmMpdItem *);
 int32 browser_screen_sort(BrowserScreen *);
-int32 browser_screen_set_current_directory(
-    BrowserScreen *screen, char *directory, int32 directory_len);
-NcmStringView browser_screen_current_directory(
-    BrowserScreen *screen);
+int32 browser_screen_set_current_directory(BrowserScreen *, char *, int32);
+NcmStringView browser_screen_current_directory(BrowserScreen *);
 void browser_screen_update_title_text(BrowserScreen *);
 void browser_screen_update_column_title(BrowserScreen *);
 void browser_screen_draw_header(BrowserScreen *);
-void browser_screen_set_display_mode(BrowserScreen *,
-                                     enum DisplayMode mode);
-int32 browser_screen_fetch_supported_extensions(
-    BrowserScreen *screen, NcmMpdClient *client, NcmError *ncm_error);
+void browser_screen_set_display_mode(BrowserScreen *, enum DisplayMode);
+int32 browser_screen_fetch_supported_extensions(BrowserScreen *, NcmMpdClient *,
+                                                NcmError *);
 void browser_screen_clear_update_request(BrowserScreen *);
 bool browser_screen_is_in_root_directory(BrowserScreen *);
-void browser_screen_set_local(BrowserScreen *,
-                              bool local_browser);
+void browser_screen_set_local(BrowserScreen *, bool);
 bool browser_screen_is_local(BrowserScreen *);
-int32 browser_screen_change_browse_mode(BrowserScreen *,
-                                       NcmMpdClient *client,
-                                       NcmError *ncm_error);
+int32 browser_screen_change_browse_mode(BrowserScreen *, NcmMpdClient *,
+                                        NcmError *);
 NcmMpdItem *browser_screen_current_item(BrowserScreen *);
-int32 browser_screen_current_song(BrowserScreen *,
-                                 NcmSong *song);
-int32 browser_screen_selected_songs(BrowserScreen *,
-                                   NcmSongArray *songs);
-int32 browser_screen_delete_items(BrowserScreen *,
-                                 NcmMpdClient *client,
-                                 NcmError *ncm_error);
+int32 browser_screen_current_song(BrowserScreen *, NcmSong *);
+int32 browser_screen_selected_songs(BrowserScreen *, NcmSongArray *);
+int32 browser_screen_delete_items(BrowserScreen *, NcmMpdClient *, NcmError *);
 bool browser_screen_has_current_directory_path(
-    BrowserScreen *screen, NcmStringView *path);
-bool browser_screen_has_current_playlist_path(
-    BrowserScreen *screen, NcmStringView *path);
-bool browser_screen_can_rename_directory(
-    BrowserScreen *screen);
-bool browser_screen_can_rename_playlist(
-    BrowserScreen *screen);
-int32 browser_screen_rename_current_directory(
-    BrowserScreen *screen, char *new_path, int32 new_path_len,
-    NcmMpdClient *client, NcmError *ncm_error);
-int32 browser_screen_rename_current_playlist(
-    BrowserScreen *screen, char *new_path, int32 new_path_len,
-    NcmMpdClient *client, NcmError *ncm_error);
-int32 browser_screen_locate_song(BrowserScreen *,
-                                NcmSong *song,
-                                NcmMpdClient *client,
-                                NcmError *ncm_error);
+    BrowserScreen *, NcmStringView *
+);
+bool browser_screen_has_current_playlist_path(BrowserScreen *, NcmStringView *);
+bool browser_screen_can_rename_directory(BrowserScreen *);
+bool browser_screen_can_rename_playlist(BrowserScreen *);
+int32 browser_screen_rename_current_directory(BrowserScreen *, char *, int32,
+                                              NcmMpdClient *, NcmError *);
+int32 browser_screen_rename_current_playlist(BrowserScreen *, char *, int32,
+                                             NcmMpdClient *, NcmError *);
+int32 browser_screen_locate_song(BrowserScreen *, NcmSong *, NcmMpdClient *,
+                                 NcmError *);
 int32 browser_screen_enter_directory(BrowserScreen *);
 int32 browser_screen_go_to_parent(BrowserScreen *);
-int32 browser_screen_apply_filter(BrowserScreen *,
-                                  char *pattern, int32 pattern_len,
-                                  NcmError *ncm_error);
+int32 browser_screen_apply_filter(BrowserScreen *, char *, int32, NcmError *);
 void browser_screen_clear_filter(BrowserScreen *);
-int32 browser_screen_search(BrowserScreen *,
-                            char *pattern, int32 pattern_len,
-                            bool forward, bool wrap,
-                            bool skip_current, NcmError *ncm_error);
+int32 browser_screen_search(BrowserScreen *, char *, int32, bool forward,
+                            bool wrap, bool skip_current, NcmError *);
 void browser_screen_request_update(BrowserScreen *);
-bool browser_screen_item_is_parent(NcmMpdItem *item);
+bool browser_screen_item_is_parent(NcmMpdItem *);
 
 /* screens/song_info.h */
 typedef struct NcmSongInfoMetadata {
@@ -2331,8 +2083,8 @@ typedef struct SongInfoScreen SongInfoScreen;
 void app_screens_init_all(void);
 void app_screens_register_initial(void);
 void app_screens_request_registered_resize(void);
-NcScreen *app_screens_find_type(enum ScreenType screen_type);
-int32 app_screens_switch_to_type(enum ScreenType screen_type);
+NcScreen *app_screens_find_type(enum ScreenType);
+int32 app_screens_switch_to_type(enum ScreenType);
 int32 app_screens_lock_current(void);
 enum ScreenType app_screens_current_type(void);
 
@@ -2378,8 +2130,7 @@ VisualizerScreen *app_screen_visualizer(void);
 void app_screen_lyrics_set_resize(void);
 void app_screen_lyrics_switch_to(void);
 void app_screen_browser_fetch_supported_extensions(void);
-int32 app_screen_selected_items_adder_open(NcmSongArray *songs,
-                                           NcmError *ncm_error);
+int32 app_screen_selected_items_adder_open(NcmSongArray *, NcmError *);
 int32 app_screen_sort_playlist_dialog_switch_to(void);
 void app_screen_outputs_toggle(void);
 void app_screen_outputs_fetch_list(void);

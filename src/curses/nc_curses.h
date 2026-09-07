@@ -147,7 +147,7 @@ typedef struct NcFdCallback {
     XX(NC_PROMPT_ABORTED)
 #include "cbase/xenums.c"
 
-typedef bool NcPromptShouldContinueFunc(char *text, void *user_data);
+typedef bool NcPromptShouldContinueFunc(char *, void *);
 
 typedef struct NcPrompt {
     char *initial_text;
@@ -188,20 +188,20 @@ typedef struct NcWindow {
     int32 italic_counter;
 } NcWindow;
 
-NcColor nc_color_make(int16 foreground, int16 background,
-                      bool is_default, bool is_end);
+NcColor nc_color_make(int16 foreground, int16 background, bool is_default,
+                      bool is_end);
 NcColor nc_color_default(void);
 NcColor nc_color_end(void);
 bool nc_color_is_equal(NcColor left, NcColor right);
-bool nc_color_is_default(NcColor color);
-bool nc_color_is_end(NcColor color);
-bool nc_color_has_current_background(NcColor color);
-int32 nc_color_pair_number(NcColor color);
+bool nc_color_is_default(NcColor);
+bool nc_color_is_end(NcColor);
+bool nc_color_has_current_background(NcColor);
+int32 nc_color_pair_number(NcColor);
 
 NcBorder nc_border_none(void);
-NcBorder nc_border_make(NcColor color);
-enum NcFormat nc_format_reverse(enum NcFormat format);
-int32 nc_key_name(NcKey key, char *buffer, int32 buffer_len);
+NcBorder nc_border_make(NcColor);
+enum NcFormat nc_format_reverse(enum NcFormat);
+int32 nc_key_name(NcKey, char *, int32);
 
 void nc_mouse_enable(void);
 void nc_mouse_disable(void);
@@ -213,76 +213,68 @@ void nc_pause_screen(void);
 void nc_unpause_screen(void);
 void nc_destroy_screen(void);
 
-void nc_window_init_empty(NcWindow *window);
-void nc_window_init(NcWindow *window, int32 start_x, int32 start_y,
-                    int32 width, int32 height, char *title,
-                    int32 title_len, NcColor color, NcBorder border);
-void nc_window_destroy(NcWindow *window);
+void nc_window_init_empty(NcWindow *);
+void nc_window_init(NcWindow *, int32 start_x, int32 start_y, int32 width,
+                    int32 height, char *, int32 title_len, NcColor, NcBorder);
+void nc_window_destroy(NcWindow *);
 
-WINDOW *nc_window_raw(NcWindow *window);
-int32 nc_window_width(NcWindow *window);
-int32 nc_window_height(NcWindow *window);
-int32 nc_window_start_x(NcWindow *window);
-int32 nc_window_start_y(NcWindow *window);
-MEVENT *nc_window_mouse_event(NcWindow *window);
+WINDOW *nc_window_raw(NcWindow *);
+int32 nc_window_width(NcWindow *);
+int32 nc_window_height(NcWindow *);
+int32 nc_window_start_x(NcWindow *);
+int32 nc_window_start_y(NcWindow *);
+MEVENT *nc_window_mouse_event(NcWindow *);
 
-void nc_window_set_color(NcWindow *window, NcColor color);
-void nc_window_set_base_color(NcWindow *window, NcColor color);
-void nc_window_set_border(NcWindow *window, NcBorder border);
-void nc_window_set_timeout(NcWindow *window, int32 timeout);
-void nc_window_set_title(NcWindow *window, char *title, int32 title_len);
-void nc_window_set_escape_terminal_sequences(NcWindow *window, bool enabled);
+void nc_window_set_color(NcWindow *, NcColor);
+void nc_window_set_base_color(NcWindow *, NcColor);
+void nc_window_set_border(NcWindow *, NcBorder);
+void nc_window_set_timeout(NcWindow *, int32);
+void nc_window_set_title(NcWindow *, char *, int32);
+void nc_window_set_escape_terminal_sequences(NcWindow *, bool);
 
-void nc_window_display(NcWindow *window);
-void nc_window_refresh_border(NcWindow *window);
-void nc_window_refresh(NcWindow *window);
-void nc_window_move_to(NcWindow *window, int32 new_x, int32 new_y);
-void nc_window_adjust_dimensions(NcWindow *window,
-                                 int32 width, int32 height);
-void nc_window_resize(NcWindow *window, int32 new_width, int32 new_height);
-void nc_window_recreate(NcWindow *window, int32 width, int32 height);
-void nc_window_clear(NcWindow *window);
+void nc_window_display(NcWindow *);
+void nc_window_refresh_border(NcWindow *);
+void nc_window_refresh(NcWindow *);
+void nc_window_move_to(NcWindow *, int32 new_x, int32 new_y);
+void nc_window_adjust_dimensions(NcWindow *, int32 width, int32 height);
+void nc_window_resize(NcWindow *, int32 new_width, int32 new_height);
+void nc_window_recreate(NcWindow *, int32 width, int32 height);
+void nc_window_clear(NcWindow *);
 
-void nc_window_add_fd_callback(NcWindow *window,
-                               int32 fd, void (*callback)(void));
-void nc_window_clear_fd_callbacks(NcWindow *window);
-bool nc_window_fd_callbacks_is_empty(NcWindow *window);
-NcKey nc_window_read_key(NcWindow *window);
-void nc_window_push_key(NcWindow *window, NcKey ch);
-enum NcPromptStatus nc_window_prompt(NcWindow *window, NcPrompt *prompt,
-                                     char **result);
-void nc_window_prompt_result_destroy(char *result);
+void nc_window_add_fd_callback(NcWindow *, int32, void (*)(void));
+void nc_window_clear_fd_callbacks(NcWindow *);
+bool nc_window_fd_callbacks_is_empty(NcWindow *);
+NcKey nc_window_read_key(NcWindow *);
+void nc_window_push_key(NcWindow *, NcKey);
+enum NcPromptStatus nc_window_prompt(NcWindow *, NcPrompt *, char **);
+void nc_window_prompt_result_destroy(char *);
 
-void nc_window_scroll(NcWindow *window, enum NcScroll where);
-void nc_window_apply_term_manip(NcWindow *window, enum NcTermManip tm);
-void nc_window_apply_format(NcWindow *window, enum NcFormat format);
-void nc_window_push_color(NcWindow *window, NcColor color);
-void nc_window_go_to_xy(NcWindow *window, int32 x, int32 y);
-int32 nc_window_get_x(NcWindow *window);
-int32 nc_window_get_y(NcWindow *window);
-bool nc_window_has_coords(NcWindow *window, int32 *x, int32 *y);
+void nc_window_scroll(NcWindow *, enum NcScroll);
+void nc_window_apply_term_manip(NcWindow *, enum NcTermManip);
+void nc_window_apply_format(NcWindow *, enum NcFormat);
+void nc_window_push_color(NcWindow *, NcColor);
+void nc_window_go_to_xy(NcWindow *, int32 x, int32 y);
+int32 nc_window_get_x(NcWindow *);
+int32 nc_window_get_y(NcWindow *);
+bool nc_window_has_coords(NcWindow *, int32 *x, int32 *y);
 
-void nc_window_print_cstring(NcWindow *window, char *string);
-void nc_window_print_data(NcWindow *window, char *string, int32 string_len);
-void nc_window_print_char(NcWindow *window, char ch);
+void nc_window_print_cstring(NcWindow *, char *);
+void nc_window_print_data(NcWindow *, char *, int32);
+void nc_window_print_char(NcWindow *, char);
 
 typedef struct NcFormattedColor {
     enum NcFormat *formats;
     NcColor color;
 } NcFormattedColor;
 
-void nc_formatted_color_init(NcFormattedColor *formatted_color);
-void nc_formatted_color_init_color(NcFormattedColor *formatted_color,
-                                   NcColor color);
-void nc_formatted_color_copy(NcFormattedColor *dest,
-                             NcFormattedColor *source);
-void nc_formatted_color_move(NcFormattedColor *dest,
-                             NcFormattedColor *source);
-void nc_formatted_color_destroy(NcFormattedColor *formatted_color);
-void nc_formatted_color_add_format(NcFormattedColor *formatted_color,
-                                   enum NcFormat format);
-enum NcFormat *nc_formatted_color_formats(NcFormattedColor *formatted_color);
-int32 nc_formatted_color_format_count(NcFormattedColor *formatted_color);
+void nc_formatted_color_init(NcFormattedColor *);
+void nc_formatted_color_init_color(NcFormattedColor *, NcColor);
+void nc_formatted_color_copy(NcFormattedColor *dest, NcFormattedColor *source);
+void nc_formatted_color_move(NcFormattedColor *dest, NcFormattedColor *source);
+void nc_formatted_color_destroy(NcFormattedColor *);
+void nc_formatted_color_add_format(NcFormattedColor *, enum NcFormat);
+enum NcFormat *nc_formatted_color_formats(NcFormattedColor *);
+int32 nc_formatted_color_format_count(NcFormattedColor *);
 
 #define ENUM_NAME NcBufferPropertyType
 #define ENUM_PREFIX_ NC_BUFFER_PROPERTY_
@@ -316,35 +308,32 @@ typedef struct NcBuffer {
 
 void nc_buffer_copy(NcBuffer *dest, NcBuffer *source);
 void nc_buffer_move(NcBuffer *dest, NcBuffer *source);
-void nc_buffer_destroy(NcBuffer *buffer);
-void nc_buffer_clear(NcBuffer *buffer);
-bool nc_buffer_is_empty(NcBuffer *buffer);
+void nc_buffer_destroy(NcBuffer *);
+void nc_buffer_clear(NcBuffer *);
+bool nc_buffer_is_empty(NcBuffer *);
 
-char *nc_buffer_data(NcBuffer *buffer);
-NcBufferProperty *nc_buffer_properties(NcBuffer *buffer);
+char *nc_buffer_data(NcBuffer *);
+NcBufferProperty *nc_buffer_properties(NcBuffer *);
 
-void nc_buffer_append_data(NcBuffer *buffer, char *data, int32 data_len);
-void nc_buffer_append_cstring(NcBuffer *buffer, char *string);
-void nc_buffer_append_char(NcBuffer *buffer, char ch);
-void nc_buffer_append_int64(NcBuffer *buffer, int64 value);
+void nc_buffer_append_data(NcBuffer *, char *, int32);
+void nc_buffer_append_cstring(NcBuffer *, char *);
+void nc_buffer_append_char(NcBuffer *, char);
+void nc_buffer_append_int64(NcBuffer *, int64);
 
-void nc_buffer_add_color(NcBuffer *buffer, int32 position, NcColor color,
-                         int64 id);
-void nc_buffer_add_format(NcBuffer *buffer, int32 position,
-                          enum NcFormat format, int64 id);
-void nc_buffer_add_formatted_color(NcBuffer *buffer, int32 position,
-                                   NcFormattedColor *formatted_color,
-                                   int64 id);
-void nc_buffer_add_formatted_color_end(NcBuffer *buffer, int32 position,
-                                       NcFormattedColor *formatted_color,
-                                       int64 id);
-void nc_buffer_remove_properties(NcBuffer *buffer, int64 id);
-void nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property);
+void nc_buffer_add_color(NcBuffer *, int32, NcColor, int64);
+void nc_buffer_add_format(NcBuffer *, int32, enum NcFormat, int64);
+void nc_buffer_add_formatted_color(
+    NcBuffer *, int32, NcFormattedColor *, int64
+);
+void nc_buffer_add_formatted_color_end(NcBuffer *, int32, NcFormattedColor *,
+                                       int64);
+void nc_buffer_remove_properties(NcBuffer *, int64);
+void nc_buffer_apply_property(NcWindow *, NcBufferProperty *);
 
 typedef struct NcMenu NcMenu;
 
-typedef bool NcMenuPositionIsHighlightableFunc(int32 pos, void *user);
-typedef bool NcMenuPositionMatchesFunc(NcMenu *menu, int32 pos, void *user);
+typedef bool NcMenuPositionIsHighlightableFunc(int32, void *);
+typedef bool NcMenuPositionMatchesFunc(NcMenu *, int32, void *);
 
 #define ENUM_NAME NcMenuItemSource
 #define ENUM_PREFIX_ NC_MENU_ITEMS_
@@ -373,9 +362,8 @@ typedef struct NcMenuItemCallbacks {
 } NcMenuItemCallbacks;
 
 typedef struct NcMenuDisplayCallbacks {
-    void (*draw)(NcMenu *menu, NcWindow *window,
-                 void *item, int32 pos, void *user);
-    bool (*matches_filter)(NcMenu *menu, void *item, void *user);
+    void (*draw)(NcMenu *, NcWindow *, void *item, int32, void *user);
+    bool (*matches_filter)(NcMenu *, void *item, void *user);
     bool (*is_separator)(void *item, void *user);
     bool (*is_selected)(void *item, void *user);
     bool (*is_inactive)(void *item, void *user);
@@ -383,8 +371,8 @@ typedef struct NcMenuDisplayCallbacks {
 } NcMenuDisplayCallbacks;
 
 typedef struct NcMenuActionCallbacks {
-    void (*activate)(NcMenu *menu, void *item, int32 pos, void *user);
-    void (*set_selected)(void *item, bool selected, void *user);
+    void (*activate)(NcMenu *, void *item, int32, void *user);
+    void (*set_selected)(void *item, bool, void *user);
     void *user;
 } NcMenuActionCallbacks;
 
@@ -413,112 +401,91 @@ struct NcMenu {
     bool autocenter_cursor;
 };
 
-void nc_menu_destroy(NcMenu *menu);
+void nc_menu_destroy(NcMenu *);
 void nc_menu_copy(NcMenu *dest, NcMenu *source);
 void nc_menu_swap(NcMenu *left, NcMenu *right);
-void nc_menu_set_item_callbacks(NcMenu *menu, NcMenuItemCallbacks callbacks);
-void nc_menu_set_display_callbacks(NcMenu *menu,
-                                   NcMenuDisplayCallbacks callbacks);
-void nc_menu_set_action_callbacks(NcMenu *menu,
-                                  NcMenuActionCallbacks callbacks);
-void nc_menu_sync_item_count(NcMenu *menu);
-int32 nc_menu_item_count(NcMenu *menu);
-int32 nc_menu_all_item_count(NcMenu *menu);
-int32 nc_menu_filtered_item_count(NcMenu *menu);
-int32 nc_menu_highlight(NcMenu *menu);
-bool nc_menu_highlight_is_enabled(NcMenu *menu);
-void nc_menu_set_highlight_prefix(NcMenu *menu, NcBuffer *buffer);
-void nc_menu_set_highlight_suffix(NcMenu *menu, NcBuffer *buffer);
-void nc_menu_set_selected_prefix(NcMenu *menu, NcBuffer *buffer);
-void nc_menu_set_selected_suffix(NcMenu *menu, NcBuffer *buffer);
-void nc_menu_set_highlighting(NcMenu *menu, bool state);
-void nc_menu_set_cyclic_scrolling(NcMenu *menu, bool state);
-void nc_menu_set_centered_cursor(NcMenu *menu, bool state);
-int32 nc_menu_goto_selectable(NcMenu *menu, int32 y);
-int32 nc_menu_search_selectable(NcMenu *menu, int32 height, bool forward,
-                                bool wrap, bool skip_current,
-                                NcMenuPositionMatchesFunc *matches, void *user,
-                                int32 *found_pos);
-void nc_menu_prepare_refresh(
-    NcMenu *menu, int32 height,
-    NcMenuPositionIsHighlightableFunc *is_highlightable, void *user
-);
-void nc_menu_refresh(NcMenu *menu, NcWindow *window, int32 width,
-                     int32 height);
-void nc_menu_scroll(
-    NcMenu *menu, int32 height, enum NcScroll where,
-    NcMenuPositionIsHighlightableFunc *is_highlightable, void *user
-);
-void nc_menu_scroll_selectable(NcMenu *menu, int32 height,
-                               enum NcScroll where);
-void nc_menu_reset(NcMenu *menu);
-void nc_menu_highlight_position(NcMenu *menu, int32 pos, int32 height);
-void nc_menu_add_item(NcMenu *menu, void *item);
-void nc_menu_add_item_with_flags(NcMenu *menu, void *item, uint32 flags);
-void nc_menu_add_separator(NcMenu *menu);
-void nc_menu_insert_item_with_flags(NcMenu *menu, int32 pos, void *item,
-                                    uint32 flags);
-int32 nc_menu_remove_item(NcMenu *menu, enum NcMenuItemSource source,
-                          int32 pos);
-int32 nc_menu_replace_item(NcMenu *menu, enum NcMenuItemSource source,
-                           int32 pos, void *item);
-void nc_menu_clear_items(NcMenu *menu);
-void nc_menu_clear_filtered_items(NcMenu *menu);
-void nc_menu_apply_filter(NcMenu *menu);
-void nc_menu_show_all_items(NcMenu *menu);
-bool nc_menu_is_filtered(NcMenu *menu);
-bool nc_menu_is_empty(NcMenu *menu);
-bool nc_menu_position_is_selectable(NcMenu *menu, int32 pos);
-bool nc_menu_position_is_separator(NcMenu *menu, int32 pos);
-bool nc_menu_position_is_inactive(NcMenu *menu, int32 pos);
-bool nc_menu_position_is_selected(NcMenu *menu, int32 pos);
-int32 nc_menu_set_position_selected(NcMenu *menu, int32 pos, bool selected);
-void nc_menu_clear_selection(NcMenu *menu);
-bool nc_menu_has_selected(NcMenu *menu);
-int32 nc_menu_selected_count(NcMenu *menu);
-bool nc_menu_current_is_selectable(NcMenu *menu);
-int32 nc_menu_set_current_selected(NcMenu *menu, bool selected);
-int32 nc_menu_toggle_current_selected(NcMenu *menu);
-int32 nc_menu_activate_current(NcMenu *menu);
-uint32 nc_menu_item_flags_at(NcMenu *menu, enum NcMenuItemSource source,
-                             int32 pos);
-int32 nc_menu_set_item_flags_at(NcMenu *menu, enum NcMenuItemSource source,
-                                int32 pos, uint32 flags);
-void *nc_menu_item_at(NcMenu *menu, enum NcMenuItemSource source, int32 pos);
-void *nc_menu_active_item_at(NcMenu *menu, int32 pos);
-void *nc_menu_current_item(NcMenu *menu);
-void nc_menu_swap_item_slots(NcMenu *menu, enum NcMenuItemSource source,
-                             int32 left, int32 right);
+void nc_menu_set_item_callbacks(NcMenu *, NcMenuItemCallbacks);
+void nc_menu_set_display_callbacks(NcMenu *, NcMenuDisplayCallbacks);
+void nc_menu_set_action_callbacks(NcMenu *, NcMenuActionCallbacks);
+void nc_menu_sync_item_count(NcMenu *);
+int32 nc_menu_item_count(NcMenu *);
+int32 nc_menu_all_item_count(NcMenu *);
+int32 nc_menu_filtered_item_count(NcMenu *);
+int32 nc_menu_highlight(NcMenu *);
+bool nc_menu_highlight_is_enabled(NcMenu *);
+void nc_menu_set_highlight_prefix(NcMenu *, NcBuffer *);
+void nc_menu_set_highlight_suffix(NcMenu *, NcBuffer *);
+void nc_menu_set_selected_prefix(NcMenu *, NcBuffer *);
+void nc_menu_set_selected_suffix(NcMenu *, NcBuffer *);
+void nc_menu_set_highlighting(NcMenu *, bool);
+void nc_menu_set_cyclic_scrolling(NcMenu *, bool);
+void nc_menu_set_centered_cursor(NcMenu *, bool);
+int32 nc_menu_goto_selectable(NcMenu *, int32);
+int32 nc_menu_search_selectable(NcMenu *, int32, bool forward, bool wrap,
+                                bool skip_current, NcMenuPositionMatchesFunc *,
+                                void *, int32 *);
+void nc_menu_prepare_refresh(NcMenu *, int32,
+                             NcMenuPositionIsHighlightableFunc *, void *);
+void nc_menu_refresh(NcMenu *, NcWindow *, int32 width, int32 height);
+void nc_menu_scroll(NcMenu *, int32, enum NcScroll,
+                    NcMenuPositionIsHighlightableFunc *, void *);
+void nc_menu_scroll_selectable(NcMenu *, int32, enum NcScroll);
+void nc_menu_reset(NcMenu *);
+void nc_menu_highlight_position(NcMenu *, int32 pos, int32 height);
+void nc_menu_add_item(NcMenu *, void *);
+void nc_menu_add_item_with_flags(NcMenu *, void *, uint32);
+void nc_menu_add_separator(NcMenu *);
+void nc_menu_insert_item_with_flags(NcMenu *, int32, void *, uint32);
+int32 nc_menu_remove_item(NcMenu *, enum NcMenuItemSource, int32);
+int32 nc_menu_replace_item(NcMenu *, enum NcMenuItemSource, int32, void *);
+void nc_menu_clear_items(NcMenu *);
+void nc_menu_clear_filtered_items(NcMenu *);
+void nc_menu_apply_filter(NcMenu *);
+void nc_menu_show_all_items(NcMenu *);
+bool nc_menu_is_filtered(NcMenu *);
+bool nc_menu_is_empty(NcMenu *);
+bool nc_menu_position_is_selectable(NcMenu *, int32);
+bool nc_menu_position_is_separator(NcMenu *, int32);
+bool nc_menu_position_is_inactive(NcMenu *, int32);
+bool nc_menu_position_is_selected(NcMenu *, int32);
+int32 nc_menu_set_position_selected(NcMenu *, int32, bool);
+void nc_menu_clear_selection(NcMenu *);
+bool nc_menu_has_selected(NcMenu *);
+int32 nc_menu_selected_count(NcMenu *);
+bool nc_menu_current_is_selectable(NcMenu *);
+int32 nc_menu_set_current_selected(NcMenu *, bool);
+int32 nc_menu_toggle_current_selected(NcMenu *);
+int32 nc_menu_activate_current(NcMenu *);
+uint32 nc_menu_item_flags_at(NcMenu *, enum NcMenuItemSource, int32);
+int32 nc_menu_set_item_flags_at(NcMenu *, enum NcMenuItemSource, int32, uint32);
+void *nc_menu_item_at(NcMenu *, enum NcMenuItemSource, int32);
+void *nc_menu_active_item_at(NcMenu *, int32);
+void *nc_menu_current_item(NcMenu *);
+void nc_menu_swap_item_slots(NcMenu *, enum NcMenuItemSource, int32 left,
+                             int32 right);
 
 typedef struct NcScrollpad {
     int32 beginning;
     int32 real_height;
 } NcScrollpad;
 
-void nc_scrollpad_init(NcScrollpad *scrollpad, int32 height);
-void nc_scrollpad_refresh(NcScrollpad *scrollpad, NcWindow *window);
-void nc_scrollpad_resize(NcScrollpad *scrollpad, NcWindow *window,
-                         int32 new_width, int32 new_height);
-void nc_scrollpad_scroll(NcScrollpad *scrollpad, NcWindow *window,
-                         enum NcScroll where);
-void nc_scrollpad_flush(NcScrollpad *scrollpad, NcWindow *window,
-                        NcBuffer *buffer);
-int32 nc_scrollpad_max_beginning(NcScrollpad *scrollpad, NcWindow *window);
-int32 nc_scrollpad_buffer_position_row(NcBuffer *buffer, int32 width,
-                                       int32 position);
-void nc_scrollpad_center_on_buffer_position(NcScrollpad *scrollpad,
-                                            NcWindow *window,
-                                            NcBuffer *buffer,
-                                            int32 position);
-void nc_scrollpad_reset(NcScrollpad *scrollpad);
+void nc_scrollpad_init(NcScrollpad *, int32);
+void nc_scrollpad_refresh(NcScrollpad *, NcWindow *);
+void nc_scrollpad_resize(NcScrollpad *, NcWindow *, int32 new_width,
+                         int32 new_height);
+void nc_scrollpad_scroll(NcScrollpad *, NcWindow *, enum NcScroll);
+void nc_scrollpad_flush(NcScrollpad *, NcWindow *, NcBuffer *);
+int32 nc_scrollpad_max_beginning(NcScrollpad *, NcWindow *);
+int32 nc_scrollpad_buffer_position_row(NcBuffer *, int32 width, int32 position);
+void nc_scrollpad_center_on_buffer_position(NcScrollpad *, NcWindow *,
+                                            NcBuffer *, int32);
+void nc_scrollpad_reset(NcScrollpad *);
 
-void nc_cyclic_text_write(StrBuilder *output, char *string,
-                          int32 string_len, int32 *start_pos,
-                          int32 width, char *separator,
-                          int32 separator_len, bool scrolling_enabled);
-void nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
-                            int32 *start_pos, int32 width,
-                            char *separator, int32 separator_len);
+void nc_cyclic_text_write(StrBuilder *, char *string, int32 string_len, int32 *,
+                          int32 width, char *separator, int32 separator_len,
+                          bool);
+void nc_cyclic_buffer_write(NcBuffer *, NcWindow *, int32 *, int32 width,
+                            char *, int32 separator_len);
 
 #include "c/ncm_c.h"
 
@@ -558,7 +525,7 @@ typedef struct NcEditorActionRow {
     int32 label_len;
     int32 label_cap;
 
-    void (*run)(void *user);
+    void (*run)(void *);
     void *user;
 } NcEditorActionRow;
 
@@ -573,35 +540,31 @@ typedef struct NcEditorSortRow {
     } TYPE_NAME
 
 #define NC_TYPED_MENU_DECLARE_INIT(TYPE_NAME, PREFIX)                          \
-    void PREFIX##_init(TYPE_NAME *menu)
+    void PREFIX##_init(TYPE_NAME *)
 
 #define NC_TYPED_MENU_DECLARE_DESTROY(TYPE_NAME, PREFIX)                       \
-    void PREFIX##_destroy(TYPE_NAME *menu)
+    void PREFIX##_destroy(TYPE_NAME *)
 
 #define NC_TYPED_MENU_DECLARE_BASE(TYPE_NAME, PREFIX)                          \
-    NcMenu *PREFIX##_base(TYPE_NAME *menu)
+    NcMenu *PREFIX##_base(TYPE_NAME *)
 
 #define NC_TYPED_MENU_DECLARE_ADD(TYPE_NAME, PREFIX, ITEM_TYPE)                \
-    void PREFIX##_add(TYPE_NAME *menu, ITEM_TYPE *item)
+    void PREFIX##_add(TYPE_NAME *, ITEM_TYPE *)
 
 #define NC_TYPED_MENU_DECLARE_ADD_WITH_FLAGS(TYPE_NAME, PREFIX, ITEM_TYPE)     \
-    void PREFIX##_add_with_flags(TYPE_NAME *menu, ITEM_TYPE *item,             \
-                                 uint32 flags)
+    void PREFIX##_add_with_flags(TYPE_NAME *, ITEM_TYPE *, uint32)
 
 #define NC_TYPED_MENU_DECLARE_ADD_SEPARATOR(TYPE_NAME, PREFIX)                 \
-    void PREFIX##_add_separator(TYPE_NAME *menu)
+    void PREFIX##_add_separator(TYPE_NAME *)
 
 #define NC_TYPED_MENU_DECLARE_INSERT_WITH_FLAGS(TYPE_NAME, PREFIX, ITEM_TYPE)  \
-    void PREFIX##_insert_with_flags(TYPE_NAME *menu, int32 pos,                \
-                                    ITEM_TYPE *item, uint32 flags)
+    void PREFIX##_insert_with_flags(TYPE_NAME *, int32, ITEM_TYPE *, uint32)
 
 #define NC_TYPED_MENU_DECLARE_ITEM_AT(TYPE_NAME, PREFIX, ITEM_TYPE)            \
-    ITEM_TYPE *PREFIX##_item_at(TYPE_NAME *menu,                               \
-                                enum NcMenuItemSource source,                  \
-                                int32 pos)
+    ITEM_TYPE *PREFIX##_item_at(TYPE_NAME *, enum NcMenuItemSource, int32)
 
 #define NC_TYPED_MENU_DECLARE_CURRENT(TYPE_NAME, PREFIX, ITEM_TYPE)            \
-    ITEM_TYPE *PREFIX##_current(TYPE_NAME *menu)
+    ITEM_TYPE *PREFIX##_current(TYPE_NAME *)
 
 #define NC_TYPED_MENU_DECLARE_COMMON(TYPE_NAME, PREFIX)                        \
     NC_TYPED_MENU_DECLARE_TYPE(TYPE_NAME);                                     \
@@ -758,22 +721,22 @@ NC_TYPED_MENU_DECLARE_ITEM_AT(NcEditorBufferMenu,
 #undef NC_TYPED_MENU_DECLARE_CURRENT
 #undef NC_TYPED_MENU_DECLARE_COMMON
 
-void nc_search_row_destroy(NcSearchRow *row);
+void nc_search_row_destroy(NcSearchRow *);
 int32 nc_search_row_copy(NcSearchRow *dest, NcSearchRow *source);
 
-void nc_media_library_tag_row_destroy(NcMediaLibraryTagRow *row);
+void nc_media_library_tag_row_destroy(NcMediaLibraryTagRow *);
 int32 nc_media_library_tag_row_copy(NcMediaLibraryTagRow *dest,
                                     NcMediaLibraryTagRow *source);
 
-void nc_media_library_album_row_destroy(NcMediaLibraryAlbumRow *row);
+void nc_media_library_album_row_destroy(NcMediaLibraryAlbumRow *);
 int32 nc_media_library_album_row_copy(NcMediaLibraryAlbumRow *dest,
                                       NcMediaLibraryAlbumRow *source);
 
-void nc_editor_action_row_destroy(NcEditorActionRow *row);
+void nc_editor_action_row_destroy(NcEditorActionRow *);
 int32 nc_editor_action_row_copy(NcEditorActionRow *dest,
                                 NcEditorActionRow *source);
 
-void nc_editor_sort_row_destroy(NcEditorSortRow *row);
+void nc_editor_sort_row_destroy(NcEditorSortRow *);
 int32 nc_editor_sort_row_copy(NcEditorSortRow *dest, NcEditorSortRow *source);
 
 #endif /* NC_CURSES_H */
