@@ -566,9 +566,8 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
     return 0;
 }
 
-#define SETTINGS_PARSE_XENUM_VALUE(                                            \
-    ENUM_PREFIX_, value, value_len, result, status                             \
-)                                                                              \
+#define SETTINGS_PARSE_XENUM_VALUE(ENUM_PREFIX_, value, value_len,             \
+                                   result, status)                             \
     do {                                                                       \
         (status) = -NCM_ERROR_PARSE;                                           \
         for (uint32 i = 0; i < CAT(ENUM_PREFIX_, COUNT); i += 1) {             \
