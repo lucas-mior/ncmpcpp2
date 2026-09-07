@@ -1305,7 +1305,7 @@ visualizer_draw_wave(VisualizerScreen *screen,
     int32 half_height;
     int32 base_y;
     int32 samples_per_column;
-    int32 previous_y;
+    int32 prev_y;
 
     if (height <= 0) {
         return;
@@ -1317,7 +1317,7 @@ visualizer_draw_wave(VisualizerScreen *screen,
 
     half_height = height / 2;
     base_y = y_offset + half_height;
-    previous_y = 0;
+    prev_y = 0;
     for (int32 x = 0; x < width; x += 1) {
         int32 sum = 0;
         int32 point_y;
@@ -1333,19 +1333,19 @@ visualizer_draw_wave(VisualizerScreen *screen,
             visualizer_color(screen, point_y, half_height, false),
             false, character, character_len);
 
-        if ((x > 0) && (((previous_y - point_y) > 1)
-                || ((point_y - previous_y) > 1))) {
-            int32 half = (previous_y + point_y) / 2;
+        if ((x > 0) && (((prev_y - point_y) > 1)
+                || ((point_y - prev_y) > 1))) {
+            int32 half = (prev_y + point_y) / 2;
 
-            if (previous_y < point_y) {
-                for (int32 y = previous_y; y < point_y; y += 1) {
+            if (prev_y < point_y) {
+                for (int32 y = prev_y; y < point_y; y += 1) {
                     visualizer_draw_character(
                         screen, x - (y < half), base_y + y,
                         visualizer_color(screen, y, half_height, false),
                         false, character, character_len);
                 }
             } else {
-                for (int32 y = previous_y; y > point_y; y -= 1) {
+                for (int32 y = prev_y; y > point_y; y -= 1) {
                     visualizer_draw_character(
                         screen, x - (y > half), base_y + y,
                         visualizer_color(screen, y, half_height, false),
@@ -1353,7 +1353,7 @@ visualizer_draw_wave(VisualizerScreen *screen,
                 }
             }
         }
-        previous_y = point_y;
+        prev_y = point_y;
     }
     return;
 }
@@ -1590,21 +1590,21 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                     }
                     h = h_next - delta*(x_next - x);
                 } else if (height_index == 1) {
-                    double x_previous;
-                    double h_previous;
+                    double x_prev;
+                    double h_prev;
 
-                    x_previous = fft->bar_heights[height_index - 1].column;
-                    h_previous = fft->bar_heights[height_index - 1].height;
-                    if (x_next != x_previous) {
-                        delta = (h_next - h_previous)
-                                /(x_next - x_previous);
+                    x_prev = fft->bar_heights[height_index - 1].column;
+                    h_prev = fft->bar_heights[height_index - 1].height;
+                    if (x_next != x_prev) {
+                        delta = (h_next - h_prev)
+                                /(x_next - x_prev);
                     }
                     h = h_next - delta*(x_next - x);
                 } else if (height_index < fft->bar_heights_len - 1) {
-                    double x_previous2;
-                    double h_previous2;
-                    double x_previous;
-                    double h_previous;
+                    double x_prev2;
+                    double h_prev2;
+                    double x_prev;
+                    double h_prev;
                     double x_next2;
                     double h_next2;
                     double m0;
@@ -1615,29 +1615,29 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                     double h01;
                     double h11;
 
-                    x_previous2 = fft->bar_heights[height_index - 2].column;
-                    h_previous2 = fft->bar_heights[height_index - 2].height;
-                    x_previous = fft->bar_heights[height_index - 1].column;
-                    h_previous = fft->bar_heights[height_index - 1].height;
+                    x_prev2 = fft->bar_heights[height_index - 2].column;
+                    h_prev2 = fft->bar_heights[height_index - 2].height;
+                    x_prev = fft->bar_heights[height_index - 1].column;
+                    h_prev = fft->bar_heights[height_index - 1].height;
                     x_next2 = fft->bar_heights[height_index + 1].column;
                     h_next2 = fft->bar_heights[height_index + 1].height;
-                    if ((x_previous == x_previous2) || (x_next2 == x_next)
-                        || (x_next == x_previous)) {
+                    if ((x_prev == x_prev2) || (x_next2 == x_next)
+                        || (x_next == x_prev)) {
                         h = h_next;
                     } else {
-                        m0 = (h_previous - h_previous2)
-                             /(x_previous - x_previous2);
+                        m0 = (h_prev - h_prev2)
+                             /(x_prev - x_prev2);
                         m1 = (h_next2 - h_next)/(x_next2 - x_next);
-                        t = ((double)x - x_previous)
-                            /(x_next - x_previous);
+                        t = ((double)x - x_prev)
+                            /(x_next - x_prev);
                         h00 = 2.0*t*t*t - 3.0*t*t + 1.0;
                         h10 = t*t*t - 2.0*t*t + t;
                         h01 = -2.0*t*t*t + 3.0*t*t;
                         h11 = t*t*t - t*t;
-                        h = h00*h_previous
-                            + h10*(x_next - x_previous)*m0
+                        h = h00*h_prev
+                            + h10*(x_next - x_prev)*m0
                             + h01*h_next
-                            + h11*(x_next - x_previous)*m1;
+                            + h11*(x_next - x_prev)*m1;
                     }
                 } else {
                     h = h_next;
@@ -1662,21 +1662,21 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                     }
                     h = h_next - delta*(x_next - x);
                 } else if (height_index < fft->bar_heights_len) {
-                    double x_previous;
-                    double h_previous;
+                    double x_prev;
+                    double h_prev;
                     double slope;
 
-                    x_previous =
+                    x_prev =
                         fft->bar_heights[height_index - 1].column;
-                    h_previous =
+                    h_prev =
                         fft->bar_heights[height_index - 1].height;
-                    if (x_next == x_previous) {
+                    if (x_next == x_prev) {
                         h = h_next;
                     } else {
-                        slope = (h_next - h_previous)
-                                /(x_next - x_previous);
-                        h = h_previous
-                            + slope*((double)x - x_previous);
+                        slope = (h_next - h_prev)
+                                /(x_next - x_prev);
+                        h = h_prev
+                            + slope*((double)x - x_prev);
                     }
                 } else {
                     h = h_next;
