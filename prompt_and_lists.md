@@ -195,4 +195,3 @@ well).
 - src/c/ncm_c.c
 - src/screens/nc_screens.c
 - src/curses/nc_curses.c
-
