@@ -932,7 +932,7 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
     screen->data_source_hooks = data_source_hooks;
 
     screen->samples_in = (NcmSampleBuffer){0};
-    screen->buffered_samples = (NcmSampleBuffer){0};
+    screen->samples_buf = (NcmSampleBuffer){0};
     screen->rendered_samples = (NcmSampleBuffer){0};
     screen->left_ch = (NcmSampleBuffer){0};
     screen->right_ch = (NcmSampleBuffer){0};
@@ -1015,7 +1015,7 @@ visualizer_screen_destroy(VisualizerScreen *screen) {
     ncm_sample_buffer_destroy(&screen->right_ch);
     ncm_sample_buffer_destroy(&screen->left_ch);
     ncm_sample_buffer_destroy(&screen->rendered_samples);
-    ncm_sample_buffer_destroy(&screen->buffered_samples);
+    ncm_sample_buffer_destroy(&screen->samples_buf);
     ncm_sample_buffer_destroy(&screen->samples_in);
     visualizer_destroy_colors(screen);
     sb_free(&screen->visualizer_chars);
@@ -1097,7 +1097,7 @@ visualizer_screen_init_visualization(VisualizerScreen *screen) {
     }
 
     ncm_sample_buffer_resize(&screen->samples_in, incoming_cap);
-    ncm_sample_buffer_resize(&screen->buffered_samples, incoming_cap);
+    ncm_sample_buffer_resize(&screen->samples_buf, incoming_cap);
     ncm_sample_buffer_resize(&screen->rendered_samples, rendered_cap);
     ncm_sample_buffer_resize(&screen->left_ch, channel_cap);
     ncm_sample_buffer_resize(&screen->right_ch, channel_cap);
@@ -1109,7 +1109,7 @@ visualizer_screen_init_visualization(VisualizerScreen *screen) {
 void
 visualizer_screen_reset_audio_state(VisualizerScreen *screen) {
     screen->samples_in.len = 0;
-    screen->buffered_samples.len = 0;
+    screen->samples_buf.len = 0;
     screen->rendered_samples.len = 0;
     screen->left_ch.len = 0;
     screen->right_ch.len = 0;
@@ -1215,7 +1215,7 @@ void
 visualizer_screen_push_samples(VisualizerScreen *screen,
                                int16 *samples, int32 samples_len) {
     visualizer_screen_apply_auto_scale(screen, samples, samples_len);
-    ncm_sample_buffer_put(&screen->buffered_samples, samples, samples_len);
+    ncm_sample_buffer_put(&screen->samples_buf, samples, samples_len);
     return;
 }
 
@@ -1223,7 +1223,7 @@ int32
 visualizer_screen_take_render_samples(VisualizerScreen *screen,
                                       int16 *dest, int32 dest_len) {
     int32 requested = visualizer_screen_requested_samples(screen);
-    return ncm_sample_buffer_get_clamped(&screen->buffered_samples,
+    return ncm_sample_buffer_get_clamped(&screen->samples_buf,
                                          requested, dest, dest_len);
 }
 

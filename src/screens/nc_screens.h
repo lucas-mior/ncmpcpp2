@@ -941,7 +941,7 @@ typedef struct VisualizerScreen {
     VisualizerDataSourceHooks data_source_hooks;
 
     NcmSampleBuffer samples_in;
-    NcmSampleBuffer buffered_samples;
+    NcmSampleBuffer samples_buf;
     NcmSampleBuffer rendered_samples;
     NcmSampleBuffer left_ch;
     NcmSampleBuffer right_ch;
