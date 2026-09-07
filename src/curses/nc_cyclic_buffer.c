@@ -330,8 +330,8 @@ nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
     nc_cyclic_buffer_write_segment(buffer, window, 0, &property_index,
                                    &written_width, width);
 
-    nc_cyclic_increment_start(
-        start_pos, string_characters + separator_characters);
+    nc_cyclic_increment_start(start_pos,
+                              string_characters + separator_characters);
     return;
 }
 
