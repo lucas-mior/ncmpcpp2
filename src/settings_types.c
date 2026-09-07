@@ -9,7 +9,6 @@
 static void
 settings_screen_type_array_init_item(void *item) {
     enum ScreenType *screen = item;
-
     *screen = NCM_SCREEN_TYPE_PLAYLIST;
     return;
 }
@@ -43,6 +42,7 @@ settings_column_array_init_item(void *item) {
     column->fixed = false;
     column->right_alignment = false;
     column->display_empty_tag = true;
+
     return;
 }
 
