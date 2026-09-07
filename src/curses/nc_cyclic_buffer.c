@@ -134,12 +134,9 @@ nc_cyclic_text_write(StrBuilder *output, char *string, int32 string_len,
                           &written_width, width);
 
     if (start > string_characters) {
-        int32 separator_start;
-        int32 separator_byte;
-
-        separator_start = start - string_characters;
-        separator_byte = utf8_byte_position(separator, separator_len,
-                                            separator_start);
+        int32 separator_start = start - string_characters;
+        int32 separator_byte = utf8_byte_position(separator, separator_len,
+                                                  separator_start);
         nc_cyclic_text_append(output, separator, separator_len,
                               separator_byte, &written_width, width);
     } else {
