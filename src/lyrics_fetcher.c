@@ -377,7 +377,6 @@ lyrics_url_is_collected(StrBuilderArray *urls, char *url, int32 url_len) {
     return false;
 }
 
-
 static char *
 lyrics_type_domain(enum NcmLyricsFetcherType type, int32 *len) {
     LyricsProviderProfile *profile = lyrics_provider_profile(type);
@@ -1397,7 +1396,6 @@ lyrics_url_best_slug_score(NcmLyricsFetcherDef *fetcher,
     return best;
 }
 
-
 static int32
 lyrics_parse_hex4(char *data, int32 data_len, int32 start, uint32 *value) {
     uint32 result;
@@ -1565,7 +1563,6 @@ lyrics_update_first_match(char *data, int32 data_len, int32 start,
     }
     return;
 }
-
 
 static int32
 lyrics_curl_perform(StrBuilder *data, char *url, int32 url_len, char *referer,
@@ -2057,8 +2054,6 @@ cleanup:
     sb_free(&data);
     return status;
 }
-
-
 
 int32
 ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,

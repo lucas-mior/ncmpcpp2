@@ -323,9 +323,9 @@ struct mpd_entity;
 #define ENUM_NAME NcmMpdItemKind
 #define ENUM_PREFIX_ NCM_MPD_ITEM_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NCM_MPD_ITEM_SONG)                                                      \
-    XX(NCM_MPD_ITEM_DIRECTORY)                                                 \
+#define ENUM_FIELDS                     \
+    XX(NCM_MPD_ITEM_SONG)               \
+    XX(NCM_MPD_ITEM_DIRECTORY)          \
     XX(NCM_MPD_ITEM_PLAYLIST)
 #include "cbase/xenums.c"
 
@@ -919,9 +919,8 @@ int32 ncm_mpd_song_list_to_song_array(NcmMpdSongList *, NcmSongArray *);
 void ncm_mpd_item_list_destroy(NcmMpdItemList *);
 void ncm_mpd_item_list_clear(NcmMpdItemList *);
 int32 ncm_mpd_item_list_to_item_array(NcmMpdItemList *, NcmMpdItemArray *);
-int32 ncm_mpd_item_list_to_directory_array(
-    NcmMpdItemList *, NcmDirectoryArray *
-);
+int32 ncm_mpd_item_list_to_directory_array(NcmMpdItemList *,
+                                           NcmDirectoryArray *);
 
 void ncm_mpd_string_list_destroy(NcmStringViewList *);
 void ncm_mpd_string_list_clear(NcmStringViewList *);
