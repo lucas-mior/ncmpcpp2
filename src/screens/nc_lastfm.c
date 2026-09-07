@@ -538,11 +538,9 @@ lastfm_apply_literal_format(NcBuffer *buffer,
                             char *needle, int32 needle_len,
                             enum NcFormat start_format,
                             enum NcFormat end_format) {
-    char *data;
-    int32 len;
+    char *data = buffer->data;
+    int32 len = buffer->len;
 
-    data = buffer->data;
-    len = buffer->len;
     for (int32 i = 0; i + needle_len <= len; i += 1) {
         if (BEGINS_WITH(data + i, len - i, needle, needle_len)) {
             nc_buffer_add_format(buffer, i, start_format,
