@@ -10,13 +10,13 @@
 #include "title.h"
 #include "ui_state.h"
 
-static bool tiny_editor_can_run_current(NcScreen  *);
-static int32 tiny_editor_run_current(NcScreen  *);
-static void tiny_editor_display(TinyTagEditScreen  *);
-static void tiny_editor_switch_to(NcScreen  *);
-static void tiny_editor_resize(NcScreen  *);
-static char *tiny_editor_title(NcScreen  *);
-static void tiny_editor_update(NcScreen  *);
+static bool tiny_editor_can_run_current(NcScreen *);
+static int32 tiny_editor_run_current(NcScreen *);
+static void tiny_editor_display(TinyTagEditScreen *);
+static void tiny_editor_switch_to(NcScreen *);
+static void tiny_editor_resize(NcScreen *);
+static char *tiny_editor_title(NcScreen *);
+static void tiny_editor_update(NcScreen *);
 static void tiny_editor_mouse_callback(NcScreen  *, MEVENT event);
 
 #define NC_SCREEN_IMPL_TYPE TinyTagEditScreen
