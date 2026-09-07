@@ -66,9 +66,9 @@ typedef struct StatusTimeoutContext {
     int32 timeout;
 } StatusTimeoutContext;
 
-static int32 status_player_state_string(char *buffer, int32 buffer_cap);
-static void status_draw_song_title(NcmSong *song);
-static void status_reset_visualizer_for_player_event(int32 event);
+static int32 status_player_state_string(char *, int32);
+static void status_draw_song_title(NcmSong *);
+static void status_reset_visualizer_for_player_event(int32);
 
 static NcmStatusHooks *
 status_active_hooks(NcmStatusHooks *hooks) {

@@ -12,19 +12,19 @@
 void ncmpcpp_init_screen(bool enable_colors, bool enable_mouse);
 void ncmpcpp_destroy_screen(void);
 
-void ncmpcpp_set_statusbar_visibility_baseline(bool visible);
+void ncmpcpp_set_statusbar_visibility_baseline(bool);
 void ncmpcpp_set_windows_dimensions(void);
 int32 ncmpcpp_header_height(void);
 int32 ncmpcpp_footer_height(void);
 int32 ncmpcpp_footer_start_y(void);
 
-NcWindow *ncmpcpp_window_create(int32 start_x, int32 start_y,
-                                int32 width, int32 height, NcColor color);
+NcWindow *ncmpcpp_window_create(int32 start_x, int32 start_y, int32 width,
+                                int32 height, NcColor);
 void ncmpcpp_window_display(NcWindow *);
 void ncmpcpp_window_destroy(NcWindow *);
 
 void ncmpcpp_init_screens(void);
-void ncmpcpp_resize_screen(bool reload_main_window);
+void ncmpcpp_resize_screen(bool);
 void ncmpcpp_playlist_switch_to(void);
 void ncmpcpp_playlist_enable_highlighting_if_current(void);
 int32 ncmpcpp_switch_to_screen_type(enum ScreenType);

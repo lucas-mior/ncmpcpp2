@@ -25,23 +25,22 @@ typedef struct LastfmFindState {
     NcBuffer *buffer;
 } LastfmFindState;
 
-static void lastfm_switch_to_callback(NcScreen *screen);
-static void lastfm_resize_callback(NcScreen *screen);
-static char *lastfm_title_callback(NcScreen *screen);
-static void lastfm_update_callback(NcScreen *screen);
-static void lastfm_mouse_button_pressed_callback(NcScreen *, MEVENT event);
-static void lastfm_set_title(LastfmScreen *, char *title, int32 title_len);
-static int32 lastfm_job_run(void *user, NcmError *ncm_error);
-static void lastfm_job_complete(int32 status, NcmError *ncm_error, void *user);
-static void lastfm_job_destroy(void *user);
-static void lastfm_apply_literal_format(NcBuffer *buffer,
-                                        char *needle, int32 needle_len,
+static void lastfm_switch_to_callback(NcScreen *);
+static void lastfm_resize_callback(NcScreen *);
+static char *lastfm_title_callback(NcScreen *);
+static void lastfm_update_callback(NcScreen *);
+static void lastfm_mouse_button_pressed_callback(NcScreen *, MEVENT);
+static void lastfm_set_title(LastfmScreen *, char *, int32);
+static int32 lastfm_job_run(void *, NcmError *);
+static void lastfm_job_complete(int32, NcmError *, void *);
+static void lastfm_job_destroy(void *);
+static void lastfm_apply_literal_format(NcBuffer *, char *, int32,
                                         enum NcFormat start_format,
                                         enum NcFormat end_format);
-static bool lastfm_find_match_callback(int32 start, int32 len, void *user);
-static void lastfm_mouse_scroll(LastfmScreen *screen, enum NcScroll where);
-static void lastfm_display(LastfmScreen *screen);
-static void lastfm_flush(LastfmScreen *screen);
+static bool lastfm_find_match_callback(int32 start, int32 len, void *);
+static void lastfm_mouse_scroll(LastfmScreen *, enum NcScroll);
+static void lastfm_display(LastfmScreen *);
+static void lastfm_flush(LastfmScreen *);
 
 #define NC_SCREEN_IMPL_TYPE LastfmScreen
 #define NC_SCREEN_IMPL_PREFIX lastfm

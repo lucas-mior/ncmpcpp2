@@ -5,12 +5,12 @@
 
 #include "screens/nc_screens.h"
 
-static void nc_server_info_switch_to(NcScreen *screen);
-static void nc_server_info_resize(NcScreen *screen);
-static char *nc_server_info_title(NcScreen *screen);
-static void nc_server_info_update(NcScreen *screen);
-static void nc_server_info_mouse_button_pressed(NcScreen *screen, MEVENT event);
-static void nc_server_info_destroy_callback(NcScreen *screen);
+static void nc_server_info_switch_to(NcScreen *);
+static void nc_server_info_resize(NcScreen *);
+static char *nc_server_info_title(NcScreen *);
+static void nc_server_info_update(NcScreen *);
+static void nc_server_info_mouse_button_pressed(NcScreen *, MEVENT);
+static void nc_server_info_destroy_callback(NcScreen *);
 
 #define NC_SCREEN_IMPL_TYPE NcServerInfoScreen
 #define NC_SCREEN_IMPL_PREFIX nc_server_info

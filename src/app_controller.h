@@ -9,18 +9,17 @@ NcScreen *app_controller_current_screen(void);
 NcScreen *app_controller_previous_screen(void);
 NcScreen *app_controller_locked_screen(void);
 bool app_controller_last_switch_has_changed_screen(void);
-int32 app_controller_register_screen(NcScreen  *);
-int32 app_controller_unregister_screen(NcScreen  *);
-NcScreen *app_controller_find_screen_type(enum NcScreenType type);
-bool app_controller_is_screen_registered(NcScreen  *);
-bool app_controller_is_screen_visible(NcScreen  *);
-bool app_controller_is_current_screen(NcScreen  *);
-NcScreenResizeParams app_controller_screen_resize_params(NcScreen  *,
-                                                         bool adjust_locked);
+int32 app_controller_register_screen(NcScreen *);
+int32 app_controller_unregister_screen(NcScreen *);
+NcScreen *app_controller_find_screen_type(enum NcScreenType);
+bool app_controller_is_screen_registered(NcScreen *);
+bool app_controller_is_screen_visible(NcScreen *);
+bool app_controller_is_current_screen(NcScreen *);
+NcScreenResizeParams app_controller_screen_resize_params(NcScreen *, bool);
 void app_controller_request_current_screen_resize(void);
 void app_controller_request_current_screen_update(void);
-void app_controller_each_visible_screen(NcScreenEachCallback, void *user);
-int32 app_controller_switch_to_screen(NcScreen  *);
+void app_controller_each_visible_screen(NcScreenEachCallback, void *);
+int32 app_controller_switch_to_screen(NcScreen *);
 int32 app_controller_lock_current_screen(void);
 void app_controller_unlock_screen(void);
 bool app_controller_can_show_locked_screen(void);
@@ -34,7 +33,7 @@ void app_controller_refresh_current_window(void);
 void app_controller_refresh_visible_screens(void);
 void app_controller_resize_current_screen(void);
 void app_controller_resize_visible_screens(void);
-void app_controller_scroll_current_screen(enum NcScroll where);
-void app_controller_mouse_button_pressed_current(MEVENT event);
+void app_controller_scroll_current_screen(enum NcScroll);
+void app_controller_mouse_button_pressed_current(MEVENT);
 
 #endif /* APP_CONTROLLER_H */

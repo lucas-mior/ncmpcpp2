@@ -63,31 +63,28 @@ typedef int32 (NcmLyricsCurlPerformFn)(StrBuilder *data, char *url,
                                          bool follow_redirect,
                                          int32 timeout_seconds, void *user);
 
-void ncm_lyrics_result_destroy(NcmLyricsResult *result);
-void ncm_lyrics_result_clear(NcmLyricsResult *result);
-int32 ncm_lyrics_result_set(NcmLyricsResult *result, bool success,
-                            char *text, int32 text_len);
+void ncm_lyrics_result_destroy(NcmLyricsResult *);
+void ncm_lyrics_result_clear(NcmLyricsResult *);
+int32 ncm_lyrics_result_set(NcmLyricsResult *, bool, char *, int32);
 
-void ncm_lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *fetcher);
-int32 ncm_lyrics_fetcher_def_set_name(NcmLyricsFetcherDef *fetcher,
-                                      char *name, int32 name_len);
-char *ncm_lyrics_fetcher_name(NcmLyricsFetcherDef *fetcher);
-int32 ncm_lyrics_fetcher_name_len(NcmLyricsFetcherDef *fetcher);
+void ncm_lyrics_fetcher_def_destroy(NcmLyricsFetcherDef *);
+int32 ncm_lyrics_fetcher_def_set_name(NcmLyricsFetcherDef *, char *, int32);
+char *ncm_lyrics_fetcher_name(NcmLyricsFetcherDef *);
+int32 ncm_lyrics_fetcher_name_len(NcmLyricsFetcherDef *);
 
-void ncm_lyrics_fetcher_registry_destroy(NcmLyricsFetcherRegistry *registry);
-void ncm_lyrics_fetcher_registry_clear(NcmLyricsFetcherRegistry *registry);
-NcmLyricsFetcherDef *
-ncm_lyrics_fetcher_registry_append(NcmLyricsFetcherRegistry *registry);
-int32 ncm_lyrics_fetcher_registry_append_name(
-    NcmLyricsFetcherRegistry *registry, char *name, int32 name_len);
+void ncm_lyrics_fetcher_registry_destroy(NcmLyricsFetcherRegistry *);
+void ncm_lyrics_fetcher_registry_clear(NcmLyricsFetcherRegistry *);
+NcmLyricsFetcherDef *ncm_lyrics_fetcher_registry_append(
+    NcmLyricsFetcherRegistry *);
+int32 ncm_lyrics_fetcher_registry_append_name(NcmLyricsFetcherRegistry *,
+                                              char *, int32);
 
-int32 ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher,
-                               NcmLyricsResult *result, char *artist,
-                               int32 artist_len, char *title, int32 title_len);
-int32 ncm_lyrics_fetcher_build_url(NcmLyricsFetcherDef *fetcher,
-                                   StrBuilder *url, char *artist,
-                                   int32 artist_len, char *title,
+int32 ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *, NcmLyricsResult *,
+                               char *artist, int32 artist_len, char *title,
+                               int32 title_len);
+int32 ncm_lyrics_fetcher_build_url(NcmLyricsFetcherDef *, StrBuilder *,
+                                   char *artist, int32 artist_len, char *title,
                                    int32 title_len);
-void ncm_lyrics_cleanup_html(StrBuilder *out, char *data, int32 data_len);
+void ncm_lyrics_cleanup_html(StrBuilder *, char *, int32);
 
 #endif /* LYRICS_FETCHER_H */

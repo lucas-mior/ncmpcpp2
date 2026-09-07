@@ -318,8 +318,8 @@ void nc_buffer_append_int64(NcBuffer *, int64);
 
 void nc_buffer_add_color(NcBuffer *, int32, NcColor, int64);
 void nc_buffer_add_format(NcBuffer *, int32, enum NcFormat, int64);
-void nc_buffer_add_formatted_color(NcBuffer *, int32, NcFormattedColor *, int64
-);
+void nc_buffer_add_formatted_color(NcBuffer *, int32, NcFormattedColor *,
+                                   int64);
 void nc_buffer_add_formatted_color_end(NcBuffer *, int32, NcFormattedColor *,
                                        int64);
 void nc_buffer_remove_properties(NcBuffer *, int64);
@@ -475,9 +475,9 @@ void nc_scrollpad_center_on_buffer_position(NcScrollpad *, NcWindow *,
                                             NcBuffer *, int32);
 void nc_scrollpad_reset(NcScrollpad *);
 
-void nc_cyclic_text_write(StrBuilder *, char *string, int32 string_len, int32 *,
-                          int32 width, char *separator, int32 separator_len,
-                          bool);
+void nc_cyclic_text_write(StrBuilder *, char *string, int32 string_len,
+                          int32 *, int32 width, char *separator,
+                          int32 separator_len, bool);
 void nc_cyclic_buffer_write(NcBuffer *, NcWindow *, int32 *, int32 width,
                             char *, int32 separator_len);
 

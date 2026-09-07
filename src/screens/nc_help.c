@@ -7,10 +7,10 @@
 #include "screens/nc_screens.h"
 #include "settings.h"
 
-static void nc_help_switch_to(NcScreen *screen);
-static void nc_help_resize(NcScreen *screen);
-static void nc_help_mouse_button_pressed(NcScreen *screen, MEVENT event);
-static void nc_help_destroy_callback(NcScreen *screen);
+static void nc_help_switch_to(NcScreen *);
+static void nc_help_resize(NcScreen *);
+static void nc_help_mouse_button_pressed(NcScreen *, MEVENT);
+static void nc_help_destroy_callback(NcScreen *);
 
 #define NC_SCREEN_IMPL_TYPE NcHelpScreen
 #define NC_SCREEN_IMPL_PREFIX nc_help

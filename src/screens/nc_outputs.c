@@ -5,15 +5,15 @@
 
 #include "screens/nc_screens.h"
 
-static void nc_outputs_switch_to(NcScreen *screen);
-static void nc_outputs_resize(NcScreen *screen);
-static void nc_outputs_mouse_button_pressed(NcScreen *screen, MEVENT event);
-static void nc_outputs_destroy_callback(NcScreen *screen);
+static void nc_outputs_switch_to(NcScreen *);
+static void nc_outputs_resize(NcScreen *);
+static void nc_outputs_mouse_button_pressed(NcScreen *, MEVENT);
+static void nc_outputs_destroy_callback(NcScreen *);
 static void nc_outputs_item_construct(void *dest, void *user);
 static void nc_outputs_item_copy(void *dest, void *source, void *user);
 static void nc_outputs_item_destroy(void *item, void *user);
-static void nc_outputs_draw_item(NcMenu *menu, NcWindow *window,
-                                 void *item, int32 pos, void *user);
+static void nc_outputs_draw_item(NcMenu *, NcWindow *, void *item, int32,
+                                 void *user);
 
 #define NC_SCREEN_IMPL_TYPE NcOutputsScreen
 #define NC_SCREEN_IMPL_PREFIX nc_outputs

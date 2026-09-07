@@ -48,8 +48,8 @@ int32 ncm_error_set_status(NcmError *, int32 status, char *, int32 message_len);
 int32 ncm_error_ok(NcmError *);
 
 void stupid_string_free(char **, int32 *len, int32 *cap);
-void stupid_string_set(char **, int32 *dest_len, int32 *dest_cap, char *, int32
-);
+void stupid_string_set(char **, int32 *dest_len, int32 *dest_cap, char *,
+                       int32);
 
 #include <mpd/tag.h>
 
@@ -199,8 +199,8 @@ int32 ncm_song_priority(NcmSong *);
 time_t ncm_song_mtime(NcmSong *);
 bool ncm_song_is_empty(NcmSong *);
 
-bool ncm_song_has_tag_view(NcmSong *, enum mpd_tag_type, int32, NcmStringView *
-);
+bool ncm_song_has_tag_view(NcmSong *, enum mpd_tag_type, int32,
+                           NcmStringView *);
 bool ncm_song_has_uri_view(NcmSong *, int32, NcmStringView *);
 bool ncm_song_has_name_view(NcmSong *, int32, NcmStringView *);
 bool ncm_song_has_directory_view(NcmSong *, int32, NcmStringView *);
@@ -266,8 +266,8 @@ int32 ncm_mutable_song_set_tags(NcmMutableSong *, enum NcmTagsField,
                                 int32 separator_len);
 bool ncm_mutable_song_has_tag_view(NcmMutableSong *, enum NcmTagsField, int32,
                                    NcmStringView *);
-void ncm_mutable_song_get_tag_buffer(NcmMutableSong *, enum NcmTagsField, int32,
-                                     StrBuilder *);
+void ncm_mutable_song_get_tag_buffer(NcmMutableSong *, enum NcmTagsField,
+                                     int32, StrBuilder *);
 StrBuilder ncm_mutable_song_tags_buffer(NcmMutableSong *, enum NcmTagsField,
                                         char *, int32, bool);
 int32 ncm_mutable_song_load_originals_from_song(NcmMutableSong *, NcmSong *);
@@ -886,8 +886,8 @@ int32 ncm_mpd_connection_get_replay_gain_mode(NcmMpdConnection *,
                                               enum NcmMpdReplayGainMode *);
 int32 ncm_mpd_connection_set_replay_gain_mode(NcmMpdConnection *,
                                               enum NcmMpdReplayGainMode);
-int32 ncm_mpd_connection_get_playlists(NcmMpdConnection *, NcmMpdPlaylistList *
-);
+int32 ncm_mpd_connection_get_playlists(NcmMpdConnection *,
+                                       NcmMpdPlaylistList *);
 int32 ncm_mpd_connection_list_all_song_uris(NcmMpdConnection *, char *,
                                             NcmStringViewList *);
 int32 ncm_mpd_connection_get_url_handlers(NcmMpdConnection *,
@@ -981,8 +981,8 @@ int32 ncm_mpd_connection_add_to_playlist(NcmMpdConnection *, char *playlist,
                                          char *path, bool);
 int32 ncm_mpd_connection_playlist_move(NcmMpdConnection *, char *, int32 from,
                                        int32 to, bool);
-int32 ncm_mpd_connection_playlist_delete(NcmMpdConnection *, char *, int32, bool
-);
+int32 ncm_mpd_connection_playlist_delete(NcmMpdConnection *, char *, int32,
+                                         bool);
 int32 ncm_mpd_connection_rename_playlist(NcmMpdConnection *, char *from,
                                          char *to);
 int32 ncm_mpd_connection_delete_playlist(NcmMpdConnection *, char *);
@@ -1069,15 +1069,16 @@ int32 ncm_mpd_client_change_volume(NcmMpdClient *, int32, NcmError *);
 int32 ncm_mpd_client_get_replay_gain_mode(NcmMpdClient *,
                                           enum NcmMpdReplayGainMode *,
                                           NcmError *);
-int32 ncm_mpd_client_set_replay_gain_mode(
-    NcmMpdClient *, enum NcmMpdReplayGainMode, NcmError *);
+int32 ncm_mpd_client_set_replay_gain_mode(NcmMpdClient *,
+                                          enum NcmMpdReplayGainMode,
+                                          NcmError *);
 
 int32 ncm_mpd_client_set_priority_id(NcmMpdClient *, int32 id, int32 priority,
                                      NcmError *);
 int32 ncm_mpd_client_set_priority_song(NcmMpdClient *, NcmSong *, int32,
                                        NcmError *);
-int32 ncm_mpd_client_add_song(NcmMpdClient *, char *, int32, int32 *, NcmError *
-);
+int32 ncm_mpd_client_add_song(NcmMpdClient *, char *, int32, int32 *,
+                              NcmError *);
 int32 ncm_mpd_client_add_song_value(NcmMpdClient *, NcmSong *, int32, int32 *,
                                     NcmError *);
 int32 ncm_mpd_client_add_song_list(NcmMpdClient *, NcmMpdSongList *, int32,
@@ -1095,12 +1096,12 @@ int32 ncm_mpd_client_delete_playlist(NcmMpdClient *, char *, NcmError *);
 int32 ncm_mpd_client_load_playlist(NcmMpdClient *, char *, bool *, NcmError *);
 int32 ncm_mpd_client_save_playlist(NcmMpdClient *, char *, NcmError *);
 int32 ncm_mpd_client_clear_playlist(NcmMpdClient *, char *, NcmError *);
-int32 ncm_mpd_client_add_to_playlist(NcmMpdClient *, char *playlist, char *path,
-                                     NcmError *);
+int32 ncm_mpd_client_add_to_playlist(NcmMpdClient *, char *playlist,
+                                     char *path, NcmError *);
 int32 ncm_mpd_client_add_song_to_playlist(NcmMpdClient *, char *, NcmSong *,
                                           NcmError *);
-int32 ncm_mpd_client_playlist_move(NcmMpdClient *, char *, int32 from, int32 to,
-                                   NcmError *);
+int32 ncm_mpd_client_playlist_move(NcmMpdClient *, char *, int32 from,
+                                   int32 to, NcmError *);
 int32 ncm_mpd_client_playlist_delete(NcmMpdClient *, char *, int32, NcmError *);
 int32 ncm_mpd_client_rename_playlist(NcmMpdClient *, char *from, char *to,
                                      NcmError *);
@@ -1127,8 +1128,8 @@ int32 ncm_mpd_client_get_directory_entries(NcmMpdClient *, char *,
                                            NcmMpdItemArray *, NcmError *);
 int32 ncm_mpd_client_get_directory_list(NcmMpdClient *, char *,
                                         NcmDirectoryArray *, NcmError *);
-int32 ncm_mpd_client_get_outputs(NcmMpdClient *, NcmMpdOutputList *, NcmError *
-);
+int32 ncm_mpd_client_get_outputs(NcmMpdClient *, NcmMpdOutputList *,
+                                 NcmError *);
 int32 ncm_mpd_client_enable_output(NcmMpdClient *, int32, NcmError *);
 int32 ncm_mpd_client_disable_output(NcmMpdClient *, int32, NcmError *);
 int32 ncm_mpd_client_get_url_handlers(NcmMpdClient *, NcmStringViewList *,
@@ -1532,8 +1533,8 @@ struct Column;
 void ncm_display_song_row(NcBuffer *, NcmFormatAst *, NcmSong *, uint32);
 void ncm_display_song_columns(NcBuffer *, NcmSong *, struct Column *,
                               int32 column_count, int32 list_width, bool);
-void ncm_display_column_title(StrBuilder *, struct Column *, int32 column_count,
-                              int32 list_width);
+void ncm_display_column_title(StrBuilder *, struct Column *,
+                              int32 column_count, int32 list_width);
 void ncm_display_directory_row(NcBuffer *, NcmDirectory *);
 void ncm_display_playlist_row(NcBuffer *, NcmPlaylist *, char *, int32);
 

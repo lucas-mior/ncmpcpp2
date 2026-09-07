@@ -27,17 +27,15 @@ typedef struct NcmConfigurationOptions {
     bool quiet;
 } NcmConfigurationOptions;
 
-void ncm_configuration_options_init(NcmConfigurationOptions *options);
-void ncm_configuration_options_destroy(NcmConfigurationOptions *options);
-int32 ncm_configuration_options_parse(NcmConfigurationOptions *options,
-                                       int32 argc, char **argv,
-                                       NcmError *ncm_error);
-int32 ncm_configuration_options_apply(NcmConfigurationOptions *options,
-                                      NcmError *ncm_error);
+void ncm_configuration_options_init(NcmConfigurationOptions *);
+void ncm_configuration_options_destroy(NcmConfigurationOptions *);
+int32 ncm_configuration_options_parse(NcmConfigurationOptions *, int32,
+                                      char **, NcmError *);
+int32 ncm_configuration_options_apply(NcmConfigurationOptions *, NcmError *);
 
 int32 configuration_discover_default_paths(StrBuilderArray *config_paths,
                                            StrBuilderArray *bindings_paths,
-                                           NcmError *ncm_error);
-int32 configure(int32 argc, char **argv);
+                                           NcmError *);
+int32 configure(int32, char **);
 
 #endif /* CONFIGURATION_H */

@@ -12,33 +12,32 @@
 #include "statusbar.h"
 #include "ui_state.h"
 
-static void adder_display(SelectedItemsAdderScreen *screen);
-static void adder_draw_row(NcMenu *menu, NcWindow *window, void *item,
-                           int32 pos, void *user);
-static bool adder_can_run_current_callback(NcScreen *screen);
-static int32 adder_run_current_callback(NcScreen *screen);
-static void adder_resize_callback(NcScreen *screen);
-static char *adder_title_callback(NcScreen *screen);
-static void adder_update_callback(NcScreen *screen);
-static void adder_mouse_callback(NcScreen *screen, MEVENT event);
-static bool adder_filter_callback(NcMenu *menu, void *item, void *user);
-static bool adder_row_matches(NcEditorActionRow *row, NcmRegex *regex);
-static bool adder_position_matches(NcMenu *menu, int32 pos, void *user);
-static void adder_action_current_playlist(void *user);
-static void adder_action_new_playlist(void *user);
-static void adder_action_cancel_target(void *user);
-static void adder_action_position_end(void *user);
-static void adder_action_position_beginning(void *user);
-static void adder_action_position_current_song(void *user);
-static void adder_action_position_current_album(void *user);
-static void adder_action_position_highlighted(void *user);
-static void adder_action_position_cancel(void *user);
-static void adder_action_existing_playlist(void *user);
+static void adder_display(SelectedItemsAdderScreen *);
+static void adder_draw_row(NcMenu *, NcWindow *, void *item, int32, void *user);
+static bool adder_can_run_current_callback(NcScreen *);
+static int32 adder_run_current_callback(NcScreen *);
+static void adder_resize_callback(NcScreen *);
+static char *adder_title_callback(NcScreen *);
+static void adder_update_callback(NcScreen *);
+static void adder_mouse_callback(NcScreen *, MEVENT);
+static bool adder_filter_callback(NcMenu *, void *item, void *user);
+static bool adder_row_matches(NcEditorActionRow *, NcmRegex *);
+static bool adder_position_matches(NcMenu *, int32, void *);
+static void adder_action_current_playlist(void *);
+static void adder_action_new_playlist(void *);
+static void adder_action_cancel_target(void *);
+static void adder_action_position_end(void *);
+static void adder_action_position_beginning(void *);
+static void adder_action_position_current_song(void *);
+static void adder_action_position_current_album(void *);
+static void adder_action_position_highlighted(void *);
+static void adder_action_position_cancel(void *);
+static void adder_action_existing_playlist(void *);
 static void adder_add_action_row(NcEditorActionMenu *menu, char *label,
                                   int32 label_len, void (*run)(void *),
                                   void *user);
-static void adder_apply_geometry(SelectedItemsAdderScreen *screen);
-static void adder_finish(SelectedItemsAdderScreen *screen);
+static void adder_apply_geometry(SelectedItemsAdderScreen *);
+static void adder_finish(SelectedItemsAdderScreen *);
 
 typedef struct ExistingPlaylistAction {
     SelectedItemsAdderScreen *screen;
@@ -47,7 +46,7 @@ typedef struct ExistingPlaylistAction {
     int32 playlist_cap;
 } ExistingPlaylistAction;
 
-static void existing_playlist_action_destroy(void *user);
+static void existing_playlist_action_destroy(void *);
 
 #define NC_SCREEN_IMPL_TYPE SelectedItemsAdderScreen
 #define NC_SCREEN_IMPL_PREFIX adder

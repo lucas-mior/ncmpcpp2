@@ -8,46 +8,37 @@
 #include "settings.h"
 #include "ui_state.h"
 
-static void search_display(SearchEngineScreen *screen);
-static void search_switch_to(NcScreen *screen);
-static void search_resize(NcScreen *screen);
-static char *search_title(NcScreen *screen);
-static void search_update(NcScreen *screen);
-static void search_mouse_button_pressed(NcScreen *screen, MEVENT event);
-static bool search_can_run_current(NcScreen *screen);
-static int32 search_run_current(NcScreen *screen);
-static void search_draw_row(NcMenu *menu, NcWindow *window,
-                            void *item, int32 pos, void *user);
-static NcMenuDisplayCallbacks search_display_callbacks(
-    SearchEngineScreen *screen, bool filtering);
-static bool search_row_matches(SearchEngineScreen *screen,
-                               NcSearchRow *row, NcmRegex *regex);
-static bool search_position_matches(NcMenu *menu, int32 pos, void *user);
-static void search_format_columns(NcmSong *song, NcBuffer *buffer,
-                                  int32 list_width);
-static int32 search_screen_width(SearchEngineScreen *screen);
-static int32 search_menu_suffix_width(NcMenu *menu, int32 pos);
-static int32 search_buffer_width(NcBuffer *buffer);
-static void search_copy_song_at(SearchEngineScreen *screen,
-                                NcmSongArray *songs, int32 pos);
-static void search_insert_buffer_with_flags(SearchEngineScreen *screen,
-                                            int32 pos, NcBuffer *buffer,
-                                            uint32 flags);
-static void search_set_buffer_row(SearchEngineScreen *screen, int32 pos,
-                                  NcBuffer *buffer);
-static void search_build_constraint_row(SearchEngineScreen *screen, int32 idx,
-                                        NcBuffer *buffer);
-static void search_build_search_source_row(SearchEngineScreen *screen,
-                                           NcBuffer *buffer);
-static void search_build_search_mode_row(SearchEngineScreen *screen,
-                                         NcBuffer *buffer);
-static void search_append_format(NcBuffer *buffer, enum NcFormat format);
-static void search_print_buffer(NcWindow *window, NcBuffer *buffer);
-static void search_mouse_scroll(SearchEngineScreen *screen,
-                                enum NcScroll where);
-static void search_print_error(SearchEngineScreen *screen, NcmError *ncm_error);
-static bool search_song_has_field_view(NcmSong *song, int32 field,
-                                       NcmStringView *view);
+static void search_display(SearchEngineScreen *);
+static void search_switch_to(NcScreen *);
+static void search_resize(NcScreen *);
+static char *search_title(NcScreen *);
+static void search_update(NcScreen *);
+static void search_mouse_button_pressed(NcScreen *, MEVENT);
+static bool search_can_run_current(NcScreen *);
+static int32 search_run_current(NcScreen *);
+static void search_draw_row(NcMenu *, NcWindow *, void *item, int32,
+                            void *user);
+static NcMenuDisplayCallbacks search_display_callbacks(SearchEngineScreen *,
+                                                       bool);
+static bool search_row_matches(SearchEngineScreen *, NcSearchRow *, NcmRegex *);
+static bool search_position_matches(NcMenu *, int32, void *);
+static void search_format_columns(NcmSong *, NcBuffer *, int32);
+static int32 search_screen_width(SearchEngineScreen *);
+static int32 search_menu_suffix_width(NcMenu *, int32);
+static int32 search_buffer_width(NcBuffer *);
+static void search_copy_song_at(SearchEngineScreen *, NcmSongArray *, int32);
+static void search_insert_buffer_with_flags(SearchEngineScreen *, int32,
+                                            NcBuffer *, uint32);
+static void search_set_buffer_row(SearchEngineScreen *, int32, NcBuffer *);
+static void search_build_constraint_row(SearchEngineScreen *, int32,
+                                        NcBuffer *);
+static void search_build_search_source_row(SearchEngineScreen *, NcBuffer *);
+static void search_build_search_mode_row(SearchEngineScreen *, NcBuffer *);
+static void search_append_format(NcBuffer *, enum NcFormat);
+static void search_print_buffer(NcWindow *, NcBuffer *);
+static void search_mouse_scroll(SearchEngineScreen *, enum NcScroll);
+static void search_print_error(SearchEngineScreen *, NcmError *);
+static bool search_song_has_field_view(NcmSong *, int32, NcmStringView *);
 
 typedef struct SearchFindContext {
     SearchEngineScreen *screen;

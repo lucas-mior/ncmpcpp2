@@ -104,24 +104,22 @@ typedef struct Configuration {
 
 } Configuration;
 
-void column_array_clear(ColumnArray *array);
-void column_array_destroy(ColumnArray *array);
-int32 column_array_reserve(ColumnArray *array, int32 extra);
-Column *column_array_append(ColumnArray *array);
+void column_array_clear(ColumnArray *);
+void column_array_destroy(ColumnArray *);
+int32 column_array_reserve(ColumnArray *, int32);
+Column *column_array_append(ColumnArray *);
 
-void configuration_init(Configuration *config);
-void configuration_destroy(Configuration *config);
-void configuration_clear(Configuration *config);
-int32 configuration_validate(Configuration *config, NcmError *ncm_error);
-double configuration_locked_screen_width_fraction(Configuration *config);
+void configuration_init(Configuration *);
+void configuration_destroy(Configuration *);
+void configuration_clear(Configuration *);
+int32 configuration_validate(Configuration *, NcmError *);
+double configuration_locked_screen_width_fraction(Configuration *);
 enum SearchEngineSearchMode configuration_search_engine_default_mode(
-    Configuration *config);
-int32 configuration_read(Configuration *config,
-                         NcmStringViewArray *config_paths,
-                         bool ignore_errors, bool quiet, NcmError *ncm_error);
-int32 configuration_apply_runtime(Configuration *config,
-                                  NcmMpdClient *client, bool quiet,
-                                  NcmError *ncm_error);
+    Configuration *);
+int32 configuration_read(Configuration *, NcmStringViewArray *,
+                         bool ignore_errors, bool quiet, NcmError *);
+int32 configuration_apply_runtime(Configuration *, NcmMpdClient *, bool,
+                                  NcmError *);
 
 extern Configuration Config;
 

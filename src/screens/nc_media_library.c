@@ -14,17 +14,17 @@
 
 // callbacks
 static NcWindow *library_active_window(NcScreen *screen);
-static void library_refresh(NcScreen *screen);
-static void library_refresh_window(NcScreen *screen);
-static void library_scroll(NcScreen *screen, enum NcScroll where);
-static void library_finish_list_change(NcScreen *screen);
-static void library_mouse_button_pressed(NcScreen *screen, MEVENT event);
-static void library_switch_to(NcScreen *screen);
-static void library_resize(NcScreen *screen);
-static int32 library_window_timeout(NcScreen *screen);
-static char *library_title(NcScreen *screen);
-static void library_update(NcScreen *screen);
-static void library_destroy_callback(NcScreen *screen);
+static void library_refresh(NcScreen *);
+static void library_refresh_window(NcScreen *);
+static void library_scroll(NcScreen *, enum NcScroll);
+static void library_finish_list_change(NcScreen *);
+static void library_mouse_button_pressed(NcScreen *, MEVENT);
+static void library_switch_to(NcScreen *);
+static void library_resize(NcScreen *);
+static int32 library_window_timeout(NcScreen *);
+static char *library_title(NcScreen *);
+static void library_update(NcScreen *);
+static void library_destroy_callback(NcScreen *);
 
 static int32
 library_mpd_search_songs(void *user, MediaLibrarySongQuery *query,
@@ -258,7 +258,7 @@ library_update_titles(MediaLibraryScreen *screen, bool update_windows) {
     return;
 }
 
-static void library_request_all_updates(MediaLibraryScreen *screen);
+static void library_request_all_updates(MediaLibraryScreen *);
 
 typedef struct MediaLibrarySearchContext {
     MediaLibraryScreen *screen;

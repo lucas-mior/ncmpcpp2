@@ -14,10 +14,10 @@ extern NcmMpdClient global_mpd;
 void global_state_init(void);
 void global_state_destroy(void);
 void global_timer_update(void);
-int64 global_timer_elapsed_ms(int64 start);
-int64 global_timer_elapsed_seconds(int64 start);
-void global_volume_state_set(char *string, int32 string_len);
-void global_volume_state_append(char *string, int32 string_len);
+int64 global_timer_elapsed_ms(int64);
+int64 global_timer_elapsed_seconds(int64);
+void global_volume_state_set(char *, int32);
+void global_volume_state_append(char *, int32);
 char *global_volume_state_cstr(void);
 int32 global_volume_state_len(void);
 

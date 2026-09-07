@@ -5,25 +5,19 @@
 
 #include "curses/nc_curses.h"
 
-static int32 nc_cyclic_normalize_start(int32 *start_pos,
-                                       int32 total_characters);
-static void nc_cyclic_increment_start(int32 *start_pos, int32 total_characters);
-static void nc_cyclic_text_append(StrBuilder *output, char *string,
-                                  int32 string_len, int32 start_byte,
-                                  int32 *written_width, int32 width);
-static void nc_cyclic_buffer_apply_properties(NcWindow *window,
-                                              NcBufferProperty *properties,
-                                              int32 property_count,
-                                              int32 *property_index,
-                                              int32 position,
-                                              bool include_position);
-static void nc_cyclic_buffer_write_segment(NcBuffer *buffer, NcWindow *window,
+static int32 nc_cyclic_normalize_start(int32 *, int32);
+static void nc_cyclic_increment_start(int32 *, int32);
+static void nc_cyclic_text_append(StrBuilder *, char *, int32 string_len,
+                                  int32 start_byte, int32 *, int32 width);
+static void nc_cyclic_buffer_apply_properties(NcWindow *, NcBufferProperty *,
+                                              int32 property_count, int32 *,
+                                              int32 position, bool);
+static void nc_cyclic_buffer_write_segment(NcBuffer *, NcWindow *,
                                            int32 start_byte,
                                            int32 *property_index,
                                            int32 *written_width, int32 width);
-static void nc_cyclic_window_write_text(NcWindow *window, char *string,
-                                        int32 string_len, int32 start_byte,
-                                        int32 *written_width, int32 width);
+static void nc_cyclic_window_write_text(NcWindow *, char *, int32 string_len,
+                                        int32 start_byte, int32 *, int32 width);
 
 void
 nc_cyclic_text_write(StrBuilder *output, char *string, int32 string_len,
