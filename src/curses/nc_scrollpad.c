@@ -217,7 +217,6 @@ nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
 void
 nc_scrollpad_flush(NcScrollpad *scrollpad, NcWindow *window, NcBuffer *buffer) {
     NcScrollpadWriteState state;
-    int32 height;
 
     state.buffer = buffer;
     state.properties = nc_buffer_properties(buffer);
@@ -226,8 +225,7 @@ nc_scrollpad_flush(NcScrollpad *scrollpad, NcWindow *window, NcBuffer *buffer) {
     state.property_index = 0;
     state.property_count = ARRAY_LEN(buffer->properties);
 
-    height = nc_scrollpad_write_buffer(&state, true);
-    scrollpad->real_height = height;
+    scrollpad->real_height = nc_scrollpad_write_buffer(&state, true);;
     if (scrollpad->real_height < window->height) {
         scrollpad->real_height = window->height;
     }
