@@ -2818,7 +2818,4 @@ ncm_lyrics_fetcher_fetch(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
     return status;
 }
 
-
-
-
 #endif /* NCMPCPP_LYRICS_FETCHER_C */
