@@ -307,7 +307,7 @@ test_runtime_application_is_separate(void) {
     ASSERT_EQUAL(global_mpd.host.data, global_mpd.host.len, "after-host");
     ASSERT(global_mpd.port == 4567);
     ASSERT_EQUAL(global_mpd.password.data, global_mpd.password.len,
-                 "after-password"));
+                 "after-password");
     ASSERT(global_mpd.timeout_ms == 9000);
 
     if (had_term) {
