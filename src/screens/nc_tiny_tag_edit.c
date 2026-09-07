@@ -411,7 +411,7 @@ tiny_editor_draw_row(NcMenu *menu, NcWindow *window, void *item,
                      int32 pos, void *user) {
     NcBuffer *buffer;
     NcBufferProperty *properties;
-    int32 property_count;
+    int32 property_len;
     int32 property_index;
 
     (void)menu;
@@ -420,10 +420,10 @@ tiny_editor_draw_row(NcMenu *menu, NcWindow *window, void *item,
     buffer = item;
 
     properties = nc_buffer_properties(buffer);
-    property_count = ARRAY_LEN(buffer->properties);
+    property_len = ARRAY_LEN(buffer->properties);
     property_index = 0;
     for (int32 i = 0;; i += 1) {
-        while ((property_index < property_count)
+        while ((property_index < property_len)
                && (properties[property_index].position == i)) {
             nc_buffer_apply_property(window, &properties[property_index]);
             property_index += 1;

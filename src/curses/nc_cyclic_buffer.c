@@ -153,9 +153,9 @@ nc_cyclic_text_write(StrBuilder *output, char *string, int32 string_len,
 static void
 nc_cyclic_buffer_apply_properties(NcWindow *window,
                                   NcBufferProperty *properties,
-                                  int32 property_count, int32 *property_index,
+                                  int32 property_len, int32 *property_index,
                                   int32 position, bool include_position) {
-    while (*property_index < property_count) {
+    while (*property_index < property_len) {
         bool should_apply;
 
         if (include_position) {
@@ -180,7 +180,7 @@ nc_cyclic_buffer_write_segment(NcBuffer *buffer, NcWindow *window,
     NcBufferProperty *properties = nc_buffer_properties(buffer);
     char *string = nc_buffer_data(buffer);
     int32 string_len = buffer->len;
-    int32 property_count = ARRAY_LEN(buffer->properties);
+    int32 property_len = ARRAY_LEN(buffer->properties);
     int32 byte;
 
     if (start_byte < 0) {
@@ -196,7 +196,7 @@ nc_cyclic_buffer_write_segment(NcBuffer *buffer, NcWindow *window,
         int32 next_byte;
 
         nc_cyclic_buffer_apply_properties(window,
-                                          properties, property_count,
+                                          properties, property_len,
                                           property_index, byte, true);
         next_byte = nc_cyclic_next_position(string, string_len, byte,
                                             &char_width);
@@ -209,7 +209,7 @@ nc_cyclic_buffer_write_segment(NcBuffer *buffer, NcWindow *window,
     }
 
     nc_cyclic_buffer_apply_properties(window,
-                                      properties, property_count,
+                                      properties, property_len,
                                       property_index,
                                       string_len, true);
     return;
@@ -280,7 +280,7 @@ nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
     string_width = utf8_width(string, string_len);
     if (string_width <= width) {
         NcBufferProperty *properties = nc_buffer_properties(buffer);
-        int32 property_count = ARRAY_LEN(buffer->properties);
+        int32 property_len = ARRAY_LEN(buffer->properties);
         int32 byte = 0;
 
         property_index = 0;
@@ -288,7 +288,7 @@ nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
             int32 next_byte;
 
             nc_cyclic_buffer_apply_properties(
-                window, properties, property_count, &property_index, byte,
+                window, properties, property_len, &property_index, byte,
                 true);
             next_byte = utf8_next_position(string, string_len, byte);
             nc_window_print_data(window, string + byte, next_byte - byte);
@@ -296,7 +296,7 @@ nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
         }
 
         nc_cyclic_buffer_apply_properties(
-            window, properties, property_count, &property_index, string_len,
+            window, properties, property_len, &property_index, string_len,
             true);
         return;
     }

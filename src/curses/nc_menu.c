@@ -680,11 +680,11 @@ menu_print_buffer(NcWindow *window, NcBuffer *buffer) {
     NcBufferProperty *properties = nc_buffer_properties(buffer);
     char *data = nc_buffer_data(buffer);
     int32 len = buffer->len;
-    int32 property_count = ARRAY_LEN(buffer->properties);
+    int32 property_len = ARRAY_LEN(buffer->properties);
     int32 property_index = 0;
 
     for (int32 i = 0; i <= len; i += 1) {
-        while ((property_index < property_count)
+        while ((property_index < property_len)
                && (properties[property_index].position == i)) {
             nc_buffer_apply_property(window, &properties[property_index]);
             property_index += 1;
