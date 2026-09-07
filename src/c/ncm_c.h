@@ -323,9 +323,9 @@ struct mpd_entity;
 #define ENUM_NAME NcmMpdItemKind
 #define ENUM_PREFIX_ NCM_MPD_ITEM_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NCM_MPD_ITEM_SONG)                                                      \
-    XX(NCM_MPD_ITEM_DIRECTORY)                                                 \
+#define ENUM_FIELDS                     \
+    XX(NCM_MPD_ITEM_SONG)               \
+    XX(NCM_MPD_ITEM_DIRECTORY)          \
     XX(NCM_MPD_ITEM_PLAYLIST)
 #include "cbase/xenums.c"
 
