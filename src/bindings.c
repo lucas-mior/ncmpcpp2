@@ -971,9 +971,13 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
         start = ncm_trim_start(line, len);
 
         if ((len - start >= 11) && STREQUAL(line + start, 11, "def_command")) {
-            status = ncm_bindings_finalize_definition(
-                bindings, in_progress, &actions, key, key_name, key_name_len,
-                command_name, command_name_len, command_immediate, ncm_error);
+            status = ncm_bindings_finalize_definition(bindings, in_progress,
+                                                      &actions, key,
+                                                      key_name, key_name_len,
+                                                      command_name,
+                                                      command_name_len,
+                                                      command_immediate,
+                                                      ncm_error);
             ncm_binding_clear(&actions);
             in_progress = IN_PROGRESS_NONE;
             if (status < 0) {
@@ -1010,17 +1014,22 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             } else if (STREQUAL(enclosed.data, enclosed.len, "deferred")) {
                 command_immediate = false;
             } else {
-                ncm_bindings_error(
-                    ncm_error, "%.*s:%d: invalid command type '%.*s'", path_len,
-                    path, line_no, enclosed.len, enclosed.data);
+                ncm_bindings_error(ncm_error,
+                                   "%.*s:%d: invalid command type '%.*s'",
+                                   path_len, path, line_no,
+                                   enclosed.len, enclosed.data);
                 status = -NCM_ERROR_PARSE;
                 break;
             }
             in_progress = IN_PROGRESS_COMMAND;
         } else if ((len - start >= 7) && STREQUAL(line + start, 7, "def_key")) {
-            status = ncm_bindings_finalize_definition(
-                bindings, in_progress, &actions, key, key_name, key_name_len,
-                command_name, command_name_len, command_immediate, ncm_error);
+            status = ncm_bindings_finalize_definition(bindings, in_progress,
+                                                      &actions, key,
+                                                      key_name, key_name_len,
+                                                      command_name,
+                                                      command_name_len,
+                                                      command_immediate,
+                                                      ncm_error);
             ncm_binding_clear(&actions);
             in_progress = IN_PROGRESS_NONE;
             if (status < 0) {
@@ -1201,9 +1210,13 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
     }
 
     if (status >= 0) {
-        status = ncm_bindings_finalize_definition(
-            bindings, in_progress, &actions, key, key_name, key_name_len,
-            command_name, command_name_len, command_immediate, ncm_error);
+        status = ncm_bindings_finalize_definition(bindings, in_progress,
+                                                  &actions, key,
+                                                  key_name, key_name_len,
+                                                  command_name,
+                                                  command_name_len,
+                                                  command_immediate,
+                                                  ncm_error);
     }
 
     ncm_binding_destroy(&actions);

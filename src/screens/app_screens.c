@@ -287,8 +287,8 @@ app_screen_browser_init(void) {
                         no_border());
     browser_screen_set_mouse_config(&browser_screen, Config.lines_scrolled,
                                     Config.mouse_list_scroll_whole_page);
-    browser_screen_set_display_mode(
-        &browser_screen, Config.browser_display_mode);
+    browser_screen_set_display_mode(&browser_screen,
+                                    Config.browser_display_mode);
     browser_screen_initialized = true;
     return;
 }
@@ -298,8 +298,9 @@ app_screen_browser_fetch_supported_extensions(void) {
     NcmError ncm_error;
 
     ncm_error_clear(&ncm_error);
-    if ((browser_screen_fetch_supported_extensions(
-        app_screen_browser(), &global_mpd, &ncm_error) < 0)
+    if ((browser_screen_fetch_supported_extensions(app_screen_browser(),
+                                                  &global_mpd,
+                                                  &ncm_error) < 0)
         && ncm_error_is_set(&ncm_error)) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     ncm_error.message);
@@ -460,10 +461,13 @@ app_screen_playlist_edit_init(void) {
     if ((Config.playlist_edit_column_width_ratio.len >= 2)
         && (Config.playlist_edit_column_width_ratio.items[0] > 0)
         && (Config.playlist_edit_column_width_ratio.items[1] > 0)) {
-        playlist_edit_screen_set_column_ratio(
-            &playlist_edit_screen,
-            Config.playlist_edit_column_width_ratio.items[0],
-            Config.playlist_edit_column_width_ratio.items[1]);
+        int32 first_ratio;
+        int32 second_ratio;
+
+        first_ratio = Config.playlist_edit_column_width_ratio.items[0];
+        second_ratio = Config.playlist_edit_column_width_ratio.items[1];
+        playlist_edit_screen_set_column_ratio(&playlist_edit_screen,
+                                              first_ratio, second_ratio);
     }
     playlist_edit_screen_initialized = true;
     return;
@@ -474,10 +478,12 @@ app_screen_selected_items_adder_init(void) {
     if (selected_items_adder_screen_initialized) {
         return;
     }
-    selected_items_adder_screen_init(
-        &selected_items_adder_screen, 0, ui_state_main_start_y(),
-        ui_state_screen_width(), ui_state_main_height(),
-        Config.main_window_color, Config.window_border_color);
+    selected_items_adder_screen_init(&selected_items_adder_screen, 0,
+                                     ui_state_main_start_y(),
+                                     ui_state_screen_width(),
+                                     ui_state_main_height(),
+                                     Config.main_window_color,
+                                     Config.window_border_color);
     selected_items_adder_screen_initialized = true;
     return;
 }
@@ -485,9 +491,9 @@ app_screen_selected_items_adder_init(void) {
 int32
 app_screen_selected_items_adder_open(NcmSongArray *songs, NcmError *ncm_error) {
     app_screen_selected_items_adder_register();
-    return selected_items_adder_screen_open(
-        app_screen_selected_items_adder(), songs,
-        app_screen_playlist(), &global_mpd, ncm_error);
+    return selected_items_adder_screen_open(app_screen_selected_items_adder(),
+                                            songs, app_screen_playlist(),
+                                            &global_mpd, ncm_error);
 }
 
 void
@@ -511,10 +517,11 @@ app_screen_sort_playlist_dialog_switch_to(void) {
     ncm_error_clear(&ncm_error);
     status = sort_playlist_dialog_open(app_screen_sort_playlist_dialog(),
                                        app_screen_playlist(), &global_mpd,
-        Config.ignore_leading_the, &ncm_error);
+                                       Config.ignore_leading_the,
+                                       &ncm_error);
     if ((status < 0) && ncm_error_is_set(&ncm_error)) {
-        ncm_statusbar_print_cstring(
-            Config.message_delay_time, ncm_error.message);
+        ncm_statusbar_print_cstring(Config.message_delay_time,
+                                    ncm_error.message);
     }
     return status;
 }
@@ -658,8 +665,8 @@ app_screen_search_engine_init(void) {
             Config.search_engine_default_search_mode;
     }
     search_engine_screen_set_search_mode(&search_engine_screen, mode);
-    search_engine_screen_set_search_source(
-        &search_engine_screen, Config.default_place_to_search_in);
+    search_engine_screen_set_search_source(&search_engine_screen,
+                                           Config.default_place_to_search_in);
 
     hooks.client = &global_mpd;
     hooks.list_database_songs = search_list_database_songs;
@@ -670,9 +677,9 @@ app_screen_search_engine_init(void) {
     hooks.format_song = search_format_song;
     hooks.user = &search_engine_screen;
     search_engine_screen_set_hooks(&search_engine_screen, hooks);
-    search_engine_screen_set_mouse_config(
-        &search_engine_screen, Config.lines_scrolled,
-        Config.mouse_list_scroll_whole_page);
+    search_engine_screen_set_mouse_config(&search_engine_screen,
+                                          Config.lines_scrolled,
+                                          Config.mouse_list_scroll_whole_page);
 
     search_engine_screen_initialized = true;
     return;
@@ -786,13 +793,13 @@ tag_edit_hook_confirm(void *user, char *message, int32 message_len) {
     window = ncm_statusbar_put();
     nc_window_print_data(window, message, message_len);
     nc_window_print_data(window, STRLIT(" [y/n] "));
-    status = ncm_statusbar_prompt_return_one_of(
-        window, values, LENGTH(values), &answer);
+    status = ncm_statusbar_prompt_return_one_of(window, values,
+                                                LENGTH(values), &answer);
     ncm_statusbar_scoped_lock_destroy(&scoped_lock);
 
     if ((status == 0) || (answer != 'y')) {
-        ncm_statusbar_print_cstring(
-            Config.message_delay_time, "Action cancelled");
+        ncm_statusbar_print_cstring(Config.message_delay_time,
+                                    "Action cancelled");
         return false;
     }
     return true;
@@ -812,10 +819,10 @@ tag_edit_hook_update_directory(void *user, char *directory, int32 directory_len
 
     (void)user;
     (void)directory_len;
-    if (ncm_mpd_client_update_directory(
-        &global_mpd, directory, NULL, &ncm_error) < 0) {
-        ncm_statusbar_print_cstring(
-            Config.message_delay_time, ncm_error.message);
+    if (ncm_mpd_client_update_directory(&global_mpd, directory, NULL,
+                                        &ncm_error) < 0) {
+        ncm_statusbar_print_cstring(Config.message_delay_time,
+                                    ncm_error.message);
     }
     return;
 }
@@ -871,10 +878,10 @@ tiny_tag_edit_update_directory(void *user, char *directory, int32 directory_len
 
     (void)user;
     (void)directory_len;
-    if (ncm_mpd_client_update_directory(
-        &global_mpd, directory, NULL, &ncm_error) < 0) {
-        ncm_statusbar_print_cstring(
-            Config.message_delay_time, ncm_error.message);
+    if (ncm_mpd_client_update_directory(&global_mpd, directory, NULL,
+                                        &ncm_error) < 0) {
+        ncm_statusbar_print_cstring(Config.message_delay_time,
+                                    ncm_error.message);
     }
     return;
 }
@@ -1124,8 +1131,8 @@ append_help(NcBuffer *buffer, enum NcmActionType type, char *description) {
             if (!ncm_binding_is_single_action_type(binding, type)) {
                 continue;
             }
-            key_len = ncm_bindings_key_name(
-                key_bindings->key, key_name, SIZEOF(key_name));
+            key_len = ncm_bindings_key_name(key_bindings->key, key_name,
+                                            SIZEOF(key_name));
             if (key_len <= 0) {
                 continue;
             }
@@ -1167,7 +1174,7 @@ help_render(void *user, NcBuffer *buffer) {
     append_help(buffer, NCM_ACTION_SHOW_SEARCH_ENGINE, "Show search engine");
     append_help(buffer, NCM_ACTION_SHOW_MEDIA_LIBRARY, "Show media library");
     append_help(buffer, NCM_ACTION_SHOW_PLAYLIST_EDITOR,
-                            "Show playlist editor");
+                "Show playlist editor");
     append_help(buffer, NCM_ACTION_SHOW_SERVER_INFO, "Show server info");
 #if defined(ENABLE_OUTPUTS)
     append_help(buffer, NCM_ACTION_SHOW_OUTPUTS, "Show outputs");

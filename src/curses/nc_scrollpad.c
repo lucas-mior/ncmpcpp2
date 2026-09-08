@@ -103,8 +103,8 @@ static void
 nc_scrollpad_load_properties(NcScrollpadWriteState *state) {
     while ((state->property_index < state->property_len)
            && (state->properties[state->property_index].position == state->i)) {
-        nc_buffer_apply_property(
-            state->window, &state->properties[state->property_index]);
+        nc_buffer_apply_property(state->window,
+                                 &state->properties[state->property_index]);
         state->property_index += 1;
     }
     return;
@@ -206,8 +206,8 @@ nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
     }
 
     while (state->property_index < state->property_len) {
-        nc_buffer_apply_property(
-            state->window, &state->properties[state->property_index]);
+        nc_buffer_apply_property(state->window,
+                                 &state->properties[state->property_index]);
         state->property_index += 1;
     }
 
