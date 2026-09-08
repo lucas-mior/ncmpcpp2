@@ -681,8 +681,9 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum NcmSongGetter getter,
         if (ncm_song_has_tag_view_unchecked(song, MPD_TAG_TRACK, idx, &view)) {
             len = ncm_song_numeric_tag_len_unchecked(view.data, view.len);
             sb_reserve(&buffer, len);
-            buffer.len = ncm_song_format_numeric_tag_unchecked(
-                buffer.data, buffer.cap, view.data, view.len);
+            buffer.len =
+                ncm_song_format_numeric_tag_unchecked(buffer.data, buffer.cap,
+                                                      view.data, view.len);
         }
         return buffer;
     case NCM_SONG_GETTER_TRACK_NUMBER:
@@ -700,16 +701,19 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum NcmSongGetter getter,
             }
             len += copy_len;
             sb_reserve(&buffer, len);
-            buffer.len = ncm_song_format_numeric_tag_prefix(
-                buffer.data, buffer.cap, view.data, view.len, copy_len);
+            buffer.len =
+                ncm_song_format_numeric_tag_prefix(buffer.data, buffer.cap,
+                                                   view.data, view.len,
+                                                   copy_len);
         }
         return buffer;
     case NCM_SONG_GETTER_DISC:
         if (ncm_song_has_tag_view_unchecked(song, MPD_TAG_DISC, idx, &view)) {
             len = ncm_song_numeric_tag_len_unchecked(view.data, view.len);
             sb_reserve(&buffer, len);
-            buffer.len = ncm_song_format_numeric_tag_unchecked(
-                buffer.data, buffer.cap, view.data, view.len);
+            buffer.len =
+                ncm_song_format_numeric_tag_unchecked(buffer.data, buffer.cap,
+                                                      view.data, view.len);
         }
         return buffer;
     case NCM_SONG_GETTER_PRIORITY:

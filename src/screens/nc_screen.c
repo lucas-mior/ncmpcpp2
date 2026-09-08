@@ -656,8 +656,8 @@ nc_screen_registry_update_one(NcScreen *screen, void *user) {
 
 void
 nc_screen_registry_update_visible(NcScreenRegistry *registry) {
-    nc_screen_registry_each_visible_unchecked(
-        registry, nc_screen_registry_update_one, NULL);
+    nc_screen_registry_each_visible_unchecked(registry,
+                                          nc_screen_registry_update_one, NULL);
     return;
 }
 
@@ -671,8 +671,8 @@ nc_screen_registry_resize_current(NcScreenRegistry *registry) {
 
 void
 nc_screen_registry_resize_visible(NcScreenRegistry *registry) {
-    nc_screen_registry_each_visible_unchecked(
-        registry, nc_screen_registry_resize_one, NULL);
+    nc_screen_registry_each_visible_unchecked(registry,
+                                          nc_screen_registry_resize_one, NULL);
     return;
 }
 

@@ -190,9 +190,9 @@ sort_dialog_add_row(SortPlaylistDialog *dialog, char *label, int32 label_len,
 static void
 sort_dialog_show_move_hint(void *user) {
     (void)user;
-    ncm_statusbar_print_cstring(
-        Config.message_delay_time,
-        "Move tag types up and down to adjust sort order");
+    ncm_statusbar_print_cstring(Config.message_delay_time,
+                                "Move tag types up and down to adjust sort "
+                                "order");
     return;
 }
 
@@ -249,9 +249,10 @@ sort_dialog_run_sort(void *user) {
     getters_len = sort_dialog_get_order(dialog, getters, LENGTH(getters));
     ncm_statusbar_print_cstring(Config.message_delay_time, "Sorting...");
     ncm_error_clear(&ncm_error);
-    status = ncm_playlist_sort_range(
-        &dialog->songs, dialog->start_position, getters, getters_len,
-        dialog->ignore_leading_the, dialog->client, &ncm_error);
+    status = ncm_playlist_sort_range(&dialog->songs, dialog->start_position,
+                                     getters, getters_len,
+                                     dialog->ignore_leading_the,
+                                     dialog->client, &ncm_error);
     if (status == 0) {
         status = ncm_status_update_full(dialog->client, NULL, &ncm_error);
     }
@@ -284,9 +285,9 @@ sort_dialog_populate_defaults(SortPlaylistDialog *dialog) {
     nc_menu_clear_items(nc_editor_sort_menu_base(&dialog->rows));
     sort_dialog_add_row(dialog, STRLIT("Artist"), NCM_SONG_GETTER_ARTIST,
                         sort_dialog_show_move_hint, dialog);
-    sort_dialog_add_row(
-        dialog, STRLIT("Album artist"),
-        NCM_SONG_GETTER_ALBUM_ARTIST, sort_dialog_show_move_hint, dialog);
+    sort_dialog_add_row(dialog, STRLIT("Album artist"),
+                        NCM_SONG_GETTER_ALBUM_ARTIST,
+                        sort_dialog_show_move_hint, dialog);
     sort_dialog_add_row(dialog, STRLIT("Album"), NCM_SONG_GETTER_ALBUM,
                         sort_dialog_show_move_hint, dialog);
     sort_dialog_add_row(dialog, STRLIT("Disc"), NCM_SONG_GETTER_DISC,
@@ -409,13 +410,14 @@ sort_playlist_dialog_open(
 
     current = nc_screen_switcher_current();
     if (current != playlist_screen_base(playlist)) {
-        return ncm_error_set_status(
-            ncm_error, -EINVAL, STRLIT("sort dialog requires playlist screen"));
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("sort dialog requires "
+                                           "playlist screen"));
     }
 
     songs = (NcmSongArray){0};
-    status = playlist_screen_copy_sort_range(
-        playlist, &songs, &start_position, ncm_error);
+    status = playlist_screen_copy_sort_range(playlist, &songs, &start_position,
+                                             ncm_error);
     if (status < 0) {
         ncm_song_array_destroy(&songs);
         return status;
@@ -442,8 +444,8 @@ sort_playlist_dialog_open(
         dialog->previous_screen = NULL;
         dialog->client = NULL;
         dialog->ready = false;
-        return ncm_error_set_status(
-            ncm_error, status, STRLIT("sort dialog is not registered"));
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("sort dialog is not registered"));
     }
 
     ncm_error_clear(ncm_error);

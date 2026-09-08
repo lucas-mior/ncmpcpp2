@@ -23,19 +23,6 @@ Only keep line break before the first argument on the very very rare occasion
 that it does not fit in a single line (80 column rule). Remember to try to keep
 associated pointer + len pairs together.
 
-- src/curses/nc_scrollpad.c
-- src/screens/nc_song_info.c
-- src/screens/app_screens.c
-- src/screens/nc_sort_playlist.c
-- src/settings_types.c
-- src/c/ncm_song.c
-- src/c/ncm_option_parser.c
-- src/helpers.c
-- src/screens/nc_server_info.c
-- src/screens/nc_screen.c
-- src/statusbar.c
-- src/status.c
-- src/bindings.c
 - src/curses/nc_cyclic_buffer.c
 - src/c/ncm_tags.c
 - src/config.c
