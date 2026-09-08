@@ -7,7 +7,7 @@ the first file in the list does not have the problem, try the next one without
 asking first.
 
 ## breaking function calls before the first argument and not aligning
-This is bad:
+For instance, this is bad:
 ```c
 status = ncm_fs_rename(
     old_real_path.data, old_real_path.len,
