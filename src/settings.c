@@ -710,11 +710,9 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
             }
         }
         if (tag.len > 0) {
-            int32 colon;
-            int32 type_len;
+            int32 colon = ncm_string_find_char(tag.data, tag.len, ':');
+            int32 type_len = tag.len;
 
-            colon = ncm_string_find_char(tag.data, tag.len, ':');
-            type_len = tag.len;
             if (colon >= 0) {
                 stupid_string_set(&column->name, &column->name_len,
                                     &column->name_cap, tag.data + colon + 1,
