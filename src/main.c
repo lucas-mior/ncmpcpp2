@@ -121,8 +121,8 @@ main(int32 argc, char **argv) {
     {
         StrBuilder path = {0};
 
-        SB_APPEND(&path, Config.ncmpcpp_directory,
-                  Config.ncmpcpp_directory_len);
+        SB_APPEND(&path,
+                  Config.ncmpcpp_directory, Config.ncmpcpp_directory_len);
         SB_APPEND(&path, "error.log");
 
         if ((app_saved_stderr_fd = dup(STDERR_FILENO)) < 0) {
@@ -226,7 +226,7 @@ main(int32 argc, char **argv) {
             bool executed = false;
 
             if (ncm_bindings_configuration_get(&Bindings, input,
-                                                  &bindings) > 0) {
+                                               &bindings) > 0) {
                 for (int32 i = 0; i < bindings.len; i += 1) {
                     if (ncmpcpp_execute_binding(bindings.data + i) == 0) {
                         executed = true;
