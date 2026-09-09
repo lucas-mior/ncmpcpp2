@@ -1609,10 +1609,11 @@ media_library_tags_from_songs(MediaLibraryTagArray *tags, NcmMpdSongList *songs,
 }
 
 int32
-media_library_albums_from_songs(
-    MediaLibraryAlbumArray *albums, NcmMpdSongList *songs,
-    enum MediaLibraryMode mode, enum mpd_tag_type primary_tag,
-    char *selected_tag, int32 selected_tag_len) {
+media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
+                                NcmMpdSongList *songs,
+                                enum MediaLibraryMode mode,
+                                enum mpd_tag_type primary_tag,
+                                char *selected_tag, int32 selected_tag_len) {
     MediaLibraryAlbumArray replacement = {0};
     MediaLibraryAlbumItem *separator;
     int32 album_count;
