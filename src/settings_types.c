@@ -174,9 +174,13 @@ configuration_destroy(Configuration *config) {
     config->NAME = NULL;                                                  \
     config->NAME##_len = 0;
 #define XX_PATH(NAME, DEFAULT)                                            \
-    XX_STRING(NAME, DEFAULT)
+    free2(config->NAME, config->NAME##_len + 1);                          \
+    config->NAME = NULL;                                                  \
+    config->NAME##_len = 0;
 #define XX_DIR(NAME, DEFAULT)                                             \
-    XX_STRING(NAME, DEFAULT)
+    free2(config->NAME, config->NAME##_len + 1);                          \
+    config->NAME = NULL;                                                  \
+    config->NAME##_len = 0;
 #define XX_FORMATTED_COLOR(NAME, DEFAULT)                                 \
     nc_formatted_color_destroy(&config->NAME);
 #define XX_FORMAT(NAME, DEFAULT, FLAGS)                                   \
