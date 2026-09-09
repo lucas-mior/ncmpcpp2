@@ -1455,7 +1455,8 @@ tag_edit_report_error(char *context, int32 context_len, NcmError *ncm_error) {
         SB_APPEND(&message, ": ");
         SB_APPEND(&message, ncm_error->message, strlen32(ncm_error->message));
     }
-    ncm_statusbar_print_cstring(Config.message_delay_time, message.data);
+    ncm_statusbar_print(Config.message_delay_time,
+                        message.data, strlen32(message.data));
     sb_free(&message);
     return;
 }

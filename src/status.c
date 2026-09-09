@@ -210,7 +210,7 @@ ncm_status_handle_server_error_value(MpdClient *client, int32 code,
         }
 
         ncm_statusbar_print(Config.message_delay_time,
-                            STRLIT("Password accepted"));
+                                    STRLIT("Password accepted"));
     }
     return;
 }
@@ -256,7 +256,8 @@ ncm_status_trace(MpdClient *client, bool update_timer,
                             int32 delay = Config.message_delay_time;
                             char *message = "Song is filtered out";
 
-                            ncm_statusbar_print_cstring(delay, message);
+                            ncm_statusbar_print(delay,
+                                                message, strlen32(message));
                         }
 
                         {
@@ -546,8 +547,9 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                                                 previous_playlist_version,
                                                 status_playlist_length,
                                                 &playlist_error) < 0) {
-                ncm_statusbar_print_cstring(Config.message_delay_time,
-                                            playlist_error.message);
+                ncm_statusbar_print(Config.message_delay_time,
+                                    playlist_error.message,
+                                    strlen32(playlist_error.message));
             } else if (status_playlist_update_observer) {
                 void *user = status_playlist_update_observer_user;
 
@@ -770,7 +772,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                 sb_printf(&message, "Crossfade set to %u seconds",
                           (uint32)mpd_status->crossfade);
                 ncm_statusbar_print(Config.message_delay_time,
-                                    message.data, message.len);
+                                                    message.data, message.len);
                 sb_free(&message);
             }
         }

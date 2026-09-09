@@ -303,11 +303,11 @@ adder_try_add_current_song(SelectedItemsAdderScreen *screen, NcmSong *song,
     }
 
     if (ncm_error.message[0] != '\0') {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    ncm_error.message);
+        ncm_statusbar_print(Config.message_delay_time,
+                            ncm_error.message, strlen32(ncm_error.message));
     } else {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Could not add selected item");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Could not add selected item"));
     }
     return false;
 }
@@ -350,8 +350,8 @@ adder_add_to_current_playlist(SelectedItemsAdderScreen *screen, int32 position
 
     ASSERT(screen->ready);
     if (position == INT32_MAX) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Playlist position is too large");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Playlist position is too large"));
         return;
     }
 
@@ -616,11 +616,11 @@ adder_add_to_stored_playlist(SelectedItemsAdderScreen *screen, char *playlist,
     }
     if (status < 0) {
         if (ncm_error.message[0] != '\0') {
-            ncm_statusbar_print_cstring(Config.message_delay_time,
-                                        ncm_error.message);
+            ncm_statusbar_print(Config.message_delay_time,
+                                ncm_error.message, strlen32(ncm_error.message));
         } else {
-            ncm_statusbar_print_cstring(Config.message_delay_time,
-                                        "Could not add selected items");
+            ncm_statusbar_print(Config.message_delay_time,
+                                STRLIT("Could not add selected items"));
         }
         return;
     }
@@ -756,8 +756,8 @@ adder_action_new_playlist(void *user) {
 
     if (prompt_status != NC_PROMPT_ACCEPTED) {
         nc_window_prompt_result_destroy(input);
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Action aborted");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Action aborted"));
         return;
     }
 

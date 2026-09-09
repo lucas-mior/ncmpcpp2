@@ -302,8 +302,8 @@ app_screen_browser_fetch_supported_extensions(void) {
                                                   &global_mpd,
                                                   &ncm_error) < 0)
         && ncm_error_is_set(&ncm_error)) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    ncm_error.message);
+        ncm_statusbar_print(Config.message_delay_time,
+                            ncm_error.message, strlen32(ncm_error.message));
     }
     return;
 }
@@ -520,8 +520,8 @@ app_screen_sort_playlist_dialog_switch_to(void) {
                                        Config.ignore_leading_the,
                                        &ncm_error);
     if ((status < 0) && ncm_error_is_set(&ncm_error)) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    ncm_error.message);
+        ncm_statusbar_print(Config.message_delay_time,
+                            ncm_error.message, strlen32(ncm_error.message));
     }
     return status;
 }
@@ -793,8 +793,8 @@ tag_edit_hook_confirm(void *user, char *message, int32 message_len) {
     ncm_statusbar_scoped_lock_destroy(&scoped_lock);
 
     if ((status == 0) || (answer != 'y')) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Action cancelled");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Action cancelled"));
         return false;
     }
     return true;
@@ -816,8 +816,8 @@ tag_edit_hook_update_directory(void *user, char *directory, int32 directory_len
     (void)directory_len;
     if (ncm_mpd_client_update_directory(&global_mpd, directory, NULL,
                                         &ncm_error) < 0) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    ncm_error.message);
+        ncm_statusbar_print(Config.message_delay_time,
+                            ncm_error.message, strlen32(ncm_error.message));
     }
     return;
 }
@@ -875,8 +875,8 @@ tiny_tag_edit_update_directory(void *user, char *directory, int32 directory_len
     (void)directory_len;
     if (ncm_mpd_client_update_directory(&global_mpd, directory, NULL,
                                         &ncm_error) < 0) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    ncm_error.message);
+        ncm_statusbar_print(Config.message_delay_time,
+                            ncm_error.message, strlen32(ncm_error.message));
     }
     return;
 }
