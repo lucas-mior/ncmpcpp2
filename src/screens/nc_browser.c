@@ -1014,9 +1014,8 @@ browser_screen_sort(BrowserScreen *screen) {
     begin = 0;
     count = nc_menu_all_item_count(menu);
     if (count > 0) {
-        NcmMpdItem *first_item;
+        NcmMpdItem *first_item = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, 0);
 
-        first_item = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, 0);
         if (browser_screen_item_is_parent(first_item)) {
             begin = 1;
         }
