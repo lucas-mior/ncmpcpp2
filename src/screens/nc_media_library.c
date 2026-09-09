@@ -1575,13 +1575,12 @@ media_library_tags_from_strings(MediaLibraryTagArray *tags,
 int32
 media_library_tags_from_songs(MediaLibraryTagArray *tags, NcmMpdSongList *songs,
                               enum mpd_tag_type primary_tag) {
-    MediaLibraryTagArray replacement;
+    MediaLibraryTagArray replacement = {0};
 
     if ((tags == NULL) || (songs == NULL) || (primary_tag == MPD_TAG_UNKNOWN)) {
         return -EINVAL;
     }
 
-    replacement = (MediaLibraryTagArray){0};
     for (int32 i = 0; i < ncm_mpd_song_list_count(songs); i += 1) {
         NcmSong *song;
         NcmStringView primary_value;
