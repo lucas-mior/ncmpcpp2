@@ -5,42 +5,6 @@
 
 #include "c/ncm_c.h"
 
-static void
-ncm_mutable_song_free_string(char **string, int32 *string_len) {
-    ASSERT((string != NULL) && (string_len != NULL));
-
-    free2(*string, *string_len + 1);
-    *string = NULL;
-    *string_len = 0;
-    return;
-}
-
-static void
-ncm_mutable_song_set_string(char **dest, int32 *dest_len,
-                            char *source, int32 source_len) {
-    char *copy;
-
-    ASSERT((dest != NULL) && (dest_len != NULL));
-    ASSERT_NON_NEGATIVE(source_len);
-    ASSERT((source != NULL) || (source_len == 0));
-
-    copy = NULL;
-    if (source != NULL) {
-        copy = malloc2(source_len + 1);
-        if (source_len > 0) {
-            memcpy64(copy, source, source_len);
-        }
-        copy[source_len] = '\0';
-    }
-
-    ncm_mutable_song_free_string(dest, dest_len);
-    *dest = copy;
-    if (copy != NULL) {
-        *dest_len = source_len;
-    }
-    return;
-}
-
 static MutableSongTag *
 ncm_mutable_song_find_tag(MutableSong *song, enum NcmTagsField field,
                           int32 idx) {
@@ -104,8 +68,7 @@ ncm_mutable_song_set_original_tag_unchecked(MutableSong *song,
     if ((tag = ncm_mutable_song_find_tag(song, field, idx)) == NULL) {
         tag = ncm_mutable_song_add_tag(song, field, idx);
     }
-    ncm_mutable_song_set_string(&tag->original, &tag->original_len,
-                                value, value_len);
+    stupid_string_set(&tag->original, &tag->original_len, value, value_len);
     return;
 }
 
@@ -123,12 +86,12 @@ ncm_mutable_song_set_tag_unchecked(MutableSong *song,
     }
 
     if (optional_strequal(tag->original, tag->original_len, value, value_len)) {
-        ncm_mutable_song_free_string(&tag->value, &tag->value_len);
+        stupid_string_free(&tag->value, &tag->value_len);
         tag->modified = false;
         return;
     }
 
-    ncm_mutable_song_set_string(&tag->value, &tag->value_len, value, value_len);
+    stupid_string_set(&tag->value, &tag->value_len, value, value_len);
     tag->modified = true;
     return;
 }
@@ -137,8 +100,8 @@ static void
 ncm_mutable_song_tag_destroy(MutableSongTag *tag) {
     ASSERT(tag != NULL);
 
-    ncm_mutable_song_free_string(&tag->original, &tag->original_len);
-    ncm_mutable_song_free_string(&tag->value, &tag->value_len);
+    stupid_string_free(&tag->original, &tag->original_len);
+    stupid_string_free(&tag->value, &tag->value_len);
     tag->idx = 0;
     tag->field = NCM_TAGS_FIELD_COUNT;
     tag->modified = false;
@@ -147,10 +110,10 @@ ncm_mutable_song_tag_destroy(MutableSongTag *tag) {
 
 static void
 ncm_mutable_song_destroy_unchecked(MutableSong *song) {
-    ncm_mutable_song_free_string(&song->uri, &song->uri_len);
-    ncm_mutable_song_free_string(&song->directory, &song->directory_len);
-    ncm_mutable_song_free_string(&song->name, &song->name_len);
-    ncm_mutable_song_free_string(&song->new_name, &song->new_name_len);
+    stupid_string_free(&song->uri, &song->uri_len);
+    stupid_string_free(&song->directory, &song->directory_len);
+    stupid_string_free(&song->name, &song->name_len);
+    stupid_string_free(&song->new_name, &song->new_name_len);
 
     for (int32 i = 0; i < song->tags_len; i += 1) {
         ncm_mutable_song_tag_destroy(&song->tags[i]);
@@ -208,14 +171,13 @@ ncm_mutable_song_copy(MutableSong *dest, MutableSong *source) {
         return 0;
     }
 
-    ncm_mutable_song_set_string(&copy.uri, &copy.uri_len,
-                                source->uri, source->uri_len);
-    ncm_mutable_song_set_string(&copy.directory, &copy.directory_len,
-                                source->directory, source->directory_len);
-    ncm_mutable_song_set_string(&copy.name, &copy.name_len,
-                                source->name, source->name_len);
-    ncm_mutable_song_set_string(&copy.new_name, &copy.new_name_len,
-                                source->new_name, source->new_name_len);
+    stupid_string_set(&copy.uri, &copy.uri_len, source->uri, source->uri_len);
+    stupid_string_set(&copy.directory, &copy.directory_len,
+                      source->directory, source->directory_len);
+    stupid_string_set(&copy.name, &copy.name_len,
+                      source->name, source->name_len);
+    stupid_string_set(&copy.new_name, &copy.new_name_len,
+                      source->new_name, source->new_name_len);
     copy.mtime = source->mtime;
     copy.duration = source->duration;
     copy.is_from_database = source->is_from_database;
@@ -229,11 +191,10 @@ ncm_mutable_song_copy(MutableSong *dest, MutableSong *source) {
         tag->field = source_tag->field;
         tag->idx = source_tag->idx;
         tag->modified = source_tag->modified;
-        ncm_mutable_song_set_string(&tag->original, &tag->original_len,
-                                    source_tag->original,
-                                    source_tag->original_len);
-        ncm_mutable_song_set_string(&tag->value, &tag->value_len,
-                                    source_tag->value, source_tag->value_len);
+        stupid_string_set(&tag->original, &tag->original_len,
+                          source_tag->original, source_tag->original_len);
+        stupid_string_set(&tag->value, &tag->value_len,
+                          source_tag->value, source_tag->value_len);
     }
 
     ncm_mutable_song_destroy_unchecked(dest);
@@ -481,20 +442,17 @@ ncm_mutable_song_load_originals_from_song(MutableSong *dest,
     if (!ncm_song_has_uri_view(source, 0, &view)) {
         return -NCM_ERROR_NOT_FOUND;
     }
-    ncm_mutable_song_set_string(&dest->uri, &dest->uri_len,
-                                view.data, view.len);
+    stupid_string_set(&dest->uri, &dest->uri_len, view.data, view.len);
     if (ncm_song_has_directory_view(source, 0, &view)) {
-        ncm_mutable_song_set_string(&dest->directory, &dest->directory_len,
-                                    view.data, view.len);
+        stupid_string_set(&dest->directory, &dest->directory_len,
+                          view.data, view.len);
     } else {
-        ncm_mutable_song_set_string(&dest->directory, &dest->directory_len,
-                                    "", 0);
+        stupid_string_set(&dest->directory, &dest->directory_len, "", 0);
     }
     if (ncm_song_has_name_view(source, 0, &view)) {
-        ncm_mutable_song_set_string(&dest->name, &dest->name_len,
-                                    view.data, view.len);
+        stupid_string_set(&dest->name, &dest->name_len, view.data, view.len);
     } else {
-        ncm_mutable_song_set_string(&dest->name, &dest->name_len, "", 0);
+        stupid_string_set(&dest->name, &dest->name_len, "", 0);
     }
     dest->is_from_database = ncm_song_is_from_database(source);
 
@@ -534,16 +492,16 @@ ncm_mutable_song_set_new_name(MutableSong *song, char *new_name,
     }
 
     if (new_name_len <= 0) {
-        ncm_mutable_song_free_string(&song->new_name, &song->new_name_len);
+        stupid_string_free(&song->new_name, &song->new_name_len);
         return 0;
     }
     if (optional_strequal(song->name, song->name_len, new_name, new_name_len)) {
-        ncm_mutable_song_free_string(&song->new_name, &song->new_name_len);
+        stupid_string_free(&song->new_name, &song->new_name_len);
         return 0;
     }
 
-    ncm_mutable_song_set_string(&song->new_name, &song->new_name_len,
-                                new_name, new_name_len);
+    stupid_string_set(&song->new_name, &song->new_name_len,
+                      new_name, new_name_len);
     return 0;
 }
 
@@ -606,10 +564,9 @@ ncm_mutable_song_clear_modifications(MutableSong *song) {
         return;
     }
 
-    ncm_mutable_song_free_string(&song->new_name, &song->new_name_len);
+    stupid_string_free(&song->new_name, &song->new_name_len);
     for (int32 i = 0; i < song->tags_len; i += 1) {
-        ncm_mutable_song_free_string(&song->tags[i].value,
-                                     &song->tags[i].value_len);
+        stupid_string_free(&song->tags[i].value, &song->tags[i].value_len);
         song->tags[i].modified = false;
     }
     return;
