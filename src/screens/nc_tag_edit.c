@@ -3627,9 +3627,8 @@ tag_edit_screen_prepare_parser_rows(TagEditScreen *screen,
 
 void
 tag_edit_screen_show_parser_dialog(TagEditScreen *screen) {
-    NcMenu *menu;
+    NcMenu *menu = nc_editor_string_menu_base(&screen->parser_dialog);
 
-    menu = nc_editor_string_menu_base(&screen->parser_dialog);
     if (nc_menu_item_count(menu) <= 0) {
         tag_edit_screen_prepare_parser_rows(screen, TAG_EDIT_PARSER_NONE,
                                             NULL, 0);
