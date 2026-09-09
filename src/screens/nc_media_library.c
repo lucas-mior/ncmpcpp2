@@ -1651,10 +1651,12 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
                         song->last_modified;
                 }
             } else {
-                library_append_album(&replacement, selected_tag,
-                                     selected_tag_len, album.data, album.len,
-                                     date.data, date.len, song->last_modified,
-                                     false, NC_MENU_ITEM_SELECTABLE);
+                library_append_album(&replacement,
+                                     selected_tag, selected_tag_len,
+                                     album.data, album.len,
+                                     date.data, date.len,
+                                     song->last_modified, false,
+                                     NC_MENU_ITEM_SELECTABLE);
             }
         } else {
             NcmStringView album = {0};
