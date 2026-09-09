@@ -990,11 +990,9 @@ browser_compare_playlist_times(NcmMpdItem *right, NcmMpdItem *left) {
 
 static int32
 browser_compare_song_times(NcmMpdItem *right, NcmMpdItem *left) {
-    NcmSong *right_song;
-    NcmSong *left_song;
+    NcmSong *right_song = ncm_mpd_item_song(right);
+    NcmSong *left_song = ncm_mpd_item_song(left);
 
-    right_song = ncm_mpd_item_song(right);
-    left_song = ncm_mpd_item_song(left);
     return browser_compare_times(ncm_song_mtime(right_song),
                                  ncm_song_mtime(left_song));
 }
