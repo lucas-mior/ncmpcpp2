@@ -212,12 +212,6 @@ configuration_destroy(Configuration *config) {
     return;
 }
 
-void
-configuration_clear(Configuration *config) {
-    configuration_destroy(config);
-    return;
-}
-
 double
 configuration_locked_screen_width_fraction(Configuration *config) {
     ASSERT(config != NULL);

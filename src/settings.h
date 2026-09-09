@@ -128,7 +128,6 @@ Column *column_array_append(ColumnArray *);
 
 void configuration_init(Configuration *);
 void configuration_destroy(Configuration *);
-void configuration_clear(Configuration *);
 int32 configuration_validate(Configuration *, NcmError *);
 double configuration_locked_screen_width_fraction(Configuration *);
 enum SearchEngineSearchMode configuration_search_engine_default_mode(
