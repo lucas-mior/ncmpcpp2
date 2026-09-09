@@ -151,7 +151,7 @@ browser_locate_last_directory(BrowserScreen *screen) {
     StringView path;
     NcMenu *menu;
 
-    target = ncm_string_view_make(screen->last_highlighted_directory.data,
+    target = ncm_string_view(screen->last_highlighted_directory.data,
                                   screen->last_highlighted_directory.len);
     if (target.len <= 0) {
         return;
@@ -956,8 +956,8 @@ browser_compare_song_sort_format(NcmMpdItem *right, NcmMpdItem *left) {
                                             ncm_mpd_item_song(right));
     left_buffer = ncm_format_render_string(&Config.browser_sort_format,
                                            ncm_mpd_item_song(left));
-    right_view = ncm_string_view_make(right_buffer.data, right_buffer.len);
-    left_view = ncm_string_view_make(left_buffer.data, left_buffer.len);
+    right_view = ncm_string_view(right_buffer.data, right_buffer.len);
+    left_view = ncm_string_view(left_buffer.data, left_buffer.len);
     comp = browser_compare_views(right_view, left_view);
     sb_free(&left_buffer);
     sb_free(&right_buffer);
@@ -1123,9 +1123,9 @@ browser_screen_set_current_directory(BrowserScreen *screen, char *directory,
         return -EINVAL;
     }
 
-    current = ncm_string_view_make(screen->current_directory.data,
+    current = ncm_string_view(screen->current_directory.data,
                                    screen->current_directory.len);
-    replacement = ncm_string_view_make(directory, directory_len);
+    replacement = ncm_string_view(directory, directory_len);
     if (!browser_string_views_matches(current, replacement)) {
         sb_set(&screen->last_highlighted_directory, current.data, current.len);
         screen->title_scroll_beginning = 0;
@@ -1138,9 +1138,9 @@ browser_screen_set_current_directory(BrowserScreen *screen, char *directory,
 StringView
 browser_screen_current_directory(BrowserScreen *screen) {
     if (screen == NULL) {
-        return ncm_string_view_make(NULL, 0);
+        return ncm_string_view(NULL, 0);
     }
-    return ncm_string_view_make(screen->current_directory.data,
+    return ncm_string_view(screen->current_directory.data,
                                 screen->current_directory.len);
 }
 
@@ -1162,7 +1162,7 @@ browser_screen_update_title_text(BrowserScreen *screen) {
 
     directory = browser_screen_current_directory(screen);
     if (directory.len <= 0) {
-        directory = ncm_string_view_make("/", 1);
+        directory = ncm_string_view("/", 1);
     }
 
     screen_width = ui_state_screen_width();
@@ -1895,7 +1895,7 @@ browser_screen_rename_current_directory(BrowserScreen *screen,
         return ncm_error_ok(ncm_error);
     }
 
-    new_path_view = ncm_string_view_make(new_path, new_path_len);
+    new_path_view = ncm_string_view(new_path, new_path_len);
     {
         StrBuilder old_real_path = {0};
         StrBuilder new_real_path = {0};

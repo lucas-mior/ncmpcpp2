@@ -185,9 +185,9 @@ current_screen_current_filter(void) {
     StrBuilder *buffer;
 
     if ((buffer = current_screen_filter_buffer()) == NULL) {
-        return ncm_string_view_make(NULL, 0);
+        return ncm_string_view(NULL, 0);
     }
-    return ncm_string_view_make(buffer->data, buffer->len);
+    return ncm_string_view(buffer->data, buffer->len);
 }
 
 int32
@@ -249,9 +249,9 @@ current_screen_current_search_constraint(void) {
     StrBuilder *buffer;
 
     if ((buffer = current_screen_search_buffer()) == NULL) {
-        return ncm_string_view_make(NULL, 0);
+        return ncm_string_view(NULL, 0);
     }
-    return ncm_string_view_make(buffer->data, buffer->len);
+    return ncm_string_view(buffer->data, buffer->len);
 }
 
 bool
