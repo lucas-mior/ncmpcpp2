@@ -181,11 +181,11 @@ typedef struct NcWindow {
 
     bool escape_terminal_sequences;
 
-    int32 bold_counter;
-    int32 underline_counter;
-    int32 reverse_counter;
-    int32 alt_charset_counter;
-    int32 italic_counter;
+    int32 bold_count;
+    int32 underline_count;
+    int32 reverse_count;
+    int32 alt_charset_count;
+    int32 italic_count;
 } NcWindow;
 
 NcColor nc_color_make(int16 foreground, int16 background, bool is_default,
