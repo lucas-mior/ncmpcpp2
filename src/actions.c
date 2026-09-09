@@ -98,8 +98,7 @@ action_runtime_switch_to_screen(enum ScreenType type) {
     int32 status;
 
     if ((type != SCREEN_TYPE_SELECTED_ITEMS_ADDER)
-        && action_runtime_current_screen_is(
-            SCREEN_TYPE_SELECTED_ITEMS_ADDER)
+        && action_runtime_current_screen_is(SCREEN_TYPE_SELECTED_ITEMS_ADDER)
         && ((status = selected_items_adder_screen_return_to_previous(
                  app_screen_selected_items_adder())) < 0)) {
         return status;
