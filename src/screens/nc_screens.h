@@ -296,13 +296,13 @@
     XX(lyrics)                                                    \
     XX(media_library)                                             \
     XX(playlist)                                                  \
-    XX(playlist_edit)                                           \
+    XX(playlist_edit)                                             \
     XX(search_engine)                                             \
     XX(selected_items_adder)                                      \
     XX(server_info)                                               \
     XX(song_info)                                                 \
     XX(sort_playlist_dialog)                                      \
-    NCM_APP_SCREEN_ENABLED_TAG_EDIT(XX)                         \
+    NCM_APP_SCREEN_ENABLED_TAG_EDIT(XX)                           \
     NCM_APP_SCREEN_ENABLED_VISUALIZER(XX)                         \
     NCM_APP_SCREEN_ENABLED_OUTPUTS(XX)
 
@@ -316,7 +316,7 @@
     XX(song_info)                                                 \
     XX(server_info)                                               \
     NCM_APP_SCREEN_ENABLED_VISUALIZER(XX)                         \
-    NCM_APP_SCREEN_ENABLED_TAG_EDIT(XX)                         \
+    NCM_APP_SCREEN_ENABLED_TAG_EDIT(XX)                           \
     NCM_APP_SCREEN_ENABLED_OUTPUTS(XX)                            \
     XX(playlist)                                                  \
     XX(playlist_edit)
@@ -328,13 +328,13 @@
     XX(lyrics, NC_SCREEN_TYPE_LYRICS)                             \
     XX(media_library, NC_SCREEN_TYPE_MEDIA_LIBRARY)               \
     XX(playlist, NC_SCREEN_TYPE_PLAYLIST)                         \
-    XX(playlist_edit, NC_SCREEN_TYPE_PLAYLIST_EDITOR)           \
+    XX(playlist_edit, NC_SCREEN_TYPE_PLAYLIST_EDITOR)             \
     XX(search_engine, NC_SCREEN_TYPE_SEARCH_ENGINE)               \
     XX(selected_items_adder, NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER) \
     XX(server_info, NC_SCREEN_TYPE_SERVER_INFO)                   \
     XX(song_info, NC_SCREEN_TYPE_SONG_INFO)                       \
     XX(sort_playlist_dialog, NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG) \
-    NCM_APP_SCREEN_ENABLED_TAG_EDIT_RESIZE(XX)                  \
+    NCM_APP_SCREEN_ENABLED_TAG_EDIT_RESIZE(XX)                    \
     NCM_APP_SCREEN_ENABLED_VISUALIZER_RESIZE(XX)                  \
     NCM_APP_SCREEN_ENABLED_OUTPUTS_RESIZE(XX)
 
