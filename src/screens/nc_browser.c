@@ -290,7 +290,6 @@ browser_reload_from_local(BrowserScreen *screen, NcmError *ncm_error) {
     NcmFsDirectory directory = {0};
     NcmFsEntry entry = {0};
     NcMenu *menu;
-    int32 read_status;
     int32 status;
 
     if (screen->current_directory.len <= 0) {
@@ -331,6 +330,7 @@ browser_reload_from_local(BrowserScreen *screen, NcmError *ncm_error) {
     while (status == 0) {
         StrBuilder path = {0};
         NcmFsStat stat = {0};
+        int32 read_status;
 
         read_status = ncm_fs_directory_read(&directory, &entry, ncm_error);
         if (read_status < 0) {
@@ -1408,7 +1408,6 @@ browser_collect_local_directory_songs(BrowserScreen *screen,
                                       NcmError *ncm_error) {
     NcmFsDirectory directory = {0};
     NcmFsEntry entry = {0};
-    int32 read_status;
     int32 status;
 
     status = ncm_fs_directory_open(&directory, path, path_len, ncm_error);
@@ -1420,6 +1419,7 @@ browser_collect_local_directory_songs(BrowserScreen *screen,
     while (true) {
         StrBuilder entry_path = {0};
         NcmFsStat stat = {0};
+        int32 read_status;
 
         read_status = ncm_fs_directory_read(&directory, &entry, ncm_error);
         if (read_status < 0) {
@@ -1572,7 +1572,6 @@ browser_delete_path_recursive(char *path, int32 path_len, NcmError *ncm_error) {
     NcmFsDirectory directory = {0};
     NcmFsEntry entry = {0};
     NcmFsStat stat = {0};
-    int32 read_status;
     int32 status;
 
     status = ncm_fs_stat(path, path_len, &stat, ncm_error);
@@ -1594,6 +1593,7 @@ browser_delete_path_recursive(char *path, int32 path_len, NcmError *ncm_error) {
     ncm_fs_entry_init(&entry);
     while (true) {
         StrBuilder child = {0};
+        int32 read_status;
 
         read_status = ncm_fs_directory_read(&directory, &entry, ncm_error);
         if (read_status < 0) {
