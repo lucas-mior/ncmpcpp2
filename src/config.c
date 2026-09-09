@@ -139,7 +139,8 @@ configuration_require_value(int32 argc, char **argv, int32 *i, char *option,
         char message[128];
         int32 len;
 
-        len = SNPRINTF(message, "option '%.*s' requires an argument",
+        len = SNPRINTF(message,
+                       "option '%.*s' requires an argument",
                        option_len, option);
         return ncm_error_set_status(ncm_error, -EINVAL, message, len);
     }
@@ -298,13 +299,14 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
                 char message[128];
                 int32 len;
 
-                len = SNPRINTF(message, "unrecognized option '--%.*s'",
-                               name_len, name);
+                len = SNPRINTF(message,
+                               "unrecognized option '--%.*s'", name_len, name);
                 return ncm_error_set_status(ncm_error, -EINVAL, message, len);
             }
 
 #undef REQUIRE_LONG
 #undef REJECT_LONG
+
         } else if ((arg_len > 1) && (arg[0] == '-')) {
             bool all_flags;
             char option[3];
