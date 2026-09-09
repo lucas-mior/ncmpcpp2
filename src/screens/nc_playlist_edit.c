@@ -254,14 +254,13 @@ playlist_edit_switch_to_callback(NcScreen *screen) {
 
 static void
 playlist_edit_resize_callback(NcScreen *screen) {
-    PlaylistEditScreen *editor;
-    NcScreenResizeParams params;
+    PlaylistEditScreen *editor = playlist_edit_from_screen(screen);
+    NcScreenResizeParams params = nc_screen_resize_params(screen);
 
-    editor = playlist_edit_from_screen(screen);
-    params = nc_screen_resize_params(screen);
-    playlist_edit_screen_set_geometry(editor, params.x_offset, params.width,
-                                        editor->main_start_y,
-                                        editor->main_height);
+    playlist_edit_screen_set_geometry(editor,
+                                      params.x_offset, params.width,
+                                      editor->main_start_y,
+                                      editor->main_height);
     nc_screen_clear_resize_request(screen);
     return;
 }
