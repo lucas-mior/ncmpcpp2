@@ -96,59 +96,59 @@ NCM_ARRAY_DEFINE_APPEND(column_array, ColumnArray, Column,
 
 static void
 configuration_init_unchecked(Configuration *config) {
-#define XX_BOOL(NAME, DEFAULT)                                           \
+#define XX_BOOL(NAME, DEFAULT)                                                 \
     config->NAME = false;
-#define XX_STRING(NAME, DEFAULT)                                         \
+#define XX_STRING(NAME, DEFAULT)                                               \
     config->NAME = NULL;                                                       \
     config->NAME##_len = 0;
-#define XX_PATH(NAME, DEFAULT)                                           \
+#define XX_PATH(NAME, DEFAULT)                                                 \
     XX_STRING(NAME, DEFAULT)
-#define XX_DIR(NAME, DEFAULT)                                            \
+#define XX_DIR(NAME, DEFAULT)                                                  \
     XX_STRING(NAME, DEFAULT)
-#define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM)                      \
+#define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM)                            \
     config->NAME = 0;
-#define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)                       \
+#define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)                             \
     config->NAME = 0;
-#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT)                             \
+#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT)                                   \
     config->NAME = (ENUM_PREFIX_)0;
-#define XX_MPD_TAG(NAME, DEFAULT)                                        \
+#define XX_MPD_TAG(NAME, DEFAULT)                                              \
     config->NAME = MPD_TAG_UNKNOWN;
-#define XX_STARTUP_SCREEN(NAME, DEFAULT)                                 \
+#define XX_STARTUP_SCREEN(NAME, DEFAULT)                                       \
     config->NAME = SCREEN_TYPE_COUNT;
 #define XX_OPTIONAL_STARTUP_SCREEN(                                            \
-    NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE                            \
+    NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE                                  \
 )                                                                              \
     config->NAME = (SCREEN_TYPE_)(UNSET_VALUE);                                \
     config->PRESENT_FIELD = false;
-#define XX_COLOR(NAME, DEFAULT)                                          \
+#define XX_COLOR(NAME, DEFAULT)                                                \
     config->NAME = nc_color_default();
-#define XX_FORMATTED_COLOR(NAME, DEFAULT)                                \
+#define XX_FORMATTED_COLOR(NAME, DEFAULT)                                      \
     nc_formatted_color_init(&config->NAME);
-#define XX_BORDER(NAME, DEFAULT)                                         \
+#define XX_BORDER(NAME, DEFAULT)                                               \
     config->NAME = nc_border_none();
-#define XX_FORMAT(NAME, DEFAULT, FLAGS)                                  \
+#define XX_FORMAT(NAME, DEFAULT, FLAGS)                                        \
     config->NAME = (NcmFormatAst){0};
-#define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                          \
+#define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                                \
     config->NAME = (NcBuffer){0};
-#define XX_BUFFER_WIDTH(NAME, DEFAULT, KEEP_EXISTING)                    \
+#define XX_BUFFER_WIDTH(NAME, DEFAULT, KEEP_EXISTING)                          \
     config->NAME = (NcBuffer){0};                                              \
     config->NAME##_length = 0;
-#define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)         \
+#define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)               \
     config->NAME = (StrBuilder){0};
-#define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                            \
+#define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                                  \
     config->NAME = (NcmInt32Array){0};
-#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT)                           \
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT)                                 \
     config->NAME = (NcmFormattedColorArray){0};
-#define XX_LYRICS_FETCHERS(NAME, DEFAULT)                                \
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT)                                      \
     config->NAME = (LyricsFetcherRegistry){0};
-#define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                    \
+#define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                          \
     config->NAME = (ScreenTypeArray){0};                                       \
     config->PREVIOUS_FIELD = false;
-#define XX_NAMED_BOOL(NAME, DEFAULT, TRUE_VALUE, FALSE_VALUE)            \
+#define XX_NAMED_BOOL(NAME, DEFAULT, TRUE_VALUE, FALSE_VALUE)                  \
     config->NAME = false;
-#define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE)             \
+#define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE)                   \
     config->NAME = (UNSET_VALUE);
-#define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD)                          \
+#define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD)                                \
     config->FORMAT_FIELD = (NcmFormatAst){0};                                  \
     config->NAME = (ColumnArray){0};
 
