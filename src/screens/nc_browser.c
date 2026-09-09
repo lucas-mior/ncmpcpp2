@@ -215,8 +215,7 @@ browser_local_path_has_supported_extension(
     BrowserScreen *screen, char *path, int32 path_len) {
     int32 extension;
 
-    extension = ncm_path_extension_start(path, path_len);
-    if (extension <= 0) {
+    if ((extension = ncm_path_extension_start(path, path_len)) <= 0) {
         return false;
     }
     return browser_supported_extensions_contains(&screen->supported_extensions,
