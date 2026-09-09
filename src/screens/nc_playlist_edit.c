@@ -1486,7 +1486,7 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
 
 int32
 playlist_edit_screen_current_playlist(PlaylistEditScreen *screen,
-                                        NcmPlaylist *playlist) {
+                                      NcmPlaylist *playlist) {
     NcmPlaylist *current;
 
     if ((screen == NULL) || (playlist == NULL)) {
@@ -1507,7 +1507,7 @@ playlist_edit_screen_current_song(PlaylistEditScreen *screen, NcmSong *song) {
 
 int32
 playlist_edit_screen_current_content_song(PlaylistEditScreen *screen,
-                                            NcmSong *song) {
+                                          NcmSong *song) {
     NcmSong *current;
 
     if ((screen == NULL) || (song == NULL)) {
