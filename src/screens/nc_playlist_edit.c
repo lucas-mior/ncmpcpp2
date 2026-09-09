@@ -398,13 +398,10 @@ update_finished:
 
 static void
 playlist_edit_mouse_scroll(PlaylistEditScreen *screen, enum NcScroll where) {
-    enum NcScroll effective;
-    NcMenu *menu;
-    int32 count;
+    enum NcScroll effective = where;
+    NcMenu *menu = playlist_edit_screen_active_menu(screen);
+    int32 count = Config.lines_scrolled;
 
-    menu = playlist_edit_screen_active_menu(screen);
-    effective = where;
-    count = Config.lines_scrolled;
     if (Config.mouse_list_scroll_whole_page) {
         count = 1;
         if (where == NC_SCROLL_DOWN) {
