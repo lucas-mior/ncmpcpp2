@@ -164,8 +164,8 @@ playlist_edit_has_current_playlist_path(PlaylistEditScreen *screen,
                                           char **path, int32 *path_len) {
     NcmPlaylist *playlist;
 
-    if ((playlist = nc_playlist_entry_menu_current(&screen->playlists))
-        == NULL) {
+    if ((playlist
+            = nc_playlist_entry_menu_current(&screen->playlists)) == NULL) {
         return false;
     }
     *path = playlist->path;
