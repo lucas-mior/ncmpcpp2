@@ -107,7 +107,7 @@ configuration_init_unchecked(Configuration *config) {
     config->NAME = 0;
 #define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)                        \
     config->NAME = 0;
-#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT)                              \
+#define XX_ENUM(NAME, DEFAULT, ENUM_PREFIX_)                              \
     config->NAME = (ENUM_PREFIX_)0;
 #define XX_MPD_TAG(NAME, DEFAULT)                                         \
     config->NAME = NCM_TAG_UNKNOWN;

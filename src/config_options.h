@@ -94,18 +94,19 @@ XX_BOOL(colors_enabled, "yes")
 
 /* Ordinary enum-backed settings. */
 #if defined(HAVE_FFTW3_H)
-XX_ENUM(visualizer_type, NCM_VISUALIZER_TYPE_, "spectrum")
+XX_ENUM(visualizer_type, "spectrum", NCM_VISUALIZER_TYPE_)
 #else
-XX_ENUM(visualizer_type, NCM_VISUALIZER_TYPE_, "ellipse")
+XX_ENUM(visualizer_type, "ellipse", NCM_VISUALIZER_TYPE_)
 #endif
-XX_ENUM(browser_sort_mode, NCM_SORT_MODE_, "type")
-XX_ENUM(playlist_display_mode, NCM_DISPLAY_MODE_, "columns")
-XX_ENUM(browser_display_mode, NCM_DISPLAY_MODE_, "classic")
-XX_ENUM(search_engine_display_mode, NCM_DISPLAY_MODE_, "classic")
-XX_ENUM(playlist_edit_display_mode, NCM_DISPLAY_MODE_, "classic")
-XX_ENUM(user_interface, NCM_DESIGN_, "classic")
+
+XX_ENUM(browser_sort_mode, "type", NCM_SORT_MODE_)
+XX_ENUM(playlist_display_mode, "columns", NCM_DISPLAY_MODE_)
+XX_ENUM(browser_display_mode, "classic", NCM_DISPLAY_MODE_)
+XX_ENUM(search_engine_display_mode, "classic", NCM_DISPLAY_MODE_)
+XX_ENUM(playlist_edit_display_mode, "classic", NCM_DISPLAY_MODE_)
+XX_ENUM(user_interface, "classic", NCM_DESIGN_)
 XX_MPD_TAG(media_library_primary_tag, "artist")
-XX_ENUM(space_add_mode, NCM_SPACE_ADD_MODE_, "add_remove")
+XX_ENUM(space_add_mode, "add_remove", NCM_SPACE_ADD_MODE_)
 XX_STARTUP_SCREEN(startup_screen, "playlist")
 
 /* Optional enum-backed settings. */

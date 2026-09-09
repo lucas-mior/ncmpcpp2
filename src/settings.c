@@ -45,7 +45,7 @@ typedef struct SettingsOption {
     SETTINGS_ASSERT_FIELD_TYPE(NAME, int32);
 #define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)                       \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, double);
-#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT)                             \
+#define XX_ENUM(NAME, DEFAULT, ENUM_PREFIX_)                             \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, ENUM_PREFIX_);
 #define XX_MPD_TAG(NAME, DEFAULT)                                        \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, enum NcmTagType);
@@ -1056,7 +1056,7 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
                                        MINIMUM, MAXIMUM, ncm_error);           \
 }
 
-#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT)                                   \
+#define XX_ENUM(NAME, DEFAULT, ENUM_PREFIX_)                                   \
 static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
@@ -1075,7 +1075,7 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
 static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
-    enum NcmTagType parsed;                                                  \
+    enum NcmTagType parsed;                                                    \
     int32 status;                                                              \
     status = settings_parse_mpd_tag(value, value_len, &parsed);                \
     if (status < 0) {                                                          \
@@ -1208,7 +1208,8 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
 static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
-    return settings_parse_screen_list(&config->NAME, &config->PREVIOUS_FIELD,  \
+    return settings_parse_screen_list(&config->NAME,                           \
+                                      &config->PREVIOUS_FIELD,                 \
                                       value, value_len, ncm_error);            \
 }
 
