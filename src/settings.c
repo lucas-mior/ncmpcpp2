@@ -32,57 +32,57 @@ typedef struct SettingsOption {
                             TYPE *: 1, default: 0),                            \
                    "generated Configuration field type mismatch")
 
-#define XX_BOOL(NAME, DEFAULT_VALUE)                                           \
+#define XX_BOOL(NAME, DEFAULT)                                           \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, bool);
-#define XX_STRING(NAME, DEFAULT_VALUE)                                         \
+#define XX_STRING(NAME, DEFAULT)                                         \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, char *);                                  \
     SETTINGS_ASSERT_FIELD_TYPE(NAME##_len, int32);
-#define XX_PATH(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
-#define XX_DIR(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
-#define XX_INTEGER(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)                      \
+#define XX_PATH(NAME, DEFAULT) XX_STRING(NAME, DEFAULT)
+#define XX_DIR(NAME, DEFAULT) XX_STRING(NAME, DEFAULT)
+#define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM)                      \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, int32);
-#define XX_DOUBLE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)                       \
+#define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)                       \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, double);
-#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT_VALUE)                             \
+#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT)                             \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, ENUM_PREFIX_);
-#define XX_MPD_TAG(NAME, DEFAULT_VALUE)                                        \
+#define XX_MPD_TAG(NAME, DEFAULT)                                        \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, enum mpd_tag_type);
-#define XX_STARTUP_SCREEN(NAME, DEFAULT_VALUE)                                 \
+#define XX_STARTUP_SCREEN(NAME, DEFAULT)                                 \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, SCREEN_TYPE_);
 #define XX_OPTIONAL_STARTUP_SCREEN(                                            \
-    NAME, DEFAULT_VALUE, PRESENT_FIELD, UNSET_VALUE                            \
+    NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE                            \
 )                                                                              \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, SCREEN_TYPE_);                        \
     SETTINGS_ASSERT_FIELD_TYPE(PRESENT_FIELD, bool);
-#define XX_COLOR(NAME, DEFAULT_VALUE)                                          \
+#define XX_COLOR(NAME, DEFAULT)                                          \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcColor);
-#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)                                \
+#define XX_FORMATTED_COLOR(NAME, DEFAULT)                                \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcFormattedColor);
-#define XX_BORDER(NAME, DEFAULT_VALUE)                                         \
+#define XX_BORDER(NAME, DEFAULT)                                         \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcBorder);
-#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS)                                  \
+#define XX_FORMAT(NAME, DEFAULT, FLAGS)                                  \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcmFormatAst);
-#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)                          \
+#define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                          \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcBuffer);
-#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)                    \
+#define XX_BUFFER_WIDTH(NAME, DEFAULT, KEEP_EXISTING)                    \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcBuffer);                                \
     SETTINGS_ASSERT_FIELD_TYPE(NAME##_length, int32);
-#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)         \
+#define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)         \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, StrBuilder);
-#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN)                            \
+#define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                            \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcmInt32Array);
-#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE)                           \
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT)                           \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcmFormattedColorArray);
-#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)                                \
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT)                                \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, LyricsFetcherRegistry);
-#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD)                    \
+#define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                    \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, ScreenTypeArray);                         \
     SETTINGS_ASSERT_FIELD_TYPE(PREVIOUS_FIELD, bool);
-#define XX_NAMED_BOOL(NAME, DEFAULT_VALUE, TRUE_VALUE, FALSE_VALUE)            \
+#define XX_NAMED_BOOL(NAME, DEFAULT, TRUE_VALUE, FALSE_VALUE)            \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, bool);
-#define XX_UINT32_CHOICE(NAME, DEFAULT_VALUE, PARSER, UNSET_VALUE)             \
+#define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE)             \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, uint32);
-#define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD)                          \
+#define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD)                          \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, ColumnArray);                             \
     SETTINGS_ASSERT_FIELD_TYPE(FORMAT_FIELD, NcmFormatAst);
 #include "config_options_pass.h"
@@ -1010,7 +1010,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
     return ncm_error_ok(ncm_error);
 }
 
-#define XX_DIR(NAME, DEFAULT_VALUE)                                            \
+#define XX_DIR(NAME, DEFAULT)                                            \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error UNUSED) {                                 \
@@ -1019,7 +1019,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
         return 0;                                                              \
     }
 
-#define XX_PATH(NAME, DEFAULT_VALUE)                                           \
+#define XX_PATH(NAME, DEFAULT)                                           \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error UNUSED) {                                 \
@@ -1028,7 +1028,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
         return 0;                                                              \
     }
 
-#define XX_STRING(NAME, DEFAULT_VALUE)                                         \
+#define XX_STRING(NAME, DEFAULT)                                         \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error UNUSED) {                                 \
@@ -1037,7 +1037,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
         return 0;                                                              \
     }
 
-#define XX_BOOL(NAME, DEFAULT_VALUE)                                           \
+#define XX_BOOL(NAME, DEFAULT)                                           \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1045,7 +1045,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
                                    ncm_error);                                 \
     }
 
-#define XX_INTEGER(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)                      \
+#define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM)                      \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1053,7 +1053,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
                                         MINIMUM, MAXIMUM, ncm_error);          \
     }
 
-#define XX_DOUBLE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)                       \
+#define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)                       \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1061,7 +1061,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
                                            MINIMUM, MAXIMUM, ncm_error);       \
     }
 
-#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT_VALUE)                             \
+#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT)                             \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1076,7 +1076,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
         return 0;                                                              \
     }
 
-#define XX_MPD_TAG(NAME, DEFAULT_VALUE)                                        \
+#define XX_MPD_TAG(NAME, DEFAULT)                                        \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1090,7 +1090,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
         return 0;                                                              \
     }
 
-#define XX_STARTUP_SCREEN(NAME, DEFAULT_VALUE)                                 \
+#define XX_STARTUP_SCREEN(NAME, DEFAULT)                                 \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1106,7 +1106,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
     }
 
 #define XX_OPTIONAL_STARTUP_SCREEN(                                            \
-    NAME, DEFAULT_VALUE, PRESENT_FIELD, UNSET_VALUE                            \
+    NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE                            \
 )                                                                              \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
@@ -1129,7 +1129,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
         return 0;                                                              \
     }
 
-#define XX_COLOR(NAME, DEFAULT_VALUE)                                          \
+#define XX_COLOR(NAME, DEFAULT)                                          \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1137,7 +1137,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
                                     ncm_error);                                \
     }
 
-#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)                                \
+#define XX_FORMATTED_COLOR(NAME, DEFAULT)                                \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1145,7 +1145,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
                                               &config->NAME, ncm_error);       \
     }
 
-#define XX_BORDER(NAME, DEFAULT_VALUE)                                         \
+#define XX_BORDER(NAME, DEFAULT)                                         \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1153,7 +1153,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
                                      ncm_error);                               \
     }
 
-#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS)                                  \
+#define XX_FORMAT(NAME, DEFAULT, FLAGS)                                  \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1161,7 +1161,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
                                      FLAGS, ncm_error);                        \
     }
 
-#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)                          \
+#define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                          \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1169,7 +1169,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
                                        KEEP_EXISTING, ncm_error);              \
     }
 
-#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)                    \
+#define XX_BUFFER_WIDTH(NAME, DEFAULT, KEEP_EXISTING)                    \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1178,7 +1178,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
             KEEP_EXISTING, ncm_error);                                         \
     }
 
-#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)         \
+#define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)         \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1187,7 +1187,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
                                    ncm_error);                                 \
     }
 
-#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN)                            \
+#define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                            \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1195,7 +1195,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
                                     EXPECTED_LEN, ncm_error);                  \
     }
 
-#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE)                           \
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT)                           \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1203,7 +1203,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
             &config->NAME, value, value_len, ncm_error);                       \
     }
 
-#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)                                \
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT)                                \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1211,7 +1211,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
             &config->NAME, value, value_len, ncm_error);                       \
     }
 
-#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD)                    \
+#define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                    \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1220,7 +1220,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
             ncm_error);                                                        \
     }
 
-#define XX_NAMED_BOOL(NAME, DEFAULT_VALUE, TRUE_VALUE, FALSE_VALUE)            \
+#define XX_NAMED_BOOL(NAME, DEFAULT, TRUE_VALUE, FALSE_VALUE)            \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
@@ -1230,7 +1230,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
             ncm_error);                                                        \
     }
 
-#define XX_UINT32_CHOICE(NAME, DEFAULT_VALUE, PARSER, UNSET_VALUE)       \
+#define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE)       \
     static int32                                                         \
     apply_##NAME(Configuration *config, char *value, int32 value_len,    \
                  NcmError *ncm_error) {                                  \
@@ -1242,7 +1242,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
         return 0;                                                        \
     }
 
-#define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD)                    \
+#define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD)                    \
     static int32                                                         \
     apply_##NAME(Configuration *config, char *value, int32 value_len,    \
                  NcmError *ncm_error) {                                  \
@@ -1253,18 +1253,18 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
 
 #include "config_options_pass.h"
 
-#define OPT(NAME, DEFAULT_VALUE)                               \
+#define OPT(NAME, DEFAULT)                               \
     {                                                          \
         .name = #NAME,                                         \
-        .default_value = DEFAULT_VALUE,                        \
+        .default_value = DEFAULT,                        \
         .name_len = STRLIT_LEN(#NAME),                         \
-        .default_value_len = STRLIT_LEN(DEFAULT_VALUE),        \
+        .default_value_len = STRLIT_LEN(DEFAULT),        \
         .apply = apply_##NAME,                                 \
     }
 
 static const SettingsOption ncmpcpp_options[] = {
-#define XX_OPTION(NAME, DEFAULT_VALUE, ...)                    \
-    [SETTINGS_OPTION_##NAME] = OPT(NAME, DEFAULT_VALUE),
+#define XX_OPTION(NAME, DEFAULT, ...)                    \
+    [SETTINGS_OPTION_##NAME] = OPT(NAME, DEFAULT),
 #include "config_options_pass.h"
 };
 
