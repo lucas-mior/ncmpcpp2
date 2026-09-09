@@ -422,13 +422,10 @@ playlist_edit_mouse_scroll(PlaylistEditScreen *screen, enum NcScroll where) {
 
 static void
 playlist_edit_mouse_callback(NcScreen *screen, MEVENT event) {
-    PlaylistEditScreen *editor;
-    int32 x;
-    int32 y;
+    PlaylistEditScreen *editor = playlist_edit_from_screen(screen);
+    int32 x = event.x;
+    int32 y = event.y;
 
-    editor = playlist_edit_from_screen(screen);
-    x = event.x;
-    y = event.y;
     if (nc_window_has_coords(&editor->playlists_window, &x, &y)) {
         if (editor->active_column != PLAYLIST_EDITOR_COLUMN_PLAYLISTS) {
             if (!playlist_edit_screen_can_move_to_previous_column(editor)) {
