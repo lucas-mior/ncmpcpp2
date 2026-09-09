@@ -1739,9 +1739,7 @@ media_library_songs_from_list(NcmSongArray *songs, NcmMpdSongList *source) {
     }
 
     for (int32 i = 0; i < ncm_mpd_song_list_count(source); i += 1) {
-        NcmSong *song;
-
-        song = ncm_mpd_song_list_at(source, i);
+        NcmSong *song = ncm_mpd_song_list_at(source, i);
         ncm_song_array_append_copy(&replacement, song);
     }
 
