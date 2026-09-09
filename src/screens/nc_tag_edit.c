@@ -988,9 +988,7 @@ tag_edit_run_current(NcScreen *screen) {
         }
         choice = nc_menu_highlight(menu);
         if (choice == 0) {
-            enum TagEditParserMode mode;
-
-            mode = TAG_EDIT_PARSER_TAGS_FROM_FILENAME;
+            enum TagEditParserMode mode = TAG_EDIT_PARSER_TAGS_FROM_FILENAME;
             tag_edit_screen_show_parser_actions(editor, mode);
             return 0;
         }
