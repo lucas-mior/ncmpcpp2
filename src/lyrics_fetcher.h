@@ -72,8 +72,7 @@ int32 ncm_lyrics_fetcher_name_len(LyricsFetcherDef *);
 
 void ncm_lyrics_fetcher_registry_destroy(LyricsFetcherRegistry *);
 void ncm_lyrics_fetcher_registry_clear(LyricsFetcherRegistry *);
-LyricsFetcherDef *ncm_lyrics_fetcher_registry_append(
-    LyricsFetcherRegistry *);
+LyricsFetcherDef *ncm_lyrics_fetcher_registry_append(LyricsFetcherRegistry *);
 int32 ncm_lyrics_fetcher_registry_append_name(LyricsFetcherRegistry *,
                                               char *, int32);
 
