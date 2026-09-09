@@ -657,6 +657,13 @@ ncm_mpd_connection_send_idle(MpdConnection *connection, int32 events) {
 
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
+    if (events == 0) {
+        if (!mpd_send_idle(connection->mpd)) {
+            return ncm_mpd_connection_check_error(connection);
+        }
+        return 0;
+    }
+
     if ((events & NCM_MPD_IDLE_DATABASE) != 0) {
         mpd_events |= MPD_IDLE_DATABASE;
     }
