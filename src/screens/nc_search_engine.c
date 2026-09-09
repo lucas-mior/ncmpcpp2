@@ -157,8 +157,8 @@ search_print_error(SearchEngineScreen *screen, NcmError *ncm_error) {
     }
     len = optional_strlen32(ncm_error->message);
     if (len > 0) {
-        screen->hooks.status_message(screen->hooks.user, ncm_error->message,
-                                     len);
+        screen->hooks.status_message(screen->hooks.user,
+                                     ncm_error->message, len);
     }
     return;
 }
@@ -296,10 +296,11 @@ search_run_current(NcScreen *base_screen) {
             char *constraint_name = search_constraint_names[pos];
             int32 constraint_name_len = search_constraint_name_lens[pos];
 
-            prompt_status = screen->hooks.prompt_constraint(screen->hooks.user,
-                                                            constraint_name,
-                                                            constraint_name_len,
-                                                            constraint, &value);
+            prompt_status =
+                screen->hooks.prompt_constraint(screen->hooks.user,
+                                                constraint_name,
+                                                constraint_name_len,
+                                                constraint, &value);
         }
 
         if (prompt_status == SEARCH_ENGINE_PROMPT_ACCEPTED) {
@@ -391,13 +392,11 @@ search_row_matches(SearchEngineScreen *screen,
                                       &screen->row_text) < 0) {
             return false;
         }
-        view = ncm_string_view(screen->row_text.data,
-                                    screen->row_text.len);
+        view = ncm_string_view(screen->row_text.data, screen->row_text.len);
     } else {
         search_engine_screen_format_song_text(screen, &row->song,
                                               &screen->row_text);
-        view = ncm_string_view(screen->row_text.data,
-                                    screen->row_text.len);
+        view = ncm_string_view(screen->row_text.data, screen->row_text.len);
     }
     return ncm_regex_matches(regex, view.data, view.len);
 }
@@ -560,8 +559,9 @@ search_engine_screen_init(SearchEngineScreen *screen,
     NcMenu *menu;
 
     nc_search_row_menu_init(&screen->rows);
-    nc_window_init(&screen->window, start_x, main_start_y, width,
-                   main_height, NULL, 0, color, border);
+    nc_window_init(&screen->window,
+                   start_x, main_start_y, width, main_height,
+                   NULL, 0, color, border);
     for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
         screen->constraints[i] = (StrBuilder){0};
     }
@@ -703,8 +703,8 @@ search_engine_screen_update_column_title(SearchEngineScreen *screen) {
 
     ncm_display_column_title(&screen->column_title, columns->items,
                              columns->len, list_width);
-    nc_window_set_title(&screen->window, screen->column_title.data,
-                        screen->column_title.len);
+    nc_window_set_title(&screen->window,
+                        screen->column_title.data, screen->column_title.len);
     return;
 }
 

@@ -1,17 +1,105 @@
 # Prompt
 
-For the first of the problems below (breaking function calls before the first
-argument and not aligning), identify instances of it in the first file in the
-list below it. Then fix those instances and remove the file from the list. If
-the first file in the list does not have the problem, try the next one without
-asking first.
+For the first of the problems below
+(Related argument pairs not grouped together),
+identify instances of it in the first file in the list below it. Then fix those
+instances and remove the file from the list. If the first file in the list does
+not have the problem, try the next one without asking first.
+
+## Related argument pairs not grouped together
+make sure that related argument pairs in function headers and calls are together
+(on the same line if they fit). For instance, width with height, x with y, array
+with its length, callback function with its `void *user`, etc.
+If both args do not fit in the same line, then break the
+line *before* the first one, so that they at least do not mix with other
+arguments in the call.
+
+- src/curses/nc_curses.c
+- src/screens/nc_browser.c
+- src/app_controller.c
+- src/screens/nc_scrollpad_screen.c
+- src/c/ncm_comparators.c
+- src/screens/nc_tiny_tag_edit.c
+- src/main.c
+- src/c/ncm_taglib.c
+- src/c/ncm_conversion.c
+- src/c/ncm_utilities.c
+- src/config.c
+- src/screens/nc_lastfm.c
+- src/c/ncm_mpd_connection.c
+- src/screens/nc_visualizer.c
+- src/ui_state.c
+- src/curses/nc_scrollpad.c
+- src/settings.c
+- src/c/ncm_mutable_song.c
+- src/screens/nc_tag_edit.c
+- src/screens/app_screens.c
+- src/c/ncm_c.c
+- src/statusbar.c
+- src/title.c
+- src/curses/nc_menu.c
+- src/screens/nc_outputs.c
+- src/c/ncm_tags.c
+- src/status.c
+- src/c/ncm_search_prompt.c
+- src/curses/nc_formatted_color.c
+- src/c/ncm_option_parser.c
+- src/screens/nc_screen_switcher.c
+- src/c/ncm_playlist_sort.c
+- src/curses/nc_app_menus.c
+- src/screens/nc_playlist_edit.c
+- src/c/ncm_error.c
+- src/screen_actions.c
+- src/screens/nc_help.c
+- src/c/ncm_job.c
+- src/bindings.c
+- src/curses/nc_buffer.c
+- src/lyrics_fetcher.c
+- src/c/ncm_song.c
+- src/screens/nc_screens.c
+- src/c/ncm_format.c
+- src/screens/nc_sort_playlist.c
+- src/lastfm_service.c
+- src/c/ncm_lrc.c
+- src/c/ncm_html.c
+- src/c/ncm_string.c
+- src/c/ncm_path.c
+- src/screens/screen_type.c
+- src/c/ncm_mpd_client.c
+- src/app_state.c
+- src/global.c
+- src/c/ncm_enums.c
+- src/screens/nc_sel_items_adder.c
+- src/curses/nc_cyclic_buffer.c
+- src/screens/nc_search_engine.c
+- src/curses/nc_window.c
+- src/c/ncm_app_arrays.c
+- src/screens/nc_lyrics.c
+- src/screens/nc_playlist.c
+- src/c/ncm_display.c
+- src/curl_handle.c
+- src/c/ncm_fs.c
+- src/c/ncm_playlist.c
+- src/helpers.c
+- src/actions.c
+- src/c/ncm_directory.c
+- src/app_legacy_bridge.c
+- src/screens/nc_media_library.c
+- src/c/ncm_sample_buffer.c
+- src/screens/nc_screen.c
+- src/c/ncm_regex.c
+- src/settings_types.c
+- src/screens/nc_song_info.c
+- src/c/ncm_type_conversions.c
+- src/screens/nc_server_info.c
+- src/c/ncm_mpd_item.c
 
 ## breaking function calls before the first argument and not aligning
 For instance, this is bad:
 ```c
 status = ncm_fs_rename(
     old_real_path.data, old_real_path.len,
-    new_real_path.data, new_real_path.len, ncm_error);
+    new_real_path.data, new_real_path.len, ncm_error)
 ```
 Replace with:
 ```c
