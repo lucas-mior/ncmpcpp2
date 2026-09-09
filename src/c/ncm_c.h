@@ -234,32 +234,32 @@ typedef struct MutableSong {
     int32 tags_cap;
 } MutableSong;
 
-void ncm_mutable_song_destroy(MutableSong *);
-int32 ncm_mutable_song_copy(MutableSong *dest, MutableSong *source);
-void ncm_mutable_song_move(MutableSong *dest, MutableSong *source);
+void mutable_song_destroy(MutableSong *);
+int32 mutable_song_copy(MutableSong *dest, MutableSong *source);
+void mutable_song_move(MutableSong *dest, MutableSong *source);
 
-int32 ncm_mutable_song_set_tag(MutableSong *, enum TagsField, int32 idx,
+int32 mutable_song_set_tag(MutableSong *, enum TagsField, int32 idx,
                                char *, int32 value_len);
-int32 ncm_mutable_song_set_tags(MutableSong *, enum TagsField,
+int32 mutable_song_set_tags(MutableSong *, enum TagsField,
                                 char *value, int32 value_len, char *separator,
                                 int32 separator_len);
-bool ncm_mutable_song_has_tag_view(MutableSong *, enum TagsField, int32,
+bool mutable_song_has_tag_view(MutableSong *, enum TagsField, int32,
                                    StringView *);
-void ncm_mutable_song_get_tag_buffer(MutableSong *, enum TagsField,
+void mutable_song_get_tag_buffer(MutableSong *, enum TagsField,
                                      int32, StrBuilder *);
-StrBuilder ncm_mutable_song_tags_buffer(MutableSong *, enum TagsField,
+StrBuilder mutable_song_tags_buffer(MutableSong *, enum TagsField,
                                         char *, int32, bool);
-int32 ncm_mutable_song_load_originals_from_song(MutableSong *, NcmSong *);
+int32 mutable_song_load_originals_from_song(MutableSong *, NcmSong *);
 
-int32 ncm_mutable_song_set_new_name(MutableSong *, char *, int32);
-bool ncm_mutable_song_has_new_name_view(MutableSong *, StringView *);
+int32 mutable_song_set_new_name(MutableSong *, char *, int32);
+bool mutable_song_has_new_name_view(MutableSong *, StringView *);
 
-int32 ncm_mutable_song_duration(MutableSong *);
-int32 ncm_mutable_song_mtime(MutableSong *);
+int32 mutable_song_duration(MutableSong *);
+int32 mutable_song_mtime(MutableSong *);
 
-bool ncm_mutable_song_is_modified(MutableSong *);
-void ncm_mutable_song_clear_modifications(MutableSong *);
-int32 ncm_mutable_song_write(MutableSong *, char *);
+bool mutable_song_is_modified(MutableSong *);
+void mutable_song_clear_modifications(MutableSong *);
+int32 mutable_song_write(MutableSong *, char *);
 
 struct mpd_directory;
 

@@ -775,7 +775,7 @@ playlist_set_mutable_uri(NcmSong *song, MutableSong *edited) {
     StringView new_name;
     StrBuilder uri = {0};
 
-    if (!ncm_mutable_song_has_new_name_view(edited, &new_name)) {
+    if (!mutable_song_has_new_name_view(edited, &new_name)) {
         ncm_song_set_uri(song, edited->uri, edited->uri_len);
         return;
     }
@@ -819,7 +819,7 @@ playlist_build_mutable_song(NcmSong *replacement,
     for (uint32 i = 0; i < NCM_TAGS_FIELD_COUNT; i += 1) {
         enum mpd_tag_type type = ncm_tags_field_to_tag_type(i);
         for (int32 j = 0; ; j += 1) {
-            if (!ncm_mutable_song_has_tag_view(edited, i, j, &value)) {
+            if (!mutable_song_has_tag_view(edited, i, j, &value)) {
                 break;
             }
             if (value.len <= 0) {
@@ -829,11 +829,11 @@ playlist_build_mutable_song(NcmSong *replacement,
         }
     }
 
-    duration = ncm_mutable_song_duration(edited);
+    duration = mutable_song_duration(edited);
     if (duration == 0) {
         duration = ncm_song_duration(current);
     }
-    mtime = ncm_mutable_song_mtime(edited);
+    mtime = mutable_song_mtime(edited);
     if (mtime <= 0) {
         mtime = (int32)ncm_song_mtime(current);
     }

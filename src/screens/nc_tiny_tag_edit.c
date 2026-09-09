@@ -59,7 +59,7 @@ tiny_editor_buffer_mutable_tag(NcBuffer *buffer, MutableSong *song,
 
     name_len = NCM_TAGS_FIELD_alias_len(field, &name);
     tiny_editor_buffer_key_value(buffer, name, name_len, NULL, 0);
-    value = ncm_mutable_song_tags_buffer(song, field,
+    value = mutable_song_tags_buffer(song, field,
                                          tag_separator, tag_separator_len,
                                          show_duplicate_tags);
     nc_buffer_append_data(buffer, value.data, value.len);
@@ -114,7 +114,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         NcBuffer row_buffer = {0};
 
         field = (enum TagsField)(row - (int32)TINY_TAG_EDIT_FIRST_TAG_ROW);
-        tag_value = ncm_mutable_song_tags_buffer(&screen->edited, field,
+        tag_value = mutable_song_tags_buffer(&screen->edited, field,
                                                  screen->tag_separator.data,
                                                  screen->tag_separator.len,
                                                  screen->show_duplicate_tags);
@@ -139,7 +139,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
             return -NCM_ERROR_UNAVAILABLE;
         }
 
-        ncm_mutable_song_set_tags(&screen->edited, field,
+        mutable_song_set_tags(&screen->edited, field,
                                   sb_opt_cstr(&input), input.len,
                                   screen->tag_separator.data,
                                   screen->tag_separator.len);
@@ -160,7 +160,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         NcBuffer row_buffer = {0};
         StrBuilder new_name = {0};
 
-        if (!ncm_mutable_song_has_new_name_view(&screen->edited,
+        if (!mutable_song_has_new_name_view(&screen->edited,
                                                 &current_name)) {
             current_name.data = screen->edited.name;
             current_name.len = screen->edited.name_len;
@@ -197,7 +197,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
             return 0;
         }
 
-        if (!ncm_mutable_song_has_new_name_view(&screen->edited,
+        if (!mutable_song_has_new_name_view(&screen->edited,
                                                 &current_name)) {
             current_name.data = screen->edited.name;
             current_name.len = screen->edited.name_len;
@@ -214,12 +214,12 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
             SB_APPEND(&new_name,
                       &current_name.data[dot], current_name.len - dot);
         }
-        ncm_mutable_song_set_new_name(&screen->edited,
+        mutable_song_set_new_name(&screen->edited,
                                       new_name.data, new_name.len);
         sb_free(&new_name);
         sb_free(&input);
 
-        if (!ncm_mutable_song_has_new_name_view(&screen->edited, &name)) {
+        if (!mutable_song_has_new_name_view(&screen->edited, &name)) {
             name.data = screen->edited.name;
             name.len = screen->edited.name_len;
         }
@@ -240,7 +240,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
                                               &screen->edited,
                                               screen->music_dir.data);
         } else {
-            status = ncm_mutable_song_write(&screen->edited,
+            status = mutable_song_write(&screen->edited,
                                             screen->music_dir.data);
         }
         if (status < 0) {
@@ -269,7 +269,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
                 screen->hooks.request_browser_update(screen->hooks.user);
             }
         }
-        ncm_mutable_song_clear_modifications(&screen->edited);
+        mutable_song_clear_modifications(&screen->edited);
         return tiny_editor_finish(screen);
     }
 
@@ -482,7 +482,7 @@ tiny_tag_edit_screen_init(TinyTagEditScreen *screen, int32 start_x, int32 width,
 void
 tiny_tag_edit_screen_destroy(TinyTagEditScreen *screen) {
     app_controller_unregister_screen(tiny_tag_edit_screen_base(screen));
-    ncm_mutable_song_destroy(&screen->edited);
+    mutable_song_destroy(&screen->edited);
     sb_free(&screen->music_dir);
     sb_free(&screen->tag_separator);
     nc_window_destroy(&screen->window);
@@ -569,14 +569,14 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     sb_set(&screen->tag_separator, tag_separator, tag_separator_len);
     screen->show_duplicate_tags = show_duplicate_tags;
 
-    status = ncm_mutable_song_load_originals_from_song(&edited, song);
+    status = mutable_song_load_originals_from_song(&edited, song);
     if (status < 0) {
-        ncm_mutable_song_destroy(&edited);
+        mutable_song_destroy(&edited);
         return TINY_TAG_EDIT_OPEN_PREPARE_FAILED;
     }
     edited.duration = ncm_song_duration(song);
     edited.mtime = (int32)ncm_song_mtime(song);
-    ncm_mutable_song_move(&screen->edited, &edited);
+    mutable_song_move(&screen->edited, &edited);
     screen->has_edited = true;
 
     if (screen->edited.is_from_database) {

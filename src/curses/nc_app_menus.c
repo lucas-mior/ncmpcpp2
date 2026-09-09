@@ -171,16 +171,16 @@ ncm_song_menu_item_destroy(void *item, void *user) {
 }
 
 static void
-ncm_mutable_song_menu_item_copy(void *dest, void *source, void *user) {
+mutable_song_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    ncm_mutable_song_copy(dest, source);
+    mutable_song_copy(dest, source);
     return;
 }
 
 static void
-ncm_mutable_song_menu_item_destroy(void *item, void *user) {
+mutable_song_menu_item_destroy(void *item, void *user) {
     (void)user;
-    ncm_mutable_song_destroy(item);
+    mutable_song_destroy(item);
     return;
 }
 
@@ -343,10 +343,10 @@ static const NcMenuItemCallbacks ncm_song_menu_callbacks = {
     .copy = ncm_song_menu_item_copy,
     .destroy = ncm_song_menu_item_destroy,
 };
-static const NcMenuItemCallbacks ncm_mutable_song_menu_callbacks = {
+static const NcMenuItemCallbacks mutable_song_menu_callbacks = {
     .item_size = SIZEOF(MutableSong),
-    .copy = ncm_mutable_song_menu_item_copy,
-    .destroy = ncm_mutable_song_menu_item_destroy,
+    .copy = mutable_song_menu_item_copy,
+    .destroy = mutable_song_menu_item_destroy,
 };
 static const NcMenuItemCallbacks ncm_mpd_item_menu_callbacks = {
     .item_size = SIZEOF(NcmMpdItem),
@@ -490,7 +490,7 @@ NC_TYPED_MENU_DEFINE_CURRENT(NcPlaylistEntryMenu,
                              nc_playlist_entry_menu, NcmPlaylist)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcTagRowMenu,
-                            nc_tag_row_menu, ncm_mutable_song_menu_callbacks)
+                            nc_tag_row_menu, mutable_song_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD(NcTagRowMenu, nc_tag_row_menu, MutableSong)
 NC_TYPED_MENU_DEFINE_CURRENT(NcTagRowMenu, nc_tag_row_menu, MutableSong)
 
