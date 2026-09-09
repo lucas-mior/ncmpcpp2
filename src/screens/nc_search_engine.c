@@ -295,11 +295,10 @@ search_run_current(NcScreen *base_screen) {
             char *constraint_name = search_constraint_names[pos];
             int32 constraint_name_len = search_constraint_name_lens[pos];
 
-            prompt_status =
-                screen->hooks.prompt_constraint(screen->hooks.user,
-                                                constraint_name,
-                                                constraint_name_len,
-                                                constraint, &value);
+            prompt_status = screen->hooks.prompt_constraint(screen->hooks.user,
+                                                            constraint_name,
+                                                            constraint_name_len,
+                                                            constraint, &value);
         }
 
         if (prompt_status == SEARCH_ENGINE_PROMPT_ACCEPTED) {
