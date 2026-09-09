@@ -998,9 +998,8 @@ playlist_edit_restore_playlist_path(PlaylistEditScreen *screen,
     }
     menu = nc_playlist_entry_menu_base(&screen->playlists);
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        NcmPlaylist *playlist;
+        NcmPlaylist *playlist = nc_menu_active_item_at(menu, i);
 
-        playlist = nc_menu_active_item_at(menu, i);
         if (STREQUAL(playlist->path, playlist->path_len,
                      buffer->data, buffer->len)) {
             nc_menu_highlight_position(menu, i, screen->main_height);
