@@ -2141,12 +2141,12 @@ lyrics_append_direct_url(NcmLyricsFetcherDef *fetcher, StrBuilder *candidate,
     }
     case NCM_LYRICS_FETCHER_AZLYRICS:
         SB_APPEND(candidate, "https://www.azlyrics.com/lyrics/");
-        status = lyrics_append_slug_profile(candidate, pair.artist, artist,
-                                            artist_len);
+        status = lyrics_append_slug_profile(candidate, pair.artist,
+                                            artist, artist_len);
         if (status >= 0) {
             sb_append_byte(candidate, '/');
-            status = lyrics_append_slug_profile(candidate, pair.title, title,
-                                                title_len);
+            status = lyrics_append_slug_profile(candidate, pair.title,
+                                                title, title_len);
         }
         if (status >= 0) {
             SB_APPEND(candidate, ".html");
@@ -2154,12 +2154,12 @@ lyrics_append_direct_url(NcmLyricsFetcherDef *fetcher, StrBuilder *candidate,
         break;
     case NCM_LYRICS_FETCHER_GENIUS:
         SB_APPEND(candidate, "https://genius.com/");
-        status = lyrics_append_slug_profile(candidate, pair.artist, artist,
-                                            artist_len);
+        status = lyrics_append_slug_profile(candidate, pair.artist,
+                                            artist, artist_len);
         if (status >= 0) {
             sb_append_byte(candidate, '-');
-            status = lyrics_append_slug_profile(candidate, pair.title, title,
-                                                title_len);
+            status = lyrics_append_slug_profile(candidate, pair.title,
+                                                title, title_len);
         }
         if (status >= 0) {
             SB_APPEND(candidate, "-lyrics");
@@ -2167,8 +2167,8 @@ lyrics_append_direct_url(NcmLyricsFetcherDef *fetcher, StrBuilder *candidate,
         break;
     case NCM_LYRICS_FETCHER_LETRASMUS:
         SB_APPEND(candidate, "https://www.letras.mus.br/");
-        status = lyrics_append_slug_profile(candidate, pair.artist, artist,
-                                            artist_len);
+        status = lyrics_append_slug_profile(candidate, pair.artist,
+                                            artist, artist_len);
         if (status >= 0) {
             sb_append_byte(candidate, '/');
             status = lyrics_append_slug_profile(candidate, pair.title, title,
