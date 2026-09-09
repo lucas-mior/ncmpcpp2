@@ -9,18 +9,21 @@ static int32
 ncm_regex_prepare_string(char *string, int32 string_len, StrBuilder *buffer,
                          NcmError *ncm_error) {
     if (buffer == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing regex buffer"));
+        ncm_error_set_status(ncm_error, -EINVAL,
+                             STRLIT("missing regex buffer"));
+        return -EINVAL;
     }
     sb_clear(buffer);
 
     if (string == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing regex string"));
+        ncm_error_set_status(ncm_error, -EINVAL,
+                             STRLIT("missing regex string"));
+        return -EINVAL;
     }
     if (string_len < 0) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("negative string length"));
+        ncm_error_set_status(ncm_error, -EINVAL,
+                             STRLIT("negative string length"));
+        return -EINVAL;
     }
 
     SB_APPEND(buffer, string, string_len);
