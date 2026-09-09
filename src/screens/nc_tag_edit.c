@@ -1587,13 +1587,12 @@ tag_edit_mouse_move_to_column(TagEditScreen *screen,
 static void
 tag_edit_mouse_scroll_menu(NcMenu *menu, NcWindow *window,
                              enum NcScroll where) {
-    enum NcScroll effective;
-    int32 count;
+    enum NcScroll effective = where;
+    int32 count = Config.lines_scrolled;
 
     ASSERT(menu != NULL);
     ASSERT(window != NULL);
-    effective = where;
-    count = Config.lines_scrolled;
+
     if (Config.mouse_list_scroll_whole_page) {
         count = 1;
         if (where == NC_SCROLL_DOWN) {
