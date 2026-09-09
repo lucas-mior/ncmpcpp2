@@ -11,8 +11,6 @@
 
 #include <fftw3.h>
 
-/* screens/screen_defs.h */
-
 #define SCREEN_FLAG_NONE 0
 #define SCREEN_FLAG_STARTUP 1
 
@@ -338,7 +336,6 @@
     NCM_APP_SCREEN_ENABLED_VISUALIZER_RESIZE(XX)                  \
     NCM_APP_SCREEN_ENABLED_OUTPUTS_RESIZE(XX)
 
-/* screens/nc_screen.h */
 #define NC_SCREEN_DEFAULT_WINDOW_TIMEOUT 500
 
 enum NcScreenType {
@@ -464,7 +461,6 @@ void nc_screen_registry_update_visible(NcScreenRegistry *);
 void nc_screen_registry_resize_current(NcScreenRegistry *);
 void nc_screen_registry_resize_visible(NcScreenRegistry *);
 
-/* screens/screen_type.h */
 #define ENUM_NAME ScreenType
 #define ENUM_PREFIX_ SCREEN_TYPE_
 #define ENUM_BITFLAGS 0
@@ -477,7 +473,7 @@ bool screen_type_is_startup(enum ScreenType);
 int32 screen_type_parse_startup(char *, int32, enum ScreenType *);
 int32 screen_type_parse(char *, int32, enum ScreenType *);
 
-/* screens/screen_switcher.h */ NcScreen *nc_screen_switcher_current(void);
+NcScreen *nc_screen_switcher_current(void);
 NcScreen *nc_screen_switcher_previous(void);
 bool nc_screen_switcher_is_current(NcScreen *);
 bool nc_screen_switcher_is_visible(NcScreen *);
@@ -486,7 +482,6 @@ void nc_screen_switcher_finish_switch(NcScreen *);
 void nc_screen_switcher_get_resize_params(NcScreen *, int32 *x_offset,
                                           int32 *width, bool);
 
-/* screens/nc_scrollpad_screen.h */
 typedef struct NcScrollpadScreen {
     NcScreen base;
 
@@ -515,7 +510,6 @@ int32 nc_scrollpad_screen_start_y(NcScrollpadScreen *);
 int32 nc_scrollpad_screen_width(NcScrollpadScreen *);
 int32 nc_scrollpad_screen_height(NcScrollpadScreen *);
 
-/* screens/nc_help.h */
 typedef struct NcHelpScreen NcHelpScreen;
 
 typedef struct NcHelpHooks {
@@ -552,7 +546,6 @@ int32 nc_help_screen_start_y(NcHelpScreen *);
 int32 nc_help_screen_width(NcHelpScreen *);
 int32 nc_help_screen_height(NcHelpScreen *);
 
-/* screens/nc_lastfm.h */
 #include "lastfm_service.h"
 
 typedef struct NcLastfmScreen {
@@ -605,7 +598,6 @@ void lastfm_screen_update(LastfmScreen *);
 char *lastfm_screen_title(LastfmScreen *);
 int32 lastfm_screen_find(LastfmScreen *, char *, int32, NcmError *);
 
-/* screens/nc_lyrics.h */
 #include "lyrics_fetcher.h"
 
 typedef struct LyricsJob LyricsJob;
@@ -709,7 +701,6 @@ void lyrics_buffer_clear_sync_highlight(NcBuffer *);
 void lyrics_buffer_highlight_sync_line(NcBuffer *, int32 start, int32 end);
 int32 lyrics_screen_find(LyricsScreen *, char *, int32, NcmError *);
 
-/* screens/nc_outputs.h */
 typedef struct NcOutputsScreen NcOutputsScreen;
 
 typedef struct NcOutputsHooks {
@@ -757,7 +748,6 @@ int32 nc_outputs_screen_start_y(NcOutputsScreen *);
 int32 nc_outputs_screen_width(NcOutputsScreen *);
 int32 nc_outputs_screen_height(NcOutputsScreen *);
 
-/* screens/nc_song_info.h */
 typedef struct NcSongInfoScreen NcSongInfoScreen;
 
 typedef struct NcSongInfoHooks {
@@ -792,7 +782,6 @@ int32 nc_song_info_screen_start_y(NcSongInfoScreen *);
 int32 nc_song_info_screen_width(NcSongInfoScreen *);
 int32 nc_song_info_screen_height(NcSongInfoScreen *);
 
-/* screens/nc_server_info.h */
 typedef struct NcServerInfoHooks {
     void (*load_lists)(void *);
     int32 (*render)(void *, NcBuffer *);
@@ -824,7 +813,6 @@ int32 nc_server_info_screen_height(NcServerInfoScreen *);
 int32 nc_server_info_screen_start_x(NcServerInfoScreen *);
 int32 nc_server_info_screen_start_y(NcServerInfoScreen *);
 
-/* screens/nc_visualizer.h */
 #include "configura.h"
 
 #if defined(HAVE_FFTW3_H)
@@ -1001,7 +989,6 @@ void visualizer_screen_apply_auto_scale(VisualizerScreen *, int16 *, int32);
 void visualizer_screen_draw(VisualizerScreen *, int16 *, int32);
 int16 visualizer_clamp_sample(int32);
 
-/* screens/nc_media_library.h */
 #define MEDIA_LIBRARY_FETCH_DELAY_MS 250
 
 #define ENUM_NAME MediaLibraryMode
@@ -1221,7 +1208,6 @@ int32 media_library_screen_add_item_to_playlist(MediaLibraryScreen *, bool,
 int32 media_library_screen_locate_song(MediaLibraryScreen *, NcmSong *,
                                        NcmError *);
 
-/* screens/nc_playlist_edit.h */
 #define ENUM_NAME PlaylistEditColumn
 #define ENUM_PREFIX_ PLAYLIST_EDITOR_COLUMN_
 #define ENUM_BITFLAGS 0
@@ -1349,7 +1335,6 @@ int32 playlist_edit_screen_search_active(PlaylistEditScreen *, char *, int32,
 void playlist_edit_screen_request_playlists_update(PlaylistEditScreen *);
 void playlist_edit_screen_request_content_update(PlaylistEditScreen *);
 
-/* screens/nc_playlist.h */
 typedef struct NcPlaylistScreen {
     NcScreen screen;
     NcMenu *menu;
@@ -1441,7 +1426,6 @@ int32 playlist_screen_set_selected_priority(PlaylistScreen *, MpdClient *,
 void playlist_screen_reload_total_length(PlaylistScreen *);
 void playlist_screen_reload_remaining(PlaylistScreen *);
 
-/* screens/nc_search_engine.h */
 #define SEARCH_ENGINE_CONSTRAINT_COUNT 11
 #define SEARCH_ENGINE_FIRST_SEPARATOR_ROW 11
 #define SEARCH_ENGINE_SEARCH_SOURCE_ROW 12
@@ -1555,7 +1539,6 @@ int32 search_engine_screen_search(SearchEngineScreen *, char *, int32,
                                   bool forward, bool wrap, bool skip_current,
                                   NcmError *);
 
-/* screens/nc_sel_items_adder.h */
 typedef struct PlaylistScreen PlaylistScreen;
 
 #define ENUM_NAME SelectedItemsAdderMenu
@@ -1610,7 +1593,6 @@ int32 selected_items_adder_screen_search(SelectedItemsAdderScreen *, char *,
                                          bool wrap, bool skip_current,
                                          NcmError *);
 
-/* screens/nc_sort_playlist.h */
 typedef struct MpdClient MpdClient;
 typedef struct PlaylistScreen PlaylistScreen;
 
@@ -1645,7 +1627,6 @@ int32 sort_playlist_dialog_open(SortPlaylistDialog *, PlaylistScreen *,
 int32 sort_playlist_dialog_move_current_up(SortPlaylistDialog *);
 int32 sort_playlist_dialog_move_current_down(SortPlaylistDialog *);
 
-/* screens/nc_tag_edit.h */
 #define ENUM_NAME TagEditColumn
 #define ENUM_PREFIX_ TAG_EDIT_COLUMN_
 #define ENUM_BITFLAGS 0
@@ -1837,7 +1818,6 @@ int32 tag_edit_generate_filename(NcmMutableSong *, char *, int32, StrBuilder *);
 int32 tag_edit_song_display_value(NcmMutableSong *, enum NcmTagsField,
                                   StrBuilder *);
 
-/* screens/nc_tiny_tag_edit.h */
 #define TINY_TAG_EDIT_TAG_ROW(FIELD) \
     ((int32)TINY_TAG_EDIT_FIRST_TAG_ROW + (int32)(FIELD))
 
@@ -1932,7 +1912,6 @@ enum TinyTagEditOpenResult tiny_tag_edit_screen_open_song(
     char *tag_separator, int32 tag_separator_len, bool, StrBuilder *);
 int32 tiny_tag_edit_screen_run_row(TinyTagEditScreen *, int32);
 
-/* screens/nc_browser.h */
 typedef struct BrowserScreen {
     NcScreen screen;
     NcBrowserEntryMenu entries;
@@ -2016,7 +1995,6 @@ int32 browser_screen_search(BrowserScreen *, char *, int32, bool forward,
 void browser_screen_request_update(BrowserScreen *);
 bool browser_screen_item_is_parent(NcmMpdItem *);
 
-/* screens/song_info.h */
 typedef struct NcmSongInfoMetadata {
     char *name;
     enum SongGetter get;
@@ -2025,7 +2003,6 @@ typedef struct NcmSongInfoMetadata {
 
 extern NcmSongInfoMetadata ncm_song_info_tags[];
 
-/* screens/app_screens.h */
 typedef struct HelpScreen HelpScreen;
 typedef struct OutputsScreen OutputsScreen;
 typedef struct SearchEngineScreen SearchEngineScreen;
