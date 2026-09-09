@@ -109,7 +109,7 @@ XX_ENUM(space_add_mode, NCM_SPACE_ADD_MODE_, "add_remove")
 XX_STARTUP_SCREEN(startup_screen, "playlist")
 
 /* Optional enum-backed settings. */
-XX_OPTIONAL_STARTUP_SCREEN(startup_slave_screen, "",
+XX_OPT_STARTUP_SCREEN(startup_slave_screen, "",
                            has_startup_slave_screen_type, SCREEN_TYPE_COUNT)
 
 /* Color-backed settings. */
