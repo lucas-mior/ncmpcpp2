@@ -922,15 +922,18 @@ media_library_screen_init(MediaLibraryScreen *screen, MediaLibraryHooks hooks,
     screen->registered = false;
 
     library_update_titles(screen, false);
-    nc_window_init(&screen->tags_window, start_x, main_start_y, width,
-                   main_height, screen->tags_title.data,
-                   screen->tags_title.len, color, border);
-    nc_window_init(&screen->albums_window, start_x, main_start_y, width,
-                   main_height, screen->albums_title.data,
-                   screen->albums_title.len, color, border);
-    nc_window_init(&screen->songs_window, start_x, main_start_y, width,
-                   main_height, screen->songs_title.data,
-                   screen->songs_title.len, color, border);
+    nc_window_init(&screen->tags_window,
+                   start_x, main_start_y, width, main_height,
+                   screen->tags_title.data, screen->tags_title.len,
+                   color, border);
+    nc_window_init(&screen->albums_window,
+                   start_x, main_start_y, width, main_height,
+                   screen->albums_title.data, screen->albums_title.len,
+                   color, border);
+    nc_window_init(&screen->songs_window,
+                   start_x, main_start_y, width, main_height,
+                   screen->songs_title.data, screen->songs_title.len,
+                   color, border);
 
     callbacks = library_display_callbacks(screen, MEDIA_LIBRARY_COLUMN_TAGS,
                                           false);
