@@ -170,21 +170,7 @@ int32 ncm_action_add_song_to_playlist_with_mode(NcmSong *, bool, int32,
                                                 enum SpaceAddMode);
 int32 ncm_action_add_song_to_playlist(NcmSong *, bool, int32);
 
-typedef struct ActionDef {
-    char *name;
-    int32 name_len;
-
-    enum ActionType type;
-} ActionDef;
-
-ActionDef *ncm_action_table_get(ActionDef *, int32, enum ActionType);
-ActionDef *ncm_action_table_find(ActionDef *, int32 defs_len, char *,
-                                    int32 name_len);
-ActionDef *ncm_action_get(enum ActionType);
-ActionDef *ncm_action_find(char *, int32);
 int32 ncm_action_type_parse(char *, int32, enum ActionType *);
-bool ncm_action_def_can_run(ActionDef *, void *);
-int32 ncm_action_def_run(ActionDef *, void *);
 bool ncm_action_can_run(enum ActionType, void *);
 bool ncm_action_immediate_command_prompt_should_stop(StrBuilder *, char *,
                                                      int32);

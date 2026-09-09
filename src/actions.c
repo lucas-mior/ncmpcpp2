@@ -19,98 +19,21 @@
 #include "title.h"
 #include "ui_state.h"
 
-#define XX(TYPE, ALIAS)                    \
-    [TYPE] = {                             \
-        #ALIAS,                            \
-        STRLIT_LEN(#ALIAS),                \
-        TYPE,                              \
-    },
-
-static ActionDef action_defs[ACTION_COUNT] = {
-    ACTION_TYPE_FIELDS(XX)
-};
-
-#undef XX
-
-ActionDef *
-ncm_action_table_get(ActionDef *defs, int32 defs_len, enum ActionType type) {
-    if (defs == NULL) {
-        return NULL;
-    }
-
-    for (int32 i = 0; i < defs_len; i += 1) {
-        if (defs[i].type == type) {
-            return defs + i;
-        }
-    }
-    return NULL;
-}
-
-ActionDef *
-ncm_action_table_find(ActionDef *defs, int32 defs_len,
-                      char *name, int32 name_len) {
-    if ((defs == NULL) || (name == NULL) || (name_len <= 0)) {
-        return NULL;
-    }
-
-    for (int32 i = 0; i < defs_len; i += 1) {
-        char *def_name = defs[i].name;
-        int32 def_name_len = defs[i].name_len;
-        if (def_name && STREQUAL(name, name_len, def_name, def_name_len)) {
-            return defs + i;
-        }
-    }
-    return NULL;
-}
-
-ActionDef *
-ncm_action_get(enum ActionType type) {
-    if ((uint32)type >= ACTION_COUNT) {
-        return NULL;
-    }
-    if (action_defs[type].name == NULL) {
-        return NULL;
-    }
-    return action_defs + type;
-}
-
-ActionDef *
-ncm_action_find(char *name, int32 name_len) {
-    return ncm_action_table_find(action_defs, LENGTH(action_defs),
-                                 name, name_len);
-}
-
 int32
 ncm_action_type_parse(char *name, int32 name_len, enum ActionType *type) {
-    ActionDef *action;
+    enum ActionType action_type;
 
     if ((name == NULL) || (name_len < 0) || (type == NULL)) {
         return -EINVAL;
     }
 
-    action = ncm_action_find(name, name_len);
-    if (action == NULL) {
+    action_type = ACTION_parse(name, name_len);
+    if (action_type == ACTION_COUNT) {
         return -NCM_ERROR_PARSE;
     }
 
-    *type = action->type;
+    *type = action_type;
     return 0;
-}
-
-bool
-ncm_action_def_can_run(ActionDef *action, void *user) {
-    if (action == NULL) {
-        return false;
-    }
-    return ncm_action_runtime_can_run(user, action->type);
-}
-
-int32
-ncm_action_def_run(ActionDef *action, void *user) {
-    if (action == NULL) {
-        return -EINVAL;
-    }
-    return ncm_action_runtime_run(user, action->type);
 }
 
 bool
