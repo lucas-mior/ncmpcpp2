@@ -54,7 +54,8 @@ NCM_ARRAY_DECLARE_APPEND(ncm_formatted_color_array, NcmFormattedColorArray,
                          NcFormattedColor)
 
 enum SettingsOptionId {
-#define XX_OPTION(NAME, DEFAULT, ...) SETTINGS_OPTION_##NAME,
+#define XX_OPTION(NAME, DEFAULT, ...) \
+    SETTINGS_OPTION_##NAME,
 #include "config_options_pass.h"
     SETTINGS_OPTION_COUNT,
 };
@@ -62,40 +63,56 @@ enum SettingsOptionId {
 /* Fields and intrinsic companion state come from the option schema. */
 typedef struct Configuration {
 
-#define XX_BOOL(NAME, DEFAULT) bool NAME;
+#define XX_BOOL(NAME, DEFAULT) \
+    bool NAME;
 #define XX_STRING(NAME, DEFAULT) \
     char *NAME; \
     int32 NAME##_len;
-#define XX_PATH(NAME, DEFAULT) XX_STRING(NAME, DEFAULT)
-#define XX_DIR(NAME, DEFAULT) XX_STRING(NAME, DEFAULT)
-#define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM) int32 NAME;
+#define XX_PATH(NAME, DEFAULT) \
+    XX_STRING(NAME, DEFAULT)
+#define XX_DIR(NAME, DEFAULT) \
+    XX_STRING(NAME, DEFAULT)
+#define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM) \
+    int32 NAME;
 #define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM) \
     double NAME;
-#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT) ENUM_PREFIX_ NAME;
-#define XX_MPD_TAG(NAME, DEFAULT) enum mpd_tag_type NAME;
-#define XX_STARTUP_SCREEN(NAME, DEFAULT) SCREEN_TYPE_ NAME;
+#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT) \
+    ENUM_PREFIX_ NAME;
+#define XX_MPD_TAG(NAME, DEFAULT) \
+    enum mpd_tag_type NAME;
+#define XX_STARTUP_SCREEN(NAME, DEFAULT) \
+    SCREEN_TYPE_ NAME;
 #define XX_OPTIONAL_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE) \
     SCREEN_TYPE_ NAME; \
     bool PRESENT_FIELD;
-#define XX_COLOR(NAME, DEFAULT) NcColor NAME;
-#define XX_FORMATTED_COLOR(NAME, DEFAULT) NcFormattedColor NAME;
-#define XX_BORDER(NAME, DEFAULT) NcBorder NAME;
-#define XX_FORMAT(NAME, DEFAULT, FLAGS) NcmFormatAst NAME;
-#define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING) NcBuffer NAME;
+#define XX_COLOR(NAME, DEFAULT) \
+    NcColor NAME;
+#define XX_FORMATTED_COLOR(NAME, DEFAULT) \
+    NcFormattedColor NAME;
+#define XX_BORDER(NAME, DEFAULT) \
+    NcBorder NAME;
+#define XX_FORMAT(NAME, DEFAULT, FLAGS) \
+    NcmFormatAst NAME;
+#define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING) \
+    NcBuffer NAME;
 #define XX_BUFFER_WIDTH(NAME, DEFAULT, KEEP_EXISTING) \
     NcBuffer NAME; \
     int32 NAME##_length;
 #define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX) \
     StrBuilder NAME;
-#define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN) NcmInt32Array NAME;
+#define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN) \
+    NcmInt32Array NAME;
 #define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT) \
     NcmFormattedColorArray NAME;
-#define XX_LYRICS_FETCHERS(NAME, DEFAULT) LyricsFetcherRegistry NAME;
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT) \
+    LyricsFetcherRegistry NAME;
 #define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD) \
     ScreenTypeArray NAME; \
     bool PREVIOUS_FIELD;
-#define XX_NAMED_BOOL(NAME, DEFAULT, TRUE_VALUE, FALSE_VALUE) bool NAME;
-#define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE) uint32 NAME;
+#define XX_NAMED_BOOL(NAME, DEFAULT, TRUE_VALUE, FALSE_VALUE) \
+    bool NAME;
+#define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE) \
+    uint32 NAME;
 #define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD) \
     NcmFormatAst FORMAT_FIELD; \
     ColumnArray NAME;
