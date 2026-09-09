@@ -401,7 +401,8 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
             char message[192];
             int32 len;
 
-            len = SNPRINTF(message, "unexpected positional argument '%.*s'",
+            len = SNPRINTF(message,
+                           "unexpected positional argument '%.*s'",
                            arg_len, arg);
             return ncm_error_set_status(ncm_error, -EINVAL, message, len);
         }
