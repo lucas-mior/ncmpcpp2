@@ -932,6 +932,14 @@ search_insert_buffer_with_flags(SearchEngineScreen *screen,
     return;
 }
 
+static uint32
+search_pattern_regex_flags(SearchEngineScreen *screen) {
+    if (screen->search_mode == SEARCH_ENGINE_SEARCH_MODE_REGEX) {
+        return Config.regular_expressions;
+    }
+    return NCM_REGEX_LITERAL_CASE_INSENSITIVE;
+}
+
 static bool
 search_song_has_field_view(NcmSong *song, int32 field, StringView *view) {
     enum mpd_tag_type tag;
@@ -1125,6 +1133,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
 
         if (status >= 0) {
             NcmRegex regexes[SEARCH_ENGINE_CONSTRAINT_COUNT];
+            uint32 regex_flags;
             bool exact_match;
 
             exact_match = screen->search_mode
@@ -1133,6 +1142,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                 regexes[i] = (NcmRegex){0};
             }
 
+            regex_flags = search_pattern_regex_flags(screen);
             status = 0;
             if (!exact_match) {
                 for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
@@ -1142,7 +1152,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                     if ((status = ncm_regex_compile(&regexes[i],
                             screen->constraints[i].data,
                             screen->constraints[i].len,
-                            Config.regular_expressions, ncm_error)) < 0) {
+                            regex_flags, ncm_error)) < 0) {
                         break;
                     }
                 }
