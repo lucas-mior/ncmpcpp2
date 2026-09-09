@@ -7,9 +7,8 @@
 
 static void
 nc_song_info_switch_to(NcScreen *screen) {
-    NcSongInfoScreen *song_info;
+    NcSongInfoScreen *song_info = (NcSongInfoScreen *)screen;
 
-    song_info = (NcSongInfoScreen *)screen;
     if (song_info->hooks.switch_to) {
         song_info->hooks.switch_to(song_info->hooks.user, song_info);
     }
