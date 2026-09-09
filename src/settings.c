@@ -1094,7 +1094,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
-        SCREEN_TYPE_ parsed = SCREEN_TYPE_COUNT;                       \
+        SCREEN_TYPE_ parsed = SCREEN_TYPE_COUNT;                               \
         int32 status;                                                          \
         status = settings_parse_startup_screen(value, value_len, &parsed,      \
                                                ncm_error);                     \
@@ -1111,17 +1111,17 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
-        SCREEN_TYPE_ parsed = SCREEN_TYPE_COUNT;                       \
+        SCREEN_TYPE_ parsed = SCREEN_TYPE_COUNT;                               \
         int32 status;                                                          \
         if (value_len <= 0) {                                                  \
             config->PRESENT_FIELD = false;                                     \
-            config->NAME = (SCREEN_TYPE_)(UNSET_VALUE);                    \
+            config->NAME = (SCREEN_TYPE_)(UNSET_VALUE);                        \
             return 0;                                                          \
         }                                                                      \
         status = settings_parse_startup_screen(value, value_len, &parsed,      \
                                                ncm_error);                     \
         if (status < 0) {                                                      \
-            config->NAME = (SCREEN_TYPE_)(UNSET_VALUE);                    \
+            config->NAME = (SCREEN_TYPE_)(UNSET_VALUE);                        \
             return status;                                                     \
         }                                                                      \
         config->NAME = parsed;                                                 \
