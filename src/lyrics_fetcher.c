@@ -1683,8 +1683,7 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
 
             end = -1;
             lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Понравился "
-                                             "перевод"),
+                                      STRLIT("Понравился перевод"),
                                       &end);
             lyrics_update_first_match(content_data, content_len, start,
                                       STRLIT("Добавить "
