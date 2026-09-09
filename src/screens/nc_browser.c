@@ -980,15 +980,11 @@ browser_compare_directory_times(NcmMpdItem *right, NcmMpdItem *left) {
 
 static int32
 browser_compare_playlist_times(NcmMpdItem *right, NcmMpdItem *left) {
-    NcmPlaylist *right_playlist;
-    NcmPlaylist *left_playlist;
-    time_t right_mtime;
-    time_t left_mtime;
+    NcmPlaylist *right_playlist = ncm_mpd_item_playlist(right);
+    NcmPlaylist *left_playlist = ncm_mpd_item_playlist(left);
+    time_t right_mtime = ncm_playlist_last_modified(right_playlist);
+    time_t left_mtime = ncm_playlist_last_modified(left_playlist);
 
-    right_playlist = ncm_mpd_item_playlist(right);
-    left_playlist = ncm_mpd_item_playlist(left);
-    right_mtime = ncm_playlist_last_modified(right_playlist);
-    left_mtime = ncm_playlist_last_modified(left_playlist);
     return browser_compare_times(right_mtime, left_mtime);
 }
 
