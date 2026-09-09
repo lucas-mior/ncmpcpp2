@@ -417,18 +417,14 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
                                              ncm_error);
         if (options->config_paths.len == 0) {
             for (int32 j = 0; j < default_config_paths.len; j += 1) {
-                StrBuilder *path;
-
-                path = &default_config_paths.items[j];
+                StrBuilder *path = &default_config_paths.items[j];
                 command_line_options_append_path(&options->config_paths,
                                                  path->data, path->len);
             }
         }
         if (options->bindings_paths.len == 0) {
             for (int32 j = 0; j < default_bindings_paths.len; j += 1) {
-                StrBuilder *path;
-
-                path = &default_bindings_paths.items[j];
+                StrBuilder *path = &default_bindings_paths.items[j];
                 command_line_options_append_path(&options->bindings_paths,
                                                  path->data, path->len);
             }
