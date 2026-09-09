@@ -7,7 +7,7 @@ instances and remove the file from the list. If the first file in the list does
 not have the problem, try the next one without asking first.
 
 ## Related argument pairs not grouped together
-make sure that related argument pairs in function headers and calls are together
+Make sure that related argument pairs in function headers and calls are together
 (on the same line if they fit). For instance, width with height, x with y, array
 with its length, callback function with its `void *user`, etc.
 If both args do not fit in the same line, then break the
