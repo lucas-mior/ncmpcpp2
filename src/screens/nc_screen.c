@@ -162,11 +162,60 @@ nc_screen_init_ops(NcScreen *screen, NcScreenOps ops,
 
     screen->ops_storage = ops;
     screen->ops = &screen->ops_storage;
+    screen->capabilities = (NcScreenCapabilities){0};
     screen->user = user;
     screen->type = type;
     screen->has_to_be_resized = false;
     screen->has_to_be_updated = false;
 
+    return;
+}
+
+void
+nc_screen_set_menu_capability(NcScreen *screen,
+                              NcScreenMenuCapability capability) {
+    ASSERT(screen != NULL);
+    screen->capabilities.menu = capability;
+    return;
+}
+
+void
+nc_screen_set_filter_capability(NcScreen *screen,
+                                NcScreenFilterCapability capability) {
+    ASSERT(screen != NULL);
+    screen->capabilities.filter = capability;
+    return;
+}
+
+void
+nc_screen_set_search_capability(NcScreen *screen,
+                                NcScreenSearchCapability capability) {
+    ASSERT(screen != NULL);
+    screen->capabilities.search = capability;
+    return;
+}
+
+void
+nc_screen_set_song_capability(NcScreen *screen,
+                              NcScreenSongCapability capability) {
+    ASSERT(screen != NULL);
+    screen->capabilities.songs = capability;
+    return;
+}
+
+void
+nc_screen_set_column_capability(NcScreen *screen,
+                                NcScreenColumnCapability capability) {
+    ASSERT(screen != NULL);
+    screen->capabilities.columns = capability;
+    return;
+}
+
+void
+nc_screen_set_tag_capability(NcScreen *screen,
+                             NcScreenTagCapability capability) {
+    ASSERT(screen != NULL);
+    screen->capabilities.tags = capability;
     return;
 }
 
@@ -294,6 +343,187 @@ void
 nc_screen_request_update(NcScreen *screen) {
     nc_screen_set_has_to_be_updated(screen, true);
     return;
+}
+
+NcMenu *
+nc_screen_current_menu(NcScreen *screen) {
+    if ((screen == NULL) || (screen->capabilities.menu.current_menu == NULL)) {
+        return NULL;
+    }
+    return screen->capabilities.menu.current_menu(
+        screen->capabilities.menu.user);
+}
+
+int32
+nc_screen_current_menu_height(NcScreen *screen) {
+    if ((screen == NULL) || (screen->capabilities.menu.height == NULL)) {
+        return ui_state_main_height();
+    }
+    return screen->capabilities.menu.height(screen->capabilities.menu.user);
+}
+
+bool
+nc_screen_can_filter(NcScreen *screen) {
+    if ((screen == NULL) || (screen->capabilities.filter.apply == NULL)) {
+        return false;
+    }
+    if (screen->capabilities.filter.can_filter) {
+        return screen->capabilities.filter.can_filter(
+            screen->capabilities.filter.user);
+    }
+    return true;
+}
+
+StringView
+nc_screen_current_filter(NcScreen *screen) {
+    if ((screen == NULL)
+        || (screen->capabilities.filter.current_constraint == NULL)) {
+        return ncm_string_view(NULL, 0);
+    }
+    return screen->capabilities.filter.current_constraint(
+        screen->capabilities.filter.user);
+}
+
+int32
+nc_screen_apply_filter(NcScreen *screen, char *pattern, int32 pattern_len,
+                       uint32 regex_flags, NcmError *ncm_error) {
+    if (!nc_screen_can_filter(screen)) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    return screen->capabilities.filter.apply(screen->capabilities.filter.user,
+                                             pattern, pattern_len,
+                                             regex_flags, ncm_error);
+}
+
+bool
+nc_screen_can_search(NcScreen *screen) {
+    if ((screen == NULL) || (screen->capabilities.search.search == NULL)) {
+        return false;
+    }
+    if (screen->capabilities.search.can_search) {
+        return screen->capabilities.search.can_search(
+            screen->capabilities.search.user);
+    }
+    return true;
+}
+
+bool
+nc_screen_can_find(NcScreen *screen) {
+    if (!nc_screen_can_search(screen)) {
+        return false;
+    }
+    return screen->capabilities.search.can_find;
+}
+
+StringView
+nc_screen_current_search_constraint(NcScreen *screen) {
+    if ((screen == NULL)
+        || (screen->capabilities.search.current_constraint == NULL)) {
+        return ncm_string_view(NULL, 0);
+    }
+    return screen->capabilities.search.current_constraint(
+        screen->capabilities.search.user);
+}
+
+void
+nc_screen_clear_search_constraint(NcScreen *screen) {
+    if ((screen == NULL)
+        || (screen->capabilities.search.clear_constraint == NULL)) {
+        return;
+    }
+    screen->capabilities.search.clear_constraint(
+        screen->capabilities.search.user);
+    return;
+}
+
+int32
+nc_screen_search(NcScreen *screen, enum SearchDirection direction,
+                 char *pattern, int32 pattern_len, uint32 regex_flags,
+                 bool wrap, bool skip_current, NcmError *ncm_error) {
+    if (!nc_screen_can_search(screen)) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    return screen->capabilities.search.search(screen->capabilities.search.user,
+                                              direction, pattern, pattern_len,
+                                              regex_flags, wrap,
+                                              skip_current, ncm_error);
+}
+
+int32
+nc_screen_current_song(NcScreen *screen, NcmSong *song) {
+    if ((screen == NULL) || (screen->capabilities.songs.current_song == NULL)) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    return screen->capabilities.songs.current_song(
+        screen->capabilities.songs.user, song);
+}
+
+int32
+nc_screen_selected_songs(NcScreen *screen, NcmSongArray *songs) {
+    if ((screen == NULL)
+        || (screen->capabilities.songs.selected_songs == NULL)) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    return screen->capabilities.songs.selected_songs(
+        screen->capabilities.songs.user, songs);
+}
+
+bool
+nc_screen_previous_column_available(NcScreen *screen) {
+    if ((screen == NULL)
+        || (screen->capabilities.columns.previous_available == NULL)) {
+        return false;
+    }
+    return screen->capabilities.columns.previous_available(
+        screen->capabilities.columns.user);
+}
+
+bool
+nc_screen_next_column_available(NcScreen *screen) {
+    if ((screen == NULL)
+        || (screen->capabilities.columns.next_available == NULL)) {
+        return false;
+    }
+    return screen->capabilities.columns.next_available(
+        screen->capabilities.columns.user);
+}
+
+int32
+nc_screen_previous_column(NcScreen *screen) {
+    if (!nc_screen_previous_column_available(screen)
+        || (screen->capabilities.columns.previous == NULL)) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    return screen->capabilities.columns.previous(
+        screen->capabilities.columns.user);
+}
+
+int32
+nc_screen_next_column(NcScreen *screen) {
+    if (!nc_screen_next_column_available(screen)
+        || (screen->capabilities.columns.next == NULL)) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    return screen->capabilities.columns.next(
+        screen->capabilities.columns.user);
+}
+
+NcMenu *
+nc_screen_tag_menu(NcScreen *screen) {
+    if ((screen == NULL) || (screen->capabilities.tags.menu == NULL)) {
+        return NULL;
+    }
+    return screen->capabilities.tags.menu(screen->capabilities.tags.user);
+}
+
+int32
+nc_screen_song_tag_at(NcScreen *screen, int32 pos, enum SongGetter getter,
+                      StrBuilder *tag) {
+    if ((screen == NULL) || (screen->capabilities.tags.tag_at == NULL)) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    return screen->capabilities.tags.tag_at(screen->capabilities.tags.user, pos,
+                                            getter, tag);
 }
 
 void

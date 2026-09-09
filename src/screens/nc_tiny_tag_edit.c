@@ -10,6 +10,11 @@
 #include "title.h"
 #include "ui_state.h"
 
+static NcMenu *
+tiny_editor_menu_capability(void *user) {
+    return nc_editor_buffer_menu_base(tiny_tag_edit_screen_rows(user));
+}
+
 static int32
 tiny_editor_current_row(TinyTagEditScreen *screen) {
     return nc_menu_highlight(nc_editor_buffer_menu_base(&screen->rows));
@@ -476,6 +481,10 @@ tiny_tag_edit_screen_init(TinyTagEditScreen *screen, int32 start_x, int32 width,
 
     nc_screen_init_ops(&screen->screen, tiny_editor_ops, screen,
                        NC_SCREEN_TYPE_TINY_TAG_EDIT);
+    nc_screen_set_menu_capability(&screen->screen, (NcScreenMenuCapability){
+        .user = screen,
+        .current_menu = tiny_editor_menu_capability,
+    });
     return;
 }
 
