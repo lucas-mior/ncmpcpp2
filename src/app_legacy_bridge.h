@@ -18,8 +18,8 @@ int32 ncmpcpp_header_height(void);
 int32 ncmpcpp_footer_height(void);
 int32 ncmpcpp_footer_start_y(void);
 
-NcWindow *ncmpcpp_window_create(int32 start_x, int32 start_y, int32 width,
-                                int32 height, NcColor);
+NcWindow *ncmpcpp_window_create(int32 start_x, int32 start_y,
+                                int32 width, int32 height, NcColor);
 void ncmpcpp_window_display(NcWindow *);
 void ncmpcpp_window_destroy(NcWindow *);
 
