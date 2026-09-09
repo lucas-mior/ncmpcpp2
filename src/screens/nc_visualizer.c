@@ -1459,8 +1459,8 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                     denominator = 1.0;
                 }
                 window = a0
-                         - a1*cos(2.0*VISUALIZER_PI*(double)i /denominator)
-                         + a2*cos(4.0*VISUALIZER_PI*(double)i /denominator);
+                         - a1*cos(2.0*PI*(double)i /denominator)
+                         + a2*cos(4.0*PI*(double)i /denominator);
                 fft->input[i] = window*(double)samples[i]
                                 /(double)VISUALIZER_MAX_SAMPLE;
             }
@@ -1823,7 +1823,7 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
 
         half_width = width / 2;
         ellipse_half_height = height / 2;
-        angle_multiplier = 2.0*VISUALIZER_PI/(double)samples_len;
+        angle_multiplier = 2.0*PI/(double)samples_len;
 
         for (int32 i = 0; i < samples_len; i += 1) {
             double angle = (double)i*angle_multiplier;

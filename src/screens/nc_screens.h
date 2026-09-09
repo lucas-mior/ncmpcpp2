@@ -832,9 +832,6 @@ int32 nc_server_info_screen_start_y(NcServerInfoScreen *);
 #include <fftw3.h>
 #endif
 
-
-#define VISUALIZER_PI 3.14159265358979323846
-
 #if defined(HAVE_FFTW3_H)
 #define VISUALIZER_FREQUENCY_FIELD                                             \
     XX(VISUALIZER_FREQUENCY, spectrum)
