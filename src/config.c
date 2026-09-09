@@ -179,11 +179,9 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
     int32 status;
 
     for (int32 i = 1; i < argc; i += 1) {
-        char *arg;
-        int32 arg_len;
+        char *arg = argv[i];
+        int32 arg_len = strlen32(arg);
 
-        arg = argv[i];
-        arg_len = strlen32(arg);
         if (STREQUAL(arg, arg_len, "--")) {
             if (i + 1 < argc) {
                 char message[192];
