@@ -33,9 +33,7 @@ current_screen_filter_buffer(void) {
         return &app_screen_browser()->filter_constraint;
     }
     if (current_screen_is(NC_SCREEN_TYPE_PLAYLIST_EDITOR)) {
-        PlaylistEditScreen *screen;
-
-        screen = app_screen_playlist_edit();
+        PlaylistEditScreen *screen = app_screen_playlist_edit();
         if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
             return &screen->content_filter_constraint;
         }
