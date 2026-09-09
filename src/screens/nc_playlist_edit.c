@@ -1124,7 +1124,7 @@ playlist_edit_screen_load_content(PlaylistEditScreen *screen,
     }
 
     had_preserved_song = playlist_edit_store_current_song(screen,
-                                                            &preserved_song);
+                                                          &preserved_song);
 
     menu = nc_song_menu_base(&screen->content);
     nc_menu_show_all_items(menu);
