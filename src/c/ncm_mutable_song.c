@@ -223,8 +223,8 @@ ncm_mutable_song_copy(MutableSong *dest, MutableSong *source) {
     for (int32 i = 0; i < source->tags_len; i += 1) {
         MutableSongTag *source_tag = &source->tags[i];
         MutableSongTag *tag = ncm_mutable_song_add_tag(&copy,
-                                                          source_tag->field,
-                                                          source_tag->idx);
+                                                       source_tag->field,
+                                                       source_tag->idx);
         ncm_mutable_song_tag_destroy(tag);
         tag->field = source_tag->field;
         tag->idx = source_tag->idx;
