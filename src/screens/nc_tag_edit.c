@@ -600,9 +600,8 @@ tag_edit_find_recent_pattern(TagEditScreen *screen,
         return -1;
     }
     for (int32 i = 0; i < screen->recent_patterns.len; i += 1) {
-        StrBuilder *item;
+        StrBuilder *item = &screen->recent_patterns.items[i];
 
-        item = &screen->recent_patterns.items[i];
         if (STREQUAL(item->data, item->len, pattern, pattern_len)) {
             return i;
         }
