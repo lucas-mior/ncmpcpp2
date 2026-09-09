@@ -187,7 +187,7 @@ main(int32 argc, char **argv) {
             && (slave_screen_type != ncmpcpp_current_screen_type())) {
             ASSERT_ZERO(ncmpcpp_switch_to_screen_type(slave_screen_type));
             if (!Config.startup_slave_screen_focus) {
-                (void)ncmpcpp_execute_action(NCM_ACTION_MASTER_SCREEN);
+                (void)ncmpcpp_execute_action(ACTION_MASTER_SCREEN);
             }
         }
     }

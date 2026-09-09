@@ -1160,50 +1160,50 @@ help_render(void *user, NcBuffer *buffer) {
     append_format(buffer, NC_FORMAT_BOLD);
     nc_buffer_append_cstring(buffer, "\n  Keys - Movement\n\n");
     append_format(buffer, NC_FORMAT_NO_BOLD);
-    append_help(buffer, NCM_ACTION_SCROLL_UP, "Move cursor up");
-    append_help(buffer, NCM_ACTION_SCROLL_DOWN, "Move cursor down");
-    append_help(buffer, NCM_ACTION_PAGE_UP, "Page up");
-    append_help(buffer, NCM_ACTION_PAGE_DOWN, "Page down");
-    append_help(buffer, NCM_ACTION_MOVE_HOME, "Home");
-    append_help(buffer, NCM_ACTION_MOVE_END, "End");
-    append_help(buffer, NCM_ACTION_NEXT_SCREEN, "Next screen");
-    append_help(buffer, NCM_ACTION_PREVIOUS_SCREEN, "Previous screen");
-    append_help(buffer, NCM_ACTION_SHOW_HELP, "Show help");
-    append_help(buffer, NCM_ACTION_SHOW_PLAYLIST, "Show playlist");
-    append_help(buffer, NCM_ACTION_SHOW_BROWSER, "Show browser");
-    append_help(buffer, NCM_ACTION_SHOW_SEARCH_ENGINE, "Show search engine");
-    append_help(buffer, NCM_ACTION_SHOW_MEDIA_LIBRARY, "Show media library");
-    append_help(buffer, NCM_ACTION_SHOW_PLAYLIST_EDITOR,
+    append_help(buffer, ACTION_SCROLL_UP, "Move cursor up");
+    append_help(buffer, ACTION_SCROLL_DOWN, "Move cursor down");
+    append_help(buffer, ACTION_PAGE_UP, "Page up");
+    append_help(buffer, ACTION_PAGE_DOWN, "Page down");
+    append_help(buffer, ACTION_MOVE_HOME, "Home");
+    append_help(buffer, ACTION_MOVE_END, "End");
+    append_help(buffer, ACTION_NEXT_SCREEN, "Next screen");
+    append_help(buffer, ACTION_PREVIOUS_SCREEN, "Previous screen");
+    append_help(buffer, ACTION_SHOW_HELP, "Show help");
+    append_help(buffer, ACTION_SHOW_PLAYLIST, "Show playlist");
+    append_help(buffer, ACTION_SHOW_BROWSER, "Show browser");
+    append_help(buffer, ACTION_SHOW_SEARCH_ENGINE, "Show search engine");
+    append_help(buffer, ACTION_SHOW_MEDIA_LIBRARY, "Show media library");
+    append_help(buffer, ACTION_SHOW_PLAYLIST_EDITOR,
                 "Show playlist editor");
-    append_help(buffer, NCM_ACTION_SHOW_SERVER_INFO, "Show server info");
+    append_help(buffer, ACTION_SHOW_SERVER_INFO, "Show server info");
 #if defined(ENABLE_OUTPUTS)
-    append_help(buffer, NCM_ACTION_SHOW_OUTPUTS, "Show outputs");
+    append_help(buffer, ACTION_SHOW_OUTPUTS, "Show outputs");
 #endif
 #if defined(ENABLE_VISUALIZER)
-    append_help(buffer, NCM_ACTION_SHOW_VISUALIZER, "Show music visualizer");
+    append_help(buffer, ACTION_SHOW_VISUALIZER, "Show music visualizer");
 #endif
 #if defined(HAVE_TAGLIB_H)
-    append_help(buffer, NCM_ACTION_SHOW_TAG_EDIT, "Show tag editor");
+    append_help(buffer, ACTION_SHOW_TAG_EDIT, "Show tag editor");
 #endif
 
     append_format(buffer, NC_FORMAT_BOLD);
     nc_buffer_append_cstring(buffer, "\n  Keys - Global\n\n");
     append_format(buffer, NC_FORMAT_NO_BOLD);
 
-    append_help(buffer, NCM_ACTION_PLAY, "Play");
-    append_help(buffer, NCM_ACTION_STOP, "Stop");
-    append_help(buffer, NCM_ACTION_PAUSE, "Pause");
-    append_help(buffer, NCM_ACTION_NEXT, "Next track");
-    append_help(buffer, NCM_ACTION_PREVIOUS, "Previous track");
-    append_help(buffer, NCM_ACTION_VOLUME_DOWN, "Decrease volume");
-    append_help(buffer, NCM_ACTION_VOLUME_UP, "Increase volume");
-    append_help(buffer, NCM_ACTION_TOGGLE_REPEAT, "Toggle repeat mode");
-    append_help(buffer, NCM_ACTION_TOGGLE_RANDOM, "Toggle random mode");
-    append_help(buffer, NCM_ACTION_TOGGLE_SINGLE, "Toggle single mode");
-    append_help(buffer, NCM_ACTION_TOGGLE_CONSUME, "Toggle consume mode");
-    append_help(buffer, NCM_ACTION_UPDATE_DATABASE, "Start database update");
-    append_help(buffer, NCM_ACTION_EXECUTE_COMMAND, "Execute command");
-    append_help(buffer, NCM_ACTION_QUIT, "Quit");
+    append_help(buffer, ACTION_PLAY, "Play");
+    append_help(buffer, ACTION_STOP, "Stop");
+    append_help(buffer, ACTION_PAUSE, "Pause");
+    append_help(buffer, ACTION_NEXT, "Next track");
+    append_help(buffer, ACTION_PREVIOUS, "Previous track");
+    append_help(buffer, ACTION_VOLUME_DOWN, "Decrease volume");
+    append_help(buffer, ACTION_VOLUME_UP, "Increase volume");
+    append_help(buffer, ACTION_TOGGLE_REPEAT, "Toggle repeat mode");
+    append_help(buffer, ACTION_TOGGLE_RANDOM, "Toggle random mode");
+    append_help(buffer, ACTION_TOGGLE_SINGLE, "Toggle single mode");
+    append_help(buffer, ACTION_TOGGLE_CONSUME, "Toggle consume mode");
+    append_help(buffer, ACTION_UPDATE_DATABASE, "Start database update");
+    append_help(buffer, ACTION_EXECUTE_COMMAND, "Execute command");
+    append_help(buffer, ACTION_QUIT, "Quit");
 
     return 1;
 }
