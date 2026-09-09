@@ -38,9 +38,11 @@ typedef struct SettingsOption {
     SETTINGS_ASSERT_FIELD_TYPE(NAME, char *);                            \
     SETTINGS_ASSERT_FIELD_TYPE(NAME##_len, int32);
 #define XX_PATH(NAME, DEFAULT)                                           \
-    XX_STRING(NAME, DEFAULT)
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, char *);                            \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME##_len, int32);
 #define XX_DIR(NAME, DEFAULT)                                            \
-    XX_STRING(NAME, DEFAULT)
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, char *);                            \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME##_len, int32);
 #define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM)                      \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, int32);
 #define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)                       \
