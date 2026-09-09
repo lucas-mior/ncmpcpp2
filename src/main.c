@@ -198,6 +198,7 @@ main(int32 argc, char **argv) {
     while (!ncmpcpp_has_exit_request()
            && !ncm_action_runtime_exit_requested(NULL)) {
         NcKey input;
+        NcmBindingSlice bindings;
 
         if (!ncmpcpp_mpd_is_connected()
             && (global_timer_elapsed_ms(connect_attempt) > 1000)) {
@@ -221,20 +222,13 @@ main(int32 argc, char **argv) {
         }
 
         global_timer_update();
-        {
-            NcmBindingSlice bindings;
-            bool executed = false;
 
-            if (ncm_bindings_configuration_get(&Bindings, input,
-                                               &bindings) > 0) {
-                for (int32 i = 0; i < bindings.len; i += 1) {
-                    if (ncmpcpp_execute_binding(bindings.data + i) == 0) {
-                        executed = true;
-                        break;
-                    }
+        if (ncm_bindings_configuration_get(&Bindings, input, &bindings) > 0) {
+            for (int32 i = 0; i < bindings.len; i += 1) {
+                if (ncmpcpp_execute_binding(bindings.data + i) == 0) {
+                    break;
                 }
             }
-            (void)executed;
         }
         ncmpcpp_playlist_enable_highlighting_if_current();
     }
