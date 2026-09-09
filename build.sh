@@ -127,9 +127,6 @@ check)
     ;;
 build|check|clean|debug|debug-fast|fast_feedback|install|test|uninstall)
     ;;
-*)
-    common_build_unknown_mode
-    ;;
 esac
 
 case "$mode" in
