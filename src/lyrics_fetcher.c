@@ -999,6 +999,9 @@ lyrics_append_slug(StrBuilder *buffer, enum LyricsFetcherType type,
 static bool
 lyrics_starts_with_ignore_case(char *string, int32 string_len,
                                char *prefix, int32 prefix_len) {
+    if ((string == NULL) || (string_len < 0)) {
+        return false;
+    }
     if (string_len < prefix_len) {
         return false;
     }
@@ -1013,6 +1016,9 @@ lyrics_starts_with_ignore_case(char *string, int32 string_len,
 static int32
 lyrics_find_ignore_case(char *data, int32 data_len, char *needle,
                         int32 needle_len, int32 start) {
+    if ((data == NULL) || (data_len < 0) || (start < 0)) {
+        return -1;
+    }
     for (int32 i = start; i + needle_len <= data_len; i += 1) {
         if (lyrics_starts_with_ignore_case(data + i, data_len - i,
                                            needle, needle_len)) {
@@ -1193,6 +1199,9 @@ lyrics_url_path_start(char *url, int32 url_len) {
     int32 scheme;
     int32 path_start;
 
+    if ((url == NULL) || (url_len <= 0)) {
+        return -1;
+    }
     if ((scheme = lyrics_find_ignore_case(url, url_len,
                                           STRLIT("://"), 0)) < 0) {
         return -1;
@@ -1213,6 +1222,10 @@ static int32
 lyrics_url_path_end(char *url, int32 url_len, int32 path_start) {
     int32 path_end = path_start;
 
+    if ((url == NULL) || (url_len <= 0)
+        || (path_start < 0) || (path_start > url_len)) {
+        return -1;
+    }
     while ((path_end < url_len) && (url[path_end] != '?')
            && (url[path_end] != '#')) {
         path_end += 1;
@@ -1224,6 +1237,9 @@ static bool
 lyrics_url_path_starts_with(char *url, int32 url_len, int32 path_start,
                             char *prefix, int32 prefix_len) {
     int32 path_end = lyrics_url_path_end(url, url_len, path_start);
+    if (path_end < 0) {
+        return false;
+    }
     return lyrics_starts_with_ignore_case(url + path_start,
                                           path_end - path_start, prefix,
                                           prefix_len);
@@ -1236,6 +1252,9 @@ lyrics_url_path_ends_with(char *url, int32 url_len, int32 path_start,
     int32 suffix_start;
 
     path_end = lyrics_url_path_end(url, url_len, path_start);
+    if (path_end < 0) {
+        return false;
+    }
     if (path_end - path_start < suffix_len) {
         return false;
     }
@@ -1251,6 +1270,9 @@ lyrics_url_path_has_segments(char *url, int32 url_len, int32 path_start,
     int32 segments = 0;
     bool in_segment = false;
 
+    if (path_end < 0) {
+        return false;
+    }
     for (int32 i = path_start; i < path_end; i += 1) {
         if (url[i] == '/') {
             if (in_segment) {

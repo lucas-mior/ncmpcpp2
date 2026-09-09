@@ -319,7 +319,6 @@ action_runtime_playlist_remove_song(NcmSong *song, NcmError *ncm_error) {
     PlaylistScreen *screen = app_screen_playlist();
     NcSongMenu *song_menu;
     NcMenu *menu;
-    NcmSong *item;
     int32 position;
     int32 count;
     bool ok;
@@ -333,11 +332,14 @@ action_runtime_playlist_remove_song(NcmSong *song, NcmError *ncm_error) {
 
     ok = ncm_mpd_client_start_command_list(&global_mpd, ncm_error) == 0;
     for (int32 i = count; ok && (i > 0); i -= 1) {
+        NcmSong *item;
+
         if (((item = nc_song_menu_item_at(song_menu, NC_MENU_ITEMS_ALL,
                                           i - 1)) == NULL)
             || !ncm_song_is_equal(item, song)) {
             continue;
         }
+
         position = ncm_song_position(item);
         if (position < 0) {
             continue;
