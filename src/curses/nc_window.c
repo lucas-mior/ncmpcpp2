@@ -1501,7 +1501,7 @@ nc_window_reverse(NcWindow *window, bool state) {
 }
 
 static void
-nc_window_alt_charset(NcWindow *window, bool state) {
+nc_window_alt_chars(NcWindow *window, bool state) {
     if (state) {
         wattron(window->window, A_ALTCHARSET);
     } else {
@@ -1556,11 +1556,11 @@ nc_window_apply_format(NcWindow *window, enum NcFormat format) {
         break;
     case NC_FORMAT_ALT_CHARSET:
         nc_window_incr_format(window,
-                              &window->alt_charset_count, nc_window_alt_charset);
+                              &window->alt_chars_count, nc_window_alt_chars);
         break;
     case NC_FORMAT_NO_ALT_CHARSET:
         nc_window_decr_format(window,
-                              &window->alt_charset_count, nc_window_alt_charset);
+                              &window->alt_chars_count, nc_window_alt_chars);
         break;
     case NC_FORMAT_ITALIC:
         nc_window_incr_format(window,

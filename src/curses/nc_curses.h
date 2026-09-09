@@ -121,8 +121,8 @@ typedef struct NcFdCallback {
     XX(NC_FORMAT_NO_UNDERLINE, no_underline)     \
     XX(NC_FORMAT_REVERSE, reverse)               \
     XX(NC_FORMAT_NO_REVERSE, no_reverse)         \
-    XX(NC_FORMAT_ALT_CHARSET, alt_charset)       \
-    XX(NC_FORMAT_NO_ALT_CHARSET, no_alt_charset) \
+    XX(NC_FORMAT_ALT_CHARSET, alt_chars)       \
+    XX(NC_FORMAT_NO_ALT_CHARSET, no_alt_chars) \
     XX(NC_FORMAT_ITALIC, italic)                 \
     XX(NC_FORMAT_NO_ITALIC, no_italic)
 #include "cbase/xenums.c"
@@ -184,7 +184,7 @@ typedef struct NcWindow {
     int32 bold_count;
     int32 underline_count;
     int32 reverse_count;
-    int32 alt_charset_count;
+    int32 alt_chars_count;
     int32 italic_count;
 } NcWindow;
 
