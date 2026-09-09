@@ -102,10 +102,6 @@ UNSET_VALUE)`
 Stores the enum plus a generated presence flag. An empty value represents the
 unset state.
 
-`XX_NAMED_BOOL(NAME, DEFAULT_VALUE, TRUE_VALUE, FALSE_VALUE)`
-
-Stores a `bool` whose external syntax is a pair of meaningful names instead of
-yes/no.
 
 `XX_UINT32_CHOICE(NAME, DEFAULT_VALUE, PARSER, UNSET_VALUE)`
 

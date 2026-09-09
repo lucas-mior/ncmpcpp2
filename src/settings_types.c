@@ -140,8 +140,6 @@ configuration_init_unchecked(Configuration *config) {
 #define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                     \
     config->NAME = (ScreenTypeArray){0};                                  \
     config->PREVIOUS_FIELD = false;
-#define XX_NAMED_BOOL(NAME, DEFAULT, TRUE_VALUE, FALSE_VALUE)             \
-    config->NAME = false;
 #define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE)              \
     config->NAME = (UNSET_VALUE);
 #define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD)                           \
