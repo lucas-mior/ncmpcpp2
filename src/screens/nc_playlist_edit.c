@@ -1068,13 +1068,11 @@ playlist_edit_screen_reload_playlists_from_mpd(PlaylistEditScreen *screen,
             while (j > 0) {
                 NcmPlaylist *left = &playlists.items[j - 1];
                 NcmPlaylist *right = &current;
-                int32 comparison;
 
-                comparison =
-                    ncm_compare_locale_strings(left->path, left->path_len,
+                if (ncm_compare_locale_strings(left->path, left->path_len,
                                                right->path, right->path_len,
-                                               Config.ignore_leading_the);
-                if (comparison <= 0) {
+                                               Config.ignore_leading_the)
+                        <= 0) {
                     break;
                 }
                 ncm_playlist_move(&playlists.items[j], &playlists.items[j - 1]);
