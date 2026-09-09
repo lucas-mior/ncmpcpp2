@@ -40,8 +40,8 @@ lastfm_resize_callback(NcScreen *screen) {
     LastfmScreen *lastfm = (LastfmScreen *)screen;
 
     nc_screen_switcher_get_resize_params(screen, &x, &width, true);
-    lastfm_screen_set_geometry(lastfm, x, width, ui_state_main_start_y(),
-                               ui_state_main_height());
+    lastfm_screen_set_geometry(lastfm, x, width,
+                               ui_state_main_start_y(), ui_state_main_height());
     nc_screen_clear_resize_request(screen);
 
     return;
@@ -108,8 +108,8 @@ void
 nc_lastfm_screen_init(NcLastfmScreen *screen, NcScreenOps callbacks, void *user,
                       int32 start_x, int32 width,
                       int32 main_start_y, int32 main_height) {
-    nc_scrollpad_screen_init(&screen->scrollpad_screen, callbacks,
-                             user, NC_SCREEN_TYPE_LASTFM, 0, 0, 0, 0);
+    nc_scrollpad_screen_init(&screen->scrollpad_screen, callbacks, user,
+                             NC_SCREEN_TYPE_LASTFM, 0, 0, 0, 0);
     nc_lastfm_screen_set_geometry(screen, start_x, width,
                                   main_start_y, main_height);
     return;
@@ -150,8 +150,9 @@ lastfm_set_title(LastfmScreen *screen, char *title, int32 title_len) {
 
     cap = title_len + 1;
     if (cap > screen->title_cap) {
-        screen->title = realloc2(screen->title, screen->title_cap,
-                                 cap, SIZEOF(*screen->title));
+        screen->title = realloc2(screen->title,
+                                 screen->title_cap, cap,
+                                 SIZEOF(*screen->title));
         screen->title_cap = cap;
     }
 
@@ -169,7 +170,8 @@ lastfm_screen_init(LastfmScreen *screen, int32 start_x, int32 width,
     nc_lastfm_screen_init(&screen->screen, lastfm_ops, screen, start_x, width,
                           main_start_y, main_height);
 
-    nc_window_init(&screen->window, nc_lastfm_screen_start_x(&screen->screen),
+    nc_window_init(&screen->window,
+                   nc_lastfm_screen_start_x(&screen->screen),
                    nc_lastfm_screen_start_y(&screen->screen),
                    nc_lastfm_screen_width(&screen->screen),
                    nc_lastfm_screen_height(&screen->screen),
@@ -225,7 +227,8 @@ lastfm_screen_set_geometry(LastfmScreen *screen, int32 start_x, int32 width,
                            int32 main_start_y, int32 main_height) {
     nc_lastfm_screen_set_geometry(&screen->screen, start_x, width,
                                   main_start_y, main_height);
-    nc_window_resize(&screen->window, nc_lastfm_screen_width(&screen->screen),
+    nc_window_resize(&screen->window,
+                     nc_lastfm_screen_width(&screen->screen),
                      nc_lastfm_screen_height(&screen->screen));
     nc_window_move_to(&screen->window,
                       nc_lastfm_screen_start_x(&screen->screen),
@@ -468,8 +471,7 @@ lastfm_buffer_find_unchecked(NcBuffer *buffer, char *pattern, int32 pattern_len,
     state.buffer = buffer;
     data = nc_buffer_data(buffer);
     match_count = ncm_regex_for_each_match(&regex, data, buffer->len,
-                                           lastfm_find_match_callback,
-                                           &state);
+                                           lastfm_find_match_callback, &state);
     ncm_regex_destroy(&regex);
     if (match_count > 0) {
         return 1;
@@ -494,8 +496,8 @@ lastfm_screen_find(LastfmScreen *screen, char *pattern, int32 pattern_len,
                                     STRLIT("missing Last.fm screen"));
     }
 
-    result = lastfm_buffer_find_unchecked(&screen->buffer, pattern,
-                                          pattern_len, ncm_error);
+    result = lastfm_buffer_find_unchecked(&screen->buffer,
+                                          pattern, pattern_len, ncm_error);
     if (result < 0) {
         lastfm_flush(screen);
         return result;
