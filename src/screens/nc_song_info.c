@@ -37,9 +37,8 @@ static void
 nc_song_info_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     NcSongInfoScreen *song_info = (NcSongInfoScreen *)screen;
     enum NcScroll where = NC_SCROLL_HOME;
-    bool do_scroll;
+    bool do_scroll = true;
 
-    do_scroll = true;
     if (event.bstate & BUTTON5_PRESSED) {
         where = NC_SCROLL_DOWN;
     } else if (event.bstate & BUTTON4_PRESSED) {
