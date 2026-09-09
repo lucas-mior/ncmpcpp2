@@ -580,9 +580,8 @@ tag_edit_build_parser_legend(TagEditScreen *screen) {
     tags = nc_tag_row_menu_base(&screen->tags);
     count = nc_menu_item_count(tags);
     for (int32 i = 0; i < count; i += 1) {
-        NcmMutableSong *song;
+        NcmMutableSong *song = nc_menu_active_item_at(tags, i);
 
-        song = nc_menu_active_item_at(tags, i);
         ASSERT(song != NULL);
         if (song->name == NULL) {
             continue;
