@@ -116,15 +116,12 @@ playlist_edit_refresh_window(NcWindow *window, NcMenu *menu) {
 
 static void
 playlist_edit_refresh_window_callback(NcScreen *screen) {
-    PlaylistEditScreen *editor;
-    NcWindow *window;
-    NcMenu *menu;
+    PlaylistEditScreen *editor = playlist_edit_from_screen(screen);
+    NcWindow *window = playlist_edit_screen_active_window(editor);
+    NcMenu *menu = playlist_edit_screen_active_menu(editor);
 
-    editor = playlist_edit_from_screen(screen);
     playlist_edit_update_titles(editor, true);
     playlist_edit_update_menu_highlights(editor);
-    window = playlist_edit_screen_active_window(editor);
-    menu = playlist_edit_screen_active_menu(editor);
     playlist_edit_refresh_window(window, menu);
     return;
 }
