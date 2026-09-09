@@ -1321,12 +1321,13 @@ playlist_edit_highlight_content_position(PlaylistEditScreen *screen,
 }
 
 static int32
-playlist_edit_locate_song_in_playlist_range(
-    PlaylistEditScreen *screen, NcmMpdClient *client,
-    NcmSong *song, int32 first, int32 last, NcmError *ncm_error) {
-    NcMenu *menu;
+playlist_edit_locate_song_in_playlist_range(PlaylistEditScreen *screen,
+                                            NcmMpdClient *client,
+                                            NcmSong *song,
+                                            int32 first, int32 last,
+                                            NcmError *ncm_error) {
+    NcMenu *menu = nc_playlist_entry_menu_base(&screen->playlists);
 
-    menu = nc_playlist_entry_menu_base(&screen->playlists);
     if (first < 0) {
         first = 0;
     }
