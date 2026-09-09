@@ -75,9 +75,8 @@ ncm_mutable_song_add_tag(NcmMutableSong *song, enum NcmTagsField field,
         song->tags = realloc2(song->tags,
                               song->tags_cap, new_cap, SIZEOF(*song->tags));
         for (int32 i = song->tags_cap; i < new_cap; i += 1) {
-            NcmMutableSongTag *new_tag;
+            NcmMutableSongTag *new_tag = &song->tags[i];
 
-            new_tag = &song->tags[i];
             new_tag->original = NULL;
             new_tag->value = NULL;
             new_tag->original_len = 0;
