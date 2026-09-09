@@ -3708,9 +3708,7 @@ tag_edit_screen_show_parser_actions(TagEditScreen *screen,
         }
     }
     if ((screen->pattern.len <= 0) && (screen->recent_patterns.len > 0)) {
-        StrBuilder *pattern;
-
-        pattern = &screen->recent_patterns.items[0];
+        StrBuilder *pattern = &screen->recent_patterns.items[0];
         tag_edit_set_pattern(screen, pattern->data, pattern->len);
     }
     tag_edit_screen_prepare_parser_rows(screen, mode, screen->pattern.data,
