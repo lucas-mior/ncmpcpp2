@@ -171,7 +171,6 @@ configuration_destroy(Configuration *config) {
         return;
     }
 
-#define XX_BOOL(NAME, DEFAULT)
 #define XX_STRING(NAME, DEFAULT)                                          \
     free2(config->NAME, config->NAME##_len + 1);                          \
     config->NAME = NULL;                                                  \
@@ -180,13 +179,6 @@ configuration_destroy(Configuration *config) {
     XX_STRING(NAME, DEFAULT)
 #define XX_DIR(NAME, DEFAULT)                                             \
     XX_STRING(NAME, DEFAULT)
-#define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM)
-#define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)
-#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT)
-#define XX_MPD_TAG(NAME, DEFAULT)
-#define XX_STARTUP_SCREEN(NAME, DEFAULT)
-#define XX_OPT_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE)
-#define XX_COLOR(NAME, DEFAULT)
 #define XX_FORMATTED_COLOR(NAME, DEFAULT)                                 \
     nc_formatted_color_destroy(&config->NAME);
 #define XX_BORDER(NAME, DEFAULT)
@@ -208,8 +200,6 @@ configuration_destroy(Configuration *config) {
 #define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                     \
     screen_type_array_destroy(&config->NAME);                             \
     config->PREVIOUS_FIELD = false;
-#define XX_NAMED_BOOL(NAME, DEFAULT, TRUE_VALUE, FALSE_VALUE)
-#define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE)
 #define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD)                           \
     ncm_format_ast_destroy(&config->FORMAT_FIELD);                        \
     column_array_destroy(&config->NAME);
