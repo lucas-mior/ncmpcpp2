@@ -1516,11 +1516,9 @@ static void
 library_append_album(MediaLibraryAlbumArray *albums, char *tag, int32 tag_len,
                      char *album, int32 album_len, char *date, int32 date_len,
                      time_t mtime, bool all_tracks_entry, uint32 menu_flags) {
-    MediaLibraryAlbumItem *item;
-    NcMediaLibraryAlbumRow *row;
+    MediaLibraryAlbumItem *item = media_library_album_array_append(albums);
+    NcMediaLibraryAlbumRow *row = &item->row;
 
-    item = media_library_album_array_append(albums);
-    row = &item->row;
     ASSERT((tag != NULL) || (tag_len == 0));
     ASSERT((album != NULL) || (album_len == 0));
     ASSERT((date != NULL) || (date_len == 0));
