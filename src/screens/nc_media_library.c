@@ -1788,14 +1788,11 @@ media_library_songs_from_list(NcmSongArray *songs, NcmMpdSongList *source) {
             }
 
             if (result == 0) {
-                StrBuilder left_text;
-                StrBuilder right_text;
                 NcmFormatAst *format = &Config.song_library_format;
-                int32 common_len;
+                StrBuilder left_text = ncm_format_render_string(format, left);
+                StrBuilder right_text = ncm_format_render_string(format, right);
+                int32 common_len = left_text.len;
 
-                left_text = ncm_format_render_string(format, left);
-                right_text = ncm_format_render_string(format, right);
-                common_len = left_text.len;
                 if (right_text.len < common_len) {
                     common_len = right_text.len;
                 }
