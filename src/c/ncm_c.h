@@ -102,7 +102,7 @@ int32 ncm_tags_write(char *music_dir, char *uri, bool, char *directory,
 #define ENUM_NAME SongGetter
 #define ENUM_PREFIX_ SONG_GETTER_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                      \
+#define ENUM_FIELDS                                  \
     XX(SONG_GETTER_NONE, none)                       \
     XX(SONG_GETTER_LENGTH, Length)                   \
     XX(SONG_GETTER_DIRECTORY, Directory)             \
