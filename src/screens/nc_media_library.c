@@ -261,14 +261,10 @@ library_active_window(NcScreen *screen) {
 
 static void
 library_update_menu_highlights(MediaLibraryScreen *screen) {
-    NcMenu *tags;
-    NcMenu *albums;
-    NcMenu *songs;
+    NcMenu *tags = nc_media_library_tag_menu_base(&screen->tags);
+    NcMenu *albums = nc_media_library_album_menu_base(&screen->albums);
+    NcMenu *songs = nc_media_library_song_menu_base(&screen->songs);
     NcMenu *active;
-
-    tags = nc_media_library_tag_menu_base(&screen->tags);
-    albums = nc_media_library_album_menu_base(&screen->albums);
-    songs = nc_media_library_song_menu_base(&screen->songs);
 
     nc_menu_set_highlight_prefix(tags,
                                  &Config.current_item_inactive_column_prefix);
