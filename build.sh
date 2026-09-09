@@ -136,12 +136,15 @@ case "$mode" in
 debug)
     load_package_flags
 
-    common_build_incremental_binary \
-        $exe \
-        src \
-        src/main.c \
-        "$CPPFLAGS $PKG_CFLAGS $CFLAGS" \
-        "$PKG_LIBS $LDFLAGS"
+    trace_on
+    $CC $CPPFLAGS $PKG_CFLAGS $CFLAGS -o $exe src/main.c $PKG_LIBS $LDFLAGS
+    trace_off
+    # common_build_incremental_binary \
+    #     $exe \
+    #     src \
+    #     src/main.c \
+    #     "$CPPFLAGS $PKG_CFLAGS $CFLAGS" \
+    #     "$PKG_LIBS $LDFLAGS"
     ;;
 build|debug-fast|fast_feedback)
     load_package_flags
@@ -152,7 +155,7 @@ build|debug-fast|fast_feedback)
     ;;
 check)
     (
-        common_build_run_analyzers build
+        common_build_run_analyzers debug
     )
     echo "static analysis finished."
     exit
