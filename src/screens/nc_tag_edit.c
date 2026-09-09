@@ -1209,11 +1209,11 @@ tag_edit_restore_current_directory(TagEditScreen *screen, StrBuilder *path) {
     }
     menu = nc_editor_pair_menu_base(&screen->directories);
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        StrBuilderPair *pair;
+        StrBuilderPair *pair = nc_menu_active_item_at(menu, i);
 
-        pair = nc_menu_active_item_at(menu, i);
         ASSERT(pair != NULL);
         ASSERT(pair->second.data != NULL);
+
         if (STREQUAL(pair->second.data, pair->second.len,
                      path->data, path->len)) {
             nc_menu_goto_selectable(menu, i);
