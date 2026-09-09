@@ -1452,7 +1452,7 @@ nc_window_apply_term_manip(NcWindow *window, enum NcTermManip tm) {
 
 static void
 nc_window_incr_format(NcWindow *window, int32 *counter,
-                          void (*set)(NcWindow *, bool)) {
+                      void (*set)(NcWindow *, bool)) {
     *counter += 1;
     set(window, true);
     return;
