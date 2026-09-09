@@ -199,8 +199,8 @@ nc_scrollpad_write_buffer(NcScrollpadWriteState *state,
         }
 
         if (generate_height_only) {
-            nc_window_go_to_xy(state->window, nc_window_get_x(state->window),
-                               0);
+            nc_window_go_to_xy(state->window,
+                               nc_window_get_x(state->window), 0);
             y = 0;
         }
     }
@@ -328,7 +328,7 @@ nc_scrollpad_buffer_position_row(NcBuffer *buffer, int32 width,
 void
 nc_scrollpad_center_on_buffer_position(NcScrollpad *scrollpad,
                                        NcWindow *window, NcBuffer *buffer,
-    int32 position) {
+                                       int32 position) {
     int32 max_beginning;
     int32 height;
     int32 row;
