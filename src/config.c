@@ -573,8 +573,8 @@ configure(int32 argc, char **argv) {
     configuration_quiet = false;
     ncm_error_clear(&ncm_error);
     ncm_configuration_options_init(&options);
-    if ((status = ncm_configuration_options_parse(&options, argc, argv,
-                                                  &ncm_error)) < 0) {
+    if (ncm_configuration_options_parse(&options, argc, argv,
+                                        &ncm_error) < 0) {
         configuration_print_error("Error while processing configuration",
                                   &ncm_error);
         ncm_configuration_options_destroy(&options);

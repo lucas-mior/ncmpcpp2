@@ -148,6 +148,11 @@ lastfm_append_escaped(StrBuilder *buffer, char *string, int32 string_len) {
 static int32
 lastfm_find(char *data, int32 data_len, char *needle, int32 needle_len,
             int32 start) {
+    if ((data == NULL) || (needle == NULL) || (data_len <= 0)
+        || (needle_len <= 0) || (needle_len > data_len)) {
+        return -1;
+    }
+
     if (start < 0) {
         start = 0;
     }
