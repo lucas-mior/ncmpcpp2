@@ -9,7 +9,7 @@
 static void
 settings_screen_type_array_init_item(void *item) {
     enum ScreenType *screen = item;
-    *screen = NCM_SCREEN_TYPE_PLAYLIST;
+    *screen = SCREEN_TYPE_PLAYLIST;
     return;
 }
 
@@ -111,11 +111,11 @@ configuration_init_unchecked(Configuration *config) {
 #define XX_MPD_TAG(NAME, DEFAULT_VALUE)                                        \
     config->NAME = MPD_TAG_UNKNOWN;
 #define XX_STARTUP_SCREEN(NAME, DEFAULT_VALUE)                                 \
-    config->NAME = NCM_SCREEN_TYPE_COUNT;
+    config->NAME = SCREEN_TYPE_COUNT;
 #define XX_OPTIONAL_STARTUP_SCREEN(                                            \
     NAME, DEFAULT_VALUE, PRESENT_FIELD, UNSET_VALUE                            \
 )                                                                              \
-    config->NAME = (NCM_SCREEN_TYPE_)(UNSET_VALUE);                            \
+    config->NAME = (SCREEN_TYPE_)(UNSET_VALUE);                            \
     config->PRESENT_FIELD = false;
 #define XX_COLOR(NAME, DEFAULT_VALUE)                                          \
     config->NAME = nc_color_default();

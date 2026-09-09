@@ -110,7 +110,7 @@ XX_STARTUP_SCREEN(startup_screen, "playlist")
 
 /* Optional enum-backed settings. */
 XX_OPTIONAL_STARTUP_SCREEN(startup_slave_screen, "",
-                           has_startup_slave_screen_type, NCM_SCREEN_TYPE_COUNT)
+                           has_startup_slave_screen_type, SCREEN_TYPE_COUNT)
 
 /* Color-backed settings. */
 XX_FORMATTED_COLOR(empty_tag_color, "cyan")

@@ -1024,7 +1024,7 @@ app_screens_current_type(void) {
     NcScreen *screen;
 
     if ((screen = app_controller_current_screen()) == NULL) {
-        return NCM_SCREEN_TYPE_COUNT;
+        return SCREEN_TYPE_COUNT;
     }
     return screen_type_from_nc_type(nc_screen_type(screen));
 }
