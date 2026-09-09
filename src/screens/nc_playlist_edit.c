@@ -1143,7 +1143,7 @@ playlist_edit_screen_load_content(PlaylistEditScreen *screen,
         int32 path_len;
 
         if (!playlist_edit_has_current_playlist_path(screen,
-                                                       &path, &path_len)) {
+                                                     &path, &path_len)) {
             sb_clear(&screen->displayed_playlist_path);
             screen->displayed_playlist_valid = false;
         } else {
