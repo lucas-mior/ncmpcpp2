@@ -3804,11 +3804,9 @@ tag_edit_parse_filename(NcmMutableSong *song, char *mask,
         next_mask_pos = percent_pos + 2;
         if (tag_edit_next_mask_tag(mask, mask_len, next_mask_pos,
                                      &next_percent_pos, &next_tag_char)) {
-            int32 literal_len;
-            int32 found;
+            int32 literal_len = next_percent_pos - next_mask_pos;
+            int32 found = -1;
 
-            literal_len = next_percent_pos - next_mask_pos;
-            found = -1;
             if (literal_len <= 0) {
                 found = file_pos;
             } else {
