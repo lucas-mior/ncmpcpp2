@@ -6,6 +6,11 @@
 #include "c/ncm_c.c"
 #endif
 
+#include "mpd/ncmpcpp2_mpd.h"
+#if !defined(PROJECT_INCREMENTAL_BUILD)
+#include "mpd/ncm_mpd.c"
+#endif
+
 #include "curses/nc_curses.h"
 #if !defined(PROJECT_INCREMENTAL_BUILD)
 #include "curses/nc_curses.c"
