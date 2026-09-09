@@ -1026,9 +1026,7 @@ app_screens_current_type(void) {
 
 static void
 draw_screen_header(NcScreen *screen) {
-    char *title;
-
-    title = nc_screen_title(screen);
+    char *title = nc_screen_title(screen);
     ncm_title_draw_header(title, optional_strlen32(title));
     return;
 }
