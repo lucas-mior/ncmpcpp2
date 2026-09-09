@@ -223,7 +223,7 @@ mutable_song_move(MutableSong *dest, MutableSong *source) {
 
 int32
 mutable_song_set_tag(MutableSong *song, enum TagsField field,
-                         int32 idx, char *value, int32 value_len) {
+                     int32 idx, char *value, int32 value_len) {
     if (song == NULL) {
         return -EINVAL;
     }
@@ -246,8 +246,8 @@ mutable_song_set_tag(MutableSong *song, enum TagsField field,
 
 int32
 mutable_song_set_tags(MutableSong *song, enum TagsField field,
-                          char *value, int32 value_len,
-                          char *separator, int32 separator_len) {
+                      char *value, int32 value_len,
+                      char *separator, int32 separator_len) {
     int32 begin;
     int32 idx;
 
@@ -283,7 +283,7 @@ mutable_song_set_tags(MutableSong *song, enum TagsField field,
 
         if (at_end || at_separator) {
             mutable_song_set_tag_unchecked(song, field, idx,
-                                               value + begin, i - begin);
+                                           value + begin, i - begin);
             idx += 1;
             if (at_separator) {
                 i += separator_len - 1;
@@ -298,8 +298,8 @@ mutable_song_set_tags(MutableSong *song, enum TagsField field,
 
 bool
 mutable_song_has_tag_view(MutableSong *song,
-                              enum TagsField field, int32 idx,
-                              StringView *view) {
+                          enum TagsField field, int32 idx,
+                          StringView *view) {
     if (view == NULL) {
         return false;
     }
@@ -319,8 +319,8 @@ mutable_song_has_tag_view(MutableSong *song,
 
 static void
 mutable_song_get_tag_buffer_unchecked(MutableSong *song,
-                                          enum TagsField field, int32 idx,
-                                          StrBuilder *buffer) {
+                                      enum TagsField field, int32 idx,
+                                      StrBuilder *buffer) {
     StringView view;
 
     sb_clear(buffer);
@@ -347,8 +347,8 @@ mutable_song_get_tag_buffer_unchecked(MutableSong *song,
 
 void
 mutable_song_get_tag_buffer(MutableSong *song,
-                                enum TagsField field, int32 idx,
-                                StrBuilder *buffer) {
+                            enum TagsField field, int32 idx,
+                            StrBuilder *buffer) {
     if (buffer == NULL) {
         return;
     }
@@ -371,8 +371,8 @@ mutable_song_get_tag_buffer(MutableSong *song,
 
 StrBuilder
 mutable_song_tags_buffer(MutableSong *song, enum TagsField field,
-                             char *separator, int32 separator_len,
-                             bool show_duplicates) {
+                         char *separator, int32 separator_len,
+                         bool show_duplicates) {
     StrBuilder result = {0};
 
     if (song == NULL) {
@@ -468,7 +468,8 @@ mutable_song_load_originals_from_song(MutableSong *dest, NcmSong *source) {
                 break;
             }
             mutable_song_set_original_tag_unchecked(dest,
-                (enum TagsField)field, i, buffer.data, buffer.len);
+                                                    (enum TagsField)field, i,
+                                                    buffer.data, buffer.len);
             sb_free(&buffer);
         }
     }
