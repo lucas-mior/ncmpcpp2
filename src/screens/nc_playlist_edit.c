@@ -375,9 +375,8 @@ playlist_edit_update_callback(NcScreen *screen) {
     }
 
     ncm_error_clear(&ncm_error);
-    status =
-        playlist_edit_screen_reload_content_from_mpd(editor, &global_mpd,
-                                                     &ncm_error);
+    status = playlist_edit_screen_reload_content_from_mpd(editor, &global_mpd,
+                                                          &ncm_error);
     if (status < 0) {
         editor->content_update_requested = false;
         playlist_edit_report_error(STRLIT("Could not fetch playlist content"),
