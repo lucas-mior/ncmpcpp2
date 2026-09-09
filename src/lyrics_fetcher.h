@@ -77,11 +77,11 @@ int32 ncm_lyrics_fetcher_registry_append_name(LyricsFetcherRegistry *,
                                               char *, int32);
 
 int32 ncm_lyrics_fetcher_fetch(LyricsFetcherDef *, LyricsResult *,
-                               char *artist, int32 artist_len, char *title,
-                               int32 title_len);
+                               char *artist, int32 artist_len,
+                               char *title, int32 title_len);
 int32 ncm_lyrics_fetcher_build_url(LyricsFetcherDef *, StrBuilder *,
-                                   char *artist, int32 artist_len, char *title,
-                                   int32 title_len);
+                                   char *artist, int32 artist_len,
+                                   char *title, int32 title_len);
 void ncm_lyrics_cleanup_html(StrBuilder *, char *, int32);
 
 #endif /* LYRICS_FETCHER_H */
