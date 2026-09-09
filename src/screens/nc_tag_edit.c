@@ -405,7 +405,7 @@ tag_edit_scroll(NcScreen *screen, enum NcScroll where) {
 
 static enum TagEditTagTypeAction
 tag_edit_current_tag_type_action(TagEditScreen *screen,
-                                   enum NcmTagsField *field) {
+                                 enum NcmTagsField *field) {
     NcMenu *menu;
     StrBuilder *row;
     int32 choice;
