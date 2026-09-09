@@ -87,6 +87,15 @@ ncm_mpd_connection_set_error(MpdConnection *connection,
     case MPD_SERVER_ERROR_UNK:
         connection->server_error_code = NCM_MPD_SERVER_ERROR_NONE;
         break;
+    case MPD_SERVER_ERROR_NOT_LIST:
+    case MPD_SERVER_ERROR_ARG:
+    case MPD_SERVER_ERROR_PASSWORD:
+    case MPD_SERVER_ERROR_UNKNOWN_CMD:
+    case MPD_SERVER_ERROR_PLAYLIST_MAX:
+    case MPD_SERVER_ERROR_SYSTEM:
+    case MPD_SERVER_ERROR_PLAYLIST_LOAD:
+    case MPD_SERVER_ERROR_UPDATE_ALREADY:
+    case MPD_SERVER_ERROR_PLAYER_SYNC:
     default:
         connection->server_error_code = NCM_MPD_SERVER_ERROR_UNKNOWN;
         break;
