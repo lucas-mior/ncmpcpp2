@@ -599,6 +599,7 @@ lyrics_append_slug_profile(StrBuilder *buffer, LyricsSlugProfile profile,
     if (profile == LYRICS_SLUG_PROFILE_NONE) {
         return -NCM_ERROR_UNAVAILABLE;
     }
+
     compact = false;
     folded_profile = false;
     separator = '\0';
@@ -628,6 +629,7 @@ lyrics_append_slug_profile(StrBuilder *buffer, LyricsSlugProfile profile,
     default:
         break;
     }
+
     pending_separator = false;
     wrote = false;
     for (int32 i = 0; i < string_len; i += 1) {
