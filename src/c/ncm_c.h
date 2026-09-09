@@ -958,8 +958,7 @@ int32 ncm_mpd_connection_playlist_move(MpdConnection *, char *, int32 from,
                                        int32 to, bool);
 int32 ncm_mpd_connection_playlist_delete(MpdConnection *, char *, int32,
                                          bool);
-int32 ncm_mpd_connection_rename_playlist(MpdConnection *, char *from,
-                                         char *to);
+int32 ncm_mpd_connection_rename_playlist(MpdConnection *, char *from, char *to);
 int32 ncm_mpd_connection_delete_playlist(MpdConnection *, char *);
 int32 ncm_mpd_connection_load_playlist(MpdConnection *, char *, bool *);
 int32 ncm_mpd_connection_save_playlist(MpdConnection *, char *);
