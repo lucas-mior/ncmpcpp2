@@ -114,7 +114,7 @@ ncm_playlist_sort_indices(NcmPlaylistSortContext *context,
 int32
 ncm_playlist_sort_range(NcmSongArray *songs, int32 start_position,
                         enum NcmSongGetter *getters, int32 getters_len,
-    bool ignore_leading_the, NcmMpdClient *client, NcmError *ncm_error) {
+    bool ignore_leading_the, MpdClient *client, NcmError *ncm_error) {
     NcmPlaylistSortPlan plan = {0};
     NcmPlaylistSortContext context = {
         .songs = songs,

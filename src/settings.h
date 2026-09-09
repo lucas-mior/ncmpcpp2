@@ -118,7 +118,7 @@ enum SearchEngineSearchMode configuration_search_engine_default_mode(
     Configuration *);
 int32 configuration_read(Configuration *, StringViewArray *,
                          bool ignore_errors, bool quiet, NcmError *);
-int32 configuration_apply_runtime(Configuration *, NcmMpdClient *, bool,
+int32 configuration_apply_runtime(Configuration *, MpdClient *, bool,
                                   NcmError *);
 
 extern Configuration Config;

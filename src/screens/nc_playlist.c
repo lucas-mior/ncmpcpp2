@@ -158,7 +158,7 @@ typedef struct PlaylistSearchContext {
 } PlaylistSearchContext;
 
 typedef struct PlaylistPriorityContext {
-    NcmMpdClient *client;
+    MpdClient *client;
     NcmError *ncm_error;
     int32 priority;
 } PlaylistPriorityContext;
@@ -702,7 +702,7 @@ playlist_apply_changed_songs(PlaylistScreen *screen,
 }
 
 int32
-playlist_screen_reload_from_mpd(PlaylistScreen *screen, NcmMpdClient *client,
+playlist_screen_reload_from_mpd(PlaylistScreen *screen, MpdClient *client,
                                 int32 version, int32 playlist_length,
                                 NcmError *ncm_error) {
     NcmMpdSongList songs;
@@ -1264,7 +1264,7 @@ playlist_set_one_priority(NcmSong *song, int32 idx, void *user) {
 
 int32
 playlist_screen_set_selected_priority(PlaylistScreen *screen,
-                                      NcmMpdClient *client, int32 priority,
+                                      MpdClient *client, int32 priority,
                                       NcmError *ncm_error) {
     PlaylistPriorityContext context;
     NcmSongArray songs = {0};

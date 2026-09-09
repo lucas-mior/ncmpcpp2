@@ -9,7 +9,7 @@ extern bool global_show_messages;
 extern bool global_seeking_in_progress;
 extern StrBuilder global_volume_state;
 extern int64 global_timer;
-extern NcmMpdClient global_mpd;
+extern MpdClient global_mpd;
 
 void global_state_init(void);
 void global_state_destroy(void);

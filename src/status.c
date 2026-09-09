@@ -157,7 +157,7 @@ status_print_server_error(char *message, int32 message_len) {
 }
 
 void
-ncm_status_handle_server_error_value(NcmMpdClient *client, int32 code,
+ncm_status_handle_server_error_value(MpdClient *client, int32 code,
                                      char *message, int32 message_len) {
     status_print_server_error(message, message_len);
     if ((code == MPD_SERVER_ERROR_PERMISSION) && (client != NULL)) {
@@ -216,7 +216,7 @@ ncm_status_handle_server_error_value(NcmMpdClient *client, int32 code,
 }
 
 void
-ncm_status_trace(NcmMpdClient *client, bool update_timer,
+ncm_status_trace(MpdClient *client, bool update_timer,
                  bool update_window_timeout, NcmError *ncm_error) {
     NcmStatusHooks *hooks = status_active_hooks(NULL);
 
@@ -814,7 +814,7 @@ status_reset_visualizer_for_player_event(int32 event) {
 }
 
 int32
-ncm_status_update(NcmMpdClient *client, int32 event, NcmError *ncm_error) {
+ncm_status_update(MpdClient *client, int32 event, NcmError *ncm_error) {
     NcmMpdStatus mpd_status;
     int32 status;
 
@@ -833,7 +833,7 @@ ncm_status_update(NcmMpdClient *client, int32 event, NcmError *ncm_error) {
 }
 
 int32
-ncm_status_update_full(NcmMpdClient *client, NcmStatusHooks *hooks,
+ncm_status_update_full(MpdClient *client, NcmStatusHooks *hooks,
                        NcmError *ncm_error) {
     NcmMpdStatus mpd_status;
     int32 status;
@@ -853,7 +853,7 @@ ncm_status_update_full(NcmMpdClient *client, NcmStatusHooks *hooks,
 }
 
 int32
-ncm_status_update_from_noidle(NcmMpdClient *client, NcmStatusHooks *hooks,
+ncm_status_update_from_noidle(MpdClient *client, NcmStatusHooks *hooks,
                               NcmError *ncm_error) {
     NcmMpdStatus mpd_status;
     int32 flags;

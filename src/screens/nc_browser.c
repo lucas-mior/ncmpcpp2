@@ -1255,7 +1255,7 @@ browser_screen_set_display_mode(BrowserScreen *screen, enum DisplayMode mode) {
 
 int32
 browser_screen_fetch_supported_extensions(BrowserScreen *screen,
-                                          NcmMpdClient *client,
+                                          MpdClient *client,
                                           NcmError *ncm_error) {
     StringViewList strings = {0};
     StrBuilderArray extensions = {0};
@@ -1335,7 +1335,7 @@ browser_screen_is_local(BrowserScreen *screen) {
 
 int32
 browser_screen_change_browse_mode(BrowserScreen *screen,
-                                  NcmMpdClient *client, NcmError *ncm_error) {
+                                  MpdClient *client, NcmError *ncm_error) {
     StrBuilder directory = {0};
     char *hostname;
     bool local_browser;
@@ -1650,7 +1650,7 @@ browser_delete_path_recursive(char *path, int32 path_len, NcmError *ncm_error) {
 }
 
 int32
-browser_screen_delete_items(BrowserScreen *screen, NcmMpdClient *client,
+browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
                             NcmError *ncm_error) {
     NcMenu *menu;
     int32 count;
@@ -1874,7 +1874,7 @@ browser_screen_can_rename_playlist(BrowserScreen *screen) {
 int32
 browser_screen_rename_current_directory(BrowserScreen *screen,
                                         char *new_path, int32 new_path_len,
-                                        NcmMpdClient *client,
+                                        MpdClient *client,
                                         NcmError *ncm_error) {
     StringView old_path;
     StringView new_path_view;
@@ -1948,7 +1948,7 @@ browser_screen_rename_current_directory(BrowserScreen *screen,
 int32
 browser_screen_rename_current_playlist(
     BrowserScreen *screen, char *new_path, int32 new_path_len,
-    NcmMpdClient *client, NcmError *ncm_error) {
+    MpdClient *client, NcmError *ncm_error) {
     StringView old_path;
     int32 status;
 
@@ -1983,7 +1983,7 @@ browser_screen_rename_current_playlist(
 
 int32
 browser_screen_locate_song(BrowserScreen *screen,
-                           NcmSong *song, NcmMpdClient *client,
+                           NcmSong *song, MpdClient *client,
                            NcmError *ncm_error) {
     StringView directory;
     bool local_browser;

@@ -976,7 +976,7 @@ search_song_has_field_view(NcmSong *song, int32 field, StringView *view) {
 
 int32
 search_engine_screen_start_searching(SearchEngineScreen *screen,
-                                     NcmMpdClient *client,
+                                     MpdClient *client,
                                      NcmError *ncm_error) {
     NcmSongArray source = {0};
     NcmSongArray songs = {0};

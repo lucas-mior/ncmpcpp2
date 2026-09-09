@@ -574,7 +574,7 @@ action_runtime_playlist_remove_song(NcmSong *song, NcmError *ncm_error) {
 
 static int32
 action_runtime_mpd_simple(
-    int32 (*func)(NcmMpdClient *client, NcmError *ncm_error)) {
+    int32 (*func)(MpdClient *client, NcmError *ncm_error)) {
     NcmError ncm_error;
 
     ncm_error_clear(&ncm_error);
@@ -650,7 +650,7 @@ ncm_action_add_song_to_playlist(NcmSong *song, bool play, int32 position) {
 }
 
 static int32
-action_runtime_mpd_toggle(int32 (*func)(NcmMpdClient *client, bool mode,
+action_runtime_mpd_toggle(int32 (*func)(MpdClient *client, bool mode,
                                         NcmError *ncm_error), bool current) {
     NcmError ncm_error;
 

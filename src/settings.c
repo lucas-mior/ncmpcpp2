@@ -975,7 +975,7 @@ configuration_validate(Configuration *config, NcmError *ncm_error) {
 }
 
 int32
-configuration_apply_runtime(Configuration *config, NcmMpdClient *client,
+configuration_apply_runtime(Configuration *config, MpdClient *client,
                             bool quiet, NcmError *ncm_error) {
     int32 status;
 

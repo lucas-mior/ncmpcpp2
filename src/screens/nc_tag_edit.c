@@ -1225,7 +1225,7 @@ tag_edit_restore_current_directory(TagEditScreen *screen, StrBuilder *path) {
 
 static int32
 tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
-                                       NcmMpdClient *client,
+                                       MpdClient *client,
                                        NcmError *ncm_error) {
     NcmDirectoryArray directories = {0};
     StrBuilder preserved = {0};
@@ -1350,7 +1350,7 @@ tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
 
 static int32
 tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
-                                 NcmMpdClient *client, NcmError *ncm_error) {
+                                 MpdClient *client, NcmError *ncm_error) {
     NcmMpdSongList list = {0};
     NcmSongArray songs = {0};
     StrBuilder preserved_uri = {0};
