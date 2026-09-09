@@ -2559,6 +2559,7 @@ tag_edit_screen_enter_directory(TagEditScreen *screen) {
     screen->directories_update_requested = true;
     screen->observed_dir_valid = false;
     tag_edit_update_titles(screen, true);
+
     return 0;
 }
 
