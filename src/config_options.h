@@ -147,15 +147,15 @@ XX_FORMAT(song_window_title_format, "{%a - }{%t}|{%f}", NCM_FORMAT_FLAG_TAG)
 XX_FORMAT(browser_sort_format, "{%a - }{%t}|{%f} {%l}", NCM_FORMAT_FLAG_TAG)
 
 /* Formatted-buffer-backed settings. */
-XX_BUFFER_WIDTH(current_item_prefix, "$(yellow)$r", true)
-XX_BUFFER_WIDTH(current_item_suffix, "$/r$(end)", true)
-XX_BUFFER_WIDTH(current_item_inactive_column_prefix, "$(white)$r", true)
-XX_BUFFER_WIDTH(current_item_inactive_column_suffix, "$/r$(end)", true)
-XX_BUFFER_WIDTH(now_playing_prefix, "$b", false)
-XX_BUFFER_WIDTH(now_playing_suffix, "$/b", false)
+XX_BUFFER(current_item_prefix, "$(yellow)$r", true)
+XX_BUFFER(current_item_suffix, "$/r$(end)", true)
+XX_BUFFER(current_item_inactive_column_prefix, "$(white)$r", true)
+XX_BUFFER(current_item_inactive_column_suffix, "$/r$(end)", true)
+XX_BUFFER(now_playing_prefix, "$b", false)
+XX_BUFFER(now_playing_suffix, "$/b", false)
 XX_BUFFER(browser_playlist_prefix, "$2playlist$9 ", false)
-XX_BUFFER_WIDTH(selected_item_prefix, "$6", false)
-XX_BUFFER_WIDTH(selected_item_suffix, "$9", false)
+XX_BUFFER(selected_item_prefix, "$6", false)
+XX_BUFFER(selected_item_suffix, "$9", false)
 XX_BUFFER(modified_item_prefix, "$3>$9 ", false)
 
 /* Fixed-glyph look settings. */

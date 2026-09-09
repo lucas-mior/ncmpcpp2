@@ -1,5 +1,3 @@
-// this is here just to silence clangd warnings on config_options.h
-
 #define XX(A, B, ...) char *A = B;
 #define XX_DIR                   XX
 #define XX_COLUMNS               XX
@@ -9,7 +7,6 @@
 #define XX_FORMATTED_COLOR_LIST  XX
 #define XX_RATIO                 XX
 #define XX_LOOK                  XX
-#define XX_BUFFER_WIDTH          XX
 #define XX_BUFFER                XX
 #define XX_FORMAT                XX
 #define XX_BORDER                XX

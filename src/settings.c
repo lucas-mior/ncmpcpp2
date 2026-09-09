@@ -64,9 +64,6 @@ typedef struct SettingsOption {
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcmFormatAst);
 #define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                          \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcBuffer);
-#define XX_BUFFER_WIDTH(NAME, DEFAULT, KEEP_EXISTING)                    \
-    SETTINGS_ASSERT_FIELD_TYPE(NAME, NcBuffer);                          \
-    SETTINGS_ASSERT_FIELD_TYPE(NAME##_length, int32);
 #define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)         \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, StrBuilder);
 #define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                            \
@@ -166,7 +163,7 @@ settings_parse_path_common(char **result, int32 *result_len,
 
 static int32
 settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
-                        int32 *width, bool keep_existing, NcmError *ncm_error) {
+                        bool keep_existing, NcmError *ncm_error) {
     NcmFormatAst ast = {0};
     NcBuffer tmp = {0};
     int32 status;
@@ -188,9 +185,6 @@ settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
                              | NCM_FORMAT_FLAG_FORMAT);
     nc_buffer_destroy(buffer);
     nc_buffer_move(buffer, &tmp);
-    if (width) {
-        *width = utf8_width(nc_buffer_data(buffer), buffer->len);
-    }
     nc_buffer_destroy(&tmp);
     ncm_format_ast_destroy(&ast);
     return 0;
@@ -1141,17 +1135,8 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
 static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
-    return settings_copy_nc_buffer(&config->NAME, value, value_len, NULL,      \
+    return settings_copy_nc_buffer(&config->NAME, value, value_len,            \
                                    KEEP_EXISTING, ncm_error);                  \
-}
-
-#define XX_BUFFER_WIDTH(NAME, DEFAULT, KEEP_EXISTING)                          \
-static int32                                                                   \
-apply_##NAME(Configuration *config, char *value, int32 value_len,              \
-             NcmError *ncm_error) {                                            \
-    return settings_copy_nc_buffer(                                            \
-        &config->NAME, value, value_len, &config->NAME##_length,               \
-        KEEP_EXISTING, ncm_error);                                             \
 }
 
 #define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)               \

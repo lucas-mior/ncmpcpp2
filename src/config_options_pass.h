@@ -132,13 +132,6 @@
 #endif
 #endif
 
-#if !defined(XX_BUFFER_WIDTH)
-#if defined(XX_OPTION)
-#define XX_BUFFER_WIDTH XX_OPTION
-#else
-#define XX_BUFFER_WIDTH(NAME, DEFAULT, KEEP_EXISTING)
-#endif
-#endif
 
 #if !defined(XX_LOOK)
 #if defined(XX_OPTION)
@@ -205,7 +198,6 @@
 #undef XX_FORMATTED_COLOR_LIST
 #undef XX_RATIO
 #undef XX_LOOK
-#undef XX_BUFFER_WIDTH
 #undef XX_BUFFER
 #undef XX_FORMAT
 #undef XX_BORDER

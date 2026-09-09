@@ -110,9 +110,6 @@ settings_assert_generated_empty(Configuration *config) {
     ASSERT(config->NAME.properties == NULL); \
     ASSERT(config->NAME.len == 0); \
     ASSERT(config->NAME.cap == 0);
-#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING) \
-    XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING) \
-    ASSERT(config->NAME##_length == 0);
 #define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX) \
     ASSERT(config->NAME.data == NULL); \
     ASSERT(config->NAME.len == 0); \
@@ -654,16 +651,12 @@ test_buffer_and_look_options(void) {
         apply_selected_item_prefix, &config, "selected"));
     ASSERT_EQUAL(config.selected_item_prefix.data,
                  config.selected_item_prefix.len, "selected");
-    ASSERT(config.selected_item_prefix_length == 8);
-
     ASSERT_ZERO(settings_test_apply(
         apply_current_item_prefix, &config, "first"));
     ASSERT_ZERO(settings_test_apply(
         apply_current_item_prefix, &config, "second"));
     ASSERT_EQUAL(config.current_item_prefix.data,
                  config.current_item_prefix.len, "first");
-    ASSERT(config.current_item_prefix_length == 5);
-
     ASSERT_ZERO(settings_test_apply(
         apply_browser_playlist_prefix, &config, "playlist "));
     ASSERT_EQUAL(config.browser_playlist_prefix.data,

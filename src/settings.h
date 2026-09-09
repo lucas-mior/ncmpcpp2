@@ -109,9 +109,6 @@ typedef struct Configuration {
     NcmFormatAst NAME;
 #define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                           \
     NcBuffer NAME;
-#define XX_BUFFER_WIDTH(NAME, DEFAULT, KEEP_EXISTING)                     \
-    NcBuffer NAME;                                                        \
-    int32 NAME##_length;
 #define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)          \
     StrBuilder NAME;
 #define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                             \
