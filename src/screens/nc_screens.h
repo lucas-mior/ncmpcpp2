@@ -1410,7 +1410,7 @@ int32 playlist_screen_song_count(PlaylistScreen *);
 bool playlist_screen_is_empty(PlaylistScreen *);
 int32 playlist_screen_current_song(PlaylistScreen *, NcmSong *);
 int32 playlist_screen_update_current_mutable_song(PlaylistScreen *,
-                                                  NcmMutableSong *);
+                                                  MutableSong *);
 int32 playlist_screen_now_playing_song(PlaylistScreen *, int32, NcmSong *);
 int32 playlist_screen_locate_position(PlaylistScreen *, int32);
 int32 playlist_screen_selected_songs(PlaylistScreen *, NcmSongArray *);
@@ -1782,7 +1782,7 @@ int32 tag_edit_screen_rename_current_directory(TagEditScreen *, char *, int32);
 void tag_edit_screen_add_directory(TagEditScreen *, char *label,
                                    int32 label_len, char *path, int32 path_len);
 void tag_edit_screen_load_songs(TagEditScreen *, NcmSongArray *);
-void tag_edit_screen_add_mutable_song(TagEditScreen *, NcmMutableSong *);
+void tag_edit_screen_add_mutable_song(TagEditScreen *, MutableSong *);
 int32 tag_edit_screen_selected_songs(TagEditScreen *, NcmSongArray *);
 bool tag_edit_screen_previous_column_available(TagEditScreen *);
 bool tag_edit_screen_next_column_available(TagEditScreen *);
@@ -1812,10 +1812,10 @@ void tag_edit_screen_show_parser_actions(TagEditScreen *,
 void tag_edit_screen_show_parser_legend(TagEditScreen *);
 void tag_edit_screen_show_parser_preview(TagEditScreen *);
 void tag_edit_screen_close_parser(TagEditScreen *);
-int32 tag_edit_parse_filename(NcmMutableSong *, char *, int32, bool,
+int32 tag_edit_parse_filename(MutableSong *, char *, int32, bool,
                               StrBuilder *);
-int32 tag_edit_generate_filename(NcmMutableSong *, char *, int32, StrBuilder *);
-int32 tag_edit_song_display_value(NcmMutableSong *, enum NcmTagsField,
+int32 tag_edit_generate_filename(MutableSong *, char *, int32, StrBuilder *);
+int32 tag_edit_song_display_value(MutableSong *, enum NcmTagsField,
                                   StrBuilder *);
 
 #define TINY_TAG_EDIT_TAG_ROW(FIELD) \
@@ -1871,9 +1871,9 @@ typedef struct TinyTagEditHooks {
                                      NcmTaglibAudioProperties *);
     bool (*taglib_file_can_set_extended_tags)(void *, NcmTaglibFile *);
     void (*taglib_close)(void *, NcmTaglibFile *);
-    int32 (*write_song)(void *, NcmMutableSong *, char *);
+    int32 (*write_song)(void *, MutableSong *, char *);
     void (*update_directory)(void *, char *, int32);
-    void (*update_playlist_song)(void *, NcmMutableSong *);
+    void (*update_playlist_song)(void *, MutableSong *);
     void (*request_browser_update)(void *);
     void (*switch_to_screen)(void *, NcScreen *);
     void *user;
@@ -1884,7 +1884,7 @@ typedef struct TinyTagEditScreen {
     NcEditorBufferMenu rows;
     NcWindow window;
     TinyTagEditHooks hooks;
-    NcmMutableSong edited;
+    MutableSong edited;
     StrBuilder music_dir;
     StrBuilder tag_separator;
     NcScreen *previous_screen;

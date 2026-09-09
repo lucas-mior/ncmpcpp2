@@ -49,7 +49,7 @@ tiny_editor_buffer_key_value(NcBuffer *buffer, char *key, int32 key_len,
 }
 
 static void
-tiny_editor_buffer_mutable_tag(NcBuffer *buffer, NcmMutableSong *song,
+tiny_editor_buffer_mutable_tag(NcBuffer *buffer, MutableSong *song,
                                enum NcmTagsField field,
                                char *tag_separator, int32 tag_separator_len,
                                bool show_duplicate_tags) {
@@ -460,7 +460,7 @@ tiny_tag_edit_screen_init(TinyTagEditScreen *screen, int32 start_x, int32 width,
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, NULL, 0, color, border);
     screen->hooks = (TinyTagEditHooks){0};
-    screen->edited = (NcmMutableSong){0};
+    screen->edited = (MutableSong){0};
 
     screen->music_dir = (StrBuilder){0};
     screen->tag_separator = (StrBuilder){0};
@@ -539,7 +539,7 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
                                char *music_dir, int32 music_dir_len,
                                char *tag_separator, int32 tag_separator_len,
                                bool show_duplicate_tags, StrBuilder *path) {
-    NcmMutableSong edited = {0};
+    MutableSong edited = {0};
     NcmTaglibAudioProperties properties = {0};
     NcmTaglibFile file;
     NcBuffer row;

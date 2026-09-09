@@ -2053,7 +2053,7 @@ action_runtime_song_tag_at(int32 pos, enum SongGetter getter,
         return 0;
 #if defined(HAVE_TAGLIB_H)
     case SCREEN_TYPE_TAG_EDIT: {
-        NcmMutableSong *mutable_song;
+        MutableSong *mutable_song;
         enum NcmTagsField field;
 
         if (app_screen_tag_edit()->active_focus != TAG_EDIT_FOCUS_TAGS) {
@@ -4981,7 +4981,7 @@ action_runtime_edit_library_tag(void) {
     for (int32 i = 0; (status == 0) && (i < ncm_mpd_song_list_count(&songs));
          i += 1) {
         NcmSong *song = ncm_mpd_song_list_at(&songs, i);
-        NcmMutableSong mutable_song = {0};
+        MutableSong mutable_song = {0};
         StringView uri;
 
         status = ncm_mutable_song_load_originals_from_song(&mutable_song, song);
