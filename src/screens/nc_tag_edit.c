@@ -3214,13 +3214,10 @@ tag_edit_screen_lower_all_letters(TagEditScreen *screen) {
 
 void
 tag_edit_screen_clear_modifications(TagEditScreen *screen) {
-    NcMenu *menu;
+    NcMenu *menu = nc_tag_row_menu_base(&screen->tags);
 
-    menu = nc_tag_row_menu_base(&screen->tags);
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        NcmMutableSong *song;
-
-        song = nc_menu_active_item_at(menu, i);
+        NcmMutableSong *song = nc_menu_active_item_at(menu, i);
         ASSERT(song != NULL);
         ncm_mutable_song_clear_modifications(song);
     }
