@@ -18,6 +18,10 @@ Example
 // bad
 int x = function_with_long_name_must_be_broken(long_argument, window_width,
                                                window_height);
+// bad (avoid breaking before the first argument, even if that would make width
+//      and height be together).
+int x = function_with_long_name_must_be_broken(
+    long_argument, window_width, window_height);
 
 // good (don't break if all arguments fit)
 int x = function_with_short_name(long_argument, window_width, window_height);
