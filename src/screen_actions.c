@@ -218,9 +218,7 @@ current_screen_apply_filter(char *pattern, int32 pattern_len,
                                                    ncm_error);
 #if defined(HAVE_TAGLIB_H)
     } else if (current_screen_is(NC_SCREEN_TYPE_TAG_EDIT)) {
-        TagEditScreen *screen;
-
-        screen = app_screen_tag_edit();
+        TagEditScreen *screen = app_screen_tag_edit();
         if (screen->active_column == TAG_EDIT_COLUMN_DIRECTORIES) {
             status = tag_edit_screen_apply_directory_filter(screen, pattern,
                                                             pattern_len,
