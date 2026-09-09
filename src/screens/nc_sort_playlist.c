@@ -389,7 +389,7 @@ sort_playlist_dialog_menu(SortPlaylistDialog *dialog) {
 int32
 sort_playlist_dialog_open(
     SortPlaylistDialog *dialog, PlaylistScreen *playlist,
-    NcmMpdClient *client, bool ignore_leading_the, NcmError *ncm_error) {
+    MpdClient *client, bool ignore_leading_the, NcmError *ncm_error) {
     NcmSongArray songs;
     NcScreen *current;
     int32 start_position;

@@ -784,7 +784,7 @@ adder_action_cancel_target(void *user) {
 int32
 selected_items_adder_screen_open(
     SelectedItemsAdderScreen *screen, NcmSongArray *songs,
-    PlaylistScreen *playlist, NcmMpdClient *client, NcmError *ncm_error) {
+    PlaylistScreen *playlist, MpdClient *client, NcmError *ncm_error) {
     NcmMpdPlaylistList playlists;
     NcmSongArray selected_songs = {0};
     NcmError playlist_error;

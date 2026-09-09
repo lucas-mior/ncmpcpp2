@@ -52,9 +52,9 @@ typedef struct NcmStatusInitHooks {
     void (*show_connected_message)(void *user);
 } NcmStatusInitHooks;
 
-void ncm_status_handle_server_error_value(NcmMpdClient *, int32 code, char *,
+void ncm_status_handle_server_error_value(MpdClient *, int32 code, char *,
                                           int32 message_len);
-void ncm_status_trace(NcmMpdClient *, bool update_timer,
+void ncm_status_trace(MpdClient *, bool update_timer,
                       bool update_window_timeout, NcmError *);
 void ncm_status_set_database_update_observer(void (*callback)(void *user),
                                              void *user);
@@ -62,9 +62,9 @@ void ncm_status_set_playlist_update_observer(void (*callback)(void *user),
                                              void *user);
 int32 ncm_status_apply_mpd_status(NcmMpdStatus *, int32, NcmStatusHooks *,
                                   NcmError *);
-int32 ncm_status_update(NcmMpdClient *, int32, NcmError *);
-int32 ncm_status_update_full(NcmMpdClient *, NcmStatusHooks *, NcmError *);
-int32 ncm_status_update_from_noidle(NcmMpdClient *, NcmStatusHooks *,
+int32 ncm_status_update(MpdClient *, int32, NcmError *);
+int32 ncm_status_update_full(MpdClient *, NcmStatusHooks *, NcmError *);
+int32 ncm_status_update_from_noidle(MpdClient *, NcmStatusHooks *,
                                     NcmError *);
 void ncm_status_clear(void);
 

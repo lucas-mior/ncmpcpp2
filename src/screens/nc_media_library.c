@@ -17,7 +17,7 @@
 static int32
 library_mpd_search_songs(void *user, MediaLibrarySongQuery *query,
                          NcmMpdSongList *songs, NcmError *ncm_error) {
-    NcmMpdClient *client = user;
+    MpdClient *client = user;
     int32 status;
 
     ASSERT(client != NULL);
@@ -47,7 +47,7 @@ library_mpd_search_songs(void *user, MediaLibrarySongQuery *query,
 static int32
 library_mpd_list_all_songs(void *user, NcmMpdSongList *songs,
                            NcmError *ncm_error) {
-    NcmMpdClient *client = user;
+    MpdClient *client = user;
 
     ASSERT(client != NULL);
     return ncm_mpd_client_get_directory_recursive(client, "/",
@@ -57,7 +57,7 @@ library_mpd_list_all_songs(void *user, NcmMpdSongList *songs,
 static int32
 library_mpd_list_tags(void *user, enum mpd_tag_type tag_type,
                       StringViewList *tags, NcmError *ncm_error) {
-    NcmMpdClient *client = user;
+    MpdClient *client = user;
 
     ASSERT(client != NULL);
     return ncm_mpd_client_get_list(client, tag_type, tags, ncm_error);
@@ -694,7 +694,7 @@ NCM_ARRAY_DEFINE_REMOVE_ORDERED(media_library_album_array,
 static int32
 library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
                       NcmError *ncm_error) {
-    NcmMpdClient *client = user;
+    MpdClient *client = user;
     NcmMpdSongList additions = {0};
     int32 status;
 
@@ -721,7 +721,7 @@ library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
 }
 
 MediaLibraryHooks
-media_library_mpd_hooks(NcmMpdClient *client) {
+media_library_mpd_hooks(MpdClient *client) {
     MediaLibraryHooks hooks = {0};
 
     hooks.list_tags = library_mpd_list_tags;

@@ -9,7 +9,7 @@ bool global_show_messages;
 bool global_seeking_in_progress;
 StrBuilder global_volume_state;
 int64 global_timer;
-NcmMpdClient global_mpd;
+MpdClient global_mpd;
 
 void
 global_state_init(void) {

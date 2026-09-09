@@ -1048,7 +1048,7 @@ playlist_edit_screen_load_playlists(PlaylistEditScreen *screen,
 
 int32
 playlist_edit_screen_reload_playlists_from_mpd(PlaylistEditScreen *screen,
-                                                 NcmMpdClient *client,
+                                                 MpdClient *client,
                                                  NcmError *ncm_error) {
     NcmMpdPlaylistList playlists = {0};
     int32 status;
@@ -1161,7 +1161,7 @@ playlist_edit_screen_load_content(PlaylistEditScreen *screen,
 
 int32
 playlist_edit_screen_reload_content_from_mpd(PlaylistEditScreen *screen,
-                                               NcmMpdClient *client,
+                                               MpdClient *client,
                                                NcmError *ncm_error) {
     NcmMpdSongList songs;
     NcmPlaylist *playlist;
@@ -1236,7 +1236,7 @@ playlist_edit_show_screen(PlaylistEditScreen *screen) {
 
 int32
 playlist_edit_screen_locate_playlist(
-    PlaylistEditScreen *screen, NcmMpdClient *client,
+    PlaylistEditScreen *screen, MpdClient *client,
     char *path, int32 path_len, NcmError *ncm_error) {
     NcMenu *menu;
     int32 pos;
@@ -1322,7 +1322,7 @@ playlist_edit_highlight_content_position(PlaylistEditScreen *screen,
 
 static int32
 playlist_edit_locate_song_in_playlist_range(PlaylistEditScreen *screen,
-                                            NcmMpdClient *client,
+                                            MpdClient *client,
                                             NcmSong *song,
                                             int32 first, int32 last,
                                             NcmError *ncm_error) {
@@ -1386,7 +1386,7 @@ playlist_edit_locate_song_in_playlist_range(PlaylistEditScreen *screen,
 
 int32
 playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
-                                 NcmMpdClient *client, NcmSong *song,
+                                 MpdClient *client, NcmSong *song,
                                  NcmError *ncm_error) {
     NcMenu *playlists;
     NcMenu *content;

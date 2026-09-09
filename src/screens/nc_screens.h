@@ -851,7 +851,7 @@ int32 nc_server_info_screen_start_y(NcServerInfoScreen *);
 #undef VISUALIZER_FREQUENCY_FIELD
 
 struct NcmError;
-struct NcmMpdClient;
+struct MpdClient;
 struct NcmMpdOutputList;
 
 typedef struct VisualizerDataSourceHooks {
@@ -978,7 +978,7 @@ void visualizer_screen_init(VisualizerScreen *, int32 start_x, int32 start_y,
                             VisualizerScreenConfig *);
 void visualizer_screen_destroy(VisualizerScreen *);
 VisualizerDataSourceHooks visualizer_data_source_system_hooks(
-    struct NcmMpdClient *);
+    struct MpdClient *);
 void visualizer_screen_init_data_source(VisualizerScreen *, char *, int32);
 int32 visualizer_screen_open_data_source(VisualizerScreen *);
 void visualizer_screen_close_data_source(VisualizerScreen *);
@@ -1123,7 +1123,7 @@ typedef struct MediaLibraryScreen {
     bool registered;
 } MediaLibraryScreen;
 
-MediaLibraryHooks media_library_mpd_hooks(NcmMpdClient *);
+MediaLibraryHooks media_library_mpd_hooks(MpdClient *);
 void media_library_screen_init(MediaLibraryScreen *, MediaLibraryHooks,
                                int32 start_x, int32 width, int32 main_start_y,
                                int32 main_height, NcColor, NcBorder);
@@ -1324,15 +1324,15 @@ void playlist_edit_screen_next_column(PlaylistEditScreen *);
 int32 playlist_edit_screen_load_playlists(PlaylistEditScreen *,
                                           NcmMpdPlaylistList *);
 int32 playlist_edit_screen_reload_playlists_from_mpd(PlaylistEditScreen *,
-                                                     NcmMpdClient *,
+                                                     MpdClient *,
                                                      NcmError *);
 int32 playlist_edit_screen_load_content(PlaylistEditScreen *, NcmMpdSongList *);
 int32 playlist_edit_screen_reload_content_from_mpd(PlaylistEditScreen *,
-                                                   NcmMpdClient *, NcmError *);
+                                                   MpdClient *, NcmError *);
 int32 playlist_edit_screen_locate_playlist(PlaylistEditScreen *,
-                                           NcmMpdClient *, char *, int32,
+                                           MpdClient *, char *, int32,
                                            NcmError *);
-int32 playlist_edit_screen_locate_song(PlaylistEditScreen *, NcmMpdClient *,
+int32 playlist_edit_screen_locate_song(PlaylistEditScreen *, MpdClient *,
                                        NcmSong *, NcmError *);
 int32 playlist_edit_screen_current_playlist(PlaylistEditScreen *,
                                             NcmPlaylist *);
@@ -1418,7 +1418,7 @@ void playlist_screen_set_highlighting(PlaylistScreen *, bool);
 bool playlist_screen_is_highlighting(PlaylistScreen *);
 void playlist_screen_request_highlighting(PlaylistScreen *);
 void playlist_screen_clear(PlaylistScreen *);
-int32 playlist_screen_reload_from_mpd(PlaylistScreen *, NcmMpdClient *,
+int32 playlist_screen_reload_from_mpd(PlaylistScreen *, MpdClient *,
                                       int32 version, int32 playlist_length,
                                       NcmError *);
 int32 playlist_screen_song_count(PlaylistScreen *);
@@ -1436,7 +1436,7 @@ int32 playlist_screen_apply_filter(PlaylistScreen *, char *, int32, NcmError *);
 void playlist_screen_clear_filter(PlaylistScreen *);
 int32 playlist_screen_search(PlaylistScreen *, char *, int32, bool forward,
                              bool wrap, bool skip_current, NcmError *);
-int32 playlist_screen_set_selected_priority(PlaylistScreen *, NcmMpdClient *,
+int32 playlist_screen_set_selected_priority(PlaylistScreen *, MpdClient *,
                                             int32, NcmError *);
 void playlist_screen_reload_total_length(PlaylistScreen *);
 void playlist_screen_reload_remaining(PlaylistScreen *);
@@ -1476,7 +1476,7 @@ void playlist_screen_reload_remaining(PlaylistScreen *);
 #include "cbase/xenums.c"
 
 typedef struct SearchEngineHooks {
-    NcmMpdClient *client;
+    MpdClient *client;
     int32 (*list_database_songs)(void *, NcmSongArray *, NcmError *);
     int32 (*snapshot_playlist)(void *, NcmSongArray *, NcmError *);
     enum SearchEnginePromptResult (*prompt_constraint)(void *, char *, int32,
@@ -1543,7 +1543,7 @@ void search_engine_screen_set_hooks(SearchEngineScreen *, SearchEngineHooks);
 void search_engine_screen_status_message(SearchEngineScreen *, char *, int32);
 bool search_engine_screen_can_run_current(SearchEngineScreen *);
 int32 search_engine_screen_start_searching(SearchEngineScreen *,
-                                           NcmMpdClient *, NcmError *);
+                                           MpdClient *, NcmError *);
 enum DisplayMode search_engine_screen_toggle_display_mode(SearchEngineScreen *);
 bool search_engine_screen_can_search(SearchEngineScreen *);
 int32 search_engine_screen_current_song(SearchEngineScreen *, NcmSong *);
@@ -1577,7 +1577,7 @@ typedef struct SelectedItemsAdderScreen {
     StrBuilder search_constraint;
     PlaylistScreen *playlist;
     NcScreen *previous_screen;
-    NcmMpdClient *client;
+    MpdClient *client;
 
     int32 playlist_width;
     int32 playlist_height;
@@ -1601,7 +1601,7 @@ NcMenu *selected_items_adder_screen_active_menu(SelectedItemsAdderScreen *);
 NcWindow *selected_items_adder_screen_active_window(SelectedItemsAdderScreen *);
 int32 selected_items_adder_screen_open(SelectedItemsAdderScreen *,
                                        NcmSongArray *, PlaylistScreen *,
-                                       NcmMpdClient *, NcmError *);
+                                       MpdClient *, NcmError *);
 int32 selected_items_adder_screen_run_current(SelectedItemsAdderScreen *);
 int32 selected_items_adder_screen_return_to_previous(
     SelectedItemsAdderScreen *);
@@ -1611,7 +1611,7 @@ int32 selected_items_adder_screen_search(SelectedItemsAdderScreen *, char *,
                                          NcmError *);
 
 /* screens/nc_sort_playlist.h */
-typedef struct NcmMpdClient NcmMpdClient;
+typedef struct MpdClient MpdClient;
 typedef struct PlaylistScreen PlaylistScreen;
 
 typedef struct SortPlaylistDialog {
@@ -1622,7 +1622,7 @@ typedef struct SortPlaylistDialog {
 
     PlaylistScreen *playlist;
     NcScreen *previous_screen;
-    NcmMpdClient *client;
+    MpdClient *client;
 
     int32 start_x;
     int32 start_y;
@@ -1641,7 +1641,7 @@ void sort_playlist_dialog_destroy(SortPlaylistDialog *);
 NcScreen *sort_playlist_dialog_base(SortPlaylistDialog *);
 NcEditorSortMenu *sort_playlist_dialog_menu(SortPlaylistDialog *);
 int32 sort_playlist_dialog_open(SortPlaylistDialog *, PlaylistScreen *,
-                                NcmMpdClient *, bool, NcmError *);
+                                MpdClient *, bool, NcmError *);
 int32 sort_playlist_dialog_move_current_up(SortPlaylistDialog *);
 int32 sort_playlist_dialog_move_current_down(SortPlaylistDialog *);
 
@@ -1985,27 +1985,27 @@ void browser_screen_update_column_title(BrowserScreen *);
 void browser_screen_draw_header(BrowserScreen *);
 void browser_screen_set_display_mode(BrowserScreen *, enum DisplayMode);
 int32 browser_screen_fetch_supported_extensions(BrowserScreen *,
-                                                NcmMpdClient *, NcmError *);
+                                                MpdClient *, NcmError *);
 void browser_screen_clear_update_request(BrowserScreen *);
 bool browser_screen_is_in_root_directory(BrowserScreen *);
 void browser_screen_set_local(BrowserScreen *, bool);
 bool browser_screen_is_local(BrowserScreen *);
-int32 browser_screen_change_browse_mode(BrowserScreen *, NcmMpdClient *,
+int32 browser_screen_change_browse_mode(BrowserScreen *, MpdClient *,
                                         NcmError *);
 NcmMpdItem *browser_screen_current_item(BrowserScreen *);
 int32 browser_screen_current_song(BrowserScreen *, NcmSong *);
 int32 browser_screen_selected_songs(BrowserScreen *, NcmSongArray *);
-int32 browser_screen_delete_items(BrowserScreen *, NcmMpdClient *, NcmError *);
+int32 browser_screen_delete_items(BrowserScreen *, MpdClient *, NcmError *);
 bool browser_screen_has_current_directory_path(BrowserScreen *,
                                                StringView *);
 bool browser_screen_has_current_playlist_path(BrowserScreen *, StringView *);
 bool browser_screen_can_rename_directory(BrowserScreen *);
 bool browser_screen_can_rename_playlist(BrowserScreen *);
 int32 browser_screen_rename_current_directory(BrowserScreen *, char *, int32,
-                                              NcmMpdClient *, NcmError *);
+                                              MpdClient *, NcmError *);
 int32 browser_screen_rename_current_playlist(BrowserScreen *, char *, int32,
-                                             NcmMpdClient *, NcmError *);
-int32 browser_screen_locate_song(BrowserScreen *, NcmSong *, NcmMpdClient *,
+                                             MpdClient *, NcmError *);
+int32 browser_screen_locate_song(BrowserScreen *, NcmSong *, MpdClient *,
                                  NcmError *);
 int32 browser_screen_enter_directory(BrowserScreen *);
 int32 browser_screen_go_to_parent(BrowserScreen *);
