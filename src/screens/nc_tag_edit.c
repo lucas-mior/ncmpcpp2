@@ -2532,10 +2532,12 @@ tag_edit_screen_enter_directory(TagEditScreen *screen) {
     if (screen->active_focus != TAG_EDIT_FOCUS_DIRECTORIES) {
         return -NCM_ERROR_UNAVAILABLE;
     }
+
     status = tag_edit_screen_current_directory_path(screen, &path);
     if (status < 0) {
         return status;
     }
+
     has_subdirectories = false;
     if (path.len > 0) {
         ncm_error_clear(&ncm_error);
