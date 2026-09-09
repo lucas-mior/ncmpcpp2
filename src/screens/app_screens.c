@@ -393,24 +393,20 @@ app_screen_visualizer_init(void) {
     conf.spectrum_gain = Config.visualizer_spectrum_gain;
     conf.spectrum_hz_min = Config.visualizer_spectrum_hz_min;
     conf.spectrum_hz_max = Config.visualizer_spectrum_hz_max;
-    conf.data_source_hooks =
-        visualizer_data_source_system_hooks(&global_mpd);
+    conf.data_source_hooks = visualizer_data_source_system_hooks(&global_mpd);
     conf.visualization_type = Config.visualizer_type;
     conf.autoscale = Config.visualizer_autoscale;
     conf.stereo = Config.visualizer_in_stereo;
-    conf.spectrum_smooth_look =
-        Config.visualizer_spectrum_smooth_look;
+    conf.spectrum_smooth_look = Config.visualizer_spectrum_smooth_look;
     conf.spectrum_smooth_look_legacy_chars =
         Config.visualizer_spectrum_smooth_look_legacy_chars;
-    conf.spectrum_log_scale_x =
-        Config.visualizer_spectrum_log_scale_x;
-    conf.spectrum_log_scale_y =
-        Config.visualizer_spectrum_log_scale_y;
+    conf.spectrum_log_scale_x = Config.visualizer_spectrum_log_scale_x;
+    conf.spectrum_log_scale_y = Config.visualizer_spectrum_log_scale_y;
 
-    visualizer_screen_init(&visualizer_screen, 0,
-                           ui_state_main_start_y(), ui_state_screen_width(),
-                           ui_state_main_height(), Config.main_window_color,
-                           no_border(), &conf);
+    visualizer_screen_init(&visualizer_screen, 0, ui_state_main_start_y(),
+                           ui_state_screen_width(), ui_state_main_height(),
+                           Config.main_window_color, no_border(),
+                           &conf);
     visualizer_screen_initialized = true;
 #endif
     return;
@@ -439,10 +435,9 @@ app_screen_playlist_init(void) {
         return;
     }
 
-    playlist_screen_init(&playlist_screen, 0,
-                         ui_state_screen_width(), ui_state_main_start_y(),
-                         ui_state_main_height(), Config.main_window_color,
-                         no_border());
+    playlist_screen_init(&playlist_screen, 0, ui_state_screen_width(),
+                         ui_state_main_start_y(), ui_state_main_height(),
+                         Config.main_window_color, no_border());
     playlist_screen_set_mouse_config(&playlist_screen, Config.lines_scrolled,
                                      Config.mouse_list_scroll_whole_page);
     playlist_screen_initialized = true;
@@ -456,8 +451,8 @@ app_screen_playlist_edit_init(void) {
         return;
     }
     playlist_edit_screen_init(&playlist_edit_screen, 0, ui_state_screen_width(),
-                                ui_state_main_start_y(), ui_state_main_height(),
-                                Config.main_window_color, no_border());
+                              ui_state_main_start_y(), ui_state_main_height(),
+                              Config.main_window_color, no_border());
     if ((Config.playlist_edit_column_width_ratio.len >= 2)
         && (Config.playlist_edit_column_width_ratio.items[0] > 0)
         && (Config.playlist_edit_column_width_ratio.items[1] > 0)) {
@@ -761,9 +756,8 @@ prompt_buffer(char *label, int32 label_len,
 }
 
 static enum TagEditPromptResult
-tag_edit_hook_prompt(
-    void *user, char *label, int32 label_len, StringView initial,
-    StrBuilder *result) {
+tag_edit_hook_prompt(void *user, char *label, int32 label_len,
+                     StringView initial, StrBuilder *result) {
     enum PromptResult prompt_result;
 
     (void)user;
@@ -850,9 +844,8 @@ app_screen_tag_edit_init(void) {
 }
 
 static enum TinyTagEditPromptResult
-tiny_tag_edit_prompt(
-    void *user, char *label, int32 label_len, StringView initial,
-    StrBuilder *result) {
+tiny_tag_edit_prompt(void *user, char *label, int32 label_len,
+                     StringView initial, StrBuilder *result) {
     enum PromptResult prompt_result;
 
     (void)user;
@@ -874,8 +867,8 @@ tiny_tag_edit_status_message(void *user, char *message, int32 message_len) {
 }
 
 static void
-tiny_tag_edit_update_directory(void *user, char *directory, int32 directory_len
-) {
+tiny_tag_edit_update_directory(void *user,
+                               char *directory, int32 directory_len) {
     NcmError ncm_error = {0};
 
     (void)user;
@@ -911,16 +904,15 @@ app_screen_tiny_tag_edit_init(void) {
         return;
     }
 
-    tiny_tag_edit_screen_init(&tiny_tag_edit_screen, 0, ui_state_screen_width(),
-                                ui_state_main_start_y(), ui_state_main_height(),
-                                Config.main_window_color, no_border());
+    tiny_tag_edit_screen_init(&tiny_tag_edit_screen,
+                              0, ui_state_screen_width(),
+                              ui_state_main_start_y(), ui_state_main_height(),
+                              Config.main_window_color, no_border());
     hooks.prompt = tiny_tag_edit_prompt;
     hooks.status_message = tiny_tag_edit_status_message;
     hooks.update_directory = tiny_tag_edit_update_directory;
-    hooks.update_playlist_song =
-        tiny_tag_edit_update_playlist_song;
-    hooks.request_browser_update =
-        tiny_tag_edit_request_browser_update;
+    hooks.update_playlist_song = tiny_tag_edit_update_playlist_song;
+    hooks.request_browser_update = tiny_tag_edit_request_browser_update;
     tiny_tag_edit_screen_set_hooks(&tiny_tag_edit_screen, hooks);
     tiny_tag_edit_screen_initialized = true;
     return;
