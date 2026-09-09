@@ -303,7 +303,7 @@ playlist_edit_title_callback(NcScreen *screen) {
 
 static void
 playlist_edit_report_error(char *context, int32 context_len,
-                             NcmError *ncm_error) {
+                           NcmError *ncm_error) {
     StrBuilder message = {0};
 
     ASSERT(ncm_error != NULL);
