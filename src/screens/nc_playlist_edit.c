@@ -153,11 +153,8 @@ playlist_edit_refresh_callback(NcScreen *screen) {
 
 static void
 playlist_edit_scroll_callback(NcScreen *screen, enum NcScroll where) {
-    PlaylistEditScreen *editor;
-    NcMenu *menu;
-
-    editor = playlist_edit_from_screen(screen);
-    menu = playlist_edit_screen_active_menu(editor);
+    PlaylistEditScreen *editor = playlist_edit_from_screen(screen);
+    NcMenu *menu = playlist_edit_screen_active_menu(editor);
     nc_menu_scroll_selectable(menu, editor->main_height, where);
     return;
 }
