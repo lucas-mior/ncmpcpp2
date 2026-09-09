@@ -394,8 +394,8 @@ ncm_key_bindings_init(NcmKeyBindings *key_bindings) {
 }
 
 void
-ncm_bindings_configuration_destroy(NcmBindingsConfiguration *bindings) {
-    ncm_bindings_configuration_clear(bindings);
+ncm_bindings_config_destroy(NcmBindingsConfiguration *bindings) {
+    ncm_bindings_config_clear(bindings);
     free2(bindings->commands,
           bindings->commands_cap*SIZEOF(*bindings->commands));
     free2(bindings->keys, bindings->keys_cap*SIZEOF(*bindings->keys));
@@ -404,7 +404,7 @@ ncm_bindings_configuration_destroy(NcmBindingsConfiguration *bindings) {
 }
 
 void
-ncm_bindings_configuration_clear(NcmBindingsConfiguration *bindings) {
+ncm_bindings_config_clear(NcmBindingsConfiguration *bindings) {
     for (int32 i = 0; i < bindings->commands_len; i += 1) {
         ncm_command_destroy(bindings->commands + i);
     }
@@ -882,7 +882,7 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
 }
 
 int32
-ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
+ncm_bindings_config_read(NcmBindingsConfiguration *bindings, char *path,
                                 int32 path_len, NcmError *ncm_error) {
     enum {
         IN_PROGRESS_NONE = 0,
@@ -1212,7 +1212,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
 }
 
 void
-ncm_bindings_configuration_generate_defaults(NcmBindingsConfiguration *bindings
+ncm_bindings_config_generate_defaults(NcmBindingsConfiguration *bindings
 ) {
     NcmBinding binding;
 
@@ -1351,7 +1351,7 @@ ncm_bindings_configuration_generate_defaults(NcmBindingsConfiguration *bindings
 }
 
 NcmCommand *
-ncm_bindings_configuration_find_command(NcmBindingsConfiguration *bindings,
+ncm_bindings_config_find_command(NcmBindingsConfiguration *bindings,
                                         char *name, int32 name_len) {
     int32 at;
 
@@ -1363,7 +1363,7 @@ ncm_bindings_configuration_find_command(NcmBindingsConfiguration *bindings,
 }
 
 int32
-ncm_bindings_configuration_get(NcmBindingsConfiguration *bindings, NcKey key,
+ncm_bindings_config_get(NcmBindingsConfiguration *bindings, NcKey key,
                                NcmBindingSlice *result) {
     int32 at;
 

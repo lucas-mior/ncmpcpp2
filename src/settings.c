@@ -929,7 +929,7 @@ settings_apply_option(Configuration *config, SettingsOption option,
 }
 
 int32
-configuration_validate(Configuration *config, NcmError *ncm_error) {
+config_validate(Configuration *config, NcmError *ncm_error) {
     if (config == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing configuration"));
@@ -946,7 +946,7 @@ configuration_validate(Configuration *config, NcmError *ncm_error) {
 }
 
 int32
-configuration_apply_runtime(Configuration *config, MpdClient *client,
+config_apply_runtime(Configuration *config, MpdClient *client,
                             bool quiet, NcmError *ncm_error) {
     int32 status;
 
@@ -1223,12 +1223,12 @@ _Static_assert(LENGTH(ncmpcpp_options) == SETTINGS_OPTION_COUNT,
 #undef OPT
 
 int32
-configuration_read(Configuration *config, StringViewArray *config_paths,
+config_read(Configuration *config, StringViewArray *config_paths,
                    bool ignore_errors, bool quiet, NcmError *ncm_error) {
     bool used[SETTINGS_OPTION_COUNT] = {0};
     int32 status;
 
-    configuration_destroy(config);
+    config_destroy(config);
     for (int32 i = 0; i < config_paths->len; i += 1) {
         StringView path = config_paths->items[i];
         StrBuilder path_buffer = {0};
@@ -1382,7 +1382,7 @@ configuration_read(Configuration *config, StringViewArray *config_paths,
         }
     }
 
-    status = configuration_validate(config, ncm_error);
+    status = config_validate(config, ncm_error);
     if (status < 0) {
         return settings_report_or_ignore(ncm_error, ignore_errors);
     }

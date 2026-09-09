@@ -93,7 +93,7 @@ NCM_ARRAY_DEFINE_APPEND(column_array, ColumnArray, Column,
                         &settings_column_callbacks)
 
 static void
-configuration_init_unchecked(Configuration *config) {
+config_init_unchecked(Configuration *config) {
 #define XX_BOOL(NAME, DEFAULT)                                            \
     config->NAME = false;
 #define XX_STRING(NAME, DEFAULT)                                          \
@@ -149,17 +149,17 @@ configuration_init_unchecked(Configuration *config) {
 }
 
 void
-configuration_init(Configuration *config) {
+config_init(Configuration *config) {
     if (config == NULL) {
         return;
     }
 
-    configuration_init_unchecked(config);
+    config_init_unchecked(config);
     return;
 }
 
 void
-configuration_destroy(Configuration *config) {
+config_destroy(Configuration *config) {
     if (config == NULL) {
         return;
     }
@@ -199,19 +199,19 @@ configuration_destroy(Configuration *config) {
 
 #include "config_options_pass.h"
 
-    configuration_init_unchecked(config);
+    config_init_unchecked(config);
 
     return;
 }
 
 double
-configuration_locked_screen_width_fraction(Configuration *config) {
+config_locked_screen_width_fraction(Configuration *config) {
     ASSERT(config != NULL);
     return config->locked_screen_width_part / 100.0;
 }
 
 enum SearchEngineSearchMode
-configuration_search_engine_default_mode(Configuration *config) {
+config_search_engine_default_mode(Configuration *config) {
     int32 mode;
 
     ASSERT(config != NULL);

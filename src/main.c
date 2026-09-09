@@ -70,8 +70,8 @@ app_signal_handler(int32 signal_number) {
 
 static void
 app_destroy_state(void) {
-    ncm_bindings_configuration_destroy(&Bindings);
-    configuration_destroy(&Config);
+    ncm_bindings_config_destroy(&Bindings);
+    config_destroy(&Config);
     global_state_destroy();
     return;
 }
@@ -112,7 +112,7 @@ main(int32 argc, char **argv) {
     program = argv[0];
 
     global_state_init();
-    configuration_init(&Config);
+    config_init(&Config);
     Bindings = (NcmBindingsConfiguration){0};
     setlocale(LC_ALL, "");
 
@@ -228,7 +228,7 @@ main(int32 argc, char **argv) {
 
         global_timer_update();
 
-        if (ncm_bindings_configuration_get(&Bindings, input, &bindings) > 0) {
+        if (ncm_bindings_config_get(&Bindings, input, &bindings) > 0) {
             for (int32 i = 0; i < bindings.len; i += 1) {
                 if (ncmpcpp_execute_binding(bindings.data + i) == 0) {
                     break;

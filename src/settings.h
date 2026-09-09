@@ -135,15 +135,14 @@ void column_array_destroy(ColumnArray *);
 int32 column_array_reserve(ColumnArray *, int32);
 Column *column_array_append(ColumnArray *);
 
-void configuration_init(Configuration *);
-void configuration_destroy(Configuration *);
-int32 configuration_validate(Configuration *, NcmError *);
-double configuration_locked_screen_width_fraction(Configuration *);
-enum SearchEngineSearchMode configuration_search_engine_default_mode(
-    Configuration *);
-int32 configuration_read(Configuration *, StringViewArray *,
+void config_init(Configuration *);
+void config_destroy(Configuration *);
+int32 config_validate(Configuration *, NcmError *);
+double config_locked_screen_width_fraction(Configuration *);
+enum SearchEngineSearchMode config_search_engine_default_mode(Configuration *);
+int32 config_read(Configuration *, StringViewArray *,
                          bool ignore_errors, bool quiet, NcmError *);
-int32 configuration_apply_runtime(Configuration *, MpdClient *, bool,
+int32 config_apply_runtime(Configuration *, MpdClient *, bool,
                                   NcmError *);
 
 extern Configuration Config;
