@@ -63,9 +63,9 @@ XX(jump_to_browser, JUMP_TO_BROWSER)                                           \
 XX(jump_to_media_library, JUMP_TO_MEDIA_LIBRARY)                               \
 XX(jump_to_parent_directory, JUMP_TO_PARENT_DIRECTORY)                         \
 XX(jump_to_playing_song, JUMP_TO_PLAYING_SONG)                                 \
-XX(jump_to_playlist_edit, JUMP_TO_PLAYLIST_EDITOR)                           \
+XX(jump_to_playlist_edit, JUMP_TO_PLAYLIST_EDITOR)                             \
 XX(jump_to_position_in_song, JUMP_TO_POSITION_IN_SONG)                         \
-XX(jump_to_tag_edit, JUMP_TO_TAG_EDIT)                                     \
+XX(jump_to_tag_edit, JUMP_TO_TAG_EDIT)                                         \
 XX(load, LOAD)                                                                 \
 XX(master_screen, MASTER_SCREEN)                                               \
 XX(mouse_event, MOUSE_EVENT)                                                   \
