@@ -631,13 +631,13 @@ typedef struct LyricsScreen {
     NcmSong song;
     StrBuilder filename;
     NcmLrcDocument lrc;
-    NcmLyricsResult result;
+    LyricsResult result;
     NcmJobQueue jobs;
     LyricsJob *foreground_job;
     LyricsQueuedSong *queued_songs;
     StrBuilder consumer_message;
 
-    NcmLyricsFetcherDef *fetcher;
+    LyricsFetcherDef *fetcher;
     int32 queued_songs_len;
     int32 queued_songs_cap;
     int32 active_lrc_line;
@@ -683,15 +683,15 @@ int32 lyrics_screen_load_file(LyricsScreen *, char *, int32, NcmError *);
 int32 lyrics_screen_save_file(LyricsScreen *, char *filename,
                               int32 filename_len, char *lyrics,
                               int32 lyrics_len, NcmError *);
-int32 lyrics_screen_fetch(LyricsScreen *, NcmSong *, NcmLyricsFetcherDef *,
+int32 lyrics_screen_fetch(LyricsScreen *, NcmSong *, LyricsFetcherDef *,
                           NcmError *);
 int32 lyrics_screen_fetch_in_background(LyricsScreen *, NcmSong *, bool,
                                         NcmError *);
 int32 lyrics_screen_dispatch_jobs(LyricsScreen *);
 void lyrics_screen_update(LyricsScreen *);
 void lyrics_screen_refetch_current(LyricsScreen *, NcmError *);
-NcmLyricsFetcherDef *lyrics_screen_toggle_fetcher(LyricsScreen *,
-                                                  NcmLyricsFetcherRegistry *);
+LyricsFetcherDef *lyrics_screen_toggle_fetcher(LyricsScreen *,
+                                                  LyricsFetcherRegistry *);
 int32 lyrics_screen_try_take_consumer_message(LyricsScreen *, StrBuilder *);
 NcmSong *lyrics_screen_song(LyricsScreen *);
 StrBuilder *lyrics_screen_filename(LyricsScreen *);

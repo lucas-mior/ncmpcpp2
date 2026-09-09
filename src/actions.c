@@ -5198,7 +5198,7 @@ action_runtime_edit_current_song(void) {
 
 static int32
 action_runtime_toggle_lyrics_fetcher(void) {
-    NcmLyricsFetcherDef *fetcher;
+    LyricsFetcherDef *fetcher;
 
     fetcher = lyrics_screen_toggle_fetcher(app_screen_lyrics(),
                                            &Config.lyrics_fetchers);

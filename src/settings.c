@@ -74,7 +74,7 @@ typedef struct SettingsOption {
 #define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE)                           \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcmFormattedColorArray);
 #define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)                                \
-    SETTINGS_ASSERT_FIELD_TYPE(NAME, NcmLyricsFetcherRegistry);
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, LyricsFetcherRegistry);
 #define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD)                    \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, ScreenTypeArray);                         \
     SETTINGS_ASSERT_FIELD_TYPE(PREVIOUS_FIELD, bool);
@@ -831,7 +831,7 @@ settings_parse_named_bool(char *value, int32 value_len, bool *result,
 static int32
 settings_append_lyrics_fetcher(void *context, char *item, int32 item_len,
                                NcmError *ncm_error) {
-    NcmLyricsFetcherRegistry *registry = context;
+    LyricsFetcherRegistry *registry = context;
     int32 status;
 
     status = ncm_lyrics_fetcher_registry_append_name(registry, item, item_len);
@@ -842,7 +842,7 @@ settings_append_lyrics_fetcher(void *context, char *item, int32 item_len,
 }
 
 static int32
-settings_parse_lyrics_fetchers(NcmLyricsFetcherRegistry *registry,
+settings_parse_lyrics_fetchers(LyricsFetcherRegistry *registry,
                                char *value, int32 value_len,
                                NcmError *ncm_error) {
     ncm_lyrics_fetcher_registry_clear(registry);
