@@ -183,9 +183,7 @@ configuration_destroy(Configuration *config) {
 #define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT)
 #define XX_MPD_TAG(NAME, DEFAULT)
 #define XX_STARTUP_SCREEN(NAME, DEFAULT)
-#define XX_OPTIONAL_STARTUP_SCREEN( \
-    NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE \
-)
+#define XX_OPTIONAL_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE)
 #define XX_COLOR(NAME, DEFAULT)
 #define XX_FORMATTED_COLOR(NAME, DEFAULT) \
     nc_formatted_color_destroy(&config->NAME);
