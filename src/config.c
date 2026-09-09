@@ -219,7 +219,7 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options,
                 value_len = 0;
             }
 
-#define REQUIRE_LONG(VALUE, VALUE_LEN)                                   \
+#define REQUIRE_LONG(VALUE, VALUE_LEN)                                         \
     do {                                                                       \
         if ((VALUE) == NULL) {                                                 \
             status = configuration_require_value(argc, argv, &i,               \
@@ -232,7 +232,7 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options,
         }                                                                      \
     } while (0)
 
-#define REJECT_LONG(VALUE)                                               \
+#define REJECT_LONG(VALUE)                                                     \
     do {                                                                       \
         if ((VALUE) != NULL) {                                                 \
             char message[128];                                                 \
