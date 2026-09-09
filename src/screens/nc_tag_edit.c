@@ -2744,8 +2744,8 @@ tag_edit_screen_rename_current_directory(TagEditScreen *screen, char *music_dir,
     enum TagEditPromptResult result;
     int32 status;
 
-    if (!tag_edit_screen_rename_directory_available(screen, music_dir,
-                                                    music_dir_len)) {
+    if (!tag_edit_screen_rename_directory_available(screen,
+                                                    music_dir, music_dir_len)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     if ((screen->hooks.prompt == NULL)
