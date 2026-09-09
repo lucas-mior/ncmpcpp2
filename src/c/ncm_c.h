@@ -1371,7 +1371,7 @@ StrBuilder ncm_string_get_enclosed(char *, int32 string_len, char open,
 void ncm_string_remove_chars(char *string, int32 *, char *chars, int32);
 void ncm_string_remove_invalid_filename_chars(char *, int32 *, bool);
 void ncm_string_append_shell_escaped_single_quotes(StrBuilder *, char *, int32);
-int32 ncm_string_basename_start(char *, int32);
+int32 ncm_path_basename_start(char *, int32);
 int32 ncm_string_parent_directory_len(char *, int32);
 
 typedef struct NcmTaglibFile {

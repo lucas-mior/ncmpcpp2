@@ -1274,10 +1274,10 @@ tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
                 int32 left_start;
                 int32 right_start;
 
-                left_start = ncm_string_basename_start(left->path,
-                                                       left->path_len);
-                right_start = ncm_string_basename_start(current.path,
-                                                        current.path_len);
+                left_start = ncm_path_basename_start(left->path,
+                                                     left->path_len);
+                right_start = ncm_path_basename_start(current.path,
+                                                      current.path_len);
                 comparison =
                     ncm_compare_locale_strings(left->path + left_start,
                                                left->path_len - left_start,
@@ -1327,7 +1327,7 @@ tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
         if (!ncm_directory_has_path_view(directory, &path)) {
             continue;
         }
-        basename_start = ncm_string_basename_start(path.data, path.len);
+        basename_start = ncm_path_basename_start(path.data, path.len);
         tag_edit_screen_add_directory(screen, path.data + basename_start,
                                       path.len - basename_start,
                                       path.data, path.len);

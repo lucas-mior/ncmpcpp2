@@ -272,11 +272,6 @@ ncm_string_append_shell_escaped_single_quotes(StrBuilder *buffer, char *string,
 }
 
 int32
-ncm_string_basename_start(char *path, int32 path_len) {
-    return ncm_path_basename_start(path, path_len);
-}
-
-int32
 ncm_string_parent_directory_len(char *path, int32 path_len) {
     return ncm_path_parent_directory_len(path, path_len);
 }
