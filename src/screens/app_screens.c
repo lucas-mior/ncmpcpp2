@@ -374,43 +374,43 @@ void
 app_screen_visualizer_init(void) {
 #if defined(ENABLE_VISUALIZER)
     static bool visualizer_screen_initialized = false;
-    VisualizerScreenConfig visualizer_config = {0};
+    VisualizerScreenConfig conf = {0};
 
     if (visualizer_screen_initialized) {
         return;
     }
 
-    visualizer_config.source_location = Config.visualizer_data_source;
-    visualizer_config.source_location_len = Config.visualizer_data_source_len;
-    visualizer_config.output_name = Config.visualizer_output_name;
-    visualizer_config.output_name_len = Config.visualizer_output_name_len;
-    visualizer_config.visualizer_chars = Config.visualizer_look.data;
-    visualizer_config.visualizer_chars_len = Config.visualizer_look.len;
-    visualizer_config.visualizer_colors = Config.visualizer_color.items;
-    visualizer_config.visualizer_colors_len = Config.visualizer_color.len;
-    visualizer_config.fps = Config.visualizer_fps;
-    visualizer_config.spectrum_dft_size = Config.visualizer_spectrum_dft_size;
-    visualizer_config.spectrum_gain = Config.visualizer_spectrum_gain;
-    visualizer_config.spectrum_hz_min = Config.visualizer_spectrum_hz_min;
-    visualizer_config.spectrum_hz_max = Config.visualizer_spectrum_hz_max;
-    visualizer_config.data_source_hooks =
+    conf.source_location = Config.visualizer_data_source;
+    conf.source_location_len = Config.visualizer_data_source_len;
+    conf.output_name = Config.visualizer_output_name;
+    conf.output_name_len = Config.visualizer_output_name_len;
+    conf.visualizer_chars = Config.visualizer_look.data;
+    conf.visualizer_chars_len = Config.visualizer_look.len;
+    conf.visualizer_colors = Config.visualizer_color.items;
+    conf.visualizer_colors_len = Config.visualizer_color.len;
+    conf.fps = Config.visualizer_fps;
+    conf.spectrum_dft_size = Config.visualizer_spectrum_dft_size;
+    conf.spectrum_gain = Config.visualizer_spectrum_gain;
+    conf.spectrum_hz_min = Config.visualizer_spectrum_hz_min;
+    conf.spectrum_hz_max = Config.visualizer_spectrum_hz_max;
+    conf.data_source_hooks =
         visualizer_data_source_system_hooks(&global_mpd);
-    visualizer_config.visualization_type = Config.visualizer_type;
-    visualizer_config.autoscale = Config.visualizer_autoscale;
-    visualizer_config.stereo = Config.visualizer_in_stereo;
-    visualizer_config.spectrum_smooth_look =
+    conf.visualization_type = Config.visualizer_type;
+    conf.autoscale = Config.visualizer_autoscale;
+    conf.stereo = Config.visualizer_in_stereo;
+    conf.spectrum_smooth_look =
         Config.visualizer_spectrum_smooth_look;
-    visualizer_config.spectrum_smooth_look_legacy_chars =
+    conf.spectrum_smooth_look_legacy_chars =
         Config.visualizer_spectrum_smooth_look_legacy_chars;
-    visualizer_config.spectrum_log_scale_x =
+    conf.spectrum_log_scale_x =
         Config.visualizer_spectrum_log_scale_x;
-    visualizer_config.spectrum_log_scale_y =
+    conf.spectrum_log_scale_y =
         Config.visualizer_spectrum_log_scale_y;
 
     visualizer_screen_init(&visualizer_screen, 0,
                            ui_state_main_start_y(), ui_state_screen_width(),
                            ui_state_main_height(), Config.main_window_color,
-                           no_border(), &visualizer_config);
+                           no_border(), &conf);
     visualizer_screen_initialized = true;
 #endif
     return;
