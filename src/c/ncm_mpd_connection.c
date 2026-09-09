@@ -33,9 +33,10 @@ ncm_mpd_connection_cstring_copy(char *dst, int32 dst_cap, char *src) {
 }
 
 static void
-ncm_mpd_connection_set_error(MpdConnection *connection, enum mpd_error code,
-                             enum mpd_server_error server_code, bool clearable,
-                             char *message) {
+ncm_mpd_connection_set_error(MpdConnection *connection,
+                             enum mpd_error code,
+                             enum mpd_server_error server_code,
+                             bool clearable, char *message) {
     int32 message_len;
 
     connection->error_code = code;
@@ -53,8 +54,10 @@ ncm_mpd_connection_require_connected(MpdConnection *connection) {
         return -EINVAL;
     }
     if (connection->mpd == NULL) {
-        ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
-                                     (enum mpd_server_error)0, false,
+        ncm_mpd_connection_set_error(connection,
+                                     MPD_ERROR_STATE,
+                                     (enum mpd_server_error)0,
+                                     false,
                                      "No active MPD connection");
         return -NCM_ERROR_INVALID_STATE;
     }
@@ -141,8 +144,10 @@ ncm_mpd_connection_recv_song(MpdConnection *connection, NcmSong *song) {
     status = ncm_song_from_mpd_song_copy(song, mpd_song);
     mpd_song_free(mpd_song);
     if (status < 0) {
-        ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
-                                     (enum mpd_server_error)0, false,
+        ncm_mpd_connection_set_error(connection,
+                                     MPD_ERROR_STATE,
+                                     (enum mpd_server_error)0,
+                                     false,
                                      "Could not read MPD song");
         return -NCM_ERROR_MPD;
     }
@@ -469,8 +474,10 @@ ncm_mpd_connection_connect(MpdConnection *connection,
 
     connection->mpd = mpd_connection_new(host, port, (uint32)timeout_ms);
     if (connection->mpd == NULL) {
-        ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
-                                     (enum mpd_server_error)0, false,
+        ncm_mpd_connection_set_error(connection,
+                                     MPD_ERROR_STATE,
+                                     (enum mpd_server_error)0,
+                                     false,
                                      "Could not create MPD connection");
         return -NCM_ERROR_MPD;
     }
@@ -580,8 +587,10 @@ ncm_mpd_connection_check_error(MpdConnection *connection) {
         return -EINVAL;
     }
     if (connection->mpd == NULL) {
-        ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
-                                     (enum mpd_server_error)0, false,
+        ncm_mpd_connection_set_error(connection,
+                                     MPD_ERROR_STATE,
+                                     (enum mpd_server_error)0,
+                                     false,
                                      "No active MPD connection");
         return -NCM_ERROR_INVALID_STATE;
     }
@@ -690,8 +699,10 @@ ncm_mpd_connection_get_stats(MpdConnection *connection,
     if ((stats = mpd_run_stats(connection->mpd)) == NULL) {
         status = ncm_mpd_connection_check_error(connection);
         if (status >= 0) {
-            ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
-                                         (enum mpd_server_error)0, false,
+            ncm_mpd_connection_set_error(connection,
+                                         MPD_ERROR_STATE,
+                                         (enum mpd_server_error)0,
+                                         false,
                                          "Could not get MPD stats");
             status = -NCM_ERROR_MPD;
         }
@@ -725,8 +736,10 @@ ncm_mpd_connection_get_status(MpdConnection *connection,
     if ((mpd_status = mpd_run_status(connection->mpd)) == NULL) {
         status = ncm_mpd_connection_check_error(connection);
         if (status >= 0) {
-            ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
-                                         (enum mpd_server_error)0, false,
+            ncm_mpd_connection_set_error(connection,
+                                         MPD_ERROR_STATE,
+                                         (enum mpd_server_error)0,
+                                         false,
                                          "Could not get MPD status");
             status = -NCM_ERROR_MPD;
         }
@@ -753,8 +766,8 @@ ncm_mpd_connection_get_status(MpdConnection *connection,
     out_status->update_id = (int32)mpd_status_get_update_id(mpd_status);
 
     error = (char *)mpd_status_get_error(mpd_status);
-    ncm_mpd_connection_cstring_copy(out_status->error,
-                                    LENGTH(out_status->error), error);
+    ncm_mpd_connection_cstring_copy(
+        out_status->error, LENGTH(out_status->error), error);
 
     mpd_status_free(mpd_status);
     return ncm_mpd_connection_check_error(connection);
@@ -872,8 +885,10 @@ ncm_mpd_connection_get_replay_gain_mode(MpdConnection *connection,
     mpd_return_pair(connection->mpd, pair);
     mpd_response_finish(connection->mpd);
     if (status < 0) {
-        ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
-                                     (enum mpd_server_error)0, false,
+        ncm_mpd_connection_set_error(connection,
+                                     MPD_ERROR_STATE,
+                                     (enum mpd_server_error)0,
+                                     false,
                                      "Unknown replay gain mode");
         return status;
     }
@@ -1131,8 +1146,10 @@ ncm_mpd_connection_get_directory(MpdConnection *connection, char *path,
         mpd_entity_free(entity);
         if (err < 0) {
             ncm_mpd_item_destroy(&item);
-            ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
-                                         (enum mpd_server_error)0, false,
+            ncm_mpd_connection_set_error(connection,
+                                         MPD_ERROR_STATE,
+                                         (enum mpd_server_error)0,
+                                         false,
                                          "Could not read MPD directory item");
             mpd_response_finish(connection->mpd);
             return -NCM_ERROR_MPD;
@@ -1207,8 +1224,10 @@ ncm_mpd_connection_list_all_songs(MpdConnection *connection, char *path,
             err = ncm_song_from_mpd_song_copy(&song, mpd_song);
             if (err < 0) {
                 ncm_song_destroy(&song);
-                ncm_mpd_connection_set_error(connection, MPD_ERROR_STATE,
-                                             (enum mpd_server_error)0, false,
+                ncm_mpd_connection_set_error(connection,
+                                             MPD_ERROR_STATE,
+                                             (enum mpd_server_error)0,
+                                             false,
                                              "Could not read MPD song entity");
                 mpd_entity_free(entity);
                 mpd_response_finish(connection->mpd);
