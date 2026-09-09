@@ -19,33 +19,14 @@
 #include "title.h"
 #include "ui_state.h"
 
-#define ACTION_TABLE_CALLBACKS(TYPE, ALIAS)                      \
-static bool                                                        \
-ncm_action_can_run_##ALIAS(void *user) {                          \
-    (void)user;                                                    \
-    return ncm_action_runtime_can_run(NULL, TYPE);                 \
-}                                                                  \
-                                                                   \
-static int32                                                       \
-ncm_action_run_##ALIAS(void *user) {                              \
-    (void)user;                                                    \
-    return ncm_action_runtime_run(NULL, TYPE);                     \
-}
-
-#define XX(TYPE, ALIAS) ACTION_TABLE_CALLBACKS(TYPE, ALIAS)
-ACTION_TYPE_FIELDS(XX)
-#undef XX
-
 #define XX(TYPE, ALIAS)                    \
-    {                                      \
+    [TYPE] = {                             \
         #ALIAS,                            \
         STRLIT_LEN(#ALIAS),                \
         TYPE,                              \
-        ncm_action_can_run_##ALIAS,        \
-        ncm_action_run_##ALIAS,            \
     },
 
-static ActionDef action_defs[] = {
+static ActionDef action_defs[ACTION_COUNT] = {
     ACTION_TYPE_FIELDS(XX)
 };
 
@@ -84,7 +65,13 @@ ncm_action_table_find(ActionDef *defs, int32 defs_len,
 
 ActionDef *
 ncm_action_get(enum ActionType type) {
-    return ncm_action_table_get(action_defs, LENGTH(action_defs), type);
+    if ((uint32)type >= ACTION_COUNT) {
+        return NULL;
+    }
+    if (action_defs[type].name == NULL) {
+        return NULL;
+    }
+    return action_defs + type;
 }
 
 ActionDef *
@@ -95,49 +82,40 @@ ncm_action_find(char *name, int32 name_len) {
 
 int32
 ncm_action_type_parse(char *name, int32 name_len, enum ActionType *type) {
+    ActionDef *action;
+
     if ((name == NULL) || (name_len < 0) || (type == NULL)) {
         return -EINVAL;
     }
 
-    for (uint32 i = 0; i < ACTION_COUNT; i += 1) {
-        enum ActionType candidate = (enum ActionType)i;
-        char *alias;
-        int32 alias_len;
-
-        alias_len = ACTION_alias_len(candidate, &alias);
-        if (STREQUAL(name, name_len, alias, alias_len)) {
-            *type = ACTION_parse(name, name_len);
-            ACTION_alias_free(alias);
-            return 0;
-        }
-        ACTION_alias_free(alias);
+    action = ncm_action_find(name, name_len);
+    if (action == NULL) {
+        return -NCM_ERROR_PARSE;
     }
 
-    return -NCM_ERROR_PARSE;
+    *type = action->type;
+    return 0;
 }
 
 bool
 ncm_action_def_can_run(ActionDef *action, void *user) {
-    if ((action == NULL) || (action->can_run == NULL)) {
+    if (action == NULL) {
         return false;
     }
-    return action->can_run(user);
+    return ncm_action_runtime_can_run(user, action->type);
 }
 
 int32
 ncm_action_def_run(ActionDef *action, void *user) {
-    if ((action == NULL) || (action->run == NULL)) {
+    if (action == NULL) {
         return -EINVAL;
     }
-    if (!ncm_action_def_can_run(action, user)) {
-        return -NCM_ERROR_UNAVAILABLE;
-    }
-    return action->run(user);
+    return ncm_action_runtime_run(user, action->type);
 }
 
 bool
 ncm_action_can_run(enum ActionType type, void *user) {
-    return ncm_action_def_can_run(ncm_action_get(type), user);
+    return ncm_action_runtime_can_run(user, type);
 }
 
 static ActionRuntime action_global_runtime;

@@ -145,9 +145,6 @@
 #define ENUM_FIELDS ACTION_TYPE_FIELDS(XX)
 #include "cbase/xenums.c"
 
-typedef bool ActionCanRunFn(void *user);
-typedef int32 ActionRunFn(void *user);
-
 #define ACTION_RUNTIME_DEFER 0
 #define ACTION_RUNTIME_ALLOW 1
 #define ACTION_RUNTIME_DENY -1
@@ -178,8 +175,6 @@ typedef struct ActionDef {
     int32 name_len;
 
     enum ActionType type;
-    ActionCanRunFn *can_run;
-    ActionRunFn *run;
 } ActionDef;
 
 ActionDef *ncm_action_table_get(ActionDef *, int32, enum ActionType);
