@@ -13,8 +13,8 @@
 Configuration Config;
 
 typedef int32 SettingsApplyFn(Configuration *config,
-                                char *value, int32 value_len,
-                                NcmError *ncm_error);
+                              char *value, int32 value_len,
+                              NcmError *ncm_error);
 
 typedef int32 (SettingsListItemFn)(void *context, char *item, int32 item_len,
                                    NcmError *ncm_error);
