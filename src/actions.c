@@ -121,11 +121,11 @@ XX(show_lyrics, SHOW_LYRICS)                                                   \
 XX(show_media_library, SHOW_MEDIA_LIBRARY)                                     \
 XX(show_outputs, SHOW_OUTPUTS)                                                 \
 XX(show_playlist, SHOW_PLAYLIST)                                               \
-XX(show_playlist_edit, SHOW_PLAYLIST_EDITOR)                                 \
+XX(show_playlist_edit, SHOW_PLAYLIST_EDITOR)                                   \
 XX(show_search_engine, SHOW_SEARCH_ENGINE)                                     \
 XX(show_server_info, SHOW_SERVER_INFO)                                         \
 XX(show_song_info, SHOW_SONG_INFO)                                             \
-XX(show_tag_edit, SHOW_TAG_EDIT)                                           \
+XX(show_tag_edit, SHOW_TAG_EDIT)                                               \
 XX(show_visualizer, SHOW_VISUALIZER)                                           \
 XX(shuffle, SHUFFLE)                                                           \
 XX(slave_screen, SLAVE_SCREEN)                                                 \
