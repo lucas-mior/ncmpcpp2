@@ -436,14 +436,12 @@ nc_prompt_display_string(void) {
             byte = next_byte;
         }
     } else {
-        int32 suffix_position;
-
-        suffix_position = utf8_suffix_width_position(before_cursor, before_len,
+        int32 suffix_pos= utf8_suffix_width_position(before_cursor, before_len,
                                                      nc_readline_state.width);
-        cursor_pos = utf8_width(before_cursor + suffix_position,
-                                before_len - suffix_position);
-        nc_prompt_print_data(before_cursor + suffix_position,
-                             before_len - suffix_position);
+        cursor_pos = utf8_width(before_cursor + suffix_pos,
+                                before_len - suffix_pos);
+        nc_prompt_print_data(before_cursor + suffix_pos,
+                             before_len - suffix_pos);
     }
     nc_window_go_to_xy(window, x + cursor_pos, y);
     return;
