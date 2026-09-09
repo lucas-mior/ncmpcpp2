@@ -14,27 +14,26 @@ stupid_string_free(char **data, int32 *len) {
 }
 
 void
-stupid_string_set(char **dest, int32 *dest_len, char *source,
-                  int32 source_len) {
+stupid_string_set(char **dst, int32 *dst_len, char *src, int32 src_len) {
     char *copy;
 
-    ASSERT(dest != NULL);
-    ASSERT(dest_len != NULL);
-    ASSERT_NON_NEGATIVE(source_len);
-    ASSERT((source != NULL) || (source_len == 0));
+    ASSERT(dst != NULL);
+    ASSERT(dst_len != NULL);
+    ASSERT_NON_NEGATIVE(src_len);
+    ASSERT((src != NULL) || (src_len == 0));
 
-    free2(*dest, *dest_len + 1);
-    *dest = NULL;
-    *dest_len = 0;
+    free2(*dst, *dst_len + 1);
+    *dst = NULL;
+    *dst_len = 0;
 
-    if (source_len == 0) {
+    if (src_len == 0) {
         return;
     }
-    copy = malloc2(source_len + 1);
-    memcpy64(copy, source, source_len);
-    copy[source_len] = '\0';
-    *dest = copy;
-    *dest_len = source_len;
+    copy = malloc2(src_len + 1);
+    memcpy64(copy, src, src_len);
+    copy[src_len] = '\0';
+    *dst = copy;
+    *dst_len = src_len;
     return;
 }
 
