@@ -232,7 +232,8 @@ visualizer_resize_callback(NcScreen *screen) {
     int32 width;
 
     nc_screen_switcher_get_resize_params(screen, &x, &width, true);
-    visualizer_screen_set_geometry(visualizer, x, ui_state_main_start_y(),
+    visualizer_screen_set_geometry(visualizer,
+                                   x, ui_state_main_start_y(),
                                    width, ui_state_main_height());
     visualizer_prepare_drawing(visualizer);
     nc_screen_clear_resize_request(screen);
