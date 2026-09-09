@@ -2890,15 +2890,11 @@ tag_edit_copy_selected_song_at(TagEditScreen *screen,
     ncm_song_set_duration(&song, source->duration);
     ncm_song_set_mtime(&song, source->mtime);
     for (int32 i = 0; i < source->tags_len; i += 1) {
-        NcmMutableSongTag *tag;
-        enum mpd_tag_type type;
-        char *value;
-        int32 value_len;
+        NcmMutableSongTag *tag = &source->tags[i];
+        enum mpd_tag_type type = ncm_tags_field_to_tag_type(tag->field);
+        char *value = tag->original;
+        int32 value_len = tag->original_len;
 
-        tag = &source->tags[i];
-        type = ncm_tags_field_to_tag_type(tag->field);
-        value = tag->original;
-        value_len = tag->original_len;
         if ((type == MPD_TAG_UNKNOWN) || (value == NULL) || (value_len <= 0)) {
             continue;
         }
