@@ -943,8 +943,7 @@ int32 ncm_mpd_connection_change_volume(MpdConnection *, int32);
 int32 ncm_mpd_connection_move(MpdConnection *, int32 from, int32 to, bool);
 int32 ncm_mpd_connection_swap(MpdConnection *, int32 from, int32 to, bool);
 int32 ncm_mpd_connection_shuffle(MpdConnection *);
-int32 ncm_mpd_connection_shuffle_range(MpdConnection *, int32 start,
-                                       int32 end);
+int32 ncm_mpd_connection_shuffle_range(MpdConnection *, int32 start, int32 end);
 int32 ncm_mpd_connection_clear_queue(MpdConnection *);
 int32 ncm_mpd_connection_set_priority_id(MpdConnection *, int32 id,
                                          int32 prio, bool);
