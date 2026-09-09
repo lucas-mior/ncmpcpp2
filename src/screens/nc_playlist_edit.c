@@ -1050,14 +1050,14 @@ int32
 playlist_edit_screen_reload_playlists_from_mpd(PlaylistEditScreen *screen,
                                                  NcmMpdClient *client,
                                                  NcmError *ncm_error) {
-    NcmMpdPlaylistList playlists;
+    NcmMpdPlaylistList playlists = {0};
     int32 status;
 
     if (screen == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing playlist editor"));
     }
-    playlists = (NcmMpdPlaylistList){0};
+
     status = ncm_mpd_client_get_playlists(client, &playlists, ncm_error);
     if (status == 0) {
         for (int32 i = 1; i < playlists.count; i += 1) {
