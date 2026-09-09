@@ -274,8 +274,8 @@ tag_edit_refresh_menu(NcWindow *window, NcMenu *menu) {
     ASSERT(menu != NULL);
     nc_menu_prepare_refresh(menu, nc_window_height(window), NULL, NULL);
     nc_window_display(window);
-    nc_menu_refresh(menu, window, nc_window_width(window),
-                    nc_window_height(window));
+    nc_menu_refresh(menu, window,
+                    nc_window_width(window), nc_window_height(window));
     return;
 }
 
