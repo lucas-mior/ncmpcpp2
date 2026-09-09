@@ -889,14 +889,15 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
         IN_PROGRESS_COMMAND = 1,
         IN_PROGRESS_KEY = 2,
     };
-    FILE *file;
     char *path_copy;
+    char *content;
+    char *content_end;
+    char *line;
     int32 path_cap;
-    char line[1024];
+    int32 content_len;
     int32 in_progress;
     int32 line_no;
     int32 status;
-    bool last_line;
     NcmBinding actions;
     char *command_name;
     char *key_name;
@@ -908,15 +909,23 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
     bool command_immediate;
 
     path_copy = ncm_string_copy(path, path_len, &path_cap);
-    if ((file = fopen(path_copy, "r")) == NULL) {
+    if (!ncm_fs_path_is_existing(path, path_len)) {
         free2(path_copy, path_cap);
         return 0;
+    }
+    if ((content_len = read_entire_file(path_copy, &content)) < 0) {
+        int32 code;
+
+        code = -content_len;
+        ncm_bindings_error(ncm_error, "%.*s: read error: %s", path_len,
+                           path, strerror(code));
+        free2(path_copy, path_cap);
+        return content_len;
     }
 
     in_progress = IN_PROGRESS_NONE;
     line_no = 0;
     status = 0;
-    last_line = false;
     command_name = NULL;
     key_name = NULL;
     command_name_len = 0;
@@ -926,51 +935,36 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
     key = NC_KEY_NONE;
     command_immediate = false;
     actions = (NcmBinding){0};
+    content_end = content + content_len;
+    line = content;
 
-    while ((status >= 0) && !last_line) {
+    while ((status >= 0) && (line < content_end)) {
+        char *current_line;
+        char *line_end;
+        char *next;
         int32 len;
         int32 start;
         StringView enclosed;
 
-        errno = 0;
-        if (fgets(line, SIZEOF(line), file) == NULL) {
-            break;
+        current_line = line;
+        if ((line_end = memchr64(current_line, '\n',
+                                 content_end - current_line))) {
+            len = (int32)(line_end - current_line);
+            next = line_end + 1;
+        } else {
+            len = (int32)(content_end - current_line);
+            next = content_end;
         }
-
         line_no += 1;
-        len = strlen32(line);
-        if ((len == SIZEOF(line) - 1) && (line[len - 1] != '\n')) {
-            int32 next;
-
-            errno = 0;
-            next = fgetc(file);
-            if (next == EOF) {
-                if (ferror(file)) {
-                    int32 code;
-
-                    code = errno;
-                    if (code == 0) {
-                        code = EIO;
-                    }
-                    ncm_bindings_error(ncm_error, "%.*s:%d: read error: %s",
-                                       path_len, path, line_no, strerror(code));
-                    status = -code;
-                    break;
-                }
-                last_line = true;
-            } else if (next != '\n') {
-                error("Bindings configuration line %d in '%.*s' is too "
-                      "long.\n", line_no, path_len, path);
-                fatal(EXIT_FAILURE);
-            }
-        }
-        len = ncm_trim_end(line, len);
-        if ((len == 0) || (line[0] == '#')) {
+        line = next;
+        len = ncm_trim_end(current_line, len);
+        if ((len == 0) || (current_line[0] == '#')) {
             continue;
         }
-        start = ncm_trim_start(line, len);
+        start = ncm_trim_start(current_line, len);
 
-        if ((len - start >= 11) && STREQUAL(line + start, 11, "def_command")) {
+        if ((len - start >= 11)
+            && STREQUAL(current_line + start, 11, "def_command")) {
             status = ncm_bindings_finalize_definition(bindings, in_progress,
                                                       &actions, key,
                                                       key_name, key_name_len,
@@ -983,8 +977,8 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             if (status < 0) {
                 break;
             }
-            if (ncm_extract_enclosed(line + start, len - start, '"', '"',
-                                     &enclosed) < 0) {
+            if (ncm_extract_enclosed(current_line + start, len - start,
+                                     '"', '"', &enclosed) < 0) {
                 ncm_bindings_error(ncm_error,
                                    "%.*s:%d: command must have non-empty name",
                                    path_len, path, line_no);
@@ -1002,8 +996,8 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             command_name = ncm_string_copy(enclosed.data, enclosed.len,
                                            &command_name_cap);
             command_name_len = enclosed.len;
-            if (ncm_extract_enclosed(line + start, len - start, '[', ']',
-                                     &enclosed) < 0) {
+            if (ncm_extract_enclosed(current_line + start, len - start,
+                                     '[', ']', &enclosed) < 0) {
                 ncm_bindings_error(ncm_error, "%.*s:%d: missing command type",
                                    path_len, path, line_no);
                 status = -NCM_ERROR_PARSE;
@@ -1022,7 +1016,8 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                 break;
             }
             in_progress = IN_PROGRESS_COMMAND;
-        } else if ((len - start >= 7) && STREQUAL(line + start, 7, "def_key")) {
+        } else if ((len - start >= 7)
+                   && STREQUAL(current_line + start, 7, "def_key")) {
             status = ncm_bindings_finalize_definition(bindings, in_progress,
                                                       &actions, key,
                                                       key_name, key_name_len,
@@ -1035,8 +1030,8 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             if (status < 0) {
                 break;
             }
-            if (ncm_extract_enclosed(line + start, len - start, '"', '"',
-                                     &enclosed) < 0) {
+            if (ncm_extract_enclosed(current_line + start, len - start,
+                                     '"', '"', &enclosed) < 0) {
                 ncm_bindings_error(ncm_error, "%.*s:%d: invalid key", path_len,
                                    path, line_no);
                 status = -NCM_ERROR_PARSE;
@@ -1055,44 +1050,45 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                                        &key_name_cap);
             key_name_len = enclosed.len;
             in_progress = IN_PROGRESS_KEY;
-        } else if (isspace((uint8)line[0])) {
+        } else if (isspace((uint8)current_line[0])) {
             NcmBindingAction action;
             StringView argument;
             int32 action_start;
             int32 action_len;
             int32 name_len;
 
-            action_start = ncm_trim_start(line, len);
-            action_len = ncm_trim_end(line + action_start, len - action_start);
+            action_start = ncm_trim_start(current_line, len);
+            action_len = ncm_trim_end(current_line + action_start,
+                                      len - action_start);
             ncm_binding_action_init(&action);
             name_len = 0;
             while ((name_len < action_len)
-                   && !isspace((uint8)line[action_start + name_len])) {
+                   && !isspace((uint8)current_line[action_start + name_len])) {
                 name_len += 1;
             }
 
-            if (STREQUAL(line + action_start, name_len,
+            if (STREQUAL(current_line + action_start, name_len,
                          "set_visualizer_sample_multiplier")) {
                 action.kind = NCM_BINDING_ACTION_NORMAL;
                 action.type = ACTION_DUMMY;
                 status = 0;
             } else if (name_len == action_len) {
-                if (ncm_action_type_parse(line + action_start, name_len,
+                if (ncm_action_type_parse(current_line + action_start, name_len,
                                           &action.type) < 0) {
                     ncm_bindings_error(ncm_error, "unknown action: '%.*s'",
-                                       name_len, line + action_start);
+                                       name_len, current_line + action_start);
                     status = -NCM_ERROR_PARSE;
                 } else {
                     action.kind = NCM_BINDING_ACTION_NORMAL;
                     status = 0;
                 }
-            } else if (ncm_extract_enclosed(line + action_start + name_len,
-                                            action_len - name_len,
-                                            '"', '"', &argument) < 0) {
+            } else if (ncm_extract_enclosed(
+                           current_line + action_start + name_len,
+                           action_len - name_len, '"', '"', &argument) < 0) {
                 ncm_bindings_error(ncm_error, "missing quoted argument: '%.*s'",
-                                   action_len, line + action_start);
+                                   action_len, current_line + action_start);
                 status = -NCM_ERROR_PARSE;
-            } else if (STREQUAL(line + action_start, name_len,
+            } else if (STREQUAL(current_line + action_start, name_len,
                                 "push_character")) {
                 NcKey action_key;
 
@@ -1110,7 +1106,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                     action.keys[0] = action_key;
                     status = 0;
                 }
-            } else if (STREQUAL(line + action_start, name_len,
+            } else if (STREQUAL(current_line + action_start, name_len,
                                 "push_characters")) {
                 if (argument.len <= 0) {
                     ncm_bindings_error(ncm_error, "empty argument passed to "
@@ -1126,7 +1122,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                     }
                     status = 0;
                 }
-            } else if (STREQUAL(line + action_start, name_len,
+            } else if (STREQUAL(current_line + action_start, name_len,
                                 "require_screen")) {
                 if (screen_type_parse(argument.data, argument.len,
                                       &action.screen_type) < 0) {
@@ -1138,7 +1134,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                     action.kind = NCM_BINDING_ACTION_REQUIRE_SCREEN;
                     status = 0;
                 }
-            } else if (STREQUAL(line + action_start, name_len,
+            } else if (STREQUAL(current_line + action_start, name_len,
                                 "require_runnable")) {
                 if (ncm_action_type_parse(argument.data, argument.len,
                                           &action.type) < 0) {
@@ -1150,7 +1146,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                     action.kind = NCM_BINDING_ACTION_REQUIRE_RUNNABLE;
                     status = 0;
                 }
-            } else if (STREQUAL(line + action_start, name_len,
+            } else if (STREQUAL(current_line + action_start, name_len,
                                 "run_external_command")) {
                 if (argument.len <= 0) {
                     ncm_bindings_error(ncm_error, "empty command passed to "
@@ -1164,7 +1160,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                     action.argument_len = argument.len;
                     status = 0;
                 }
-            } else if (STREQUAL(line + action_start, name_len,
+            } else if (STREQUAL(current_line + action_start, name_len,
                                 "run_external_console_command")) {
                 if (argument.len <= 0) {
                     ncm_bindings_error(ncm_error, "empty command passed to "
@@ -1181,7 +1177,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
                 }
             } else {
                 ncm_bindings_error(ncm_error, "unknown action: '%.*s'",
-                                   action_len, line + action_start);
+                                   action_len, current_line + action_start);
                 status = -NCM_ERROR_PARSE;
             }
 
@@ -1192,21 +1188,9 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             ncm_binding_action_destroy(&action);
         } else {
             ncm_bindings_error(ncm_error, "%.*s:%d: invalid line '%.*s'",
-                               path_len, path, line_no, len, line);
+                               path_len, path, line_no, len, current_line);
             status = -NCM_ERROR_PARSE;
         }
-    }
-
-    if ((status >= 0) && ferror(file)) {
-        int32 code;
-
-        code = errno;
-        if (code == 0) {
-            code = EIO;
-        }
-        ncm_bindings_error(ncm_error, "%.*s:%d: read error: %s", path_len,
-                           path, line_no + 1, strerror(code));
-        status = -code;
     }
 
     if (status >= 0) {
@@ -1222,7 +1206,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
     ncm_binding_destroy(&actions);
     free2(command_name, command_name_cap);
     free2(key_name, key_name_cap);
-    fclose(file);
+    free2(content, content_len + 1);
     free2(path_copy, path_cap);
     return status;
 }
