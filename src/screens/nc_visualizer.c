@@ -1195,8 +1195,7 @@ visualizer_screen_requested_samples(VisualizerScreen *screen) {
         channels = 2;
     }
     max_frames = INT32_MAX/channels;
-    max_elapsed_ns = max_frames*(int32)1e9
-                     /screen->sample_rate;
+    max_elapsed_ns = max_frames*(int32)1e9 /screen->sample_rate;
     if (elapsed_ns > max_elapsed_ns) {
         screen->sample_clock_frame_remainder = 0;
         return (int32)(max_frames*channels);
@@ -1205,8 +1204,7 @@ visualizer_screen_requested_samples(VisualizerScreen *screen) {
     scaled_frames = elapsed_ns*screen->sample_rate;
     scaled_frames += screen->sample_clock_frame_remainder;
     frames = scaled_frames/(int32)1e9;
-    screen->sample_clock_frame_remainder =
-        scaled_frames%(int32)1e9;
+    screen->sample_clock_frame_remainder = scaled_frames%(int32)1e9;
     if (frames >= max_frames) {
         screen->sample_clock_frame_remainder = 0;
         frames = max_frames;
