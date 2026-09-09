@@ -202,23 +202,23 @@
     XX(server_info, nc_server_info_screen_base(&server_info_screen.screen))    \
     XX(song_info, nc_song_info_screen_base(&song_info_screen.screen))
 
-#define NCM_APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(XX)                        \
+#define NCM_APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(XX)           \
     XX(help, app_screen_help, NcHelpScreen, &help_screen.screen)
 
-#define NCM_APP_SCREEN_STANDARD_REGISTER_TYPES(XX)                             \
-    XX(browser)                                                                \
-    XX(help)                                                                   \
-    XX(lastfm)                                                                 \
-    XX(lyrics)                                                                 \
-    XX(visualizer)                                                             \
-    XX(playlist)                                                               \
-    XX(playlist_edit)                                                        \
-    XX(search_engine)                                                          \
-    XX(media_library)                                                          \
-    XX(tag_edit)                                                             \
-    XX(tiny_tag_edit)                                                        \
-    XX(song_info)                                                              \
-    XX(server_info)                                                            \
+#define NCM_APP_SCREEN_STANDARD_REGISTER_TYPES(XX)                \
+    XX(browser)                                                   \
+    XX(help)                                                      \
+    XX(lastfm)                                                    \
+    XX(lyrics)                                                    \
+    XX(visualizer)                                                \
+    XX(playlist)                                                  \
+    XX(playlist_edit)                                             \
+    XX(search_engine)                                             \
+    XX(media_library)                                             \
+    XX(tag_edit)                                                  \
+    XX(tiny_tag_edit)                                             \
+    XX(song_info)                                                 \
+    XX(server_info)                                               \
     XX(outputs)
 
 #define NCM_APP_SCREEN_REPLACE_REGISTER_TYPES(XX)                 \
