@@ -351,6 +351,7 @@ nc_prompt_read_key(FILE *file) {
                 return EOF;
             }
         }
+
         nc_window_go_to_xy(window, x, nc_readline_state.start_y);
         nc_window_refresh(window);
         key = nc_window_read_key(window);
