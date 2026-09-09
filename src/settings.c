@@ -946,8 +946,8 @@ config_validate(Configuration *config, NcmError *ncm_error) {
 }
 
 int32
-config_apply_runtime(Configuration *config, MpdClient *client,
-                            bool quiet, NcmError *ncm_error) {
+config_apply_runtime(Configuration *config, MpdClient *client, bool quiet,
+                     NcmError *ncm_error) {
     int32 status;
 
     if ((config == NULL) || (client == NULL)) {
@@ -1224,7 +1224,7 @@ _Static_assert(LENGTH(ncmpcpp_options) == SETTINGS_OPTION_COUNT,
 
 int32
 config_read(Configuration *config, StringViewArray *config_paths,
-                   bool ignore_errors, bool quiet, NcmError *ncm_error) {
+            bool ignore_errors, bool quiet, NcmError *ncm_error) {
     bool used[SETTINGS_OPTION_COUNT] = {0};
     int32 status;
 

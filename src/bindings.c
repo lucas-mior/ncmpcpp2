@@ -882,8 +882,8 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
 }
 
 int32
-ncm_bindings_config_read(NcmBindingsConfiguration *bindings, char *path,
-                                int32 path_len, NcmError *ncm_error) {
+ncm_bindings_config_read(NcmBindingsConfiguration *bindings,
+                         char *path, int32 path_len, NcmError *ncm_error) {
     enum {
         IN_PROGRESS_NONE = 0,
         IN_PROGRESS_COMMAND = 1,
@@ -1212,8 +1212,7 @@ ncm_bindings_config_read(NcmBindingsConfiguration *bindings, char *path,
 }
 
 void
-ncm_bindings_config_generate_defaults(NcmBindingsConfiguration *bindings
-) {
+ncm_bindings_config_generate_defaults(NcmBindingsConfiguration *bindings) {
     NcmBinding binding;
 
     binding = (NcmBinding){0};
@@ -1352,7 +1351,7 @@ ncm_bindings_config_generate_defaults(NcmBindingsConfiguration *bindings
 
 NcmCommand *
 ncm_bindings_config_find_command(NcmBindingsConfiguration *bindings,
-                                        char *name, int32 name_len) {
+                                 char *name, int32 name_len) {
     int32 at;
 
     at = ncm_bindings_command_index(bindings, name, name_len);
@@ -1364,7 +1363,7 @@ ncm_bindings_config_find_command(NcmBindingsConfiguration *bindings,
 
 int32
 ncm_bindings_config_get(NcmBindingsConfiguration *bindings, NcKey key,
-                               NcmBindingSlice *result) {
+                        NcmBindingSlice *result) {
     int32 at;
 
     if (result == NULL) {

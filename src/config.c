@@ -72,7 +72,7 @@ config_append_buffer_path(StrBuilderArray *paths, StrBuilder *path) {
 
 static void
 config_append_default_file(StrBuilderArray *paths,
-                                  char *filename, int32 filename_len) {
+                           char *filename, int32 filename_len) {
     char *xdg_config_home;
     StrBuilder directory = {0};
     StrBuilder path = {0};
@@ -94,7 +94,7 @@ config_append_default_file(StrBuilderArray *paths,
 
 static void
 config_append_legacy_file(StrBuilderArray *paths,
-                                 char *filename, int32 filename_len) {
+                          char *filename, int32 filename_len) {
     StrBuilder directory = {0};
     StrBuilder path = {0};
 
@@ -109,8 +109,8 @@ config_append_legacy_file(StrBuilderArray *paths,
 
 int32
 config_discover_default_paths(StrBuilderArray *config_paths,
-                                     StrBuilderArray *bindings_paths,
-                                     NcmError *ncm_error) {
+                              StrBuilderArray *bindings_paths,
+                              NcmError *ncm_error) {
     if ((config_paths == NULL) || (bindings_paths == NULL)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing default path output"));
@@ -133,9 +133,9 @@ config_copy_string(StrBuilder *buffer, char *string, int32 string_len) {
 
 static int32
 config_require_value(int32 argc, char **argv, int32 *i,
-                            char *option, int32 option_len,
-                            char **value, int32 *value_len,
-                            NcmError *ncm_error) {
+                     char *option, int32 option_len,
+                     char **value, int32 *value_len,
+                     NcmError *ncm_error) {
     *value = NULL;
     *value_len = 0;
     if (*i + 1 >= argc) {
@@ -156,8 +156,8 @@ config_require_value(int32 argc, char **argv, int32 *i,
 
 static int32
 config_parse_port(char *value, int32 value_len,
-                         char *option, int32 option_len,
-                         int32 *port, NcmError *ncm_error) {
+                  char *option, int32 option_len,
+                  int32 *port, NcmError *ncm_error) {
     int32 parsed;
 
     if (ncm_parse_int32(value, value_len, &parsed, ncm_error) < 0) {
@@ -180,8 +180,8 @@ config_parse_port(char *value, int32 value_len,
 
 int32
 ncm_config_options_parse(NcmConfigurationOptions *options,
-                                int32 argc, char **argv,
-                                NcmError *ncm_error) {
+                         int32 argc, char **argv,
+                         NcmError *ncm_error) {
     int32 status;
 
     for (int32 i = 1; i < argc; i += 1) {
@@ -222,9 +222,9 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
 #define REQUIRE_LONG(VALUE, VALUE_LEN) do {                                \
     if ((VALUE) == NULL) {                                                 \
         status = config_require_value(argc, argv, &i,               \
-                                             arg, name_len + 2,            \
-                                             &(VALUE), &(VALUE_LEN),       \
-                                             ncm_error);                   \
+                                      arg, name_len + 2,            \
+                                      &(VALUE), &(VALUE_LEN),       \
+                                      ncm_error);                   \
         if (status < 0) {                                                  \
             return status;                                                 \
         }                                                                  \
@@ -249,9 +249,9 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
             } else if (STREQUAL(name, name_len, "port")) {
                 REQUIRE_LONG(value, value_len);
                 if ((status = config_parse_port(value, value_len,
-                                                        arg, name_len + 2,
-                                                        &options->port,
-                                                        ncm_error)) < 0) {
+                                                arg, name_len + 2,
+                                                &options->port,
+                                                ncm_error)) < 0) {
                     return status;
                 }
                 options->port_provided = true;
@@ -259,12 +259,12 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
                 options->current_song = true;
                 if (value) {
                     config_copy_string(&options->current_song_format,
-                                              value, value_len);
+                                       value, value_len);
                 } else if ((i + 1 < argc) && !((strlen32(argv[i + 1]) > 1)
                                                && (argv[i + 1][0] == '-'))) {
                     i += 1;
                     config_copy_string(&options->current_song_format,
-                                              argv[i], strlen32(argv[i]));
+                                       argv[i], strlen32(argv[i]));
                 }
             } else if (STREQUAL(name, name_len, "config")) {
                 REQUIRE_LONG(value, value_len);
@@ -283,13 +283,12 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
             } else if (STREQUAL(name, name_len, "screen")) {
                 REQUIRE_LONG(value, value_len);
                 options->screen = true;
-                config_copy_string(&options->screen_name,
-                                          value, value_len);
+                config_copy_string(&options->screen_name, value, value_len);
             } else if (STREQUAL(name, name_len, "slave-screen")) {
                 REQUIRE_LONG(value, value_len);
                 options->slave_screen = true;
                 config_copy_string(&options->slave_screen_name,
-                                          value, value_len);
+                                   value, value_len);
             } else if (STREQUAL(name, name_len, "help")) {
                 REJECT_LONG(value);
                 options->help = true;
@@ -361,9 +360,9 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
                 value = arg + 2;
                 value_len = arg_len - 2;
             } else if ((status = config_require_value(argc, argv, &i,
-                                                             option, 2,
-                                                             &value, &value_len,
-                                                             ncm_error)) < 0) {
+                                                      option, 2,
+                                                      &value, &value_len,
+                                                      ncm_error)) < 0) {
                 return status;
             }
 
@@ -374,9 +373,9 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
                 break;
             case 'p':
                 if ((status = config_parse_port(value, value_len,
-                                                        option, 2,
-                                                        &options->port,
-                                                        ncm_error)) < 0) {
+                                                option, 2,
+                                                &options->port,
+                                                ncm_error)) < 0) {
                     return status;
                 }
                 options->port_provided = true;
@@ -391,13 +390,12 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
                 break;
             case 's':
                 options->screen = true;
-                config_copy_string(&options->screen_name,
-                                          value, value_len);
+                config_copy_string(&options->screen_name, value, value_len);
                 break;
             case 'S':
                 options->slave_screen = true;
                 config_copy_string(&options->slave_screen_name,
-                                          value, value_len);
+                                   value, value_len);
                 break;
             default:
                 break;
@@ -419,8 +417,8 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
         StrBuilderArray default_bindings_paths = {0};
 
         config_discover_default_paths(&default_config_paths,
-                                             &default_bindings_paths,
-                                             ncm_error);
+                                      &default_bindings_paths,
+                                      ncm_error);
         if (options->config_paths.len == 0) {
             for (int32 j = 0; j < default_config_paths.len; j += 1) {
                 StrBuilder *path = &default_config_paths.items[j];
@@ -443,7 +441,7 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
 
 int32
 ncm_config_options_apply(NcmConfigurationOptions *options,
-                                NcmError *ncm_error) {
+                         NcmError *ncm_error) {
     StringViewArray config_views = {0};
     char *env_host;
     char *env_port;
@@ -466,8 +464,8 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
 
     config_destroy(&Config);
     status = config_read(&Config, &config_views,
-                                options->ignore_config_errors, options->quiet,
-                                ncm_error);
+                         options->ignore_config_errors, options->quiet,
+                         ncm_error);
     if (status < 0) {
         ncm_string_view_array_destroy(&config_views);
         if (!ncm_error_is_set(ncm_error)) {
@@ -494,7 +492,7 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
     }
 
     status = config_apply_runtime(&Config, &global_mpd, options->quiet,
-                                         ncm_error);
+                                  ncm_error);
     if (status < 0) {
         return status;
     }
@@ -576,10 +574,8 @@ configure(int32 argc, char **argv) {
     config_quiet = false;
     ncm_error_clear(&ncm_error);
     ncm_config_options_init(&options);
-    if (ncm_config_options_parse(&options, argc, argv,
-                                        &ncm_error) < 0) {
-        config_print_error("Error while processing configuration",
-                                  &ncm_error);
+    if (ncm_config_options_parse(&options, argc, argv, &ncm_error) < 0) {
+        config_print_error("Error while processing configuration", &ncm_error);
         ncm_config_options_destroy(&options);
         exit(EXIT_FAILURE);
     }
@@ -591,7 +587,7 @@ configure(int32 argc, char **argv) {
         StrBuilderArray bindings_paths = {0};
 
         config_discover_default_paths(&config_paths, &bindings_paths,
-                                             &ncm_error);
+                                      &ncm_error);
         printf("Usage: %s [options]...\n", argv[0]);
         printf("Options:\n");
         printf("  -h, --host HOST              "
@@ -604,9 +600,8 @@ configure(int32 argc, char **argv) {
                "specify configuration file(s)\n");
         printf("                               default: ");
         for (int32 i = 0; i < config_paths.len; i += 1) {
-            StrBuilder *path;
+            StrBuilder *path = &config_paths.items[i];
 
-            path = &config_paths.items[i];
             if (i > 0) {
                 printf(" AND ");
             }
@@ -760,8 +755,8 @@ configure(int32 argc, char **argv) {
                 break;
             }
             if ((status = ncm_bindings_config_read(&Bindings,
-                                                          path->data, path->len,
-                                                          &ncm_error)) < 0) {
+                                                   path->data, path->len,
+                                                   &ncm_error)) < 0) {
                 break;
             }
         }
@@ -798,15 +793,13 @@ configure(int32 argc, char **argv) {
         ncm_mpd_client_disconnect(&global_mpd);
         ncm_config_options_destroy(&options);
         if (status < 0) {
-            config_print_error("Error while printing current song",
-                                      &ncm_error);
+            config_print_error("Error while printing current song", &ncm_error);
             exit(EXIT_FAILURE);
         }
         return 0;
     }
     if (status < 0) {
-        config_print_error("Error while processing configuration",
-                                  &ncm_error);
+        config_print_error("Error while processing configuration", &ncm_error);
         ncm_config_options_destroy(&options);
         exit(EXIT_FAILURE);
     }

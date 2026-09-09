@@ -29,13 +29,13 @@ typedef struct NcmConfigurationOptions {
 
 void ncm_config_options_init(NcmConfigurationOptions *);
 void ncm_config_options_destroy(NcmConfigurationOptions *);
-int32 ncm_config_options_parse(NcmConfigurationOptions *, int32,
-                                      char **, NcmError *);
+int32 ncm_config_options_parse(NcmConfigurationOptions *, int32, char **,
+                               NcmError *);
 int32 ncm_config_options_apply(NcmConfigurationOptions *, NcmError *);
 
 int32 config_discover_default_paths(StrBuilderArray *config_paths,
-                                           StrBuilderArray *bindings_paths,
-                                           NcmError *);
+                                    StrBuilderArray *bindings_paths,
+                                    NcmError *);
 int32 configure(int32, char **);
 
 #endif /* config_H */

@@ -1277,8 +1277,8 @@ action_runtime_execute_command(void) {
     }
 
     command = ncm_bindings_config_find_command(&Bindings,
-                                                      command_name.data,
-                                                      command_name.len);
+                                               command_name.data,
+                                               command_name.len);
     if (command == NULL) {
         action_runtime_print_message(STRLIT("No command named \""),
                                      command_name.data, command_name.len,
