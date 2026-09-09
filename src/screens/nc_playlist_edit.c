@@ -177,9 +177,8 @@ static void
 playlist_edit_observe_current_playlist(PlaylistEditScreen *screen) {
     char *path;
     int32 path_len;
-    NcMenu *menu;
+    NcMenu *menu = nc_playlist_entry_menu_base(&screen->playlists);
 
-    menu = nc_playlist_entry_menu_base(&screen->playlists);
     screen->last_playlist_highlight = nc_menu_highlight(menu);
 
     if (!playlist_edit_has_current_playlist_path(screen, &path, &path_len)) {
