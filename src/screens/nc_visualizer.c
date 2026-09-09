@@ -1730,11 +1730,12 @@ visualizer_screen_draw(VisualizerScreen *screen,
         half_height = height / 2;
         switch (screen->visualization_type) {
         case VISUALIZER_WAVE:
-            visualizer_draw_wave(screen, screen->left_ch.data,
-                                 channel_samples, 0, half_height);
-            visualizer_draw_wave(screen, screen->right_ch.data,
-                                 channel_samples, half_height,
-                                 height - half_height);
+            visualizer_draw_wave(screen,
+                                 screen->left_ch.data, channel_samples,
+                                 0, half_height);
+            visualizer_draw_wave(screen,
+                                 screen->right_ch.data, channel_samples,
+                                 half_height, height - half_height);
             break;
         case VISUALIZER_WAVE_FILLED:
             visualizer_draw_wave_filled(screen,
