@@ -13,6 +13,115 @@ typedef struct SearchFindContext {
     NcmRegex *regex;
 } SearchFindContext;
 
+static NcMenu *
+search_engine_menu_capability(void *user) {
+    return search_engine_screen_menu(user);
+}
+
+static int32
+search_engine_menu_height_capability(void *user) {
+    SearchEngineScreen *screen = user;
+
+    return nc_window_height(&screen->window);
+}
+
+static StringView
+search_engine_filter_constraint_capability(void *user) {
+    SearchEngineScreen *screen = user;
+
+    return ncm_string_view(screen->filter_constraint.data,
+                           screen->filter_constraint.len);
+}
+
+static int32
+search_engine_filter_apply_capability(void *user, char *pattern,
+                                      int32 pattern_len, uint32 regex_flags,
+                                      NcmError *ncm_error) {
+    (void)regex_flags;
+    return search_engine_screen_apply_filter(user, pattern, pattern_len,
+                                             ncm_error);
+}
+
+static bool
+search_engine_search_available_capability(void *user) {
+    return search_engine_screen_can_search(user);
+}
+
+static StringView
+search_engine_search_constraint_capability(void *user) {
+    SearchEngineScreen *screen = user;
+
+    return ncm_string_view(screen->search_constraint.data,
+                           screen->search_constraint.len);
+}
+
+static void
+search_engine_search_clear_capability(void *user) {
+    SearchEngineScreen *screen = user;
+
+    sb_clear(&screen->search_constraint);
+    return;
+}
+
+static int32
+search_engine_search_capability(void *user, enum SearchDirection direction,
+                                char *pattern, int32 pattern_len,
+                                uint32 regex_flags, bool wrap,
+                                bool skip_current, NcmError *ncm_error) {
+    int32 status;
+    bool forward;
+
+    (void)regex_flags;
+    forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
+    status = search_engine_screen_search(user, pattern, pattern_len, forward,
+                                         wrap, skip_current, ncm_error);
+    if (status >= 0) {
+        SearchEngineScreen *screen = user;
+
+        sb_set(&screen->search_constraint, pattern, pattern_len);
+    }
+    return status;
+}
+
+static int32
+search_engine_current_song_capability(void *user, NcmSong *song) {
+    int32 status;
+
+    status = search_engine_screen_current_song(user, song);
+    if (status > 0) {
+        return 0;
+    }
+    if (status == 0) {
+        return -NCM_ERROR_NOT_FOUND;
+    }
+    return status;
+}
+
+static int32
+search_engine_selected_songs_capability(void *user, NcmSongArray *songs) {
+    return search_engine_screen_selected_songs(user, songs);
+}
+
+static NcMenu *
+search_engine_tag_menu_capability(void *user) {
+    return search_engine_screen_menu(user);
+}
+
+static int32
+search_engine_tag_at_capability(void *user, int32 pos, enum SongGetter getter,
+                                StrBuilder *tag) {
+    NcSearchRow *row;
+
+    row = nc_menu_active_item_at(search_engine_screen_menu(user), pos);
+    if ((row == NULL) || !row->is_song || (tag == NULL)) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    *tag = ncm_song_tags_buffer(&row->song, getter, Config.tags_separator,
+                                Config.tags_separator_len,
+                                Config.show_duplicate_tags);
+    return 0;
+}
+
 static char *search_constraint_names[] = {
     "Any",
     "Artist",
@@ -600,6 +709,35 @@ search_engine_screen_init(SearchEngineScreen *screen,
 
     nc_screen_init_ops(&screen->screen, search_ops, screen,
                        NC_SCREEN_TYPE_SEARCH_ENGINE);
+    nc_screen_set_menu_capability(&screen->screen, (NcScreenMenuCapability){
+        .user = screen,
+        .current_menu = search_engine_menu_capability,
+        .height = search_engine_menu_height_capability,
+    });
+    nc_screen_set_filter_capability(&screen->screen,
+                                    (NcScreenFilterCapability){
+        .user = screen,
+        .current_constraint = search_engine_filter_constraint_capability,
+        .apply = search_engine_filter_apply_capability,
+    });
+    nc_screen_set_search_capability(&screen->screen,
+                                    (NcScreenSearchCapability){
+        .user = screen,
+        .can_search = search_engine_search_available_capability,
+        .current_constraint = search_engine_search_constraint_capability,
+        .clear_constraint = search_engine_search_clear_capability,
+        .search = search_engine_search_capability,
+    });
+    nc_screen_set_song_capability(&screen->screen, (NcScreenSongCapability){
+        .user = screen,
+        .current_song = search_engine_current_song_capability,
+        .selected_songs = search_engine_selected_songs_capability,
+    });
+    nc_screen_set_tag_capability(&screen->screen, (NcScreenTagCapability){
+        .user = screen,
+        .menu = search_engine_tag_menu_capability,
+        .tag_at = search_engine_tag_at_capability,
+    });
     menu = search_engine_screen_menu(screen);
     nc_menu_set_display_callbacks(menu,
                                   search_display_callbacks(screen, false));

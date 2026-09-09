@@ -33,6 +33,49 @@ static void adder_add_action_row(NcEditorActionMenu *menu, char *label,
                                   int32 label_len, void (*run)(void *),
                                   void *user);
 
+static NcMenu *
+selected_items_adder_menu_capability(void *user) {
+    return selected_items_adder_screen_active_menu(user);
+}
+
+static StringView
+selected_items_adder_search_constraint_capability(void *user) {
+    SelectedItemsAdderScreen *screen = user;
+
+    return ncm_string_view(screen->search_constraint.data,
+                           screen->search_constraint.len);
+}
+
+static void
+selected_items_adder_search_clear_capability(void *user) {
+    SelectedItemsAdderScreen *screen = user;
+
+    screen->search_enabled = false;
+    sb_clear(&screen->search_constraint);
+    return;
+}
+
+static int32
+selected_items_adder_search_capability(void *user,
+                                      enum SearchDirection direction,
+                                      char *pattern, int32 pattern_len,
+                                      uint32 regex_flags, bool wrap,
+                                      bool skip_current, NcmError *ncm_error) {
+    SelectedItemsAdderScreen *screen = user;
+    bool forward;
+    int32 status;
+
+    forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
+    status = selected_items_adder_screen_search(screen, pattern, pattern_len,
+                                                regex_flags, forward, wrap,
+                                                skip_current, ncm_error);
+    if (status >= 0) {
+        sb_set(&screen->search_constraint, pattern, pattern_len);
+        screen->search_enabled = true;
+    }
+    return status;
+}
+
 typedef struct ExistingPlaylistAction {
     SelectedItemsAdderScreen *screen;
     char *playlist;
@@ -568,6 +611,18 @@ selected_items_adder_screen_init(
     screen->ready = false;
     nc_screen_init_ops(&screen->screen, adder_ops, screen,
                        NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER);
+    nc_screen_set_menu_capability(&screen->screen, (NcScreenMenuCapability){
+        .user = screen,
+        .current_menu = selected_items_adder_menu_capability,
+    });
+    nc_screen_set_search_capability(&screen->screen,
+                                    (NcScreenSearchCapability){
+        .user = screen,
+        .current_constraint =
+            selected_items_adder_search_constraint_capability,
+        .clear_constraint = selected_items_adder_search_clear_capability,
+        .search = selected_items_adder_search_capability,
+    });
     display_callbacks.draw = adder_draw_row;
     display_callbacks.matches_filter = adder_filter_callback;
     display_callbacks.user = screen;

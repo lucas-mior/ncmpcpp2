@@ -83,6 +83,32 @@ nc_help_destroy_callback(NcScreen *screen) {
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
 
+static StringView
+nc_help_search_constraint_capability(void *user) {
+    NcHelpScreen *screen = user;
+
+    return ncm_string_view(screen->search_constraint.data,
+                           screen->search_constraint.len);
+}
+
+static void
+nc_help_search_clear_capability(void *user) {
+    nc_help_screen_clear_search(user);
+    return;
+}
+
+static int32
+nc_help_search_capability(void *user, enum SearchDirection direction,
+                          char *pattern, int32 pattern_len,
+                          uint32 regex_flags, bool wrap, bool skip_current,
+                          NcmError *ncm_error) {
+    (void)direction;
+    (void)regex_flags;
+    (void)wrap;
+    (void)skip_current;
+    return nc_help_screen_find(user, pattern, pattern_len, ncm_error);
+}
+
 void
 nc_help_screen_init(NcHelpScreen *screen, NcHelpHooks hooks,
                     int32 start_x, int32 width,
@@ -94,6 +120,14 @@ nc_help_screen_init(NcHelpScreen *screen, NcHelpHooks hooks,
                              hooks.user, NC_SCREEN_TYPE_HELP, 0, 0, 0, 0);
     screen->buffer = (NcBuffer){0};
     screen->search_constraint = (StrBuilder){0};
+    nc_screen_set_search_capability(nc_help_screen_base(screen),
+                                    (NcScreenSearchCapability){
+        .user = screen,
+        .can_find = true,
+        .current_constraint = nc_help_search_constraint_capability,
+        .clear_constraint = nc_help_search_clear_capability,
+        .search = nc_help_search_capability,
+    });
     nc_help_screen_set_geometry(screen, start_x, width, main_start_y,
                                 main_height);
     nc_window_init(&screen->window, nc_help_screen_start_x(screen),

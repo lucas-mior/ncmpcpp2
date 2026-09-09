@@ -196,6 +196,45 @@ lyrics_display(LyricsScreen *screen) {
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
 
+static StringView
+lyrics_search_constraint_capability(void *user) {
+    LyricsScreen *screen = user;
+
+    return ncm_string_view(screen->search_constraint.data,
+                           screen->search_constraint.len);
+}
+
+static void
+lyrics_search_clear_capability(void *user) {
+    LyricsScreen *screen = user;
+
+    sb_clear(&screen->search_constraint);
+    return;
+}
+
+static int32
+lyrics_search_capability(void *user, enum SearchDirection direction,
+                         char *pattern, int32 pattern_len,
+                         uint32 regex_flags, bool wrap, bool skip_current,
+                         NcmError *ncm_error) {
+    (void)direction;
+    (void)regex_flags;
+    (void)wrap;
+    (void)skip_current;
+    return lyrics_screen_find(user, pattern, pattern_len, ncm_error);
+}
+
+static int32
+lyrics_current_song_capability(void *user, NcmSong *song) {
+    NcmSong *current;
+
+    current = lyrics_screen_song(user);
+    if ((current == NULL) || (song == NULL)) {
+        return -NCM_ERROR_NOT_FOUND;
+    }
+    return ncm_song_copy(song, current);
+}
+
 void
 nc_lyrics_screen_init(NcLyricsScreen *screen, NcScreenOps callbacks, void *user,
                       int32 start_x, int32 width,
@@ -313,6 +352,19 @@ lyrics_screen_init(LyricsScreen *screen, int32 start_x, int32 width,
     screen->display = (NcBuffer){0};
 
     screen->search_constraint = (StrBuilder){0};
+    nc_screen_set_search_capability(lyrics_screen_base(screen),
+                                    (NcScreenSearchCapability){
+        .user = screen,
+        .can_find = true,
+        .current_constraint = lyrics_search_constraint_capability,
+        .clear_constraint = lyrics_search_clear_capability,
+        .search = lyrics_search_capability,
+    });
+    nc_screen_set_song_capability(lyrics_screen_base(screen),
+                                  (NcScreenSongCapability){
+        .user = screen,
+        .current_song = lyrics_current_song_capability,
+    });
     screen->title = (StrBuilder){0};
     screen->song = (NcmSong){0};
     screen->filename = (StrBuilder){0};

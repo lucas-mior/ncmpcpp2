@@ -355,6 +355,58 @@ typedef struct NcScreenResizeParams {
     int32 width;
 } NcScreenResizeParams;
 
+typedef struct NcScreenMenuCapability {
+    void *user;
+    NcMenu *(*current_menu)(void *);
+    int32 (*height)(void *);
+} NcScreenMenuCapability;
+
+typedef struct NcScreenFilterCapability {
+    void *user;
+    bool (*can_filter)(void *);
+    StringView (*current_constraint)(void *);
+    int32 (*apply)(void *, char *, int32, uint32, NcmError *);
+} NcScreenFilterCapability;
+
+typedef struct NcScreenSearchCapability {
+    void *user;
+    bool (*can_search)(void *);
+    bool can_find;
+    StringView (*current_constraint)(void *);
+    void (*clear_constraint)(void *);
+    int32 (*search)(void *, enum SearchDirection, char *, int32, uint32,
+                    bool, bool, NcmError *);
+} NcScreenSearchCapability;
+
+typedef struct NcScreenSongCapability {
+    void *user;
+    int32 (*current_song)(void *, NcmSong *);
+    int32 (*selected_songs)(void *, NcmSongArray *);
+} NcScreenSongCapability;
+
+typedef struct NcScreenColumnCapability {
+    void *user;
+    bool (*previous_available)(void *);
+    bool (*next_available)(void *);
+    int32 (*previous)(void *);
+    int32 (*next)(void *);
+} NcScreenColumnCapability;
+
+typedef struct NcScreenTagCapability {
+    void *user;
+    NcMenu *(*menu)(void *);
+    int32 (*tag_at)(void *, int32, enum SongGetter, StrBuilder *);
+} NcScreenTagCapability;
+
+typedef struct NcScreenCapabilities {
+    NcScreenMenuCapability menu;
+    NcScreenFilterCapability filter;
+    NcScreenSearchCapability search;
+    NcScreenSongCapability songs;
+    NcScreenColumnCapability columns;
+    NcScreenTagCapability tags;
+} NcScreenCapabilities;
+
 typedef struct NcScreenOps {
     NcWindow *(*active_window)(NcScreen *);
     void (*refresh)(NcScreen *);
@@ -382,6 +434,7 @@ typedef struct NcScreenOps {
 struct NcScreen {
     const NcScreenOps *ops;
     NcScreenOps ops_storage;
+    NcScreenCapabilities capabilities;
     void *user;
     enum NcScreenType type;
     bool has_to_be_resized;
@@ -400,6 +453,12 @@ struct NcScreenRegistry {
 };
 
 void nc_screen_init_ops(NcScreen *, NcScreenOps, void *, enum NcScreenType);
+void nc_screen_set_menu_capability(NcScreen *, NcScreenMenuCapability);
+void nc_screen_set_filter_capability(NcScreen *, NcScreenFilterCapability);
+void nc_screen_set_search_capability(NcScreen *, NcScreenSearchCapability);
+void nc_screen_set_song_capability(NcScreen *, NcScreenSongCapability);
+void nc_screen_set_column_capability(NcScreen *, NcScreenColumnCapability);
+void nc_screen_set_tag_capability(NcScreen *, NcScreenTagCapability);
 NcWindow *nc_screen_default_active_window(NcScreen *);
 void nc_screen_noop_refresh(NcScreen *);
 void nc_screen_noop_refresh_window(NcScreen *);
@@ -432,6 +491,25 @@ void nc_screen_set_has_to_be_resized(NcScreen *, bool);
 void nc_screen_set_has_to_be_updated(NcScreen *, bool);
 void nc_screen_request_resize(NcScreen *);
 void nc_screen_request_update(NcScreen *);
+NcMenu *nc_screen_current_menu(NcScreen *);
+int32 nc_screen_current_menu_height(NcScreen *);
+bool nc_screen_can_filter(NcScreen *);
+StringView nc_screen_current_filter(NcScreen *);
+int32 nc_screen_apply_filter(NcScreen *, char *, int32, uint32, NcmError *);
+bool nc_screen_can_search(NcScreen *);
+bool nc_screen_can_find(NcScreen *);
+StringView nc_screen_current_search_constraint(NcScreen *);
+void nc_screen_clear_search_constraint(NcScreen *);
+int32 nc_screen_search(NcScreen *, enum SearchDirection, char *, int32,
+                       uint32, bool, bool, NcmError *);
+int32 nc_screen_current_song(NcScreen *, NcmSong *);
+int32 nc_screen_selected_songs(NcScreen *, NcmSongArray *);
+bool nc_screen_previous_column_available(NcScreen *);
+bool nc_screen_next_column_available(NcScreen *);
+int32 nc_screen_previous_column(NcScreen *);
+int32 nc_screen_next_column(NcScreen *);
+NcMenu *nc_screen_tag_menu(NcScreen *);
+int32 nc_screen_song_tag_at(NcScreen *, int32, enum SongGetter, StrBuilder *);
 void nc_screen_clear_resize_request(NcScreen *);
 void nc_screen_clear_update_request(NcScreen *);
 NcScreenResizeParams nc_screen_resize_params(NcScreen *);

@@ -266,6 +266,93 @@ playlist_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
 
+static NcMenu *
+playlist_menu_capability(void *user) {
+    return playlist_screen_menu(user);
+}
+
+static int32
+playlist_menu_height_capability(void *user) {
+    PlaylistScreen *screen = user;
+
+    return screen->screen.main_height;
+}
+
+static StringView
+playlist_filter_constraint_capability(void *user) {
+    PlaylistScreen *screen = user;
+
+    return ncm_string_view(screen->filter_constraint.data,
+                           screen->filter_constraint.len);
+}
+
+static int32
+playlist_filter_apply_capability(void *user, char *pattern,
+                                 int32 pattern_len, uint32 regex_flags,
+                                 NcmError *ncm_error) {
+    (void)regex_flags;
+    return playlist_screen_apply_filter(user, pattern, pattern_len, ncm_error);
+}
+
+static StringView
+playlist_search_constraint_capability(void *user) {
+    PlaylistScreen *screen = user;
+
+    return ncm_string_view(screen->search_constraint.data,
+                           screen->search_constraint.len);
+}
+
+static void
+playlist_search_clear_capability(void *user) {
+    PlaylistScreen *screen = user;
+
+    sb_clear(&screen->search_constraint);
+    return;
+}
+
+static int32
+playlist_search_capability(void *user, enum SearchDirection direction,
+                           char *pattern, int32 pattern_len,
+                           uint32 regex_flags, bool wrap, bool skip_current,
+                           NcmError *ncm_error) {
+    bool forward;
+
+    (void)regex_flags;
+    forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
+    return playlist_screen_search(user, pattern, pattern_len, forward, wrap,
+                                  skip_current, ncm_error);
+}
+
+static int32
+playlist_current_song_capability(void *user, NcmSong *song) {
+    return playlist_screen_current_song(user, song);
+}
+
+static int32
+playlist_selected_songs_capability(void *user, NcmSongArray *songs) {
+    return playlist_screen_selected_songs(user, songs);
+}
+
+static NcMenu *
+playlist_tag_menu_capability(void *user) {
+    return playlist_screen_menu(user);
+}
+
+static int32
+playlist_tag_at_capability(void *user, int32 pos, enum SongGetter getter,
+                           StrBuilder *tag) {
+    NcmSong *song;
+
+    song = nc_menu_active_item_at(playlist_screen_menu(user), pos);
+    if ((song == NULL) || (tag == NULL)) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    *tag = ncm_song_tags_buffer(song, getter, Config.tags_separator,
+                                Config.tags_separator_len,
+                                Config.show_duplicate_tags);
+    return 0;
+}
+
 static bool
 playlist_song_is_now_playing(NcmSong *song) {
     int32 current_position;
@@ -434,6 +521,37 @@ playlist_screen_init(PlaylistScreen *screen, int32 start_x,
     playlist_screen_set_mouse_config(screen, Config.lines_scrolled,
                                      Config.mouse_list_scroll_whole_page);
     playlist_screen_update_column_title(screen);
+    nc_screen_set_menu_capability(&screen->screen.screen,
+                                  (NcScreenMenuCapability){
+        .user = screen,
+        .current_menu = playlist_menu_capability,
+        .height = playlist_menu_height_capability,
+    });
+    nc_screen_set_filter_capability(&screen->screen.screen,
+                                    (NcScreenFilterCapability){
+        .user = screen,
+        .current_constraint = playlist_filter_constraint_capability,
+        .apply = playlist_filter_apply_capability,
+    });
+    nc_screen_set_search_capability(&screen->screen.screen,
+                                    (NcScreenSearchCapability){
+        .user = screen,
+        .current_constraint = playlist_search_constraint_capability,
+        .clear_constraint = playlist_search_clear_capability,
+        .search = playlist_search_capability,
+    });
+    nc_screen_set_song_capability(&screen->screen.screen,
+                                  (NcScreenSongCapability){
+        .user = screen,
+        .current_song = playlist_current_song_capability,
+        .selected_songs = playlist_selected_songs_capability,
+    });
+    nc_screen_set_tag_capability(&screen->screen.screen,
+                                 (NcScreenTagCapability){
+        .user = screen,
+        .menu = playlist_tag_menu_capability,
+        .tag_at = playlist_tag_at_capability,
+    });
 
     return;
 }

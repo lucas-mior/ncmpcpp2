@@ -11,6 +11,11 @@
 #include "statusbar.h"
 #include "ui_state.h"
 
+static NcMenu *
+sort_dialog_menu_capability(void *user) {
+    return nc_editor_sort_menu_base(sort_playlist_dialog_menu(user));
+}
+
 static void
 sort_dialog_refresh_rows(SortPlaylistDialog *dialog) {
     NcMenu *menu;
@@ -359,6 +364,10 @@ sort_playlist_dialog_init(SortPlaylistDialog *dialog,
     dialog->ready = false;
     nc_screen_init_ops(&dialog->screen, sort_dialog_ops, dialog,
                        NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG);
+    nc_screen_set_menu_capability(&dialog->screen, (NcScreenMenuCapability){
+        .user = dialog,
+        .current_menu = sort_dialog_menu_capability,
+    });
     sort_dialog_populate_defaults(dialog);
     return;
 }
