@@ -136,6 +136,8 @@ configuration_require_value(int32 argc, char **argv, int32 *i,
                             char *option, int32 option_len,
                             char **value, int32 *value_len,
                             NcmError *ncm_error) {
+    *value = NULL;
+    *value_len = 0;
     if (*i + 1 >= argc) {
         char message[128];
         int32 len;

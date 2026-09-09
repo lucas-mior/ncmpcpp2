@@ -3897,6 +3897,9 @@ tag_edit_screen_show_parser_actions(TagEditScreen *screen,
                     ASSERT(item != NULL);
                     sb_set(item, line.data, line.len);
                 }
+                if (ch == EOF) {
+                    break;
+                }
             }
             if ((fclose(file) == EOF) && (status == 0)) {
                 status = errno ? -errno : -EIO;
