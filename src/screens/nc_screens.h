@@ -273,7 +273,7 @@
     XX(tag_edit)                                              \
     XX(tiny_tag_edit)
 #define NCM_APP_SCREEN_ENABLED_TAG_EDIT_RESIZE(XX)            \
-    XX(tag_edit, NC_SCREEN_TYPE_TAG_EDIT)                   \
+    XX(tag_edit, NC_SCREEN_TYPE_TAG_EDIT)                     \
     XX(tiny_tag_edit, NC_SCREEN_TYPE_TINY_TAG_EDIT)
 #else
 #define NCM_APP_SCREEN_ENABLED_TAG_EDIT(XX)
