@@ -2827,8 +2827,7 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
             library_apply_column_filter(screen, MEDIA_LIBRARY_COLUMN_SONGS,
                                         replacement_menu);
             {
-                NcMenu *base =
-                    nc_media_library_song_menu_base(&replacement);
+                NcMenu *base = nc_media_library_song_menu_base(&replacement);
                 bool restored = false;
 
                 if (identity_valid) {
