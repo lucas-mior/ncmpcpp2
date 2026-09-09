@@ -491,15 +491,13 @@ playlist_edit_mouse_callback(NcScreen *screen, MEVENT event) {
             playlist_edit_screen_next_column(editor);
         }
         if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
-            NcMenu *menu;
+            NcMenu *menu = nc_song_menu_base(&editor->content);
 
-            menu = nc_song_menu_base(&editor->content);
             if ((y >= 0) && (y < nc_menu_item_count(menu))
                 && (nc_menu_goto_selectable(menu, y) >= 0)
                 && (event.bstate & BUTTON3_PRESSED)) {
-                NcmSong *song;
+                NcmSong *song = nc_song_menu_current(&editor->content);
 
-                song = nc_song_menu_current(&editor->content);
                 ncm_action_add_song_to_playlist(song, true, -1);
             }
         } else if (event.bstate & BUTTON5_PRESSED) {
