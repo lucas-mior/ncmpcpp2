@@ -1359,11 +1359,9 @@ lyrics_url_best_slug_score(LyricsFetcherDef *fetcher,
                                 score = 35;
                             }
                         } else if ((match != NULL) && (match > candid)) {
-                            char before_match;
-                            int32 match_pos;
+                            int32 match_pos = (int32)(match - candid);
+                            char before_match = candid[match_pos - 1];
 
-                            match_pos = (int32)(match - candid);
-                            before_match = candid[match_pos - 1];
                             if (lyrics_slug_match_separator(before_match)
                                 && (match_pos + wanted_len < candid_len)) {
                                 char after_match;
