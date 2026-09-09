@@ -7,7 +7,7 @@
  */
 
 #if defined(__INCLUDE_LEVEL__) && (__INCLUDE_LEVEL__ == 0)
-#include "config_options_pass.h"
+#include "config_options_dummy.h"
 #endif
 
 XX_DIR(ncmpcpp_directory, "~/.config/ncmpcpp/")
