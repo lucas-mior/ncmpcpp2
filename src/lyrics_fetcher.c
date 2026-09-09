@@ -1670,7 +1670,7 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
                 } else {
                     match = memchr64(content_data + marker, '>',
                                      content_len - marker);
-                    if (match != NULL) {
+                    if (match) {
                         start = (int32)(match - content_data) + 1;
                     }
                 }
