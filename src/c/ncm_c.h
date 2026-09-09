@@ -195,8 +195,8 @@ bool ncm_song_is_from_database(NcmSong *);
 bool ncm_song_is_stream(NcmSong *);
 
 int32 ncm_song_numeric_tag_len(char *, int32);
-int32 ncm_song_format_numeric_tag(char *buffer, int32 buffer_cap, char *tag,
-                                  int32 tag_len);
+int32 ncm_song_format_numeric_tag(char *buffer, int32 buffer_cap,
+                                  char *tag, int32 tag_len);
 int32 ncm_song_show_time(int32 length, char *, int32 buffer_cap);
 StrBuilder ncm_song_getter_buffer(NcmSong *, enum SongGetter, int32);
 StrBuilder ncm_song_tags_buffer(NcmSong *, enum SongGetter, char *, int32,
