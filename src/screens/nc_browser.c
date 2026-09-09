@@ -424,9 +424,8 @@ browser_update(NcScreen *screen) {
             if (browser->current_directory.len <= 0) {
                 browser_screen_set_current_directory(browser, STRLIT("/"));
             } else {
-                StringView current;
+                StringView current = browser_screen_current_directory(browser);
 
-                current = browser_screen_current_directory(browser);
                 if (browser_path_is_parent_directory(current.data,
                                                      current.len)) {
                     status = browser_set_normalized_directory(browser,
