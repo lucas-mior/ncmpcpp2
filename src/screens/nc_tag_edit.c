@@ -1066,41 +1066,40 @@ tag_edit_run_current(NcScreen *screen) {
                 return -NCM_ERROR_UNAVAILABLE;
             }
             if (success) {
+                StrBuilderArray replacement = {0};
+                StrBuilder first = {0};
+                int32 existing;
+
                 if (editor->pattern.len <= 0) {
                     return -NCM_ERROR_UNAVAILABLE;
                 }
-                {
-                    StrBuilderArray replacement = {0};
-                    StrBuilder first = {0};
-                    int32 existing;
 
-                    sb_set(&first, editor->pattern.data, editor->pattern.len);
-                    str_builder_array_append_copy(&replacement, &first);
-                    sb_free(&first);
-                    existing =
-                        tag_edit_find_recent_pattern(editor,
-                                                     editor->pattern.data,
-                                                     editor->pattern.len);
-                    for (int32 i = 0; i < editor->recent_patterns.len; i += 1) {
-                        if (i == existing) {
-                            continue;
-                        }
-                        {
-                            StrBuilder *pattern;
-
-                            pattern = &editor->recent_patterns.items[i];
-                            str_builder_array_append_copy(&replacement,
-                                                          pattern);
-                        }
+                sb_set(&first, editor->pattern.data, editor->pattern.len);
+                str_builder_array_append_copy(&replacement, &first);
+                sb_free(&first);
+                existing =
+                    tag_edit_find_recent_pattern(editor,
+                                                 editor->pattern.data,
+                                                 editor->pattern.len);
+                for (int32 i = 0; i < editor->recent_patterns.len; i += 1) {
+                    if (i == existing) {
+                        continue;
                     }
-                    str_builder_array_move(&editor->recent_patterns,
-                                           &replacement);
-                    str_builder_array_destroy(&replacement);
-                    tag_edit_screen_prepare_parser_rows(editor,
-                                                        editor->parser_mode,
-                                                        editor->pattern.data,
-                                                        editor->pattern.len);
+                    {
+                        StrBuilder *pattern;
+
+                        pattern = &editor->recent_patterns.items[i];
+                        str_builder_array_append_copy(&replacement,
+                                                      pattern);
+                    }
                 }
+                str_builder_array_move(&editor->recent_patterns,
+                                       &replacement);
+                str_builder_array_destroy(&replacement);
+                tag_edit_screen_prepare_parser_rows(editor,
+                                                    editor->parser_mode,
+                                                    editor->pattern.data,
+                                                    editor->pattern.len);
                 tag_edit_save_recent_patterns(editor);
                 tag_edit_status_message(editor, STRLIT("Operation finished"));
                 tag_edit_screen_close_parser(editor);
