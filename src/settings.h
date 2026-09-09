@@ -61,6 +61,7 @@ enum SettingsOptionId {
 
 /* Fields and intrinsic companion state come from the option schema. */
 typedef struct Configuration {
+
 #define XX_BOOL(NAME, DEFAULT) bool NAME;
 #define XX_STRING(NAME, DEFAULT) \
     char *NAME; \
@@ -98,6 +99,7 @@ typedef struct Configuration {
 #define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD) \
     NcmFormatAst FORMAT_FIELD; \
     ColumnArray NAME;
+
 #include "config_options_pass.h"
 
 } Configuration;
