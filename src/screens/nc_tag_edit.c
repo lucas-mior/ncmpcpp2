@@ -389,11 +389,9 @@ tag_edit_finish_tag_type_change(TagEditScreen *screen, bool refresh_tags) {
 static void
 tag_edit_scroll(NcScreen *screen, enum NcScroll where) {
     TagEditScreen *editor = tag_edit_from_screen(screen);
-    NcMenu *menu;
-    NcWindow *window;
+    NcMenu *menu = tag_edit_screen_active_menu(editor);
+    NcWindow *window = tag_edit_screen_active_window(editor);
 
-    menu = tag_edit_screen_active_menu(editor);
-    window = tag_edit_screen_active_window(editor);
     if (menu) {
         nc_menu_scroll_selectable(menu, nc_window_height(window), where);
     } else if (window) {
