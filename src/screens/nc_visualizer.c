@@ -905,8 +905,8 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
     {
         int32 next;
 
-        sb_set(&screen->visualizer_chars, visualizer_chars,
-               visualizer_chars_len);
+        sb_set(&screen->visualizer_chars,
+               visualizer_chars, visualizer_chars_len);
         next = utf8_next_position(screen->visualizer_chars.data,
                                   screen->visualizer_chars.len, 0);
         screen->point_char_offset = 0;
