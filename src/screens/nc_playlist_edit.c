@@ -1386,8 +1386,8 @@ playlist_edit_locate_song_in_playlist_range(PlaylistEditScreen *screen,
 
 int32
 playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
-                                   NcmMpdClient *client, NcmSong *song,
-                                   NcmError *ncm_error) {
+                                 NcmMpdClient *client, NcmSong *song,
+                                 NcmError *ncm_error) {
     NcMenu *playlists;
     NcMenu *content;
     int32 playlist_pos;
