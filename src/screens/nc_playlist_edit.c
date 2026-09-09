@@ -311,7 +311,7 @@ playlist_edit_report_error(char *context, int32 context_len,
     SB_APPEND(&message, context, context_len);
     if (ncm_error->message[0] != 0) {
         SB_APPEND(&message, ": ");
-        SB_APPEND(&message, ncm_error->message, strlen32(ncm_error->message));
+        SB_APPEND(&message, ncm_error->message, ncm_error->message_len);
     }
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
     sb_free(&message);

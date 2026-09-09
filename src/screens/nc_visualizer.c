@@ -275,8 +275,8 @@ visualizer_update_callback(NcScreen *screen) {
             StrBuilder message = {0};
 
             SB_APPEND(&message, "Could not disable visualizer output: ");
-            SB_APPEND(&message, 
-                      ncm_error.message, optional_strlen32(ncm_error.message));
+            SB_APPEND(&message,
+                      ncm_error.message, ncm_error.message_len);
             ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                                 message.data, message.len);
             sb_free(&message);
@@ -296,7 +296,7 @@ visualizer_update_callback(NcScreen *screen) {
 
             SB_APPEND(&message, "Could not enable visualizer output: ");
             SB_APPEND(&message, ncm_error.message,
-                      optional_strlen32(ncm_error.message));
+                      ncm_error.message_len);
             ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                                 message.data, message.len);
             sb_free(&message);
@@ -747,7 +747,7 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
 
         SB_APPEND(&message, "Could not fetch outputs: ");
         SB_APPEND(&message, ncm_error.message,
-                  optional_strlen32(ncm_error.message));
+                  ncm_error.message_len);
         ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                             message.data, message.len);
         sb_free(&message);

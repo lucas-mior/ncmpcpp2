@@ -487,7 +487,7 @@ static void
 action_runtime_mpd_error(NcmError *ncm_error) {
     if (ncm_error_is_set(ncm_error)) {
         ncm_statusbar_print(Config.message_delay_time,
-                            ncm_error->message, strlen32(ncm_error->message));
+                            ncm_error->message, ncm_error->message_len);
     }
     return;
 }
@@ -2396,7 +2396,7 @@ action_runtime_add_prompt(void) {
         SB_APPEND(&message, "Error while adding item: ");
         if (ncm_error_is_set(&ncm_error)) {
             SB_APPEND(&message, ncm_error.message,
-                      optional_strlen32(ncm_error.message));
+                      ncm_error.message_len);
         }
         ncm_statusbar_print(Config.message_delay_time, message.data,
                             message.len);
@@ -4392,7 +4392,7 @@ action_runtime_change_browse_mode(void) {
                                         "is required"));
         } else if (ncm_error_is_set(&ncm_error)) {
             ncm_statusbar_print(Config.message_delay_time,
-                                ncm_error.message, strlen32(ncm_error.message));
+                                ncm_error.message, ncm_error.message_len);
         }
         return -NCM_ERROR_UNAVAILABLE;
     }
@@ -5109,7 +5109,7 @@ action_runtime_edit_library_album(void) {
     if (status < 0) {
         if (ncm_error_is_set(&ncm_error)) {
             ncm_statusbar_print(Config.message_delay_time,
-                                ncm_error.message, strlen32(ncm_error.message));
+                                ncm_error.message, ncm_error.message_len);
         }
         goto cleanup;
     }

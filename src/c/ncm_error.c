@@ -39,6 +39,7 @@ ncm_error_clear(NcmError *ncm_error) {
     }
 
     ncm_error->message[0] = '\0';
+    ncm_error->message_len = 0;
     ncm_error->code = 0;
     return;
 }
@@ -71,6 +72,7 @@ ncm_error_set(NcmError *ncm_error, int32 code,
 
     memcpy64(ncm_error->message, message, len);
     ncm_error->message[len] = '\0';
+    ncm_error->message_len = len;
     ncm_error->code = code;
     return;
 }
