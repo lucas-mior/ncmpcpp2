@@ -12,7 +12,7 @@
 #if defined(XX_OPTION)
 #define XX_BOOL XX_OPTION
 #else
-#define XX_BOOL(NAME, DEFAULT_VALUE)
+#define XX_BOOL(NAME, DEFAULT)
 #endif
 #endif
 
@@ -20,7 +20,7 @@
 #if defined(XX_OPTION)
 #define XX_STRING XX_OPTION
 #else
-#define XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_STRING(NAME, DEFAULT)
 #endif
 #endif
 
@@ -28,7 +28,7 @@
 #if defined(XX_OPTION)
 #define XX_PATH XX_OPTION
 #else
-#define XX_PATH(NAME, DEFAULT_VALUE)
+#define XX_PATH(NAME, DEFAULT)
 #endif
 #endif
 
@@ -36,7 +36,7 @@
 #if defined(XX_OPTION)
 #define XX_DIR XX_OPTION
 #else
-#define XX_DIR(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT)
 #endif
 #endif
 
@@ -44,7 +44,7 @@
 #if defined(XX_OPTION)
 #define XX_INTEGER XX_OPTION
 #else
-#define XX_INTEGER(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM)
 #endif
 #endif
 
@@ -52,46 +52,46 @@
 #if defined(XX_OPTION)
 #define XX_DOUBLE XX_OPTION
 #else
-#define XX_DOUBLE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)
+#define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)
 #endif
 #endif
 
 #if !defined(XX_ENUM)
 #if defined(XX_OPTION)
-#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT_VALUE) \
-    XX_OPTION(NAME, DEFAULT_VALUE, ENUM_PREFIX_)
+#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT) \
+    XX_OPTION(NAME, DEFAULT, ENUM_PREFIX_)
 #else
-#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT_VALUE)
+#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT)
 #endif
 #endif
 
 #if !defined(XX_MPD_TAG)
 #if defined(XX_OPTION)
-#define XX_MPD_TAG(NAME, DEFAULT_VALUE) \
-    XX_OPTION(NAME, DEFAULT_VALUE)
+#define XX_MPD_TAG(NAME, DEFAULT) \
+    XX_OPTION(NAME, DEFAULT)
 #else
-#define XX_MPD_TAG(NAME, DEFAULT_VALUE)
+#define XX_MPD_TAG(NAME, DEFAULT)
 #endif
 #endif
 
 #if !defined(XX_STARTUP_SCREEN)
 #if defined(XX_OPTION)
-#define XX_STARTUP_SCREEN(NAME, DEFAULT_VALUE) \
-    XX_OPTION(NAME, DEFAULT_VALUE)
+#define XX_STARTUP_SCREEN(NAME, DEFAULT) \
+    XX_OPTION(NAME, DEFAULT)
 #else
-#define XX_STARTUP_SCREEN(NAME, DEFAULT_VALUE)
+#define XX_STARTUP_SCREEN(NAME, DEFAULT)
 #endif
 #endif
 
 #if !defined(XX_OPTIONAL_STARTUP_SCREEN)
 #if defined(XX_OPTION)
 #define XX_OPTIONAL_STARTUP_SCREEN( \
-    NAME, DEFAULT_VALUE, PRESENT_FIELD, UNSET_VALUE \
+    NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE \
 ) \
-    XX_OPTION(NAME, DEFAULT_VALUE, PRESENT_FIELD, UNSET_VALUE)
+    XX_OPTION(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE)
 #else
 #define XX_OPTIONAL_STARTUP_SCREEN( \
-    NAME, DEFAULT_VALUE, PRESENT_FIELD, UNSET_VALUE \
+    NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE \
 )
 #endif
 #endif
@@ -100,7 +100,7 @@
 #if defined(XX_OPTION)
 #define XX_COLOR XX_OPTION
 #else
-#define XX_COLOR(NAME, DEFAULT_VALUE)
+#define XX_COLOR(NAME, DEFAULT)
 #endif
 #endif
 
@@ -108,7 +108,7 @@
 #if defined(XX_OPTION)
 #define XX_FORMATTED_COLOR XX_OPTION
 #else
-#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)
+#define XX_FORMATTED_COLOR(NAME, DEFAULT)
 #endif
 #endif
 
@@ -116,7 +116,7 @@
 #if defined(XX_OPTION)
 #define XX_BORDER XX_OPTION
 #else
-#define XX_BORDER(NAME, DEFAULT_VALUE)
+#define XX_BORDER(NAME, DEFAULT)
 #endif
 #endif
 
@@ -124,7 +124,7 @@
 #if defined(XX_OPTION)
 #define XX_FORMAT XX_OPTION
 #else
-#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS)
+#define XX_FORMAT(NAME, DEFAULT, FLAGS)
 #endif
 #endif
 
@@ -132,7 +132,7 @@
 #if defined(XX_OPTION)
 #define XX_BUFFER XX_OPTION
 #else
-#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)
 #endif
 #endif
 
@@ -140,7 +140,7 @@
 #if defined(XX_OPTION)
 #define XX_BUFFER_WIDTH XX_OPTION
 #else
-#define XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)
+#define XX_BUFFER_WIDTH(NAME, DEFAULT, KEEP_EXISTING)
 #endif
 #endif
 
@@ -148,7 +148,7 @@
 #if defined(XX_OPTION)
 #define XX_LOOK XX_OPTION
 #else
-#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)
+#define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)
 #endif
 #endif
 
@@ -156,7 +156,7 @@
 #if defined(XX_OPTION)
 #define XX_RATIO XX_OPTION
 #else
-#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN)
+#define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)
 #endif
 #endif
 
@@ -164,7 +164,7 @@
 #if defined(XX_OPTION)
 #define XX_FORMATTED_COLOR_LIST XX_OPTION
 #else
-#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE)
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT)
 #endif
 #endif
 
@@ -172,7 +172,7 @@
 #if defined(XX_OPTION)
 #define XX_LYRICS_FETCHERS XX_OPTION
 #else
-#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT)
 #endif
 #endif
 
@@ -180,7 +180,7 @@
 #if defined(XX_OPTION)
 #define XX_SCREEN_LIST XX_OPTION
 #else
-#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD)
+#define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)
 #endif
 #endif
 
@@ -188,7 +188,7 @@
 #if defined(XX_OPTION)
 #define XX_NAMED_BOOL XX_OPTION
 #else
-#define XX_NAMED_BOOL(NAME, DEFAULT_VALUE, TRUE_VALUE, FALSE_VALUE)
+#define XX_NAMED_BOOL(NAME, DEFAULT, TRUE_VALUE, FALSE_VALUE)
 #endif
 #endif
 
@@ -196,7 +196,7 @@
 #if defined(XX_OPTION)
 #define XX_UINT32_CHOICE XX_OPTION
 #else
-#define XX_UINT32_CHOICE(NAME, DEFAULT_VALUE, PARSER, UNSET_VALUE)
+#define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE)
 #endif
 #endif
 
@@ -204,7 +204,7 @@
 #if defined(XX_OPTION)
 #define XX_COLUMNS XX_OPTION
 #else
-#define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD)
+#define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD)
 #endif
 #endif
 
