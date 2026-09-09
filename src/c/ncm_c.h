@@ -99,41 +99,41 @@ int32 ncm_tags_write(char *music_dir, char *uri, bool, char *directory,
     XX(NCM_ITEM_PLAYLIST)
 #include "cbase/xenums.c"
 
-#define ENUM_NAME NcmSongGetter
-#define ENUM_PREFIX_ NCM_SONG_GETTER_
+#define ENUM_NAME SongGetter
+#define ENUM_PREFIX_ SONG_GETTER_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                      \
-    XX(NCM_SONG_GETTER_NONE, none)                       \
-    XX(NCM_SONG_GETTER_LENGTH, Length)                   \
-    XX(NCM_SONG_GETTER_DIRECTORY, Directory)             \
-    XX(NCM_SONG_GETTER_NAME, Filename)                   \
-    XX(NCM_SONG_GETTER_URI, URI)                         \
-    XX(NCM_SONG_GETTER_ARTIST, Artist)                   \
-    XX(NCM_SONG_GETTER_ALBUM_ARTIST, Album Artist)       \
-    XX(NCM_SONG_GETTER_TITLE, Title)                     \
-    XX(NCM_SONG_GETTER_ALBUM, Album)                     \
-    XX(NCM_SONG_GETTER_DATE, Date)                       \
-    XX(NCM_SONG_GETTER_TRACK_NUMBER, Track Number)       \
-    XX(NCM_SONG_GETTER_TRACK, Track)                     \
-    XX(NCM_SONG_GETTER_GENRE, Genre)                     \
-    XX(NCM_SONG_GETTER_COMPOSER, Composer)               \
-    XX(NCM_SONG_GETTER_PERFORMER, Performer)             \
-    XX(NCM_SONG_GETTER_DISC, Disc)                       \
-    XX(NCM_SONG_GETTER_COMMENT, Comment)                 \
-    XX(NCM_SONG_GETTER_PRIORITY, Priority)
+    XX(SONG_GETTER_NONE, none)                       \
+    XX(SONG_GETTER_LENGTH, Length)                   \
+    XX(SONG_GETTER_DIRECTORY, Directory)             \
+    XX(SONG_GETTER_NAME, Filename)                   \
+    XX(SONG_GETTER_URI, URI)                         \
+    XX(SONG_GETTER_ARTIST, Artist)                   \
+    XX(SONG_GETTER_ALBUM_ARTIST, Album Artist)       \
+    XX(SONG_GETTER_TITLE, Title)                     \
+    XX(SONG_GETTER_ALBUM, Album)                     \
+    XX(SONG_GETTER_DATE, Date)                       \
+    XX(SONG_GETTER_TRACK_NUMBER, Track Number)       \
+    XX(SONG_GETTER_TRACK, Track)                     \
+    XX(SONG_GETTER_GENRE, Genre)                     \
+    XX(SONG_GETTER_COMPOSER, Composer)               \
+    XX(SONG_GETTER_PERFORMER, Performer)             \
+    XX(SONG_GETTER_DISC, Disc)                       \
+    XX(SONG_GETTER_COMMENT, Comment)                 \
+    XX(SONG_GETTER_PRIORITY, Priority)
 #include "cbase/xenums.c"
 
 int32 ncm_channels_to_string(int32 channels, char *, int32 buffer_cap);
 int32 ncm_color_index_from_char(char);
 char *ncm_tag_type_name(enum mpd_tag_type);
 enum mpd_tag_type ncm_char_to_tag_type(char);
-enum NcmSongGetter ncm_song_getter_from_char(char);
-enum mpd_tag_type ncm_song_getter_to_tag_type(enum NcmSongGetter);
+enum SongGetter ncm_song_getter_from_char(char);
+enum mpd_tag_type ncm_song_getter_to_tag_type(enum SongGetter);
 enum NcmTagsField ncm_tags_field_from_char(char);
 enum NcmTagsField ncm_tags_field_from_tag_type(enum mpd_tag_type);
 enum mpd_tag_type ncm_tags_field_to_tag_type(enum NcmTagsField);
-enum NcmSongGetter ncm_tags_field_to_song_getter(enum NcmTagsField);
-enum NcmTagsField ncm_song_getter_to_tags_field(enum NcmSongGetter);
+enum SongGetter ncm_tags_field_to_song_getter(enum NcmTagsField);
+enum NcmTagsField ncm_song_getter_to_tags_field(enum SongGetter);
 
 #include <mpd/tag.h>
 
@@ -198,8 +198,8 @@ int32 ncm_song_numeric_tag_len(char *, int32);
 int32 ncm_song_format_numeric_tag(char *buffer, int32 buffer_cap, char *tag,
                                   int32 tag_len);
 int32 ncm_song_show_time(int32 length, char *, int32 buffer_cap);
-StrBuilder ncm_song_getter_buffer(NcmSong *, enum NcmSongGetter, int32);
-StrBuilder ncm_song_tags_buffer(NcmSong *, enum NcmSongGetter, char *, int32,
+StrBuilder ncm_song_getter_buffer(NcmSong *, enum SongGetter, int32);
+StrBuilder ncm_song_tags_buffer(NcmSong *, enum SongGetter, char *, int32,
                                 bool);
 bool ncm_song_is_equal(NcmSong *a, NcmSong *b);
 
@@ -1335,7 +1335,7 @@ typedef struct NcmPlaylistSortPlan {
 } NcmPlaylistSortPlan;
 
 int32 ncm_playlist_sort_range(NcmSongArray *, int32 start_position,
-                              enum NcmSongGetter *, int32 getters_len, bool,
+                              enum SongGetter *, int32 getters_len, bool,
                               MpdClient *, NcmError *);
 
 typedef struct NcmSearchPromptState {
@@ -1438,7 +1438,7 @@ void ncm_taglib_clear_strings(void);
 #include "cbase/xenums.c"
 
 typedef struct NcmFormatSongTag {
-    enum NcmSongGetter getter;
+    enum SongGetter getter;
     uint32 delimiter;
 } NcmFormatSongTag;
 

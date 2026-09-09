@@ -734,7 +734,7 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
                 case '|':
                     break;
                 default:
-                    if (ncm_song_getter_from_char(ch) != NCM_SONG_GETTER_NONE) {
+                    if (ncm_song_getter_from_char(ch) != SONG_GETTER_NONE) {
                         int32 new_len = column->type_len + 1;
                         int32 new_cap = new_len + 1;
                         char *new_data = malloc2(new_cap);

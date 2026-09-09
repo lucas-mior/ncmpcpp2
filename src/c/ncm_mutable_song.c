@@ -500,9 +500,9 @@ ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
     dest->is_from_database = ncm_song_is_from_database(source);
 
     for (uint32 field = 0; field < NCM_TAGS_FIELD_COUNT; field += 1) {
-        enum NcmSongGetter getter = ncm_tags_field_to_song_getter(field);
+        enum SongGetter getter = ncm_tags_field_to_song_getter(field);
 
-        if (getter == NCM_SONG_GETTER_NONE) {
+        if (getter == SONG_GETTER_NONE) {
             continue;
         }
         for (int32 i = 0; ; i += 1) {

@@ -1992,14 +1992,14 @@ action_runtime_current_tag_scroll_menu(void) {
 }
 
 static StrBuilder
-action_runtime_song_tag_buffer(NcmSong *song, enum NcmSongGetter getter) {
+action_runtime_song_tag_buffer(NcmSong *song, enum SongGetter getter) {
     return ncm_song_tags_buffer(song, getter, Config.tags_separator,
                                 Config.tags_separator_len,
                                 Config.show_duplicate_tags);
 }
 
 static int32
-action_runtime_song_tag_at(int32 pos, enum NcmSongGetter getter,
+action_runtime_song_tag_at(int32 pos, enum SongGetter getter,
                            StrBuilder *tag) {
     NcmMpdItem *item;
     NcSearchRow *row;
@@ -2099,7 +2099,7 @@ action_runtime_song_tag_at(int32 pos, enum NcmSongGetter getter,
 }
 
 static bool
-action_runtime_tag_scroll_available(enum NcmSongGetter getter) {
+action_runtime_tag_scroll_available(enum SongGetter getter) {
     StrBuilder tag = {0};
     NcMenu *menu;
     bool available;
@@ -2116,7 +2116,7 @@ action_runtime_tag_scroll_available(enum NcmSongGetter getter) {
 }
 
 static int32
-action_runtime_scroll_by_tag(enum NcmSongGetter getter, bool down) {
+action_runtime_scroll_by_tag(enum SongGetter getter, bool down) {
     StrBuilder current_tag;
     StrBuilder other_tag;
     NcMenu *menu;
@@ -3623,13 +3623,13 @@ action_runtime_select_album(void) {
     }
 
     current = nc_menu_highlight(menu);
-    if (action_runtime_song_tag_at(current, NCM_SONG_GETTER_ALBUM,
+    if (action_runtime_song_tag_at(current, SONG_GETTER_ALBUM,
                                     &album) < 0) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
     for (int32 position = current; position >= 0; position -= 1) {
-        if (action_runtime_song_tag_at(position, NCM_SONG_GETTER_ALBUM,
+        if (action_runtime_song_tag_at(position, SONG_GETTER_ALBUM,
                                         &candidate) < 0) {
             break;
         }
@@ -3643,7 +3643,7 @@ action_runtime_select_album(void) {
 
     count = nc_menu_item_count(menu);
     for (int32 position = current + 1; position < count; position += 1) {
-        if (action_runtime_song_tag_at(position, NCM_SONG_GETTER_ALBUM,
+        if (action_runtime_song_tag_at(position, SONG_GETTER_ALBUM,
                                         &candidate) < 0) {
             break;
         }
@@ -5512,10 +5512,10 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
         return true;
     case NCM_ACTION_SCROLL_UP_ARTIST:
     case NCM_ACTION_SCROLL_DOWN_ARTIST:
-        return action_runtime_tag_scroll_available(NCM_SONG_GETTER_ARTIST);
+        return action_runtime_tag_scroll_available(SONG_GETTER_ARTIST);
     case NCM_ACTION_SCROLL_UP_ALBUM:
     case NCM_ACTION_SCROLL_DOWN_ALBUM:
-        return action_runtime_tag_scroll_available(NCM_SONG_GETTER_ALBUM);
+        return action_runtime_tag_scroll_available(SONG_GETTER_ALBUM);
     case NCM_ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE:
         return app_screen_lyrics_is_current();
     case NCM_ACTION_SHOW_HELP:
@@ -5920,7 +5920,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
                && (constraint.len > 0);
     }
     case NCM_ACTION_SELECT_ALBUM:
-        return action_runtime_tag_scroll_available(NCM_SONG_GETTER_ALBUM);
+        return action_runtime_tag_scroll_available(SONG_GETTER_ALBUM);
     case NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY:
         if (!ncm_mpd_client_is_connected(&global_mpd)
             || !action_runtime_current_screen_is(NCM_SCREEN_TYPE_PLAYLIST)
@@ -5998,16 +5998,16 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
         app_controller_scroll_current_screen(NC_SCROLL_UP);
         return 0;
     case NCM_ACTION_SCROLL_UP_ARTIST:
-        return action_runtime_scroll_by_tag(NCM_SONG_GETTER_ARTIST, false);
+        return action_runtime_scroll_by_tag(SONG_GETTER_ARTIST, false);
     case NCM_ACTION_SCROLL_UP_ALBUM:
-        return action_runtime_scroll_by_tag(NCM_SONG_GETTER_ALBUM, false);
+        return action_runtime_scroll_by_tag(SONG_GETTER_ALBUM, false);
     case NCM_ACTION_SCROLL_DOWN:
         app_controller_scroll_current_screen(NC_SCROLL_DOWN);
         return 0;
     case NCM_ACTION_SCROLL_DOWN_ARTIST:
-        return action_runtime_scroll_by_tag(NCM_SONG_GETTER_ARTIST, true);
+        return action_runtime_scroll_by_tag(SONG_GETTER_ARTIST, true);
     case NCM_ACTION_SCROLL_DOWN_ALBUM:
-        return action_runtime_scroll_by_tag(NCM_SONG_GETTER_ALBUM, true);
+        return action_runtime_scroll_by_tag(SONG_GETTER_ALBUM, true);
     case NCM_ACTION_PAGE_UP:
         app_controller_scroll_current_screen(NC_SCROLL_PAGE_UP);
         return 0;

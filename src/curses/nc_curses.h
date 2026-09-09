@@ -525,7 +525,7 @@ typedef struct NcEditorActionRow {
 
 typedef struct NcEditorSortRow {
     NcEditorActionRow action;
-    enum NcmSongGetter getter;
+    enum SongGetter getter;
 } NcEditorSortRow;
 
 #define NC_TYPED_MENU_DECLARE_TYPE(TYPE_NAME)                                  \
