@@ -1284,11 +1284,11 @@ playlist_edit_screen_locate_playlist(
 }
 
 static int32
-playlist_edit_find_song_in_content_range(
-    PlaylistEditScreen *screen, NcmSong *song, int32 first, int32 last) {
-    NcMenu *menu;
+playlist_edit_find_song_in_content_range(PlaylistEditScreen *screen,
+                                         NcmSong *song,
+                                         int32 first, int32 last) {
+    NcMenu *menu = nc_song_menu_base(&screen->content);
 
-    menu = nc_song_menu_base(&screen->content);
     if (first < 0) {
         first = 0;
     }
