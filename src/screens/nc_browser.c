@@ -1217,7 +1217,8 @@ browser_screen_update_column_title(BrowserScreen *screen) {
     ncm_display_column_title(&screen->column_title_text,
                              Config.song_columns_list_format.items,
                              Config.song_columns_list_format.len, width);
-    nc_window_set_title(&screen->window, screen->column_title_text.data,
+    nc_window_set_title(&screen->window,
+                        screen->column_title_text.data,
                         screen->column_title_text.len);
     return;
 }
