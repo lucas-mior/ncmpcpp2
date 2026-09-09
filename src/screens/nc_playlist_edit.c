@@ -30,11 +30,9 @@ playlist_edit_update_titles(PlaylistEditScreen *screen, bool update_windows) {
             SB_APPEND(&screen->content_title, " (");
             {
                 char digits[32];
-                int32 len;
-                int32 value;
+                int32 len = 0;
+                int32 value = screen->last_known_content_count;
 
-                value = screen->last_known_content_count;
-                len = 0;
                 if (value == 0) {
                     sb_append_byte(&screen->content_title, '0');
                 } else {
