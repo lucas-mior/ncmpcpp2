@@ -660,8 +660,10 @@ app_screen_search_engine_init(void) {
 
     mode = configuration_search_engine_default_mode(&Config);
     search_engine_screen_set_search_mode(&search_engine_screen, mode);
-    search_engine_screen_set_search_source(&search_engine_screen,
-                                           Config.default_place_to_search_in);
+    search_engine_screen_set_search_source(
+        &search_engine_screen,
+        Config.default_place_to_search_in
+        == NCM_DEFAULT_SEARCH_SOURCE_DATABASE);
 
     hooks.client = &global_mpd;
     hooks.list_database_songs = search_list_database_songs;

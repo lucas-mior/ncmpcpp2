@@ -329,7 +329,13 @@ search_run_current(NcScreen *base_screen) {
 
     if (pos == SEARCH_ENGINE_SEARCH_SOURCE_ROW) {
         screen->search_in_database = !screen->search_in_database;
-        Config.default_place_to_search_in = screen->search_in_database;
+        if (screen->search_in_database) {
+            Config.default_place_to_search_in
+                = NCM_DEFAULT_SEARCH_SOURCE_DATABASE;
+        } else {
+            Config.default_place_to_search_in
+                = NCM_DEFAULT_SEARCH_SOURCE_PLAYLIST;
+        }
         search_engine_screen_update_search_source_row(screen);
         return 0;
     }

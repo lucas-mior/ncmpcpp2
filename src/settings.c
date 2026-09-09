@@ -78,8 +78,6 @@ typedef struct SettingsOption {
 #define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                    \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, ScreenTypeArray);                   \
     SETTINGS_ASSERT_FIELD_TYPE(PREVIOUS_FIELD, bool);
-#define XX_NAMED_BOOL(NAME, DEFAULT, TRUE_VALUE, FALSE_VALUE)            \
-    SETTINGS_ASSERT_FIELD_TYPE(NAME, bool);
 #define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE)             \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, uint32);
 #define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD)                          \
@@ -808,22 +806,6 @@ settings_parse_look(StrBuilder *look, char *value, int32 value_len,
 }
 
 static int32
-settings_parse_named_bool(char *value, int32 value_len, bool *result,
-                          char *true_value, int32 true_value_len,
-                          char *false_value, int32 false_value_len,
-                          NcmError *ncm_error) {
-    if (STREQUAL(value, value_len, true_value, true_value_len)) {
-        *result = true;
-        return 0;
-    }
-    if (STREQUAL(value, value_len, false_value, false_value_len)) {
-        *result = false;
-        return 0;
-    }
-    return settings_invalid_value(ncm_error, value, value_len);
-}
-
-static int32
 settings_append_lyrics_fetcher(void *context, char *item, int32 item_len,
                                NcmError *ncm_error) {
     LyricsFetcherRegistry *registry = context;
@@ -1211,16 +1193,6 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
     return settings_parse_screen_list(&config->NAME, &config->PREVIOUS_FIELD,  \
                                       value, value_len, ncm_error);            \
-}
-
-#define XX_NAMED_BOOL(NAME, DEFAULT, TRUE_VALUE, FALSE_VALUE)                  \
-static int32                                                                   \
-apply_##NAME(Configuration *config, char *value, int32 value_len,              \
-             NcmError *ncm_error) {                                            \
-    return settings_parse_named_bool(value, value_len,                         \
-                                     &config->NAME,                            \
-                                     STRLIT(TRUE_VALUE), STRLIT(FALSE_VALUE),  \
-                                     ncm_error);                               \
 }
 
 #define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE)                   \

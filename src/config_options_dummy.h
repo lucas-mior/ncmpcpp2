@@ -2,7 +2,6 @@
 #define XX_DIR                   XX
 #define XX_COLUMNS               XX
 #define XX_UINT32_CHOICE         XX
-#define XX_NAMED_BOOL            XX
 #define XX_SCREEN_LIST           XX
 #define XX_LYRICS_FETCHERS       XX
 #define XX_FORMATTED_COLOR_LIST  XX

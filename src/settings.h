@@ -49,6 +49,22 @@ NCM_ARRAY_DECLARE_RESERVE(ncm_formatted_color_array, NcmFormattedColorArray)
 NCM_ARRAY_DECLARE_APPEND(ncm_formatted_color_array, NcmFormattedColorArray,
                          NcFormattedColor)
 
+#define ENUM_NAME DefaultSearchSource
+#define ENUM_PREFIX_ NCM_DEFAULT_SEARCH_SOURCE_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS                                            \
+    XX(NCM_DEFAULT_SEARCH_SOURCE_DATABASE, database)           \
+    XX(NCM_DEFAULT_SEARCH_SOURCE_PLAYLIST, playlist)
+#include "cbase/xenums.c"
+
+#define ENUM_NAME DefaultFindMode
+#define ENUM_PREFIX_ NCM_DEFAULT_FIND_MODE_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS                                  \
+    XX(NCM_DEFAULT_FIND_MODE_WRAPPED, wrapped)      \
+    XX(NCM_DEFAULT_FIND_MODE_NORMAL, normal)
+#include "cbase/xenums.c"
+
 enum SettingsOptionId {
 #define XX_OPTION(NAME, DEFAULT, ...) \
     SETTINGS_OPTION_##NAME,
@@ -107,8 +123,6 @@ typedef struct Configuration {
 #define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                     \
     ScreenTypeArray NAME;                                                 \
     bool PREVIOUS_FIELD;
-#define XX_NAMED_BOOL(NAME, DEFAULT, TRUE_VALUE, FALSE_VALUE)             \
-    bool NAME;
 #define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE)              \
     uint32 NAME;
 #define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD)                           \

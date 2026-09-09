@@ -951,8 +951,10 @@ action_runtime_search_from_prompt_start(ActionRuntimeSearchPrompt *state,
         }
     }
 
-    status = current_screen_search(state->direction, text, text_len,
-                                   Config.default_find_mode, false, ncm_error);
+    status = current_screen_search(
+        state->direction, text, text_len,
+        Config.default_find_mode == NCM_DEFAULT_FIND_MODE_WRAPPED, false,
+        ncm_error);
     if (status < 0) {
         *found = false;
         return status;
@@ -1776,10 +1778,10 @@ action_runtime_find_item(enum SearchDirection direction) {
             current_screen_clear_search_constraint();
         } else {
             ncm_error_clear(&ncm_error);
-            (void)current_screen_search(direction, previous_constraint.data,
-                                        previous_constraint.len,
-                                        Config.default_find_mode, false,
-                                        &ncm_error);
+            (void)current_screen_search(
+                direction, previous_constraint.data, previous_constraint.len,
+                Config.default_find_mode == NCM_DEFAULT_FIND_MODE_WRAPPED,
+                false, &ncm_error);
         }
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("Action cancelled"));
@@ -1836,8 +1838,10 @@ action_runtime_repeat_search(enum SearchDirection direction) {
     }
 
     ncm_error_clear(&ncm_error);
-    status = current_screen_search(direction, constraint.data, constraint.len,
-                                   Config.default_find_mode, true, &ncm_error);
+    status = current_screen_search(
+        direction, constraint.data, constraint.len,
+        Config.default_find_mode == NCM_DEFAULT_FIND_MODE_WRAPPED, true,
+        &ncm_error);
     if (status < 0) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
@@ -6380,8 +6384,12 @@ action_runtime_builtin_run(ActionRuntime *runtime, enum ActionType type) {
     case ACTION_PREVIOUS_FOUND_ITEM:
         return action_runtime_repeat_search(NCM_SEARCH_DIRECTION_BACKWARD);
     case ACTION_TOGGLE_FIND_MODE:
-        Config.default_find_mode = !Config.default_find_mode;
-        if (Config.default_find_mode) {
+        if (Config.default_find_mode == NCM_DEFAULT_FIND_MODE_WRAPPED) {
+            Config.default_find_mode = NCM_DEFAULT_FIND_MODE_NORMAL;
+        } else {
+            Config.default_find_mode = NCM_DEFAULT_FIND_MODE_WRAPPED;
+        }
+        if (Config.default_find_mode == NCM_DEFAULT_FIND_MODE_WRAPPED) {
             ncm_statusbar_print(Config.message_delay_time,
                                 STRLIT("Search mode: Wrapped"));
         } else {

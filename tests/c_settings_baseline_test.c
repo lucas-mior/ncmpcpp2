@@ -134,8 +134,6 @@ settings_assert_generated_empty(Configuration *config) {
     ASSERT(config->NAME.len == 0); \
     ASSERT(config->NAME.cap == 0); \
     ASSERT(!config->PREVIOUS_FIELD);
-#define XX_NAMED_BOOL(NAME, DEFAULT_VALUE, TRUE_VALUE, FALSE_VALUE) \
-    ASSERT(!config->NAME);
 #define XX_UINT32_CHOICE(NAME, DEFAULT_VALUE, PARSER, UNSET_VALUE) \
     ASSERT(config->NAME == (UNSET_VALUE));
 #define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD) \
@@ -752,23 +750,26 @@ test_remaining_generated_options(void) {
 
     ASSERT_ZERO(settings_test_apply(
         apply_default_place_to_search_in, &config, "database"));
-    ASSERT(config.default_place_to_search_in);
+    ASSERT(config.default_place_to_search_in
+           == NCM_DEFAULT_SEARCH_SOURCE_DATABASE);
     ASSERT_ZERO(settings_test_apply(
         apply_default_place_to_search_in, &config, "playlist"));
-    ASSERT(!config.default_place_to_search_in);
+    ASSERT(config.default_place_to_search_in
+           == NCM_DEFAULT_SEARCH_SOURCE_PLAYLIST);
     ASSERT(settings_test_apply(
         apply_default_place_to_search_in, &config, "invalid") < 0);
-    ASSERT(!config.default_place_to_search_in);
+    ASSERT(config.default_place_to_search_in
+           == NCM_DEFAULT_SEARCH_SOURCE_PLAYLIST);
 
     ASSERT_ZERO(settings_test_apply(
         apply_default_find_mode, &config, "wrapped"));
-    ASSERT(config.default_find_mode);
+    ASSERT(config.default_find_mode == NCM_DEFAULT_FIND_MODE_WRAPPED);
     ASSERT_ZERO(settings_test_apply(
         apply_default_find_mode, &config, "normal"));
-    ASSERT(!config.default_find_mode);
+    ASSERT(config.default_find_mode == NCM_DEFAULT_FIND_MODE_NORMAL);
     ASSERT(settings_test_apply(
         apply_default_find_mode, &config, "invalid") < 0);
-    ASSERT(!config.default_find_mode);
+    ASSERT(config.default_find_mode == NCM_DEFAULT_FIND_MODE_NORMAL);
 
     ASSERT_ZERO(settings_test_apply(
         apply_regular_expressions, &config, "none"));

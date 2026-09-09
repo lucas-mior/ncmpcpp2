@@ -180,14 +180,6 @@
 #endif
 #endif
 
-#if !defined(XX_NAMED_BOOL)
-#if defined(XX_OPTION)
-#define XX_NAMED_BOOL XX_OPTION
-#else
-#define XX_NAMED_BOOL(NAME, DEFAULT, TRUE_VALUE, FALSE_VALUE)
-#endif
-#endif
-
 #if !defined(XX_UINT32_CHOICE)
 #if defined(XX_OPTION)
 #define XX_UINT32_CHOICE XX_OPTION
@@ -208,7 +200,6 @@
 
 #undef XX_COLUMNS
 #undef XX_UINT32_CHOICE
-#undef XX_NAMED_BOOL
 #undef XX_SCREEN_LIST
 #undef XX_LYRICS_FETCHERS
 #undef XX_FORMATTED_COLOR_LIST
