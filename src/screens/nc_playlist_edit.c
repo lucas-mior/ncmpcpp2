@@ -1256,9 +1256,8 @@ playlist_edit_screen_locate_playlist(
     pos = -ENOENT;
     menu = nc_playlist_entry_menu_base(&screen->playlists);
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        NcmPlaylist *playlist;
+        NcmPlaylist *playlist = nc_menu_active_item_at(menu, i);
 
-        playlist = nc_menu_active_item_at(menu, i);
         if (STREQUAL(playlist->path, playlist->path_len, path, path_len)) {
             pos = i;
             break;
