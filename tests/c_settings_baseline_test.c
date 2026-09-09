@@ -459,29 +459,37 @@ test_numeric_boundaries(void) {
     ASSERT_ZERO(settings_test_apply(apply_mpd_port, &config, "-1"));
     ASSERT_EQUAL(config.mpd_port, -1);
 
-    ASSERT_ZERO(settings_test_apply(apply_visualizer_spectrum_hz_min, &config, "20"));
-    ASSERT_ZERO(settings_test_apply(apply_visualizer_spectrum_hz_max, &config, "20"));
+    ASSERT_ZERO(settings_test_apply(apply_visualizer_spectrum_hz_min,
+                                    &config, "20"));
+    ASSERT_ZERO(settings_test_apply(apply_visualizer_spectrum_hz_max,
+                                    &config, "20"));
     ASSERT(config_validate(&config, &ncm_error) < 0);
-    ASSERT_ZERO(settings_test_apply(apply_visualizer_spectrum_hz_max, &config, "21"));
+    ASSERT_ZERO(settings_test_apply(apply_visualizer_spectrum_hz_max,
+                                    &config, "21"));
     ncm_error_clear(&ncm_error);
     ASSERT_ZERO(config_validate(&config, &ncm_error));
 
-    ASSERT_ZERO(settings_test_apply(apply_locked_screen_width_part, &config, "20"));
+    ASSERT_ZERO(settings_test_apply(apply_locked_screen_width_part,
+                                    &config, "20"));
     ASSERT_EQUAL(config.locked_screen_width_part, 20.0);
     ASSERT_EQUAL(config_locked_screen_width_fraction(&config), 0.2);
-    ASSERT_ZERO(settings_test_apply(apply_locked_screen_width_part, &config, "80"));
+    ASSERT_ZERO(settings_test_apply(apply_locked_screen_width_part,
+                                    &config, "80"));
     ASSERT(config.locked_screen_width_part == 80.0);
     ASSERT(config_locked_screen_width_fraction(&config) == 0.8);
 
-    ASSERT_ZERO(settings_test_apply(apply_search_engine_default_search_mode, &config, "1"));
+    ASSERT_ZERO(settings_test_apply(apply_search_engine_default_search_mode,
+                                    &config, "1"));
     ASSERT(config.search_engine_default_search_mode == 1);
     ASSERT(config_search_engine_default_mode(&config)
            == SEARCH_ENGINE_SEARCH_MODE_LITERAL);
-    ASSERT_ZERO(settings_test_apply(apply_search_engine_default_search_mode, &config, "3"));
+    ASSERT_ZERO(settings_test_apply(apply_search_engine_default_search_mode,
+                                    &config, "3"));
     ASSERT(config.search_engine_default_search_mode == 3);
     ASSERT(config_search_engine_default_mode(&config)
            == SEARCH_ENGINE_SEARCH_MODE_EXACT);
-    ASSERT(settings_test_apply(apply_search_engine_default_search_mode, &config, "4") < 0);
+    ASSERT(settings_test_apply(apply_search_engine_default_search_mode,
+                               &config, "4") < 0);
     ASSERT(config.search_engine_default_search_mode == 3);
 
     ASSERT_ZERO(settings_test_apply(apply_system_encoding, &config, "UTF-8"));
