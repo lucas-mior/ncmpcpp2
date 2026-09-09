@@ -5,8 +5,6 @@
 
 #include "configura.h"
 
-#include <mpd/client.h>
-#include <mpd/status.h>
 #if defined(HAVE_NETINET_IN_H) && defined(HAVE_NETINET_TCP_H)
 #include <netinet/tcp.h>
 #endif

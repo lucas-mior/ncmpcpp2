@@ -3,8 +3,6 @@
 
 #include "cbase.h"
 
-#include <mpd/client.h>
-
 #include "c/ncm_c.h"
 
 static bool

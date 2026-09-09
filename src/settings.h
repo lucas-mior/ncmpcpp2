@@ -3,8 +3,6 @@
 
 #include "cbase.h"
 
-#include <mpd/tag.h>
-
 #include "c/ncm_c.h"
 #include "curses/nc_curses.h"
 #include "lyrics_fetcher.h"
