@@ -1019,8 +1019,8 @@ playlist_edit_screen_load_playlists(PlaylistEditScreen *screen,
     if ((screen == NULL) || (playlists == NULL)) {
         return -EINVAL;
     }
-    had_preserved =
-        playlist_edit_store_current_playlist_path(screen, &preserved);
+    had_preserved = playlist_edit_store_current_playlist_path(screen,
+                                                              &preserved);
     menu = nc_playlist_entry_menu_base(&screen->playlists);
     nc_menu_show_all_items(menu);
     nc_menu_clear_items(menu);
