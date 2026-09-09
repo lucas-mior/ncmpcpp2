@@ -1683,8 +1683,7 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                         character_len = visualizer_smooth_char_lens[index];
                     } else if (flipped) {
                         if (screen->spectrum_smooth_look_legacy_chars) {
-                            character =
-                                visualizer_smooth_flipped_chars[index];
+                            character = visualizer_smooth_flipped_chars[index];
                             character_len =
                                 visualizer_smooth_flipped_char_lens[index];
                         } else {
