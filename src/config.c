@@ -455,11 +455,9 @@ ncm_configuration_options_apply(NcmConfigurationOptions *options,
         }
     }
     for (int32 i = 0; i < options->config_paths.len; i += 1) {
-        StringView *view;
-        StrBuilder *buffer;
+        StringView *view = ncm_string_view_array_append(&config_views);
+        StrBuilder *buffer = &options->config_paths.items[i];
 
-        buffer = &options->config_paths.items[i];
-        view = ncm_string_view_array_append(&config_views);
         view->data = buffer->data;
         view->len = buffer->len;
     }
