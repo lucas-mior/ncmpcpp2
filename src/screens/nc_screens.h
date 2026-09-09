@@ -45,7 +45,7 @@
       9, search_engine, SCREEN_FLAG_STARTUP)
 #define SCREEN_TYPE_SELECTED_ITEMS_ADDER_ENTRY(XX)                         \
     XX(SCREEN_TYPE_SELECTED_ITEMS_ADDER,                                   \
-      NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER, 10, selected_items_adder,           \
+      NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER, 10, selected_items_adder,       \
       SCREEN_FLAG_NONE)
 #define SCREEN_TYPE_SERVER_INFO_ENTRY(XX)                                  \
     XX(SCREEN_TYPE_SERVER_INFO, NC_SCREEN_TYPE_SERVER_INFO, 11,            \
@@ -55,13 +55,13 @@
       song_info, SCREEN_FLAG_NONE)
 #define SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)                         \
     XX(SCREEN_TYPE_SORT_PLAYLIST_DIALOG,                                   \
-      NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG, 13, sort_playlist_dialog,           \
+      NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG, 13, sort_playlist_dialog,       \
       SCREEN_FLAG_NONE)
-#define SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                   \
-    XX(SCREEN_TYPE_TAG_EDIT, NC_SCREEN_TYPE_TAG_EDIT, 14,              \
+#define SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                     \
+    XX(SCREEN_TYPE_TAG_EDIT, NC_SCREEN_TYPE_TAG_EDIT, 14,                  \
       tag_edit, SCREEN_FLAG_STARTUP)
-#define SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)                              \
-    XX(SCREEN_TYPE_TINY_TAG_EDIT, NC_SCREEN_TYPE_TINY_TAG_EDIT,        \
+#define SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)                                \
+    XX(SCREEN_TYPE_TINY_TAG_EDIT, NC_SCREEN_TYPE_TINY_TAG_EDIT,            \
       15, tiny_tag_edit, SCREEN_FLAG_NONE)
 #define SCREEN_TYPE_VISUALIZER_ENTRY(XX)                                   \
     XX(SCREEN_TYPE_VISUALIZER, NC_SCREEN_TYPE_VISUALIZER, 16,              \
@@ -81,27 +81,27 @@
     SCREEN_TYPE_SERVER_INFO_ENTRY(XX)                                      \
     SCREEN_TYPE_SONG_INFO_ENTRY(XX)                                        \
     SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)                             \
-    SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                       \
-    SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)                                  \
+    SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                         \
+    SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)                                    \
     SCREEN_TYPE_VISUALIZER_ENTRY(XX)
 
 #if defined(ENABLE_OUTPUTS)
-#define SCREEN_ENABLED_OUTPUTS_TYPES(XX)                                 \
+#define SCREEN_ENABLED_OUTPUTS_TYPES(XX)                                   \
     SCREEN_TYPE_OUTPUTS_ENTRY(XX)
 #else
 #define SCREEN_ENABLED_OUTPUTS_TYPES(XX)
 #endif
 
 #if defined(HAVE_TAGLIB_H)
-#define SCREEN_ENABLED_TAG_EDIT_TYPES(XX)                              \
-    SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                     \
+#define SCREEN_ENABLED_TAG_EDIT_TYPES(XX)                                  \
+    SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                         \
     SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)
 #else
 #define SCREEN_ENABLED_TAG_EDIT_TYPES(XX)
 #endif
 
 #if defined(ENABLE_VISUALIZER)
-#define SCREEN_ENABLED_VISUALIZER_TYPES(XX)                              \
+#define SCREEN_ENABLED_VISUALIZER_TYPES(XX)                                \
     SCREEN_TYPE_VISUALIZER_ENTRY(XX)
 #else
 #define SCREEN_ENABLED_VISUALIZER_TYPES(XX)
@@ -121,20 +121,20 @@
     SCREEN_TYPE_SERVER_INFO_ENTRY(XX)              \
     SCREEN_TYPE_SONG_INFO_ENTRY(XX)                \
     SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)     \
-    SCREEN_ENABLED_TAG_EDIT_TYPES(XX)            \
+    SCREEN_ENABLED_TAG_EDIT_TYPES(XX)              \
     SCREEN_ENABLED_VISUALIZER_TYPES(XX)
 
-#define SCREEN_NC_TYPE_ENUM_FIELD(                 \
+#define SCREEN_NC_TYPE_ENUM_FIELD(                     \
     screen_type, nc_type, nc_value, alias, flags       \
 )                                                      \
     nc_type = nc_value,
 
-#define SCREEN_TYPE_XENUM_FIELD(                   \
+#define SCREEN_TYPE_XENUM_FIELD(                       \
     screen_type, nc_type, nc_value, alias, flags       \
 )                                                      \
     XX(screen_type, alias)
 
-#define SCREEN_TYPE_ENUM_FIELDS                    \
+#define SCREEN_TYPE_ENUM_FIELDS                        \
     SCREEN_TYPES(SCREEN_TYPE_XENUM_FIELD)
 
 
@@ -144,12 +144,12 @@
     XX(LyricsScreen, lyrics_screen)                            \
     XX(VisualizerScreen, visualizer_screen)                    \
     XX(PlaylistScreen, playlist_screen)                        \
-    XX(PlaylistEditScreen, playlist_edit_screen)           \
+    XX(PlaylistEditScreen, playlist_edit_screen)               \
     XX(SelectedItemsAdderScreen, selected_items_adder_screen)  \
     XX(SortPlaylistDialog, sort_playlist_dialog)               \
     XX(SearchEngineScreen, search_engine_screen)               \
     XX(MediaLibraryScreen, media_library_screen)               \
-    XX(TagEditScreen, tag_edit_screen)                     \
+    XX(TagEditScreen, tag_edit_screen)                         \
     XX(TinyTagEditScreen, tiny_tag_edit_screen)
 
 #define NCM_APP_SCREEN_WRAPPED_STORAGE_TYPES(XX)               \
@@ -163,13 +163,13 @@
     XX(lastfm_screen_initialized)                              \
     XX(lyrics_screen_initialized)                              \
     XX(visualizer_screen_initialized)                          \
-    XX(playlist_edit_screen_initialized)                     \
+    XX(playlist_edit_screen_initialized)                       \
     XX(selected_items_adder_screen_initialized)                \
     XX(sort_playlist_dialog_initialized)                       \
     XX(search_engine_screen_initialized)                       \
     XX(media_library_screen_initialized)                       \
-    XX(tag_edit_screen_initialized)                          \
-    XX(tiny_tag_edit_screen_initialized)                     \
+    XX(tag_edit_screen_initialized)                            \
+    XX(tiny_tag_edit_screen_initialized)                       \
     XX(playlist_screen_initialized)
 
 #define NCM_APP_SCREEN_DIRECT_ACCESSOR_TYPES(XX)                               \
