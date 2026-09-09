@@ -39,9 +39,7 @@ typedef struct LyricsResult {
 
 typedef struct LyricsFetcherDef {
     char *name;
-
     int32 name_len;
-
     enum LyricsFetcherType type;
     bool enabled;
 } LyricsFetcherDef;
