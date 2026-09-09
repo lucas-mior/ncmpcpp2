@@ -656,7 +656,7 @@ app_screen_search_engine_init(void) {
                               ui_state_main_height(), Config.main_window_color,
                               no_border());
 
-    mode = configuration_search_engine_default_mode(&Config);
+    mode = config_search_engine_default_mode(&Config);
     search_engine_screen_set_search_mode(&search_engine_screen, mode);
     search_engine_screen_set_search_source(
         &search_engine_screen,

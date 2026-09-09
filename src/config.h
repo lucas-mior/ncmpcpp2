@@ -1,5 +1,5 @@
-#if !defined(CONFIGURATION_H)
-#define CONFIGURATION_H
+#if !defined(config_H)
+#define config_H
 
 #include "cbase.h"
 
@@ -27,15 +27,15 @@ typedef struct NcmConfigurationOptions {
     bool quiet;
 } NcmConfigurationOptions;
 
-void ncm_configuration_options_init(NcmConfigurationOptions *);
-void ncm_configuration_options_destroy(NcmConfigurationOptions *);
-int32 ncm_configuration_options_parse(NcmConfigurationOptions *, int32,
+void ncm_config_options_init(NcmConfigurationOptions *);
+void ncm_config_options_destroy(NcmConfigurationOptions *);
+int32 ncm_config_options_parse(NcmConfigurationOptions *, int32,
                                       char **, NcmError *);
-int32 ncm_configuration_options_apply(NcmConfigurationOptions *, NcmError *);
+int32 ncm_config_options_apply(NcmConfigurationOptions *, NcmError *);
 
-int32 configuration_discover_default_paths(StrBuilderArray *config_paths,
+int32 config_discover_default_paths(StrBuilderArray *config_paths,
                                            StrBuilderArray *bindings_paths,
                                            NcmError *);
 int32 configure(int32, char **);
 
-#endif /* CONFIGURATION_H */
+#endif /* config_H */

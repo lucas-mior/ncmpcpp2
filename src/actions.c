@@ -604,8 +604,7 @@ ncm_action_immediate_command_prompt_should_stop(StrBuilder *previous,
         return false;
     }
 
-    command = ncm_bindings_configuration_find_command(&Bindings, text,
-                                                      text_len);
+    command = ncm_bindings_config_find_command(&Bindings, text, text_len);
     if (command && command->immediate) {
         return true;
     }
@@ -1277,7 +1276,7 @@ action_runtime_execute_command(void) {
         return 0;
     }
 
-    command = ncm_bindings_configuration_find_command(&Bindings,
+    command = ncm_bindings_config_find_command(&Bindings,
                                                       command_name.data,
                                                       command_name.len);
     if (command == NULL) {

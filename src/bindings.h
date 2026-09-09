@@ -107,14 +107,14 @@ void ncm_command_destroy(NcmCommand *);
 
 void ncm_key_bindings_init(NcmKeyBindings *);
 
-void ncm_bindings_configuration_destroy(NcmBindingsConfiguration *);
-void ncm_bindings_configuration_clear(NcmBindingsConfiguration *);
-int32 ncm_bindings_configuration_read(NcmBindingsConfiguration *, char *,
+void ncm_bindings_config_destroy(NcmBindingsConfiguration *);
+void ncm_bindings_config_clear(NcmBindingsConfiguration *);
+int32 ncm_bindings_config_read(NcmBindingsConfiguration *, char *,
                                       int32, NcmError *);
-void ncm_bindings_configuration_generate_defaults(NcmBindingsConfiguration *);
-NcmCommand *ncm_bindings_configuration_find_command(NcmBindingsConfiguration *,
+void ncm_bindings_config_generate_defaults(NcmBindingsConfiguration *);
+NcmCommand *ncm_bindings_config_find_command(NcmBindingsConfiguration *,
                                                     char *, int32);
-int32 ncm_bindings_configuration_get(NcmBindingsConfiguration *, NcKey,
+int32 ncm_bindings_config_get(NcmBindingsConfiguration *, NcKey,
                                      NcmBindingSlice *);
 
 NcKey ncm_bindings_string_to_key(char *, int32);

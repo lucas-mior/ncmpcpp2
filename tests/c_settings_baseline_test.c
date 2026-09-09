@@ -169,11 +169,11 @@ test_each_declared_default(void) {
         NcmError ncm_error = {0};
         int32 status;
 
-        configuration_init(&config);
+        config_init(&config);
         status = option.apply(&config, option.default_value,
                               option.default_value_len, &ncm_error);
         ASSERT_ZERO(status);
-        configuration_destroy(&config);
+        config_destroy(&config);
         settings_assert_generated_empty(&config);
     }
     return;
@@ -205,9 +205,9 @@ test_declared_defaults_and_cleanup(void) {
     StringViewArray paths = {0};
     NcmError ncm_error = {0};
 
-    configuration_init(&config);
+    config_init(&config);
     settings_assert_generated_empty(&config);
-    ASSERT_ZERO(configuration_read(&config, &paths, false, true, &ncm_error));
+    ASSERT_ZERO(config_read(&config, &paths, false, true, &ncm_error));
 
     ASSERT(config.mpd_port == 6600);
     ASSERT(config.visualizer_fps == 60);
@@ -236,7 +236,7 @@ test_declared_defaults_and_cleanup(void) {
     ASSERT(config.space_add_mode == NCM_SPACE_ADD_MODE_ADD_REMOVE);
     ASSERT(config.startup_screen == SCREEN_TYPE_PLAYLIST);
 
-    configuration_destroy(&config);
+    config_destroy(&config);
     settings_assert_generated_empty(&config);
     ASSERT(config.ncmpcpp_directory == NULL);
     ASSERT(config.ncmpcpp_directory_len == 0);
@@ -244,7 +244,7 @@ test_declared_defaults_and_cleanup(void) {
     ASSERT(config.screen_switcher_mode.items == NULL);
     ASSERT(config.lyrics_fetchers.fetchers.items == NULL);
 
-    configuration_destroy(&config);
+    config_destroy(&config);
     return;
 }
 
@@ -264,7 +264,7 @@ test_runtime_application_is_separate(void) {
     }
     ASSERT_ZERO(setenv("TERM", "linux", 1));
 
-    configuration_init(&config);
+    config_init(&config);
 
     ASSERT_ZERO(ncm_mpd_client_set_hostname(
         &global_mpd, STRLIT("before-host"), &ncm_error));
@@ -274,7 +274,7 @@ test_runtime_application_is_separate(void) {
     ASSERT_ZERO(ncm_mpd_client_set_timeout_ms(
         &global_mpd, 4321, &ncm_error));
 
-    ASSERT_ZERO(configuration_read(&config, &paths, false, true, &ncm_error));
+    ASSERT_ZERO(config_read(&config, &paths, false, true, &ncm_error));
     ASSERT(config.enable_window_title);
     ASSERT_EQUAL(global_mpd.host.data, global_mpd.host.len,
                  "before-host");
@@ -298,7 +298,7 @@ test_runtime_application_is_separate(void) {
                  "before-password");
     ASSERT(global_mpd.timeout_ms == 4321);
 
-    ASSERT_ZERO(configuration_apply_runtime(&config, &global_mpd, true,
+    ASSERT_ZERO(config_apply_runtime(&config, &global_mpd, true,
                                             &ncm_error));
     ASSERT(config.enable_window_title);
     ASSERT(!window_title_enabled);
@@ -314,13 +314,13 @@ test_runtime_application_is_separate(void) {
         ASSERT_ZERO(unsetenv("TERM"));
     }
     sb_free(&previous_term);
-    configuration_destroy(&config);
+    config_destroy(&config);
     ncm_string_view_array_destroy(&paths);
     return;
 }
 
 static void
-test_configuration_options_apply_runtime_precedence(void) {
+test_config_options_apply_runtime_precedence(void) {
     static char contents[] =
         "ncmpcpp_directory = /tmp/\n"
         "lyrics_directory = /tmp/\n"
@@ -361,12 +361,12 @@ test_configuration_options_apply_runtime_precedence(void) {
     ASSERT_ZERO(XCLOSE(&fd, path));
     ASSERT(write_entire_file(path, contents, contents_len) == contents_len);
 
-    ncm_configuration_options_init(&options);
+    ncm_config_options_init(&options);
     options.quiet = true;
     config_path = str_builder_array_append(&options.config_paths);
     SB_APPEND(config_path, path, strlen32(path));
 
-    ASSERT_ZERO(ncm_configuration_options_apply(&options, &ncm_error));
+    ASSERT_ZERO(ncm_config_options_apply(&options, &ncm_error));
     ASSERT_EQUAL(global_mpd.host.data, global_mpd.host.len, "config-host");
     ASSERT(global_mpd.port == 1111);
     ASSERT_EQUAL(global_mpd.password.data, global_mpd.password.len,
@@ -382,7 +382,7 @@ test_configuration_options_apply_runtime_precedence(void) {
     ASSERT_ZERO(setenv("MPD_HOST", "env-host", 1));
     ASSERT_ZERO(setenv("MPD_PORT", "2222", 1));
     ncm_error_clear(&ncm_error);
-    ASSERT_ZERO(ncm_configuration_options_apply(&options, &ncm_error));
+    ASSERT_ZERO(ncm_config_options_apply(&options, &ncm_error));
     ASSERT_EQUAL(global_mpd.host.data, global_mpd.host.len, "env-host");
     ASSERT(global_mpd.port == 2222);
     ASSERT_EQUAL(global_mpd.password.data, global_mpd.password.len,
@@ -400,7 +400,7 @@ test_configuration_options_apply_runtime_precedence(void) {
     options.port = 3333;
     options.port_provided = true;
     ncm_error_clear(&ncm_error);
-    ASSERT_ZERO(ncm_configuration_options_apply(&options, &ncm_error));
+    ASSERT_ZERO(ncm_config_options_apply(&options, &ncm_error));
     ASSERT_EQUAL(global_mpd.host.data, global_mpd.host.len, "cli-host");
     ASSERT(global_mpd.port == 3333);
     ASSERT_EQUAL(global_mpd.password.data, global_mpd.password.len,
@@ -425,7 +425,7 @@ test_configuration_options_apply_runtime_precedence(void) {
 
     sb_free(&previous_host);
     sb_free(&previous_port);
-    ncm_configuration_options_destroy(&options);
+    ncm_config_options_destroy(&options);
     ASSERT_ZERO(cbase_remove_file(path));
     return;
 }
@@ -434,7 +434,7 @@ static void
 test_generated_numeric_boundaries(void) {
     Configuration config = {0};
 
-    configuration_init(&config);
+    config_init(&config);
 
 #define XX_INTEGER(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     settings_test_int_range(apply_##NAME, &config, &config.NAME, \
@@ -444,7 +444,7 @@ test_generated_numeric_boundaries(void) {
                                MINIMUM, MAXIMUM);
 #include "config_options_pass.h"
 
-    configuration_destroy(&config);
+    config_destroy(&config);
     settings_assert_generated_empty(&config);
     return;
 }
@@ -454,7 +454,7 @@ test_numeric_boundaries(void) {
     Configuration config = {0};
     NcmError ncm_error = {0};
 
-    configuration_init(&config);
+    config_init(&config);
 
     ASSERT_ZERO(settings_test_apply(apply_mpd_port, &config, "-1"));
     ASSERT(config.mpd_port == -1);
@@ -463,30 +463,30 @@ test_numeric_boundaries(void) {
         apply_visualizer_spectrum_hz_min, &config, "20"));
     ASSERT_ZERO(settings_test_apply(
         apply_visualizer_spectrum_hz_max, &config, "20"));
-    ASSERT(configuration_validate(&config, &ncm_error) < 0);
+    ASSERT(config_validate(&config, &ncm_error) < 0);
     ASSERT_ZERO(settings_test_apply(
         apply_visualizer_spectrum_hz_max, &config, "21"));
     ncm_error_clear(&ncm_error);
-    ASSERT_ZERO(configuration_validate(&config, &ncm_error));
+    ASSERT_ZERO(config_validate(&config, &ncm_error));
 
     ASSERT_ZERO(settings_test_apply(
         apply_locked_screen_width_part, &config, "20"));
     ASSERT(config.locked_screen_width_part == 20.0);
-    ASSERT(configuration_locked_screen_width_fraction(&config) == 0.2);
+    ASSERT(config_locked_screen_width_fraction(&config) == 0.2);
     ASSERT_ZERO(settings_test_apply(
         apply_locked_screen_width_part, &config, "80"));
     ASSERT(config.locked_screen_width_part == 80.0);
-    ASSERT(configuration_locked_screen_width_fraction(&config) == 0.8);
+    ASSERT(config_locked_screen_width_fraction(&config) == 0.8);
 
     ASSERT_ZERO(settings_test_apply(
         apply_search_engine_default_search_mode, &config, "1"));
     ASSERT(config.search_engine_default_search_mode == 1);
-    ASSERT(configuration_search_engine_default_mode(&config)
+    ASSERT(config_search_engine_default_mode(&config)
            == SEARCH_ENGINE_SEARCH_MODE_LITERAL);
     ASSERT_ZERO(settings_test_apply(
         apply_search_engine_default_search_mode, &config, "3"));
     ASSERT(config.search_engine_default_search_mode == 3);
-    ASSERT(configuration_search_engine_default_mode(&config)
+    ASSERT(config_search_engine_default_mode(&config)
            == SEARCH_ENGINE_SEARCH_MODE_EXACT);
     ASSERT(settings_test_apply(
         apply_search_engine_default_search_mode, &config, "4") < 0);
@@ -496,7 +496,7 @@ test_numeric_boundaries(void) {
     ASSERT_EQUAL(config.system_encoding, config.system_encoding_len,
                  "UTF-8");
 
-    configuration_destroy(&config);
+    config_destroy(&config);
     return;
 }
 
@@ -504,7 +504,7 @@ static void
 test_enum_options(void) {
     Configuration config = {0};
 
-    configuration_init(&config);
+    config_init(&config);
 
     ASSERT_ZERO(settings_test_apply(
         apply_browser_sort_mode, &config, "none"));
@@ -531,7 +531,7 @@ test_enum_options(void) {
         apply_startup_screen, &config, "playlist"));
     ASSERT(config.startup_screen == SCREEN_TYPE_PLAYLIST);
 
-    configuration_destroy(&config);
+    config_destroy(&config);
     return;
 }
 
@@ -539,7 +539,7 @@ static void
 test_optional_enum_options(void) {
     Configuration config = {0};
 
-    configuration_init(&config);
+    config_init(&config);
 
     ASSERT(!config.has_startup_slave_screen_type);
     ASSERT(config.startup_slave_screen == SCREEN_TYPE_COUNT);
@@ -558,7 +558,7 @@ test_optional_enum_options(void) {
     ASSERT(!config.has_startup_slave_screen_type);
     ASSERT(config.startup_slave_screen == SCREEN_TYPE_COUNT);
 
-    configuration_destroy(&config);
+    config_destroy(&config);
     settings_assert_generated_empty(&config);
     return;
 }
@@ -568,7 +568,7 @@ test_color_options(void) {
     Configuration config = {0};
     NcColor expected;
 
-    configuration_init(&config);
+    config_init(&config);
 
     ASSERT_ZERO(settings_test_apply(
         apply_header_window_color, &config, "red_blue"));
@@ -599,7 +599,7 @@ test_color_options(void) {
     ASSERT(config.window_border_color.enabled);
     ASSERT(nc_color_is_equal(config.window_border_color.color, expected));
 
-    configuration_destroy(&config);
+    config_destroy(&config);
     return;
 }
 
@@ -607,7 +607,7 @@ static void
 test_format_options(void) {
     Configuration config = {0};
 
-    configuration_init(&config);
+    config_init(&config);
 
     ASSERT_ZERO(settings_test_apply(
         apply_song_list_format, &config, "$R"));
@@ -636,7 +636,7 @@ test_format_options(void) {
     ASSERT(config.browser_sort_format.root.items[0].type
            == NCM_FORMAT_EXPR_SONG_TAG);
 
-    configuration_destroy(&config);
+    config_destroy(&config);
     settings_assert_generated_empty(&config);
     return;
 }
@@ -645,7 +645,7 @@ static void
 test_buffer_and_look_options(void) {
     Configuration config = {0};
 
-    configuration_init(&config);
+    config_init(&config);
 
     ASSERT_ZERO(settings_test_apply(
         apply_selected_item_prefix, &config, "selected"));
@@ -681,7 +681,7 @@ test_buffer_and_look_options(void) {
     ASSERT(config.progressbar_look.len == 3);
     ASSERT(config.progressbar_look.data[2] == 'c');
 
-    configuration_destroy(&config);
+    config_destroy(&config);
     settings_assert_generated_empty(&config);
     return;
 }
@@ -690,7 +690,7 @@ static void
 test_collection_options(void) {
     Configuration config = {0};
 
-    configuration_init(&config);
+    config_init(&config);
 
     ASSERT_ZERO(settings_test_apply(
         apply_media_library_column_width_ratio_two, &config, "2:3"));
@@ -730,7 +730,7 @@ test_collection_options(void) {
     ASSERT(config.screen_switcher_previous);
     ASSERT(config.screen_switcher_mode.len == 0);
 
-    configuration_destroy(&config);
+    config_destroy(&config);
     settings_assert_generated_empty(&config);
     return;
 }
@@ -739,7 +739,7 @@ static void
 test_remaining_generated_options(void) {
     Configuration config = {0};
 
-    configuration_init(&config);
+    config_init(&config);
 
     ASSERT_ZERO(settings_test_apply(
         apply_default_place_to_search_in, &config, "database"));
@@ -800,7 +800,7 @@ test_remaining_generated_options(void) {
         apply_song_columns_list_format, &config, "invalid") < 0);
     ASSERT(config.song_columns_list_format.len == 0);
 
-    configuration_destroy(&config);
+    config_destroy(&config);
     settings_assert_generated_empty(&config);
     return;
 }
@@ -829,15 +829,15 @@ test_cross_field_validation_is_post_parse(void) {
     path_view->data = path;
     path_view->len = strlen32(path);
 
-    configuration_init(&config);
-    status = configuration_read(&config, &paths, false, true, &ncm_error);
+    config_init(&config);
+    status = config_read(&config, &paths, false, true, &ncm_error);
     ASSERT(status < 0);
     ASSERT(config.visualizer_spectrum_hz_min == 200.0);
     ASSERT(config.visualizer_spectrum_hz_max == 100.0);
     ASSERT_CONTAINS(ncm_error.message, ncm_error.message_len,
                     "visualizer_spectrum_hz_max");
 
-    configuration_destroy(&config);
+    config_destroy(&config);
     ncm_string_view_array_destroy(&paths);
     ASSERT_ZERO(cbase_remove_file(path));
     return;
@@ -879,14 +879,14 @@ test_duplicate_option_is_rejected(void) {
     path_view->data = second_path;
     path_view->len = strlen32(second_path);
 
-    configuration_init(&config);
-    status = configuration_read(&config, &paths, false, true, &ncm_error);
+    config_init(&config);
+    status = config_read(&config, &paths, false, true, &ncm_error);
     ASSERT(status < 0);
     ASSERT(config.lines_scrolled == 4);
     ASSERT_CONTAINS(ncm_error.message, ncm_error.message_len,
                     "option already set");
 
-    configuration_destroy(&config);
+    config_destroy(&config);
     ncm_string_view_array_destroy(&paths);
     ASSERT_ZERO(cbase_remove_file(first_path));
     ASSERT_ZERO(cbase_remove_file(second_path));
@@ -914,14 +914,14 @@ test_duplicate_state_is_per_read(void) {
     path_view->data = path;
     path_view->len = strlen32(path);
 
-    configuration_init(&config);
-    ASSERT_ZERO(configuration_read(&config, &paths, false, true, &ncm_error));
+    config_init(&config);
+    ASSERT_ZERO(config_read(&config, &paths, false, true, &ncm_error));
     ASSERT(config.lines_scrolled == 4);
     ncm_error_clear(&ncm_error);
-    ASSERT_ZERO(configuration_read(&config, &paths, false, true, &ncm_error));
+    ASSERT_ZERO(config_read(&config, &paths, false, true, &ncm_error));
     ASSERT(config.lines_scrolled == 4);
 
-    configuration_destroy(&config);
+    config_destroy(&config);
     ncm_string_view_array_destroy(&paths);
     ASSERT_ZERO(cbase_remove_file(path));
     return;
@@ -930,14 +930,14 @@ test_duplicate_state_is_per_read(void) {
 int
 main(void) {
     global_state_init();
-    configuration_init(&Config);
+    config_init(&Config);
 
     test_generated_option_identity();
     test_each_declared_default();
     test_option_table_shape();
     test_declared_defaults_and_cleanup();
     test_runtime_application_is_separate();
-    test_configuration_options_apply_runtime_precedence();
+    test_config_options_apply_runtime_precedence();
     test_generated_numeric_boundaries();
     test_numeric_boundaries();
     test_enum_options();
@@ -951,7 +951,7 @@ main(void) {
     test_duplicate_option_is_rejected();
     test_duplicate_state_is_per_read();
 
-    configuration_destroy(&Config);
+    config_destroy(&Config);
     global_state_destroy();
     return 0;
 }
