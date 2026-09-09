@@ -6,8 +6,7 @@
 #include "c/ncm_c.h"
 
 static MutableSongTag *
-ncm_mutable_song_find_tag(MutableSong *song, enum TagsField field,
-                          int32 idx) {
+ncm_mutable_song_find_tag(MutableSong *song, enum TagsField field, int32 idx) {
     ASSERT((song != NULL) && (idx >= 0));
 
     for (int32 i = 0; i < song->tags_len; i += 1) {
@@ -22,8 +21,7 @@ ncm_mutable_song_find_tag(MutableSong *song, enum TagsField field,
 }
 
 static MutableSongTag *
-ncm_mutable_song_add_tag(MutableSong *song, enum TagsField field,
-                         int32 idx) {
+ncm_mutable_song_add_tag(MutableSong *song, enum TagsField field, int32 idx) {
     MutableSongTag *tag;
 
     ASSERT((song != NULL) && (idx >= 0));
@@ -178,6 +176,7 @@ ncm_mutable_song_copy(MutableSong *dest, MutableSong *source) {
                       source->name, source->name_len);
     stupid_string_set(&copy.new_name, &copy.new_name_len,
                       source->new_name, source->new_name_len);
+
     copy.mtime = source->mtime;
     copy.duration = source->duration;
     copy.is_from_database = source->is_from_database;
@@ -247,8 +246,8 @@ ncm_mutable_song_set_tag(MutableSong *song, enum TagsField field,
 
 int32
 ncm_mutable_song_set_tags(MutableSong *song, enum TagsField field,
-                          char *value, int32 value_len, char *separator,
-                          int32 separator_len) {
+                          char *value, int32 value_len,
+                          char *separator, int32 separator_len) {
     int32 begin;
     int32 idx;
 
@@ -429,8 +428,7 @@ ncm_mutable_song_tags_buffer(MutableSong *song, enum TagsField field,
 }
 
 int32
-ncm_mutable_song_load_originals_from_song(MutableSong *dest,
-                                          NcmSong *source) {
+ncm_mutable_song_load_originals_from_song(MutableSong *dest, NcmSong *source) {
     StringView view;
 
     if (dest == NULL) {
