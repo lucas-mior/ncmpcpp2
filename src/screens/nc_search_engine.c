@@ -27,7 +27,7 @@ static char *search_constraint_names[] = {
     "Comment",
 };
 
-static int32 search_constraint_name_lengths[] = {
+static int32 search_constraint_name_lens[] = {
     STRLIT_LEN("Any"),
     STRLIT_LEN("Artist"),
     STRLIT_LEN("Album Artist"),
@@ -245,7 +245,7 @@ search_build_constraint_row(SearchEngineScreen *screen, int32 idx,
     search_append_format(buffer, NC_FORMAT_BOLD);
     nc_buffer_append_data(buffer,
                           search_constraint_names[idx],
-                          search_constraint_name_lengths[idx]);
+                          search_constraint_name_lens[idx]);
     while (buffer->len < 13) {
         nc_buffer_append_char(buffer, ' ');
     }
@@ -293,7 +293,7 @@ search_run_current(NcScreen *base_screen) {
         } else {
             StrBuilder *constraint = &screen->constraints[pos];
             char *constraint_name = search_constraint_names[pos];
-            int32 constraint_name_len = search_constraint_name_lengths[pos];
+            int32 constraint_name_len = search_constraint_name_lens[pos];
 
             prompt_status =
                 screen->hooks.prompt_constraint(screen->hooks.user,
