@@ -125,8 +125,6 @@ fast_feedback)
     ;;
 check)
     ;;
-build|check|clean|debug|debug-fast|fast_feedback|install|test|uninstall)
-    ;;
 esac
 
 case "$mode" in
