@@ -50,7 +50,7 @@ tiny_editor_buffer_key_value(NcBuffer *buffer, char *key, int32 key_len,
 
 static void
 tiny_editor_buffer_mutable_tag(NcBuffer *buffer, MutableSong *song,
-                               enum NcmTagsField field,
+                               enum TagsField field,
                                char *tag_separator, int32 tag_separator_len,
                                bool show_duplicate_tags) {
     StrBuilder value;
@@ -94,7 +94,7 @@ tiny_editor_finish(TinyTagEditScreen *screen) {
 static int32
 tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
     enum TinyTagEditPromptResult prompt_result;
-    enum NcmTagsField field;
+    enum TagsField field;
     StringView initial;
     StringView current_name;
     StrBuilder input = {0};
@@ -113,7 +113,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         int32 field_name_len;
         NcBuffer row_buffer = {0};
 
-        field = (enum NcmTagsField)(row - (int32)TINY_TAG_EDIT_FIRST_TAG_ROW);
+        field = (enum TagsField)(row - (int32)TINY_TAG_EDIT_FIRST_TAG_ROW);
         tag_value = ncm_mutable_song_tags_buffer(&screen->edited, field,
                                                  screen->tag_separator.data,
                                                  screen->tag_separator.len,
@@ -676,7 +676,7 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
 
         row = (NcBuffer){0};
         tiny_editor_buffer_mutable_tag(&row, &screen->edited,
-                                       (enum NcmTagsField)field,
+                                       (enum TagsField)field,
                                        tag_separator, tag_separator_len,
                                        show_duplicate_tags);
         inactive = !extended_tags_supported

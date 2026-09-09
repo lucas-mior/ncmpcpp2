@@ -802,7 +802,7 @@ playlist_build_mutable_song(NcmSong *replacement,
     playlist_set_mutable_uri(replacement, edited);
 
     for (int32 i = 0; i < current->tags_len; i += 1) {
-        enum NcmTagsField field;
+        enum TagsField field;
 
         if (current->tags[i].type == MPD_TAG_UNKNOWN) {
             continue;

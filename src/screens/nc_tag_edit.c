@@ -78,7 +78,7 @@ tag_edit_draw_tag(NcMenu *menu, NcWindow *window, void *item,
     choice = nc_menu_highlight(tag_types);
     if ((choice >= 0) && (choice < 11)) {
         StrBuilder tag;
-        enum NcmTagsField field = ncm_song_info_tags[choice].field;
+        enum TagsField field = ncm_song_info_tags[choice].field;
 
         tag = ncm_mutable_song_tags_buffer(song, field, Config.tags_separator,
                                            Config.tags_separator_len,
@@ -405,7 +405,7 @@ tag_edit_scroll(NcScreen *screen, enum NcScroll where) {
 
 static enum TagEditTagTypeAction
 tag_edit_current_tag_type_action(TagEditScreen *screen,
-                                 enum NcmTagsField *field) {
+                                 enum TagsField *field) {
     NcMenu *menu;
     StrBuilder *row;
     int32 choice;
@@ -451,7 +451,7 @@ static bool
 tag_edit_can_run_current(NcScreen *screen) {
     TagEditScreen *editor = tag_edit_from_screen(screen);
     NcMenu *menu;
-    enum NcmTagsField field;
+    enum TagsField field;
 
     switch (editor->active_focus) {
     case TAG_EDIT_FOCUS_DIRECTORIES:
@@ -665,7 +665,7 @@ tag_edit_save_recent_patterns(TagEditScreen *screen) {
 
 static bool
 tag_edit_prompt_tag_value(TagEditScreen *screen,
-                            enum NcmTagsField field, bool all_targets) {
+                            enum TagsField field, bool all_targets) {
     MutableSong *song;
     StrBuilder initial;
     StrBuilder input = {0};
@@ -846,7 +846,7 @@ tag_edit_run_current(NcScreen *screen) {
         }
         return -NCM_ERROR_UNAVAILABLE;
     case TAG_EDIT_FOCUS_TAG_TYPES: {
-        enum NcmTagsField field;
+        enum TagsField field;
 
         switch (tag_edit_current_tag_type_action(editor, &field)) {
         case TAG_EDIT_TAG_TYPE_ACTION_FIELD:
@@ -893,7 +893,7 @@ tag_edit_run_current(NcScreen *screen) {
     }
     case TAG_EDIT_FOCUS_TAGS: {
         enum TagEditTagTypeAction action;
-        enum NcmTagsField field;
+        enum TagsField field;
         NcMenu *tags;
         bool result;
 
@@ -1818,7 +1818,7 @@ typedef struct TagEditSearchContext {
 } TagEditSearchContext;
 
 typedef struct TagSetter {
-    enum NcmTagsField field;
+    enum TagsField field;
     char *value;
     char *separator;
     int32 value_len;
@@ -1949,7 +1949,7 @@ tag_edit_tag_matches_regex(TagEditScreen *screen,
                              MutableSong *song, NcmRegex *regex) {
     StrBuilder buffer = {0};
     NcMenu *tag_types;
-    enum NcmTagsField field;
+    enum TagsField field;
     int32 choice;
     bool found;
 
@@ -3079,7 +3079,7 @@ tag_edit_set_song_tag_callback(MutableSong *song, void *user) {
 
 int32
 tag_edit_screen_apply_tag_to_selection(TagEditScreen *screen,
-                                         enum NcmTagsField field,
+                                         enum TagsField field,
                                          char *value, int32 value_len,
                                          char *separator, int32 separator_len) {
     TagSetter setter;
@@ -3148,7 +3148,7 @@ tag_edit_capitalize_song_callback(MutableSong *song, void *user) {
     (void)user;
 
     for (int32 fi = 0; ncm_song_info_tags[fi].name; fi += 1) {
-        enum NcmTagsField field = ncm_song_info_tags[fi].field;
+        enum TagsField field = ncm_song_info_tags[fi].field;
 
         for (int32 i = 0; ; i += 1) {
             StringView view;
@@ -3187,7 +3187,7 @@ static int32
 tag_edit_lower_song_callback(MutableSong *song, void *user) {
     (void)user;
     for (int32 j = 0; ncm_song_info_tags[j].name; j += 1) {
-        enum NcmTagsField field = ncm_song_info_tags[j].field;
+        enum TagsField field = ncm_song_info_tags[j].field;
 
         for (int32 i = 0; ; i += 1) {
             StringView view;
@@ -3792,7 +3792,7 @@ tag_edit_parse_filename(MutableSong *song, char *mask,
         int32 value_end;
         int32 separator_len;
         char next_tag_char;
-        enum NcmTagsField field;
+        enum TagsField field;
 
         separator_len = percent_pos - mask_pos;
         if ((separator_len > 0) && (((file_pos + separator_len) > file.len)
@@ -3936,7 +3936,7 @@ tag_edit_generate_filename(MutableSong *song, char *pattern,
 }
 
 int32
-tag_edit_song_display_value(MutableSong *song, enum NcmTagsField field,
+tag_edit_song_display_value(MutableSong *song, enum TagsField field,
                               StrBuilder *buffer) {
     StrBuilder tag = {0};
 

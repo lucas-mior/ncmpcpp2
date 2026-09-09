@@ -255,12 +255,12 @@ ncm_song_getter_to_tag_type(enum SongGetter getter) {
     }
 }
 
-enum NcmTagsField
+enum TagsField
 ncm_tags_field_from_char(char c) {
     return ncm_tags_field_from_tag_type(ncm_char_to_tag_type(c));
 }
 
-enum NcmTagsField
+enum TagsField
 ncm_tags_field_from_tag_type(enum mpd_tag_type tag) {
     switch (tag) {
     case MPD_TAG_TITLE:
@@ -332,7 +332,7 @@ ncm_tags_field_from_tag_type(enum mpd_tag_type tag) {
 }
 
 enum mpd_tag_type
-ncm_tags_field_to_tag_type(enum NcmTagsField field) {
+ncm_tags_field_to_tag_type(enum TagsField field) {
     switch (field) {
     case NCM_TAGS_FIELD_TITLE:
         return MPD_TAG_TITLE;
@@ -363,7 +363,7 @@ ncm_tags_field_to_tag_type(enum NcmTagsField field) {
 }
 
 enum SongGetter
-ncm_tags_field_to_song_getter(enum NcmTagsField field) {
+ncm_tags_field_to_song_getter(enum TagsField field) {
     switch (field) {
     case NCM_TAGS_FIELD_TITLE:
         return SONG_GETTER_TITLE;
@@ -393,7 +393,7 @@ ncm_tags_field_to_song_getter(enum NcmTagsField field) {
     }
 }
 
-enum NcmTagsField
+enum TagsField
 ncm_song_getter_to_tags_field(enum SongGetter getter) {
     switch (getter) {
     case SONG_GETTER_TITLE:
