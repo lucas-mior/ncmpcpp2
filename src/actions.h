@@ -137,14 +137,14 @@ enum ActionType {
     ACTION_LAST,
 };
 
-typedef bool (ActionCanRunFn)(void *user);
-typedef int32 (ActionRunFn)(void *user);
+typedef bool ActionCanRunFn(void *user);
+typedef int32 ActionRunFn(void *user);
 
 #define ACTION_RUNTIME_DEFER 0
 #define ACTION_RUNTIME_ALLOW 1
 #define ACTION_RUNTIME_DENY -1
 
-typedef int32 (ActionRuntimeHook)(enum ActionType type, void *user);
+typedef int32 ActionRuntimeHook(enum ActionType type, void *user);
 
 typedef struct ActionRuntime {
     ActionRuntimeHook *can_run_hook;

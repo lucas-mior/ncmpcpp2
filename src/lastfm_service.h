@@ -19,14 +19,14 @@ typedef struct NcmLastfmResult {
     bool success;
 } NcmLastfmResult;
 
-typedef int32 (NcmLastfmCurlPerformFn)(StrBuilder *data, char *url,
-                                         int32 url_len, char *referer,
-                                         int32 referer_len,
-                                         bool follow_redirect,
-                                         int32 timeout_seconds, void *user);
+typedef int32 NcmLastfmCurlPerformFn(StrBuilder *data, char *url,
+                                     int32 url_len, char *referer,
+                                     int32 referer_len,
+                                     bool follow_redirect,
+                                     int32 timeout_seconds, void *user);
 
-typedef int32 (NcmLastfmCurlEscapeFn)(StrBuilder *out, char *string,
-                                         int32 string_len, void *user);
+typedef int32 NcmLastfmCurlEscapeFn(StrBuilder *out, char *string,
+                                    int32 string_len, void *user);
 
 typedef struct NcmLastfmService {
     char *artist;
