@@ -1336,11 +1336,10 @@ playlist_edit_locate_song_in_playlist_range(PlaylistEditScreen *screen,
     }
     for (int32 i = first; i < last; i += 1) {
         NcmMpdSongList songs = {0};
-        NcmPlaylist *playlist;
+        NcmPlaylist *playlist = nc_menu_active_item_at(menu, i);
         int32 song_index;
         int32 status;
 
-        playlist = nc_menu_active_item_at(menu, i);
         song_index = ncm_mpd_client_get_playlist_content_no_info(client,
                                                                  playlist->path,
                                                                  &songs,
