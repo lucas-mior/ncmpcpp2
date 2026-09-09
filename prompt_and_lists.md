@@ -36,12 +36,6 @@ int x = function_with_long_name_must_be_broken_twice(long_argument,
                                                      window_height);
 ```
 
-- src/screens/nc_tiny_tag_edit.c
-- src/main.c
-- src/c/ncm_taglib.c
-- src/c/ncm_conversion.c
-- src/c/ncm_utilities.c
-- src/config.c
 - src/screens/nc_lastfm.c
 - src/c/ncm_mpd_connection.c
 - src/screens/nc_visualizer.c

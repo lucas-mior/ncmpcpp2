@@ -38,8 +38,8 @@ ncm_conversion_has_only_trailing_space(char *cursor) {
 }
 
 static int32
-ncm_conversion_set_parse_error(NcmError *ncm_error, char *source,
-                               int32 source_len) {
+ncm_conversion_set_parse_error(NcmError *ncm_error,
+                               char *source, int32 source_len) {
     char message[256];
     int32 len;
 

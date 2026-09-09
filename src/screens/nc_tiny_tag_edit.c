@@ -211,8 +211,8 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
 
         SB_APPEND(&new_name, input.data, input.len);
         if (dot >= 0) {
-            SB_APPEND(&new_name, &current_name.data[dot],
-                      current_name.len - dot);
+            SB_APPEND(&new_name,
+                      &current_name.data[dot], current_name.len - dot);
         }
         ncm_mutable_song_set_new_name(&screen->edited,
                                       new_name.data, new_name.len);
@@ -457,8 +457,8 @@ tiny_tag_edit_screen_init(TinyTagEditScreen *screen, int32 start_x, int32 width,
     nc_menu_set_cyclic_scrolling(menu, Config.cyclic_scrolling);
     nc_menu_set_centered_cursor(menu, Config.centered_cursor);
 
-    nc_window_init(&screen->window, start_x, main_start_y, width,
-                   main_height, NULL, 0, color, border);
+    nc_window_init(&screen->window, start_x, main_start_y,
+                   width, main_height, NULL, 0, color, border);
     screen->hooks = (TinyTagEditHooks){0};
     screen->edited = (MutableSong){0};
 
@@ -620,8 +620,8 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     nc_menu_clear_items(nc_editor_buffer_menu_base(&screen->rows));
 
     row = (NcBuffer){0};
-    tiny_editor_buffer_key_value(&row, STRLIT("Filename"), screen->edited.name,
-                                 screen->edited.name_len);
+    tiny_editor_buffer_key_value(&row, STRLIT("Filename"),
+                                 screen->edited.name, screen->edited.name_len);
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
     nc_buffer_clear(&row);
 
@@ -662,7 +662,8 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
     nc_buffer_clear(&row);
 
-    channel_len = ncm_channels_to_string(properties.channels, channel_buffer,
+    channel_len = ncm_channels_to_string(properties.channels,
+                                         channel_buffer,
                                          SIZEOF(channel_buffer));
     tiny_editor_buffer_key_value(&row, STRLIT("Channels"),
                                  channel_buffer, channel_len);
@@ -693,8 +694,8 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
 
     nc_editor_buffer_menu_add_separator(&screen->rows);
     row = (NcBuffer){0};
-    tiny_editor_buffer_key_value(&row, STRLIT("Filename"), screen->edited.name,
-                                 screen->edited.name_len);
+    tiny_editor_buffer_key_value(&row, STRLIT("Filename"),
+                                 screen->edited.name, screen->edited.name_len);
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_SELECTABLE);
     nc_buffer_destroy(&row);
 
