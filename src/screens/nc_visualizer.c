@@ -1825,8 +1825,10 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
             double angle = (double)i*angle_multiplier;
             int32 x = (int32)((double)half_width*cos(angle));
             int32 y = (int32)((double)ellipse_half_height*sin(angle));
-            double max_radius = sqrt(SQUARE((double)x) + SQUARE((double)y));
             double radius = fabs((double)samples[i])/32768.0;
+            double x2 = SQUARE((double)x);
+            double y2 = SQUARE((double)y);
+            double max_radius = sqrt(x2 + y2);
 
             x = (int32)((double)x*radius);
             y = (int32)((double)y*radius);
@@ -1834,9 +1836,8 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
             visualizer_draw_character(screen, half_width + x,
                                       ellipse_half_height + y,
                                       visualizer_color(screen,
-                                          sqrt(SQUARE((double)x)
-                                               + SQUARE((double)y)),
-                                          max_radius, false),
+                                                       sqrt(x2 + y2),
+                                                       max_radius, false),
                                       false, character, character_len);
         }
         break;
