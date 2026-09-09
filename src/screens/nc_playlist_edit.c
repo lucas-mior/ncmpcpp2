@@ -353,11 +353,11 @@ playlist_edit_update_callback(NcScreen *screen) {
     content_fetch_due = false;
     if (nc_menu_item_count(playlists) > 0) {
         NcMenu *content = nc_song_menu_base(&editor->content);
-        bool displayed_playlist_is_current =
+        bool displayed_is_current =
             playlist_edit_displayed_playlist_is_current(editor);
-        if (editor->content_update_requested && displayed_playlist_is_current) {
+        if (editor->content_update_requested && displayed_is_current) {
             content_fetch_due = true;
-        } else if (!displayed_playlist_is_current
+        } else if (!displayed_is_current
                    && !((editor->last_known_content_count == 0)
                         && editor->displayed_playlist_valid)
                    && (nc_menu_item_count(content) <= 0)) {
