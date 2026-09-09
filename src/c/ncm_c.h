@@ -1102,8 +1102,7 @@ int32 ncm_mpd_client_enable_output(MpdClient *, int32, NcmError *);
 int32 ncm_mpd_client_disable_output(MpdClient *, int32, NcmError *);
 int32 ncm_mpd_client_get_url_handlers(MpdClient *, StringViewList *,
                                       NcmError *);
-int32 ncm_mpd_client_get_tag_types(MpdClient *, StringViewList *,
-                                   NcmError *);
+int32 ncm_mpd_client_get_tag_types(MpdClient *, StringViewList *, NcmError *);
 
 #include "configura.h"
 
