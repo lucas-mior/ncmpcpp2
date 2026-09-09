@@ -3,17 +3,25 @@
 #include "nc_screens.h"
 
 #if defined(__INCLUDE_LEVEL__) && (__INCLUDE_LEVEL__ == 0)
-#define NC_SCREEN_IMPL_TYPE             nc_screen_impl_type
-#define NC_SCREEN_IMPL_PREFIX           nc_screen_impl_prefix
-#define NC_SCREEN_IMPL_PUBLIC_PREFIX    nc_screen_impl_public_prefix
-#define NC_SCREEN_IMPL_BASE_FIELD       nc_screen_impl_base_field
-#define NC_SCREEN_IMPL_WINDOW_FIELD     nc_screen_impl_window_field
-#define NC_SCREEN_IMPL_WINDOW           nc_screen_impl_window
-#define NC_SCREEN_IMPL_SCROLL_CALLBACK  nc_screen_impl_scroll_callback
-#define NC_SCREEN_IMPL_SCROLLPAD_FIELD  nc_screen_impl_scrollpad_field
-#define NC_SCREEN_IMPL_SCROLL_MENU      nc_screen_impl_scroll_menu
-#define NC_SCREEN_IMPL_MENU             nc_screen_impl_menu
-#define NC_SCREEN_IMPL_REFRESH_CALLBACK nc_screen_impl_refresh_callback
+typedef struct NcScreenImplDummy {
+    NcScreen nc_screen_impl_base_field;
+    NcWindow nc_screen_impl_window_field;
+    NcScrollpad nc_screen_impl_scrollpad_field;
+} NcScreenImplDummy;
+
+NcScreen *nc_screen_impl_dummy_base(NcScreenImplDummy *);
+
+#define NC_SCREEN_IMPL_TYPE            NcScreenImplDummy
+#define NC_SCREEN_IMPL_PREFIX          nc_screen_impl_dummy
+#define NC_SCREEN_IMPL_PUBLIC_PREFIX   nc_screen_impl_dummy
+#define NC_SCREEN_IMPL_BASE_FIELD      nc_screen_impl_base_field
+#define NC_SCREEN_IMPL_BASE_EXPR(screen)                                      \
+    (&(screen)->NC_SCREEN_IMPL_BASE_FIELD)
+#define NC_SCREEN_IMPL_WINDOW_FIELD    nc_screen_impl_window_field
+#define NC_SCREEN_IMPL_SCROLLPAD_FIELD nc_screen_impl_scrollpad_field
+#define NC_SCREEN_IMPL_NO_GEOMETRY_ACCESSORS
+#define NC_SCREEN_IMPL_REFRESH_CALLBACK(screen)                              \
+    ((void)(screen))
 #endif
 
 #if !defined(NC_SCREEN_IMPL_TYPE)
