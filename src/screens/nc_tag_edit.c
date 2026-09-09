@@ -1077,10 +1077,9 @@ tag_edit_run_current(NcScreen *screen) {
                 sb_set(&first, editor->pattern.data, editor->pattern.len);
                 str_builder_array_append_copy(&replacement, &first);
                 sb_free(&first);
-                existing =
-                    tag_edit_find_recent_pattern(editor,
-                                                 editor->pattern.data,
-                                                 editor->pattern.len);
+                existing = tag_edit_find_recent_pattern(editor,
+                                                        editor->pattern.data,
+                                                        editor->pattern.len);
                 for (int32 i = 0; i < editor->recent_patterns.len; i += 1) {
                     StrBuilder *pattern;
                     if (i == existing) {
