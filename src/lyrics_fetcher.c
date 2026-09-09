@@ -1358,7 +1358,7 @@ lyrics_url_best_slug_score(LyricsFetcherDef *fetcher,
                             if (lyrics_slug_match_separator(prefix_separator)) {
                                 score = 35;
                             }
-                        } else if ((match != NULL) && (match > candid)) {
+                        } else if (match && (match > candid)) {
                             int32 match_pos = (int32)(match - candid);
                             char before_match = candid[match_pos - 1];
 
