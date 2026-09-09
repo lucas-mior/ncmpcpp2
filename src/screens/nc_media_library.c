@@ -2502,11 +2502,12 @@ library_apply_column_filter(MediaLibraryScreen *screen,
     NcMenuDisplayCallbacks callbacks;
 
     state = media_library_screen_column_state(screen, column);
+    callbacks = library_display_callbacks(screen, column,
+                                          state->filter_enabled);
+
     ASSERT(state != NULL);
     ASSERT(menu != NULL);
 
-    callbacks = library_display_callbacks(screen, column,
-                                          state->filter_enabled);
     nc_menu_set_display_callbacks(menu, callbacks);
     if (state->filter_enabled) {
         nc_menu_apply_filter(menu);
