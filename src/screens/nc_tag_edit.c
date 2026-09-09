@@ -3185,10 +3185,8 @@ tag_edit_screen_capitalize_first_letters(TagEditScreen *screen) {
 static int32
 tag_edit_lower_song_callback(NcmMutableSong *song, void *user) {
     (void)user;
-    for (int32 field_idx = 0;
-         ncm_song_info_tags[field_idx].name;
-         field_idx += 1) {
-        enum NcmTagsField field = ncm_song_info_tags[field_idx].field;
+    for (int32 j = 0; ncm_song_info_tags[j].name; j += 1) {
+        enum NcmTagsField field = ncm_song_info_tags[j].field;
 
         for (int32 i = 0; ; i += 1) {
             NcmStringView view;
