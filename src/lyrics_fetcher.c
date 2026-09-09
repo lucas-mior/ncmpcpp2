@@ -2120,11 +2120,11 @@ lyrics_append_direct_url(NcmLyricsFetcherDef *fetcher, StrBuilder *candidate,
         StrBuilder artist_slug = {0};
         StrBuilder title_slug = {0};
 
-        status = lyrics_append_slug_profile(&artist_slug, pair.artist, artist,
-                                            artist_len);
+        status = lyrics_append_slug_profile(&artist_slug, pair.artist,
+                                            artist, artist_len);
         if (status >= 0) {
-            status = lyrics_append_slug_profile(&title_slug, pair.title, title,
-                                                title_len);
+            status = lyrics_append_slug_profile(&title_slug, pair.title,
+                                                title, title_len);
         }
         if (status >= 0) {
             SB_APPEND(candidate, "https://www.amalgama-lab.com/songs/");
