@@ -70,71 +70,71 @@ settings_test_double_range(SettingsApplyFn apply, Configuration *config,
 static void
 settings_assert_generated_empty(Configuration *config) {
 
-#define XX_BOOL(NAME, DEFAULT_VALUE)                                           \
+#define XX_BOOL(NAME, DEFAULT)                                           \
     ASSERT(!config->NAME);
-#define XX_STRING(NAME, DEFAULT_VALUE)                                         \
+#define XX_STRING(NAME, DEFAULT)                                         \
     ASSERT(config->NAME == NULL);                                              \
     ASSERT(config->NAME##_len == 0);
-#define XX_PATH(NAME, DEFAULT_VALUE)                                           \
+#define XX_PATH(NAME, DEFAULT)                                           \
     ASSERT(config->NAME == NULL);                                              \
     ASSERT(config->NAME##_len == 0);
-#define XX_DIR(NAME, DEFAULT_VALUE)                                            \
+#define XX_DIR(NAME, DEFAULT)                                            \
     ASSERT(config->NAME == NULL);                                              \
     ASSERT(config->NAME##_len == 0);
-#define XX_INTEGER(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)                      \
+#define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM)                      \
     ASSERT(config->NAME == 0);
-#define XX_DOUBLE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)                       \
+#define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)                       \
     ASSERT(config->NAME == 0);
-#define XX_ENUM(NAME, DEFAULT_VALUE, ENUM_PREFIX_)                             \
+#define XX_ENUM(NAME, DEFAULT, ENUM_PREFIX_)                             \
     ASSERT(config->NAME == (ENUM_PREFIX_)0);
-#define XX_MPD_TAG(NAME, DEFAULT_VALUE)                                        \
+#define XX_MPD_TAG(NAME, DEFAULT)                                        \
     ASSERT(config->NAME == NCM_TAG_UNKNOWN);
-#define XX_STARTUP_SCREEN(NAME, DEFAULT_VALUE)                                 \
+#define XX_STARTUP_SCREEN(NAME, DEFAULT)                                 \
     ASSERT(config->NAME == SCREEN_TYPE_COUNT);
-#define XX_OPT_STARTUP_SCREEN(NAME, DEFAULT_VALUE, PRESENT_FIELD, UNSET_VALUE) \
+#define XX_OPT_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE) \
     ASSERT(config->NAME == (SCREEN_TYPE_)(UNSET_VALUE));                       \
     ASSERT(!config->PRESENT_FIELD);
-#define XX_COLOR(NAME, DEFAULT_VALUE)                                          \
+#define XX_COLOR(NAME, DEFAULT)                                          \
     ASSERT(nc_color_is_default(config->NAME));
-#define XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)                                \
+#define XX_FORMATTED_COLOR(NAME, DEFAULT)                                \
     ASSERT(config->NAME.formats == NULL);                                      \
     ASSERT(nc_color_is_default(config->NAME.color));
-#define XX_BORDER(NAME, DEFAULT_VALUE)                                         \
+#define XX_BORDER(NAME, DEFAULT)                                         \
     ASSERT(!config->NAME.enabled);                                             \
     ASSERT(nc_color_is_default(config->NAME.color));
-#define XX_FORMAT(NAME, DEFAULT_VALUE, FLAGS)                                  \
+#define XX_FORMAT(NAME, DEFAULT, FLAGS)                                  \
     ASSERT(config->NAME.root.items == NULL);                                   \
     ASSERT(config->NAME.root.len == 0);                                        \
     ASSERT(config->NAME.root.cap == 0);
-#define XX_BUFFER(NAME, DEFAULT_VALUE, KEEP_EXISTING)                          \
+#define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                          \
     ASSERT(config->NAME.data == NULL);                                         \
     ASSERT(config->NAME.properties == NULL);                                   \
     ASSERT(config->NAME.len == 0);                                             \
     ASSERT(config->NAME.cap == 0);
-#define XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)         \
+#define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)         \
     ASSERT(config->NAME.data == NULL);                                         \
     ASSERT(config->NAME.len == 0);                                             \
     ASSERT(config->NAME.cap == 0);
-#define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN)                            \
+#define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                            \
     ASSERT(config->NAME.items == NULL);                                        \
     ASSERT(config->NAME.len == 0);                                             \
     ASSERT(config->NAME.cap == 0);
-#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE)                           \
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT)                           \
     ASSERT(config->NAME.items == NULL);                                        \
     ASSERT(config->NAME.len == 0);                                             \
     ASSERT(config->NAME.cap == 0);
-#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)                                \
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT)                                \
     ASSERT(config->NAME.fetchers.items == NULL);                               \
     ASSERT(config->NAME.fetchers.len == 0);                                    \
     ASSERT(config->NAME.fetchers.cap == 0);
-#define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD)                    \
+#define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                    \
     ASSERT(config->NAME.items == NULL);                                        \
     ASSERT(config->NAME.len == 0);                                             \
     ASSERT(config->NAME.cap == 0);                                             \
     ASSERT(!config->PREVIOUS_FIELD);
-#define XX_UINT32_CHOICE(NAME, DEFAULT_VALUE, PARSER, UNSET_VALUE)             \
+#define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE)             \
     ASSERT(config->NAME == (UNSET_VALUE));
-#define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD)                          \
+#define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD)                          \
     ASSERT(config->FORMAT_FIELD.root.items == NULL);                           \
     ASSERT(config->FORMAT_FIELD.root.len == 0);                                \
     ASSERT(config->FORMAT_FIELD.root.cap == 0);                                \
@@ -149,14 +149,14 @@ settings_assert_generated_empty(Configuration *config) {
 
 static void
 test_generated_option_identity(void) {
-#define XX_OPTION(NAME, DEFAULT_VALUE, ...) \
+#define XX_OPTION(NAME, DEFAULT, ...) \
     ASSERT_EQUAL( \
         ncmpcpp_options[SETTINGS_OPTION_##NAME].name, \
         ncmpcpp_options[SETTINGS_OPTION_##NAME].name_len, #NAME); \
     ASSERT_EQUAL( \
         ncmpcpp_options[SETTINGS_OPTION_##NAME].default_value, \
         ncmpcpp_options[SETTINGS_OPTION_##NAME].default_value_len, \
-        DEFAULT_VALUE); \
+        DEFAULT); \
     ASSERT(ncmpcpp_options[SETTINGS_OPTION_##NAME].apply == apply_##NAME);
 #include "config_options_pass.h"
 
@@ -438,10 +438,10 @@ test_generated_numeric_boundaries(void) {
 
     config_init(&config);
 
-#define XX_INTEGER(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+#define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM) \
     settings_test_int_range(apply_##NAME, &config, &config.NAME, \
                             MINIMUM, MAXIMUM);
-#define XX_DOUBLE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
+#define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM) \
     settings_test_double_range(apply_##NAME, &config, &config.NAME, \
                                MINIMUM, MAXIMUM);
 #include "config_options_pass.h"
