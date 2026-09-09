@@ -58,9 +58,8 @@ nc_song_info_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 
 static void
 nc_song_info_destroy_callback(NcScreen *screen) {
-    NcSongInfoScreen *song_info;
+    NcSongInfoScreen *song_info = (NcSongInfoScreen *)screen;
 
-    song_info = (NcSongInfoScreen *)screen;
     if (song_info->hooks.destroy) {
         song_info->hooks.destroy(song_info->hooks.user);
     }
