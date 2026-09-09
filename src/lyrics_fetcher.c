@@ -1333,8 +1333,8 @@ lyrics_url_best_slug_score(LyricsFetcherDef *fetcher,
 
         if (segment_len > 0) {
             lyrics_percent_decode(&decoded, segment, segment_len);
-            if (lyrics_append_slug(&slug, fetcher->type, decoded.data,
-                                   decoded.len) >= 0) {
+            if (lyrics_append_slug(&slug, fetcher->type,
+                                   decoded.data, decoded.len) >= 0) {
                 char *candid = slug.data;
                 char *wanted_data = wanted->data;
                 int32 candid_len = slug.len;
@@ -1384,8 +1384,7 @@ lyrics_url_best_slug_score(LyricsFetcherDef *fetcher,
 
                     if (lyrics_starts_with_ignore_case(wanted_data,
                                                        wanted_len,
-                                                       candid,
-                                                       candid_len)
+                                                       candid, candid_len)
                         && lyrics_slug_match_separator(suffix_separator)) {
                         score = 20;
                     }
@@ -1641,15 +1640,15 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
             int32 second_status;
 
             first_status = lyrics_extract_divs(out, content_data, content_len,
-                                                 STRLIT("class=\"original\""),
-                                                 true);
+                                               STRLIT("class=\"original\""),
+                                               true);
             if (first_status == 0) {
                 extract_status = 0;
                 break;
             }
             second_status = lyrics_extract_divs(out, content_data, content_len,
-                                                  STRLIT("class='original'"),
-                                                  true);
+                                                STRLIT("class='original'"),
+                                                true);
             if (second_status == 0) {
                 extract_status = 0;
                 break;
@@ -1753,8 +1752,8 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
             int32 fallback_status;
 
             match = memmem64(content_data, content_len,
-                           STRLIT("window.__PRELOADED_STATE__ = "
-                                  "JSON.parse('"));
+                             STRLIT("window.__PRELOADED_STATE__ = "
+                                    "JSON.parse('"));
             if (match == NULL) {
                 marker = -1;
             } else {
@@ -1813,9 +1812,9 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
             }
 
             fallback_status = lyrics_extract_divs(out, content_data,
-                                                    content_len,
-                                                    STRLIT("data-lyrics-"
-                                                          "container=\"true\""),
+                                                  content_len,
+                                                  STRLIT("data-lyrics-"
+                                                         "container=\"true\""),
                                                     true);
             if (fallback_status == 0) {
                 extract_status = 0;
