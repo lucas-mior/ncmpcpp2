@@ -370,8 +370,7 @@ search_run_current(NcScreen *base_screen) {
 #define NC_SCREEN_IMPL_TITLE_CALLBACK search_title
 #define NC_SCREEN_IMPL_UPDATE_CALLBACK search_update
 #define NC_SCREEN_IMPL_MOUSE_CALLBACK search_mouse_button_pressed
-#define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK \
-    search_engine_screen_destroy
+#define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK search_engine_screen_destroy
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
