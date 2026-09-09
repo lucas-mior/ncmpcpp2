@@ -119,7 +119,7 @@ nc_song_info_screen_set_geometry(NcSongInfoScreen *screen,
 
 int32
 nc_song_info_screen_prepare_current(NcSongInfoScreen *screen) {
-    NcBuffer next_buffer;
+    NcBuffer next_buffer = {0};
     int32 status;
 
     if (screen == NULL) {
@@ -129,7 +129,6 @@ nc_song_info_screen_prepare_current(NcSongInfoScreen *screen) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    next_buffer = (NcBuffer){0};
     status = screen->hooks.render(screen->hooks.user, screen, &next_buffer);
     if (status < 0) {
         nc_buffer_destroy(&next_buffer);
