@@ -1328,7 +1328,8 @@ tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
             continue;
         }
         basename_start = ncm_path_basename_start(path.data, path.len);
-        tag_edit_screen_add_directory(screen, path.data + basename_start,
+        tag_edit_screen_add_directory(screen,
+                                      path.data + basename_start,
                                       path.len - basename_start,
                                       path.data, path.len);
     }
@@ -2819,8 +2820,8 @@ tag_edit_screen_rename_current_directory(TagEditScreen *screen, char *music_dir,
 
 void
 tag_edit_screen_add_directory(TagEditScreen *screen,
-                                char *label, int32 label_len,
-                                char *path, int32 path_len) {
+                              char *label, int32 label_len,
+                              char *path, int32 path_len) {
     StrBuilderPair pair = {0};
 
     sb_set(&pair.first, label, label_len);
