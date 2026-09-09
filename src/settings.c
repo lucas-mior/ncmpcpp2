@@ -1076,7 +1076,7 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
 static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
-    enum NcmTagType parsed;                                                  \
+    enum NcmTagType parsed;                                                    \
     int32 status;                                                              \
     status = settings_parse_mpd_tag(value, value_len, &parsed);                \
     if (status < 0) {                                                          \
