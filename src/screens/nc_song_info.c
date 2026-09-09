@@ -35,11 +35,10 @@ nc_song_info_resize(NcScreen *screen) {
 
 static void
 nc_song_info_mouse_button_pressed(NcScreen *screen, MEVENT event) {
-    NcSongInfoScreen *song_info;
+    NcSongInfoScreen *song_info = (NcSongInfoScreen *)screen;
     enum NcScroll where = NC_SCROLL_HOME;
     bool do_scroll;
 
-    song_info = (NcSongInfoScreen *)screen;
     do_scroll = true;
     if (event.bstate & BUTTON5_PRESSED) {
         where = NC_SCROLL_DOWN;
