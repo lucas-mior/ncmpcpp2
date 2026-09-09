@@ -84,7 +84,7 @@ typedef struct Configuration {
     enum mpd_tag_type NAME;
 #define XX_STARTUP_SCREEN(NAME, DEFAULT)                                       \
     SCREEN_TYPE_ NAME;
-#define XX_OPTIONAL_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE)  \
+#define XX_OPT_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE)  \
     SCREEN_TYPE_ NAME;                                                         \
     bool PRESENT_FIELD;
 #define XX_COLOR(NAME, DEFAULT)                                                \

@@ -115,7 +115,7 @@ configuration_init_unchecked(Configuration *config) {
     config->NAME = MPD_TAG_UNKNOWN;
 #define XX_STARTUP_SCREEN(NAME, DEFAULT)                                       \
     config->NAME = SCREEN_TYPE_COUNT;
-#define XX_OPTIONAL_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE)  \
+#define XX_OPT_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE)  \
     config->NAME = (SCREEN_TYPE_)(UNSET_VALUE);                                \
     config->PRESENT_FIELD = false;
 #define XX_COLOR(NAME, DEFAULT)                                                \
@@ -185,7 +185,7 @@ configuration_destroy(Configuration *config) {
 #define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT)
 #define XX_MPD_TAG(NAME, DEFAULT)
 #define XX_STARTUP_SCREEN(NAME, DEFAULT)
-#define XX_OPTIONAL_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE)
+#define XX_OPT_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE)
 #define XX_COLOR(NAME, DEFAULT)
 #define XX_FORMATTED_COLOR(NAME, DEFAULT)                                      \
     nc_formatted_color_destroy(&config->NAME);

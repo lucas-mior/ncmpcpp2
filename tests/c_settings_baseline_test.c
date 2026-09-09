@@ -88,7 +88,7 @@ settings_assert_generated_empty(Configuration *config) {
     ASSERT(config->NAME == MPD_TAG_UNKNOWN);
 #define XX_STARTUP_SCREEN(NAME, DEFAULT_VALUE) \
     ASSERT(config->NAME == SCREEN_TYPE_COUNT);
-#define XX_OPTIONAL_STARTUP_SCREEN( \
+#define XX_OPT_STARTUP_SCREEN( \
     NAME, DEFAULT_VALUE, PRESENT_FIELD, UNSET_VALUE \
 ) \
     ASSERT(config->NAME == (SCREEN_TYPE_)(UNSET_VALUE)); \
