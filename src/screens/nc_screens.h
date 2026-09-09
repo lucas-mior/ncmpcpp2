@@ -908,8 +908,9 @@ struct NcmMpdOutputList;
 
 typedef struct VisualizerDataSourceHooks {
     int32 (*open_fifo)(void *, char *, int32);
-    int32 (*open_udp)(void *, char *location, int32 location_len, char *port,
-                      int32 port_len);
+    int32 (*open_udp)(void *,
+                      char *location, int32 location_len,
+                      char *port, int32 port_len);
     int32 (*read_source)(void *user, int32 fd, void *buffer, int32 buffer_size);
     void (*close_source)(void *, int32);
     int32 (*get_outputs)(void *, struct NcmMpdOutputList *, struct NcmError *);
