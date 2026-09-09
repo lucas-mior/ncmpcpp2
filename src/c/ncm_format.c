@@ -276,13 +276,13 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                     }
                 }
                 if (close < 0) {
-                    status = ncm_format_set_error(
-                        ncm_error, "unexpected end", first_i);
+                    status = ncm_format_set_error(ncm_error, "unexpected end",
+                                                  first_i);
                     break;
                 }
 
-                status = ncm_format_parse_bracket(
-                    &inner, data, first_i + 1, close, flags, ncm_error);
+                status = ncm_format_parse_bracket(&inner, data, first_i + 1,
+                                                  close, flags, ncm_error);
                 if (status == 0) {
                     NcmFormatExpr *expr;
 
@@ -306,8 +306,9 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                 if ((first_i < end) && (data[first_i] == '|')) {
                     first_i += 1;
                     if ((first_i >= end) || (data[first_i] != '{')) {
-                        status = ncm_format_set_error(
-                            ncm_error, "expected bracket", first_i);
+                        status = ncm_format_set_error(ncm_error,
+                                                      "expected bracket",
+                                                      first_i);
                     }
                 } else {
                     done = true;
@@ -325,8 +326,8 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
             ncm_format_text_append(out, &token);
             percent_i = i + 1;
             if (percent_i >= end) {
-                status = ncm_format_set_error(
-                    ncm_error, "unexpected end", percent_i);
+                status = ncm_format_set_error(ncm_error, "unexpected end",
+                                              percent_i);
             } else if (data[percent_i] == '%') {
                 expr = ncm_format_expr_list_append(out);
                 expr->type = NCM_FORMAT_EXPR_TEXT;
@@ -342,16 +343,17 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                         percent_i += 1;
                     }
                     if (percent_i >= end) {
-                        status = ncm_format_set_error(
-                            ncm_error, "unexpected end", percent_i);
+                        status = ncm_format_set_error(ncm_error,
+                                                      "unexpected end",
+                                                      percent_i);
                     } else {
                         for (int32 j = delimiter_start;
                              (status == 0) && (j < percent_i); j += 1) {
                             uint32 digit = (uint32)(data[j] - '0');
 
                             if (delimiter > (MAXOF(delimiter) - digit)/10) {
-                                status = ncm_error_set_status(
-                                    ncm_error, -EOVERFLOW,
+                                status = ncm_error_set_status(ncm_error,
+                                    -EOVERFLOW,
                                     STRLIT("tag delimiter too large"));
                             } else {
                                 delimiter = delimiter*10 + digit;
@@ -363,8 +365,9 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                 if (status == 0) {
                     getter = ncm_song_getter_from_char(data[percent_i]);
                     if (getter == NCM_SONG_GETTER_NONE) {
-                        status = ncm_format_set_error(
-                            ncm_error, "invalid tag", percent_i);
+                        status = ncm_format_set_error(ncm_error,
+                                                      "invalid tag",
+                                                      percent_i);
                     } else {
                         expr = ncm_format_expr_list_append(out);
                         expr->type = NCM_FORMAT_EXPR_SONG_TAG;
@@ -382,8 +385,8 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
 
             ncm_format_text_append(out, &token);
             if (dollar_i >= end) {
-                status = ncm_format_set_error(
-                    ncm_error, "unexpected end", dollar_i);
+                status = ncm_format_set_error(ncm_error, "unexpected end",
+                                              dollar_i);
             } else if (data[dollar_i] == '$') {
                 expr = ncm_format_expr_list_append(out);
                 expr->type = NCM_FORMAT_EXPR_TEXT;
@@ -401,43 +404,44 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                         expr->value.color = nc_color_default();
                         break;
                     case 1:
-                        expr->value.color = nc_color_make(
-                            COLOR_BLACK, -1, false, false);
+                        expr->value.color = nc_color_make(COLOR_BLACK, -1,
+                                                          false, false);
                         break;
                     case 2:
-                        expr->value.color = nc_color_make(
-                            COLOR_RED, -1, false, false);
+                        expr->value.color = nc_color_make(COLOR_RED, -1,
+                                                          false, false);
                         break;
                     case 3:
-                        expr->value.color = nc_color_make(
-                            COLOR_GREEN, -1, false, false);
+                        expr->value.color = nc_color_make(COLOR_GREEN, -1,
+                                                          false, false);
                         break;
                     case 4:
-                        expr->value.color = nc_color_make(
-                            COLOR_YELLOW, -1, false, false);
+                        expr->value.color = nc_color_make(COLOR_YELLOW, -1,
+                                                          false, false);
                         break;
                     case 5:
-                        expr->value.color = nc_color_make(
-                            COLOR_BLUE, -1, false, false);
+                        expr->value.color = nc_color_make(COLOR_BLUE, -1,
+                                                          false, false);
                         break;
                     case 6:
-                        expr->value.color = nc_color_make(
-                            COLOR_MAGENTA, -1, false, false);
+                        expr->value.color = nc_color_make(COLOR_MAGENTA, -1,
+                                                          false, false);
                         break;
                     case 7:
-                        expr->value.color = nc_color_make(
-                            COLOR_CYAN, -1, false, false);
+                        expr->value.color = nc_color_make(COLOR_CYAN, -1,
+                                                          false, false);
                         break;
                     case 8:
-                        expr->value.color = nc_color_make(
-                            COLOR_WHITE, -1, false, false);
+                        expr->value.color = nc_color_make(COLOR_WHITE, -1,
+                                                          false, false);
                         break;
                     case 9:
                         expr->value.color = nc_color_end();
                         break;
                     default:
-                        status = ncm_format_set_error(
-                            ncm_error, "invalid color", dollar_i);
+                        status = ncm_format_set_error(ncm_error,
+                                                      "invalid color",
+                                                      dollar_i);
                         break;
                     }
                     if (status == 0) {
@@ -460,8 +464,9 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                         dollar_i += 1;
                     }
                     if (dollar_i >= end) {
-                        status = ncm_format_set_error(
-                            ncm_error, "unexpected end", dollar_i);
+                        status = ncm_format_set_error(ncm_error,
+                                                      "unexpected end",
+                                                      dollar_i);
                         continue;
                     }
 
@@ -485,11 +490,11 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                             color_status = ncm_format_parse_color_component(
                                 color_data, color_len, false, &foreground);
                             if (color_status == 0) {
-                                expr->value.color = nc_color_make(
-                                    foreground, -2, false, false);
+                                expr->value.color = nc_color_make(foreground,
+                                    -2, false, false);
                             }
-                        } else if (ncm_format_parse_color_component(
-                                       color_data, underscore,
+                        } else if (ncm_format_parse_color_component(color_data,
+                                       underscore,
                                        false, &foreground) < 0) {
                             color_status = -NCM_ERROR_PARSE;
                         } else if (ncm_format_parse_color_component(
@@ -498,14 +503,15 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                                        true, &background) < 0) {
                             color_status = -NCM_ERROR_PARSE;
                         } else {
-                            expr->value.color = nc_color_make(
-                                foreground, background, false, false);
+                            expr->value.color = nc_color_make(foreground,
+                                background, false, false);
                         }
                     }
 
                     if (color_status < 0) {
-                        status = ncm_format_set_error(
-                            ncm_error, "invalid color", color_start);
+                        status = ncm_format_set_error(ncm_error,
+                                                      "invalid color",
+                                                      color_start);
                     } else {
                         expr->type = NCM_FORMAT_EXPR_COLOR;
                         i = dollar_i;
@@ -543,8 +549,9 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                            && (data[dollar_i] == '/')) {
                     dollar_i += 1;
                     if (dollar_i >= end) {
-                        status = ncm_format_set_error(
-                            ncm_error, "unexpected end", dollar_i);
+                        status = ncm_format_set_error(ncm_error,
+                                                      "unexpected end",
+                                                      dollar_i);
                     } else {
                         expr->type = NCM_FORMAT_EXPR_FORMAT;
                         if (data[dollar_i] == 'b') {
@@ -558,16 +565,18 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                         } else if (data[dollar_i] == 'i') {
                             expr->value.format = NC_FORMAT_NO_ITALIC;
                         } else {
-                            status = ncm_format_set_error(
-                                ncm_error, "invalid format", dollar_i);
+                            status = ncm_format_set_error(ncm_error,
+                                                          "invalid format",
+                                                          dollar_i);
                         }
                         if (status == 0) {
                             i = dollar_i;
                         }
                     }
                 } else {
-                    status = ncm_format_set_error(
-                        ncm_error, "invalid character", dollar_i);
+                    status = ncm_format_set_error(ncm_error,
+                                                  "invalid character",
+                                                  dollar_i);
                 }
             }
         } else {

@@ -191,8 +191,9 @@ nc_help_screen_find(NcHelpScreen *screen, char *pattern, int32 pattern_len,
     }
 
     data = nc_buffer_data(&screen->buffer);
-    match_count = ncm_regex_for_each_match(
-        &regex, data, screen->buffer.len, nc_help_find_match_callback, screen);
+    match_count = ncm_regex_for_each_match(&regex, data, screen->buffer.len,
+                                           nc_help_find_match_callback,
+                                           screen);
     ncm_regex_destroy(&regex);
     nc_scrollpad_flush(&screen->scrollpad, &screen->window, &screen->buffer);
     if (match_count > 0) {

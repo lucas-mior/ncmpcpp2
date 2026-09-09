@@ -17,8 +17,8 @@ playlist_edit_update_titles(PlaylistEditScreen *screen, bool update_windows) {
     ASSERT(screen != NULL);
 
     if (screen->last_known_content_count >= 0) {
-        screen->last_known_content_count = nc_menu_item_count(
-            nc_song_menu_base(&screen->content));
+        screen->last_known_content_count =
+            nc_menu_item_count(nc_song_menu_base(&screen->content));
     }
 
     sb_clear(&screen->playlists_title);
@@ -141,18 +141,19 @@ playlist_edit_separator_width(int32 width) {
 static void
 playlist_edit_refresh_callback(NcScreen *screen) {
     PlaylistEditScreen *editor;
+    NcMenu *playlists;
+    NcMenu *content;
 
     editor = playlist_edit_from_screen(screen);
+    playlists = nc_playlist_entry_menu_base(&editor->playlists);
+    content = nc_song_menu_base(&editor->content);
     playlist_edit_update_titles(editor, true);
     playlist_edit_update_menu_highlights(editor);
-    playlist_edit_refresh_window(&editor->playlists_window,
-                                   nc_playlist_entry_menu_base(
-                                       &editor->playlists));
+    playlist_edit_refresh_window(&editor->playlists_window, playlists);
     if (playlist_edit_separator_width(editor->width) > 0) {
         nc_screen_draw_vertical_separator(editor->right_start_x - 1);
     }
-    playlist_edit_refresh_window(&editor->content_window,
-                                   nc_song_menu_base(&editor->content));
+    playlist_edit_refresh_window(&editor->content_window, content);
     return;
 }
 
@@ -293,12 +294,15 @@ playlist_edit_displayed_playlist_is_current(PlaylistEditScreen *screen) {
 static int32
 playlist_edit_timeout_callback(NcScreen *screen) {
     PlaylistEditScreen *editor;
+    NcMenu *playlists;
+    NcMenu *content;
 
     editor = playlist_edit_from_screen(screen);
+    playlists = nc_playlist_entry_menu_base(&editor->playlists);
+    content = nc_song_menu_base(&editor->content);
     if ((editor->fetching_delay_ms >= 0)
-        && (nc_menu_item_count(nc_song_menu_base(&editor->content)) <= 0)
-        && ((nc_menu_item_count(nc_playlist_entry_menu_base(
-                 &editor->playlists)) <= 0)
+        && (nc_menu_item_count(content) <= 0)
+        && ((nc_menu_item_count(playlists) <= 0)
             || !playlist_edit_displayed_playlist_is_current(editor))) {
         return editor->window_timeout_ms;
     }
@@ -344,15 +348,16 @@ playlist_edit_update_callback(NcScreen *screen) {
 
     changed = 0;
     ncm_error_clear(&ncm_error);
+    playlists = nc_playlist_entry_menu_base(&editor->playlists);
     if (editor->playlists_update_requested
-        || (nc_menu_item_count(nc_playlist_entry_menu_base(
-                &editor->playlists)) <= 0)) {
-        status = playlist_edit_screen_reload_playlists_from_mpd(
-            editor, &global_mpd, &ncm_error);
+        || (nc_menu_item_count(playlists) <= 0)) {
+        status =
+            playlist_edit_screen_reload_playlists_from_mpd(editor, &global_mpd,
+                                                           &ncm_error);
         if (status < 0) {
             editor->playlists_update_requested = false;
-            playlist_edit_report_error(
-                STRLIT("Could not fetch playlists"), &ncm_error);
+            playlist_edit_report_error(STRLIT("Could not fetch playlists"),
+                                       &ncm_error);
             ncm_error_clear(&ncm_error);
             playlist_edit_update_titles(editor, true);
             goto update_finished;
@@ -362,7 +367,6 @@ playlist_edit_update_callback(NcScreen *screen) {
 
     playlist_edit_finish_playlist_change(editor);
     content_fetch_due = false;
-    playlists = nc_playlist_entry_menu_base(&editor->playlists);
     if (nc_menu_item_count(playlists) > 0) {
         content = nc_song_menu_base(&editor->content);
         displayed_playlist_is_current =
@@ -387,12 +391,13 @@ playlist_edit_update_callback(NcScreen *screen) {
     }
 
     ncm_error_clear(&ncm_error);
-    status = playlist_edit_screen_reload_content_from_mpd(
-        editor, &global_mpd, &ncm_error);
+    status =
+        playlist_edit_screen_reload_content_from_mpd(editor, &global_mpd,
+                                                     &ncm_error);
     if (status < 0) {
         editor->content_update_requested = false;
-        playlist_edit_report_error(
-            STRLIT("Could not fetch playlist content"), &ncm_error);
+        playlist_edit_report_error(STRLIT("Could not fetch playlist content"),
+                                   &ncm_error);
         ncm_error_clear(&ncm_error);
         playlist_edit_update_titles(editor, true);
         goto update_finished;
@@ -464,15 +469,19 @@ playlist_edit_mouse_callback(NcScreen *screen, MEVENT event) {
                     bool loaded;
                     int32 status;
 
-                    playlist = nc_playlist_entry_menu_current(
-                        &editor->playlists);
+                    playlist =
+                        nc_playlist_entry_menu_current(&editor->playlists);
                     loaded = false;
                     ncm_error_clear(&ncm_error);
-                    status = ncm_mpd_client_load_playlist(
-                        &global_mpd, playlist->path, &loaded, &ncm_error);
+                    status = ncm_mpd_client_load_playlist(&global_mpd,
+                                                          playlist->path,
+                                                          &loaded,
+                                                          &ncm_error);
                     if (status < 0) {
-                        playlist_edit_report_error(
-                            STRLIT("Could not load playlist"), &ncm_error);
+                        char *context = "Could not load playlist";
+
+                        playlist_edit_report_error(context, strlen32(context),
+                                                   &ncm_error);
                     } else if (loaded) {
                         StrBuilder message = {0};
 
@@ -556,8 +565,8 @@ playlist_filter_callback(NcMenu *menu, void *item, void *user) {
     if (!editor->playlist_filter_enabled) {
         return true;
     }
-    return playlist_edit_playlist_matches_regex(
-        &editor->playlist_filter_regex, playlist);
+    return playlist_edit_playlist_matches_regex(&editor->playlist_filter_regex,
+                                                playlist);
 }
 
 static bool
@@ -586,8 +595,8 @@ content_filter_callback(NcMenu *menu, void *item, void *user) {
     if (!editor->content_filter_enabled) {
         return true;
     }
-    return playlist_edit_content_matches_regex(
-        &editor->content_filter_regex, item);
+    return playlist_edit_content_matches_regex(&editor->content_filter_regex,
+                                               item);
 }
 
 static void
@@ -627,9 +636,10 @@ content_draw_callback(NcMenu *menu, NcWindow *window, void *item,
         }
         use_colors = !Config.discard_colors_if_item_is_selected
                      || !nc_menu_position_is_selected(menu, pos);
-        ncm_display_song_columns(
-            &buffer, item, Config.song_columns_list_format.items,
-            Config.song_columns_list_format.len, list_width, use_colors);
+        ncm_display_song_columns(&buffer, item,
+                                 Config.song_columns_list_format.items,
+                                 Config.song_columns_list_format.len,
+                                 list_width, use_colors);
     } else {
         ncm_display_song_row(&buffer, &Config.song_list_format, item,
                              NCM_FORMAT_FLAG_ALL);
@@ -770,19 +780,19 @@ playlist_edit_screen_init(PlaylistEditScreen *screen,
     }
     {
         NcMenuDisplayCallbacks display_callbacks = {0};
+        NcMenu *playlists = nc_playlist_entry_menu_base(&screen->playlists);
+        NcMenu *content = nc_song_menu_base(&screen->content);
 
         display_callbacks.draw = playlist_draw_callback;
         display_callbacks.matches_filter = playlist_filter_callback;
         display_callbacks.user = screen;
-        nc_menu_set_display_callbacks(nc_playlist_entry_menu_base(
-            &screen->playlists), display_callbacks);
+        nc_menu_set_display_callbacks(playlists, display_callbacks);
 
         display_callbacks = (NcMenuDisplayCallbacks){0};
         display_callbacks.draw = content_draw_callback;
         display_callbacks.matches_filter = content_filter_callback;
         display_callbacks.user = screen;
-        nc_menu_set_display_callbacks(nc_song_menu_base(&screen->content),
-                                      display_callbacks);
+        nc_menu_set_display_callbacks(content, display_callbacks);
     }
 
     return;
@@ -1037,8 +1047,8 @@ playlist_edit_screen_load_playlists(PlaylistEditScreen *screen,
     if ((screen == NULL) || (playlists == NULL)) {
         return -EINVAL;
     }
-    had_preserved = playlist_edit_store_current_playlist_path(
-        screen, &preserved);
+    had_preserved =
+        playlist_edit_store_current_playlist_path(screen, &preserved);
     menu = nc_playlist_entry_menu_base(&screen->playlists);
     nc_menu_show_all_items(menu);
     nc_menu_clear_items(menu);
@@ -1090,9 +1100,10 @@ playlist_edit_screen_reload_playlists_from_mpd(PlaylistEditScreen *screen,
 
                 left = &playlists.items[j - 1];
                 right = &current;
-                comparison = ncm_compare_locale_strings(
-                    left->path, left->path_len, right->path, right->path_len,
-                    Config.ignore_leading_the);
+                comparison =
+                    ncm_compare_locale_strings(left->path, left->path_len,
+                                               right->path, right->path_len,
+                                               Config.ignore_leading_the);
                 if (comparison <= 0) {
                     break;
                 }
@@ -1199,8 +1210,8 @@ playlist_edit_screen_reload_content_from_mpd(PlaylistEditScreen *screen,
     }
 
     songs = (NcmMpdSongList){0};
-    status = ncm_mpd_client_get_playlist_content(
-        client, playlist->path, &songs, ncm_error);
+    status = ncm_mpd_client_get_playlist_content(client, playlist->path,
+                                                 &songs, ncm_error);
     if (status == 0) {
         playlist_edit_screen_load_content(screen, &songs);
     }
@@ -1291,14 +1302,14 @@ playlist_edit_screen_locate_playlist(
     }
 
     menu = nc_playlist_entry_menu_base(&screen->playlists);
-    nc_menu_highlight_position(menu, pos, nc_window_height(
-                                   &screen->playlists_window));
+    nc_menu_highlight_position(menu, pos,
+                               nc_window_height(&screen->playlists_window));
     screen->active_column = PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
     playlist_edit_update_menu_highlights(screen);
     playlist_edit_clear_content_filter(screen);
     playlist_edit_clear_stale_content(screen);
     status = playlist_edit_screen_reload_content_from_mpd(screen, client,
-                                                            ncm_error);
+                                                          ncm_error);
     if (status < 0) {
         return status;
     }
@@ -1364,8 +1375,10 @@ playlist_edit_locate_song_in_playlist_range(
         int32 status;
 
         playlist = nc_menu_active_item_at(menu, i);
-        song_index = ncm_mpd_client_get_playlist_content_no_info(
-            client, playlist->path, &songs, ncm_error);
+        song_index = ncm_mpd_client_get_playlist_content_no_info(client,
+                                                                 playlist->path,
+                                                                 &songs,
+                                                                 ncm_error);
         if (song_index >= 0) {
             song_index = -ENOENT;
             for (int32 j = 0; j < songs.count; j += 1) {
@@ -1385,20 +1398,20 @@ playlist_edit_locate_song_in_playlist_range(
             }
             return song_index;
         }
-        nc_menu_highlight_position(menu, i, nc_window_height(
-                                       &screen->playlists_window));
+        nc_menu_highlight_position(menu, i,
+                                   nc_window_height(&screen->playlists_window));
         screen->active_column = PLAYLIST_EDITOR_COLUMN_PLAYLISTS;
         playlist_edit_update_menu_highlights(screen);
         playlist_edit_clear_stale_content(screen);
-        status = playlist_edit_screen_reload_content_from_mpd(
-            screen, client, ncm_error);
+        status = playlist_edit_screen_reload_content_from_mpd(screen, client,
+                                                              ncm_error);
         if (status < 0) {
             return status;
         }
         status = playlist_edit_highlight_content_position(screen, song_index);
         if (status < 0) {
-            return ncm_error_set_status(
-                ncm_error, status, STRLIT("song is not in playlist view"));
+            return ncm_error_set_status(ncm_error, status,
+                                        STRLIT("song is not in playlist view"));
         }
         return 1;
     }
@@ -1415,6 +1428,8 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
     int32 playlist_pos;
     int32 song_pos;
     int32 found_pos;
+    int32 playlist_count;
+    int32 content_count;
     int32 status;
 
     if ((screen == NULL) || (song == NULL)) {
@@ -1423,8 +1438,8 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
     playlists = nc_playlist_entry_menu_base(&screen->playlists);
     if ((nc_menu_all_item_count(playlists) <= 0)
         || screen->playlists_update_requested) {
-        status = playlist_edit_screen_reload_playlists_from_mpd(
-            screen, client, ncm_error);
+        status = playlist_edit_screen_reload_playlists_from_mpd(screen, client,
+                                                               ncm_error);
         if (status < 0) {
             return status;
         }
@@ -1438,14 +1453,17 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
     playlist_edit_clear_playlist_filter(screen);
     playlists = nc_playlist_entry_menu_base(&screen->playlists);
     content = nc_song_menu_base(&screen->content);
+    playlist_count = nc_menu_all_item_count(playlists);
+    content_count = nc_menu_all_item_count(content);
     playlist_pos = nc_menu_highlight(playlists);
     song_pos = nc_menu_highlight(content);
     if (song_pos < 0) {
         song_pos = 0;
     }
 
-    found_pos = playlist_edit_find_song_in_content_range(
-        screen, song, song_pos + 1, nc_menu_all_item_count(content));
+    found_pos = playlist_edit_find_song_in_content_range(screen, song,
+                                                         song_pos + 1,
+                                                         content_count);
     if (found_pos >= 0) {
         playlist_edit_highlight_content_position(screen, found_pos);
         return playlist_edit_show_screen(screen);
@@ -1453,9 +1471,10 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
 
     ncm_statusbar_print_cstring(Config.message_delay_time,
                                 "Jumping to song...");
-    status = playlist_edit_locate_song_in_playlist_range(
-        screen, client, song, playlist_pos + 1,
-        nc_menu_all_item_count(playlists), ncm_error);
+    status = playlist_edit_locate_song_in_playlist_range(screen, client, song,
+                                                         playlist_pos + 1,
+                                                         playlist_count,
+                                                         ncm_error);
     if (status > 0) {
         return playlist_edit_show_screen(screen);
     }
@@ -1463,8 +1482,9 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
         return status;
     }
 
-    status = playlist_edit_locate_song_in_playlist_range(
-        screen, client, song, 0, playlist_pos, ncm_error);
+    status = playlist_edit_locate_song_in_playlist_range(screen, client, song,
+                                                         0, playlist_pos,
+                                                         ncm_error);
     if (status > 0) {
         return playlist_edit_show_screen(screen);
     }
@@ -1472,8 +1492,8 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
         return status;
     }
 
-    found_pos = playlist_edit_find_song_in_content_range(
-        screen, song, 0, song_pos);
+    found_pos = playlist_edit_find_song_in_content_range(screen, song,
+                                                         0, song_pos);
     if (found_pos >= 0) {
         playlist_edit_highlight_content_position(screen, found_pos);
         return playlist_edit_show_screen(screen);
@@ -1483,7 +1503,7 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
         NcmSong current_song = {0};
 
         status = playlist_edit_screen_current_content_song(screen,
-                                                             &current_song);
+                                                           &current_song);
         if ((status > 0) && ncm_song_is_equal(&current_song, song)) {
             ncm_song_destroy(&current_song);
             screen->active_column = PLAYLIST_EDITOR_COLUMN_CONTENT;
@@ -1537,11 +1557,13 @@ playlist_edit_screen_current_content_song(PlaylistEditScreen *screen,
 
 int32
 playlist_edit_screen_selected_playlist_count(PlaylistEditScreen *screen) {
+    NcMenu *menu;
+
     if (screen == NULL) {
         return 0;
     }
-    return nc_menu_selected_count(
-        nc_playlist_entry_menu_base(&screen->playlists));
+    menu = nc_playlist_entry_menu_base(&screen->playlists);
+    return nc_menu_selected_count(menu);
 }
 
 static int32
@@ -1608,11 +1630,14 @@ playlist_edit_screen_selected_songs(
             playlist = nc_menu_active_item_at(menu, i);
 
             ncm_error_clear(&ncm_error);
-            status = ncm_mpd_client_get_playlist_content(
-                &global_mpd, playlist->path, &list, &ncm_error);
+            status = ncm_mpd_client_get_playlist_content(&global_mpd,
+                                                         playlist->path,
+                                                         &list, &ncm_error);
             if (status < 0) {
-                playlist_edit_report_error(
-                    STRLIT("Could not fetch playlist content"), &ncm_error);
+                char *context = "Could not fetch playlist content";
+
+                playlist_edit_report_error(context, strlen32(context),
+                                           &ncm_error);
                 ncm_error_clear(&ncm_error);
                 ncm_mpd_song_list_destroy(&list);
                 ncm_song_array_clear(songs);

@@ -258,12 +258,12 @@ search_build_constraint_row(SearchEngineScreen *screen, int32 idx,
         || (Config.empty_tag_marker_len <= 0)) {
         return;
     }
-    nc_buffer_add_formatted_color(
-        buffer, buffer->len, &Config.empty_tag_color, 0);
-    nc_buffer_append_data(buffer,
-                          Config.empty_tag_marker, Config.empty_tag_marker_len);
-    nc_buffer_add_formatted_color_end(
-        buffer, buffer->len, &Config.empty_tag_color, 0);
+    nc_buffer_add_formatted_color(buffer, buffer->len,
+                                  &Config.empty_tag_color, 0);
+    nc_buffer_append_data(buffer, Config.empty_tag_marker,
+                          Config.empty_tag_marker_len);
+    nc_buffer_add_formatted_color_end(buffer, buffer->len,
+                                      &Config.empty_tag_color, 0);
     return;
 }
 
@@ -289,10 +289,15 @@ search_run_current(NcScreen *base_screen) {
         if ((pos < 0) || (screen->hooks.prompt_constraint == NULL)) {
             prompt_status = SEARCH_ENGINE_PROMPT_ERROR;
         } else {
-            prompt_status = screen->hooks.prompt_constraint(
-                screen->hooks.user, search_constraint_names[pos],
-                search_constraint_name_lengths[pos],
-                &screen->constraints[pos], &value);
+            StrBuilder *constraint = &screen->constraints[pos];
+            char *constraint_name = search_constraint_names[pos];
+            int32 constraint_name_len = search_constraint_name_lengths[pos];
+
+            prompt_status =
+                screen->hooks.prompt_constraint(screen->hooks.user,
+                                                constraint_name,
+                                                constraint_name_len,
+                                                constraint, &value);
         }
 
         if (prompt_status == SEARCH_ENGINE_PROMPT_ACCEPTED) {
@@ -309,11 +314,12 @@ search_run_current(NcScreen *base_screen) {
         }
         sb_free(&value);
         if (prompt_status == SEARCH_ENGINE_PROMPT_ABORTED) {
-            search_engine_screen_status_message(
-                screen, STRLIT("Action aborted"));
+            search_engine_screen_status_message(screen,
+                                                STRLIT("Action aborted"));
         } else {
-            search_engine_screen_status_message(
-                screen, STRLIT("Unable to read search constraint"));
+            search_engine_screen_status_message(screen,
+                                                STRLIT("Unable to read"
+                                                       " search constraint"));
         }
         return -NCM_ERROR_UNAVAILABLE;
     }
@@ -335,8 +341,9 @@ search_run_current(NcScreen *base_screen) {
     }
     if (pos == SEARCH_ENGINE_SEARCH_BUTTON_ROW) {
         ncm_error_clear(&ncm_error);
-        if ((status = search_engine_screen_start_searching(
-                 screen, screen->hooks.client, &ncm_error)) < 0) {
+        if ((status =
+             search_engine_screen_start_searching(screen, screen->hooks.client,
+                                                  &ncm_error)) < 0) {
             return status;
         }
         return 0;
@@ -379,15 +386,15 @@ search_row_matches(SearchEngineScreen *screen,
 
     if (screen->hooks.format_song) {
         sb_clear(&screen->row_text);
-        if (screen->hooks.format_song(
-            screen->hooks.user, &row->song, &screen->row_text) < 0) {
+        if (screen->hooks.format_song(screen->hooks.user, &row->song,
+                                      &screen->row_text) < 0) {
             return false;
         }
         view = ncm_string_view_make(screen->row_text.data,
                                     screen->row_text.len);
     } else {
-        search_engine_screen_format_song_text(
-            screen, &row->song, &screen->row_text);
+        search_engine_screen_format_song_text(screen, &row->song,
+                                              &screen->row_text);
         view = ncm_string_view_make(screen->row_text.data,
                                     screen->row_text.len);
     }
@@ -408,9 +415,10 @@ search_row_matches_filter(NcMenu *menu, void *item, void *user) {
 
 static void
 search_format_columns(NcmSong *song, NcBuffer *buffer, int32 list_width) {
-    ncm_display_song_columns(
-        buffer, song, Config.song_columns_list_format.items,
-        Config.song_columns_list_format.len, list_width, true);
+    ncm_display_song_columns(buffer, song,
+                             Config.song_columns_list_format.items,
+                             Config.song_columns_list_format.len, list_width,
+                             true);
     return;
 }
 
@@ -753,13 +761,13 @@ search_engine_screen_prepare_static_rows(SearchEngineScreen *screen) {
         NcBuffer constraint_buffer = {0};
 
         search_build_constraint_row(screen, i, &constraint_buffer);
-        search_engine_screen_add_buffer_with_flags(
-            screen, &constraint_buffer, 0);
+        search_engine_screen_add_buffer_with_flags(screen,
+                                                   &constraint_buffer, 0);
         nc_buffer_destroy(&constraint_buffer);
     }
 
-    search_engine_screen_add_buffer_with_flags(
-        screen, &buffer, NC_MENU_ITEM_SEPARATOR);
+    search_engine_screen_add_buffer_with_flags(screen, &buffer,
+                                               NC_MENU_ITEM_SEPARATOR);
 
     search_build_search_source_row(screen, &buffer);
     search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
@@ -768,8 +776,8 @@ search_engine_screen_prepare_static_rows(SearchEngineScreen *screen) {
     search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
 
     nc_buffer_clear(&buffer);
-    search_engine_screen_add_buffer_with_flags(
-        screen, &buffer, NC_MENU_ITEM_SEPARATOR);
+    search_engine_screen_add_buffer_with_flags(screen, &buffer,
+                                               NC_MENU_ITEM_SEPARATOR);
 
     nc_buffer_append_data(&buffer, STRLIT("Search"));
     search_engine_screen_add_buffer_with_flags(screen, &buffer, 0);
@@ -1025,8 +1033,9 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
             constraint_status = 0;
             constraint = &screen->constraints[0];
             if (constraint->len > 0) {
-                constraint_status = ncm_mpd_client_add_search_any(
-                    client, constraint->data, ncm_error);
+                constraint_status =
+                    ncm_mpd_client_add_search_any(client, constraint->data,
+                                                  ncm_error);
             }
 
             for (int32 i = 1;
@@ -1040,8 +1049,9 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                     continue;
                 }
                 if (i == 5) {
-                    constraint_status = ncm_mpd_client_add_search_uri(
-                        client, constraint->data, ncm_error);
+                    constraint_status =
+                        ncm_mpd_client_add_search_uri(client, constraint->data,
+                                                      ncm_error);
                     continue;
                 }
 
@@ -1078,14 +1088,15 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                     continue;
                 }
 
-                constraint_status = ncm_mpd_client_add_search_tag(
-                    client, tag, constraint->data, ncm_error);
+                constraint_status =
+                    ncm_mpd_client_add_search_tag(client, tag, constraint->data,
+                                                  ncm_error);
             }
             status = constraint_status;
         }
         if (status == 0) {
-            status = ncm_mpd_client_commit_search_songs(
-                client, &result, ncm_error);
+            status = ncm_mpd_client_commit_search_songs(client, &result,
+                                                         ncm_error);
         }
         if (status == 0) {
             ncm_mpd_song_list_to_song_array(&result, &songs);
@@ -1094,21 +1105,21 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
     } else {
         if (screen->search_in_database) {
             if (screen->hooks.list_database_songs == NULL) {
-                status = ncm_error_set_status(
-                    ncm_error, -NCM_ERROR_UNAVAILABLE,
-                    STRLIT("database search unavailable"));
+                status = ncm_error_set_status(ncm_error, -NCM_ERROR_UNAVAILABLE,
+                                              STRLIT("database search"
+                                                     " unavailable"));
             } else {
-                status = screen->hooks.list_database_songs(
-                    screen->hooks.user, &source, ncm_error);
+                status = screen->hooks.list_database_songs(screen->hooks.user,
+                                                            &source, ncm_error);
             }
         } else {
             if (screen->hooks.snapshot_playlist == NULL) {
-                status = ncm_error_set_status(
-                    ncm_error, -NCM_ERROR_UNAVAILABLE,
-                    STRLIT("playlist snapshot unavailable"));
+                status = ncm_error_set_status(ncm_error, -NCM_ERROR_UNAVAILABLE,
+                                              STRLIT("playlist snapshot"
+                                                     " unavailable"));
             } else {
-                status = screen->hooks.snapshot_playlist(
-                    screen->hooks.user, &source, ncm_error);
+                status = screen->hooks.snapshot_playlist(screen->hooks.user,
+                                                          &source, ncm_error);
             }
         }
 
@@ -1128,10 +1139,10 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                     if (screen->constraints[i].len <= 0) {
                         continue;
                     }
-                    if ((status = ncm_regex_compile(
-                         &regexes[i], screen->constraints[i].data,
-                         screen->constraints[i].len, Config.regular_expressions,
-                         ncm_error)) < 0) {
+                    if ((status = ncm_regex_compile(&regexes[i],
+                            screen->constraints[i].data,
+                            screen->constraints[i].len,
+                            Config.regular_expressions, ncm_error)) < 0) {
                         break;
                     }
                 }
@@ -1156,23 +1167,23 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                                  field += 1) {
                                 NcmStringView value;
 
-                                if (!search_song_has_field_view(
-                                    song, field, &value)) {
+                                if (!search_song_has_field_view(song, field,
+                                                                 &value)) {
                                     value = ncm_string_view_make(
                                         search_empty_string, 0);
                                 }
                                 if (screen->search_mode
                                     == SEARCH_ENGINE_SEARCH_MODE_EXACT) {
-                                    if (ncm_compare_locale_strings(
-                                        value.data, value.len,
-                                        constraint->data, constraint->len,
+                                    if (ncm_compare_locale_strings(value.data,
+                                        value.len, constraint->data,
+                                        constraint->len,
                                         Config.ignore_leading_the) == 0) {
                                         matches = true;
                                         break;
                                     }
-                                } else if (ncm_regex_matches(
-                                               &regexes[0], value.data,
-                                               value.len)) {
+                                } else if (ncm_regex_matches(&regexes[0],
+                                                               value.data,
+                                                               value.len)) {
                                     matches = true;
                                     break;
                                 }
@@ -1195,22 +1206,21 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                             continue;
                         }
                         if (!search_song_has_field_view(song, field, &value)) {
-                            value = ncm_string_view_make(
-                                search_empty_string, 0);
+                            value = ncm_string_view_make(search_empty_string,
+                                                         0);
                         }
                         if (screen->search_mode
                             == SEARCH_ENGINE_SEARCH_MODE_EXACT) {
-                            if (ncm_compare_locale_strings(
-                                value.data, value.len,
-                                constraint->data, constraint->len,
+                            if (ncm_compare_locale_strings(value.data,
+                                value.len, constraint->data, constraint->len,
                                 Config.ignore_leading_the) != 0) {
                                 matches = false;
                                 break;
                             }
                         } else if (regexes[field].compiled
-                                   && !ncm_regex_matches(
-                                          &regexes[field], value.data,
-                                          value.len)) {
+                                   && !ncm_regex_matches(&regexes[field],
+                                                         value.data,
+                                                         value.len)) {
                             matches = false;
                             break;
                         }
@@ -1248,17 +1258,17 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
 
         row.is_song = true;
         ncm_song_copy(&row.song, &songs.items[i]);
-        nc_search_row_menu_add_with_flags(
-            &screen->rows, &row, NC_MENU_ITEM_SELECTABLE);
+        nc_search_row_menu_add_with_flags(&screen->rows, &row,
+                                          NC_MENU_ITEM_SELECTABLE);
         nc_search_row_destroy(&row);
     }
 
     {
         NcBuffer buffer = {0};
 
-        search_insert_buffer_with_flags(
-            screen, SEARCH_ENGINE_RESULT_SEPARATOR_ROW, &buffer,
-            NC_MENU_ITEM_SEPARATOR);
+        search_insert_buffer_with_flags(screen,
+                                        SEARCH_ENGINE_RESULT_SEPARATOR_ROW,
+                                        &buffer, NC_MENU_ITEM_SEPARATOR);
         nc_buffer_append_cstring(&buffer, "Search results: Found ");
         nc_buffer_append_int64(&buffer, songs.len);
         if (songs.len == 1) {
@@ -1266,13 +1276,13 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
         } else {
             nc_buffer_append_cstring(&buffer, " songs");
         }
-        search_insert_buffer_with_flags(
-            screen, SEARCH_ENGINE_RESULT_SUMMARY_ROW, &buffer,
-            NC_MENU_ITEM_INACTIVE);
+        search_insert_buffer_with_flags(screen,
+                                        SEARCH_ENGINE_RESULT_SUMMARY_ROW,
+                                        &buffer, NC_MENU_ITEM_INACTIVE);
         nc_buffer_clear(&buffer);
-        search_insert_buffer_with_flags(
-            screen, SEARCH_ENGINE_RESULT_END_SEPARATOR_ROW, &buffer,
-            NC_MENU_ITEM_SEPARATOR);
+        search_insert_buffer_with_flags(screen,
+                                        SEARCH_ENGINE_RESULT_END_SEPARATOR_ROW,
+                                        &buffer, NC_MENU_ITEM_SEPARATOR);
         nc_buffer_destroy(&buffer);
     }
     screen->result_rows_present = true;
@@ -1294,12 +1304,12 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
         }
     }
 
-    nc_menu_scroll_selectable(
-        search_engine_screen_menu(screen),
-        nc_window_height(&screen->window), NC_SCROLL_DOWN);
-    nc_menu_scroll_selectable(
-        search_engine_screen_menu(screen),
-        nc_window_height(&screen->window), NC_SCROLL_DOWN);
+    nc_menu_scroll_selectable(search_engine_screen_menu(screen),
+                              nc_window_height(&screen->window),
+                              NC_SCROLL_DOWN);
+    nc_menu_scroll_selectable(search_engine_screen_menu(screen),
+                              nc_window_height(&screen->window),
+                              NC_SCROLL_DOWN);
     search_engine_screen_update_column_title(screen);
     search_engine_screen_status_message(screen, STRLIT("Searching finished"));
 
@@ -1414,9 +1424,9 @@ search_engine_screen_apply_filter(SearchEngineScreen *screen,
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing filter pattern"));
     }
-    if ((status = ncm_regex_compile(
-        &screen->filter_regex, pattern, pattern_len,
-        NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error)) < 0) {
+    if ((status = ncm_regex_compile(&screen->filter_regex, pattern, pattern_len,
+                                     NCM_REGEX_LITERAL_CASE_INSENSITIVE,
+                                     ncm_error)) < 0) {
         return status;
     }
     sb_set(&screen->filter_constraint, pattern, pattern_len);
@@ -1474,9 +1484,9 @@ search_engine_screen_search(SearchEngineScreen *screen,
     }
 
     regex = (NcmRegex){0};
-    if ((status = ncm_regex_compile(
-        &regex, pattern, pattern_len,
-        NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error)) < 0) {
+    if ((status = ncm_regex_compile(&regex, pattern, pattern_len,
+                                     NCM_REGEX_LITERAL_CASE_INSENSITIVE,
+                                     ncm_error)) < 0) {
         ncm_regex_destroy(&regex);
         return status;
     }

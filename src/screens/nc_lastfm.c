@@ -467,8 +467,9 @@ lastfm_buffer_find_unchecked(NcBuffer *buffer, char *pattern, int32 pattern_len,
 
     state.buffer = buffer;
     data = nc_buffer_data(buffer);
-    match_count = ncm_regex_for_each_match(
-        &regex, data, buffer->len, lastfm_find_match_callback, &state);
+    match_count = ncm_regex_for_each_match(&regex, data, buffer->len,
+                                           lastfm_find_match_callback,
+                                           &state);
     ncm_regex_destroy(&regex);
     if (match_count > 0) {
         return 1;

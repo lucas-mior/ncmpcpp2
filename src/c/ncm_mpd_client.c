@@ -67,13 +67,15 @@ ncm_mpd_client_noidle_connected(NcmMpdClient *client, int32 *flags,
     ASSERT(client != NULL);
 
     if (client->idle) {
-        NCM_CLIENT_TRY_MPD(
-            client, ncm_mpd_connection_noidle(&client->connection), ncm_error);
+        NCM_CLIENT_TRY_MPD(client,
+                           ncm_mpd_connection_noidle(&client->connection),
+                           ncm_error);
         client->idle = false;
-        NCM_CLIENT_TRY_MPD(
-            client,
-            ncm_mpd_connection_recv_idle(&client->connection, true, &events),
-            ncm_error);
+        NCM_CLIENT_TRY_MPD(client,
+                           ncm_mpd_connection_recv_idle(&client->connection,
+                                                        true,
+                                                        &events),
+                           ncm_error);
     }
 
     if (flags != NULL) {
@@ -118,9 +120,9 @@ ncm_mpd_client_prechecks_no_commands(NcmMpdClient *client,
         return status;
     }
     if (client->command_list_active) {
-        return ncm_error_set_status(
-            ncm_error, -NCM_ERROR_INVALID_STATE,
-            STRLIT("MPD command list is already active"));
+        return ncm_error_set_status(ncm_error, -NCM_ERROR_INVALID_STATE,
+                                    STRLIT("MPD command list is already"
+                                           " active"));
     }
 
     return ncm_mpd_client_prechecks_connected(client, ncm_error);
@@ -129,10 +131,13 @@ ncm_mpd_client_prechecks_no_commands(NcmMpdClient *client,
 static int32
 ncm_mpd_client_add_song_ready(NcmMpdClient *client, char *path, int32 pos,
                               int32 *id, NcmError *ncm_error) {
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_add_song(&client->connection, path, pos,
-                                            client->command_list_active, id),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_add_song(&client->connection,
+                                                   path,
+                                                   pos,
+                                                   client->command_list_active,
+                                                   id),
+                       ncm_error);
     return ncm_error_ok(ncm_error);
 }
 
@@ -141,9 +146,10 @@ ncm_mpd_client_start_command_list_ready(NcmMpdClient *client,
                                         NcmError *ncm_error) {
     ASSERT(!client->command_list_active);
 
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_start_command_list(&client->connection),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_start_command_list(
+                           &client->connection),
+                       ncm_error);
     client->command_list_active = true;
     return ncm_error_ok(ncm_error);
 }
@@ -335,10 +341,10 @@ ncm_mpd_client_set_timeout_ms(NcmMpdClient *client,
 
     client->timeout_ms = timeout_ms;
     if (ncm_mpd_connection_is_connected(&client->connection)) {
-        NCM_CLIENT_TRY_MPD(
-            client,
-            ncm_mpd_connection_set_timeout(&client->connection, timeout_ms),
-            ncm_error);
+        NCM_CLIENT_TRY_MPD(client,
+                           ncm_mpd_connection_set_timeout(&client->connection,
+                                                          timeout_ms),
+                           ncm_error);
     }
 
     return ncm_error_ok(ncm_error);
@@ -346,6 +352,7 @@ ncm_mpd_client_set_timeout_ms(NcmMpdClient *client,
 
 int32
 ncm_mpd_client_connect(NcmMpdClient *client, NcmError *ncm_error) {
+    char *password;
     int32 status;
 
     if (client == NULL) {
@@ -353,18 +360,20 @@ ncm_mpd_client_connect(NcmMpdClient *client, NcmError *ncm_error) {
                                     STRLIT("missing MPD client"));
     }
 
-    NCM_CLIENT_TRY_MPD(
-        client,
-        ncm_mpd_connection_connect(&client->connection,
-                                   sb_opt_cstr(&client->host), client->port,
-                                   client->timeout_ms), ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_connect(&client->connection,
+                                                  sb_opt_cstr(&client->host),
+                                                  client->port,
+                                                  client->timeout_ms),
+                       ncm_error);
 
     client->fd = ncm_mpd_connection_fd(&client->connection);
     client->idle = false;
     client->command_list_active = false;
     if (client->password.len > 0) {
-        status = ncm_mpd_connection_send_password(
-            &client->connection, sb_opt_cstr(&client->password));
+        password = sb_opt_cstr(&client->password);
+        status = ncm_mpd_connection_send_password(&client->connection,
+                                                  password);
         if (status < 0) {
             ncm_mpd_client_copy_connection_error(client, ncm_error);
             ncm_mpd_client_disconnect_ready(client);
@@ -387,12 +396,14 @@ ncm_mpd_client_disconnect(NcmMpdClient *client) {
 
 int32
 ncm_mpd_client_send_password(NcmMpdClient *client, NcmError *ncm_error) {
+    char *password;
+
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client,
-        ncm_mpd_connection_send_password(&client->connection,
-                                         sb_opt_cstr(&client->password)),
-        ncm_error);
+    password = sb_opt_cstr(&client->password);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_send_password(&client->connection,
+                                                        password),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -402,9 +413,10 @@ ncm_mpd_client_idle(NcmMpdClient *client, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_require_connected(client, ncm_error));
 
     if (!client->idle) {
-        NCM_CLIENT_TRY_MPD(
-            client, ncm_mpd_connection_send_idle(&client->connection,
-                                                 (enum mpd_idle)0), ncm_error);
+        NCM_CLIENT_TRY_MPD(client,
+                           ncm_mpd_connection_send_idle(&client->connection,
+                                                        (enum mpd_idle)0),
+                           ncm_error);
         client->idle = true;
     }
 
@@ -477,9 +489,9 @@ int32
 ncm_mpd_client_get_stats(NcmMpdClient *client, NcmMpdStats *stats,
                          NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_get_stats(&client->connection, stats),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_get_stats(&client->connection, stats),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -488,9 +500,10 @@ int32
 ncm_mpd_client_get_status(NcmMpdClient *client, NcmMpdStatus *status,
                           NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_get_status(&client->connection, status),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_get_status(&client->connection,
+                                                     status),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -499,10 +512,11 @@ int32
 ncm_mpd_client_update_directory(NcmMpdClient *client, char *path,
                                 int32 *id, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client,
-        ncm_mpd_connection_update_database(&client->connection, path, id),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_update_database(&client->connection,
+                                                          path,
+                                                          id),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -510,9 +524,9 @@ ncm_mpd_client_update_directory(NcmMpdClient *client, char *path,
 int32
 ncm_mpd_client_play_pos(NcmMpdClient *client, int32 pos, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_play_pos(&client->connection, pos),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_play_pos(&client->connection, pos),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -520,8 +534,9 @@ ncm_mpd_client_play_pos(NcmMpdClient *client, int32 pos, NcmError *ncm_error) {
 int32
 ncm_mpd_client_play_id(NcmMpdClient *client, int32 id, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_play_id(&client->connection, id), ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_play_id(&client->connection, id),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -530,9 +545,12 @@ int32
 ncm_mpd_client_move(NcmMpdClient *client, int32 from, int32 to,
                     NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_move(&client->connection, from, to,
-                                client->command_list_active), ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_move(&client->connection,
+                                               from,
+                                               to,
+                                               client->command_list_active),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -541,9 +559,12 @@ int32
 ncm_mpd_client_swap(NcmMpdClient *client, int32 from, int32 to,
                     NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_swap(&client->connection, from, to,
-                                client->command_list_active), ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_swap(&client->connection,
+                                               from,
+                                               to,
+                                               client->command_list_active),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -552,9 +573,11 @@ int32
 ncm_mpd_client_seek_pos(NcmMpdClient *client, int32 pos, int32 seconds,
                         NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_seek_pos(&client->connection, pos, seconds),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_seek_pos(&client->connection,
+                                                   pos,
+                                                   seconds),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -563,10 +586,11 @@ int32
 ncm_mpd_client_shuffle_range(NcmMpdClient *client, int32 start, int32 end,
                              NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client,
-        ncm_mpd_connection_shuffle_range(&client->connection, start, end),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_shuffle_range(&client->connection,
+                                                        start,
+                                                        end),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -575,8 +599,9 @@ ncm_mpd_client_shuffle_range(NcmMpdClient *client, int32 start, int32 end,
 int32 \
 NAME(NcmMpdClient *client, LIST_TYPE *list, NcmError *ncm_error) { \
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error)); \
-    NCM_CLIENT_TRY_MPD( \
-        client, CONN_CALL(&client->connection, list), ncm_error); \
+    NCM_CLIENT_TRY_MPD(client, \
+                       CONN_CALL(&client->connection, list), \
+                       ncm_error); \
     return ncm_error_ok(ncm_error); \
 }
 
@@ -598,9 +623,9 @@ int32
 ncm_mpd_client_get_queue(NcmMpdClient *client,
                          NcmMpdSongList *songs, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_get_queue(&client->connection, songs),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_get_queue(&client->connection, songs),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -609,9 +634,11 @@ int32
 ncm_mpd_client_get_queue_changes(NcmMpdClient *client, int32 version,
                                  NcmMpdSongList *songs, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_get_queue_changes(&client->connection,
-                                             version, songs), ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_get_queue_changes(&client->connection,
+                                                            version,
+                                                            songs),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -620,9 +647,10 @@ int32
 ncm_mpd_client_get_current_song(NcmMpdClient *client, NcmSong *song,
                                 NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_get_current_song(&client->connection, song),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_get_current_song(&client->connection,
+                                                           song),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -632,9 +660,10 @@ ncm_mpd_client_get_playlist_content(NcmMpdClient *client, char *path,
                                     NcmMpdSongList *songs,
                                     NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_get_playlist_content(&client->connection,
-                                                path, songs), ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_get_playlist_content(
+                           &client->connection, path, songs),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -644,11 +673,10 @@ ncm_mpd_client_get_playlist_content_no_info(NcmMpdClient *client, char *path,
                                             NcmMpdSongList *songs,
                                             NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client,
-        ncm_mpd_connection_get_playlist_content_no_info(&client->connection,
-                                                        path, songs),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_get_playlist_content_no_info(
+                           &client->connection, path, songs),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -657,8 +685,9 @@ ncm_mpd_client_get_playlist_content_no_info(NcmMpdClient *client, char *path,
 int32 \
 NAME(NcmMpdClient *client, bool mode, NcmError *ncm_error) { \
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error)); \
-    NCM_CLIENT_TRY_MPD( \
-        client, CONN_CALL(&client->connection, mode), ncm_error); \
+    NCM_CLIENT_TRY_MPD(client, \
+                       CONN_CALL(&client->connection, mode), \
+                       ncm_error); \
     return ncm_error_ok(ncm_error); \
 }
 
@@ -673,9 +702,10 @@ int32
 ncm_mpd_client_set_crossfade(NcmMpdClient *client, int32 seconds,
                              NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_set_crossfade(&client->connection, seconds),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_set_crossfade(&client->connection,
+                                                        seconds),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -684,9 +714,10 @@ int32
 ncm_mpd_client_set_volume(NcmMpdClient *client, int32 volume,
                           NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_set_volume(&client->connection, volume),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_set_volume(&client->connection,
+                                                     volume),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -695,9 +726,10 @@ int32
 ncm_mpd_client_change_volume(NcmMpdClient *client, int32 change,
                              NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_change_volume(&client->connection, change),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_change_volume(&client->connection,
+                                                        change),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -707,10 +739,10 @@ ncm_mpd_client_get_replay_gain_mode(NcmMpdClient *client,
                                     enum NcmMpdReplayGainMode *mode,
                                     NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client,
-        ncm_mpd_connection_get_replay_gain_mode(&client->connection, mode),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_get_replay_gain_mode(
+                           &client->connection, mode),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -720,10 +752,10 @@ ncm_mpd_client_set_replay_gain_mode(NcmMpdClient *client,
                                     enum NcmMpdReplayGainMode mode,
                                     NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client,
-        ncm_mpd_connection_set_replay_gain_mode(&client->connection, mode),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_set_replay_gain_mode(
+                           &client->connection, mode),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -737,10 +769,11 @@ ncm_mpd_client_set_priority_song(NcmMpdClient *client, NcmSong *song,
     }
 
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_set_priority_id(
-            &client->connection, ncm_song_id(song), priority,
-            client->command_list_active), ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_set_priority_id(
+                           &client->connection, ncm_song_id(song), priority,
+                           client->command_list_active),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -785,8 +818,8 @@ ncm_mpd_client_add_song_list(NcmMpdClient *client,
 
     started = false;
     if (!client->command_list_active) {
-        if ((status = ncm_mpd_client_start_command_list_ready(
-                 client, ncm_error)) < 0) {
+        if ((status = ncm_mpd_client_start_command_list_ready(client,
+                                                              ncm_error)) < 0) {
             return status;
         }
         started = true;
@@ -822,9 +855,12 @@ int32
 ncm_mpd_client_add(NcmMpdClient *client, char *path, bool *added,
                    NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_add(&client->connection, path,
-                               client->command_list_active, added), ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_add(&client->connection,
+                                              path,
+                                              client->command_list_active,
+                                              added),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -832,9 +868,11 @@ ncm_mpd_client_add(NcmMpdClient *client, char *path, bool *added,
 int32
 ncm_mpd_client_delete(NcmMpdClient *client, int32 pos, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_delete(&client->connection, pos,
-                                  client->command_list_active), ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_delete(&client->connection,
+                                                 pos,
+                                                 client->command_list_active),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -863,9 +901,10 @@ int32
 ncm_mpd_client_delete_playlist(NcmMpdClient *client, char *name,
                                NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_delete_playlist(&client->connection, name),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_delete_playlist(&client->connection,
+                                                          name),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -874,10 +913,11 @@ int32
 ncm_mpd_client_load_playlist(NcmMpdClient *client, char *name,
                              bool *loaded, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client,
-        ncm_mpd_connection_load_playlist(&client->connection, name, loaded),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_load_playlist(&client->connection,
+                                                        name,
+                                                        loaded),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -886,9 +926,10 @@ int32
 ncm_mpd_client_save_playlist(NcmMpdClient *client, char *name,
                              NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_save_playlist(&client->connection, name),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_save_playlist(&client->connection,
+                                                        name),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -897,9 +938,10 @@ int32
 ncm_mpd_client_clear_playlist(NcmMpdClient *client, char *name,
                               NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_clear_playlist(&client->connection, name),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_clear_playlist(&client->connection,
+                                                         name),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -920,10 +962,11 @@ ncm_mpd_client_add_song_to_playlist(NcmMpdClient *client,
     }
 
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_add_to_playlist(
-            &client->connection, playlist, uri.data,
-            client->command_list_active), ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_add_to_playlist(
+                           &client->connection, playlist, uri.data,
+                           client->command_list_active),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -932,10 +975,11 @@ int32
 ncm_mpd_client_playlist_move(NcmMpdClient *client, char *playlist,
                              int32 from, int32 to, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_playlist_move(&client->connection, playlist,
-                                         from, to, client->command_list_active),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_playlist_move(
+                           &client->connection, playlist, from, to,
+                           client->command_list_active),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -944,11 +988,11 @@ int32
 ncm_mpd_client_playlist_delete(NcmMpdClient *client, char *playlist,
                                int32 pos, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client,
-        ncm_mpd_connection_playlist_delete(&client->connection, playlist, pos,
-                                           client->command_list_active),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_playlist_delete(
+                           &client->connection, playlist, pos,
+                           client->command_list_active),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -957,10 +1001,11 @@ int32
 ncm_mpd_client_rename_playlist(NcmMpdClient *client, char *from,
                                char *to, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client,
-        ncm_mpd_connection_rename_playlist(&client->connection, from, to),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_rename_playlist(&client->connection,
+                                                          from,
+                                                          to),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -969,9 +1014,10 @@ int32
 ncm_mpd_client_start_search(NcmMpdClient *client, bool exact_match,
                             NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_start_search_songs(&client->connection,
-                                                      exact_match), ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_start_search_songs(
+                           &client->connection, exact_match),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -980,10 +1026,11 @@ int32
 ncm_mpd_client_add_search_tag(NcmMpdClient *client, enum mpd_tag_type tag,
                               char *value, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_require_connected(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client,
-        ncm_mpd_connection_add_search_tag(&client->connection, tag, value),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_add_search_tag(&client->connection,
+                                                         tag,
+                                                         value),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -992,9 +1039,10 @@ int32
 ncm_mpd_client_add_search_any(NcmMpdClient *client, char *value,
                               NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_require_connected(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_add_search_any(&client->connection, value),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_add_search_any(&client->connection,
+                                                         value),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -1003,9 +1051,10 @@ int32
 ncm_mpd_client_add_search_uri(NcmMpdClient *client, char *value,
                               NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_require_connected(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_add_search_uri(&client->connection, value),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_add_search_uri(&client->connection,
+                                                         value),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -1014,10 +1063,10 @@ int32
 ncm_mpd_client_commit_search_songs(NcmMpdClient *client, NcmMpdSongList *songs,
                                    NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client,
-        ncm_mpd_connection_commit_search_songs(&client->connection, songs),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_commit_search_songs(
+                           &client->connection, songs),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -1026,10 +1075,11 @@ int32
 ncm_mpd_client_get_list(NcmMpdClient *client, enum mpd_tag_type tag,
                         NcmStringViewList *strings, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client,
-        ncm_mpd_connection_list_tag_values(&client->connection, tag, strings),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_list_tag_values(&client->connection,
+                                                          tag,
+                                                          strings),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -1039,10 +1089,11 @@ ncm_mpd_client_get_directory_recursive(NcmMpdClient *client, char *path,
                                        NcmMpdSongList *songs,
                                        NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client,
-        ncm_mpd_connection_list_all_songs(&client->connection, path, songs),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_list_all_songs(&client->connection,
+                                                         path,
+                                                         songs),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -1051,9 +1102,10 @@ int32
 ncm_mpd_client_get_songs(NcmMpdClient *client, char *path,
                          NcmMpdSongList *songs, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_get_directory_songs(&client->connection,
-                                                       path, songs), ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_get_directory_songs(
+                           &client->connection, path, songs),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -1119,9 +1171,10 @@ int32
 ncm_mpd_client_enable_output(NcmMpdClient *client, int32 id,
                              NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_enable_output(&client->connection, id),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_enable_output(&client->connection,
+                                                        id),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -1130,9 +1183,10 @@ int32
 ncm_mpd_client_disable_output(NcmMpdClient *client, int32 id,
                               NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    NCM_CLIENT_TRY_MPD(
-        client, ncm_mpd_connection_disable_output(&client->connection, id),
-        ncm_error);
+    NCM_CLIENT_TRY_MPD(client,
+                       ncm_mpd_connection_disable_output(&client->connection,
+                                                         id),
+                       ncm_error);
 
     return ncm_error_ok(ncm_error);
 }
@@ -1175,8 +1229,9 @@ ncm_mpd_client_add_random_tag(NcmMpdClient *client, enum mpd_tag_type tag,
             ncm_mpd_client_copy_connection_error(client, ncm_error);
             goto cleanup;
         }
-        status = ncm_mpd_connection_add_search_tag(
-            &client->connection, tag, tags.items[i].data);
+        status = ncm_mpd_connection_add_search_tag(&client->connection,
+                                                   tag,
+                                                   tags.items[i].data);
         if (status < 0) {
             ncm_mpd_client_copy_connection_error(client, ncm_error);
             goto cleanup;
@@ -1187,16 +1242,16 @@ ncm_mpd_client_add_random_tag(NcmMpdClient *client, enum mpd_tag_type tag,
             ncm_mpd_client_copy_connection_error(client, ncm_error);
             goto cleanup;
         }
-        if ((status = ncm_mpd_client_start_command_list_ready(
-                 client, ncm_error)) < 0) {
+        if ((status = ncm_mpd_client_start_command_list_ready(client,
+                                                              ncm_error)) < 0) {
             goto cleanup;
         }
         for (int32 j = 0; j < songs.count; j += 1) {
             ncm_mpd_client_add_song_ready(client, songs.items[j].uri, -1,
                                           NULL, ncm_error);
         }
-        if ((status = ncm_mpd_client_commit_command_list_ready(
-                 client, ncm_error)) < 0) {
+        if ((status =
+             ncm_mpd_client_commit_command_list_ready(client, ncm_error)) < 0) {
             goto cleanup;
         }
         ncm_mpd_song_list_clear(&songs);
@@ -1263,8 +1318,8 @@ ncm_mpd_client_add_random_songs(NcmMpdClient *client, int32 number,
     }
 
     rand_shuffle(files.items, files.count, SIZEOF(*files.items));
-    if ((status = ncm_mpd_client_start_command_list_ready(
-             client, ncm_error)) < 0) {
+    if ((status = ncm_mpd_client_start_command_list_ready(client,
+                                                          ncm_error)) < 0) {
         goto cleanup;
     }
 
@@ -1279,8 +1334,8 @@ ncm_mpd_client_add_random_songs(NcmMpdClient *client, int32 number,
                                       ncm_error);
         added += 1;
     }
-    if ((status = ncm_mpd_client_commit_command_list_ready(
-             client, ncm_error)) < 0) {
+    if ((status = ncm_mpd_client_commit_command_list_ready(client,
+                                                           ncm_error)) < 0) {
         goto cleanup;
     }
 

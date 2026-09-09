@@ -114,18 +114,19 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         NcBuffer row_buffer = {0};
 
         field = (enum NcmTagsField)(row - (int32)TINY_TAG_EDIT_FIRST_TAG_ROW);
-        tag_value = ncm_mutable_song_tags_buffer(
-            &screen->edited, field, screen->tag_separator.data,
-            screen->tag_separator.len, screen->show_duplicate_tags);
+        tag_value = ncm_mutable_song_tags_buffer(&screen->edited, field,
+                                                 screen->tag_separator.data,
+                                                 screen->tag_separator.len,
+                                                 screen->show_duplicate_tags);
         initial.data = tag_value.data;
         initial.len = tag_value.len;
         field_name_len = NCM_TAGS_FIELD_alias_len(field, &field_name);
         if (screen->hooks.prompt == NULL) {
             prompt_result = TINY_TAG_EDIT_PROMPT_ERROR;
         } else {
-            prompt_result = screen->hooks.prompt(
-                screen->hooks.user, field_name, field_name_len, initial,
-                &input);
+            prompt_result = screen->hooks.prompt(screen->hooks.user,
+                                                 field_name, field_name_len,
+                                                 initial, &input);
         }
         sb_free(&tag_value);
         if (prompt_result == TINY_TAG_EDIT_PROMPT_ABORTED) {
@@ -138,15 +139,16 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
             return -NCM_ERROR_UNAVAILABLE;
         }
 
-        ncm_mutable_song_set_tags(
-            &screen->edited, field, sb_opt_cstr(&input), input.len,
-            screen->tag_separator.data, screen->tag_separator.len);
+        ncm_mutable_song_set_tags(&screen->edited, field,
+                                  sb_opt_cstr(&input), input.len,
+                                  screen->tag_separator.data,
+                                  screen->tag_separator.len);
         sb_free(&input);
 
-        tiny_editor_buffer_mutable_tag(
-            &row_buffer, &screen->edited, field,
-            screen->tag_separator.data, screen->tag_separator.len,
-            screen->show_duplicate_tags);
+        tiny_editor_buffer_mutable_tag(&row_buffer, &screen->edited, field,
+                                       screen->tag_separator.data,
+                                       screen->tag_separator.len,
+                                       screen->show_duplicate_tags);
         nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL,
                              TINY_TAG_EDIT_TAG_ROW(field), &row_buffer);
         nc_buffer_destroy(&row_buffer);
@@ -177,8 +179,9 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         if (screen->hooks.prompt == NULL) {
             prompt_result = TINY_TAG_EDIT_PROMPT_ERROR;
         } else {
-            prompt_result = screen->hooks.prompt(
-                screen->hooks.user, STRLIT("Filename"), initial, &input);
+            prompt_result = screen->hooks.prompt(screen->hooks.user,
+                                                 STRLIT("Filename"), initial,
+                                                 &input);
         }
         if (prompt_result == TINY_TAG_EDIT_PROMPT_ABORTED) {
             tiny_editor_status_message(screen, STRLIT("Action aborted"));
@@ -220,8 +223,8 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
             name.data = screen->edited.name;
             name.len = screen->edited.name_len;
         }
-        tiny_editor_buffer_key_value(
-            &row_buffer, STRLIT("Filename"), name.data, name.len);
+        tiny_editor_buffer_key_value(&row_buffer, STRLIT("Filename"),
+                                     name.data, name.len);
         nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL,
                              TINY_TAG_EDIT_FILE_NAME_EDIT_ROW, &row_buffer);
         nc_buffer_destroy(&row_buffer);
@@ -233,11 +236,12 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
 
         tiny_editor_status_message(screen, STRLIT("Updating tags..."));
         if (screen->hooks.write_song) {
-            status = screen->hooks.write_song(
-                screen->hooks.user, &screen->edited, screen->music_dir.data);
+            status = screen->hooks.write_song(screen->hooks.user,
+                                              &screen->edited,
+                                              screen->music_dir.data);
         } else {
-            status = ncm_mutable_song_write(
-                &screen->edited, screen->music_dir.data);
+            status = ncm_mutable_song_write(&screen->edited,
+                                            screen->music_dir.data);
         }
         if (status < 0) {
             error_len = SNPRINTF(error_buffer, "Error while writing tags: %s",
@@ -250,16 +254,16 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         tiny_editor_status_message(screen, STRLIT("Tags updated"));
         if (screen->edited.is_from_database) {
             if (screen->hooks.update_directory) {
-                screen->hooks.update_directory(
-                    screen->hooks.user, screen->edited.directory,
-                    screen->edited.directory_len);
+                screen->hooks.update_directory(screen->hooks.user,
+                                               screen->edited.directory,
+                                               screen->edited.directory_len);
             }
         } else if (screen->previous_screen) {
             previous_type = nc_screen_type(screen->previous_screen);
             if ((previous_type == NC_SCREEN_TYPE_PLAYLIST)
                 && screen->hooks.update_playlist_song) {
-                screen->hooks.update_playlist_song(
-                    screen->hooks.user, &screen->edited);
+                screen->hooks.update_playlist_song(screen->hooks.user,
+                                                   &screen->edited);
             } else if ((previous_type == NC_SCREEN_TYPE_BROWSER)
                        && screen->hooks.request_browser_update) {
                 screen->hooks.request_browser_update(screen->hooks.user);
@@ -582,8 +586,8 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
 
     file = (NcmTaglibFile){0};
     if (screen->hooks.taglib_open) {
-        status = screen->hooks.taglib_open(
-            screen->hooks.user, &file, path->data, path->len);
+        status = screen->hooks.taglib_open(screen->hooks.user, &file,
+                                           path->data, path->len);
     } else {
         status = ncm_taglib_file_open(&file, path->data);
     }
@@ -599,15 +603,15 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     }
 
     if (screen->hooks.taglib_audio_properties) {
-        screen->hooks.taglib_audio_properties(
-            screen->hooks.user, &file, &properties);
+        screen->hooks.taglib_audio_properties(screen->hooks.user, &file,
+                                              &properties);
     } else {
         ncm_taglib_file_audio_properties(&file, &properties);
     }
     if (screen->hooks.taglib_file_can_set_extended_tags) {
         extended_tags_supported =
-            screen->hooks.taglib_file_can_set_extended_tags(
-                screen->hooks.user, &file);
+            screen->hooks.taglib_file_can_set_extended_tags(screen->hooks.user,
+                                                            &file);
     } else {
         extended_tags_supported = ncm_taglib_file_can_set_extended_tags(&file);
     }
@@ -631,8 +635,9 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     nc_buffer_clear(&row);
 
     if (screen->edited.duration > 0) {
-        duration_len = ncm_song_show_time(
-            screen->edited.duration, duration_buffer, SIZEOF(duration_buffer));
+        duration_len = ncm_song_show_time(screen->edited.duration,
+                                          duration_buffer,
+                                          SIZEOF(duration_buffer));
     } else {
         duration_buffer[0] = '-';
         duration_buffer[1] = ':';
@@ -645,19 +650,20 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
     nc_buffer_clear(&row);
 
-    tiny_editor_buffer_key_uint(
-        &row, STRLIT("Bitrate"), (uint32)properties.bitrate, STRLIT(" kbps"));
+    tiny_editor_buffer_key_uint(&row, STRLIT("Bitrate"),
+                                (uint32)properties.bitrate,
+                                STRLIT(" kbps"));
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
     nc_buffer_clear(&row);
 
-    tiny_editor_buffer_key_uint(
-        &row, STRLIT("Sample rate"), (uint32)properties.sample_rate,
-        STRLIT(" Hz"));
+    tiny_editor_buffer_key_uint(&row, STRLIT("Sample rate"),
+                                (uint32)properties.sample_rate,
+                                STRLIT(" Hz"));
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
     nc_buffer_clear(&row);
 
-    channel_len = ncm_channels_to_string(
-        properties.channels, channel_buffer, SIZEOF(channel_buffer));
+    channel_len = ncm_channels_to_string(properties.channels, channel_buffer,
+                                         SIZEOF(channel_buffer));
     tiny_editor_buffer_key_value(&row, STRLIT("Channels"),
                                  channel_buffer, channel_len);
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
@@ -668,9 +674,10 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
         bool inactive;
 
         row = (NcBuffer){0};
-        tiny_editor_buffer_mutable_tag(
-            &row, &screen->edited, (enum NcmTagsField)field,
-            tag_separator, tag_separator_len, show_duplicate_tags);
+        tiny_editor_buffer_mutable_tag(&row, &screen->edited,
+                                       (enum NcmTagsField)field,
+                                       tag_separator, tag_separator_len,
+                                       show_duplicate_tags);
         inactive = !extended_tags_supported
                    && ((field == NCM_TAGS_FIELD_ALBUM_ARTIST)
                        || (field == NCM_TAGS_FIELD_COMPOSER)

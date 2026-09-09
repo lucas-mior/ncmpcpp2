@@ -72,8 +72,10 @@ ncm_tags_read_song(struct mpd_song *song) {
     }
 
     context.song = song;
-    status = ncm_taglib_read_mapped_properties(
-        &file, ncm_tags_mapped_property_callback, &context);
+    status =
+        ncm_taglib_read_mapped_properties(&file,
+                                          ncm_tags_mapped_property_callback,
+                                          &context);
     if (status < 0) {
         ncm_taglib_file_close(&file);
         ncm_taglib_clear_strings();

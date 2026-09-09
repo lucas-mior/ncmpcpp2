@@ -966,9 +966,10 @@ configuration_validate(Configuration *config, NcmError *ncm_error) {
 
     if (config->visualizer_spectrum_hz_max
         <= config->visualizer_spectrum_hz_min) {
-        return settings_error(
-            ncm_error, STRLIT("visualizer_spectrum_hz_max must be greater than "
-                   "visualizer_spectrum_hz_min"));
+        return settings_error(ncm_error,
+                              STRLIT("visualizer_spectrum_hz_max must be "
+                                     "greater than "
+                                     "visualizer_spectrum_hz_min"));
     }
     return ncm_error_ok(ncm_error);
 }
@@ -983,21 +984,24 @@ configuration_apply_runtime(Configuration *config, NcmMpdClient *client,
                                     STRLIT("missing runtime configuration"));
     }
 
-    status = ncm_mpd_client_set_hostname(
-        client, config->mpd_host, config->mpd_host_len, ncm_error);
+    status = ncm_mpd_client_set_hostname(client,
+                                         config->mpd_host, config->mpd_host_len,
+                                         ncm_error);
     if (status < 0) {
         return status;
     }
     ncm_mpd_client_set_port(client, (uint16)config->mpd_port);
     if (config->mpd_password_len > 0) {
-        status = ncm_mpd_client_set_password(
-            client, config->mpd_password, config->mpd_password_len, ncm_error);
+        status = ncm_mpd_client_set_password(client, config->mpd_password,
+                                             config->mpd_password_len,
+                                             ncm_error);
         if (status < 0) {
             return status;
         }
     }
-    status = ncm_mpd_client_set_timeout_ms(
-        client, config->mpd_connection_timeout*1000, ncm_error);
+    status = ncm_mpd_client_set_timeout_ms(client,
+                                          config->mpd_connection_timeout*1000,
+                                          ncm_error);
     if (status < 0) {
         return status;
     }
@@ -1299,9 +1303,9 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                            "failed to read configuration file '%.*s': %s",
                 path.len, path.data, strerror(error_code));
             if (len < 0) {
-                ncm_error_set_status(
-                    ncm_error, content_len,
-                    STRLIT("failed to read configuration file"));
+                ncm_error_set_status(ncm_error, content_len,
+                                     STRLIT("failed to read "
+                                            "configuration file"));
             } else {
                 if (len >= SIZEOF(message)) {
                     len = SIZEOF(message) - 1;
@@ -1344,8 +1348,8 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                        || (current_line[line_len - 1] == '\r'))) {
                 line_len -= 1;
             }
-            status = ncm_option_parser_parse_line(
-                current_line, line_len, &parsed, &has_option);
+            status = ncm_option_parser_parse_line(current_line, line_len,
+                                                   &parsed, &has_option);
             if (status < 0) {
                 settings_invalid_value(ncm_error, current_line, line_len);
                 status = settings_report_or_ignore(ncm_error, ignore_errors);
@@ -1361,9 +1365,9 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
             }
 
             for (uint32 j = 0; j < SETTINGS_OPTION_COUNT; j += 1) {
-                if (STREQUAL(
-                    parsed.option, parsed.option_len,
-                    ncmpcpp_options[j].name, ncmpcpp_options[j].name_len)) {
+                if (STREQUAL(parsed.option, parsed.option_len,
+                             ncmpcpp_options[j].name,
+                             ncmpcpp_options[j].name_len)) {
                     option_index = j;
                     break;
                 }
@@ -1411,10 +1415,10 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
                 continue;
             }
             used[option_index] = true;
-            status = settings_apply_option(
-                config, ncmpcpp_options[option_index],
-                parsed.value, parsed.value_len,
-                false, ignore_errors, ncm_error);
+            status = settings_apply_option(config,
+                                           ncmpcpp_options[option_index],
+                                           parsed.value, parsed.value_len,
+                                           false, ignore_errors, ncm_error);
             if (status < 0) {
                 free2(content, content_len + 1);
                 sb_free(&path_buffer);
@@ -1429,10 +1433,10 @@ configuration_read(Configuration *config, NcmStringViewArray *config_paths,
         if (used[i]) {
             continue;
         }
-        status = settings_apply_option(
-            config, ncmpcpp_options[i], ncmpcpp_options[i].default_value,
-            ncmpcpp_options[i].default_value_len,
-            true, ignore_errors, ncm_error);
+        status = settings_apply_option(config, ncmpcpp_options[i],
+                                       ncmpcpp_options[i].default_value,
+                                       ncmpcpp_options[i].default_value_len,
+                                       true, ignore_errors, ncm_error);
         if (status < 0) {
             return status;
         }

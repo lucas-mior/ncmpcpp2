@@ -174,10 +174,10 @@ ncm_bounds_check_i64(int64 value, int64 lbound, int64 ubound,
         char message[256];
         int32 len;
 
-        len = SNPRINTF(
-            message,
-            "value is out of bounds ([%lld, %lld] expected, %lld given)",
-            lbound, ubound, value);
+        len = SNPRINTF(message,
+                       "value is out of bounds ([%lld, %lld] expected, "
+                       "%lld given)",
+                       lbound, ubound, value);
         return ncm_error_set_status(ncm_error, -ERANGE, message, len);
     }
 

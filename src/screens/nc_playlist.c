@@ -327,12 +327,12 @@ playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
                                           Config.now_playing_suffix.len);
         }
         if (nc_menu_position_is_selected(menu, pos)) {
-            available_width -= utf8_width(
-                menu->selected_suffix.data, menu->selected_suffix.len);
+            available_width -= utf8_width(menu->selected_suffix.data,
+                                          menu->selected_suffix.len);
         }
         if (!menu->highlight_disabled && (pos == menu->highlight)) {
-            available_width -= utf8_width(
-                menu->highlight_suffix.data, menu->highlight_suffix.len);
+            available_width -= utf8_width(menu->highlight_suffix.data,
+                                          menu->highlight_suffix.len);
         }
         if (available_width < 0) {
             available_width = 0;
@@ -340,9 +340,10 @@ playlist_draw_song(NcMenu *menu, NcWindow *window, void *item,
         list_width = available_width;
         use_colors = !Config.discard_colors_if_item_is_selected
                      || !nc_menu_position_is_selected(menu, pos);
-        ncm_display_song_columns(
-            &buffer, item, Config.song_columns_list_format.items,
-            Config.song_columns_list_format.len, list_width, use_colors);
+        ncm_display_song_columns(&buffer, item,
+                                 Config.song_columns_list_format.items,
+                                 Config.song_columns_list_format.len,
+                                 list_width, use_colors);
     } else {
         ncm_display_song_row(&buffer, &Config.song_list_format, item,
                              NCM_FORMAT_FLAG_ALL);
@@ -1031,9 +1032,9 @@ playlist_screen_find_sort_range(
 
             flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
             if (!(flags & NC_MENU_ITEM_SELECTED)) {
-                return ncm_error_set_status(
-                    ncm_error, -EINVAL,
-                    STRLIT("selected songs are not contiguous"));
+                return ncm_error_set_status(ncm_error, -EINVAL,
+                                            STRLIT("selected songs are not "
+                                                   "contiguous"));
             }
         }
         last = selected_last;
@@ -1049,9 +1050,9 @@ playlist_screen_find_sort_range(
         song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i);
         expected_position = range_start + i - first;
         if (ncm_song_position(song) != expected_position) {
-            return ncm_error_set_status(
-                ncm_error, -EINVAL,
-                STRLIT("playlist range positions are not contiguous"));
+            return ncm_error_set_status(ncm_error, -EINVAL,
+                                        STRLIT("playlist range positions are "
+                                               "not contiguous"));
         }
     }
 
@@ -1160,9 +1161,9 @@ playlist_screen_apply_filter(PlaylistScreen *screen,
         playlist_screen_clear_filter(screen);
         return ncm_error_ok(ncm_error);
     }
-    if ((status = ncm_regex_compile(
-        &screen->filter_regex, pattern, pattern_len,
-        Config.regular_expressions, ncm_error)) < 0) {
+    if ((status = ncm_regex_compile(&screen->filter_regex, pattern, pattern_len,
+                                    Config.regular_expressions,
+                                    ncm_error)) < 0) {
         return status;
     }
     sb_set(&screen->filter_constraint, pattern, pattern_len);
@@ -1244,9 +1245,8 @@ playlist_screen_search(PlaylistScreen *screen, char *pattern, int32 pattern_len,
     }
     sb_set(&screen->search_constraint, pattern, pattern_len);
 
-    status = playlist_search_menu(
-        screen, playlist_storage_menu(screen), &regex, forward,
-        wrap, skip_current);
+    status = playlist_search_menu(screen, playlist_storage_menu(screen), &regex,
+                                  forward, wrap, skip_current);
     ncm_regex_destroy(&regex);
     return status;
 }

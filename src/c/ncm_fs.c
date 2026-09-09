@@ -170,8 +170,8 @@ ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *ncm_error) {
         if (mkdir(copy, 0700) < 0) {
             int32 code = errno;
             if (code != EEXIST) {
-                status = ncm_fs_set_errno_error(
-                    ncm_error, code, "mkdir", copy, i);
+                status = ncm_fs_set_errno_error(ncm_error, code, "mkdir",
+                                                copy, i);
                 free2(copy, path_len + 1);
                 return status;
             }

@@ -192,8 +192,8 @@ ncm_mpd_item_from_entity_copy(NcmMpdItem *item, struct mpd_entity *entity) {
         ncm_mpd_item_init(&replacement);
         replacement.kind = NCM_MPD_ITEM_DIRECTORY;
         replacement.value.directory = (NcmDirectory){0};
-        status = ncm_directory_from_mpd_directory(
-            &replacement.value.directory, source);
+        status = ncm_directory_from_mpd_directory(&replacement.value.directory,
+                                                  source);
         if (status < 0) {
             ncm_mpd_item_destroy(&replacement);
             return status;
@@ -212,8 +212,8 @@ ncm_mpd_item_from_entity_copy(NcmMpdItem *item, struct mpd_entity *entity) {
         ncm_mpd_item_init(&replacement);
         replacement.kind = NCM_MPD_ITEM_PLAYLIST;
         replacement.value.playlist = (NcmPlaylist){0};
-        status = ncm_playlist_from_mpd_playlist(
-            &replacement.value.playlist, source);
+        status = ncm_playlist_from_mpd_playlist(&replacement.value.playlist,
+                                                source);
         if (status < 0) {
             ncm_mpd_item_destroy(&replacement);
             return status;
