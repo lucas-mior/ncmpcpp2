@@ -2030,7 +2030,8 @@ browser_screen_locate_song(BrowserScreen *screen,
         ncm_mpd_item_array_destroy(&items);
         sb_free(&path);
 
-        if ((status < 0) && (ncm_mpd_client_server_error_code(client)
+        if ((status < 0)
+            && (ncm_mpd_client_server_error_code(client)
                 == MPD_SERVER_ERROR_NO_EXIST)) {
             browser_screen_request_update(screen);
             return ncm_error_ok(ncm_error);
