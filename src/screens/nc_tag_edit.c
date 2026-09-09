@@ -756,9 +756,10 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
                 SB_APPEND(&screen->parser_preview, song->name, song->name_len);
                 SB_APPEND(&screen->parser_preview, ":\n");
             }
-            status = tag_edit_parse_filename(song, screen->pattern.data,
-                                             screen->pattern.len, !apply,
-                                             &screen->parser_preview);
+            status = tag_edit_parse_filename(song,
+                                             screen->pattern.data,
+                                             screen->pattern.len,
+                                             !apply, &screen->parser_preview);
             if ((status < 0) && !apply) {
                 SB_APPEND(&screen->parser_preview,
                           "Error while parsing filename!\n");
