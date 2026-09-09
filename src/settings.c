@@ -1221,9 +1221,9 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
 static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
-    return settings_parse_named_bool(                                          \
-        value, value_len, &config->NAME, TRUE_VALUE,                           \
-        STRLIT_LEN(TRUE_VALUE), FALSE_VALUE, STRLIT_LEN(FALSE_VALUE),          \
+    return settings_parse_named_bool(value, value_len,                         \
+                                     &config->NAME, STRLIT(TRUE_VALUE),        \
+                                     STRLIT(FALSE_VALUE),                      \
         ncm_error);                                                            \
 }
 
