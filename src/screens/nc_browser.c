@@ -1762,9 +1762,8 @@ browser_screen_delete_items(BrowserScreen *screen, NcmMpdClient *client,
     }
 
     if (!screen->local_browser) {
-        char *directory;
+        char *directory = screen->current_directory.data;
 
-        directory = screen->current_directory.data;
         if (screen->current_directory.len <= 0) {
             directory = "/";
         }
