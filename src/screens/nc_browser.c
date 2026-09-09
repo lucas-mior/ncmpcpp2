@@ -109,8 +109,8 @@ browser_set_normalized_directory(BrowserScreen *screen,
                                                    current, current_len);
         }
         directory_len -= STRLIT_LEN("/..");
-        return browser_set_parent_of_directory(screen, directory,
-                                               directory_len);
+        return browser_set_parent_of_directory(screen,
+                                               directory, directory_len);
     }
     browser_screen_set_current_directory(screen, directory, directory_len);
     return 0;
