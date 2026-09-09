@@ -3464,9 +3464,6 @@ tag_edit_screen_search(TagEditScreen *screen, char *pattern, int32 pattern_len,
     NcmRegex *regex;
     StrBuilder *constraint;
     bool *enabled;
-    NcMenu *menu;
-    NcWindow *window;
-    bool found;
     int32 status;
 
     if (screen == NULL) {
@@ -3500,17 +3497,22 @@ tag_edit_screen_search(TagEditScreen *screen, char *pattern, int32 pattern_len,
     sb_set(constraint, pattern, pattern_len);
     *enabled = true;
 
-    menu = tag_edit_screen_active_menu(screen);
-    window = tag_edit_screen_active_window(screen);
-    context.screen = screen;
-    context.regex = regex;
-    found = nc_menu_search_selectable(menu, nc_window_height(window),
-                                      forward, wrap, skip_current,
-                                      tag_edit_search_position,
-                                      &context, NULL) == 0;
-    if (found) {
-        tag_edit_screen_finish_directory_change(screen);
-        return 1;
+    {
+        NcMenu *menu = tag_edit_screen_active_menu(screen);
+        NcWindow *window = tag_edit_screen_active_window(screen);
+        bool found;
+
+        context.screen = screen;
+        context.regex = regex;
+
+        found = nc_menu_search_selectable(menu, nc_window_height(window),
+                                          forward, wrap, skip_current,
+                                          tag_edit_search_position,
+                                          &context, NULL) == 0;
+        if (found) {
+            tag_edit_screen_finish_directory_change(screen);
+            return 1;
+        }
     }
     return 0;
 }
