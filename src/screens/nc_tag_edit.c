@@ -1426,9 +1426,12 @@ tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
         for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
             NcmMutableSong *item = nc_menu_active_item_at(menu, i);
 
-            if ((item->uri != NULL)
-                && STREQUAL(item->uri, item->uri_len,
-                            preserved_uri.data, preserved_uri.len)) {
+            if (item->uri == NULL) {
+                continue;
+            }
+
+            if (STREQUAL(item->uri, item->uri_len,
+                         preserved_uri.data, preserved_uri.len)) {
                 nc_menu_goto_selectable(menu, i);
                 break;
             }
