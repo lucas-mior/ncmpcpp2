@@ -1442,7 +1442,8 @@ library_compare_album_items(MediaLibraryAlbumItem *left,
         right_data = "";
     }
     return ncm_compare_locale_strings(left_data, left_row->album_len,
-        right_data, right_row->album_len, Config.ignore_leading_the);
+                                      right_data, right_row->album_len,
+                                      Config.ignore_leading_the);
 }
 
 static void
