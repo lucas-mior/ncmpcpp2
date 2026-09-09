@@ -3446,15 +3446,11 @@ tag_edit_search_position(NcMenu *menu, int32 pos, void *user) {
     TagEditScreen *screen = context->screen;
 
     if (screen->active_focus == TAG_EDIT_FOCUS_TAGS) {
-        NcmMutableSong *song;
-
-        song = nc_menu_active_item_at(menu, pos);
+        NcmMutableSong *song = nc_menu_active_item_at(menu, pos);
         return tag_edit_tag_matches_regex(screen, song, context->regex);
     }
     if (screen->active_focus == TAG_EDIT_FOCUS_DIRECTORIES) {
-        StrBuilderPair *pair;
-
-        pair = nc_menu_active_item_at(menu, pos);
+        StrBuilderPair *pair = nc_menu_active_item_at(menu, pos);
         return tag_edit_directory_matches_regex(pair, context->regex, false);
     }
     return false;
