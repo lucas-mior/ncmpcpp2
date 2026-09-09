@@ -1627,9 +1627,8 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
     }
 
     for (int32 i = 0; i < ncm_mpd_song_list_count(songs); i += 1) {
-        NcmSong *song;
+        NcmSong *song = ncm_mpd_song_list_at(songs, i);
 
-        song = ncm_mpd_song_list_at(songs, i);
         if (mode == MEDIA_LIBRARY_MODE_THREE_COLUMNS) {
             NcmStringView album = {0};
             NcmStringView date = {0};
