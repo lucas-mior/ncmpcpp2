@@ -1336,7 +1336,7 @@ int32 ncm_playlist_sort_range(NcmSongArray *, int32 start_position,
                               enum SongGetter *, int32 getters_len, bool,
                               MpdClient *, NcmError *);
 
-typedef struct NcmSearchPromptState {
+typedef struct SearchPromptState {
     enum SearchDirection direction;
     StrBuilder last_text;
     int32 start_position;
@@ -1344,14 +1344,14 @@ typedef struct NcmSearchPromptState {
     bool has_start_position;
     bool has_last_result;
     bool last_found;
-} NcmSearchPromptState;
+} SearchPromptState;
 
-void ncm_search_prompt_state_init(NcmSearchPromptState *, enum SearchDirection);
-void ncm_search_prompt_state_destroy(NcmSearchPromptState *);
-void ncm_search_prompt_state_set_start_position(NcmSearchPromptState *, int32);
-bool ncm_search_prompt_state_has_cached_result(NcmSearchPromptState *, char *,
+void ncm_search_prompt_state_init(SearchPromptState *, enum SearchDirection);
+void ncm_search_prompt_state_destroy(SearchPromptState *);
+void ncm_search_prompt_state_set_start_position(SearchPromptState *, int32);
+bool ncm_search_prompt_state_has_cached_result(SearchPromptState *, char *,
                                                int32, bool *);
-int32 ncm_search_prompt_state_finish_result(NcmSearchPromptState *, char *,
+int32 ncm_search_prompt_state_finish_result(SearchPromptState *, char *,
                                             int32, bool search_ok, bool found);
 
 StringView ncm_string_view_make(char *, int32);

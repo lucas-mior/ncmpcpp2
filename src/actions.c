@@ -267,7 +267,7 @@ typedef struct ActionRuntimeCommandPrompt {
     StrBuilder previous;
 } ActionRuntimeCommandPrompt;
 
-typedef NcmSearchPromptState ActionRuntimeSearchPrompt;
+typedef SearchPromptState ActionRuntimeSearchPrompt;
 
 static NcmActionRuntime *
 action_runtime_or_global(NcmActionRuntime *runtime) {
