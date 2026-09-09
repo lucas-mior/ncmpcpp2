@@ -1627,9 +1627,10 @@ playlist_edit_screen_selected_songs(
 }
 
 int32
-playlist_edit_screen_apply_active_filter(
-    PlaylistEditScreen *screen, char *pattern, int32 pattern_len,
-    uint32 regex_flags, NcmError *ncm_error) {
+playlist_edit_screen_apply_active_filter(PlaylistEditScreen *screen,
+                                         char *pattern, int32 pattern_len,
+                                         uint32 regex_flags,
+                                         NcmError *ncm_error) {
     NcMenu *menu;
     NcmRegex *regex;
     StrBuilder *constraint;
