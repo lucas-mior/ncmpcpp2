@@ -179,8 +179,7 @@ static ActionDef action_defs[] = {
 #undef XX
 
 ActionDef *
-ncm_action_table_get(ActionDef *defs, int32 defs_len,
-                     enum ActionType type) {
+ncm_action_table_get(ActionDef *defs, int32 defs_len, enum ActionType type) {
     if (defs == NULL) {
         return NULL;
     }
