@@ -1435,10 +1435,10 @@ visualizer_draw_frequency(VisualizerScreen *screen,
     }
 
     {
-        int32 used_samples;
+        int32 used_samples = samples_len;
 
         memset64(fft->input, 0, fft->dft_total_size*SIZEOF(*fft->input));
-        used_samples = samples_len;
+
         if (used_samples > fft->dft_nonzero_size) {
             used_samples = fft->dft_nonzero_size;
         }
