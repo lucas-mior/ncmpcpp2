@@ -3388,10 +3388,10 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
         bool found = false;
 
         for (int32 i = 0; i < nc_menu_item_count(songs_menu); i += 1) {
-            NcmSong *candidate;
+            NcmSong *candidate = nc_menu_active_item_at(songs_menu, i);
 
-            candidate = nc_menu_active_item_at(songs_menu, i);
             ASSERT(candidate != NULL);
+
             if (ncm_song_is_equal(candidate, song)) {
                 nc_menu_goto_selectable(songs_menu, i);
                 found = true;
