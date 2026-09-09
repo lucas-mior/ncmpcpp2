@@ -2942,24 +2942,18 @@ tag_edit_screen_previous_column_available(TagEditScreen *screen) {
         return false;
     }
     if (screen->active_focus == TAG_EDIT_FOCUS_TAGS) {
-        NcMenu *menu;
-
-        menu = nc_editor_string_menu_base(&screen->tag_types);
+        NcMenu *menu = nc_editor_string_menu_base(&screen->tag_types);
         return nc_menu_item_count(menu) > 0;
     }
     if (screen->active_focus == TAG_EDIT_FOCUS_TAG_TYPES) {
-        NcMenu *menu;
-
-        menu = nc_editor_pair_menu_base(&screen->directories);
+        NcMenu *menu = nc_editor_pair_menu_base(&screen->directories);
         if (nc_menu_item_count(menu) <= 0) {
             return false;
         }
         return true;
     }
     if (tag_edit_focus_is_parser_helper(screen->active_focus)) {
-        NcMenu *menu;
-
-        menu = nc_editor_string_menu_base(&screen->parser_actions);
+        NcMenu *menu = nc_editor_string_menu_base(&screen->parser_actions);
         return nc_menu_item_count(menu) > 0;
     }
     return false;
