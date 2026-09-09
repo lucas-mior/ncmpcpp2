@@ -1778,7 +1778,8 @@ media_library_songs_from_list(NcmSongArray *songs, NcmMpdSongList *source) {
                     right_data = "";
                 }
                 result = ncm_compare_locale_strings(left_data, left_tags.len,
-                    right_data, right_tags.len, Config.ignore_leading_the);
+                                                    right_data, right_tags.len,
+                                                    Config.ignore_leading_the);
                 sb_free(&right_tags);
                 sb_free(&left_tags);
                 if (result != 0) {
