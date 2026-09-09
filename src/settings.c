@@ -17,7 +17,7 @@ typedef int32 SettingsApplyFn(Configuration *config,
                               NcmError *ncm_error);
 
 typedef int32 SettingsListItemFn(void *context, char *item, int32 item_len,
-                                   NcmError *ncm_error);
+                                 NcmError *ncm_error);
 
 typedef struct SettingsOption {
     char *name;
@@ -87,6 +87,7 @@ typedef struct SettingsOption {
 #define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD)                          \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, ColumnArray);                       \
     SETTINGS_ASSERT_FIELD_TYPE(FORMAT_FIELD, NcmFormatAst);
+
 #include "config_options_pass.h"
 #undef SETTINGS_ASSERT_FIELD_TYPE
 

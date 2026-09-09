@@ -214,28 +214,28 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
                 value_len = 0;
             }
 
-#define REQUIRE_LONG_VALUE() \
-    do { \
-        if (value == NULL) { \
-            status = configuration_require_value(argc, argv, &i, arg, \
-                                                 name_len + 2, &value, \
-                                                 &value_len, ncm_error); \
-            if (status < 0) { \
-                return status; \
-            } \
-        } \
+#define REQUIRE_LONG_VALUE()                                                   \
+    do {                                                                       \
+        if (value == NULL) {                                                   \
+            status = configuration_require_value(argc, argv, &i, arg,          \
+                                                 name_len + 2, &value,         \
+                                                 &value_len, ncm_error);       \
+            if (status < 0) {                                                  \
+                return status;                                                 \
+            }                                                                  \
+        }                                                                      \
     } while (0)
 
-#define REJECT_LONG_VALUE() \
-    do { \
-        if (value != NULL) { \
-            char message[128]; \
-            int32 len; \
-            len = SNPRINTF(message, \
-                           "option '--%.*s' does not take an argument", \
-                           name_len, name); \
-            return ncm_error_set_status(ncm_error, -EINVAL, message, len); \
-        } \
+#define REJECT_LONG_VALUE()                                                    \
+    do {                                                                       \
+        if (value != NULL) {                                                   \
+            char message[128];                                                 \
+            int32 len;                                                         \
+            len = SNPRINTF(message,                                            \
+                           "option '--%.*s' does not take an argument",        \
+                           name_len, name);                                    \
+            return ncm_error_set_status(ncm_error, -EINVAL, message, len);     \
+        }                                                                      \
     } while (0)
 
             if (STREQUAL(name, name_len, "host")) {
