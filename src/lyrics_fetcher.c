@@ -1686,8 +1686,7 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
                                       STRLIT("Понравился перевод"),
                                       &end);
             lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Добавить "
-                                             "видео"),
+                                      STRLIT("Добавить видео"),
                                       &end);
             lyrics_update_first_match(content_data, content_len, start,
                                       STRLIT("Другие песни"), &end);
