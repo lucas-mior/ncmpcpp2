@@ -1241,8 +1241,8 @@ tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
         }
     }
     if ((preserved.len <= 0) && (screen->highlighted_dir.len > 0)) {
-        sb_set(&preserved, screen->highlighted_dir.data,
-               screen->highlighted_dir.len);
+        sb_set(&preserved,
+               screen->highlighted_dir.data, screen->highlighted_dir.len);
     }
     dir = screen->current_dir.data;
     if (dir == NULL) {
