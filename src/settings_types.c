@@ -176,8 +176,10 @@ configuration_destroy(Configuration *config) {
     free2(config->NAME, config->NAME##_len + 1); \
     config->NAME = NULL;                         \
     config->NAME##_len = 0;
-#define XX_PATH(NAME, DEFAULT) XX_STRING(NAME, DEFAULT)
-#define XX_DIR(NAME, DEFAULT) XX_STRING(NAME, DEFAULT)
+#define XX_PATH(NAME, DEFAULT) \
+    XX_STRING(NAME, DEFAULT)
+#define XX_DIR(NAME, DEFAULT) \
+    XX_STRING(NAME, DEFAULT)
 #define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM)
 #define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)
 #define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT)

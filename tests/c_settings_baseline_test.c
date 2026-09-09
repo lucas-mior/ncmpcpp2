@@ -69,12 +69,15 @@ settings_test_double_range(SettingsApplyFn apply, Configuration *config,
 
 static void
 settings_assert_generated_empty(Configuration *config) {
-#define XX_BOOL(NAME, DEFAULT_VALUE) ASSERT(!config->NAME);
+#define XX_BOOL(NAME, DEFAULT_VALUE) \
+    ASSERT(!config->NAME);
 #define XX_STRING(NAME, DEFAULT_VALUE) \
     ASSERT(config->NAME == NULL); \
     ASSERT(config->NAME##_len == 0);
-#define XX_PATH(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
-#define XX_DIR(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_PATH(NAME, DEFAULT_VALUE) \
+    XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT_VALUE) \
+    XX_STRING(NAME, DEFAULT_VALUE)
 #define XX_INTEGER(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     ASSERT(config->NAME == 0);
 #define XX_DOUBLE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
