@@ -324,7 +324,6 @@ playlist_edit_update_callback(NcScreen *screen) {
     NcmError ncm_error = {0};
     NcMenu *playlists;
     bool content_fetch_due;
-    bool displayed_playlist_is_current;
     int32 changed;
     int32 status;
 
@@ -354,7 +353,7 @@ playlist_edit_update_callback(NcScreen *screen) {
     content_fetch_due = false;
     if (nc_menu_item_count(playlists) > 0) {
         NcMenu *content = nc_song_menu_base(&editor->content);
-        displayed_playlist_is_current =
+        bool displayed_playlist_is_current =
             playlist_edit_displayed_playlist_is_current(editor);
         if (editor->content_update_requested && displayed_playlist_is_current) {
             content_fetch_due = true;
