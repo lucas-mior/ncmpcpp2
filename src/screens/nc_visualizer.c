@@ -1834,8 +1834,8 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
             visualizer_draw_character(screen, half_width + x,
                                       ellipse_half_height + y,
                                       visualizer_color(screen,
-                                          sqrt((double)x*(double)x
-                                               + (double)y*(double)y),
+                                          sqrt(SQUARE((double)x)
+                                               + SQUARE((double)y)),
                                           max_radius, false),
                                       false, character, character_len);
         }
