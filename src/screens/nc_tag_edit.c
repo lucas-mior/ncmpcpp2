@@ -3395,10 +3395,9 @@ tag_edit_screen_apply_directory_filter(TagEditScreen *screen,
     }
     sb_set(&screen->directory_filter_constraint, pattern, pattern_len);
     {
-        NcMenu *menu;
+        NcMenu *menu = nc_editor_pair_menu_base(&screen->directories);
         NcMenuDisplayCallbacks callbacks;
 
-        menu = nc_editor_pair_menu_base(&screen->directories);
         callbacks = tag_edit_directory_display_callbacks(screen);
         nc_menu_set_display_callbacks(menu, callbacks);
     }
