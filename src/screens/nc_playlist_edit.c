@@ -1685,10 +1685,11 @@ playlist_edit_search_position(NcMenu *menu, int32 pos, void *user) {
 }
 
 int32
-playlist_edit_screen_search_active(
-    PlaylistEditScreen *screen, char *pattern, int32 pattern_len,
-    uint32 regex_flags, bool forward, bool wrap, bool skip_current,
-    NcmError *ncm_error) {
+playlist_edit_screen_search_active(PlaylistEditScreen *screen,
+                                   char *pattern, int32 pattern_len,
+                                   uint32 regex_flags,
+                                   bool forward, bool wrap, bool skip_current,
+                                   NcmError *ncm_error) {
     StrBuilder *constraint;
     NcmRegex *regex;
     NcMenu *menu;
