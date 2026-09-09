@@ -90,8 +90,8 @@ typedef struct SettingsOption {
 
 static int32
 settings_error(NcmError *ncm_error, char *message, int32 message_len) {
-    return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
-                                message, message_len);
+    ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE, message, message_len);
+    return -NCM_ERROR_PARSE;
 }
 
 static int32

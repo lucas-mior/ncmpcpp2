@@ -1625,7 +1625,6 @@ lyrics_fetch_page(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
         int32 extract_status;
 
         *plain_text_out = false;
-        extract_status = -NCM_ERROR_UNAVAILABLE;
         switch (fetcher->type) {
         case NCM_LYRICS_FETCHER_AMALGAMA: {
             char *match;
@@ -1765,12 +1764,16 @@ lyrics_fetch_page(NcmLyricsFetcherDef *fetcher, NcmLyricsResult *result,
                                                         content_len, marker,
                                                         '\'', &json_end);
                 if (extract_status == 0) {
-                    match = memmem64(json.data, json.len,
-                                     STRLIT("\"lyricsData\""));
-                    if (match == NULL) {
+                    if (json.len <= 0) {
                         lyrics_data = -1;
                     } else {
-                        lyrics_data = (int32)(match - json.data);
+                        match = memmem64(json.data, json.len,
+                                         STRLIT("\"lyricsData\""));
+                        if (match == NULL) {
+                            lyrics_data = -1;
+                        } else {
+                            lyrics_data = (int32)(match - json.data);
+                        }
                     }
                     if (lyrics_data < 0) {
                         extract_status = -NCM_ERROR_NOT_FOUND;
@@ -2112,7 +2115,6 @@ lyrics_append_direct_url(NcmLyricsFetcherDef *fetcher, StrBuilder *candidate,
     int32 status;
 
     sb_clear(candidate);
-    status = 0;
     switch (fetcher->type) {
     case NCM_LYRICS_FETCHER_AMALGAMA: {
         StrBuilder artist_slug = {0};
@@ -2179,6 +2181,7 @@ lyrics_append_direct_url(NcmLyricsFetcherDef *fetcher, StrBuilder *candidate,
     case NCM_LYRICS_FETCHER_LACOCCINELLE:
     case NCM_LYRICS_FETCHER_MUSICA:
         ASSERT(false);
+        status = -NCM_ERROR_UNAVAILABLE;
         break;
     case NCM_LYRICS_FETCHER_PAROLES:
         SB_APPEND(candidate, "https://www.paroles.net/");
@@ -2228,6 +2231,7 @@ lyrics_append_direct_url(NcmLyricsFetcherDef *fetcher, StrBuilder *candidate,
     case NCM_LYRICS_FETCHER_LAST:
     default:
         ASSERT(false);
+        status = -NCM_ERROR_UNAVAILABLE;
         break;
     }
 
@@ -2689,7 +2693,6 @@ lyrics_collect_search_urls(NcmLyricsFetcherDef *fetcher, StrBuilderArray *out,
                                            numeric_unescaped.len);
     sb_free(&numeric_unescaped);
 
-    status = -NCM_ERROR_NOT_FOUND;
     str_builder_array_clear(out);
     pos = 0;
     while (pos < unescaped.len) {

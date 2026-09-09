@@ -44,11 +44,12 @@ ncm_conversion_set_parse_error(NcmError *ncm_error, char *source,
     int32 len;
 
     len = SNPRINTF(message, "conversion failed for '%.*s'", source_len, source);
-    return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE, message, len);
+    ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE, message, len);
+    return -NCM_ERROR_PARSE;
 }
 
 int32
-ncm_parse_int64(char *source, int32 source_len, int32 *out,
+ncm_parse_int64(char *source, int32 source_len, int64 *out,
                 NcmError *ncm_error) {
     StrBuilder buffer = {0};
     char *negative_cursor;
@@ -92,7 +93,7 @@ ncm_parse_int64(char *source, int32 source_len, int32 *out,
          && (errno != ERANGE)
          && (value <= MAXOF(*out));
     if (ok) {
-        *out = (int32)value;
+        *out = value;
         status = ncm_error_ok(ncm_error);
     } else {
         status = ncm_conversion_set_parse_error(ncm_error, source, source_len);
@@ -105,7 +106,7 @@ ncm_parse_int64(char *source, int32 source_len, int32 *out,
 int32
 ncm_parse_int32(char *source, int32 source_len, int32 *out,
                 NcmError *ncm_error) {
-    int32 value;
+    int64 value;
     int32 status;
 
     if (out == NULL) {
@@ -121,7 +122,7 @@ ncm_parse_int32(char *source, int32 source_len, int32 *out,
         fatal(EXIT_FAILURE);
     }
 
-    *out = value;
+    *out = (int32)value;
     return ncm_error_ok(ncm_error);
 }
 

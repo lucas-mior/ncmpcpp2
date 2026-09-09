@@ -214,7 +214,6 @@ ncm_playlist_sort_range(NcmSongArray *songs, int32 start_position,
         free2(order, songs->len*SIZEOF(*order));
     }
 
-    status = ncm_error_ok(ncm_error);
     if (client == NULL) {
         free2(plan.items, plan_items_len*SIZEOF(*plan.items));
         return ncm_error_set_code(ncm_error, EINVAL,
