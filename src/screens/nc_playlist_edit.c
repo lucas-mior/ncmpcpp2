@@ -1296,9 +1296,8 @@ playlist_edit_find_song_in_content_range(PlaylistEditScreen *screen,
         last = nc_menu_item_count(menu);
     }
     for (int32 i = first; i < last; i += 1) {
-        NcmSong *candidate;
+        NcmSong *candidate = nc_menu_active_item_at(menu, i);
 
-        candidate = nc_menu_active_item_at(menu, i);
         if (ncm_song_is_equal(candidate, song)) {
             return i;
         }
