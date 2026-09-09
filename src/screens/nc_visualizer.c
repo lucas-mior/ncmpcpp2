@@ -26,7 +26,6 @@
 #define VISUALIZER_MIN_SAMPLE (-32768)
 #define VISUALIZER_MAX_SAMPLE 32767
 #define VISUALIZER_DEFAULT_CHARS "●▮"
-#define VISUALIZER_NANOSECONDS_PER_SECOND 1000000000ll
 
 #if defined(HAVE_FFTW3_H)
 #define VISUALIZER_SMOOTH_CHAR_COUNT 8
@@ -1196,7 +1195,7 @@ visualizer_screen_requested_samples(VisualizerScreen *screen) {
         channels = 2;
     }
     max_frames = INT32_MAX/channels;
-    max_elapsed_ns = max_frames*VISUALIZER_NANOSECONDS_PER_SECOND
+    max_elapsed_ns = max_frames*(int32)1e9
                      /screen->sample_rate;
     if (elapsed_ns > max_elapsed_ns) {
         screen->sample_clock_frame_remainder = 0;
@@ -1205,9 +1204,9 @@ visualizer_screen_requested_samples(VisualizerScreen *screen) {
 
     scaled_frames = elapsed_ns*screen->sample_rate;
     scaled_frames += screen->sample_clock_frame_remainder;
-    frames = scaled_frames/VISUALIZER_NANOSECONDS_PER_SECOND;
+    frames = scaled_frames/(int32)1e9;
     screen->sample_clock_frame_remainder =
-        scaled_frames%VISUALIZER_NANOSECONDS_PER_SECOND;
+        scaled_frames%(int32)1e9;
     if (frames >= max_frames) {
         screen->sample_clock_frame_remainder = 0;
         frames = max_frames;
