@@ -1558,8 +1558,8 @@ append_content_item(PlaylistEditScreen *screen, int32 pos,
 }
 
 int32
-playlist_edit_screen_selected_songs(
-    PlaylistEditScreen *screen, NcmSongArray *songs) {
+playlist_edit_screen_selected_songs(PlaylistEditScreen *screen,
+                                    NcmSongArray *songs) {
     int32 status;
 
     if (songs) {
