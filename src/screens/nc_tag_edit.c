@@ -613,8 +613,9 @@ static void
 tag_edit_history_path(StrBuilder *path) {
     ASSERT(path != NULL);
     if (Config.ncmpcpp_directory && (Config.ncmpcpp_directory_len > 0)) {
-        ncm_fs_join(path, Config.ncmpcpp_directory,
-                    Config.ncmpcpp_directory_len, STRLIT("patterns.list"));
+        ncm_fs_join(path,
+                    Config.ncmpcpp_directory, Config.ncmpcpp_directory_len,
+                    STRLIT("patterns.list"));
         return;
     }
     sb_set(path, STRLIT("patterns.list"));
