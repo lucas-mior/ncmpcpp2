@@ -1745,11 +1745,12 @@ visualizer_screen_draw(VisualizerScreen *screen,
             break;
 #if defined(HAVE_FFTW3_H)
         case VISUALIZER_FREQUENCY:
-            visualizer_draw_frequency(screen, screen->left_ch.data,
-                                      channel_samples, 0, half_height);
-            visualizer_draw_frequency(screen, screen->right_ch.data,
-                                      channel_samples, half_height,
-                                      height - half_height);
+            visualizer_draw_frequency(screen,
+                                      screen->left_ch.data, channel_samples,
+                                      0, half_height);
+            visualizer_draw_frequency(screen,
+                                      screen->right_ch.data, channel_samples,
+                                      half_height, height - half_height);
             break;
 #endif
         case VISUALIZER_ELLIPSE: {
