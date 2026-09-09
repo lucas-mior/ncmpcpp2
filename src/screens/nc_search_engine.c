@@ -390,12 +390,12 @@ search_row_matches(SearchEngineScreen *screen,
                                       &screen->row_text) < 0) {
             return false;
         }
-        view = ncm_string_view_make(screen->row_text.data,
+        view = ncm_string_view(screen->row_text.data,
                                     screen->row_text.len);
     } else {
         search_engine_screen_format_song_text(screen, &row->song,
                                               &screen->row_text);
-        view = ncm_string_view_make(screen->row_text.data,
+        view = ncm_string_view(screen->row_text.data,
                                     screen->row_text.len);
     }
     return ncm_regex_matches(regex, view.data, view.len);
@@ -1179,7 +1179,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
 
                                 if (!search_song_has_field_view(song, field,
                                                                  &value)) {
-                                    value = ncm_string_view_make(
+                                    value = ncm_string_view(
                                         search_empty_string, 0);
                                 }
                                 if (screen->search_mode
@@ -1216,7 +1216,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                             continue;
                         }
                         if (!search_song_has_field_view(song, field, &value)) {
-                            value = ncm_string_view_make(search_empty_string,
+                            value = ncm_string_view(search_empty_string,
                                                          0);
                         }
                         if (screen->search_mode
