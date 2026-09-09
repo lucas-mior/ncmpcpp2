@@ -1178,10 +1178,9 @@ int32 ncm_parse_int32(char *, int32, int32 *, NcmError *);
 int32 ncm_parse_int64(char *, int32, int32 *, NcmError *);
 int32 ncm_parse_double(char *, int32, double *, NcmError *);
 
-int32 ncm_bounds_check_i64(int64 value, int64 lbound, int64 ubound, NcmError *);
+int32 ncm_bounds_check_i64(int64 value, int64 min, int64 max, NcmError *);
+int32 ncm_bounds_check_f64(double value, double min, double max, NcmError *);
 
-int32 ncm_bounds_check_f64(double value, double lbound, double ubound,
-                           NcmError *);
 int32 ncm_lower_bound_check_f64(double value, double lbound, NcmError *);
 
 #define ENUM_NAME NcmFsEntryType
