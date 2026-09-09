@@ -100,9 +100,11 @@ config_init_unchecked(Configuration *config) {
     config->NAME = NULL;                                                  \
     config->NAME##_len = 0;
 #define XX_PATH(NAME, DEFAULT)                                            \
-    XX_STRING(NAME, DEFAULT)
+    config->NAME = NULL;                                                  \
+    config->NAME##_len = 0;
 #define XX_DIR(NAME, DEFAULT)                                             \
-    XX_STRING(NAME, DEFAULT)
+    config->NAME = NULL;                                                  \
+    config->NAME##_len = 0;
 #define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM)                       \
     config->NAME = 0;
 #define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)                        \
