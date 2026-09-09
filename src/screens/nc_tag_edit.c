@@ -1642,9 +1642,8 @@ tag_edit_mouse_callback(NcScreen *screen, MEVENT event) {
         y = event.y;
         if (nc_window_has_coords(&editor->parser_dialog_window, &x, &y)) {
             enum TagEditFocus focus = TAG_EDIT_FOCUS_PARSER_CHOICE;
-            NcMenu *menu;
+            NcMenu *menu = nc_editor_string_menu_base(&editor->parser_dialog);
 
-            menu = nc_editor_string_menu_base(&editor->parser_dialog);
             if (!tag_edit_mouse_move_to_parser_focus(editor, focus)) {
                 return;
             }
