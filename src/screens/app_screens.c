@@ -396,8 +396,7 @@ app_screen_visualizer_init(void) {
     visualizer_config.spectrum_hz_max = Config.visualizer_spectrum_hz_max;
     visualizer_config.data_source_hooks =
         visualizer_data_source_system_hooks(&global_mpd);
-    visualizer_config.visualization_type =
-        (enum VisualizerScreenType)Config.visualizer_type;
+    visualizer_config.visualization_type = Config.visualizer_type;
     visualizer_config.autoscale = Config.visualizer_autoscale;
     visualizer_config.stereo = Config.visualizer_in_stereo;
     visualizer_config.spectrum_smooth_look =
