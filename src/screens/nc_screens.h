@@ -156,20 +156,6 @@
     XX(ServerInfoScreen, server_info_screen)                   \
     XX(SongInfoScreen, song_info_screen)
 
-#define APP_SCREEN_INIT_FLAGS(XX)                          \
-    XX(browser_screen_initialized)                             \
-    XX(lastfm_screen_initialized)                              \
-    XX(lyrics_screen_initialized)                              \
-    XX(visualizer_screen_initialized)                          \
-    XX(playlist_edit_screen_initialized)                       \
-    XX(selected_items_adder_screen_initialized)                \
-    XX(sort_playlist_dialog_initialized)                       \
-    XX(search_engine_screen_initialized)                       \
-    XX(media_library_screen_initialized)                       \
-    XX(tag_edit_screen_initialized)                            \
-    XX(tiny_tag_edit_screen_initialized)                       \
-    XX(playlist_screen_initialized)
-
 #define APP_SCREEN_DIRECT_ACCESSOR_TYPES(XX)                               \
   XX(browser, BrowserScreen, browser_screen,                                   \
      browser_screen_base(&browser_screen))                                     \

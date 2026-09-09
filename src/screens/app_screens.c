@@ -119,11 +119,6 @@ APP_SCREEN_WRAPPED_STORAGE_TYPES(APP_SCREEN_DECLARE_STORAGE)
 
 #undef APP_SCREEN_DECLARE_STORAGE
 
-#define APP_SCREEN_DECLARE_INIT_FLAG(name)                                 \
-    static bool name;
-
-APP_SCREEN_INIT_FLAGS(APP_SCREEN_DECLARE_INIT_FLAG)
-
 #undef APP_SCREEN_DECLARE_INIT_FLAG
 
 #define ENUM_NAME PromptResult
@@ -277,6 +272,7 @@ APP_SCREEN_IS_CURRENT_TYPES(APP_SCREEN_DEFINE_IS_CURRENT)
 
 void
 app_screen_browser_init(void) {
+    static bool browser_screen_initialized = false;
     if (browser_screen_initialized) {
         return;
     }
@@ -289,6 +285,7 @@ app_screen_browser_init(void) {
                                     Config.mouse_list_scroll_whole_page);
     browser_screen_set_display_mode(&browser_screen,
                                     Config.browser_display_mode);
+
     browser_screen_initialized = true;
     return;
 }
@@ -310,6 +307,7 @@ app_screen_browser_fetch_supported_extensions(void) {
 
 void
 app_screen_lastfm_init(void) {
+    static bool lastfm_screen_initialized = false;
     if (lastfm_screen_initialized) {
         return;
     }
@@ -346,6 +344,7 @@ app_screen_lastfm_switch_to(void) {
 
 void
 app_screen_lyrics_init(void) {
+    static bool lyrics_screen_initialized = false;
     if (lyrics_screen_initialized) {
         return;
     }
@@ -374,6 +373,7 @@ app_screen_lyrics_switch_to(void) {
 void
 app_screen_visualizer_init(void) {
 #if defined(ENABLE_VISUALIZER)
+    static bool visualizer_screen_initialized = false;
     VisualizerScreenConfig visualizer_config = {0};
 
     if (visualizer_screen_initialized) {
@@ -436,6 +436,7 @@ app_screen_visualizer_base(void) {
 
 void
 app_screen_playlist_init(void) {
+    static bool playlist_screen_initialized;
     if (playlist_screen_initialized) {
         return;
     }
@@ -452,6 +453,7 @@ app_screen_playlist_init(void) {
 
 void
 app_screen_playlist_edit_init(void) {
+    static bool playlist_edit_screen_initialized = false;
     if (playlist_edit_screen_initialized) {
         return;
     }
@@ -475,6 +477,7 @@ app_screen_playlist_edit_init(void) {
 
 void
 app_screen_selected_items_adder_init(void) {
+    static bool selected_items_adder_screen_initialized = false;
     if (selected_items_adder_screen_initialized) {
         return;
     }
@@ -498,6 +501,7 @@ app_screen_selected_items_adder_open(NcmSongArray *songs, NcmError *ncm_error) {
 
 void
 app_screen_sort_playlist_dialog_init(void) {
+    static bool sort_playlist_dialog_initialized = false;
     if (sort_playlist_dialog_initialized) {
         return;
     }
@@ -648,6 +652,7 @@ void
 app_screen_search_engine_init(void) {
     SearchEngineHooks hooks = {0};
     enum SearchEngineSearchMode mode;
+    static bool search_engine_screen_initialized = false;
 
     if (search_engine_screen_initialized) {
         return;
@@ -685,6 +690,7 @@ app_screen_search_engine_init(void) {
 void
 app_screen_media_library_init(void) {
     MediaLibraryHooks hooks;
+    static bool media_library_screen_initialized = false;
 
     if (media_library_screen_initialized) {
         return;
@@ -827,6 +833,7 @@ tag_edit_hook_update_directory(void *user, char *directory, int32 directory_len
 void
 app_screen_tag_edit_init(void) {
     TagEditHooks hooks = {0};
+    static bool tag_edit_screen_initialized = false;
 
     if (tag_edit_screen_initialized) {
         return;
@@ -900,6 +907,7 @@ tiny_tag_edit_request_browser_update(void *user) {
 void
 app_screen_tiny_tag_edit_init(void) {
     TinyTagEditHooks hooks = {0};
+    static bool tiny_tag_edit_screen_initialized = false;
 
     if (tiny_tag_edit_screen_initialized) {
         return;
