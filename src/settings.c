@@ -1197,8 +1197,8 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
 static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
-    return settings_parse_formatted_color_list(                                \
-        &config->NAME, value, value_len, ncm_error);                           \
+    return settings_parse_formatted_color_list(&config->NAME,                  \
+                                               value, value_len, ncm_error);   \
 }
 
 #define XX_LYRICS_FETCHERS(NAME, DEFAULT)                                      \
