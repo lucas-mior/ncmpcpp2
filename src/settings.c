@@ -49,9 +49,7 @@ typedef struct SettingsOption {
     SETTINGS_ASSERT_FIELD_TYPE(NAME, enum mpd_tag_type);
 #define XX_STARTUP_SCREEN(NAME, DEFAULT)                                 \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, SCREEN_TYPE_);
-#define XX_OPTIONAL_STARTUP_SCREEN(                                            \
-    NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE                            \
-)                                                                              \
+#define XX_OPTIONAL_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE) \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, SCREEN_TYPE_);                        \
     SETTINGS_ASSERT_FIELD_TYPE(PRESENT_FIELD, bool);
 #define XX_COLOR(NAME, DEFAULT)                                          \
@@ -1105,9 +1103,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
         return 0;                                                              \
     }
 
-#define XX_OPTIONAL_STARTUP_SCREEN(                                            \
-    NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE                            \
-)                                                                              \
+#define XX_OPTIONAL_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE)  \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
