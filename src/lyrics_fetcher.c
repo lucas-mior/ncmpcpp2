@@ -2366,8 +2366,8 @@ lyrics_unwrap_search_url(StrBuilder *candidate, char *url, int32 url_len) {
         int32 key_len;
         int32 value_len;
 
-        query = lyrics_url_query_value(url, url_len, query, &key, &key_len,
-                                       &value, &value_len);
+        query = lyrics_url_query_value(url, url_len, query,
+                                       &key, &key_len, &value, &value_len);
         if ((key == NULL) || (!STREQUAL(key, key_len, "q")
                 && !STREQUAL(key, key_len, "url")
                 && !STREQUAL(key, key_len, "uddg"))) {
