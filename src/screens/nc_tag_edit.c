@@ -1586,7 +1586,7 @@ tag_edit_mouse_move_to_column(TagEditScreen *screen,
 
 static void
 tag_edit_mouse_scroll_menu(NcMenu *menu, NcWindow *window,
-                             enum NcScroll where) {
+                           enum NcScroll where) {
     enum NcScroll effective = where;
     int32 count = Config.lines_scrolled;
 
