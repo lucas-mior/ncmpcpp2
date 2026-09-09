@@ -1308,9 +1308,8 @@ playlist_edit_find_song_in_content_range(PlaylistEditScreen *screen,
 static int32
 playlist_edit_highlight_content_position(PlaylistEditScreen *screen,
                                            int32 pos) {
-    NcMenu *menu;
+    NcMenu *menu = nc_song_menu_base(&screen->content);
 
-    menu = nc_song_menu_base(&screen->content);
     if ((pos < 0) || (pos >= nc_menu_item_count(menu))) {
         return -EINVAL;
     }
