@@ -399,16 +399,14 @@ mutable_song_tags_buffer(MutableSong *song, enum TagsField field,
         already_present = false;
         if (!show_duplicates) {
             for (int32 j = 0; j < i; j += 1) {
-                StrBuilder previous = {0};
+                StrBuilder prev = {0};
 
-                mutable_song_get_tag_buffer_unchecked(song, field, j,
-                                                          &previous);
-                if (optional_strequal(previous.data, previous.len,
-                                      tag.data, tag.len)) {
+                mutable_song_get_tag_buffer_unchecked(song, field, j, &prev);
+                if (optional_strequal(prev.data, prev.len, tag.data, tag.len)) {
                     already_present = true;
                 }
 
-                sb_free(&previous);
+                sb_free(&prev);
                 if (already_present) {
                     break;
                 }
