@@ -2149,7 +2149,7 @@ browser_screen_search(BrowserScreen *screen, char *pattern, int32 pattern_len,
                       bool forward, bool wrap,
                       bool skip_current, NcmError *ncm_error) {
     BrowserSearchContext context;
-    NcmRegex regex;
+    NcmRegex regex = {0};
     NcMenu *menu;
     int32 status;
 
@@ -2162,7 +2162,6 @@ browser_screen_search(BrowserScreen *screen, char *pattern, int32 pattern_len,
                                     STRLIT("missing search pattern"));
     }
 
-    regex = (NcmRegex){0};
     status = ncm_regex_compile(&regex, pattern, pattern_len,
                                NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error);
     if (status < 0) {
