@@ -57,11 +57,11 @@ typedef struct LyricsFetcherRegistry {
     LyricsFetcherArray fetchers;
 } LyricsFetcherRegistry;
 
-typedef int32 (LyricsCurlPerformFn)(StrBuilder *data, char *url,
-                                         int32 url_len, char *referer,
-                                         int32 referer_len,
-                                         bool follow_redirect,
-                                         int32 timeout_seconds, void *user);
+typedef int32 (LyricsCurlPerformFn)(StrBuilder *data,
+                                    char *url, int32 url_len,
+                                    char *referer, int32 referer_len,
+                                    bool follow_redirect, int32 timeout_seconds,
+                                    void *user);
 
 void ncm_lyrics_result_destroy(LyricsResult *);
 void ncm_lyrics_result_clear(LyricsResult *);
