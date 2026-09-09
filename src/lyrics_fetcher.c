@@ -1306,93 +1306,99 @@ lyrics_url_best_slug_score(LyricsFetcherDef *fetcher,
     segment_start = -1;
     best = 0;
     for (int32 i = path_start; i <= path_end; i += 1) {
+        StrBuilder decoded = {0};
+        StrBuilder slug = {0};
+        char *segment;
+        int32 segment_len;
+        int32 score;
+
         if ((i < path_end) && (url[i] != '/')) {
             if (segment_start < 0) {
                 segment_start = i;
             }
             continue;
         }
-        if (segment_start >= 0) {
-            StrBuilder decoded = {0};
-            StrBuilder slug = {0};
-            char *segment = url + segment_start;
-            int32 segment_len = i - segment_start;
-            int32 score = 0;
+        if (segment_start < 0) {
+            continue;
+        }
 
-            lyrics_trim_url_segment_suffix(&segment, &segment_len,
-                                           STRLIT(".html"));
-            lyrics_trim_url_segment_suffix(&segment, &segment_len,
-                                           STRLIT("-lyrics"));
+        segment = url + segment_start;
+        segment_len = i - segment_start;
+        score = 0;
 
-            if (segment_len > 0) {
-                lyrics_percent_decode(&decoded, segment, segment_len);
-                if (lyrics_append_slug(&slug, fetcher->type, decoded.data,
-                                       decoded.len) >= 0) {
-                    char *candid = slug.data;
-                    char *wanted_data = wanted->data;
-                    int32 candid_len = slug.len;
-                    int32 wanted_len = wanted->len;
+        lyrics_trim_url_segment_suffix(&segment, &segment_len,
+                                       STRLIT(".html"));
+        lyrics_trim_url_segment_suffix(&segment, &segment_len,
+                                       STRLIT("-lyrics"));
 
-                    if (STREQUAL(wanted_data, wanted_len, candid, candid_len)) {
-                        score = 50;
-                    } else if (candid_len > wanted_len) {
-                        char *match;
-                        char *suffix;
-                        char prefix_separator;
-                        char suffix_separator;
+        if (segment_len > 0) {
+            lyrics_percent_decode(&decoded, segment, segment_len);
+            if (lyrics_append_slug(&slug, fetcher->type, decoded.data,
+                                   decoded.len) >= 0) {
+                char *candid = slug.data;
+                char *wanted_data = wanted->data;
+                int32 candid_len = slug.len;
+                int32 wanted_len = wanted->len;
 
-                        match = memmem64(candid, candid_len,
-                                         wanted_data, wanted_len);
-                        suffix = candid + candid_len - wanted_len;
-                        prefix_separator = candid[candid_len - wanted_len - 1];
-                        suffix_separator = candid[wanted_len];
-                        if (lyrics_starts_with_ignore_case(candid, candid_len,
-                                                           wanted_data,
-                                                           wanted_len)
-                            && lyrics_slug_match_separator(suffix_separator)) {
-                            score = 40;
-                        } else if (lyrics_starts_with_ignore_case(suffix,
-                                                                  wanted_len,
-                                                                  wanted_data,
-                                                                  wanted_len)) {
-                            if (lyrics_slug_match_separator(prefix_separator)) {
-                                score = 35;
-                            }
-                        } else if (match && (match > candid)) {
-                            int32 match_pos = (int32)(match - candid);
-                            char before_match = candid[match_pos - 1];
+                if (STREQUAL(wanted_data, wanted_len, candid, candid_len)) {
+                    score = 50;
+                } else if (candid_len > wanted_len) {
+                    char *match;
+                    char *suffix;
+                    char prefix_separator;
+                    char suffix_separator;
 
-                            if (lyrics_slug_match_separator(before_match)
-                                && (match_pos + wanted_len < candid_len)) {
-                                char after_match;
+                    match = memmem64(candid, candid_len,
+                                     wanted_data, wanted_len);
+                    suffix = candid + candid_len - wanted_len;
+                    prefix_separator = candid[candid_len - wanted_len - 1];
+                    suffix_separator = candid[wanted_len];
+                    if (lyrics_starts_with_ignore_case(candid, candid_len,
+                                                       wanted_data,
+                                                       wanted_len)
+                        && lyrics_slug_match_separator(suffix_separator)) {
+                        score = 40;
+                    } else if (lyrics_starts_with_ignore_case(suffix,
+                                                              wanted_len,
+                                                              wanted_data,
+                                                              wanted_len)) {
+                        if (lyrics_slug_match_separator(prefix_separator)) {
+                            score = 35;
+                        }
+                    } else if (match && (match > candid)) {
+                        int32 match_pos = (int32)(match - candid);
+                        char before_match = candid[match_pos - 1];
 
-                                after_match = candid[match_pos + wanted_len];
-                                if (lyrics_slug_match_separator(after_match)) {
-                                    score = 30;
-                                }
+                        if (lyrics_slug_match_separator(before_match)
+                            && (match_pos + wanted_len < candid_len)) {
+                            char after_match;
+
+                            after_match = candid[match_pos + wanted_len];
+                            if (lyrics_slug_match_separator(after_match)) {
+                                score = 30;
                             }
                         }
-                    } else if (wanted_len > candid_len) {
-                        char suffix_separator = wanted_data[candid_len];
+                    }
+                } else if (wanted_len > candid_len) {
+                    char suffix_separator = wanted_data[candid_len];
 
-                        if (lyrics_starts_with_ignore_case(wanted_data,
-                                                           wanted_len,
-                                                           candid,
-                                                           candid_len)
-                            && lyrics_slug_match_separator(suffix_separator)) {
-                            score = 20;
-                        }
+                    if (lyrics_starts_with_ignore_case(wanted_data,
+                                                       wanted_len,
+                                                       candid,
+                                                       candid_len)
+                        && lyrics_slug_match_separator(suffix_separator)) {
+                        score = 20;
                     }
                 }
             }
-            sb_free(&slug);
-            sb_free(&decoded);
-
-            if (score > best) {
-                best = score;
-            }
-            segment_start = -1;
         }
+        sb_free(&slug);
+        sb_free(&decoded);
+
+        if (score > best) {
+            best = score;
+        }
+        segment_start = -1;
     }
     return best;
 }
