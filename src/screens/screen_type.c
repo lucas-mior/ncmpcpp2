@@ -10,7 +10,7 @@ enum NcScreenType
 screen_type_to_nc_type(enum ScreenType screen_type) {
     switch (screen_type) {
     #define SCREEN_TO_NC_CASE(screen_type_value, nc_type, ...) \
-        case screen_type_value: \
+        case screen_type_value:                                \
             return nc_type;
 
     SCREEN_TYPES(SCREEN_TO_NC_CASE)
@@ -29,7 +29,7 @@ enum ScreenType
 screen_type_from_nc_type(enum NcScreenType nc_type) {
     switch (nc_type) {
     #define SCREEN_FROM_NC_CASE(screen_type_value, nc_type_value, ...) \
-        case nc_type_value: \
+        case nc_type_value:                                            \
             return screen_type_value;
 
     SCREEN_TYPES(SCREEN_FROM_NC_CASE)
@@ -47,10 +47,10 @@ screen_type_from_nc_type(enum NcScreenType nc_type) {
 bool
 screen_type_is_startup(enum ScreenType screen_type) {
     switch (screen_type) {
-    #define SCREEN_STARTUP_CASE( \
+    #define SCREEN_STARTUP_CASE(                           \
         screen_type_value, nc_type, nc_value, alias, flags \
-    ) \
-        case screen_type_value: \
+    )                                                      \
+        case screen_type_value:                            \
             return (flags & SCREEN_FLAG_STARTUP) != 0;
 
     SCREEN_TYPES(SCREEN_STARTUP_CASE)
