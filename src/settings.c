@@ -48,11 +48,11 @@ typedef struct SettingsOption {
 #define XX_MPD_TAG(NAME, DEFAULT_VALUE)                                        \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, enum mpd_tag_type);
 #define XX_STARTUP_SCREEN(NAME, DEFAULT_VALUE)                                 \
-    SETTINGS_ASSERT_FIELD_TYPE(NAME, NCM_SCREEN_TYPE_);
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, SCREEN_TYPE_);
 #define XX_OPTIONAL_STARTUP_SCREEN(                                            \
     NAME, DEFAULT_VALUE, PRESENT_FIELD, UNSET_VALUE                            \
 )                                                                              \
-    SETTINGS_ASSERT_FIELD_TYPE(NAME, NCM_SCREEN_TYPE_);                        \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, SCREEN_TYPE_);                        \
     SETTINGS_ASSERT_FIELD_TYPE(PRESENT_FIELD, bool);
 #define XX_COLOR(NAME, DEFAULT_VALUE)                                          \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcColor);
@@ -583,11 +583,11 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
 
 static int32
 settings_parse_startup_screen(char *value, int32 value_len,
-                              NCM_SCREEN_TYPE_ *screen, NcmError *ncm_error) {
-    NCM_SCREEN_TYPE_ parsed = NCM_SCREEN_TYPE_COUNT;
+                              SCREEN_TYPE_ *screen, NcmError *ncm_error) {
+    SCREEN_TYPE_ parsed = SCREEN_TYPE_COUNT;
     int32 status;
 
-    SETTINGS_PARSE_XENUM_VALUE(NCM_SCREEN_TYPE_, value, value_len,
+    SETTINGS_PARSE_XENUM_VALUE(SCREEN_TYPE_, value, value_len,
                                &parsed, status);
     if (status < 0) {
         return settings_invalid_value(ncm_error, value, value_len);
@@ -1094,7 +1094,7 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
-        NCM_SCREEN_TYPE_ parsed = NCM_SCREEN_TYPE_COUNT;                       \
+        SCREEN_TYPE_ parsed = SCREEN_TYPE_COUNT;                       \
         int32 status;                                                          \
         status = settings_parse_startup_screen(value, value_len, &parsed,      \
                                                ncm_error);                     \
@@ -1111,17 +1111,17 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error) {                                        \
-        NCM_SCREEN_TYPE_ parsed = NCM_SCREEN_TYPE_COUNT;                       \
+        SCREEN_TYPE_ parsed = SCREEN_TYPE_COUNT;                       \
         int32 status;                                                          \
         if (value_len <= 0) {                                                  \
             config->PRESENT_FIELD = false;                                     \
-            config->NAME = (NCM_SCREEN_TYPE_)(UNSET_VALUE);                    \
+            config->NAME = (SCREEN_TYPE_)(UNSET_VALUE);                    \
             return 0;                                                          \
         }                                                                      \
         status = settings_parse_startup_screen(value, value_len, &parsed,      \
                                                ncm_error);                     \
         if (status < 0) {                                                      \
-            config->NAME = (NCM_SCREEN_TYPE_)(UNSET_VALUE);                    \
+            config->NAME = (SCREEN_TYPE_)(UNSET_VALUE);                    \
             return status;                                                     \
         }                                                                      \
         config->NAME = parsed;                                                 \

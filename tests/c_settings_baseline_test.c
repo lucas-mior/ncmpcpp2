@@ -84,11 +84,11 @@ settings_assert_generated_empty(Configuration *config) {
 #define XX_MPD_TAG(NAME, DEFAULT_VALUE) \
     ASSERT(config->NAME == MPD_TAG_UNKNOWN);
 #define XX_STARTUP_SCREEN(NAME, DEFAULT_VALUE) \
-    ASSERT(config->NAME == NCM_SCREEN_TYPE_COUNT);
+    ASSERT(config->NAME == SCREEN_TYPE_COUNT);
 #define XX_OPTIONAL_STARTUP_SCREEN( \
     NAME, DEFAULT_VALUE, PRESENT_FIELD, UNSET_VALUE \
 ) \
-    ASSERT(config->NAME == (NCM_SCREEN_TYPE_)(UNSET_VALUE)); \
+    ASSERT(config->NAME == (SCREEN_TYPE_)(UNSET_VALUE)); \
     ASSERT(!config->PRESENT_FIELD);
 #define XX_COLOR(NAME, DEFAULT_VALUE) \
     ASSERT(nc_color_is_default(config->NAME));
@@ -220,7 +220,7 @@ test_declared_defaults_and_cleanup(void) {
     ASSERT(config.search_engine_default_search_mode == 1);
     ASSERT(config.screen_switcher_mode.len == 2);
     ASSERT(!config.has_startup_slave_screen_type);
-    ASSERT(config.startup_slave_screen == NCM_SCREEN_TYPE_COUNT);
+    ASSERT(config.startup_slave_screen == SCREEN_TYPE_COUNT);
     ASSERT(config.regular_expressions
            == NCM_REGEX_EXTENDED_CASE_INSENSITIVE);
 #if defined(HAVE_FFTW3_H)
@@ -236,7 +236,7 @@ test_declared_defaults_and_cleanup(void) {
     ASSERT(config.user_interface == NCM_DESIGN_CLASSIC);
     ASSERT(config.media_library_primary_tag == MPD_TAG_ARTIST);
     ASSERT(config.space_add_mode == NCM_SPACE_ADD_MODE_ADD_REMOVE);
-    ASSERT(config.startup_screen == NCM_SCREEN_TYPE_PLAYLIST);
+    ASSERT(config.startup_screen == SCREEN_TYPE_PLAYLIST);
 
     configuration_destroy(&config);
     settings_assert_generated_empty(&config);
@@ -531,7 +531,7 @@ test_enum_options(void) {
 
     ASSERT_ZERO(settings_test_apply(
         apply_startup_screen, &config, "playlist"));
-    ASSERT(config.startup_screen == NCM_SCREEN_TYPE_PLAYLIST);
+    ASSERT(config.startup_screen == SCREEN_TYPE_PLAYLIST);
 
     configuration_destroy(&config);
     return;
@@ -544,21 +544,21 @@ test_optional_enum_options(void) {
     configuration_init(&config);
 
     ASSERT(!config.has_startup_slave_screen_type);
-    ASSERT(config.startup_slave_screen == NCM_SCREEN_TYPE_COUNT);
+    ASSERT(config.startup_slave_screen == SCREEN_TYPE_COUNT);
     ASSERT_ZERO(settings_test_apply(
         apply_startup_slave_screen, &config, "browser"));
     ASSERT(config.has_startup_slave_screen_type);
-    ASSERT(config.startup_slave_screen == NCM_SCREEN_TYPE_BROWSER);
+    ASSERT(config.startup_slave_screen == SCREEN_TYPE_BROWSER);
 
     ASSERT(settings_test_apply(
         apply_startup_slave_screen, &config, "invalid") < 0);
     ASSERT(config.has_startup_slave_screen_type);
-    ASSERT(config.startup_slave_screen == NCM_SCREEN_TYPE_COUNT);
+    ASSERT(config.startup_slave_screen == SCREEN_TYPE_COUNT);
 
     ASSERT_ZERO(settings_test_apply(
         apply_startup_slave_screen, &config, ""));
     ASSERT(!config.has_startup_slave_screen_type);
-    ASSERT(config.startup_slave_screen == NCM_SCREEN_TYPE_COUNT);
+    ASSERT(config.startup_slave_screen == SCREEN_TYPE_COUNT);
 
     configuration_destroy(&config);
     settings_assert_generated_empty(&config);
@@ -728,9 +728,9 @@ test_collection_options(void) {
     ASSERT(!config.screen_switcher_previous);
     ASSERT(config.screen_switcher_mode.len == 2);
     ASSERT(config.screen_switcher_mode.items[0]
-           == NCM_SCREEN_TYPE_PLAYLIST);
+           == SCREEN_TYPE_PLAYLIST);
     ASSERT(config.screen_switcher_mode.items[1]
-           == NCM_SCREEN_TYPE_BROWSER);
+           == SCREEN_TYPE_BROWSER);
     ASSERT_ZERO(settings_test_apply(
         apply_screen_switcher_mode, &config, "previous"));
     ASSERT(config.screen_switcher_previous);
