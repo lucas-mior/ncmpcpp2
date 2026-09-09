@@ -1102,9 +1102,9 @@ lyrics_screen_fetch(LyricsScreen *screen, NcmSong *song,
             txt_status = "not found";
         }
 
-        lrc_start = ncm_string_basename_start(lrc_filename.data,
+        lrc_start = ncm_path_basename_start(lrc_filename.data,
                                               lrc_filename.len);
-        txt_start = ncm_string_basename_start(txt_filename.data,
+        txt_start = ncm_path_basename_start(txt_filename.data,
                                               txt_filename.len);
         SB_APPEND(&message, lrc_filename.data + lrc_start,
                   lrc_filename.len - lrc_start);
