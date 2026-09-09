@@ -7,7 +7,7 @@
 
 #include "c/ncm_c.h"
 
-#define NCM_LYRICS_FETCHER_LIST(XX)                 \
+#define LYRICS_FETCHER_LIST(XX)                 \
     XX(AMALGAMA,     "amalgama-lab.com")            \
     XX(AZLYRICS,     "azlyrics.com")                \
     XX(GENIUS,       "genius.com")                  \
@@ -21,15 +21,15 @@
     XX(INTERNET,     "the Internet")
 
 enum LyricsFetcherType {
-    NCM_LYRICS_FETCHER_UNKNOWN,
-#define NCM_LYRICS_FETCHER_ENUM(NAME, DISPLAY_NAME) \
-    NCM_LYRICS_FETCHER_##NAME,
-    NCM_LYRICS_FETCHER_LIST(NCM_LYRICS_FETCHER_ENUM)
-#undef NCM_LYRICS_FETCHER_ENUM
-    NCM_LYRICS_FETCHER_LAST,
+    LYRICS_FETCHER_UNKNOWN,
+#define LYRICS_FETCHER_ENUM(NAME, DISPLAY_NAME) \
+    LYRICS_FETCHER_##NAME,
+    LYRICS_FETCHER_LIST(LYRICS_FETCHER_ENUM)
+#undef LYRICS_FETCHER_ENUM
+    LYRICS_FETCHER_LAST,
 };
 
-#undef NCM_LYRICS_FETCHER_LIST
+#undef LYRICS_FETCHER_LIST
 
 typedef struct LyricsResult {
     char *text;
