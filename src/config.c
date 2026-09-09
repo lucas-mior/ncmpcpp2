@@ -459,7 +459,7 @@ ncm_configuration_options_apply(NcmConfigurationOptions *options,
         view->len = buffer->len;
     }
 
-    configuration_clear(&Config);
+    configuration_destroy(&Config);
     status = configuration_read(&Config, &config_views,
                                 options->ignore_config_errors, options->quiet,
                                 ncm_error);

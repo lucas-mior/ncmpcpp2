@@ -1272,7 +1272,7 @@ configuration_read(Configuration *config, StringViewArray *config_paths,
     bool used[SETTINGS_OPTION_COUNT] = {0};
     int32 status;
 
-    configuration_clear(config);
+    configuration_destroy(config);
     for (int32 i = 0; i < config_paths->len; i += 1) {
         StringView path = config_paths->items[i];
         StrBuilder path_buffer = {0};
