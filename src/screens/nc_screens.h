@@ -248,13 +248,13 @@
     XX(lyrics)                                                    \
     XX(visualizer)                                                \
     XX(playlist)                                                  \
-    XX(playlist_edit)                                           \
+    XX(playlist_edit)                                             \
     XX(selected_items_adder)                                      \
     XX(sort_playlist_dialog)                                      \
     XX(search_engine)                                             \
     XX(media_library)                                             \
-    XX(tag_edit)                                                \
-    XX(tiny_tag_edit)                                           \
+    XX(tag_edit)                                                  \
+    XX(tiny_tag_edit)                                             \
     XX(song_info)                                                 \
     XX(server_info)                                               \
     XX(outputs)
