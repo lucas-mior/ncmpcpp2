@@ -124,8 +124,8 @@ mutable_song_destroy_unchecked(MutableSong *song) {
 
 static bool
 mutable_song_has_tag_view_unchecked(MutableSong *song,
-                                        enum TagsField field, int32 idx,
-                                        StringView *view) {
+                                    enum TagsField field, int32 idx,
+                                    StringView *view) {
     MutableSongTag *tag;
 
     if ((tag = mutable_song_find_tag(song, field, idx)) == NULL) {
@@ -142,7 +142,7 @@ mutable_song_has_tag_view_unchecked(MutableSong *song,
 
 static bool
 mutable_song_write_callback(enum TagsField field, int32 idx,
-                                StringView *value, void *user) {
+                            StringView *value, void *user) {
     MutableSong *song = user;
     return mutable_song_has_tag_view_unchecked(song, field, idx, value);
 }
