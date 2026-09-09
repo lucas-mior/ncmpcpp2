@@ -15,9 +15,7 @@ typedef struct Column {
     char *type;
 
     int32 name_len;
-    int32 name_cap;
     int32 type_len;
-    int32 type_cap;
 
     int32 width;
     int32 stretch_limit;

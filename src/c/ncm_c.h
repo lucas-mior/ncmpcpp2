@@ -47,9 +47,8 @@ int32 ncm_error_status(NcmError *);
 int32 ncm_error_set_status(NcmError *, int32 status, char *, int32 message_len);
 int32 ncm_error_ok(NcmError *);
 
-void stupid_string_free(char **, int32 *len, int32 *cap);
-void stupid_string_set(char **, int32 *dest_len, int32 *dest_cap, char *,
-                       int32);
+void stupid_string_free(char **, int32 *len);
+void stupid_string_set(char **, int32 *dest_len, char *, int32);
 
 #include <mpd/tag.h>
 

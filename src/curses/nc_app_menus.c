@@ -6,32 +6,6 @@
 #include "c/ncm_c.h"
 #include "curses/nc_curses.h"
 
-static void
-nc_menu_owned_string_copy(char **dest_data, int32 *dest_len,
-                          int32 *dest_cap, char *source_data,
-                          int32 source_len) {
-    char *data;
-    int32 cap;
-
-    ASSERT_NON_NEGATIVE(source_len);
-    ASSERT((source_data != NULL) || (source_len == 0));
-
-    stupid_string_free(dest_data, dest_len, dest_cap);
-    if (source_len == 0) {
-        return;
-    }
-
-    cap = source_len + 1;
-    data = malloc2(cap);
-    memcpy64(data, source_data, source_len);
-    data[source_len] = '\0';
-
-    *dest_data = data;
-    *dest_len = source_len;
-    *dest_cap = cap;
-    return;
-}
-
 void
 nc_search_row_destroy(NcSearchRow *row) {
     if (row == NULL) {
@@ -64,7 +38,7 @@ nc_media_library_tag_row_destroy(NcMediaLibraryTagRow *row) {
     if (row == NULL) {
         return;
     }
-    stupid_string_free(&row->tag, &row->tag_len, &row->tag_cap);
+    stupid_string_free(&row->tag, &row->tag_len);
     row->mtime = 0;
     return;
 }
@@ -77,8 +51,7 @@ nc_media_library_tag_row_copy(NcMediaLibraryTagRow *dest,
     if ((dest == NULL) || (source == NULL)) {
         return -EINVAL;
     }
-    nc_menu_owned_string_copy(&tmp.tag, &tmp.tag_len, &tmp.tag_cap,
-                              source->tag, source->tag_len);
+    stupid_string_set(&tmp.tag, &tmp.tag_len, source->tag, source->tag_len);
     tmp.mtime = source->mtime;
 
     nc_media_library_tag_row_destroy(dest);
@@ -135,7 +108,7 @@ nc_editor_action_row_destroy(NcEditorActionRow *row) {
     if (row == NULL) {
         return;
     }
-    stupid_string_free(&row->label, &row->label_len, &row->label_cap);
+    stupid_string_free(&row->label, &row->label_len);
     row->run = NULL;
     row->user = NULL;
     return;
@@ -148,8 +121,8 @@ nc_editor_action_row_copy(NcEditorActionRow *dest, NcEditorActionRow *source) {
     if ((dest == NULL) || (source == NULL)) {
         return -EINVAL;
     }
-    nc_menu_owned_string_copy(&tmp.label, &tmp.label_len, &tmp.label_cap,
-                              source->label, source->label_len);
+    stupid_string_set(&tmp.label, &tmp.label_len,
+                      source->label, source->label_len);
     tmp.run = source->run;
     tmp.user = source->user;
 

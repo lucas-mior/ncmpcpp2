@@ -163,8 +163,7 @@ sort_dialog_mouse_callback(NcScreen *screen, MEVENT event) {
 
 static void
 sort_dialog_label_set(NcEditorSortRow *row, char *label, int32 label_len) {
-    row->action.label_cap = label_len + 1;
-    row->action.label = malloc2(row->action.label_cap);
+    row->action.label = malloc2(label_len + 1);
     memcpy64(row->action.label, label, label_len);
     row->action.label[label_len] = '\0';
     row->action.label_len = label_len;
