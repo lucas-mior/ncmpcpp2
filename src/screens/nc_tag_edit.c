@@ -57,7 +57,7 @@ static void
 tag_edit_draw_tag(NcMenu *menu, NcWindow *window, void *item,
                     int32 pos, void *user) {
     TagEditScreen *screen = user;
-    NcmMutableSong *song = item;
+    MutableSong *song = item;
     NcBuffer buffer = {0};
     NcMenu *tag_types;
     int32 choice;
@@ -580,7 +580,7 @@ tag_edit_build_parser_legend(TagEditScreen *screen) {
     tags = nc_tag_row_menu_base(&screen->tags);
     count = nc_menu_item_count(tags);
     for (int32 i = 0; i < count; i += 1) {
-        NcmMutableSong *song = nc_menu_active_item_at(tags, i);
+        MutableSong *song = nc_menu_active_item_at(tags, i);
 
         ASSERT(song != NULL);
         if (song->name == NULL) {
@@ -666,7 +666,7 @@ tag_edit_save_recent_patterns(TagEditScreen *screen) {
 static bool
 tag_edit_prompt_tag_value(TagEditScreen *screen,
                             enum NcmTagsField field, bool all_targets) {
-    NcmMutableSong *song;
+    MutableSong *song;
     StrBuilder initial;
     StrBuilder input = {0};
     char *label;
@@ -747,7 +747,7 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
     tags = nc_tag_row_menu_base(&screen->tags);
     count = nc_menu_item_count(tags);
     for (int32 i = 0; i < count; i += 1) {
-        NcmMutableSong *song;
+        MutableSong *song;
 
         song = nc_menu_active_item_at(tags, i);
         ASSERT(song != NULL);
@@ -901,7 +901,7 @@ tag_edit_run_current(NcScreen *screen) {
         if (action == TAG_EDIT_TAG_TYPE_ACTION_FIELD) {
             result = tag_edit_prompt_tag_value(editor, field, false);
         } else if (action == TAG_EDIT_TAG_TYPE_ACTION_FILENAME) {
-            NcmMutableSong *song;
+            MutableSong *song;
             StringView current_name;
             StringView initial;
             StrBuilder input = {0};
@@ -1364,7 +1364,7 @@ tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
     }
 
     {
-        NcmMutableSong *current;
+        MutableSong *current;
 
         if ((current = nc_tag_row_menu_current(&screen->tags))) {
             if (current->uri && (current->uri_len > 0)) {
@@ -1424,7 +1424,7 @@ tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
         NcMenu *menu = nc_tag_row_menu_base(&screen->tags);
 
         for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-            NcmMutableSong *item = nc_menu_active_item_at(menu, i);
+            MutableSong *item = nc_menu_active_item_at(menu, i);
 
             if (item->uri == NULL) {
                 continue;
@@ -1945,7 +1945,7 @@ tag_edit_tag_type_display_callbacks(TagEditScreen *screen) {
 
 static bool
 tag_edit_tag_matches_regex(TagEditScreen *screen,
-                             NcmMutableSong *song, NcmRegex *regex) {
+                             MutableSong *song, NcmRegex *regex) {
     StrBuilder buffer = {0};
     NcMenu *tag_types;
     enum NcmTagsField field;
@@ -1979,7 +1979,7 @@ tag_edit_tag_matches_regex(TagEditScreen *screen,
 static bool
 tag_edit_tag_filter(NcMenu *menu, void *item, void *user) {
     TagEditScreen *screen = user;
-    NcmMutableSong *song = item;
+    MutableSong *song = item;
 
     (void)menu;
     if (!screen->tag_filter_enabled) {
@@ -2670,7 +2670,7 @@ tag_edit_screen_locate_song(TagEditScreen *screen, NcmSong *song) {
         nc_menu_reset(nc_editor_string_menu_base(&screen->tag_types));
         tag_edit_set_focus(screen, TAG_EDIT_FOCUS_TAGS);
         for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-            NcmMutableSong *item;
+            MutableSong *item;
 
             item = nc_menu_active_item_at(menu, i);
             ASSERT(item != NULL);
@@ -2845,7 +2845,7 @@ tag_edit_screen_load_songs(TagEditScreen *screen, NcmSongArray *songs) {
 
     nc_menu_clear_items(nc_tag_row_menu_base(&screen->tags));
     for (int32 i = 0; i < songs->len; i += 1) {
-        NcmMutableSong mutable_song = {0};
+        MutableSong mutable_song = {0};
 
         ncm_mutable_song_load_originals_from_song(&mutable_song,
                                                   &songs->items[i]);
@@ -2867,7 +2867,7 @@ tag_edit_screen_load_songs(TagEditScreen *screen, NcmSongArray *songs) {
 }
 
 void
-tag_edit_screen_add_mutable_song(TagEditScreen *screen, NcmMutableSong *song) {
+tag_edit_screen_add_mutable_song(TagEditScreen *screen, MutableSong *song) {
     nc_tag_row_menu_add(&screen->tags, song);
     screen->last_known_tag_count =
         nc_menu_item_count(nc_tag_row_menu_base(&screen->tags));
@@ -2878,7 +2878,7 @@ tag_edit_screen_add_mutable_song(TagEditScreen *screen, NcmMutableSong *song) {
 static void
 tag_edit_copy_selected_song_at(TagEditScreen *screen,
                                  NcmSongArray *songs, int32 pos) {
-    NcmMutableSong *source;
+    MutableSong *source;
     NcmSong song = {0};
 
     source = nc_menu_active_item_at(nc_tag_row_menu_base(&screen->tags), pos);
@@ -2890,7 +2890,7 @@ tag_edit_copy_selected_song_at(TagEditScreen *screen,
     ncm_song_set_duration(&song, source->duration);
     ncm_song_set_mtime(&song, source->mtime);
     for (int32 i = 0; i < source->tags_len; i += 1) {
-        NcmMutableSongTag *tag = &source->tags[i];
+        MutableSongTag *tag = &source->tags[i];
         enum mpd_tag_type type = ncm_tags_field_to_tag_type(tag->field);
         char *value = tag->original;
         int32 value_len = tag->original_len;
@@ -2999,7 +2999,7 @@ tag_edit_screen_previous_column(TagEditScreen *screen) {
         bool modified = false;
 
         for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-            NcmMutableSong *song = nc_menu_active_item_at(menu, i);
+            MutableSong *song = nc_menu_active_item_at(menu, i);
 
             ASSERT(song != NULL);
             if (ncm_mutable_song_is_modified(song)) {
@@ -3039,7 +3039,7 @@ tag_edit_screen_next_column(TagEditScreen *screen) {
 
 static int32
 tag_edit_for_each_target(TagEditScreen *screen,
-                           int32 (*cb)(NcmMutableSong *song, void *user),
+                           int32 (*cb)(MutableSong *song, void *user),
                            void *user) {
     NcMenu *menu;
     bool has_selected;
@@ -3050,7 +3050,7 @@ tag_edit_for_each_target(TagEditScreen *screen,
     has_selected = nc_menu_has_selected(menu);
     count = 0;
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        NcmMutableSong *song;
+        MutableSong *song;
 
         if (has_selected && !nc_menu_position_is_selected(menu, i)) {
             continue;
@@ -3067,7 +3067,7 @@ tag_edit_for_each_target(TagEditScreen *screen,
 }
 
 static int32
-tag_edit_set_song_tag_callback(NcmMutableSong *song, void *user) {
+tag_edit_set_song_tag_callback(MutableSong *song, void *user) {
     TagSetter *setter = user;
 
     ncm_mutable_song_set_tags(song, setter->field, setter->value,
@@ -3103,7 +3103,7 @@ tag_edit_screen_apply_tag_to_selection(TagEditScreen *screen,
 }
 
 static int32
-tag_edit_number_song_callback(NcmMutableSong *song, void *user) {
+tag_edit_number_song_callback(MutableSong *song, void *user) {
     TrackNumberer *numberer = user;
     StringView view;
     char buffer[64];
@@ -3143,7 +3143,7 @@ tag_edit_screen_number_tracks(TagEditScreen *screen, bool extended) {
 }
 
 static int32
-tag_edit_capitalize_song_callback(NcmMutableSong *song, void *user) {
+tag_edit_capitalize_song_callback(MutableSong *song, void *user) {
     (void)user;
 
     for (int32 fi = 0; ncm_song_info_tags[fi].name; fi += 1) {
@@ -3183,7 +3183,7 @@ tag_edit_screen_capitalize_first_letters(TagEditScreen *screen) {
 }
 
 static int32
-tag_edit_lower_song_callback(NcmMutableSong *song, void *user) {
+tag_edit_lower_song_callback(MutableSong *song, void *user) {
     (void)user;
     for (int32 j = 0; ncm_song_info_tags[j].name; j += 1) {
         enum NcmTagsField field = ncm_song_info_tags[j].field;
@@ -3217,7 +3217,7 @@ tag_edit_screen_clear_modifications(TagEditScreen *screen) {
     NcMenu *menu = nc_tag_row_menu_base(&screen->tags);
 
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        NcmMutableSong *song = nc_menu_active_item_at(menu, i);
+        MutableSong *song = nc_menu_active_item_at(menu, i);
         ASSERT(song != NULL);
         ncm_mutable_song_clear_modifications(song);
     }
@@ -3225,7 +3225,7 @@ tag_edit_screen_clear_modifications(TagEditScreen *screen) {
 }
 
 static int32
-tag_edit_save_song_callback(NcmMutableSong *song, void *user) {
+tag_edit_save_song_callback(MutableSong *song, void *user) {
     SaveContext *context = user;
     int32 status;
     int32 error_code;
@@ -3446,7 +3446,7 @@ tag_edit_search_position(NcMenu *menu, int32 pos, void *user) {
     TagEditScreen *screen = context->screen;
 
     if (screen->active_focus == TAG_EDIT_FOCUS_TAGS) {
-        NcmMutableSong *song = nc_menu_active_item_at(menu, pos);
+        MutableSong *song = nc_menu_active_item_at(menu, pos);
         return tag_edit_tag_matches_regex(screen, song, context->regex);
     }
     if (screen->active_focus == TAG_EDIT_FOCUS_DIRECTORIES) {
@@ -3758,7 +3758,7 @@ tag_edit_next_mask_tag(char *mask, int32 mask_len, int32 start,
 }
 
 int32
-tag_edit_parse_filename(NcmMutableSong *song, char *mask,
+tag_edit_parse_filename(MutableSong *song, char *mask,
                           int32 mask_len, bool preview,
                           StrBuilder *preview_buffer) {
     StrBuilder file = {0};
@@ -3854,7 +3854,7 @@ tag_edit_parse_filename(NcmMutableSong *song, char *mask,
 }
 
 int32
-tag_edit_generate_filename(NcmMutableSong *song, char *pattern,
+tag_edit_generate_filename(MutableSong *song, char *pattern,
                              int32 pattern_len, StrBuilder *filename) {
     NcmFormatAst ast = {0};
     NcmSong format_song = {0};
@@ -3897,7 +3897,7 @@ tag_edit_generate_filename(NcmMutableSong *song, char *pattern,
         ncm_song_set_duration(&format_song, song->duration);
         ncm_song_set_mtime(&format_song, song->mtime);
         for (int32 i = 0; i < song->tags_len; i += 1) {
-            NcmMutableSongTag *tag = &song->tags[i];
+            MutableSongTag *tag = &song->tags[i];
             enum mpd_tag_type type = ncm_tags_field_to_tag_type(tag->field);
             char *value;
             int32 value_len;
@@ -3935,7 +3935,7 @@ tag_edit_generate_filename(NcmMutableSong *song, char *pattern,
 }
 
 int32
-tag_edit_song_display_value(NcmMutableSong *song, enum NcmTagsField field,
+tag_edit_song_display_value(MutableSong *song, enum NcmTagsField field,
                               StrBuilder *buffer) {
     StrBuilder tag = {0};
 

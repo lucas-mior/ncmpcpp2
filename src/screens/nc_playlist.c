@@ -770,7 +770,7 @@ playlist_screen_current_song(PlaylistScreen *screen, NcmSong *song) {
 }
 
 static void
-playlist_set_mutable_uri(NcmSong *song, NcmMutableSong *edited) {
+playlist_set_mutable_uri(NcmSong *song, MutableSong *edited) {
     StringView new_name;
     StrBuilder uri = {0};
 
@@ -793,7 +793,7 @@ playlist_set_mutable_uri(NcmSong *song, NcmMutableSong *edited) {
 
 static void
 playlist_build_mutable_song(NcmSong *replacement,
-                            NcmSong *current, NcmMutableSong *edited) {
+                            NcmSong *current, MutableSong *edited) {
     StringView value;
     int32 mtime;
     int32 duration;
@@ -846,7 +846,7 @@ playlist_build_mutable_song(NcmSong *replacement,
 
 int32
 playlist_screen_update_current_mutable_song(PlaylistScreen *screen,
-                                            NcmMutableSong *song) {
+                                            MutableSong *song) {
     NcmSong replacement = {0};
     NcmSong *current;
     NcMenu *menu;

@@ -586,8 +586,8 @@ NC_TYPED_MENU_DECLARE_CURRENT(NcPlaylistEntryMenu,
                               nc_playlist_entry_menu, NcmPlaylist);
 
 NC_TYPED_MENU_DECLARE_COMMON(NcTagRowMenu, nc_tag_row_menu);
-NC_TYPED_MENU_DECLARE_ADD(NcTagRowMenu, nc_tag_row_menu, NcmMutableSong);
-NC_TYPED_MENU_DECLARE_CURRENT(NcTagRowMenu, nc_tag_row_menu, NcmMutableSong);
+NC_TYPED_MENU_DECLARE_ADD(NcTagRowMenu, nc_tag_row_menu, MutableSong);
+NC_TYPED_MENU_DECLARE_CURRENT(NcTagRowMenu, nc_tag_row_menu, MutableSong);
 
 NC_TYPED_MENU_DECLARE_COMMON(NcSearchRowMenu, nc_search_row_menu);
 NC_TYPED_MENU_DECLARE_ADD_WITH_FLAGS(NcSearchRowMenu,

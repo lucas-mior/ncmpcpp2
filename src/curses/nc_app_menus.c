@@ -371,7 +371,7 @@ static const NcMenuItemCallbacks ncm_song_menu_callbacks = {
     .destroy = ncm_song_menu_item_destroy,
 };
 static const NcMenuItemCallbacks ncm_mutable_song_menu_callbacks = {
-    .item_size = SIZEOF(NcmMutableSong),
+    .item_size = SIZEOF(MutableSong),
     .copy = ncm_mutable_song_menu_item_copy,
     .destroy = ncm_mutable_song_menu_item_destroy,
 };
@@ -518,8 +518,8 @@ NC_TYPED_MENU_DEFINE_CURRENT(NcPlaylistEntryMenu,
 
 NC_TYPED_MENU_DEFINE_COMMON(NcTagRowMenu,
                             nc_tag_row_menu, ncm_mutable_song_menu_callbacks)
-NC_TYPED_MENU_DEFINE_ADD(NcTagRowMenu, nc_tag_row_menu, NcmMutableSong)
-NC_TYPED_MENU_DEFINE_CURRENT(NcTagRowMenu, nc_tag_row_menu, NcmMutableSong)
+NC_TYPED_MENU_DEFINE_ADD(NcTagRowMenu, nc_tag_row_menu, MutableSong)
+NC_TYPED_MENU_DEFINE_CURRENT(NcTagRowMenu, nc_tag_row_menu, MutableSong)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcSearchRowMenu,
                             nc_search_row_menu, nc_search_row_menu_callbacks)

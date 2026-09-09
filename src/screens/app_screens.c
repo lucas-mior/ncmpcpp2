@@ -882,7 +882,7 @@ tiny_tag_edit_update_directory(void *user, char *directory, int32 directory_len
 }
 
 static void
-tiny_tag_edit_update_playlist_song(void *user, NcmMutableSong *song) {
+tiny_tag_edit_update_playlist_song(void *user, MutableSong *song) {
     (void)user;
     playlist_screen_update_current_mutable_song(app_screen_playlist(), song);
     return;

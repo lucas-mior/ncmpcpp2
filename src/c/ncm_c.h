@@ -203,7 +203,7 @@ StrBuilder ncm_song_tags_buffer(NcmSong *, enum SongGetter, char *, int32,
                                 bool);
 bool ncm_song_is_equal(NcmSong *a, NcmSong *b);
 
-typedef struct NcmMutableSongTag {
+typedef struct MutableSongTag {
     char *original;
     char *value;
 
@@ -213,9 +213,9 @@ typedef struct NcmMutableSongTag {
 
     enum NcmTagsField field;
     bool modified;
-} NcmMutableSongTag;
+} MutableSongTag;
 
-typedef struct NcmMutableSong {
+typedef struct MutableSong {
     char *uri;
     char *directory;
     char *name;
@@ -230,37 +230,37 @@ typedef struct NcmMutableSong {
     int32 duration;
     bool is_from_database;
 
-    NcmMutableSongTag *tags;
+    MutableSongTag *tags;
     int32 tags_len;
     int32 tags_cap;
-} NcmMutableSong;
+} MutableSong;
 
-void ncm_mutable_song_destroy(NcmMutableSong *);
-int32 ncm_mutable_song_copy(NcmMutableSong *dest, NcmMutableSong *source);
-void ncm_mutable_song_move(NcmMutableSong *dest, NcmMutableSong *source);
+void ncm_mutable_song_destroy(MutableSong *);
+int32 ncm_mutable_song_copy(MutableSong *dest, MutableSong *source);
+void ncm_mutable_song_move(MutableSong *dest, MutableSong *source);
 
-int32 ncm_mutable_song_set_tag(NcmMutableSong *, enum NcmTagsField, int32 idx,
+int32 ncm_mutable_song_set_tag(MutableSong *, enum NcmTagsField, int32 idx,
                                char *, int32 value_len);
-int32 ncm_mutable_song_set_tags(NcmMutableSong *, enum NcmTagsField,
+int32 ncm_mutable_song_set_tags(MutableSong *, enum NcmTagsField,
                                 char *value, int32 value_len, char *separator,
                                 int32 separator_len);
-bool ncm_mutable_song_has_tag_view(NcmMutableSong *, enum NcmTagsField, int32,
+bool ncm_mutable_song_has_tag_view(MutableSong *, enum NcmTagsField, int32,
                                    StringView *);
-void ncm_mutable_song_get_tag_buffer(NcmMutableSong *, enum NcmTagsField,
+void ncm_mutable_song_get_tag_buffer(MutableSong *, enum NcmTagsField,
                                      int32, StrBuilder *);
-StrBuilder ncm_mutable_song_tags_buffer(NcmMutableSong *, enum NcmTagsField,
+StrBuilder ncm_mutable_song_tags_buffer(MutableSong *, enum NcmTagsField,
                                         char *, int32, bool);
-int32 ncm_mutable_song_load_originals_from_song(NcmMutableSong *, NcmSong *);
+int32 ncm_mutable_song_load_originals_from_song(MutableSong *, NcmSong *);
 
-int32 ncm_mutable_song_set_new_name(NcmMutableSong *, char *, int32);
-bool ncm_mutable_song_has_new_name_view(NcmMutableSong *, StringView *);
+int32 ncm_mutable_song_set_new_name(MutableSong *, char *, int32);
+bool ncm_mutable_song_has_new_name_view(MutableSong *, StringView *);
 
-int32 ncm_mutable_song_duration(NcmMutableSong *);
-int32 ncm_mutable_song_mtime(NcmMutableSong *);
+int32 ncm_mutable_song_duration(MutableSong *);
+int32 ncm_mutable_song_mtime(MutableSong *);
 
-bool ncm_mutable_song_is_modified(NcmMutableSong *);
-void ncm_mutable_song_clear_modifications(NcmMutableSong *);
-int32 ncm_mutable_song_write(NcmMutableSong *, char *);
+bool ncm_mutable_song_is_modified(MutableSong *);
+void ncm_mutable_song_clear_modifications(MutableSong *);
+int32 ncm_mutable_song_write(MutableSong *, char *);
 
 struct mpd_directory;
 
