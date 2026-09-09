@@ -1902,8 +1902,8 @@ tag_edit_directory_filter(NcMenu *menu, void *item, void *user) {
         return true;
     }
     return tag_edit_directory_matches_regex(pair,
-                                              &screen->directory_filter_regex,
-                                              true);
+                                            &screen->directory_filter_regex,
+                                            true);
 }
 
 static NcMenuDisplayCallbacks
