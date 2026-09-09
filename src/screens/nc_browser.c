@@ -1605,7 +1605,8 @@ browser_delete_path_recursive(char *path, int32 path_len, NcmError *ncm_error) {
             break;
         }
 
-        ncm_fs_join(&child, directory.path, directory.path_len,
+        ncm_fs_join(&child,
+                    directory.path, directory.path_len,
                     entry.name, entry.name_len);
         status = browser_delete_path_recursive(child.data, child.len,
                                                ncm_error);
