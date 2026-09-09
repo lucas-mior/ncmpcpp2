@@ -562,10 +562,10 @@ playlist_edit_content_matches_regex(NcmRegex *regex, NcmSong *song) {
 
 static bool
 content_filter_callback(NcMenu *menu, void *item, void *user) {
-    PlaylistEditScreen *editor;
+    PlaylistEditScreen *editor = user;
 
     (void)menu;
-    editor = user;
+
     if (!editor->content_filter_enabled) {
         return true;
     }
