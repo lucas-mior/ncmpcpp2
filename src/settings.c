@@ -1250,12 +1250,12 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
 #include "config_options_pass.h"
 
 #define OPT(NAME, DEFAULT)                               \
-    {                                                          \
-        .name = #NAME,                                         \
+    {                                                    \
+        .name = #NAME,                                   \
         .default_value = DEFAULT,                        \
-        .name_len = STRLIT_LEN(#NAME),                         \
+        .name_len = STRLIT_LEN(#NAME),                   \
         .default_value_len = STRLIT_LEN(DEFAULT),        \
-        .apply = apply_##NAME,                                 \
+        .apply = apply_##NAME,                           \
     }
 
 static const SettingsOption ncmpcpp_options[] = {
@@ -1297,7 +1297,7 @@ configuration_read(Configuration *config, StringViewArray *config_paths,
             error_code = -content_len;
             len = SNPRINTF(message,
                            "failed to read configuration file '%.*s': %s",
-                path.len, path.data, strerror(error_code));
+                           path.len, path.data, strerror(error_code));
             if (len < 0) {
                 ncm_error_set_status(ncm_error, content_len,
                                      STRLIT("failed to read "
