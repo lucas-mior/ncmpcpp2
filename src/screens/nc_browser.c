@@ -440,12 +440,9 @@ browser_update(NcScreen *screen) {
 
             while (status >= 0) {
                 NcmMpdItemArray items = {0};
+                StringView dir = browser_screen_current_directory(browser);
+                char *path = dir.data;
 
-                StringView directory;
-                char *path;
-
-                directory = browser_screen_current_directory(browser);
-                path = directory.data;
                 status = ncm_mpd_client_get_directory_entries(&global_mpd, path,
                                                               &items,
                                                               &ncm_error);
