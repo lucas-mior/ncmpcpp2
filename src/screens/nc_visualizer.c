@@ -1737,11 +1737,12 @@ visualizer_screen_draw(VisualizerScreen *screen,
                                  height - half_height);
             break;
         case VISUALIZER_WAVE_FILLED:
-            visualizer_draw_wave_filled(screen, screen->left_ch.data,
-                                        channel_samples, 0, half_height);
-            visualizer_draw_wave_filled(screen, screen->right_ch.data,
-                                        channel_samples, half_height,
-                                        height - half_height);
+            visualizer_draw_wave_filled(screen,
+                                        screen->left_ch.data, channel_samples,
+                                        0, half_height);
+            visualizer_draw_wave_filled(screen,
+                                        screen->right_ch.data, channel_samples,
+                                        half_height, height - half_height);
             break;
 #if defined(HAVE_FFTW3_H)
         case VISUALIZER_FREQUENCY:
