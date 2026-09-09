@@ -27,15 +27,15 @@ typedef struct SettingsOption {
     SettingsApplyFn *apply;
 } SettingsOption;
 
-#define SETTINGS_ASSERT_FIELD_TYPE(NAME, TYPE)                                 \
-    _Static_assert(_Generic(&((Configuration *)0)->NAME,                       \
-                            TYPE *: 1, default: 0),                            \
+#define SETTINGS_ASSERT_FIELD_TYPE(NAME, TYPE)                           \
+    _Static_assert(_Generic(&((Configuration *)0)->NAME,                 \
+                            TYPE *: 1, default: 0),                      \
                    "generated Configuration field type mismatch")
 
 #define XX_BOOL(NAME, DEFAULT)                                           \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, bool);
 #define XX_STRING(NAME, DEFAULT)                                         \
-    SETTINGS_ASSERT_FIELD_TYPE(NAME, char *);                                  \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, char *);                            \
     SETTINGS_ASSERT_FIELD_TYPE(NAME##_len, int32);
 #define XX_PATH(NAME, DEFAULT)                                           \
     XX_STRING(NAME, DEFAULT)
@@ -52,7 +52,7 @@ typedef struct SettingsOption {
 #define XX_STARTUP_SCREEN(NAME, DEFAULT)                                 \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, SCREEN_TYPE_);
 #define XX_OPT_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE) \
-    SETTINGS_ASSERT_FIELD_TYPE(NAME, SCREEN_TYPE_);                        \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, SCREEN_TYPE_);                      \
     SETTINGS_ASSERT_FIELD_TYPE(PRESENT_FIELD, bool);
 #define XX_COLOR(NAME, DEFAULT)                                          \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcColor);
@@ -65,7 +65,7 @@ typedef struct SettingsOption {
 #define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                          \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcBuffer);
 #define XX_BUFFER_WIDTH(NAME, DEFAULT, KEEP_EXISTING)                    \
-    SETTINGS_ASSERT_FIELD_TYPE(NAME, NcBuffer);                                \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, NcBuffer);                          \
     SETTINGS_ASSERT_FIELD_TYPE(NAME##_length, int32);
 #define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)         \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, StrBuilder);
@@ -76,14 +76,14 @@ typedef struct SettingsOption {
 #define XX_LYRICS_FETCHERS(NAME, DEFAULT)                                \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, LyricsFetcherRegistry);
 #define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                    \
-    SETTINGS_ASSERT_FIELD_TYPE(NAME, ScreenTypeArray);                         \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, ScreenTypeArray);                   \
     SETTINGS_ASSERT_FIELD_TYPE(PREVIOUS_FIELD, bool);
 #define XX_NAMED_BOOL(NAME, DEFAULT, TRUE_VALUE, FALSE_VALUE)            \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, bool);
 #define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE)             \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, uint32);
 #define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD)                          \
-    SETTINGS_ASSERT_FIELD_TYPE(NAME, ColumnArray);                             \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, ColumnArray);                       \
     SETTINGS_ASSERT_FIELD_TYPE(FORMAT_FIELD, NcmFormatAst);
 #include "config_options_pass.h"
 #undef SETTINGS_ASSERT_FIELD_TYPE
