@@ -3092,6 +3092,7 @@ tag_edit_screen_apply_tag_to_selection(TagEditScreen *screen,
     if ((value_len < 0) || (separator_len < 0)) {
         return -EINVAL;
     }
+
     setter.field = field;
     setter.value = value;
     setter.value_len = value_len;
