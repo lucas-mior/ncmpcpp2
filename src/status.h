@@ -52,8 +52,8 @@ typedef struct NcmStatusInitHooks {
     void (*show_connected_message)(void *user);
 } NcmStatusInitHooks;
 
-void ncm_status_handle_server_error_value(MpdClient *, int32 code, char *,
-                                          int32 message_len);
+void ncm_status_handle_server_error_value(MpdClient *, int32 code,
+                                          char *, int32 message_len);
 void ncm_status_trace(MpdClient *, bool update_timer,
                       bool update_window_timeout, NcmError *);
 void ncm_status_set_database_update_observer(void (*callback)(void *user),
@@ -64,8 +64,7 @@ int32 ncm_status_apply_mpd_status(NcmMpdStatus *, int32, NcmStatusHooks *,
                                   NcmError *);
 int32 ncm_status_update(MpdClient *, int32, NcmError *);
 int32 ncm_status_update_full(MpdClient *, NcmStatusHooks *, NcmError *);
-int32 ncm_status_update_from_noidle(MpdClient *, NcmStatusHooks *,
-                                    NcmError *);
+int32 ncm_status_update_from_noidle(MpdClient *, NcmStatusHooks *, NcmError *);
 void ncm_status_clear(void);
 
 bool ncm_status_state_consume_is_enabled(void);
