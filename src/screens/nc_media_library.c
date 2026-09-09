@@ -2227,8 +2227,9 @@ media_library_screen_selected_songs_checked(
 }
 
 int32
-media_library_screen_copy_visible_songs(
-    MediaLibraryScreen *screen, NcmSongArray *songs, NcmError *ncm_error) {
+media_library_screen_copy_visible_songs(MediaLibraryScreen *screen,
+                                        NcmSongArray *songs,
+                                        NcmError *ncm_error) {
     NcMenu *menu;
 
     if ((screen == NULL) || (songs == NULL)) {
