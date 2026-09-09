@@ -2017,10 +2017,10 @@ int32 app_screens_switch_to_type(enum ScreenType);
 int32 app_screens_lock_current(void);
 enum ScreenType app_screens_current_type(void);
 
-#define NCM_APP_SCREEN_DECLARE_COMMON(suffix)                                  \
-    void app_screen_##suffix##_init(void);                                     \
-    void app_screen_##suffix##_register(void);                                 \
-    bool app_screen_##suffix##_is_current(void);                               \
+#define NCM_APP_SCREEN_DECLARE_COMMON(suffix)          \
+    void app_screen_##suffix##_init(void);             \
+    void app_screen_##suffix##_register(void);         \
+    bool app_screen_##suffix##_is_current(void);       \
     NcScreen *app_screen_##suffix##_base(void);
 
 NCM_APP_SCREEN_IS_CURRENT_TYPES(NCM_APP_SCREEN_DECLARE_COMMON)
