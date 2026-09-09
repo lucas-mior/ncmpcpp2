@@ -7,7 +7,7 @@
 
 typedef struct NcmPlaylistSortContext {
     NcmSongArray *songs;
-    enum NcmSongGetter *getters;
+    enum SongGetter *getters;
     int32 getters_len;
     bool ignore_leading_the;
 } NcmPlaylistSortContext;
@@ -38,13 +38,13 @@ ncm_playlist_sort_indices(NcmPlaylistSortContext *context,
         int32 result = 0;
 
         for (int32 i = 0; i < context->getters_len; i += 1) {
-            enum NcmSongGetter getter = context->getters[i];
+            enum SongGetter getter = context->getters[i];
             StrBuilder left_buffer;
             StrBuilder right_buffer;
             char *left_data;
             char *right_data;
 
-            if (getter == NCM_SONG_GETTER_NONE) {
+            if (getter == SONG_GETTER_NONE) {
                 break;
             }
 
@@ -113,7 +113,7 @@ ncm_playlist_sort_indices(NcmPlaylistSortContext *context,
 
 int32
 ncm_playlist_sort_range(NcmSongArray *songs, int32 start_position,
-                        enum NcmSongGetter *getters, int32 getters_len,
+                        enum SongGetter *getters, int32 getters_len,
     bool ignore_leading_the, MpdClient *client, NcmError *ncm_error) {
     NcmPlaylistSortPlan plan = {0};
     NcmPlaylistSortContext context = {
@@ -154,11 +154,11 @@ ncm_playlist_sort_range(NcmSongArray *songs, int32 start_position,
                                   STRLIT("missing sort keys"));
     }
     for (int32 i = 0; i < getters_len; i += 1) {
-        if (getters[i] == NCM_SONG_GETTER_NONE) {
+        if (getters[i] == SONG_GETTER_NONE) {
             break;
         }
-        if ((getters[i] < NCM_SONG_GETTER_NONE)
-            || (getters[i] > NCM_SONG_GETTER_PRIORITY)) {
+        if ((getters[i] < SONG_GETTER_NONE)
+            || (getters[i] > SONG_GETTER_PRIORITY)) {
             return ncm_error_set_code(ncm_error, EINVAL,
                                       STRLIT("invalid playlist sort key"));
         }

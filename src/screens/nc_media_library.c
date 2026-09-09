@@ -1726,11 +1726,11 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
 
 int32
 media_library_songs_from_list(NcmSongArray *songs, NcmMpdSongList *source) {
-    static enum NcmSongGetter getters[] = {
-        NCM_SONG_GETTER_DATE,
-        NCM_SONG_GETTER_ALBUM,
-        NCM_SONG_GETTER_DISC,
-        NCM_SONG_GETTER_TRACK_NUMBER,
+    static enum SongGetter getters[] = {
+        SONG_GETTER_DATE,
+        SONG_GETTER_ALBUM,
+        SONG_GETTER_DISC,
+        SONG_GETTER_TRACK_NUMBER,
     };
     NcmSongArray replacement = {0};
 

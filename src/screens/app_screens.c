@@ -42,62 +42,62 @@ struct SongInfoScreen {
 NcmSongInfoMetadata ncm_song_info_tags[] = {
     {
         .name = "Title",
-        .get = NCM_SONG_GETTER_TITLE,
+        .get = SONG_GETTER_TITLE,
         .field = NCM_TAGS_FIELD_TITLE,
     },
     {
         .name = "Artist",
-        .get = NCM_SONG_GETTER_ARTIST,
+        .get = SONG_GETTER_ARTIST,
         .field = NCM_TAGS_FIELD_ARTIST,
     },
     {
         .name = "Album Artist",
-        .get = NCM_SONG_GETTER_ALBUM_ARTIST,
+        .get = SONG_GETTER_ALBUM_ARTIST,
         .field = NCM_TAGS_FIELD_ALBUM_ARTIST,
     },
     {
         .name = "Album",
-        .get = NCM_SONG_GETTER_ALBUM,
+        .get = SONG_GETTER_ALBUM,
         .field = NCM_TAGS_FIELD_ALBUM,
     },
     {
         .name = "Date",
-        .get = NCM_SONG_GETTER_DATE,
+        .get = SONG_GETTER_DATE,
         .field = NCM_TAGS_FIELD_DATE,
     },
     {
         .name = "Track",
-        .get = NCM_SONG_GETTER_TRACK,
+        .get = SONG_GETTER_TRACK,
         .field = NCM_TAGS_FIELD_TRACK,
     },
     {
         .name = "Genre",
-        .get = NCM_SONG_GETTER_GENRE,
+        .get = SONG_GETTER_GENRE,
         .field = NCM_TAGS_FIELD_GENRE,
     },
     {
         .name = "Composer",
-        .get = NCM_SONG_GETTER_COMPOSER,
+        .get = SONG_GETTER_COMPOSER,
         .field = NCM_TAGS_FIELD_COMPOSER,
     },
     {
         .name = "Performer",
-        .get = NCM_SONG_GETTER_PERFORMER,
+        .get = SONG_GETTER_PERFORMER,
         .field = NCM_TAGS_FIELD_PERFORMER,
     },
     {
         .name = "Disc",
-        .get = NCM_SONG_GETTER_DISC,
+        .get = SONG_GETTER_DISC,
         .field = NCM_TAGS_FIELD_DISC,
     },
     {
         .name = "Comment",
-        .get = NCM_SONG_GETTER_COMMENT,
+        .get = SONG_GETTER_COMMENT,
         .field = NCM_TAGS_FIELD_COMMENT,
     },
     {
         .name = NULL,
-        .get = NCM_SONG_GETTER_NONE,
+        .get = SONG_GETTER_NONE,
         .field = NCM_TAGS_FIELD_COUNT,
     },
 };
@@ -1608,16 +1608,16 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
         return 0;
     }
 
-    value = ncm_song_getter_buffer(&owner->song, NCM_SONG_GETTER_NAME, 0);
+    value = ncm_song_getter_buffer(&owner->song, SONG_GETTER_NAME, 0);
     append_song_key_value(buffer, "Filename", &value, false);
     sb_free(&value);
 
-    value = ncm_song_getter_buffer(&owner->song, NCM_SONG_GETTER_DIRECTORY, 0);
+    value = ncm_song_getter_buffer(&owner->song, SONG_GETTER_DIRECTORY, 0);
     append_song_key_value(buffer, "Directory", &value, true);
     sb_free(&value);
     nc_buffer_append_cstring(buffer, "\n");
 
-    value = ncm_song_getter_buffer(&owner->song, NCM_SONG_GETTER_LENGTH, 0);
+    value = ncm_song_getter_buffer(&owner->song, SONG_GETTER_LENGTH, 0);
     append_song_key_value(buffer, "Length", &value, false);
     sb_free(&value);
 

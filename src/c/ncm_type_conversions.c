@@ -175,81 +175,81 @@ ncm_char_to_tag_type(char c) {
     }
 }
 
-enum NcmSongGetter
+enum SongGetter
 ncm_song_getter_from_char(char c) {
     switch (c) {
     case 'l':
-        return NCM_SONG_GETTER_LENGTH;
+        return SONG_GETTER_LENGTH;
     case 'D':
-        return NCM_SONG_GETTER_DIRECTORY;
+        return SONG_GETTER_DIRECTORY;
     case 'f':
-        return NCM_SONG_GETTER_NAME;
+        return SONG_GETTER_NAME;
     case 'F':
-        return NCM_SONG_GETTER_URI;
+        return SONG_GETTER_URI;
     case 'a':
-        return NCM_SONG_GETTER_ARTIST;
+        return SONG_GETTER_ARTIST;
     case 'A':
-        return NCM_SONG_GETTER_ALBUM_ARTIST;
+        return SONG_GETTER_ALBUM_ARTIST;
     case 't':
-        return NCM_SONG_GETTER_TITLE;
+        return SONG_GETTER_TITLE;
     case 'b':
-        return NCM_SONG_GETTER_ALBUM;
+        return SONG_GETTER_ALBUM;
     case 'y':
-        return NCM_SONG_GETTER_DATE;
+        return SONG_GETTER_DATE;
     case 'n':
-        return NCM_SONG_GETTER_TRACK_NUMBER;
+        return SONG_GETTER_TRACK_NUMBER;
     case 'N':
-        return NCM_SONG_GETTER_TRACK;
+        return SONG_GETTER_TRACK;
     case 'g':
-        return NCM_SONG_GETTER_GENRE;
+        return SONG_GETTER_GENRE;
     case 'c':
-        return NCM_SONG_GETTER_COMPOSER;
+        return SONG_GETTER_COMPOSER;
     case 'p':
-        return NCM_SONG_GETTER_PERFORMER;
+        return SONG_GETTER_PERFORMER;
     case 'd':
-        return NCM_SONG_GETTER_DISC;
+        return SONG_GETTER_DISC;
     case 'C':
-        return NCM_SONG_GETTER_COMMENT;
+        return SONG_GETTER_COMMENT;
     case 'P':
-        return NCM_SONG_GETTER_PRIORITY;
+        return SONG_GETTER_PRIORITY;
     default:
-        return NCM_SONG_GETTER_NONE;
+        return SONG_GETTER_NONE;
     }
 }
 
 enum mpd_tag_type
-ncm_song_getter_to_tag_type(enum NcmSongGetter getter) {
+ncm_song_getter_to_tag_type(enum SongGetter getter) {
     switch (getter) {
-    case NCM_SONG_GETTER_ARTIST:
+    case SONG_GETTER_ARTIST:
         return MPD_TAG_ARTIST;
-    case NCM_SONG_GETTER_TITLE:
+    case SONG_GETTER_TITLE:
         return MPD_TAG_TITLE;
-    case NCM_SONG_GETTER_ALBUM:
+    case SONG_GETTER_ALBUM:
         return MPD_TAG_ALBUM;
-    case NCM_SONG_GETTER_ALBUM_ARTIST:
+    case SONG_GETTER_ALBUM_ARTIST:
         return MPD_TAG_ALBUM_ARTIST;
-    case NCM_SONG_GETTER_TRACK:
+    case SONG_GETTER_TRACK:
         return MPD_TAG_TRACK;
-    case NCM_SONG_GETTER_DATE:
+    case SONG_GETTER_DATE:
         return MPD_TAG_DATE;
-    case NCM_SONG_GETTER_GENRE:
+    case SONG_GETTER_GENRE:
         return MPD_TAG_GENRE;
-    case NCM_SONG_GETTER_COMPOSER:
+    case SONG_GETTER_COMPOSER:
         return MPD_TAG_COMPOSER;
-    case NCM_SONG_GETTER_PERFORMER:
+    case SONG_GETTER_PERFORMER:
         return MPD_TAG_PERFORMER;
-    case NCM_SONG_GETTER_COMMENT:
+    case SONG_GETTER_COMMENT:
         return MPD_TAG_COMMENT;
-    case NCM_SONG_GETTER_DISC:
+    case SONG_GETTER_DISC:
         return MPD_TAG_DISC;
-    case NCM_SONG_GETTER_NONE:
-    case NCM_SONG_GETTER_LENGTH:
-    case NCM_SONG_GETTER_DIRECTORY:
-    case NCM_SONG_GETTER_NAME:
-    case NCM_SONG_GETTER_URI:
-    case NCM_SONG_GETTER_TRACK_NUMBER:
-    case NCM_SONG_GETTER_PRIORITY:
-    case NCM_SONG_GETTER_COUNT:
+    case SONG_GETTER_NONE:
+    case SONG_GETTER_LENGTH:
+    case SONG_GETTER_DIRECTORY:
+    case SONG_GETTER_NAME:
+    case SONG_GETTER_URI:
+    case SONG_GETTER_TRACK_NUMBER:
+    case SONG_GETTER_PRIORITY:
+    case SONG_GETTER_COUNT:
     default:
         return MPD_TAG_UNKNOWN;
     }
@@ -362,70 +362,70 @@ ncm_tags_field_to_tag_type(enum NcmTagsField field) {
     }
 }
 
-enum NcmSongGetter
+enum SongGetter
 ncm_tags_field_to_song_getter(enum NcmTagsField field) {
     switch (field) {
     case NCM_TAGS_FIELD_TITLE:
-        return NCM_SONG_GETTER_TITLE;
+        return SONG_GETTER_TITLE;
     case NCM_TAGS_FIELD_ARTIST:
-        return NCM_SONG_GETTER_ARTIST;
+        return SONG_GETTER_ARTIST;
     case NCM_TAGS_FIELD_ALBUM_ARTIST:
-        return NCM_SONG_GETTER_ALBUM_ARTIST;
+        return SONG_GETTER_ALBUM_ARTIST;
     case NCM_TAGS_FIELD_ALBUM:
-        return NCM_SONG_GETTER_ALBUM;
+        return SONG_GETTER_ALBUM;
     case NCM_TAGS_FIELD_DATE:
-        return NCM_SONG_GETTER_DATE;
+        return SONG_GETTER_DATE;
     case NCM_TAGS_FIELD_TRACK:
-        return NCM_SONG_GETTER_TRACK;
+        return SONG_GETTER_TRACK;
     case NCM_TAGS_FIELD_GENRE:
-        return NCM_SONG_GETTER_GENRE;
+        return SONG_GETTER_GENRE;
     case NCM_TAGS_FIELD_COMPOSER:
-        return NCM_SONG_GETTER_COMPOSER;
+        return SONG_GETTER_COMPOSER;
     case NCM_TAGS_FIELD_PERFORMER:
-        return NCM_SONG_GETTER_PERFORMER;
+        return SONG_GETTER_PERFORMER;
     case NCM_TAGS_FIELD_DISC:
-        return NCM_SONG_GETTER_DISC;
+        return SONG_GETTER_DISC;
     case NCM_TAGS_FIELD_COMMENT:
-        return NCM_SONG_GETTER_COMMENT;
+        return SONG_GETTER_COMMENT;
     case NCM_TAGS_FIELD_COUNT:
     default:
-        return NCM_SONG_GETTER_NONE;
+        return SONG_GETTER_NONE;
     }
 }
 
 enum NcmTagsField
-ncm_song_getter_to_tags_field(enum NcmSongGetter getter) {
+ncm_song_getter_to_tags_field(enum SongGetter getter) {
     switch (getter) {
-    case NCM_SONG_GETTER_TITLE:
+    case SONG_GETTER_TITLE:
         return NCM_TAGS_FIELD_TITLE;
-    case NCM_SONG_GETTER_ARTIST:
+    case SONG_GETTER_ARTIST:
         return NCM_TAGS_FIELD_ARTIST;
-    case NCM_SONG_GETTER_ALBUM_ARTIST:
+    case SONG_GETTER_ALBUM_ARTIST:
         return NCM_TAGS_FIELD_ALBUM_ARTIST;
-    case NCM_SONG_GETTER_ALBUM:
+    case SONG_GETTER_ALBUM:
         return NCM_TAGS_FIELD_ALBUM;
-    case NCM_SONG_GETTER_DATE:
+    case SONG_GETTER_DATE:
         return NCM_TAGS_FIELD_DATE;
-    case NCM_SONG_GETTER_TRACK:
-    case NCM_SONG_GETTER_TRACK_NUMBER:
+    case SONG_GETTER_TRACK:
+    case SONG_GETTER_TRACK_NUMBER:
         return NCM_TAGS_FIELD_TRACK;
-    case NCM_SONG_GETTER_GENRE:
+    case SONG_GETTER_GENRE:
         return NCM_TAGS_FIELD_GENRE;
-    case NCM_SONG_GETTER_COMPOSER:
+    case SONG_GETTER_COMPOSER:
         return NCM_TAGS_FIELD_COMPOSER;
-    case NCM_SONG_GETTER_PERFORMER:
+    case SONG_GETTER_PERFORMER:
         return NCM_TAGS_FIELD_PERFORMER;
-    case NCM_SONG_GETTER_DISC:
+    case SONG_GETTER_DISC:
         return NCM_TAGS_FIELD_DISC;
-    case NCM_SONG_GETTER_COMMENT:
+    case SONG_GETTER_COMMENT:
         return NCM_TAGS_FIELD_COMMENT;
-    case NCM_SONG_GETTER_NONE:
-    case NCM_SONG_GETTER_LENGTH:
-    case NCM_SONG_GETTER_DIRECTORY:
-    case NCM_SONG_GETTER_NAME:
-    case NCM_SONG_GETTER_URI:
-    case NCM_SONG_GETTER_PRIORITY:
-    case NCM_SONG_GETTER_COUNT:
+    case SONG_GETTER_NONE:
+    case SONG_GETTER_LENGTH:
+    case SONG_GETTER_DIRECTORY:
+    case SONG_GETTER_NAME:
+    case SONG_GETTER_URI:
+    case SONG_GETTER_PRIORITY:
+    case SONG_GETTER_COUNT:
     default:
         return NCM_TAGS_FIELD_COUNT;
     }

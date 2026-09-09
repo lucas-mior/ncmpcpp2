@@ -639,7 +639,7 @@ ncm_song_show_time(int32 length, char *buffer, int32 buffer_cap) {
 }
 
 static StrBuilder
-ncm_song_getter_buffer_unchecked(NcmSong *song, enum NcmSongGetter getter,
+ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
                                  int32 idx) {
     StrBuilder buffer = {0};
     StringView view;
@@ -650,7 +650,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum NcmSongGetter getter,
     enum mpd_tag_type tag;
 
     switch (getter) {
-    case NCM_SONG_GETTER_LENGTH:
+    case SONG_GETTER_LENGTH:
         if (idx > 0) {
             return buffer;
         }
@@ -662,22 +662,22 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum NcmSongGetter getter,
             SB_APPEND(&buffer, "-:--");
         }
         return buffer;
-    case NCM_SONG_GETTER_DIRECTORY:
+    case SONG_GETTER_DIRECTORY:
         if (ncm_song_has_directory_view_unchecked(song, idx, &view)) {
             SB_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
-    case NCM_SONG_GETTER_NAME:
+    case SONG_GETTER_NAME:
         if (ncm_song_has_name_view_unchecked(song, idx, &view)) {
             SB_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
-    case NCM_SONG_GETTER_URI:
+    case SONG_GETTER_URI:
         if (ncm_song_has_uri_view_unchecked(song, idx, &view)) {
             SB_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
-    case NCM_SONG_GETTER_TRACK:
+    case SONG_GETTER_TRACK:
         if (ncm_song_has_tag_view_unchecked(song, MPD_TAG_TRACK, idx, &view)) {
             len = ncm_song_numeric_tag_len_unchecked(view.data, view.len);
             sb_reserve(&buffer, len);
@@ -686,7 +686,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum NcmSongGetter getter,
                                                       view.data, view.len);
         }
         return buffer;
-    case NCM_SONG_GETTER_TRACK_NUMBER:
+    case SONG_GETTER_TRACK_NUMBER:
         if (ncm_song_has_tag_view_unchecked(song, MPD_TAG_TRACK, idx, &view)) {
             slash = ncm_string_find_char(view.data, view.len, '/');
             if (ncm_song_needs_numeric_zero(view.data, view.len)) {
@@ -707,7 +707,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum NcmSongGetter getter,
                                                    copy_len);
         }
         return buffer;
-    case NCM_SONG_GETTER_DISC:
+    case SONG_GETTER_DISC:
         if (ncm_song_has_tag_view_unchecked(song, MPD_TAG_DISC, idx, &view)) {
             len = ncm_song_numeric_tag_len_unchecked(view.data, view.len);
             sb_reserve(&buffer, len);
@@ -716,35 +716,35 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum NcmSongGetter getter,
                                                       view.data, view.len);
         }
         return buffer;
-    case NCM_SONG_GETTER_PRIORITY:
+    case SONG_GETTER_PRIORITY:
         if (idx > 0) {
             return buffer;
         }
         sb_printf(&buffer, "%d", song->priority);
         return buffer;
-    case NCM_SONG_GETTER_ARTIST:
-    case NCM_SONG_GETTER_ALBUM_ARTIST:
-    case NCM_SONG_GETTER_TITLE:
-    case NCM_SONG_GETTER_ALBUM:
-    case NCM_SONG_GETTER_DATE:
-    case NCM_SONG_GETTER_GENRE:
-    case NCM_SONG_GETTER_COMPOSER:
-    case NCM_SONG_GETTER_PERFORMER:
-    case NCM_SONG_GETTER_COMMENT:
+    case SONG_GETTER_ARTIST:
+    case SONG_GETTER_ALBUM_ARTIST:
+    case SONG_GETTER_TITLE:
+    case SONG_GETTER_ALBUM:
+    case SONG_GETTER_DATE:
+    case SONG_GETTER_GENRE:
+    case SONG_GETTER_COMPOSER:
+    case SONG_GETTER_PERFORMER:
+    case SONG_GETTER_COMMENT:
         tag = ncm_song_getter_to_tag_type(getter);
         if (ncm_song_has_tag_view_unchecked(song, tag, idx, &view)) {
             SB_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
-    case NCM_SONG_GETTER_NONE:
-    case NCM_SONG_GETTER_COUNT:
+    case SONG_GETTER_NONE:
+    case SONG_GETTER_COUNT:
     default:
         return buffer;
     }
 }
 
 StrBuilder
-ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
+ncm_song_getter_buffer(NcmSong *song, enum SongGetter getter, int32 idx) {
     StrBuilder buffer = {0};
 
     if ((song == NULL) || (idx < 0)) {
@@ -755,7 +755,7 @@ ncm_song_getter_buffer(NcmSong *song, enum NcmSongGetter getter, int32 idx) {
 }
 
 StrBuilder
-ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
+ncm_song_tags_buffer(NcmSong *song, enum SongGetter getter,
                      char *separator, int32 separator_len,
                      bool show_duplicates) {
     StrBuilder result = {0};
@@ -763,7 +763,7 @@ ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
     if (song == NULL) {
         return result;
     }
-    if (getter == NCM_SONG_GETTER_NONE) {
+    if (getter == SONG_GETTER_NONE) {
         return result;
     }
     if ((separator == NULL) || (separator_len < 0)) {

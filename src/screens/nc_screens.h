@@ -2019,7 +2019,7 @@ bool browser_screen_item_is_parent(NcmMpdItem *);
 /* screens/song_info.h */
 typedef struct NcmSongInfoMetadata {
     char *name;
-    enum NcmSongGetter get;
+    enum SongGetter get;
     enum NcmTagsField field;
 } NcmSongInfoMetadata;
 

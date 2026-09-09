@@ -218,7 +218,7 @@ ncm_format_ast_append_column_types(NcmFormatAst *ast,
     }
 
     for (int32 i = 0; i < types_len; i += 1) {
-        if (ncm_song_getter_from_char(types[i]) == NCM_SONG_GETTER_NONE) {
+        if (ncm_song_getter_from_char(types[i]) == SONG_GETTER_NONE) {
             return -NCM_ERROR_PARSE;
         }
     }
@@ -321,7 +321,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
             NcmFormatExpr *expr;
             uint32 delimiter;
             int32 percent_i;
-            enum NcmSongGetter getter;
+            enum SongGetter getter;
 
             ncm_format_text_append(out, &token);
             percent_i = i + 1;
@@ -364,7 +364,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
 
                 if (status == 0) {
                     getter = ncm_song_getter_from_char(data[percent_i]);
-                    if (getter == NCM_SONG_GETTER_NONE) {
+                    if (getter == SONG_GETTER_NONE) {
                         status = ncm_format_set_error(ncm_error,
                                                       "invalid tag",
                                                       percent_i);
@@ -633,8 +633,8 @@ ncm_format_render_tag_unchecked(NcmSong *song, NcmFormatSongTag *tag) {
             limit = (int32)tag->delimiter;
         }
 
-        if ((tag->getter == NCM_SONG_GETTER_DATE)
-            || (tag->getter == NCM_SONG_GETTER_LENGTH)) {
+        if ((tag->getter == SONG_GETTER_DATE)
+            || (tag->getter == SONG_GETTER_LENGTH)) {
             if (limit < result.len) {
                 result.len = limit;
             }

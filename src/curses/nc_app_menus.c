@@ -164,7 +164,7 @@ nc_editor_sort_row_destroy(NcEditorSortRow *row) {
         return;
     }
     nc_editor_action_row_destroy(&row->action);
-    row->getter = NCM_SONG_GETTER_NONE;
+    row->getter = SONG_GETTER_NONE;
     return;
 }
 
