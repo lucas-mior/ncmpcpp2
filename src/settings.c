@@ -12,7 +12,7 @@
 
 Configuration Config;
 
-typedef int32 (SettingsApplyFn)(Configuration *config,
+typedef int32 SettingsApplyFn(Configuration *config,
                                 char *value, int32 value_len,
                                 NcmError *ncm_error);
 
