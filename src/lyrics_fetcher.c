@@ -2171,8 +2171,8 @@ lyrics_append_direct_url(NcmLyricsFetcherDef *fetcher, StrBuilder *candidate,
                                             artist, artist_len);
         if (status >= 0) {
             sb_append_byte(candidate, '/');
-            status = lyrics_append_slug_profile(candidate, pair.title, title,
-                                                title_len);
+            status = lyrics_append_slug_profile(candidate, pair.title,
+                                                title, title_len);
         }
         if (status >= 0) {
             sb_append_byte(candidate, '/');
@@ -2185,22 +2185,22 @@ lyrics_append_direct_url(NcmLyricsFetcherDef *fetcher, StrBuilder *candidate,
         break;
     case NCM_LYRICS_FETCHER_PAROLES:
         SB_APPEND(candidate, "https://www.paroles.net/");
-        status = lyrics_append_slug_profile(candidate, pair.artist, artist,
-                                            artist_len);
+        status = lyrics_append_slug_profile(candidate, pair.artist,
+                                            artist, artist_len);
         if (status >= 0) {
             SB_APPEND(candidate, "/paroles-");
-            status = lyrics_append_slug_profile(candidate, pair.title, title,
-                                                title_len);
+            status = lyrics_append_slug_profile(candidate, pair.title,
+                                                title, title_len);
         }
         break;
     case NCM_LYRICS_FETCHER_MUSIXMATCH:
         SB_APPEND(candidate, "https://www.musixmatch.com/lyrics/");
-        status = lyrics_append_slug_profile(candidate, pair.artist, artist,
-                                            artist_len);
+        status = lyrics_append_slug_profile(candidate, pair.artist,
+                                            artist, artist_len);
         if (status >= 0) {
             sb_append_byte(candidate, '/');
-            status = lyrics_append_slug_profile(candidate, pair.title, title,
-                                                title_len);
+            status = lyrics_append_slug_profile(candidate, pair.title,
+                                                title, title_len);
         }
         break;
     case NCM_LYRICS_FETCHER_TEKSTOWO:
