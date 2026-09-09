@@ -148,6 +148,7 @@ configuration_init_unchecked(Configuration *config) {
 #define XX_COLUMNS(NAME, DEFAULT_VALUE, FORMAT_FIELD)                          \
     config->FORMAT_FIELD = (NcmFormatAst){0};                                  \
     config->NAME = (ColumnArray){0};
+
 #include "config_options_pass.h"
 
     return;
