@@ -438,12 +438,10 @@ test_generated_numeric_boundaries(void) {
 
     config_init(&config);
 
-#define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM) \
-    settings_test_int_range(apply_##NAME, &config, &config.NAME, \
-                            MINIMUM, MAXIMUM);
-#define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM) \
-    settings_test_double_range(apply_##NAME, &config, &config.NAME, \
-                               MINIMUM, MAXIMUM);
+#define XX_INTEGER(NAME, DEFAULT, MINI, MAXI) \
+    settings_test_int_range(apply_##NAME, &config, &config.NAME, MINI, MAXI);
+#define XX_DOUBLE(NAME, DEFAULT, MINI, MAXI) \
+    settings_test_double_range(apply_##NAME, &config, &config.NAME, MINI, MAXI);
 #include "config_options_pass.h"
 
     config_destroy(&config);
