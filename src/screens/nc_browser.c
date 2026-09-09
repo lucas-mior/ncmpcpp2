@@ -1624,13 +1624,13 @@ browser_delete_path_recursive(char *path, int32 path_len, NcmError *ncm_error) {
     {
         char message[256];
         char *copy;
-        int32 message_len;
         int32 code;
 
         copy = malloc2(path_len + 1);
         memcpy64(copy, path, path_len);
         copy[path_len] = '\0';
-        if (rmdir(copy) != 0) {
+        if (rmdir(copy) < 0) {
+            int32 message_len;
             code = errno;
             if (code == ENOENT) {
                 free2(copy, path_len + 1);
