@@ -507,7 +507,6 @@ action_runtime_playlist_find_song(NcmSong *song, NcmSong **match) {
     PlaylistScreen *screen = app_screen_playlist();
     NcSongMenu *song_menu;
     NcMenu *menu;
-    NcmSong *item;
     int32 count;
 
     ASSERT(match != NULL);
@@ -516,12 +515,17 @@ action_runtime_playlist_find_song(NcmSong *song, NcmSong **match) {
     if ((song_menu = playlist_screen_song_menu(screen)) == NULL) {
         return -NCM_ERROR_UNAVAILABLE;
     }
+
     menu = nc_song_menu_base(song_menu);
     count = nc_menu_all_item_count(menu);
     for (int32 i = 0; i < count; i += 1) {
-        if (((item = nc_song_menu_item_at(song_menu, NC_MENU_ITEMS_ALL,
-                                          i)) == NULL)
-            || !ncm_song_is_equal(item, song)) {
+        NcmSong *item;
+
+        if ((item = nc_song_menu_item_at(song_menu,
+                                         NC_MENU_ITEMS_ALL, i)) == NULL) {
+            continue;
+        }
+        if (!ncm_song_is_equal(item, song)) {
             continue;
         }
         *match = item;
