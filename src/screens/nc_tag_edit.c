@@ -2892,11 +2892,11 @@ tag_edit_copy_selected_song_at(TagEditScreen *screen,
     ncm_song_set_mtime(&song, source->mtime);
     for (int32 i = 0; i < source->tags_len; i += 1) {
         MutableSongTag *tag = &source->tags[i];
-        enum mpd_tag_type type = ncm_tags_field_to_tag_type(tag->field);
+        enum NcmTagType type = ncm_tags_field_to_tag_type(tag->field);
         char *value = tag->original;
         int32 value_len = tag->original_len;
 
-        if ((type == MPD_TAG_UNKNOWN) || (value == NULL) || (value_len <= 0)) {
+        if ((type == NCM_TAG_UNKNOWN) || (value == NULL) || (value_len <= 0)) {
             continue;
         }
         ncm_song_add_tag(&song, type, value, value_len);
@@ -3899,7 +3899,7 @@ tag_edit_generate_filename(MutableSong *song, char *pattern,
         ncm_song_set_mtime(&format_song, song->mtime);
         for (int32 i = 0; i < song->tags_len; i += 1) {
             MutableSongTag *tag = &song->tags[i];
-            enum mpd_tag_type type = ncm_tags_field_to_tag_type(tag->field);
+            enum NcmTagType type = ncm_tags_field_to_tag_type(tag->field);
             char *value;
             int32 value_len;
 
@@ -3910,7 +3910,7 @@ tag_edit_generate_filename(MutableSong *song, char *pattern,
                 value = tag->original;
                 value_len = tag->original_len;
             }
-            if ((type == MPD_TAG_UNKNOWN) || (value == NULL)
+            if ((type == NCM_TAG_UNKNOWN) || (value == NULL)
                 || (value_len <= 0)) {
                 continue;
             }

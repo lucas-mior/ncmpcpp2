@@ -5,14 +5,6 @@
 
 #include "c/ncm_c.h"
 
-#define NCM_LIBMPDCLIENT_CHECK_VERSION(major, minor, patch) \
-    ((LIBMPDCLIENT_MAJOR_VERSION > (major)) \
-     || ((LIBMPDCLIENT_MAJOR_VERSION == (major)) \
-         && (LIBMPDCLIENT_MINOR_VERSION > (minor))) \
-     || ((LIBMPDCLIENT_MAJOR_VERSION == (major)) \
-         && (LIBMPDCLIENT_MINOR_VERSION == (minor)) \
-         && (LIBMPDCLIENT_PATCH_VERSION >= (patch))))
-
 int32
 ncm_channels_to_string(int32 channels, char *buffer, int32 buffer_cap) {
     int32 result;
@@ -73,103 +65,89 @@ ncm_color_index_from_char(char c) {
 }
 
 char *
-ncm_tag_type_name(enum mpd_tag_type tag) {
+ncm_tag_type_name(enum NcmTagType tag) {
     switch (tag) {
-    case MPD_TAG_ARTIST:
+    case NCM_TAG_ARTIST:
         return "Artist";
-    case MPD_TAG_ALBUM:
+    case NCM_TAG_ALBUM:
         return "Album";
-    case MPD_TAG_ALBUM_ARTIST:
+    case NCM_TAG_ALBUM_ARTIST:
         return "Album Artist";
-    case MPD_TAG_TITLE:
+    case NCM_TAG_TITLE:
         return "Title";
-    case MPD_TAG_TRACK:
+    case NCM_TAG_TRACK:
         return "Track";
-    case MPD_TAG_GENRE:
+    case NCM_TAG_GENRE:
         return "Genre";
-    case MPD_TAG_DATE:
+    case NCM_TAG_DATE:
         return "Date";
-    case MPD_TAG_COMPOSER:
+    case NCM_TAG_COMPOSER:
         return "Composer";
-    case MPD_TAG_PERFORMER:
+    case NCM_TAG_PERFORMER:
         return "Performer";
-    case MPD_TAG_COMMENT:
+    case NCM_TAG_COMMENT:
         return "Comment";
-    case MPD_TAG_DISC:
+    case NCM_TAG_DISC:
         return "Disc";
-    case MPD_TAG_UNKNOWN:
-    case MPD_TAG_NAME:
-    case MPD_TAG_MUSICBRAINZ_ARTISTID:
-    case MPD_TAG_MUSICBRAINZ_ALBUMID:
-    case MPD_TAG_MUSICBRAINZ_ALBUMARTISTID:
-    case MPD_TAG_MUSICBRAINZ_TRACKID:
-#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
-    case MPD_TAG_MUSICBRAINZ_RELEASETRACKID:
-#endif
-    case MPD_TAG_ORIGINAL_DATE:
-#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 11, 0)
-    case MPD_TAG_ARTIST_SORT:
-    case MPD_TAG_ALBUM_ARTIST_SORT:
-#endif
-    case MPD_TAG_ALBUM_SORT:
-#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 17, 0)
-    case MPD_TAG_LABEL:
-    case MPD_TAG_MUSICBRAINZ_WORKID:
-    case MPD_TAG_GROUPING:
-    case MPD_TAG_WORK:
-    case MPD_TAG_CONDUCTOR:
-#endif
-#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 20, 0)
-    case MPD_TAG_COMPOSER_SORT:
-    case MPD_TAG_ENSEMBLE:
-    case MPD_TAG_MOVEMENT:
-    case MPD_TAG_MOVEMENTNUMBER:
-    case MPD_TAG_LOCATION:
-#endif
-#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 21, 0)
-    case MPD_TAG_MOOD:
-    case MPD_TAG_TITLE_SORT:
-    case MPD_TAG_MUSICBRAINZ_RELEASEGROUPID:
-#endif
-#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 23, 0)
-    case MPD_TAG_SHOWMOVEMENT:
-#endif
-#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 25, 0)
-    case MPD_TAG_DISCSUBTITLE:
-#endif
-    case MPD_TAG_COUNT:
+    case NCM_TAG_UNKNOWN:
+    case NCM_TAG_NAME:
+    case NCM_TAG_MUSICBRAINZ_ARTISTID:
+    case NCM_TAG_MUSICBRAINZ_ALBUMID:
+    case NCM_TAG_MUSICBRAINZ_ALBUMARTISTID:
+    case NCM_TAG_MUSICBRAINZ_TRACKID:
+    case NCM_TAG_MUSICBRAINZ_RELEASETRACKID:
+    case NCM_TAG_ORIGINAL_DATE:
+    case NCM_TAG_ARTIST_SORT:
+    case NCM_TAG_ALBUM_ARTIST_SORT:
+    case NCM_TAG_ALBUM_SORT:
+    case NCM_TAG_LABEL:
+    case NCM_TAG_MUSICBRAINZ_WORKID:
+    case NCM_TAG_GROUPING:
+    case NCM_TAG_WORK:
+    case NCM_TAG_CONDUCTOR:
+    case NCM_TAG_COMPOSER_SORT:
+    case NCM_TAG_ENSEMBLE:
+    case NCM_TAG_MOVEMENT:
+    case NCM_TAG_MOVEMENTNUMBER:
+    case NCM_TAG_LOCATION:
+    case NCM_TAG_MOOD:
+    case NCM_TAG_TITLE_SORT:
+    case NCM_TAG_MUSICBRAINZ_RELEASEGROUPID:
+    case NCM_TAG_SHOWMOVEMENT:
+    case NCM_TAG_DISCSUBTITLE:
+    case NCM_TAG_COUNT:
     default:
         return "";
     }
 }
 
-enum mpd_tag_type
+enum NcmTagType
 ncm_char_to_tag_type(char c) {
     switch (c) {
     case 'a':
-        return MPD_TAG_ARTIST;
+        return NCM_TAG_ARTIST;
     case 'A':
-        return MPD_TAG_ALBUM_ARTIST;
+        return NCM_TAG_ALBUM_ARTIST;
     case 't':
-        return MPD_TAG_TITLE;
+        return NCM_TAG_TITLE;
     case 'b':
-        return MPD_TAG_ALBUM;
+        return NCM_TAG_ALBUM;
     case 'y':
-        return MPD_TAG_DATE;
+        return NCM_TAG_DATE;
     case 'n':
-        return MPD_TAG_TRACK;
+        return NCM_TAG_TRACK;
     case 'g':
-        return MPD_TAG_GENRE;
+        return NCM_TAG_GENRE;
     case 'c':
-        return MPD_TAG_COMPOSER;
+        return NCM_TAG_COMPOSER;
     case 'p':
-        return MPD_TAG_PERFORMER;
+        return NCM_TAG_PERFORMER;
     case 'd':
-        return MPD_TAG_DISC;
+        return NCM_TAG_DISC;
     case 'C':
-        return MPD_TAG_COMMENT;
+        return NCM_TAG_COMMENT;
     default:
-        return MPD_TAG_UNKNOWN;
+        return NCM_TAG_UNKNOWN;
     }
 }
 
@@ -215,31 +193,31 @@ ncm_song_getter_from_char(char c) {
     }
 }
 
-enum mpd_tag_type
+enum NcmTagType
 ncm_song_getter_to_tag_type(enum SongGetter getter) {
     switch (getter) {
     case SONG_GETTER_ARTIST:
-        return MPD_TAG_ARTIST;
+        return NCM_TAG_ARTIST;
     case SONG_GETTER_TITLE:
-        return MPD_TAG_TITLE;
+        return NCM_TAG_TITLE;
     case SONG_GETTER_ALBUM:
-        return MPD_TAG_ALBUM;
+        return NCM_TAG_ALBUM;
     case SONG_GETTER_ALBUM_ARTIST:
-        return MPD_TAG_ALBUM_ARTIST;
+        return NCM_TAG_ALBUM_ARTIST;
     case SONG_GETTER_TRACK:
-        return MPD_TAG_TRACK;
+        return NCM_TAG_TRACK;
     case SONG_GETTER_DATE:
-        return MPD_TAG_DATE;
+        return NCM_TAG_DATE;
     case SONG_GETTER_GENRE:
-        return MPD_TAG_GENRE;
+        return NCM_TAG_GENRE;
     case SONG_GETTER_COMPOSER:
-        return MPD_TAG_COMPOSER;
+        return NCM_TAG_COMPOSER;
     case SONG_GETTER_PERFORMER:
-        return MPD_TAG_PERFORMER;
+        return NCM_TAG_PERFORMER;
     case SONG_GETTER_COMMENT:
-        return MPD_TAG_COMMENT;
+        return NCM_TAG_COMMENT;
     case SONG_GETTER_DISC:
-        return MPD_TAG_DISC;
+        return NCM_TAG_DISC;
     case SONG_GETTER_NONE:
     case SONG_GETTER_LENGTH:
     case SONG_GETTER_DIRECTORY:
@@ -249,7 +227,7 @@ ncm_song_getter_to_tag_type(enum SongGetter getter) {
     case SONG_GETTER_PRIORITY:
     case SONG_GETTER_COUNT:
     default:
-        return MPD_TAG_UNKNOWN;
+        return NCM_TAG_UNKNOWN;
     }
 }
 
@@ -259,104 +237,90 @@ ncm_tags_field_from_char(char c) {
 }
 
 enum TagsField
-ncm_tags_field_from_tag_type(enum mpd_tag_type tag) {
+ncm_tags_field_from_tag_type(enum NcmTagType tag) {
     switch (tag) {
-    case MPD_TAG_TITLE:
+    case NCM_TAG_TITLE:
         return NCM_TAGS_FIELD_TITLE;
-    case MPD_TAG_ARTIST:
+    case NCM_TAG_ARTIST:
         return NCM_TAGS_FIELD_ARTIST;
-    case MPD_TAG_ALBUM_ARTIST:
+    case NCM_TAG_ALBUM_ARTIST:
         return NCM_TAGS_FIELD_ALBUM_ARTIST;
-    case MPD_TAG_ALBUM:
+    case NCM_TAG_ALBUM:
         return NCM_TAGS_FIELD_ALBUM;
-    case MPD_TAG_DATE:
+    case NCM_TAG_DATE:
         return NCM_TAGS_FIELD_DATE;
-    case MPD_TAG_TRACK:
+    case NCM_TAG_TRACK:
         return NCM_TAGS_FIELD_TRACK;
-    case MPD_TAG_GENRE:
+    case NCM_TAG_GENRE:
         return NCM_TAGS_FIELD_GENRE;
-    case MPD_TAG_COMPOSER:
+    case NCM_TAG_COMPOSER:
         return NCM_TAGS_FIELD_COMPOSER;
-    case MPD_TAG_PERFORMER:
+    case NCM_TAG_PERFORMER:
         return NCM_TAGS_FIELD_PERFORMER;
-    case MPD_TAG_DISC:
+    case NCM_TAG_DISC:
         return NCM_TAGS_FIELD_DISC;
-    case MPD_TAG_COMMENT:
+    case NCM_TAG_COMMENT:
         return NCM_TAGS_FIELD_COMMENT;
-    case MPD_TAG_UNKNOWN:
-    case MPD_TAG_NAME:
-    case MPD_TAG_MUSICBRAINZ_ARTISTID:
-    case MPD_TAG_MUSICBRAINZ_ALBUMID:
-    case MPD_TAG_MUSICBRAINZ_ALBUMARTISTID:
-    case MPD_TAG_MUSICBRAINZ_TRACKID:
-#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 10, 0)
-    case MPD_TAG_MUSICBRAINZ_RELEASETRACKID:
-#endif
-    case MPD_TAG_ORIGINAL_DATE:
-#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 11, 0)
-    case MPD_TAG_ARTIST_SORT:
-    case MPD_TAG_ALBUM_ARTIST_SORT:
-#endif
-    case MPD_TAG_ALBUM_SORT:
-#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 17, 0)
-    case MPD_TAG_LABEL:
-    case MPD_TAG_MUSICBRAINZ_WORKID:
-    case MPD_TAG_GROUPING:
-    case MPD_TAG_WORK:
-    case MPD_TAG_CONDUCTOR:
-#endif
-#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 20, 0)
-    case MPD_TAG_COMPOSER_SORT:
-    case MPD_TAG_ENSEMBLE:
-    case MPD_TAG_MOVEMENT:
-    case MPD_TAG_MOVEMENTNUMBER:
-    case MPD_TAG_LOCATION:
-#endif
-#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 21, 0)
-    case MPD_TAG_MOOD:
-    case MPD_TAG_TITLE_SORT:
-    case MPD_TAG_MUSICBRAINZ_RELEASEGROUPID:
-#endif
-#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 23, 0)
-    case MPD_TAG_SHOWMOVEMENT:
-#endif
-#if NCM_LIBMPDCLIENT_CHECK_VERSION(2, 25, 0)
-    case MPD_TAG_DISCSUBTITLE:
-#endif
-    case MPD_TAG_COUNT:
+    case NCM_TAG_UNKNOWN:
+    case NCM_TAG_NAME:
+    case NCM_TAG_MUSICBRAINZ_ARTISTID:
+    case NCM_TAG_MUSICBRAINZ_ALBUMID:
+    case NCM_TAG_MUSICBRAINZ_ALBUMARTISTID:
+    case NCM_TAG_MUSICBRAINZ_TRACKID:
+    case NCM_TAG_MUSICBRAINZ_RELEASETRACKID:
+    case NCM_TAG_ORIGINAL_DATE:
+    case NCM_TAG_ARTIST_SORT:
+    case NCM_TAG_ALBUM_ARTIST_SORT:
+    case NCM_TAG_ALBUM_SORT:
+    case NCM_TAG_LABEL:
+    case NCM_TAG_MUSICBRAINZ_WORKID:
+    case NCM_TAG_GROUPING:
+    case NCM_TAG_WORK:
+    case NCM_TAG_CONDUCTOR:
+    case NCM_TAG_COMPOSER_SORT:
+    case NCM_TAG_ENSEMBLE:
+    case NCM_TAG_MOVEMENT:
+    case NCM_TAG_MOVEMENTNUMBER:
+    case NCM_TAG_LOCATION:
+    case NCM_TAG_MOOD:
+    case NCM_TAG_TITLE_SORT:
+    case NCM_TAG_MUSICBRAINZ_RELEASEGROUPID:
+    case NCM_TAG_SHOWMOVEMENT:
+    case NCM_TAG_DISCSUBTITLE:
+    case NCM_TAG_COUNT:
     default:
         return NCM_TAGS_FIELD_COUNT;
     }
 }
 
-enum mpd_tag_type
+enum NcmTagType
 ncm_tags_field_to_tag_type(enum TagsField field) {
     switch (field) {
     case NCM_TAGS_FIELD_TITLE:
-        return MPD_TAG_TITLE;
+        return NCM_TAG_TITLE;
     case NCM_TAGS_FIELD_ARTIST:
-        return MPD_TAG_ARTIST;
+        return NCM_TAG_ARTIST;
     case NCM_TAGS_FIELD_ALBUM_ARTIST:
-        return MPD_TAG_ALBUM_ARTIST;
+        return NCM_TAG_ALBUM_ARTIST;
     case NCM_TAGS_FIELD_ALBUM:
-        return MPD_TAG_ALBUM;
+        return NCM_TAG_ALBUM;
     case NCM_TAGS_FIELD_DATE:
-        return MPD_TAG_DATE;
+        return NCM_TAG_DATE;
     case NCM_TAGS_FIELD_TRACK:
-        return MPD_TAG_TRACK;
+        return NCM_TAG_TRACK;
     case NCM_TAGS_FIELD_GENRE:
-        return MPD_TAG_GENRE;
+        return NCM_TAG_GENRE;
     case NCM_TAGS_FIELD_COMPOSER:
-        return MPD_TAG_COMPOSER;
+        return NCM_TAG_COMPOSER;
     case NCM_TAGS_FIELD_PERFORMER:
-        return MPD_TAG_PERFORMER;
+        return NCM_TAG_PERFORMER;
     case NCM_TAGS_FIELD_DISC:
-        return MPD_TAG_DISC;
+        return NCM_TAG_DISC;
     case NCM_TAGS_FIELD_COMMENT:
-        return MPD_TAG_COMMENT;
+        return NCM_TAG_COMMENT;
     case NCM_TAGS_FIELD_COUNT:
     default:
-        return MPD_TAG_UNKNOWN;
+        return NCM_TAG_UNKNOWN;
     }
 }
 
@@ -429,7 +393,5 @@ ncm_song_getter_to_tags_field(enum SongGetter getter) {
     }
 }
 
-
-#undef NCM_LIBMPDCLIENT_CHECK_VERSION
 
 #endif /* NCM_TYPE_CONVERSIONS_C */

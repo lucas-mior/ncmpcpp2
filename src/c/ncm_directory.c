@@ -108,27 +108,4 @@ ncm_directory_last_modified(NcmDirectory *directory) {
     return directory->last_modified;
 }
 
-int32
-ncm_directory_from_mpd_directory(NcmDirectory *dest,
-                                 struct mpd_directory *source) {
-    char *path;
-    int32 path_len;
-    time_t last_modified;
-
-    if (dest == NULL) {
-        return -EINVAL;
-    }
-    if (source == NULL) {
-        return -EINVAL;
-    }
-
-    if ((path = (char *)mpd_directory_get_path(source)) == NULL) {
-        return -NCM_ERROR_NOT_FOUND;
-    }
-
-    path_len = optional_strlen32(path);
-    last_modified = mpd_directory_get_last_modified(source);
-    return ncm_directory_set(dest, path, path_len, last_modified);
-}
-
 #endif /* NCM_DIRECTORY_C */

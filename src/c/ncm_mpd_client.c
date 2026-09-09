@@ -4,6 +4,7 @@
 #include "cbase.h"
 
 #include "c/ncm_c.h"
+#include "ncmpcpp2_mpd.h"
 
 #define NCM_CLIENT_TRY(expression) \
     do { \
@@ -32,7 +33,7 @@ ncm_mpd_client_set_buffer(StrBuilder *buffer, char *string, int32 string_len) {
 static void
 ncm_mpd_client_copy_connection_error(MpdClient *client,
                                      NcmError *ncm_error) {
-    enum mpd_error code;
+    enum NcmMpdError code;
     char *message;
     int32 message_len;
 
@@ -62,7 +63,7 @@ ncm_mpd_client_require_connected(MpdClient *client, NcmError *ncm_error) {
 static int32
 ncm_mpd_client_noidle_connected(MpdClient *client, int32 *flags,
                                 NcmError *ncm_error) {
-    enum mpd_idle events = (enum mpd_idle)0;
+    int32 events = 0;
 
     ASSERT(client != NULL);
 
@@ -415,7 +416,7 @@ ncm_mpd_client_idle(MpdClient *client, NcmError *ncm_error) {
     if (!client->idle) {
         NCM_CLIENT_TRY_MPD(client,
                            ncm_mpd_connection_send_idle(&client->connection,
-                                                        (enum mpd_idle)0),
+                                                        0),
                            ncm_error);
         client->idle = true;
     }
@@ -429,19 +430,19 @@ ncm_mpd_client_noidle(MpdClient *client, int32 *flags, NcmError *ncm_error) {
     return ncm_mpd_client_noidle_connected(client, flags, ncm_error);
 }
 
-enum mpd_error
+enum NcmMpdError
 ncm_mpd_client_error_code(MpdClient *client) {
     if (client == NULL) {
-        return MPD_ERROR_SUCCESS;
+        return NCM_MPD_ERROR_SUCCESS;
     }
 
     return ncm_mpd_connection_error_code(&client->connection);
 }
 
-enum mpd_server_error
+enum NcmMpdServerError
 ncm_mpd_client_server_error_code(MpdClient *client) {
     if (client == NULL) {
-        return (enum mpd_server_error)0;
+        return NCM_MPD_SERVER_ERROR_NONE;
     }
 
     return ncm_mpd_connection_server_error_code(&client->connection);
@@ -1023,7 +1024,7 @@ ncm_mpd_client_start_search(MpdClient *client, bool exact_match,
 }
 
 int32
-ncm_mpd_client_add_search_tag(MpdClient *client, enum mpd_tag_type tag,
+ncm_mpd_client_add_search_tag(MpdClient *client, enum NcmTagType tag,
                               char *value, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_require_connected(client, ncm_error));
     NCM_CLIENT_TRY_MPD(client,
@@ -1072,7 +1073,7 @@ ncm_mpd_client_commit_search_songs(MpdClient *client, NcmMpdSongList *songs,
 }
 
 int32
-ncm_mpd_client_get_list(MpdClient *client, enum mpd_tag_type tag,
+ncm_mpd_client_get_list(MpdClient *client, enum NcmTagType tag,
                         StringViewList *strings, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
     NCM_CLIENT_TRY_MPD(client,
@@ -1192,7 +1193,7 @@ ncm_mpd_client_disable_output(MpdClient *client, int32 id,
 }
 
 int32
-ncm_mpd_client_add_random_tag(MpdClient *client, enum mpd_tag_type tag,
+ncm_mpd_client_add_random_tag(MpdClient *client, enum NcmTagType tag,
                               int32 number, NcmError *ncm_error) {
     StringViewList tags;
     NcmMpdSongList songs;

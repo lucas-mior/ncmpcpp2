@@ -941,7 +941,7 @@ search_pattern_regex_flags(SearchEngineScreen *screen) {
 
 static bool
 search_song_has_field_view(NcmSong *song, int32 field, StringView *view) {
-    enum mpd_tag_type tag;
+    enum NcmTagType tag;
 
     if (field == 5) {
         return ncm_song_has_name_view(song, 0, view);
@@ -949,31 +949,31 @@ search_song_has_field_view(NcmSong *song, int32 field, StringView *view) {
 
     switch (field) {
     case 1:
-        tag = MPD_TAG_ARTIST;
+        tag = NCM_TAG_ARTIST;
         break;
     case 2:
-        tag = MPD_TAG_ALBUM_ARTIST;
+        tag = NCM_TAG_ALBUM_ARTIST;
         break;
     case 3:
-        tag = MPD_TAG_TITLE;
+        tag = NCM_TAG_TITLE;
         break;
     case 4:
-        tag = MPD_TAG_ALBUM;
+        tag = NCM_TAG_ALBUM;
         break;
     case 6:
-        tag = MPD_TAG_COMPOSER;
+        tag = NCM_TAG_COMPOSER;
         break;
     case 7:
-        tag = MPD_TAG_PERFORMER;
+        tag = NCM_TAG_PERFORMER;
         break;
     case 8:
-        tag = MPD_TAG_GENRE;
+        tag = NCM_TAG_GENRE;
         break;
     case 9:
-        tag = MPD_TAG_DATE;
+        tag = NCM_TAG_DATE;
         break;
     case 10:
-        tag = MPD_TAG_COMMENT;
+        tag = NCM_TAG_COMMENT;
         break;
     default:
         return false;
@@ -1049,7 +1049,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                  (i < SEARCH_ENGINE_CONSTRAINT_COUNT)
                      && (constraint_status == 0);
                  i += 1) {
-                enum mpd_tag_type tag;
+                enum NcmTagType tag;
 
                 constraint = &screen->constraints[i];
                 if (constraint->len <= 0) {
@@ -1064,31 +1064,31 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
 
                 switch (i) {
                 case 1:
-                    tag = MPD_TAG_ARTIST;
+                    tag = NCM_TAG_ARTIST;
                     break;
                 case 2:
-                    tag = MPD_TAG_ALBUM_ARTIST;
+                    tag = NCM_TAG_ALBUM_ARTIST;
                     break;
                 case 3:
-                    tag = MPD_TAG_TITLE;
+                    tag = NCM_TAG_TITLE;
                     break;
                 case 4:
-                    tag = MPD_TAG_ALBUM;
+                    tag = NCM_TAG_ALBUM;
                     break;
                 case 6:
-                    tag = MPD_TAG_COMPOSER;
+                    tag = NCM_TAG_COMPOSER;
                     break;
                 case 7:
-                    tag = MPD_TAG_PERFORMER;
+                    tag = NCM_TAG_PERFORMER;
                     break;
                 case 8:
-                    tag = MPD_TAG_GENRE;
+                    tag = NCM_TAG_GENRE;
                     break;
                 case 9:
-                    tag = MPD_TAG_DATE;
+                    tag = NCM_TAG_DATE;
                     break;
                 case 10:
-                    tag = MPD_TAG_COMMENT;
+                    tag = NCM_TAG_COMMENT;
                     break;
                 default:
                     ASSERT(false);

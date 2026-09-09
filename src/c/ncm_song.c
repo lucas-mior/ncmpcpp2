@@ -57,7 +57,7 @@ static void
 ncm_song_tag_init(NcmSongTag *tag) {
     tag->value = NULL;
     tag->value_len = 0;
-    tag->type = MPD_TAG_UNKNOWN;
+    tag->type = NCM_TAG_UNKNOWN;
     return;
 }
 
@@ -122,7 +122,7 @@ ncm_song_set_uri_unchecked(NcmSong *song, char *uri, int32 uri_len) {
 }
 
 static void
-ncm_song_add_tag_unchecked(NcmSong *song, enum mpd_tag_type type,
+ncm_song_add_tag_unchecked(NcmSong *song, enum NcmTagType type,
                            char *value, int32 value_len) {
     NcmSongTag *tag;
 
@@ -199,68 +199,6 @@ ncm_song_copy(NcmSong *dest, NcmSong *source) {
 }
 
 int32
-ncm_song_from_mpd_song(NcmSong *dest, struct mpd_song *source) {
-    return ncm_song_from_mpd_song_copy(dest, source);
-}
-
-int32
-ncm_song_from_mpd_song_copy(NcmSong *dest, struct mpd_song *source) {
-    NcmSong replacement = {0};
-    enum mpd_tag_type tags[] = {
-        MPD_TAG_ARTIST,
-        MPD_TAG_ALBUM,
-        MPD_TAG_ALBUM_ARTIST,
-        MPD_TAG_TITLE,
-        MPD_TAG_TRACK,
-        MPD_TAG_NAME,
-        MPD_TAG_GENRE,
-        MPD_TAG_DATE,
-        MPD_TAG_COMPOSER,
-        MPD_TAG_PERFORMER,
-        MPD_TAG_COMMENT,
-        MPD_TAG_DISC,
-    };
-    char *uri;
-    int32 tags_len = (int32)(SIZEOF(tags)/SIZEOF(tags[0]));
-
-    if (dest == NULL) {
-        return -EINVAL;
-    }
-    if (source == NULL) {
-        return -EINVAL;
-    }
-
-    if ((uri = (char *)mpd_song_get_uri(source)) == NULL) {
-        return -NCM_ERROR_NOT_FOUND;
-    }
-
-    ncm_song_set_uri_unchecked(&replacement, uri, optional_strlen32(uri));
-
-    for (int32 i = 0; i < tags_len; i += 1) {
-        for (uint32 j = 0; ; j += 1) {
-            char *value;
-
-            value = (char *)mpd_song_get_tag(source, tags[i], j);
-            if (value == NULL) {
-                break;
-            }
-            ncm_song_add_tag_unchecked(&replacement, tags[i], value,
-                                       strlen32(value));
-        }
-    }
-
-    replacement.duration = (int32)mpd_song_get_duration(source);
-    replacement.position = (int32)mpd_song_get_pos(source);
-    replacement.id = (int32)mpd_song_get_id(source);
-    replacement.priority = (int32)mpd_song_get_prio(source);
-    replacement.last_modified = mpd_song_get_last_modified(source);
-
-    ncm_song_destroy_unchecked(dest);
-    *dest = replacement;
-    return 0;
-}
-
-int32
 ncm_song_set_uri(NcmSong *song, char *uri, int32 uri_len) {
     if (song == NULL) {
         return -EINVAL;
@@ -277,7 +215,7 @@ ncm_song_set_uri(NcmSong *song, char *uri, int32 uri_len) {
 }
 
 int32
-ncm_song_add_tag(NcmSong *song, enum mpd_tag_type type,
+ncm_song_add_tag(NcmSong *song, enum NcmTagType type,
                  char *value, int32 value_len) {
     if (song == NULL) {
         return -EINVAL;
@@ -288,7 +226,7 @@ ncm_song_add_tag(NcmSong *song, enum mpd_tag_type type,
     if (value_len < 0) {
         return -EINVAL;
     }
-    if (type == MPD_TAG_UNKNOWN) {
+    if (type == NCM_TAG_UNKNOWN) {
         return -EINVAL;
     }
 
@@ -386,7 +324,7 @@ ncm_song_is_empty(NcmSong *song) {
 }
 
 static bool
-ncm_song_has_tag_view_unchecked(NcmSong *song, enum mpd_tag_type tag,
+ncm_song_has_tag_view_unchecked(NcmSong *song, enum NcmTagType tag,
                                 int32 idx, StringView *view) {
     int32 seen;
 
@@ -439,7 +377,7 @@ ncm_song_has_name_view_unchecked(NcmSong *song, int32 idx,
     StringView uri;
     int32 basename;
 
-    if (ncm_song_has_tag_view_unchecked(song, MPD_TAG_NAME, idx, view)) {
+    if (ncm_song_has_tag_view_unchecked(song, NCM_TAG_NAME, idx, view)) {
         return true;
     }
     if (idx != 0) {
@@ -507,7 +445,7 @@ ncm_song_is_from_database_unchecked(NcmSong *song) {
 }
 
 bool
-ncm_song_has_tag_view(NcmSong *song, enum mpd_tag_type tag, int32 idx,
+ncm_song_has_tag_view(NcmSong *song, enum NcmTagType tag, int32 idx,
                       StringView *view) {
     if ((song == NULL) || (idx < 0)) {
         ncm_string_view_clear(view);
@@ -645,7 +583,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
     int32 copy_len;
     int32 len;
     int32 slash;
-    enum mpd_tag_type tag;
+    enum NcmTagType tag;
 
     switch (getter) {
     case SONG_GETTER_LENGTH:
@@ -676,7 +614,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
         }
         return buffer;
     case SONG_GETTER_TRACK:
-        if (ncm_song_has_tag_view_unchecked(song, MPD_TAG_TRACK, idx, &view)) {
+        if (ncm_song_has_tag_view_unchecked(song, NCM_TAG_TRACK, idx, &view)) {
             len = ncm_song_numeric_tag_len_unchecked(view.data, view.len);
             sb_reserve(&buffer, len);
             buffer.len =
@@ -685,7 +623,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
         }
         return buffer;
     case SONG_GETTER_TRACK_NUMBER:
-        if (ncm_song_has_tag_view_unchecked(song, MPD_TAG_TRACK, idx, &view)) {
+        if (ncm_song_has_tag_view_unchecked(song, NCM_TAG_TRACK, idx, &view)) {
             slash = ncm_string_find_char(view.data, view.len, '/');
             if (ncm_song_needs_numeric_zero(view.data, view.len)) {
                 len = 1;
@@ -706,7 +644,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
         }
         return buffer;
     case SONG_GETTER_DISC:
-        if (ncm_song_has_tag_view_unchecked(song, MPD_TAG_DISC, idx, &view)) {
+        if (ncm_song_has_tag_view_unchecked(song, NCM_TAG_DISC, idx, &view)) {
             len = ncm_song_numeric_tag_len_unchecked(view.data, view.len);
             sb_reserve(&buffer, len);
             buffer.len =

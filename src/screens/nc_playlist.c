@@ -804,7 +804,7 @@ playlist_build_mutable_song(NcmSong *replacement,
     for (int32 i = 0; i < current->tags_len; i += 1) {
         enum TagsField field;
 
-        if (current->tags[i].type == MPD_TAG_UNKNOWN) {
+        if (current->tags[i].type == NCM_TAG_UNKNOWN) {
             continue;
         }
 
@@ -817,7 +817,7 @@ playlist_build_mutable_song(NcmSong *replacement,
     }
 
     for (uint32 i = 0; i < NCM_TAGS_FIELD_COUNT; i += 1) {
-        enum mpd_tag_type type = ncm_tags_field_to_tag_type(i);
+        enum NcmTagType type = ncm_tags_field_to_tag_type(i);
         for (int32 j = 0; ; j += 1) {
             if (!mutable_song_has_tag_view(edited, i, j, &value)) {
                 break;

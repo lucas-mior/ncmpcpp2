@@ -4,6 +4,37 @@
 #include "cbase.h"
 
 #include "c/ncm_c.h"
+#include "ncmpcpp2_mpd.h"
+
+typedef struct NcmMpdItemTagsContext {
+    struct mpd_song *song;
+} NcmMpdItemTagsContext;
+
+static void
+ncm_mpd_item_set_attribute(struct mpd_song *song, char *name, char *value) {
+    struct mpd_pair pair;
+
+    if ((song == NULL) || (name == NULL) || (value == NULL)) {
+        return;
+    }
+
+    pair.name = name;
+    pair.value = value;
+    mpd_song_feed(song, &pair);
+    return;
+}
+
+static void
+ncm_mpd_item_mapped_property_callback(char *name, char *value, void *user) {
+    NcmMpdItemTagsContext *context = user;
+
+    if (context == NULL) {
+        return;
+    }
+
+    ncm_mpd_item_set_attribute(context->song, name, value);
+    return;
+}
 
 void
 ncm_mpd_item_init(NcmMpdItem *item) {
@@ -153,7 +184,169 @@ ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
 }
 
 int32
-ncm_mpd_item_from_entity_copy(NcmMpdItem *item, struct mpd_entity *entity) {
+ncm_mpd_item_song_from_mpd_song_copy(NcmSong *dest, void *mpd_song) {
+    NcmSong replacement = {0};
+    struct mpd_song *source = mpd_song;
+    struct {
+        enum mpd_tag_type mpd;
+        enum NcmTagType ncm;
+    } tags[] = {
+        {MPD_TAG_ARTIST, NCM_TAG_ARTIST},
+        {MPD_TAG_ALBUM, NCM_TAG_ALBUM},
+        {MPD_TAG_ALBUM_ARTIST, NCM_TAG_ALBUM_ARTIST},
+        {MPD_TAG_TITLE, NCM_TAG_TITLE},
+        {MPD_TAG_TRACK, NCM_TAG_TRACK},
+        {MPD_TAG_NAME, NCM_TAG_NAME},
+        {MPD_TAG_GENRE, NCM_TAG_GENRE},
+        {MPD_TAG_DATE, NCM_TAG_DATE},
+        {MPD_TAG_COMPOSER, NCM_TAG_COMPOSER},
+        {MPD_TAG_PERFORMER, NCM_TAG_PERFORMER},
+        {MPD_TAG_COMMENT, NCM_TAG_COMMENT},
+        {MPD_TAG_DISC, NCM_TAG_DISC},
+    };
+    char *uri;
+    int32 tags_len = (int32)(SIZEOF(tags)/SIZEOF(tags[0]));
+    int32 status;
+
+    if (dest == NULL) {
+        return -EINVAL;
+    }
+    if (source == NULL) {
+        return -EINVAL;
+    }
+
+    if ((uri = (char *)mpd_song_get_uri(source)) == NULL) {
+        return -NCM_ERROR_NOT_FOUND;
+    }
+
+    if ((status = ncm_song_set_uri(&replacement, uri, strlen32(uri))) < 0) {
+        return status;
+    }
+
+    for (int32 i = 0; i < tags_len; i += 1) {
+        for (uint32 j = 0; ; j += 1) {
+            char *value = (char *)mpd_song_get_tag(source, tags[i].mpd, j);
+
+            if (value == NULL) {
+                break;
+            }
+            status = ncm_song_add_tag(&replacement, tags[i].ncm, value,
+                                      strlen32(value));
+            if (status < 0) {
+                ncm_song_destroy(&replacement);
+                return status;
+            }
+        }
+    }
+
+    replacement.duration = (int32)mpd_song_get_duration(source);
+    replacement.position = (int32)mpd_song_get_pos(source);
+    replacement.id = (int32)mpd_song_get_id(source);
+    replacement.priority = (int32)mpd_song_get_prio(source);
+    replacement.last_modified = mpd_song_get_last_modified(source);
+
+    ncm_song_destroy(dest);
+    *dest = replacement;
+    return 0;
+}
+
+int32
+ncm_mpd_item_playlist_from_mpd_playlist(NcmPlaylist *dest, void *mpd_playlist) {
+    struct mpd_playlist *source = mpd_playlist;
+    char *path;
+    int32 path_len;
+    time_t last_modified;
+
+    if (dest == NULL) {
+        return -EINVAL;
+    }
+    if (source == NULL) {
+        return -EINVAL;
+    }
+
+    if ((path = (char *)mpd_playlist_get_path(source)) == NULL) {
+        return -NCM_ERROR_NOT_FOUND;
+    }
+
+    path_len = optional_strlen32(path);
+    last_modified = mpd_playlist_get_last_modified(source);
+    return ncm_playlist_set(dest, path, path_len, last_modified);
+}
+
+void
+ncm_mpd_item_local_song(NcmSong *song, char *path, int32 path_len,
+                        time_t mtime) {
+    int32 status;
+
+    if ((song == NULL) || (path == NULL) || (path_len < 0)) {
+        return;
+    }
+
+    if (ncm_song_set_uri(song, path, path_len) < 0) {
+        return;
+    }
+    ncm_song_set_mtime(song, mtime);
+
+#if defined(HAVE_TAGLIB_H)
+    {
+        struct mpd_pair pair;
+        struct mpd_song *mpd_song;
+
+        pair.name = "file";
+        pair.value = path;
+        mpd_song = mpd_song_begin(&pair);
+        if (mpd_song == NULL) {
+            return;
+        }
+
+        {
+            NcmTaglibFile file = {0};
+            NcmTaglibAudioProperties properties;
+            NcmMpdItemTagsContext context;
+            char time_buffer[32];
+            int32 written;
+            int32 count;
+
+            status = ncm_taglib_file_open(&file,
+                                          (char *)mpd_song_get_uri(mpd_song));
+            if (status >= 0) {
+                count = 0;
+                if (ncm_taglib_file_audio_properties(&file, &properties) == 0) {
+                    written = SNPRINTF(time_buffer, "%d", properties.length);
+                    if (written > 0) {
+                        ncm_mpd_item_set_attribute(mpd_song, "Time",
+                                                   time_buffer);
+                        count += 1;
+                    }
+                }
+
+                context.song = mpd_song;
+                status = ncm_taglib_read_mapped_properties(
+                    &file, ncm_mpd_item_mapped_property_callback, &context);
+                if (status >= 0) {
+                    count += status;
+                    if (count > 0) {
+                        ncm_mpd_item_song_from_mpd_song_copy(song, mpd_song);
+                        ncm_song_set_mtime(song, mtime);
+                    }
+                }
+                ncm_taglib_file_close(&file);
+                ncm_taglib_clear_strings();
+            }
+        }
+        mpd_song_free(mpd_song);
+    }
+#else
+    (void)status;
+#endif
+
+    return;
+}
+
+int32
+ncm_mpd_item_from_entity_copy(NcmMpdItem *item, void *mpd_entity) {
+    struct mpd_entity *entity = mpd_entity;
+
     if (item == NULL) {
         return -EINVAL;
     }
@@ -171,8 +364,8 @@ ncm_mpd_item_from_entity_copy(NcmMpdItem *item, struct mpd_entity *entity) {
         ncm_mpd_item_init(&replacement);
         replacement.kind = NCM_MPD_ITEM_SONG;
         replacement.value.song = (NcmSong){0};
-        if ((status = ncm_song_from_mpd_song_copy(&replacement.value.song,
-                                                  source)) < 0) {
+        if ((status = ncm_mpd_item_song_from_mpd_song_copy(
+                 &replacement.value.song, source)) < 0) {
             ncm_mpd_item_destroy(&replacement);
             return status;
         }
@@ -185,13 +378,20 @@ ncm_mpd_item_from_entity_copy(NcmMpdItem *item, struct mpd_entity *entity) {
         NcmMpdItem replacement = {0};
         struct mpd_directory *source =
             (struct mpd_directory *)mpd_entity_get_directory(entity);
+        char *path;
         int32 status;
 
         ncm_mpd_item_init(&replacement);
         replacement.kind = NCM_MPD_ITEM_DIRECTORY;
         replacement.value.directory = (NcmDirectory){0};
-        status = ncm_directory_from_mpd_directory(&replacement.value.directory,
-                                                  source);
+        if ((source == NULL)
+            || ((path = (char *)mpd_directory_get_path(source)) == NULL)) {
+            status = -NCM_ERROR_NOT_FOUND;
+        } else {
+            status = ncm_directory_set(
+                &replacement.value.directory, path, optional_strlen32(path),
+                mpd_directory_get_last_modified(source));
+        }
         if (status < 0) {
             ncm_mpd_item_destroy(&replacement);
             return status;
@@ -210,8 +410,8 @@ ncm_mpd_item_from_entity_copy(NcmMpdItem *item, struct mpd_entity *entity) {
         ncm_mpd_item_init(&replacement);
         replacement.kind = NCM_MPD_ITEM_PLAYLIST;
         replacement.value.playlist = (NcmPlaylist){0};
-        status = ncm_playlist_from_mpd_playlist(&replacement.value.playlist,
-                                                source);
+        status = ncm_mpd_item_playlist_from_mpd_playlist(
+            &replacement.value.playlist, source);
         if (status < 0) {
             ncm_mpd_item_destroy(&replacement);
             return status;

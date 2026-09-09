@@ -79,9 +79,10 @@ status_active_hooks(NcmStatusHooks *hooks) {
 
 static int32
 status_full_event_mask(void) {
-    return MPD_IDLE_DATABASE | MPD_IDLE_STORED_PLAYLIST | MPD_IDLE_PLAYLIST
-           | MPD_IDLE_PLAYER | MPD_IDLE_MIXER | MPD_IDLE_OUTPUT
-           | MPD_IDLE_UPDATE | MPD_IDLE_OPTIONS;
+    return NCM_MPD_IDLE_DATABASE | NCM_MPD_IDLE_STORED_PLAYLIST
+           | NCM_MPD_IDLE_PLAYLIST | NCM_MPD_IDLE_PLAYER
+           | NCM_MPD_IDLE_MIXER | NCM_MPD_IDLE_OUTPUT
+           | NCM_MPD_IDLE_UPDATE | NCM_MPD_IDLE_OPTIONS;
 }
 
 void
@@ -158,7 +159,7 @@ void
 ncm_status_handle_server_error_value(MpdClient *client, int32 code,
                                      char *message, int32 message_len) {
     status_print_server_error(message, message_len);
-    if ((code == MPD_SERVER_ERROR_PERMISSION) && (client != NULL)) {
+    if ((code == NCM_MPD_SERVER_ERROR_PERMISSION) && (client != NULL)) {
         enum NcPromptStatus prompt_status;
         NcPrompt prompt = {0};
         NcWindow *window;
@@ -194,7 +195,7 @@ ncm_status_handle_server_error_value(MpdClient *client, int32 code,
         }
 
         if (ncm_mpd_client_send_password(client, NULL) < 0) {
-            if (ncm_mpd_client_error_code(client) == MPD_ERROR_SERVER) {
+            if (ncm_mpd_client_error_code(client) == NCM_MPD_ERROR_SERVER) {
                 status_print_server_error(ncm_mpd_client_error_message(client),
                                           -1);
             } else {
@@ -461,16 +462,16 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
 
     status_current_song_pos = mpd_status->song_pos;
     switch (mpd_status->state) {
-    case MPD_STATE_STOP:
+    case NCM_MPD_STATE_STOP:
         status_player_state = NCM_STATUS_PLAYER_STOP;
         break;
-    case MPD_STATE_PLAY:
+    case NCM_MPD_STATE_PLAY:
         status_player_state = NCM_STATUS_PLAYER_PLAY;
         break;
-    case MPD_STATE_PAUSE:
+    case NCM_MPD_STATE_PAUSE:
         status_player_state = NCM_STATUS_PLAYER_PAUSE;
         break;
-    case MPD_STATE_UNKNOWN:
+    case NCM_MPD_STATE_UNKNOWN:
     default:
         status_player_state = NCM_STATUS_PLAYER_UNKNOWN;
         break;
@@ -482,7 +483,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
     status_total_time = mpd_status->total_time;
     status_volume = mpd_status->volume;
 
-    if ((event & MPD_IDLE_DATABASE) != 0) {
+    if ((event & NCM_MPD_IDLE_DATABASE) != 0) {
         if (active_hooks && active_hooks->database_changed) {
             active_hooks->database_changed(active_hooks->user);
         } else {
@@ -507,7 +508,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         }
     }
 
-    if ((event & MPD_IDLE_STORED_PLAYLIST) != 0) {
+    if ((event & NCM_MPD_IDLE_STORED_PLAYLIST) != 0) {
         if (active_hooks && active_hooks->stored_playlists_changed) {
             active_hooks->stored_playlists_changed(active_hooks->user);
         } else {
@@ -530,7 +531,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         }
     }
 
-    if ((event & MPD_IDLE_PLAYLIST) != 0) {
+    if ((event & NCM_MPD_IDLE_PLAYLIST) != 0) {
         previous_playlist_version = status_playlist_version;
         status_playlist_version = mpd_status->queue_version;
         if (active_hooks && active_hooks->playlist_changed) {
@@ -560,7 +561,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         }
     }
 
-    if ((event & MPD_IDLE_PLAYER) != 0) {
+    if ((event & NCM_MPD_IDLE_PLAYER) != 0) {
         if (active_hooks && active_hooks->player_state_changed) {
             active_hooks->player_state_changed(active_hooks->user);
         } else {
@@ -672,7 +673,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         }
     }
 
-    if ((event & MPD_IDLE_MIXER) != 0) {
+    if ((event & NCM_MPD_IDLE_MIXER) != 0) {
         if (active_hooks && active_hooks->mixer_changed) {
             active_hooks->mixer_changed(active_hooks->user);
         } else {
@@ -680,7 +681,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         }
     }
 
-    if ((event & MPD_IDLE_OUTPUT) != 0) {
+    if ((event & NCM_MPD_IDLE_OUTPUT) != 0) {
         if (active_hooks && active_hooks->outputs_changed) {
             active_hooks->outputs_changed(active_hooks->user);
         } else {
@@ -691,7 +692,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         }
     }
 
-    if ((event & MPD_IDLE_UPDATE) != 0) {
+    if ((event & NCM_MPD_IDLE_UPDATE) != 0) {
         status_db_updating = 0;
         if (mpd_status->update_id != 0) {
             status_db_updating = 'U';
@@ -708,7 +709,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         }
     }
 
-    if ((event & MPD_IDLE_OPTIONS) != 0) {
+    if ((event & NCM_MPD_IDLE_OPTIONS) != 0) {
         new_repeat = 0;
         if (mpd_status->repeat) {
             new_repeat = 'r';
@@ -776,7 +777,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         }
     }
 
-    if ((event & (MPD_IDLE_UPDATE | MPD_IDLE_OPTIONS)) != 0) {
+    if ((event & (NCM_MPD_IDLE_UPDATE | NCM_MPD_IDLE_OPTIONS)) != 0) {
         if (active_hooks && active_hooks->flags_changed) {
             active_hooks->flags_changed(active_hooks->user);
         } else {
@@ -786,11 +787,12 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
 
     status_initialized = true;
 
-    if ((event & MPD_IDLE_PLAYER) != 0) {
+    if ((event & NCM_MPD_IDLE_PLAYER) != 0) {
         status_refresh_footer(active_hooks);
     }
 
-    if ((event & (MPD_IDLE_PLAYLIST | MPD_IDLE_DATABASE | MPD_IDLE_PLAYER))) {
+    if ((event & (NCM_MPD_IDLE_PLAYLIST | NCM_MPD_IDLE_DATABASE
+                  |NCM_MPD_IDLE_PLAYER))) {
         if (active_hooks && active_hooks->refresh_visible_screens) {
             active_hooks->refresh_visible_screens(active_hooks->user);
         } else {
@@ -804,7 +806,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
 static void
 status_reset_visualizer_for_player_event(int32 event) {
 #if defined(ENABLE_VISUALIZER)
-    if ((event & MPD_IDLE_PLAYER) != 0) {
+    if ((event & NCM_MPD_IDLE_PLAYER) != 0) {
         visualizer_screen_reset_audio_state(app_screen_visualizer());
     }
 #else

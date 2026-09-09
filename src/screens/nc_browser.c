@@ -261,26 +261,7 @@ browser_stat_local_path(char *path, int32 path_len, NcmFsStat *out,
 static void
 browser_make_local_song(NcmSong *song, char *path, int32 path_len,
                         time_t mtime) {
-#if defined(HAVE_TAGLIB_H)
-    struct mpd_pair pair;
-    struct mpd_song *mpd_song;
-#endif
-
-    ncm_song_set_uri(song, path, path_len);
-    ncm_song_set_mtime(song, mtime);
-
-#if defined(HAVE_TAGLIB_H)
-    pair.name = "file";
-    pair.value = path;
-    if ((mpd_song = mpd_song_begin(&pair))) {
-        if (ncm_tags_read_song(mpd_song) > 0) {
-            ncm_song_from_mpd_song(song, mpd_song);
-            ncm_song_set_mtime(song, mtime);
-        }
-        mpd_song_free(mpd_song);
-    }
-#endif
-
+    ncm_mpd_item_local_song(song, path, path_len, mtime);
     return;
 }
 
@@ -456,7 +437,7 @@ browser_update(NcScreen *screen) {
                 ncm_mpd_item_array_destroy(&items);
 
                 if (ncm_mpd_client_server_error_code(&global_mpd)
-                    != MPD_SERVER_ERROR_NO_EXIST) {
+                    != NCM_MPD_SERVER_ERROR_NO_EXIST) {
                     break;
                 }
                 status = browser_screen_go_to_parent(browser);
@@ -1746,7 +1727,7 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
                 break;
             }
             if (ncm_mpd_client_server_error_code(client)
-                != MPD_SERVER_ERROR_NO_EXIST) {
+                != NCM_MPD_SERVER_ERROR_NO_EXIST) {
                 return status;
             }
 
@@ -2040,7 +2021,7 @@ browser_screen_locate_song(BrowserScreen *screen,
 
         if ((status < 0)
             && (ncm_mpd_client_server_error_code(client)
-                == MPD_SERVER_ERROR_NO_EXIST)) {
+                == NCM_MPD_SERVER_ERROR_NO_EXIST)) {
             browser_screen_request_update(screen);
             return ncm_error_ok(ncm_error);
         }
