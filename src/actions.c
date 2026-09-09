@@ -138,7 +138,7 @@ XX(toggle_browser_sort_mode, TOGGLE_BROWSER_SORT_MODE)                         \
 XX(toggle_consume, TOGGLE_CONSUME)                                             \
 XX(toggle_crossfade, TOGGLE_CROSSFADE)                                         \
 XX(toggle_display_mode, TOGGLE_DISPLAY_MODE)                                   \
-XX(toggle_fetching_lyrics_in_background, TOGGLE_FETCHING_LYRICS_IN_BACKGROUND) \
+XX(toggle_fetch_lyrics_in_background, TOGGLE_FETCHING_LYRICS_IN_BACKGROUND) \
 XX(toggle_find_mode, TOGGLE_FIND_MODE)                                         \
 XX(toggle_interface, TOGGLE_INTERFACE)                                         \
 XX(toggle_library_tag_type, TOGGLE_LIBRARY_TAG_TYPE)                           \
@@ -1353,7 +1353,7 @@ action_runtime_toggle_lyrics_update_on_song_change(void) {
 }
 
 static int32
-action_runtime_toggle_fetching_lyrics_in_background(void) {
+action_runtime_toggle_fetch_lyrics_in_background(void) {
     Config.fetch_lyrics_for_current_song_in_background =
         !Config.fetch_lyrics_for_current_song_in_background;
     if (Config.fetch_lyrics_for_current_song_in_background) {
@@ -6121,7 +6121,7 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
     case NCM_ACTION_TOGGLE_LYRICS_FETCHER:
         return action_runtime_toggle_lyrics_fetcher();
     case NCM_ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND:
-        return action_runtime_toggle_fetching_lyrics_in_background();
+        return action_runtime_toggle_fetch_lyrics_in_background();
     case NCM_ACTION_TOGGLE_PLAYING_SONG_CENTERING:
         Config.autocenter_mode = !Config.autocenter_mode;
         if (Config.autocenter_mode) {
