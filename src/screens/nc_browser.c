@@ -1283,8 +1283,8 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
             sb_set(&buffer, string->data, string->len);
         }
 
-        if (!browser_supported_extensions_contains(&extensions, buffer.data,
-                                                   buffer.len)) {
+        if (!browser_supported_extensions_contains(&extensions,
+                                                   buffer.data, buffer.len)) {
             str_builder_array_append_copy(&extensions, &buffer);
         }
         sb_free(&buffer);
