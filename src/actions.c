@@ -19,18 +19,18 @@
 #include "title.h"
 #include "ui_state.h"
 
-#define ACTION_TABLE_CALLBACKS(SUFFIX, TYPE)                           \
-    static bool                                                        \
-    ncm_action_can_run_##SUFFIX(void *user) {                          \
-        (void)user;                                                    \
-        return ncm_action_runtime_can_run(NULL, ACTION_##TYPE);        \
-    }                                                                  \
-                                                                       \
-    static int32                                                       \
-    ncm_action_run_##SUFFIX(void *user) {                              \
-        (void)user;                                                    \
-        return ncm_action_runtime_run(NULL, ACTION_##TYPE);            \
-    }
+#define ACTION_TABLE_CALLBACKS(SUFFIX, TYPE)                       \
+static bool                                                        \
+ncm_action_can_run_##SUFFIX(void *user) {                          \
+    (void)user;                                                    \
+    return ncm_action_runtime_can_run(NULL, ACTION_##TYPE);        \
+}                                                                  \
+                                                                   \
+static int32                                                       \
+ncm_action_run_##SUFFIX(void *user) {                              \
+    (void)user;                                                    \
+    return ncm_action_runtime_run(NULL, ACTION_##TYPE);            \
+}
 
 #define ACTION_TABLE_DEFS(XX)                                                \
 XX(add, ADD)                                                                 \
@@ -169,13 +169,15 @@ ACTION_TABLE_DEFS(XX)
     {                                       \
         #SUFFIX,                            \
         STRLIT_LEN(#SUFFIX),                \
-        ACTION_##TYPE,                  \
+        ACTION_##TYPE,                      \
         ncm_action_can_run_##SUFFIX,        \
         ncm_action_run_##SUFFIX,            \
     },
+
 static ActionDef action_defs[] = {
     ACTION_TABLE_DEFS(XX)
 };
+
 #undef XX
 
 ActionDef *

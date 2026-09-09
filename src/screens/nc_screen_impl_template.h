@@ -26,13 +26,13 @@
 #if !defined(NC_SCREEN_IMPL_BASE_FIELD)
 #error "NC_SCREEN_IMPL_BASE_FIELD is undefined"
 #endif
-#if !defined(NC_SCREEN_IMPL_WINDOW_FIELD) \
+#if !defined(NC_SCREEN_IMPL_WINDOW_FIELD)                                      \
     && !defined(NC_SCREEN_IMPL_WINDOW)
 #error "screen implementation needs a window field or window expression"
 #endif
-#if !defined(NC_SCREEN_IMPL_SCROLL_CALLBACK) \
-    && !defined(NC_SCREEN_IMPL_SCROLLPAD_FIELD) \
-    && !defined(NC_SCREEN_IMPL_SCROLL_MENU) \
+#if !defined(NC_SCREEN_IMPL_SCROLL_CALLBACK)                                   \
+    && !defined(NC_SCREEN_IMPL_SCROLLPAD_FIELD)                                \
+    && !defined(NC_SCREEN_IMPL_SCROLL_MENU)                                    \
     && !defined(NC_SCREEN_IMPL_MENU)
 #error "screen implementation needs a scroll callback or scrollable object"
 #endif
@@ -50,46 +50,46 @@
 #define NC_SCREEN_IMPL_MERGABLE false
 #endif
 #if !defined(NC_SCREEN_IMPL_WINDOW)
-#define NC_SCREEN_IMPL_WINDOW(screen) \
+#define NC_SCREEN_IMPL_WINDOW(screen)                                          \
     (&(screen)->NC_SCREEN_IMPL_WINDOW_FIELD)
 #endif
-#if !defined(NC_SCREEN_IMPL_SCROLL_MENU) \
+#if !defined(NC_SCREEN_IMPL_SCROLL_MENU)                                       \
     && defined(NC_SCREEN_IMPL_MENU)
 #define NC_SCREEN_IMPL_SCROLL_MENU(screen) NC_SCREEN_IMPL_MENU(screen)
 #endif
-#if !defined(NC_SCREEN_IMPL_SCROLL_HEIGHT) \
+#if !defined(NC_SCREEN_IMPL_SCROLL_HEIGHT)                                     \
     && defined(NC_SCREEN_IMPL_SCROLL_MENU)
-#define NC_SCREEN_IMPL_SCROLL_HEIGHT(screen) \
+#define NC_SCREEN_IMPL_SCROLL_HEIGHT(screen)                                   \
     nc_window_height(NC_SCREEN_IMPL_WINDOW(screen))
 #endif
-#if (defined(NC_SCREEN_IMPL_SCROLLPAD_FIELD) \
-     || defined(NC_SCREEN_IMPL_SCROLLPAD_BASE)) \
+#if (defined(NC_SCREEN_IMPL_SCROLLPAD_FIELD)                                   \
+     || defined(NC_SCREEN_IMPL_SCROLLPAD_BASE))                                \
     && !defined(NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR)
 #if defined(NC_SCREEN_IMPL_SCROLLPAD_BASE)
-#define NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen) \
+#define NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen)                             \
     (&(screen)->NC_SCREEN_IMPL_SCROLLPAD_BASE)
 #else
-#define NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen) \
+#define NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen)                             \
     (&(screen)->NC_SCREEN_IMPL_BASE_FIELD)
 #endif
 #endif
 #if !defined(NC_SCREEN_IMPL_BASE_EXPR)
-#if defined(NC_SCREEN_IMPL_SCROLLPAD_FIELD) \
+#if defined(NC_SCREEN_IMPL_SCROLLPAD_FIELD)                                    \
     || defined(NC_SCREEN_IMPL_SCROLLPAD_BASE)
-#define NC_SCREEN_IMPL_BASE_EXPR(screen) \
+#define NC_SCREEN_IMPL_BASE_EXPR(screen)                                       \
     nc_scrollpad_screen_base(NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen))
 #else
-#define NC_SCREEN_IMPL_BASE_EXPR(screen) \
+#define NC_SCREEN_IMPL_BASE_EXPR(screen)                                       \
     (&(screen)->NC_SCREEN_IMPL_BASE_FIELD)
 #endif
 #endif
 
 #define NC_SCREEN_IMPL_FROM_SCREEN CAT(NC_SCREEN_IMPL_PREFIX, _from_screen)
 #define NC_SCREEN_IMPL_OPS CAT(NC_SCREEN_IMPL_PREFIX, _ops)
-#define NC_SCREEN_IMPL_ACTIVE_WINDOW \
+#define NC_SCREEN_IMPL_ACTIVE_WINDOW                                           \
     CAT(NC_SCREEN_IMPL_PREFIX, _active_window)
 #define NC_SCREEN_IMPL_REFRESH CAT(NC_SCREEN_IMPL_PREFIX, _refresh)
-#define NC_SCREEN_IMPL_REFRESH_WINDOW \
+#define NC_SCREEN_IMPL_REFRESH_WINDOW                                          \
     CAT(NC_SCREEN_IMPL_PREFIX, _refresh_window)
 #define NC_SCREEN_IMPL_SCROLL CAT(NC_SCREEN_IMPL_PREFIX, _scroll)
 #define NC_SCREEN_IMPL_TITLE CAT(NC_SCREEN_IMPL_PREFIX, _title)
@@ -111,8 +111,8 @@ NC_SCREEN_IMPL_BASE(NC_SCREEN_IMPL_TYPE *screen) {
     return NC_SCREEN_IMPL_BASE_EXPR(screen);
 }
 
-#if (defined(NC_SCREEN_IMPL_SCROLLPAD_FIELD) \
-     || defined(NC_SCREEN_IMPL_SCROLLPAD_BASE)) \
+#if (defined(NC_SCREEN_IMPL_SCROLLPAD_FIELD)                                   \
+     || defined(NC_SCREEN_IMPL_SCROLLPAD_BASE))                                \
     && !defined(NC_SCREEN_IMPL_NO_GEOMETRY_ACCESSORS)
 int32
 NC_SCREEN_IMPL_START_X(NC_SCREEN_IMPL_TYPE *screen) {
@@ -207,7 +207,7 @@ static const NcScreenOps NC_SCREEN_IMPL_OPS = {
     .refresh_window = NC_SCREEN_IMPL_REFRESH_WINDOW,
 #if defined(NC_SCREEN_IMPL_SCROLL_CALLBACK)
     .scroll = NC_SCREEN_IMPL_SCROLL_CALLBACK,
-#elif defined(NC_SCREEN_IMPL_SCROLLPAD_FIELD) \
+#elif defined(NC_SCREEN_IMPL_SCROLLPAD_FIELD)                                  \
       || defined(NC_SCREEN_IMPL_SCROLL_MENU)
     .scroll = NC_SCREEN_IMPL_SCROLL,
 #endif
