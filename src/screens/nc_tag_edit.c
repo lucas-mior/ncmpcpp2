@@ -69,7 +69,7 @@ tag_edit_draw_tag(NcMenu *menu, NcWindow *window, void *item,
     ASSERT(window != NULL);
     ASSERT(song != NULL);
 
-    if (ncm_mutable_song_is_modified(song)) {
+    if (mutable_song_is_modified(song)) {
         nc_buffer_append_data(&buffer, Config.modified_item_prefix.data,
                               Config.modified_item_prefix.len);
     }
@@ -80,7 +80,7 @@ tag_edit_draw_tag(NcMenu *menu, NcWindow *window, void *item,
         StrBuilder tag;
         enum TagsField field = ncm_song_info_tags[choice].field;
 
-        tag = ncm_mutable_song_tags_buffer(song, field, Config.tags_separator,
+        tag = mutable_song_tags_buffer(song, field, Config.tags_separator,
                                            Config.tags_separator_len,
                                            Config.show_duplicate_tags);
         if (tag.len <= 0) {
@@ -682,7 +682,7 @@ tag_edit_prompt_tag_value(TagEditScreen *screen,
     ASSERT(song != NULL);
 
     label_len = NCM_TAGS_FIELD_alias_len(field, &label);
-    initial = ncm_mutable_song_tags_buffer(song, field, Config.tags_separator,
+    initial = mutable_song_tags_buffer(song, field, Config.tags_separator,
                                            Config.tags_separator_len,
                                            Config.show_duplicate_tags);
     if (screen->hooks.prompt == NULL) {
@@ -712,7 +712,7 @@ tag_edit_prompt_tag_value(TagEditScreen *screen,
                                                Config.tags_separator,
                                                Config.tags_separator_len);
     } else {
-        ncm_mutable_song_set_tags(song, field, sb_opt_cstr(&input), input.len,
+        mutable_song_set_tags(song, field, sb_opt_cstr(&input), input.len,
                                   Config.tags_separator,
                                   Config.tags_separator_len);
     }
@@ -809,7 +809,7 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
                 return 0;
             }
             if (apply) {
-                ncm_mutable_song_set_new_name(song, new_name.data,
+                mutable_song_set_new_name(song, new_name.data,
                                               new_name.len);
             } else {
                 tag_edit_append_parser_filename(&screen->parser_preview,
@@ -911,7 +911,7 @@ tag_edit_run_current(NcScreen *screen) {
             ASSERT(editor != NULL);
             song = nc_tag_row_menu_current(&editor->tags);
             ASSERT(song != NULL);
-            if (!ncm_mutable_song_has_new_name_view(song, &current_name)) {
+            if (!mutable_song_has_new_name_view(song, &current_name)) {
                 current_name.data = song->name;
                 current_name.len = song->name_len;
             }
@@ -944,7 +944,7 @@ tag_edit_run_current(NcScreen *screen) {
                 StrBuilder new_name = {0};
                 int32 stem_dot = -1;
 
-                if (!ncm_mutable_song_has_new_name_view(song, &stem_name)) {
+                if (!mutable_song_has_new_name_view(song, &stem_name)) {
                     stem_name.data = song->name;
                     stem_name.len = song->name_len;
                 }
@@ -959,7 +959,7 @@ tag_edit_run_current(NcScreen *screen) {
                               stem_name.data + stem_dot,
                               stem_name.len - stem_dot);
                 }
-                ncm_mutable_song_set_new_name(song, new_name.data,
+                mutable_song_set_new_name(song, new_name.data,
                                               new_name.len);
                 sb_free(&new_name);
                 result = true;
@@ -2848,10 +2848,10 @@ tag_edit_screen_load_songs(TagEditScreen *screen, NcmSongArray *songs) {
     for (int32 i = 0; i < songs->len; i += 1) {
         MutableSong mutable_song = {0};
 
-        ncm_mutable_song_load_originals_from_song(&mutable_song,
+        mutable_song_load_originals_from_song(&mutable_song,
                                                   &songs->items[i]);
         tag_edit_screen_add_mutable_song(screen, &mutable_song);
-        ncm_mutable_song_destroy(&mutable_song);
+        mutable_song_destroy(&mutable_song);
     }
     if (tag_edit_current_directory_path(screen, &path, &path_len)) {
         sb_set(&screen->displayed_dir, path, path_len);
@@ -3003,7 +3003,7 @@ tag_edit_screen_previous_column(TagEditScreen *screen) {
             MutableSong *song = nc_menu_active_item_at(menu, i);
 
             ASSERT(song != NULL);
-            if (ncm_mutable_song_is_modified(song)) {
+            if (mutable_song_is_modified(song)) {
                 modified = true;
                 break;
             }
@@ -3071,7 +3071,7 @@ static int32
 tag_edit_set_song_tag_callback(MutableSong *song, void *user) {
     TagSetter *setter = user;
 
-    ncm_mutable_song_set_tags(song, setter->field, setter->value,
+    mutable_song_set_tags(song, setter->field, setter->value,
                               setter->value_len, setter->separator,
                               setter->separator_len);
     return 0;
@@ -3117,11 +3117,11 @@ tag_edit_number_song_callback(MutableSong *song, void *user) {
     }
 
     numberer->current += 1;
-    ncm_mutable_song_set_tag(song, NCM_TAGS_FIELD_TRACK, 0, buffer, len);
+    mutable_song_set_tag(song, NCM_TAGS_FIELD_TRACK, 0, buffer, len);
     for (int32 i = 1;
-         ncm_mutable_song_has_tag_view(song, NCM_TAGS_FIELD_TRACK, i, &view);
+         mutable_song_has_tag_view(song, NCM_TAGS_FIELD_TRACK, i, &view);
          i += 1) {
-        ncm_mutable_song_set_tag(song, NCM_TAGS_FIELD_TRACK, i, STRLIT(""));
+        mutable_song_set_tag(song, NCM_TAGS_FIELD_TRACK, i, STRLIT(""));
     }
     return 0;
 }
@@ -3155,7 +3155,7 @@ tag_edit_capitalize_song_callback(MutableSong *song, void *user) {
             StrBuilder converted = {0};
             int32 converted_len;
 
-            if (!ncm_mutable_song_has_tag_view(song, field, i, &view)) {
+            if (!mutable_song_has_tag_view(song, field, i, &view)) {
                 break;
             }
 
@@ -3168,7 +3168,7 @@ tag_edit_capitalize_song_callback(MutableSong *song, void *user) {
             if (converted.data) {
                 converted.data[converted.len] = '\0';
             }
-            ncm_mutable_song_set_tag(song, field, i,
+            mutable_song_set_tag(song, field, i,
                                      converted.data, converted.len);
             sb_free(&converted);
         }
@@ -3193,14 +3193,14 @@ tag_edit_lower_song_callback(MutableSong *song, void *user) {
             StringView view;
             StrBuilder buffer = {0};
 
-            if (!ncm_mutable_song_has_tag_view(song, field, i, &view)) {
+            if (!mutable_song_has_tag_view(song, field, i, &view)) {
                 break;
             }
             SB_APPEND(&buffer, view.data, view.len);
             if (buffer.data != NULL) {
                 ncm_string_lowercase_ascii(buffer.data, buffer.len);
             }
-            ncm_mutable_song_set_tag(song, field, i, buffer.data, buffer.len);
+            mutable_song_set_tag(song, field, i, buffer.data, buffer.len);
             sb_free(&buffer);
         }
     }
@@ -3220,7 +3220,7 @@ tag_edit_screen_clear_modifications(TagEditScreen *screen) {
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         MutableSong *song = nc_menu_active_item_at(menu, i);
         ASSERT(song != NULL);
-        ncm_mutable_song_clear_modifications(song);
+        mutable_song_clear_modifications(song);
     }
     return;
 }
@@ -3262,7 +3262,7 @@ tag_edit_save_song_callback(MutableSong *song, void *user) {
             context->shared_directory = shared;
         }
     }
-    if (!ncm_mutable_song_is_modified(song)) {
+    if (!mutable_song_is_modified(song)) {
         return 0;
     }
 
@@ -3279,7 +3279,7 @@ tag_edit_save_song_callback(MutableSong *song, void *user) {
         sb_free(&message);
     }
 
-    status = ncm_mutable_song_write(song, context->music_dir);
+    status = mutable_song_write(song, context->music_dir);
     if (status < 0) {
         StrBuilder message = {0};
         char *system_error;
@@ -3301,7 +3301,7 @@ tag_edit_save_song_callback(MutableSong *song, void *user) {
     }
 
     context->write_count += 1;
-    ncm_mutable_song_clear_modifications(song);
+    mutable_song_clear_modifications(song);
     return 0;
 }
 
@@ -3843,7 +3843,7 @@ tag_edit_parse_filename(MutableSong *song, char *mask,
                           file.data + file_pos, value_end - file_pos);
                 sb_append_byte(preview_buffer, '\n');
             } else {
-                ncm_mutable_song_set_tags(song, field, file.data + file_pos,
+                mutable_song_set_tags(song, field, file.data + file_pos,
                                           value_end - file_pos, NULL, 0);
             }
         }
@@ -3952,7 +3952,7 @@ tag_edit_song_display_value(MutableSong *song, enum TagsField field,
         return -EINVAL;
     }
 
-    ncm_mutable_song_get_tag_buffer(song, field, 0, &tag);
+    mutable_song_get_tag_buffer(song, field, 0, &tag);
     SB_APPEND(buffer, tag.data, tag.len);
     sb_free(&tag);
     return 0;

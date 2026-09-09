@@ -16,7 +16,7 @@
 #include "c/ncm_mpd_client.c"
 #include "c/ncm_mpd_connection.c"
 #include "c/ncm_mpd_item.c"
-#include "c/ncm_mutable_song.c"
+#include "c/mutable_song.c"
 #include "c/ncm_option_parser.c"
 #include "c/ncm_path.c"
 #include "c/ncm_playlist.c"

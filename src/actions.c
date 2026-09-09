@@ -2071,7 +2071,7 @@ action_runtime_song_tag_at(int32 pos, enum SongGetter getter,
         if ((mutable_song = nc_menu_active_item_at(menu, pos)) == NULL) {
             return -NCM_ERROR_UNAVAILABLE;
         }
-        *tag = ncm_mutable_song_tags_buffer(mutable_song, field,
+        *tag = mutable_song_tags_buffer(mutable_song, field,
                                             Config.tags_separator,
                                             Config.tags_separator_len,
                                             Config.show_duplicate_tags);
@@ -5003,20 +5003,20 @@ action_runtime_edit_library_tag(void) {
         MutableSong mutable_song = {0};
         StringView uri;
 
-        status = ncm_mutable_song_load_originals_from_song(&mutable_song, song);
+        status = mutable_song_load_originals_from_song(&mutable_song, song);
         if (status == 0) {
-            status = ncm_mutable_song_set_tags(&mutable_song, field,
+            status = mutable_song_set_tags(&mutable_song, field,
                                                new_tag.data, new_tag.len,
                                                Config.tags_separator,
                                                Config.tags_separator_len);
         }
         if (status < 0) {
-            ncm_mutable_song_destroy(&mutable_song);
+            mutable_song_destroy(&mutable_song);
             break;
         }
 
         action_runtime_print_updating_song(song);
-        status = ncm_mutable_song_write(&mutable_song, Config.mpd_music_dir);
+        status = mutable_song_write(&mutable_song, Config.mpd_music_dir);
         if (status < 0) {
             StringView name;
 
@@ -5033,7 +5033,7 @@ action_runtime_edit_library_tag(void) {
                                                     message.data, message.len);
                 sb_free(&message);
             }
-            ncm_mutable_song_destroy(&mutable_song);
+            mutable_song_destroy(&mutable_song);
             break;
         }
 
@@ -5041,7 +5041,7 @@ action_runtime_edit_library_tag(void) {
             status = action_runtime_shared_directory_update(
                 &shared_directory, &shared_directory_valid, uri.data, uri.len);
         }
-        ncm_mutable_song_destroy(&mutable_song);
+        mutable_song_destroy(&mutable_song);
     }
 
     if (status == 0) {
