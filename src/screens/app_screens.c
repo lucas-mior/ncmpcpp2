@@ -1113,7 +1113,7 @@ append_song_key_value(NcBuffer *buffer, char *key, StrBuilder *value,
 }
 
 static void
-append_help(NcBuffer *buffer, enum NcmActionType type, char *description) {
+append_help(NcBuffer *buffer, enum ActionType type, char *description) {
     int32 column_start;
     int32 width;
 

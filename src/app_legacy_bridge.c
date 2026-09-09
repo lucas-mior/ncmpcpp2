@@ -379,7 +379,7 @@ ncmpcpp_execute_binding(NcmBinding *binding) {
 }
 
 int32
-ncmpcpp_execute_action(enum NcmActionType type) {
+ncmpcpp_execute_action(enum ActionType type) {
     return ncm_action_runtime_run(NULL, type);
 }
 

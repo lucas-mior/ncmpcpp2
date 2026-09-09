@@ -38,7 +38,7 @@ void ncmpcpp_status_clear(void);
 int32 ncmpcpp_update_environment(bool update_timer, bool refresh_window,
                                  bool mpd_sync);
 int32 ncmpcpp_execute_binding(NcmBinding *);
-int32 ncmpcpp_execute_action(enum NcmActionType);
+int32 ncmpcpp_execute_action(enum ActionType);
 bool ncmpcpp_has_exit_request(void);
 
 #endif /* APP_BRIDGE_H */

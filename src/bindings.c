@@ -217,12 +217,12 @@ ncm_binding_action_can_run(NcmBindingAction *action,
 }
 
 bool
-ncm_binding_runtime_can_run_action(enum NcmActionType type, void *user) {
+ncm_binding_runtime_can_run_action(enum ActionType type, void *user) {
     return ncm_action_runtime_can_run(user, type);
 }
 
 int32
-ncm_binding_runtime_run_action(enum NcmActionType type, void *user) {
+ncm_binding_runtime_run_action(enum ActionType type, void *user) {
     return ncm_action_runtime_run(user, type);
 }
 
@@ -366,7 +366,7 @@ ncm_binding_execute_default(NcmBinding *binding) {
 
 bool
 ncm_binding_is_single_action_type(NcmBinding *binding,
-                                  enum NcmActionType type) {
+                                  enum ActionType type) {
     if ((binding == NULL) || (binding->actions_len != 1)) {
         return false;
     }
@@ -589,7 +589,7 @@ ncm_bindings_key_name(NcKey key, char *buffer, int32 buffer_len) {
 }
 
 static void
-ncm_binding_append_normal(NcmBinding *binding, enum NcmActionType type) {
+ncm_binding_append_normal(NcmBinding *binding, enum ActionType type) {
     NcmBindingAction action;
 
     ncm_binding_action_init(&action);
@@ -749,7 +749,7 @@ ncm_bindings_key_is_unbound(NcmBindingsConfiguration *bindings, NcKey key) {
 
 static void
 ncm_bindings_bind_single(NcmBindingsConfiguration *bindings, char *key_name,
-                         int32 key_name_len, enum NcmActionType type) {
+                         int32 key_name_len, enum ActionType type) {
     NcmBinding binding = {0};
     NcKey key = ncm_bindings_string_to_key(key_name, key_name_len);
 
@@ -765,8 +765,8 @@ ncm_bindings_bind_single(NcmBindingsConfiguration *bindings, char *key_name,
 
 static void
 ncm_bindings_bind_chain2(NcmBindingsConfiguration *bindings, char *key_name,
-                         int32 key_name_len, enum NcmActionType first,
-                         enum NcmActionType second) {
+                         int32 key_name_len, enum ActionType first,
+                         enum ActionType second) {
     NcmBinding binding = {0};
     NcKey key = ncm_bindings_string_to_key(key_name, key_name_len);
 
@@ -784,7 +784,7 @@ ncm_bindings_bind_chain2(NcmBindingsConfiguration *bindings, char *key_name,
 static void
 ncm_bindings_bind_group(NcmBindingsConfiguration *bindings,
                         char *key_name, int32 key_name_len,
-                        enum NcmActionType *actions, int32 actions_len) {
+                        enum ActionType *actions, int32 actions_len) {
     NcKey key = ncm_bindings_string_to_key(key_name, key_name_len);
 
     if (!ncm_bindings_key_is_unbound(bindings, key)) {
@@ -1242,7 +1242,7 @@ ncm_bindings_configuration_generate_defaults(NcmBindingsConfiguration *bindings
 #define CHAIN2(KEY, A, B) \
     ncm_bindings_bind_chain2(bindings, STRLIT(KEY), A, B)
 #define GROUP(KEY, ...) do { \
-    enum NcmActionType actions[] = { __VA_ARGS__ }; \
+    enum ActionType actions[] = { __VA_ARGS__ }; \
     ncm_bindings_bind_group(bindings, STRLIT(KEY), \
                             actions, LENGTH(actions)); \
 } while (0)
