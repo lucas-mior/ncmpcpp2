@@ -1010,25 +1010,25 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
     return ncm_error_ok(ncm_error);
 }
 
-#define XX_DIR(NAME, DEFAULT)                                            \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error UNUSED) {                                 \
-        settings_parse_path_common(&config->NAME, &config->NAME##_len,         \
-                                   value, value_len, true);                    \
-        return 0;                                                              \
-    }
+#define XX_DIR(NAME, DEFAULT)                                                  \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error UNUSED) {                                     \
+    settings_parse_path_common(&config->NAME, &config->NAME##_len,             \
+                               value, value_len, true);                        \
+    return 0;                                                                  \
+}
 
-#define XX_PATH(NAME, DEFAULT)                                           \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error UNUSED) {                                 \
-        settings_parse_path_common(&config->NAME, &config->NAME##_len,         \
-                                   value, value_len, false);                   \
-        return 0;                                                              \
-    }
+#define XX_PATH(NAME, DEFAULT)                                                 \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error UNUSED) {                                     \
+    settings_parse_path_common(&config->NAME, &config->NAME##_len,             \
+                               value, value_len, false);                       \
+    return 0;                                                                  \
+}
 
-#define XX_STRING(NAME, DEFAULT)                                         \
+#define XX_STRING(NAME, DEFAULT)                                               \
     static int32                                                               \
     apply_##NAME(Configuration *config, char *value, int32 value_len,          \
                  NcmError *ncm_error UNUSED) {                                 \
@@ -1037,217 +1037,217 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
         return 0;                                                              \
     }
 
-#define XX_BOOL(NAME, DEFAULT)                                           \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        return settings_parse_bool(value, value_len, &config->NAME,            \
-                                   ncm_error);                                 \
-    }
+#define XX_BOOL(NAME, DEFAULT)                                                 \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    return settings_parse_bool(value, value_len, &config->NAME,                \
+                               ncm_error);                                     \
+}
 
-#define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM)                      \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        return settings_parse_int_range(value, value_len, &config->NAME,       \
-                                        MINIMUM, MAXIMUM, ncm_error);          \
-    }
+#define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM)                            \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    return settings_parse_int_range(value, value_len, &config->NAME,           \
+                                    MINIMUM, MAXIMUM, ncm_error);              \
+}
 
-#define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)                       \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        return settings_parse_double_range(value, value_len, &config->NAME,    \
-                                           MINIMUM, MAXIMUM, ncm_error);       \
-    }
+#define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)                             \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    return settings_parse_double_range(value, value_len, &config->NAME,        \
+                                       MINIMUM, MAXIMUM, ncm_error);           \
+}
 
-#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT)                             \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        ENUM_PREFIX_ parsed = (ENUM_PREFIX_)0;                                 \
-        int32 status;                                                          \
-        SETTINGS_PARSE_XENUM_VALUE(ENUM_PREFIX_, value, value_len,             \
-                                   &parsed, status);                           \
-        if (status < 0) {                                                      \
-            return settings_invalid_value(ncm_error, value, value_len);        \
-        }                                                                      \
-        config->NAME = parsed;                                                 \
+#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT)                                   \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    ENUM_PREFIX_ parsed = (ENUM_PREFIX_)0;                                     \
+    int32 status;                                                              \
+    SETTINGS_PARSE_XENUM_VALUE(ENUM_PREFIX_, value, value_len,                 \
+                               &parsed, status);                               \
+    if (status < 0) {                                                          \
+        return settings_invalid_value(ncm_error, value, value_len);            \
+    }                                                                          \
+    config->NAME = parsed;                                                     \
+    return 0;                                                                  \
+}
+
+#define XX_MPD_TAG(NAME, DEFAULT)                                              \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    enum mpd_tag_type parsed;                                                  \
+    int32 status;                                                              \
+    status = settings_parse_mpd_tag(value, value_len, &parsed);                \
+    if (status < 0) {                                                          \
+        return settings_invalid_value(ncm_error, value, value_len);            \
+    }                                                                          \
+    config->NAME = parsed;                                                     \
+    return 0;                                                                  \
+}
+
+#define XX_STARTUP_SCREEN(NAME, DEFAULT)                                       \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    SCREEN_TYPE_ parsed = SCREEN_TYPE_COUNT;                                   \
+    int32 status;                                                              \
+    status = settings_parse_startup_screen(value, value_len, &parsed,          \
+                                           ncm_error);                         \
+    if (status < 0) {                                                          \
+        return status;                                                         \
+    }                                                                          \
+    config->NAME = parsed;                                                     \
+    return 0;                                                                  \
+}
+
+#define XX_OPT_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE)       \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    SCREEN_TYPE_ parsed = SCREEN_TYPE_COUNT;                                   \
+    int32 status;                                                              \
+    if (value_len <= 0) {                                                      \
+        config->PRESENT_FIELD = false;                                         \
+        config->NAME = (SCREEN_TYPE_)(UNSET_VALUE);                            \
         return 0;                                                              \
-    }
+    }                                                                          \
+    status = settings_parse_startup_screen(value, value_len, &parsed,          \
+                                           ncm_error);                         \
+    if (status < 0) {                                                          \
+        config->NAME = (SCREEN_TYPE_)(UNSET_VALUE);                            \
+        return status;                                                         \
+    }                                                                          \
+    config->NAME = parsed;                                                     \
+    config->PRESENT_FIELD = true;                                              \
+    return 0;                                                                  \
+}
 
-#define XX_MPD_TAG(NAME, DEFAULT)                                        \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        enum mpd_tag_type parsed;                                              \
-        int32 status;                                                          \
-        status = settings_parse_mpd_tag(value, value_len, &parsed);            \
-        if (status < 0) {                                                      \
-            return settings_invalid_value(ncm_error, value, value_len);        \
-        }                                                                      \
-        config->NAME = parsed;                                                 \
-        return 0;                                                              \
-    }
+#define XX_COLOR(NAME, DEFAULT)                                                \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    return settings_parse_color(value, value_len, &config->NAME,               \
+                                ncm_error);                                    \
+}
 
-#define XX_STARTUP_SCREEN(NAME, DEFAULT)                                 \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        SCREEN_TYPE_ parsed = SCREEN_TYPE_COUNT;                               \
-        int32 status;                                                          \
-        status = settings_parse_startup_screen(value, value_len, &parsed,      \
-                                               ncm_error);                     \
-        if (status < 0) {                                                      \
-            return status;                                                     \
-        }                                                                      \
-        config->NAME = parsed;                                                 \
-        return 0;                                                              \
-    }
+#define XX_FORMATTED_COLOR(NAME, DEFAULT)                                      \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    return settings_parse_formatted_color(value, value_len,                    \
+                                          &config->NAME, ncm_error);           \
+}
 
-#define XX_OPT_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE)  \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        SCREEN_TYPE_ parsed = SCREEN_TYPE_COUNT;                               \
-        int32 status;                                                          \
-        if (value_len <= 0) {                                                  \
-            config->PRESENT_FIELD = false;                                     \
-            config->NAME = (SCREEN_TYPE_)(UNSET_VALUE);                        \
-            return 0;                                                          \
-        }                                                                      \
-        status = settings_parse_startup_screen(value, value_len, &parsed,      \
-                                               ncm_error);                     \
-        if (status < 0) {                                                      \
-            config->NAME = (SCREEN_TYPE_)(UNSET_VALUE);                        \
-            return status;                                                     \
-        }                                                                      \
-        config->NAME = parsed;                                                 \
-        config->PRESENT_FIELD = true;                                          \
-        return 0;                                                              \
-    }
+#define XX_BORDER(NAME, DEFAULT)                                               \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    return settings_parse_border(value, value_len, &config->NAME,              \
+                                 ncm_error);                                   \
+}
 
-#define XX_COLOR(NAME, DEFAULT)                                          \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        return settings_parse_color(value, value_len, &config->NAME,           \
-                                    ncm_error);                                \
-    }
+#define XX_FORMAT(NAME, DEFAULT, FLAGS)                                        \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    return settings_parse_format(&config->NAME, value, value_len,              \
+                                 FLAGS, ncm_error);                            \
+}
 
-#define XX_FORMATTED_COLOR(NAME, DEFAULT)                                \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        return settings_parse_formatted_color(value, value_len,                \
-                                              &config->NAME, ncm_error);       \
-    }
+#define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                                \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    return settings_copy_nc_buffer(&config->NAME, value, value_len, NULL,      \
+                                   KEEP_EXISTING, ncm_error);                  \
+}
 
-#define XX_BORDER(NAME, DEFAULT)                                         \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        return settings_parse_border(value, value_len, &config->NAME,          \
-                                     ncm_error);                               \
-    }
+#define XX_BUFFER_WIDTH(NAME, DEFAULT, KEEP_EXISTING)                          \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    return settings_copy_nc_buffer(                                            \
+        &config->NAME, value, value_len, &config->NAME##_length,               \
+        KEEP_EXISTING, ncm_error);                                             \
+}
 
-#define XX_FORMAT(NAME, DEFAULT, FLAGS)                                  \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        return settings_parse_format(&config->NAME, value, value_len,          \
-                                     FLAGS, ncm_error);                        \
-    }
+#define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)               \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    return settings_parse_look(&config->NAME, value, value_len,                \
+                               MIN_CHARS, MAX_CHARS, PAD_TO_MAX,               \
+                               ncm_error);                                     \
+}
 
-#define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                          \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        return settings_copy_nc_buffer(&config->NAME, value, value_len, NULL,  \
-                                       KEEP_EXISTING, ncm_error);              \
-    }
+#define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                                  \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    return settings_parse_ratio(&config->NAME, value, value_len,               \
+                                EXPECTED_LEN, ncm_error);                      \
+}
 
-#define XX_BUFFER_WIDTH(NAME, DEFAULT, KEEP_EXISTING)                    \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        return settings_copy_nc_buffer(                                        \
-            &config->NAME, value, value_len, &config->NAME##_length,           \
-            KEEP_EXISTING, ncm_error);                                         \
-    }
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT)                                 \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    return settings_parse_formatted_color_list(                                \
+        &config->NAME, value, value_len, ncm_error);                           \
+}
 
-#define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)         \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        return settings_parse_look(&config->NAME, value, value_len,            \
-                                   MIN_CHARS, MAX_CHARS, PAD_TO_MAX,           \
-                                   ncm_error);                                 \
-    }
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT)                                      \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    return settings_parse_lyrics_fetchers(                                     \
+        &config->NAME, value, value_len, ncm_error);                           \
+}
 
-#define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                            \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        return settings_parse_ratio(&config->NAME, value, value_len,           \
-                                    EXPECTED_LEN, ncm_error);                  \
-    }
+#define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                          \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    return settings_parse_screen_list(                                         \
+        &config->NAME, &config->PREVIOUS_FIELD, value, value_len,              \
+        ncm_error);                                                            \
+}
 
-#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT)                           \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        return settings_parse_formatted_color_list(                            \
-            &config->NAME, value, value_len, ncm_error);                       \
-    }
+#define XX_NAMED_BOOL(NAME, DEFAULT, TRUE_VALUE, FALSE_VALUE)                  \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    return settings_parse_named_bool(                                          \
+        value, value_len, &config->NAME, TRUE_VALUE,                           \
+        STRLIT_LEN(TRUE_VALUE), FALSE_VALUE, STRLIT_LEN(FALSE_VALUE),          \
+        ncm_error);                                                            \
+}
 
-#define XX_LYRICS_FETCHERS(NAME, DEFAULT)                                \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        return settings_parse_lyrics_fetchers(                                 \
-            &config->NAME, value, value_len, ncm_error);                       \
-    }
+#define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE)                   \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    int32 status;                                                              \
+    status = PARSER(value, value_len, &config->NAME);                          \
+    if (status < 0) {                                                          \
+        return settings_invalid_value(ncm_error, value, value_len);            \
+    }                                                                          \
+    return 0;                                                                  \
+}
 
-#define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                    \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        return settings_parse_screen_list(                                     \
-            &config->NAME, &config->PREVIOUS_FIELD, value, value_len,          \
-            ncm_error);                                                        \
-    }
-
-#define XX_NAMED_BOOL(NAME, DEFAULT, TRUE_VALUE, FALSE_VALUE)            \
-    static int32                                                               \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,          \
-                 NcmError *ncm_error) {                                        \
-        return settings_parse_named_bool(                                      \
-            value, value_len, &config->NAME, TRUE_VALUE,                       \
-            STRLIT_LEN(TRUE_VALUE), FALSE_VALUE, STRLIT_LEN(FALSE_VALUE),      \
-            ncm_error);                                                        \
-    }
-
-#define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE)       \
-    static int32                                                         \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,    \
-                 NcmError *ncm_error) {                                  \
-        int32 status;                                                    \
-        status = PARSER(value, value_len, &config->NAME);                \
-        if (status < 0) {                                                \
-            return settings_invalid_value(ncm_error, value, value_len);  \
-        }                                                                \
-        return 0;                                                        \
-    }
-
-#define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD)                    \
-    static int32                                                         \
-    apply_##NAME(Configuration *config, char *value, int32 value_len,    \
-                 NcmError *ncm_error) {                                  \
-        return settings_parse_columns(&config->NAME,                     \
-                                      &config->FORMAT_FIELD,             \
-                                      value, value_len, ncm_error);      \
-    }
+#define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD)                                \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    return settings_parse_columns(&config->NAME,                               \
+                                  &config->FORMAT_FIELD,                       \
+                                  value, value_len, ncm_error);                \
+}
 
 #include "config_options_pass.h"
 
