@@ -1817,13 +1817,9 @@ visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
                           + screen->point_char_offset;
         int32 character_len = screen->point_char_len;
         int32 width = nc_window_width(&screen->window);
-        int32 half_width;
-        int32 ellipse_half_height;
-        double angle_multiplier;
-
-        half_width = width / 2;
-        ellipse_half_height = height / 2;
-        angle_multiplier = 2.0*PI/(double)samples_len;
+        int32 half_width = width / 2;
+        int32 ellipse_half_height = height / 2;
+        double angle_multiplier = 2.0*PI/(double)samples_len;
 
         for (int32 i = 0; i < samples_len; i += 1) {
             double angle = (double)i*angle_multiplier;
