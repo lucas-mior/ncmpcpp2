@@ -5,8 +5,6 @@
 
 #include "c/ncm_c.h"
 
-#include <mpd/version.h>
-
 #define NCM_LIBMPDCLIENT_CHECK_VERSION(major, minor, patch) \
     ((LIBMPDCLIENT_MAJOR_VERSION > (major)) \
      || ((LIBMPDCLIENT_MAJOR_VERSION == (major)) \

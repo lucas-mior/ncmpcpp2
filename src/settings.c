@@ -3,8 +3,6 @@
 
 #include "cbase.h"
 
-#include <mpd/tag.h>
-
 #include "c/ncm_c.h"
 #include "configura.h"
 #include "settings.h"

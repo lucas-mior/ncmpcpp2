@@ -4,9 +4,8 @@
 #include "cbase.h"
 
 #include "configura.h"
+#include "ncmpcpp2_mpd.h"
 
-#include <mpd/client.h>
-#include <mpd/tag.h>
 #include <regex.h>
 
 typedef struct StringView {
@@ -50,8 +49,6 @@ int32 ncm_error_ok(NcmError *);
 void stupid_string_free(char **, int32 *len);
 void stupid_string_set(char **, int32 *dest_len, char *, int32);
 
-#include <mpd/tag.h>
-
 struct mpd_song;
 
 #define ENUM_NAME TagsField
@@ -86,8 +83,6 @@ void ncm_tags_set_attribute(struct mpd_song *, char *name, char *value);
 int32 ncm_tags_read_song(struct mpd_song *);
 int32 ncm_tags_write(char *music_dir, char *uri, bool, char *directory,
                      char *new_name, NcmTagsGetFieldCallback *, void *);
-
-#include <mpd/tag.h>
 
 #define ENUM_NAME NcmItemType
 #define ENUM_PREFIX_ NCM_ITEM_
@@ -133,8 +128,6 @@ enum TagsField ncm_tags_field_from_tag_type(enum mpd_tag_type);
 enum mpd_tag_type ncm_tags_field_to_tag_type(enum TagsField);
 enum SongGetter ncm_tags_field_to_song_getter(enum TagsField);
 enum TagsField ncm_song_getter_to_tags_field(enum SongGetter);
-
-#include <mpd/tag.h>
 
 struct mpd_song;
 
@@ -744,8 +737,6 @@ int32 ncm_regex_compile(NcmRegex *, char *, int32, uint32, NcmError *);
 bool ncm_regex_matches(NcmRegex *, char *, int32);
 int32 ncm_regex_for_each_match(NcmRegex *, char *, int32,
                                NcmRegexMatchCallback *, void *);
-
-#include <mpd/client.h>
 
 typedef struct MpdConnection {
     struct mpd_connection *mpd;
