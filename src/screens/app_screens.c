@@ -111,20 +111,20 @@ app_request_registered_resize(enum NcScreenType type) {
     return;
 }
 
-#define NCM_APP_SCREEN_DECLARE_STORAGE(type, name)                             \
+#define APP_SCREEN_DECLARE_STORAGE(type, name)                             \
     static type name;
 
-NCM_APP_SCREEN_DIRECT_STORAGE_TYPES(NCM_APP_SCREEN_DECLARE_STORAGE)
-NCM_APP_SCREEN_WRAPPED_STORAGE_TYPES(NCM_APP_SCREEN_DECLARE_STORAGE)
+APP_SCREEN_DIRECT_STORAGE_TYPES(APP_SCREEN_DECLARE_STORAGE)
+APP_SCREEN_WRAPPED_STORAGE_TYPES(APP_SCREEN_DECLARE_STORAGE)
 
-#undef NCM_APP_SCREEN_DECLARE_STORAGE
+#undef APP_SCREEN_DECLARE_STORAGE
 
-#define NCM_APP_SCREEN_DECLARE_INIT_FLAG(name)                                 \
+#define APP_SCREEN_DECLARE_INIT_FLAG(name)                                 \
     static bool name;
 
-NCM_APP_SCREEN_INIT_FLAGS(NCM_APP_SCREEN_DECLARE_INIT_FLAG)
+APP_SCREEN_INIT_FLAGS(APP_SCREEN_DECLARE_INIT_FLAG)
 
-#undef NCM_APP_SCREEN_DECLARE_INIT_FLAG
+#undef APP_SCREEN_DECLARE_INIT_FLAG
 
 #define ENUM_NAME PromptResult
 #define ENUM_PREFIX_ PROMPT_RESULT_
@@ -135,7 +135,7 @@ NCM_APP_SCREEN_INIT_FLAGS(NCM_APP_SCREEN_DECLARE_INIT_FLAG)
     XX(PROMPT_RESULT_ACCEPTED)
 #include "cbase/xenums.c"
 
-#define NCM_APP_SCREEN_DIRECT_ACCESSOR(suffix, type, storage, base_expr) \
+#define APP_SCREEN_DIRECT_ACCESSOR(suffix, type, storage, base_expr) \
     type *                                                               \
     app_screen_##suffix(void) {                                          \
         app_screen_##suffix##_init();                                    \
@@ -192,45 +192,45 @@ no_border(void) {
     return border;
 }
 
-NCM_APP_SCREEN_DIRECT_ACCESSOR_TYPES(NCM_APP_SCREEN_DIRECT_ACCESSOR)
+APP_SCREEN_DIRECT_ACCESSOR_TYPES(APP_SCREEN_DIRECT_ACCESSOR)
 
-#undef NCM_APP_SCREEN_DIRECT_ACCESSOR
+#undef APP_SCREEN_DIRECT_ACCESSOR
 
-#define NCM_APP_SCREEN_DEFINE_WRAPPED_ACCESSOR(suffix, base_expr)           \
+#define APP_SCREEN_DEFINE_WRAPPED_ACCESSOR(suffix, base_expr)           \
     NcScreen *                                                              \
     app_screen_##suffix##_base(void) {                                      \
         app_screen_##suffix##_init();                                       \
         return base_expr;                                                   \
     }
 
-NCM_APP_SCREEN_WRAPPED_ACCESSOR_TYPES(NCM_APP_SCREEN_DEFINE_WRAPPED_ACCESSOR)
+APP_SCREEN_WRAPPED_ACCESSOR_TYPES(APP_SCREEN_DEFINE_WRAPPED_ACCESSOR)
 
-#undef NCM_APP_SCREEN_DEFINE_WRAPPED_ACCESSOR
+#undef APP_SCREEN_DEFINE_WRAPPED_ACCESSOR
 
-#define NCM_APP_SCREEN_TYPED_WRAPPED_ACCESSOR(suffix, function, type, expr) \
+#define APP_SCREEN_TYPED_WRAPPED_ACCESSOR(suffix, function, type, expr) \
     type *                                                                  \
     function(void) {                                                        \
         app_screen_##suffix##_init();                                       \
         return expr;                                                        \
     }
 
-NCM_APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(
-    NCM_APP_SCREEN_TYPED_WRAPPED_ACCESSOR)
+APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(
+    APP_SCREEN_TYPED_WRAPPED_ACCESSOR)
 
-#undef NCM_APP_SCREEN_TYPED_WRAPPED_ACCESSOR
+#undef APP_SCREEN_TYPED_WRAPPED_ACCESSOR
 
-#define NCM_APP_SCREEN_DEFINE_STANDARD_REGISTER(suffix)                        \
+#define APP_SCREEN_DEFINE_STANDARD_REGISTER(suffix)                        \
     void                                                                       \
     app_screen_##suffix##_register(void) {                                     \
         app_screen_register_once(app_screen_##suffix##_base());                \
         return;                                                                \
     }
 
-NCM_APP_SCREEN_STANDARD_REGISTER_TYPES(NCM_APP_SCREEN_DEFINE_STANDARD_REGISTER)
+APP_SCREEN_STANDARD_REGISTER_TYPES(APP_SCREEN_DEFINE_STANDARD_REGISTER)
 
-#undef NCM_APP_SCREEN_DEFINE_STANDARD_REGISTER
+#undef APP_SCREEN_DEFINE_STANDARD_REGISTER
 
-#define NCM_APP_SCREEN_DEFINE_REPLACE_REGISTER(suffix, type)                   \
+#define APP_SCREEN_DEFINE_REPLACE_REGISTER(suffix, type)                   \
     void                                                                       \
     app_screen_##suffix##_register(void) {                                     \
         app_screen_register_replacing(                                         \
@@ -238,22 +238,22 @@ NCM_APP_SCREEN_STANDARD_REGISTER_TYPES(NCM_APP_SCREEN_DEFINE_STANDARD_REGISTER)
         return;                                                                \
     }
 
-NCM_APP_SCREEN_REPLACE_REGISTER_TYPES(NCM_APP_SCREEN_DEFINE_REPLACE_REGISTER)
+APP_SCREEN_REPLACE_REGISTER_TYPES(APP_SCREEN_DEFINE_REPLACE_REGISTER)
 
-#undef NCM_APP_SCREEN_DEFINE_REPLACE_REGISTER
+#undef APP_SCREEN_DEFINE_REPLACE_REGISTER
 
-#define NCM_APP_SCREEN_DEFINE_SIMPLE_SWITCH(suffix)                            \
+#define APP_SCREEN_DEFINE_SIMPLE_SWITCH(suffix)                            \
     void                                                                       \
     app_screen_##suffix##_switch_to(void) {                                    \
         app_screen_switch_to(app_screen_##suffix##_base());                    \
         return;                                                                \
     }
 
-NCM_APP_SCREEN_SIMPLE_SWITCH_TYPES(NCM_APP_SCREEN_DEFINE_SIMPLE_SWITCH)
+APP_SCREEN_SIMPLE_SWITCH_TYPES(APP_SCREEN_DEFINE_SIMPLE_SWITCH)
 
-#undef NCM_APP_SCREEN_DEFINE_SIMPLE_SWITCH
+#undef APP_SCREEN_DEFINE_SIMPLE_SWITCH
 
-#define NCM_APP_SCREEN_DEFINE_REGISTER_SWITCH(suffix)                          \
+#define APP_SCREEN_DEFINE_REGISTER_SWITCH(suffix)                          \
     void                                                                       \
     app_screen_##suffix##_switch_to(void) {                                    \
         app_screen_##suffix##_register();                                      \
@@ -261,19 +261,19 @@ NCM_APP_SCREEN_SIMPLE_SWITCH_TYPES(NCM_APP_SCREEN_DEFINE_SIMPLE_SWITCH)
         return;                                                                \
     }
 
-NCM_APP_SCREEN_REGISTER_SWITCH_TYPES(NCM_APP_SCREEN_DEFINE_REGISTER_SWITCH)
+APP_SCREEN_REGISTER_SWITCH_TYPES(APP_SCREEN_DEFINE_REGISTER_SWITCH)
 
-#undef NCM_APP_SCREEN_DEFINE_REGISTER_SWITCH
+#undef APP_SCREEN_DEFINE_REGISTER_SWITCH
 
-#define NCM_APP_SCREEN_DEFINE_IS_CURRENT(suffix)                               \
+#define APP_SCREEN_DEFINE_IS_CURRENT(suffix)                               \
     bool                                                                       \
     app_screen_##suffix##_is_current(void) {                                   \
         return app_screen_is_current(app_screen_##suffix##_base());            \
     }
 
-NCM_APP_SCREEN_IS_CURRENT_TYPES(NCM_APP_SCREEN_DEFINE_IS_CURRENT)
+APP_SCREEN_IS_CURRENT_TYPES(APP_SCREEN_DEFINE_IS_CURRENT)
 
-#undef NCM_APP_SCREEN_DEFINE_IS_CURRENT
+#undef APP_SCREEN_DEFINE_IS_CURRENT
 
 void
 app_screen_browser_init(void) {
@@ -962,34 +962,34 @@ app_screen_outputs_base(void) {
 
 void
 app_screens_init_all(void) {
-    #define NCM_APP_SCREEN_INIT_SCREEN(suffix)                                 \
+    #define APP_SCREEN_INIT_SCREEN(suffix)                                 \
         app_screen_##suffix##_init();
 
-    NCM_APP_SCREEN_INIT_ALL_TYPES(NCM_APP_SCREEN_INIT_SCREEN)
+    APP_SCREEN_INIT_ALL_TYPES(APP_SCREEN_INIT_SCREEN)
 
-    #undef NCM_APP_SCREEN_INIT_SCREEN
+    #undef APP_SCREEN_INIT_SCREEN
     return;
 }
 
 void
 app_screens_register_initial(void) {
-    #define NCM_APP_SCREEN_REGISTER_SCREEN(suffix)                             \
+    #define APP_SCREEN_REGISTER_SCREEN(suffix)                             \
         app_screen_##suffix##_register();
 
-    NCM_APP_SCREEN_REGISTER_INITIAL_TYPES(NCM_APP_SCREEN_REGISTER_SCREEN)
+    APP_SCREEN_REGISTER_INITIAL_TYPES(APP_SCREEN_REGISTER_SCREEN)
 
-    #undef NCM_APP_SCREEN_REGISTER_SCREEN
+    #undef APP_SCREEN_REGISTER_SCREEN
     return;
 }
 
 void
 app_screens_request_registered_resize(void) {
-    #define NCM_APP_SCREEN_REQUEST_RESIZE(suffix, type)                        \
+    #define APP_SCREEN_REQUEST_RESIZE(suffix, type)                        \
         app_request_registered_resize(type);
 
-    NCM_APP_SCREEN_RESIZE_REQUEST_TYPES(NCM_APP_SCREEN_REQUEST_RESIZE)
+    APP_SCREEN_RESIZE_REQUEST_TYPES(APP_SCREEN_REQUEST_RESIZE)
 
-    #undef NCM_APP_SCREEN_REQUEST_RESIZE
+    #undef APP_SCREEN_REQUEST_RESIZE
     return;
 }
 
