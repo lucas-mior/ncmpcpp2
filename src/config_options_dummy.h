@@ -1,0 +1,26 @@
+#define XX(A, B, ...) char *A = B;
+#define XX_DIR                   XX
+#define XX_COLUMNS               XX
+#define XX_UINT32_CHOICE         XX
+#define XX_NAMED_BOOL            XX
+#define XX_SCREEN_LIST           XX
+#define XX_LYRICS_FETCHERS       XX
+#define XX_FORMATTED_COLOR_LIST  XX
+#define XX_RATIO                 XX
+#define XX_LOOK                  XX
+#define XX_BUFFER_WIDTH          XX
+#define XX_BUFFER                XX
+#define XX_FORMAT                XX
+#define XX_BORDER                XX
+#define XX_FORMATTED_COLOR       XX
+#define XX_COLOR                 XX
+#define XX_OPT_STARTUP_SCREEN    XX
+#define XX_STARTUP_SCREEN        XX
+#define XX_MPD_TAG               XX
+#define XX_ENUM                  XX
+#define XX_DOUBLE                XX
+#define XX_INTEGER               XX
+#define XX_PATH                  XX
+#define XX_STRING                XX
+#define XX_BOOL                  XX
+#define XX_OPTION                XX
