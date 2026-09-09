@@ -359,8 +359,8 @@ action_runtime_playlist_remove_song(NcmSong *song, NcmError *ncm_error) {
 }
 
 static int32
-action_runtime_mpd_simple(
-    int32 (*func)(MpdClient *client, NcmError *ncm_error)) {
+action_runtime_mpd_simple(int32 (*func)(MpdClient *client,
+                                        NcmError *ncm_error)) {
     NcmError ncm_error;
 
     ncm_error_clear(&ncm_error);
