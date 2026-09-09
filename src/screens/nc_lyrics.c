@@ -784,14 +784,14 @@ lyrics_append_fetching(NcBuffer *buffer, LyricsFetcherDef *fetcher) {
     name = ncm_lyrics_fetcher_name(fetcher);
     name_len = ncm_lyrics_fetcher_name_len(fetcher);
 
-    nc_buffer_append_cstring(buffer, "Fetching lyrics from ");
+    nc_buffer_append_data(buffer, STRLIT("Fetching lyrics from "));
     fetcher_position = buffer->len;
     nc_buffer_add_format(buffer, fetcher_position, NC_FORMAT_BOLD,
                          LYRICS_FETCH_PROPERTY_ID);
     nc_buffer_append_data(buffer, name, name_len);
     nc_buffer_add_format(buffer, buffer->len, NC_FORMAT_NO_BOLD,
                          LYRICS_FETCH_PROPERTY_ID);
-    nc_buffer_append_cstring(buffer, "... ");
+    nc_buffer_append_data(buffer, STRLIT("... "));
 
     return;
 }
@@ -954,8 +954,8 @@ lyrics_job_complete(int32 status, NcmError *ncm_error, void *user) {
             lyrics_screen_clear_lyrics_state(screen, LYRICS_MODE_FETCH_LOG);
             nc_buffer_destroy(&screen->display);
             nc_buffer_copy(&screen->display, &job->log);
-            nc_buffer_append_cstring(&screen->display,
-                                     "\nLyrics were not found.\n");
+            nc_buffer_append_data(&screen->display,
+                                  STRLIT("\nLyrics were not found.\n"));
         }
         nc_lyrics_screen_request_refresh(&screen->screen);
     } else {

@@ -312,7 +312,6 @@ char *nc_buffer_data(NcBuffer *);
 NcBufferProperty *nc_buffer_properties(NcBuffer *);
 
 void nc_buffer_append_data(NcBuffer *, char *, int32);
-void nc_buffer_append_cstring(NcBuffer *, char *);
 void nc_buffer_append_char(NcBuffer *, char);
 void nc_buffer_append_int64(NcBuffer *, int64);
 

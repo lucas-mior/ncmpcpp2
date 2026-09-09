@@ -162,16 +162,6 @@ nc_buffer_append_data(NcBuffer *buffer, char *data, int32 data_len) {
 }
 
 void
-nc_buffer_append_cstring(NcBuffer *buffer, char *string) {
-    if (string == NULL) {
-        return;
-    }
-
-    nc_buffer_append_data(buffer, string, strlen32(string));
-    return;
-}
-
-void
 nc_buffer_append_char(NcBuffer *buffer, char ch) {
     nc_buffer_reserve(buffer, 1);
     buffer->data[buffer->len] = ch;
