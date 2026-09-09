@@ -300,9 +300,8 @@ browser_reload_from_local(BrowserScreen *screen, NcmError *ncm_error) {
             return status;
         }
     } else {
-        NcmStringView current;
+        NcmStringView current = browser_screen_current_directory(screen);
 
-        current = browser_screen_current_directory(screen);
         if (browser_path_is_parent_directory(current.data, current.len)) {
             status = browser_set_normalized_directory(screen, current.data,
                                                       current.len);
