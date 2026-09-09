@@ -1709,8 +1709,8 @@ visualizer_draw_frequency(VisualizerScreen *screen,
 #endif
 
 void
-visualizer_screen_draw(VisualizerScreen *screen, int16 *samples,
-                       int32 samples_len) {
+visualizer_screen_draw(VisualizerScreen *screen,
+                       int16 *samples, int32 samples_len) {
     int32 height;
     int32 half_height;
 
