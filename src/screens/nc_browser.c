@@ -1402,9 +1402,10 @@ browser_screen_current_song(BrowserScreen *screen, NcmSong *song) {
 }
 
 static int32
-browser_collect_local_directory_songs(
-    BrowserScreen *screen, NcmSongArray *songs, char *path,
-    int32 path_len, NcmError *ncm_error) {
+browser_collect_local_directory_songs(BrowserScreen *screen,
+                                      NcmSongArray *songs,
+                                      char *path, int32 path_len,
+                                      NcmError *ncm_error) {
     NcmFsDirectory directory = {0};
     NcmFsEntry entry = {0};
     int32 read_status;
