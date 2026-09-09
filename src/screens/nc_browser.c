@@ -201,9 +201,8 @@ static bool
 browser_supported_extensions_contains(StrBuilderArray *extensions,
                                       char *extension, int32 extension_len) {
     for (int32 i = 0; i < extensions->len; i += 1) {
-        StrBuilder *item;
+        StrBuilder *item = &extensions->items[i];
 
-        item = &extensions->items[i];
         if (STREQUAL(item->data, item->len, extension, extension_len)) {
             return true;
         }
