@@ -214,21 +214,21 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
                 value_len = 0;
             }
 
-#define REQUIRE_LONG_VALUE()                                                   \
+#define REQUIRE_LONG_VALUE(VALUE, VALUE_LEN)                                   \
     do {                                                                       \
-        if (value == NULL) {                                                   \
+        if ((VALUE) == NULL) {                                                 \
             status = configuration_require_value(argc, argv, &i, arg,          \
-                                                 name_len + 2, &value,         \
-                                                 &value_len, ncm_error);       \
+                                                 name_len + 2, &(VALUE),       \
+                                                 &(VALUE_LEN), ncm_error);     \
             if (status < 0) {                                                  \
                 return status;                                                 \
             }                                                                  \
         }                                                                      \
     } while (0)
 
-#define REJECT_LONG_VALUE()                                                    \
+#define REJECT_LONG_VALUE(VALUE)                                               \
     do {                                                                       \
-        if (value != NULL) {                                                   \
+        if ((VALUE) != NULL) {                                                 \
             char message[128];                                                 \
             int32 len;                                                         \
             len = SNPRINTF(message,                                            \
@@ -239,11 +239,11 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
     } while (0)
 
             if (STREQUAL(name, name_len, "host")) {
-                REQUIRE_LONG_VALUE();
+                REQUIRE_LONG_VALUE(value, value_len);
                 configuration_copy_string(&options->host, value, value_len);
                 options->host_provided = true;
             } else if (STREQUAL(name, name_len, "port")) {
-                REQUIRE_LONG_VALUE();
+                REQUIRE_LONG_VALUE(value, value_len);
                 if ((status = configuration_parse_port(value, value_len, arg,
                                                         name_len + 2,
                                                         &options->port,
@@ -263,37 +263,37 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options, int32 argc,
                                               argv[i], strlen32(argv[i]));
                 }
             } else if (STREQUAL(name, name_len, "config")) {
-                REQUIRE_LONG_VALUE();
+                REQUIRE_LONG_VALUE(value, value_len);
                 command_line_options_append_path(&options->config_paths,
                                                  value, value_len);
             } else if (STREQUAL(name, name_len, "ignore-config-errors")) {
-                REJECT_LONG_VALUE();
+                REJECT_LONG_VALUE(value);
                 options->ignore_config_errors = true;
             } else if (STREQUAL(name, name_len, "test-lyrics-fetchers")) {
-                REJECT_LONG_VALUE();
+                REJECT_LONG_VALUE(value);
                 options->test_lyrics_fetchers = true;
             } else if (STREQUAL(name, name_len, "bindings")) {
-                REQUIRE_LONG_VALUE();
+                REQUIRE_LONG_VALUE(value, value_len);
                 command_line_options_append_path(&options->bindings_paths,
                                                  value, value_len);
             } else if (STREQUAL(name, name_len, "screen")) {
-                REQUIRE_LONG_VALUE();
+                REQUIRE_LONG_VALUE(value, value_len);
                 options->screen = true;
                 configuration_copy_string(&options->screen_name,
                                           value, value_len);
             } else if (STREQUAL(name, name_len, "slave-screen")) {
-                REQUIRE_LONG_VALUE();
+                REQUIRE_LONG_VALUE(value, value_len);
                 options->slave_screen = true;
                 configuration_copy_string(&options->slave_screen_name,
                                           value, value_len);
             } else if (STREQUAL(name, name_len, "help")) {
-                REJECT_LONG_VALUE();
+                REJECT_LONG_VALUE(value);
                 options->help = true;
             } else if (STREQUAL(name, name_len, "version")) {
-                REJECT_LONG_VALUE();
+                REJECT_LONG_VALUE(value);
                 options->version = true;
             } else if (STREQUAL(name, name_len, "quiet")) {
-                REJECT_LONG_VALUE();
+                REJECT_LONG_VALUE(value);
                 options->quiet = true;
             } else {
                 char message[128];
