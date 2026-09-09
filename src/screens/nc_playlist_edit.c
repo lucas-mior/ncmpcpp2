@@ -136,13 +136,10 @@ playlist_edit_separator_width(int32 width) {
 
 static void
 playlist_edit_refresh_callback(NcScreen *screen) {
-    PlaylistEditScreen *editor;
-    NcMenu *playlists;
-    NcMenu *content;
+    PlaylistEditScreen *editor = playlist_edit_from_screen(screen);
+    NcMenu *playlists = nc_playlist_entry_menu_base(&editor->playlists);
+    NcMenu *content = nc_song_menu_base(&editor->content);
 
-    editor = playlist_edit_from_screen(screen);
-    playlists = nc_playlist_entry_menu_base(&editor->playlists);
-    content = nc_song_menu_base(&editor->content);
     playlist_edit_update_titles(editor, true);
     playlist_edit_update_menu_highlights(editor);
     playlist_edit_refresh_window(&editor->playlists_window, playlists);
@@ -150,6 +147,7 @@ playlist_edit_refresh_callback(NcScreen *screen) {
         nc_screen_draw_vertical_separator(editor->right_start_x - 1);
     }
     playlist_edit_refresh_window(&editor->content_window, content);
+
     return;
 }
 
