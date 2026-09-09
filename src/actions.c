@@ -173,14 +173,14 @@ ACTION_TABLE_DEFS(XX)
         ncm_action_can_run_##SUFFIX,        \
         ncm_action_run_##SUFFIX,            \
     },
-static NcmActionDef action_defs[] = {
+static ActionDef action_defs[] = {
     ACTION_TABLE_DEFS(XX)
 };
 #undef XX
 
-NcmActionDef *
-ncm_action_table_get(NcmActionDef *defs, int32 defs_len,
-                     enum NcmActionType type) {
+ActionDef *
+ncm_action_table_get(ActionDef *defs, int32 defs_len,
+                     enum ActionType type) {
     if (defs == NULL) {
         return NULL;
     }
@@ -193,8 +193,8 @@ ncm_action_table_get(NcmActionDef *defs, int32 defs_len,
     return NULL;
 }
 
-NcmActionDef *
-ncm_action_table_find(NcmActionDef *defs, int32 defs_len,
+ActionDef *
+ncm_action_table_find(ActionDef *defs, int32 defs_len,
                       char *name, int32 name_len) {
     if ((defs == NULL) || (name == NULL) || (name_len <= 0)) {
         return NULL;
@@ -210,20 +210,20 @@ ncm_action_table_find(NcmActionDef *defs, int32 defs_len,
     return NULL;
 }
 
-NcmActionDef *
-ncm_action_get(enum NcmActionType type) {
+ActionDef *
+ncm_action_get(enum ActionType type) {
     return ncm_action_table_get(action_defs, LENGTH(action_defs), type);
 }
 
-NcmActionDef *
+ActionDef *
 ncm_action_find(char *name, int32 name_len) {
     return ncm_action_table_find(action_defs, LENGTH(action_defs),
                                  name, name_len);
 }
 
 int32
-ncm_action_type_parse(char *name, int32 name_len, enum NcmActionType *type) {
-    NcmActionDef *action;
+ncm_action_type_parse(char *name, int32 name_len, enum ActionType *type) {
+    ActionDef *action;
 
     if ((name == NULL) || (name_len < 0) || (type == NULL)) {
         return -EINVAL;
@@ -237,7 +237,7 @@ ncm_action_type_parse(char *name, int32 name_len, enum NcmActionType *type) {
 }
 
 bool
-ncm_action_def_can_run(NcmActionDef *action, void *user) {
+ncm_action_def_can_run(ActionDef *action, void *user) {
     if ((action == NULL) || (action->can_run == NULL)) {
         return false;
     }
@@ -245,7 +245,7 @@ ncm_action_def_can_run(NcmActionDef *action, void *user) {
 }
 
 int32
-ncm_action_def_run(NcmActionDef *action, void *user) {
+ncm_action_def_run(ActionDef *action, void *user) {
     if ((action == NULL) || (action->run == NULL)) {
         return -EINVAL;
     }
@@ -256,11 +256,11 @@ ncm_action_def_run(NcmActionDef *action, void *user) {
 }
 
 bool
-ncm_action_can_run(enum NcmActionType type, void *user) {
+ncm_action_can_run(enum ActionType type, void *user) {
     return ncm_action_def_can_run(ncm_action_get(type), user);
 }
 
-static NcmActionRuntime action_global_runtime;
+static ActionRuntime action_global_runtime;
 static bool action_global_runtime_initialized;
 
 typedef struct ActionRuntimeCommandPrompt {
@@ -269,8 +269,8 @@ typedef struct ActionRuntimeCommandPrompt {
 
 typedef SearchPromptState ActionRuntimeSearchPrompt;
 
-static NcmActionRuntime *
-action_runtime_or_global(NcmActionRuntime *runtime) {
+static ActionRuntime *
+action_runtime_or_global(ActionRuntime *runtime) {
     if (runtime) {
         return runtime;
     }
@@ -278,7 +278,7 @@ action_runtime_or_global(NcmActionRuntime *runtime) {
 }
 
 static int32
-action_runtime_call_hook(NcmActionRuntimeHook hook, enum NcmActionType type,
+action_runtime_call_hook(ActionRuntimeHook hook, enum ActionType type,
                          void *user) {
     if (hook == NULL) {
         return ACTION_RUNTIME_DEFER;
@@ -5482,8 +5482,8 @@ action_runtime_mouse_event(void) {
 }
 
 static bool
-action_runtime_builtin_can_run(NcmActionRuntime *runtime,
-                               enum NcmActionType type) {
+action_runtime_builtin_can_run(ActionRuntime *runtime,
+                               enum ActionType type) {
     (void)runtime;
 
     switch (type) {
@@ -5986,7 +5986,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
 }
 
 static int32
-action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
+action_runtime_builtin_run(ActionRuntime *runtime, enum ActionType type) {
     switch (type) {
     case ACTION_DUMMY:
         return 0;
@@ -6398,30 +6398,30 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
     }
 }
 
-NcmActionRuntime *
+ActionRuntime *
 ncm_action_runtime_global(void) {
     if (!action_global_runtime_initialized) {
-        action_global_runtime = (NcmActionRuntime){0};
+        action_global_runtime = (ActionRuntime){0};
         action_global_runtime_initialized = true;
     }
     return &action_global_runtime;
 }
 
 bool
-ncm_action_runtime_exit_requested(NcmActionRuntime *runtime) {
+ncm_action_runtime_exit_requested(ActionRuntime *runtime) {
     runtime = action_runtime_or_global(runtime);
     return runtime->exit_requested;
 }
 
 void
-ncm_action_runtime_request_exit(NcmActionRuntime *runtime) {
+ncm_action_runtime_request_exit(ActionRuntime *runtime) {
     runtime = action_runtime_or_global(runtime);
     runtime->exit_requested = true;
     return;
 }
 
 bool
-ncm_action_runtime_can_run(NcmActionRuntime *runtime, enum NcmActionType type) {
+ncm_action_runtime_can_run(ActionRuntime *runtime, enum ActionType type) {
     int32 hook_result;
     bool handled;
 
@@ -6439,7 +6439,7 @@ ncm_action_runtime_can_run(NcmActionRuntime *runtime, enum NcmActionType type) {
 }
 
 int32
-ncm_action_runtime_run(NcmActionRuntime *runtime, enum NcmActionType type) {
+ncm_action_runtime_run(ActionRuntime *runtime, enum ActionType type) {
     int32 hook_result;
     bool handled;
 

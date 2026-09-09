@@ -25,7 +25,7 @@ typedef struct NcmBindingAction {
     int32 argument_cap;
     int32 keys_len;
 
-    enum NcmActionType type;
+    enum ActionType type;
     enum NcmBindingActionKind kind;
     enum ScreenType screen_type;
 } NcmBindingAction;
@@ -57,8 +57,8 @@ typedef struct NcmBindingSlice {
 } NcmBindingSlice;
 
 typedef int32 (NcmBindingActionRunner)(NcmBindingAction *action, void *user);
-typedef bool (NcmBindingCanRunActionFn)(enum NcmActionType type, void *user);
-typedef int32 (NcmBindingRunActionFn)(enum NcmActionType type, void *user);
+typedef bool (NcmBindingCanRunActionFn)(enum ActionType type, void *user);
+typedef int32 (NcmBindingRunActionFn)(enum ActionType type, void *user);
 typedef bool (NcmBindingCurrentScreenIsFn)(enum ScreenType, void *user);
 typedef void (NcmBindingPushKeyFn)(NcKey key, void *user);
 typedef int32 (NcmBindingRunExternalCommandFn)(char *, int32, void *user);
@@ -92,8 +92,8 @@ void ncm_binding_clear(NcmBinding *);
 void ncm_binding_append_action(NcmBinding *, NcmBindingAction *);
 void ncm_binding_copy(NcmBinding *dest, NcmBinding *source);
 bool ncm_binding_action_can_run(NcmBindingAction *, NcmBindingRuntime *);
-bool ncm_binding_runtime_can_run_action(enum NcmActionType, void *);
-int32 ncm_binding_runtime_run_action(enum NcmActionType, void *);
+bool ncm_binding_runtime_can_run_action(enum ActionType, void *);
+int32 ncm_binding_runtime_run_action(enum ActionType, void *);
 bool ncm_binding_runtime_current_screen_is(enum ScreenType, void *);
 void ncm_binding_runtime_push_key(NcKey, void *);
 int32 ncm_binding_runtime_run_external_command(char *, int32, void *);
@@ -101,7 +101,7 @@ int32 ncm_binding_runtime_run_external_console_command(char *, int32, void *);
 NcmBindingRuntime *ncm_binding_default_runtime(void);
 bool ncm_binding_can_execute_default(NcmBinding *);
 int32 ncm_binding_execute_default(NcmBinding *);
-bool ncm_binding_is_single_action_type(NcmBinding *, enum NcmActionType);
+bool ncm_binding_is_single_action_type(NcmBinding *, enum ActionType);
 
 void ncm_command_destroy(NcmCommand *);
 

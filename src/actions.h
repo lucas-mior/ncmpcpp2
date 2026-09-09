@@ -5,7 +5,7 @@
 
 #include "c/ncm_c.h"
 
-enum NcmActionType {
+enum ActionType {
     ACTION_MACRO_UTILITY = -1,
     ACTION_DUMMY,
     ACTION_UPDATE_ENVIRONMENT,
@@ -137,27 +137,27 @@ enum NcmActionType {
     ACTION_LAST,
 };
 
-typedef bool (NcmActionCanRunFn)(void *user);
-typedef int32 (NcmActionRunFn)(void *user);
+typedef bool (ActionCanRunFn)(void *user);
+typedef int32 (ActionRunFn)(void *user);
 
 #define ACTION_RUNTIME_DEFER 0
 #define ACTION_RUNTIME_ALLOW 1
 #define ACTION_RUNTIME_DENY -1
 
-typedef int32 (NcmActionRuntimeHook)(enum NcmActionType type, void *user);
+typedef int32 (ActionRuntimeHook)(enum ActionType type, void *user);
 
-typedef struct NcmActionRuntime {
-    NcmActionRuntimeHook *can_run_hook;
-    NcmActionRuntimeHook *run_hook;
+typedef struct ActionRuntime {
+    ActionRuntimeHook *can_run_hook;
+    ActionRuntimeHook *run_hook;
     void *user;
     bool exit_requested;
-} NcmActionRuntime;
+} ActionRuntime;
 
-NcmActionRuntime *ncm_action_runtime_global(void);
-bool ncm_action_runtime_exit_requested(NcmActionRuntime *);
-void ncm_action_runtime_request_exit(NcmActionRuntime *);
-bool ncm_action_runtime_can_run(NcmActionRuntime *, enum NcmActionType);
-int32 ncm_action_runtime_run(NcmActionRuntime *, enum NcmActionType);
+ActionRuntime *ncm_action_runtime_global(void);
+bool ncm_action_runtime_exit_requested(ActionRuntime *);
+void ncm_action_runtime_request_exit(ActionRuntime *);
+bool ncm_action_runtime_can_run(ActionRuntime *, enum ActionType);
+int32 ncm_action_runtime_run(ActionRuntime *, enum ActionType);
 int32 ncm_action_edit_song(NcmSong *);
 int32 ncm_action_show_visualizer(void);
 int32 ncm_action_toggle_visualization_type(void);
@@ -165,24 +165,24 @@ int32 ncm_action_add_song_to_playlist_with_mode(NcmSong *, bool, int32,
                                                 enum SpaceAddMode);
 int32 ncm_action_add_song_to_playlist(NcmSong *, bool, int32);
 
-typedef struct NcmActionDef {
+typedef struct ActionDef {
     char *name;
     int32 name_len;
 
-    enum NcmActionType type;
-    NcmActionCanRunFn *can_run;
-    NcmActionRunFn *run;
-} NcmActionDef;
+    enum ActionType type;
+    ActionCanRunFn *can_run;
+    ActionRunFn *run;
+} ActionDef;
 
-NcmActionDef *ncm_action_table_get(NcmActionDef *, int32, enum NcmActionType);
-NcmActionDef *ncm_action_table_find(NcmActionDef *, int32 defs_len, char *,
+ActionDef *ncm_action_table_get(ActionDef *, int32, enum ActionType);
+ActionDef *ncm_action_table_find(ActionDef *, int32 defs_len, char *,
                                     int32 name_len);
-NcmActionDef *ncm_action_get(enum NcmActionType);
-NcmActionDef *ncm_action_find(char *, int32);
-int32 ncm_action_type_parse(char *, int32, enum NcmActionType *);
-bool ncm_action_def_can_run(NcmActionDef *, void *);
-int32 ncm_action_def_run(NcmActionDef *, void *);
-bool ncm_action_can_run(enum NcmActionType, void *);
+ActionDef *ncm_action_get(enum ActionType);
+ActionDef *ncm_action_find(char *, int32);
+int32 ncm_action_type_parse(char *, int32, enum ActionType *);
+bool ncm_action_def_can_run(ActionDef *, void *);
+int32 ncm_action_def_run(ActionDef *, void *);
+bool ncm_action_can_run(enum ActionType, void *);
 bool ncm_action_immediate_command_prompt_should_stop(StrBuilder *, char *,
                                                      int32);
 
