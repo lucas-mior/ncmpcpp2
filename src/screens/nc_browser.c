@@ -733,9 +733,7 @@ static void
 browser_install_menu_callbacks(BrowserScreen *screen) {
     NcMenuDisplayCallbacks display_callbacks = {0};
     NcMenuActionCallbacks action_callbacks = {0};
-    NcMenu *menu;
-
-    menu = browser_screen_menu(screen);
+    NcMenu *menu = browser_screen_menu(screen);
 
     display_callbacks.draw = browser_draw_item;
     display_callbacks.matches_filter = browser_item_matches_filter;
