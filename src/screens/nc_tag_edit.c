@@ -613,8 +613,9 @@ static void
 tag_edit_history_path(StrBuilder *path) {
     ASSERT(path != NULL);
     if (Config.ncmpcpp_directory && (Config.ncmpcpp_directory_len > 0)) {
-        ncm_fs_join(path, Config.ncmpcpp_directory,
-                    Config.ncmpcpp_directory_len, STRLIT("patterns.list"));
+        ncm_fs_join(path,
+                    Config.ncmpcpp_directory, Config.ncmpcpp_directory_len,
+                    STRLIT("patterns.list"));
         return;
     }
     sb_set(path, STRLIT("patterns.list"));
@@ -755,9 +756,10 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
                 SB_APPEND(&screen->parser_preview, song->name, song->name_len);
                 SB_APPEND(&screen->parser_preview, ":\n");
             }
-            status = tag_edit_parse_filename(song, screen->pattern.data,
-                                             screen->pattern.len, !apply,
-                                             &screen->parser_preview);
+            status = tag_edit_parse_filename(song,
+                                             screen->pattern.data,
+                                             screen->pattern.len,
+                                             !apply, &screen->parser_preview);
             if ((status < 0) && !apply) {
                 SB_APPEND(&screen->parser_preview,
                           "Error while parsing filename!\n");
