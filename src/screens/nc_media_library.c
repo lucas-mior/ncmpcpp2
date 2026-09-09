@@ -248,6 +248,7 @@ typedef struct MediaLibrarySearchContext {
     MediaLibraryScreen *screen;
     NcmRegex *regex;
 } MediaLibrarySearchContext;
+
 static MediaLibraryScreen *
 library_from_screen(NcScreen *screen) {
     return nc_screen_user(screen);
