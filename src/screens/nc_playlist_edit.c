@@ -1560,7 +1560,6 @@ append_content_item(PlaylistEditScreen *screen, int32 pos,
 int32
 playlist_edit_screen_selected_songs(
     PlaylistEditScreen *screen, NcmSongArray *songs) {
-    NcMenu *menu;
     int32 status;
 
     if (songs) {
@@ -1570,7 +1569,7 @@ playlist_edit_screen_selected_songs(
         return -EINVAL;
     }
     if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
-        menu = nc_song_menu_base(&screen->content);
+        NcMenu *menu = nc_song_menu_base(&screen->content);
         if (!nc_menu_has_selected(menu)) {
             return append_content_item(screen, nc_menu_highlight(menu), songs);
         }
@@ -1583,7 +1582,7 @@ playlist_edit_screen_selected_songs(
         return 0;
     }
     if (playlist_edit_screen_selected_playlist_count(screen) > 0) {
-        menu = nc_playlist_entry_menu_base(&screen->playlists);
+        NcMenu *menu = nc_playlist_entry_menu_base(&screen->playlists);
         for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
             NcmMpdSongList list = {0};
             NcmError ncm_error = {0};
@@ -1617,9 +1616,12 @@ playlist_edit_screen_selected_songs(
         return 0;
     }
 
-    menu = nc_song_menu_base(&screen->content);
-    for (int32 i = 0; i < nc_menu_all_item_count(menu); i += 1) {
-        append_content_item_from_source(screen, NC_MENU_ITEMS_ALL, i, songs);
+    {
+        NcMenu *menu = nc_song_menu_base(&screen->content);
+        for (int32 i = 0; i < nc_menu_all_item_count(menu); i += 1) {
+            append_content_item_from_source(screen, NC_MENU_ITEMS_ALL,
+                                            i, songs);
+        }
     }
     return 0;
 }
