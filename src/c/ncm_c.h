@@ -806,9 +806,9 @@ typedef struct NcmMpdPlaylistList {
 #define ENUM_NAME NcmMpdReplayGainMode
 #define ENUM_PREFIX_ NCM_MPD_REPLAY_GAIN_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(NCM_MPD_REPLAY_GAIN_OFF, off)                                           \
-    XX(NCM_MPD_REPLAY_GAIN_TRACK, track)                                       \
+#define ENUM_FIELDS                        \
+    XX(NCM_MPD_REPLAY_GAIN_OFF, off)       \
+    XX(NCM_MPD_REPLAY_GAIN_TRACK, track)   \
     XX(NCM_MPD_REPLAY_GAIN_ALBUM, album)
 #include "cbase/xenums.c"
 
