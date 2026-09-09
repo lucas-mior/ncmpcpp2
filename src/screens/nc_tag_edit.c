@@ -846,11 +846,9 @@ tag_edit_run_current(NcScreen *screen) {
         }
         return -NCM_ERROR_UNAVAILABLE;
     case TAG_EDIT_FOCUS_TAG_TYPES: {
-        enum TagEditTagTypeAction action;
         enum NcmTagsField field;
 
-        action = tag_edit_current_tag_type_action(editor, &field);
-        switch (action) {
+        switch (tag_edit_current_tag_type_action(editor, &field)) {
         case TAG_EDIT_TAG_TYPE_ACTION_FIELD:
             if (tag_edit_prompt_tag_value(editor, field, true)) {
                 return 0;
