@@ -1640,9 +1640,10 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
                 ncm_string_view_clear(&date);
             }
 
-            existing = library_find_album(&replacement, selected_tag,
-                                          selected_tag_len, album.data,
-                                          album.len, date.data, date.len);
+            existing = library_find_album(&replacement,
+                                          selected_tag, selected_tag_len,
+                                          album.data, album.len,
+                                          date.data, date.len);
             if (existing >= 0) {
                 if (song->last_modified
                     > replacement.items[existing].row.mtime) {
