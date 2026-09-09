@@ -778,13 +778,11 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
     }
     if (last_relative >= 0) {
         Column *column = &columns->items[last_relative];
-
         column->stretch_limit = stretch_limit;
     }
 
     for (int32 i = 0; i < columns->len; i += 1) {
         Column *column = &columns->items[i];
-
         ncm_format_ast_append_column_types(format,
                                            column->type, column->type_len);
     }
@@ -1389,9 +1387,9 @@ configuration_read(Configuration *config, StringViewArray *config_paths,
 
                 len = SNPRINTF(message,
                                "error while processing option \"%.*s\": "
-                    "option already set",
-                    ncmpcpp_options[option_index].name_len,
-                    ncmpcpp_options[option_index].name);
+                               "option already set",
+                               ncmpcpp_options[option_index].name_len,
+                               ncmpcpp_options[option_index].name);
                 ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE, message, len);
                 status = settings_report_or_ignore(ncm_error, ignore_errors);
                 if (status < 0) {
