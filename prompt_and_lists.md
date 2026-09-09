@@ -12,7 +12,25 @@ make sure that related argument pairs in function headers and calls are together
 with its length, callback function with its `void *user`, etc.
 If both args do not fit in the same line, then break the
 line *before* the first one, so that they at least do not mix with other
-arguments in the call.
+arguments in the call and are aligned.
+Example
+```c
+// bad
+int x = function_with_long_name_must_be_broken(long_argument, window_width,
+                                               window_height);
+
+// good (don't break if all arguments fit)
+int x = function_with_short_name(long_argument, window_width, window_height);
+
+// good
+int x = function_with_long_name_must_be_broken(long_argument,
+                                               window_width, window_height);
+
+// good
+int x = function_with_long_name_must_be_broken_twice(long_argument,
+                                                     window_width,
+                                                     window_height);
+```
 
 - src/curses/nc_curses.c
 - src/screens/nc_browser.c
@@ -71,7 +89,6 @@ arguments in the call.
 - src/c/ncm_enums.c
 - src/screens/nc_sel_items_adder.c
 - src/curses/nc_cyclic_buffer.c
-- src/screens/nc_search_engine.c
 - src/curses/nc_window.c
 - src/c/ncm_app_arrays.c
 - src/screens/nc_lyrics.c
