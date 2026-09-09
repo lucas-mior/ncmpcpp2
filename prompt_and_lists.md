@@ -36,9 +36,6 @@ int x = function_with_long_name_must_be_broken_twice(long_argument,
                                                      window_height);
 ```
 
-- src/app_controller.c
-- src/screens/nc_scrollpad_screen.c
-- src/c/ncm_comparators.c
 - src/screens/nc_tiny_tag_edit.c
 - src/main.c
 - src/c/ncm_taglib.c

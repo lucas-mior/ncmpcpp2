@@ -113,10 +113,10 @@ ncm_compare_locale_strings(char *left, int32 left_len,
         }
     }
 
-    ncm_compare_copy_to_buffer(&left_buffer, left + left_offset,
-                               left_len - left_offset);
-    ncm_compare_copy_to_buffer(&right_buffer, right + right_offset,
-                               right_len - right_offset);
+    ncm_compare_copy_to_buffer(&left_buffer,
+                               left + left_offset, left_len - left_offset);
+    ncm_compare_copy_to_buffer(&right_buffer,
+                               right + right_offset, right_len - right_offset);
 
     result = strcoll(left_buffer.data, right_buffer.data);
     sb_free(&left_buffer);
