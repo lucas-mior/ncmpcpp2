@@ -20,19 +20,19 @@
 #include "ui_state.h"
 
 #define ACTION_TABLE_CALLBACKS(SUFFIX, TYPE)                           \
-    static bool                                                            \
-    ncm_action_can_run_##SUFFIX(void *user) {                              \
-        (void)user;                                                        \
+    static bool                                                        \
+    ncm_action_can_run_##SUFFIX(void *user) {                          \
+        (void)user;                                                    \
         return ncm_action_runtime_can_run(NULL, ACTION_##TYPE);        \
-    }                                                                      \
-                                                                           \
-    static int32                                                           \
-    ncm_action_run_##SUFFIX(void *user) {                                  \
-        (void)user;                                                        \
+    }                                                                  \
+                                                                       \
+    static int32                                                       \
+    ncm_action_run_##SUFFIX(void *user) {                              \
+        (void)user;                                                    \
         return ncm_action_runtime_run(NULL, ACTION_##TYPE);            \
     }
 
-#define ACTION_TABLE_DEFS(XX)                                            \
+#define ACTION_TABLE_DEFS(XX)                                                \
 XX(add, ADD)                                                                 \
 XX(add_item_to_playlist, ADD_ITEM_TO_PLAYLIST)                               \
 XX(add_random_items, ADD_RANDOM_ITEMS)                                       \
