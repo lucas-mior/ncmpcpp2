@@ -133,11 +133,6 @@ valid for that option.
 Stores a rendered `NcBuffer`. `KEEP_EXISTING` preserves an already populated
 buffer instead of replacing it.
 
-`XX_BUFFER_WIDTH(NAME, DEFAULT_VALUE, KEEP_EXISTING)`
-
-Stores the same buffer plus generated `int32 NAME_length` containing the
-rendered display width.
-
 `XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)`
 
 Stores a `StrBuilder` containing a constrained UTF-8 glyph/look string.
@@ -178,7 +173,6 @@ A physical `Configuration` member is not necessarily an independent option.
 Companion state belongs to the macro entry that owns it. Current examples are:
 
 - `*_len` fields for `XX_STRING`, `XX_PATH`, and `XX_DIR`;
-- `*_length` cached widths from `XX_BUFFER_WIDTH`;
 - `has_startup_slave_screen_type` from `XX_OPTIONAL_ENUM`;
 - `screen_switcher_previous` from `XX_SCREEN_LIST`;
 - `song_columns_mode_format` from `XX_COLUMNS`.

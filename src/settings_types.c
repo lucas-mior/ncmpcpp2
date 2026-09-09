@@ -126,9 +126,6 @@ configuration_init_unchecked(Configuration *config) {
     config->NAME = (NcmFormatAst){0};
 #define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                           \
     config->NAME = (NcBuffer){0};
-#define XX_BUFFER_WIDTH(NAME, DEFAULT, KEEP_EXISTING)                     \
-    config->NAME = (NcBuffer){0};                                         \
-    config->NAME##_length = 0;
 #define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)          \
     config->NAME = (StrBuilder){0};
 #define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                             \
@@ -185,9 +182,6 @@ configuration_destroy(Configuration *config) {
     ncm_format_ast_destroy(&config->NAME);
 #define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                           \
     nc_buffer_destroy(&config->NAME);
-#define XX_BUFFER_WIDTH(NAME, DEFAULT, KEEP_EXISTING)                     \
-    nc_buffer_destroy(&config->NAME);                                     \
-    config->NAME##_length = 0;
 #define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)          \
     sb_free(&config->NAME);
 #define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                             \
