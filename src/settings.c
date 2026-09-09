@@ -1222,9 +1222,9 @@ static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
     return settings_parse_named_bool(value, value_len,                         \
-                                     &config->NAME, STRLIT(TRUE_VALUE),        \
-                                     STRLIT(FALSE_VALUE),                      \
-        ncm_error);                                                            \
+                                     &config->NAME,                            \
+                                     STRLIT(TRUE_VALUE), STRLIT(FALSE_VALUE),  \
+                                     ncm_error);                               \
 }
 
 #define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE)                   \
