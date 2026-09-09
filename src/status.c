@@ -548,7 +548,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                                                 &playlist_error) < 0) {
                 ncm_statusbar_print(Config.message_delay_time,
                                     playlist_error.message,
-                                    strlen32(playlist_error.message));
+                                    playlist_error.message_len);
             } else if (status_playlist_update_observer) {
                 void *user = status_playlist_update_observer_user;
 

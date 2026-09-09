@@ -376,7 +376,7 @@ playlist_activate_song(NcMenu *menu, void *item, int32 pos, void *user) {
     if (ncm_mpd_client_play_id(&global_mpd, ncm_song_id(item),
                                &ncm_error) < 0) {
         ncm_statusbar_print(1,
-                            ncm_error.message, strlen32(ncm_error.message));
+                            ncm_error.message, ncm_error.message_len);
     }
     return;
 }

@@ -155,7 +155,7 @@ search_print_error(SearchEngineScreen *screen, NcmError *ncm_error) {
     if (screen->hooks.status_message == NULL) {
         return;
     }
-    len = optional_strlen32(ncm_error->message);
+    len = ncm_error->message_len;
     if (len > 0) {
         screen->hooks.status_message(screen->hooks.user,
                                      ncm_error->message, len);

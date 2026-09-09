@@ -14,6 +14,7 @@ typedef struct StringView {
 
 typedef struct NcmError {
     char message[256];
+    int32 message_len;
     int32 code;
 } NcmError;
 

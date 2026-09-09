@@ -1453,7 +1453,7 @@ tag_edit_report_error(char *context, int32 context_len, NcmError *ncm_error) {
     SB_APPEND(&message, context, context_len);
     if (ncm_error && (ncm_error->message[0] != 0)) {
         SB_APPEND(&message, ": ");
-        SB_APPEND(&message, ncm_error->message, strlen32(ncm_error->message));
+        SB_APPEND(&message, ncm_error->message, ncm_error->message_len);
     }
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
     sb_free(&message);
@@ -2788,7 +2788,7 @@ tag_edit_screen_rename_current_directory(TagEditScreen *screen, char *music_dir,
         SB_APPEND(&message, pair->first.data, pair->first.len);
         SB_APPEND(&message, "\": ");
         if (ncm_error_is_set(&ncm_error)) {
-            error_len = strlen32(ncm_error.message);
+            error_len = ncm_error.message_len;
             SB_APPEND(&message, ncm_error.message, error_len);
         } else {
             SB_APPEND(&message, "unknown error");

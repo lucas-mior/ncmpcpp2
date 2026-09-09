@@ -262,7 +262,7 @@ sort_dialog_run_sort(void *user) {
                             STRLIT("Range sorted"));
     } else if (ncm_error_is_set(&ncm_error)) {
         ncm_statusbar_print(Config.message_delay_time,
-                            ncm_error.message, strlen32(ncm_error.message));
+                            ncm_error.message, ncm_error.message_len);
     } else {
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("Could not sort playlist"));

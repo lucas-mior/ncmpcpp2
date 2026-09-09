@@ -840,7 +840,7 @@ test_cross_field_validation_is_post_parse(void) {
     ASSERT(status < 0);
     ASSERT(config.visualizer_spectrum_hz_min == 200.0);
     ASSERT(config.visualizer_spectrum_hz_max == 100.0);
-    ASSERT_CONTAINS(ncm_error.message, strlen32(ncm_error.message),
+    ASSERT_CONTAINS(ncm_error.message, ncm_error.message_len,
                     "visualizer_spectrum_hz_max");
 
     configuration_destroy(&config);
@@ -889,7 +889,7 @@ test_duplicate_option_is_rejected(void) {
     status = configuration_read(&config, &paths, false, true, &ncm_error);
     ASSERT(status < 0);
     ASSERT(config.lines_scrolled == 4);
-    ASSERT_CONTAINS(ncm_error.message, strlen32(ncm_error.message),
+    ASSERT_CONTAINS(ncm_error.message, ncm_error.message_len,
                     "option already set");
 
     configuration_destroy(&config);

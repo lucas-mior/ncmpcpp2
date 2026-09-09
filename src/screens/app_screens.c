@@ -303,7 +303,7 @@ app_screen_browser_fetch_supported_extensions(void) {
                                                   &ncm_error) < 0)
         && ncm_error_is_set(&ncm_error)) {
         ncm_statusbar_print(Config.message_delay_time,
-                            ncm_error.message, strlen32(ncm_error.message));
+                            ncm_error.message, ncm_error.message_len);
     }
     return;
 }
@@ -521,7 +521,7 @@ app_screen_sort_playlist_dialog_switch_to(void) {
                                        &ncm_error);
     if ((status < 0) && ncm_error_is_set(&ncm_error)) {
         ncm_statusbar_print(Config.message_delay_time,
-                            ncm_error.message, strlen32(ncm_error.message));
+                            ncm_error.message, ncm_error.message_len);
     }
     return status;
 }
@@ -817,7 +817,7 @@ tag_edit_hook_update_directory(void *user, char *directory, int32 directory_len
     if (ncm_mpd_client_update_directory(&global_mpd, directory, NULL,
                                         &ncm_error) < 0) {
         ncm_statusbar_print(Config.message_delay_time,
-                            ncm_error.message, strlen32(ncm_error.message));
+                            ncm_error.message, ncm_error.message_len);
     }
     return;
 }
@@ -876,7 +876,7 @@ tiny_tag_edit_update_directory(void *user, char *directory, int32 directory_len
     if (ncm_mpd_client_update_directory(&global_mpd, directory, NULL,
                                         &ncm_error) < 0) {
         ncm_statusbar_print(Config.message_delay_time,
-                            ncm_error.message, strlen32(ncm_error.message));
+                            ncm_error.message, ncm_error.message_len);
     }
     return;
 }
@@ -1268,7 +1268,7 @@ outputs_fetch(void *user, NcOutputsScreen *screen) {
 
         SB_APPEND(&message, "Could not fetch outputs: ");
         SB_APPEND(&message,
-                  ncm_error.message, optional_strlen32(ncm_error.message));
+                  ncm_error.message, ncm_error.message_len);
         ncm_statusbar_print(5, message.data, message.len);
         sb_free(&message);
         ncm_mpd_output_list_destroy(&outputs);
@@ -1311,7 +1311,7 @@ outputs_toggle(void *user, int32 id, bool enabled, char *name, int32 name_len) {
         SB_APPEND(&message, name, name_len);
         SB_APPEND(&message, ": ");
         SB_APPEND(&message, ncm_error.message,
-                  optional_strlen32(ncm_error.message));
+                  ncm_error.message_len);
         ncm_statusbar_print(5, message.data, message.len);
         sb_free(&message);
         return status;
@@ -1649,7 +1649,7 @@ song_info_switch_to(void *user, NcSongInfoScreen *screen) {
 
         SB_APPEND(&message, "Could not fetch current song: ");
         SB_APPEND(&message, ncm_error.message,
-                  optional_strlen32(ncm_error.message));
+                  ncm_error.message_len);
         ncm_statusbar_print(5, message.data, message.len);
         sb_free(&message);
         return;

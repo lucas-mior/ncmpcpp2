@@ -929,7 +929,7 @@ settings_apply_option(Configuration *config, SettingsOption option,
         detail_len = STRLIT_LEN("invalid value");
         if (ncm_error_is_set(&cause)) {
             detail = cause.message;
-            detail_len = strlen32(cause.message);
+            detail_len = cause.message_len;
         }
 
         len = SNPRINTF(message, "error while %s option \"%.*s\": %.*s",

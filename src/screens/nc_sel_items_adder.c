@@ -294,7 +294,7 @@ adder_try_add_current_song(SelectedItemsAdderScreen *screen, NcmSong *song,
 
     if (ncm_error.code == NCM_MPD_ERROR_SERVER) {
         server_error = ncm_mpd_client_server_error_code(screen->client);
-        message_len = optional_strlen32(ncm_error.message);
+        message_len = ncm_error.message_len;
         ncm_status_handle_server_error_value(screen->client,
                                              (int32)server_error,
                                              ncm_error.message, message_len);
@@ -304,7 +304,7 @@ adder_try_add_current_song(SelectedItemsAdderScreen *screen, NcmSong *song,
 
     if (ncm_error.message[0] != '\0') {
         ncm_statusbar_print(Config.message_delay_time,
-                            ncm_error.message, strlen32(ncm_error.message));
+                            ncm_error.message, ncm_error.message_len);
     } else {
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("Could not add selected item"));
@@ -617,7 +617,7 @@ adder_add_to_stored_playlist(SelectedItemsAdderScreen *screen, char *playlist,
     if (status < 0) {
         if (ncm_error.message[0] != '\0') {
             ncm_statusbar_print(Config.message_delay_time,
-                                ncm_error.message, strlen32(ncm_error.message));
+                                ncm_error.message, ncm_error.message_len);
         } else {
             ncm_statusbar_print(Config.message_delay_time,
                                 STRLIT("Could not add selected items"));
@@ -853,7 +853,7 @@ selected_items_adder_screen_open(
             ncm_mpd_playlist_list_clear(&playlists);
             SB_APPEND(&message, "Could not fetch playlists: ");
             SB_APPEND(&message, playlist_error.message,
-                      optional_strlen32(playlist_error.message));
+                      playlist_error.message_len);
             ncm_statusbar_print(Config.message_delay_time,
                                 message.data, message.len);
             sb_free(&message);

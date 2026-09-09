@@ -397,7 +397,7 @@ library_mouse_select(MediaLibraryScreen *screen,
             if (ncm_error_is_set(&ncm_error)) {
                 ncm_statusbar_print(Config.message_delay_time,
                                     ncm_error.message,
-                                    strlen32(ncm_error.message));
+                                    ncm_error.message_len);
             }
         }
     }
@@ -600,7 +600,7 @@ library_update(NcScreen *screen) {
     if (status < 0) {
         if (ncm_error_is_set(&ncm_error)) {
             ncm_statusbar_print(Config.message_delay_time,
-                                ncm_error.message, strlen32(ncm_error.message));
+                                ncm_error.message, ncm_error.message_len);
         }
         return;
     }
@@ -2063,7 +2063,7 @@ media_library_screen_selected_songs(MediaLibraryScreen *screen,
                                                          &ncm_error);
     if ((status < 0) && ncm_error_is_set(&ncm_error)) {
         ncm_statusbar_print(Config.message_delay_time,
-                            ncm_error.message, strlen32(ncm_error.message));
+                            ncm_error.message, ncm_error.message_len);
     }
     return status;
 }
