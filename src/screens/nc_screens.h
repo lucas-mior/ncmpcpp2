@@ -1789,7 +1789,7 @@ bool tag_edit_screen_next_column_available(TagEditScreen *);
 void tag_edit_screen_previous_column(TagEditScreen *);
 void tag_edit_screen_next_column(TagEditScreen *);
 int32 tag_edit_screen_apply_tag_to_selection(TagEditScreen *,
-                                             enum NcmTagsField, char *value,
+                                             enum TagsField, char *value,
                                              int32 value_len, char *separator,
                                              int32 separator_len);
 int32 tag_edit_screen_number_tracks(TagEditScreen *, bool);
@@ -1815,7 +1815,7 @@ void tag_edit_screen_close_parser(TagEditScreen *);
 int32 tag_edit_parse_filename(MutableSong *, char *, int32, bool,
                               StrBuilder *);
 int32 tag_edit_generate_filename(MutableSong *, char *, int32, StrBuilder *);
-int32 tag_edit_song_display_value(MutableSong *, enum NcmTagsField,
+int32 tag_edit_song_display_value(MutableSong *, enum TagsField,
                                   StrBuilder *);
 
 #define TINY_TAG_EDIT_TAG_ROW(FIELD) \
@@ -1998,7 +1998,7 @@ bool browser_screen_item_is_parent(NcmMpdItem *);
 typedef struct NcmSongInfoMetadata {
     char *name;
     enum SongGetter get;
-    enum NcmTagsField field;
+    enum TagsField field;
 } NcmSongInfoMetadata;
 
 extern NcmSongInfoMetadata ncm_song_info_tags[];

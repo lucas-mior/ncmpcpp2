@@ -2058,7 +2058,7 @@ action_runtime_song_tag_at(int32 pos, enum SongGetter getter,
 #if defined(HAVE_TAGLIB_H)
     case SCREEN_TYPE_TAG_EDIT: {
         MutableSong *mutable_song;
-        enum NcmTagsField field;
+        enum TagsField field;
 
         if (app_screen_tag_edit()->active_focus != TAG_EDIT_FOCUS_TAGS) {
             return -NCM_ERROR_UNAVAILABLE;
@@ -4936,7 +4936,7 @@ action_runtime_update_tag_directory(StrBuilder *shared_directory, bool valid) {
 
 static int32
 action_runtime_edit_library_tag(void) {
-    enum NcmTagsField field;
+    enum TagsField field;
     NcmMpdSongList songs = {0};
     StrBuilder current_tag = {0};
     StrBuilder prompt = {0};

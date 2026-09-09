@@ -6,7 +6,7 @@
 #include "c/ncm_c.h"
 
 static MutableSongTag *
-ncm_mutable_song_find_tag(MutableSong *song, enum NcmTagsField field,
+ncm_mutable_song_find_tag(MutableSong *song, enum TagsField field,
                           int32 idx) {
     ASSERT((song != NULL) && (idx >= 0));
 
@@ -22,7 +22,7 @@ ncm_mutable_song_find_tag(MutableSong *song, enum NcmTagsField field,
 }
 
 static MutableSongTag *
-ncm_mutable_song_add_tag(MutableSong *song, enum NcmTagsField field,
+ncm_mutable_song_add_tag(MutableSong *song, enum TagsField field,
                          int32 idx) {
     MutableSongTag *tag;
 
@@ -61,7 +61,7 @@ ncm_mutable_song_add_tag(MutableSong *song, enum NcmTagsField field,
 
 static void
 ncm_mutable_song_set_original_tag_unchecked(MutableSong *song,
-                                            enum NcmTagsField field, int32 idx,
+                                            enum TagsField field, int32 idx,
                                             char *value, int32 value_len) {
     MutableSongTag *tag;
 
@@ -74,7 +74,7 @@ ncm_mutable_song_set_original_tag_unchecked(MutableSong *song,
 
 static void
 ncm_mutable_song_set_tag_unchecked(MutableSong *song,
-                                   enum NcmTagsField field, int32 idx,
+                                   enum TagsField field, int32 idx,
                                    char *value, int32 value_len) {
     MutableSongTag *tag;
 
@@ -126,7 +126,7 @@ ncm_mutable_song_destroy_unchecked(MutableSong *song) {
 
 static bool
 ncm_mutable_song_has_tag_view_unchecked(MutableSong *song,
-                                        enum NcmTagsField field, int32 idx,
+                                        enum TagsField field, int32 idx,
                                         StringView *view) {
     MutableSongTag *tag;
 
@@ -143,7 +143,7 @@ ncm_mutable_song_has_tag_view_unchecked(MutableSong *song,
 }
 
 static bool
-ncm_mutable_song_write_callback(enum NcmTagsField field, int32 idx,
+ncm_mutable_song_write_callback(enum TagsField field, int32 idx,
                                 StringView *value, void *user) {
     MutableSong *song = user;
     return ncm_mutable_song_has_tag_view_unchecked(song, field, idx, value);
@@ -223,7 +223,7 @@ ncm_mutable_song_move(MutableSong *dest, MutableSong *source) {
 }
 
 int32
-ncm_mutable_song_set_tag(MutableSong *song, enum NcmTagsField field,
+ncm_mutable_song_set_tag(MutableSong *song, enum TagsField field,
                          int32 idx, char *value, int32 value_len) {
     if (song == NULL) {
         return -EINVAL;
@@ -246,7 +246,7 @@ ncm_mutable_song_set_tag(MutableSong *song, enum NcmTagsField field,
 }
 
 int32
-ncm_mutable_song_set_tags(MutableSong *song, enum NcmTagsField field,
+ncm_mutable_song_set_tags(MutableSong *song, enum TagsField field,
                           char *value, int32 value_len, char *separator,
                           int32 separator_len) {
     int32 begin;
@@ -299,7 +299,7 @@ ncm_mutable_song_set_tags(MutableSong *song, enum NcmTagsField field,
 
 bool
 ncm_mutable_song_has_tag_view(MutableSong *song,
-                              enum NcmTagsField field, int32 idx,
+                              enum TagsField field, int32 idx,
                               StringView *view) {
     if (view == NULL) {
         return false;
@@ -320,7 +320,7 @@ ncm_mutable_song_has_tag_view(MutableSong *song,
 
 static void
 ncm_mutable_song_get_tag_buffer_unchecked(MutableSong *song,
-                                          enum NcmTagsField field, int32 idx,
+                                          enum TagsField field, int32 idx,
                                           StrBuilder *buffer) {
     StringView view;
 
@@ -348,7 +348,7 @@ ncm_mutable_song_get_tag_buffer_unchecked(MutableSong *song,
 
 void
 ncm_mutable_song_get_tag_buffer(MutableSong *song,
-                                enum NcmTagsField field, int32 idx,
+                                enum TagsField field, int32 idx,
                                 StrBuilder *buffer) {
     if (buffer == NULL) {
         return;
@@ -371,7 +371,7 @@ ncm_mutable_song_get_tag_buffer(MutableSong *song,
 }
 
 StrBuilder
-ncm_mutable_song_tags_buffer(MutableSong *song, enum NcmTagsField field,
+ncm_mutable_song_tags_buffer(MutableSong *song, enum TagsField field,
                              char *separator, int32 separator_len,
                              bool show_duplicates) {
     StrBuilder result = {0};
@@ -470,7 +470,7 @@ ncm_mutable_song_load_originals_from_song(MutableSong *dest,
                 break;
             }
             ncm_mutable_song_set_original_tag_unchecked(dest,
-                (enum NcmTagsField)field, i, buffer.data, buffer.len);
+                (enum TagsField)field, i, buffer.data, buffer.len);
             sb_free(&buffer);
         }
     }

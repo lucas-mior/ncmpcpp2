@@ -54,7 +54,7 @@ void stupid_string_set(char **, int32 *dest_len, char *, int32);
 
 struct mpd_song;
 
-#define ENUM_NAME NcmTagsField
+#define ENUM_NAME TagsField
 #define ENUM_PREFIX_ NCM_TAGS_FIELD_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                  \
@@ -79,7 +79,7 @@ typedef struct NcmTagsReplayGainInfo {
     StringView album_peak;
 } NcmTagsReplayGainInfo;
 
-typedef bool NcmTagsGetFieldCallback(enum NcmTagsField, int32, StringView *,
+typedef bool NcmTagsGetFieldCallback(enum TagsField, int32, StringView *,
                                      void *);
 
 void ncm_tags_set_attribute(struct mpd_song *, char *name, char *value);
@@ -128,11 +128,11 @@ char *ncm_tag_type_name(enum mpd_tag_type);
 enum mpd_tag_type ncm_char_to_tag_type(char);
 enum SongGetter ncm_song_getter_from_char(char);
 enum mpd_tag_type ncm_song_getter_to_tag_type(enum SongGetter);
-enum NcmTagsField ncm_tags_field_from_char(char);
-enum NcmTagsField ncm_tags_field_from_tag_type(enum mpd_tag_type);
-enum mpd_tag_type ncm_tags_field_to_tag_type(enum NcmTagsField);
-enum SongGetter ncm_tags_field_to_song_getter(enum NcmTagsField);
-enum NcmTagsField ncm_song_getter_to_tags_field(enum SongGetter);
+enum TagsField ncm_tags_field_from_char(char);
+enum TagsField ncm_tags_field_from_tag_type(enum mpd_tag_type);
+enum mpd_tag_type ncm_tags_field_to_tag_type(enum TagsField);
+enum SongGetter ncm_tags_field_to_song_getter(enum TagsField);
+enum TagsField ncm_song_getter_to_tags_field(enum SongGetter);
 
 #include <mpd/tag.h>
 
@@ -210,7 +210,7 @@ typedef struct MutableSongTag {
     int32 value_len;
     int32 idx;
 
-    enum NcmTagsField field;
+    enum TagsField field;
     bool modified;
 } MutableSongTag;
 
@@ -238,16 +238,16 @@ void ncm_mutable_song_destroy(MutableSong *);
 int32 ncm_mutable_song_copy(MutableSong *dest, MutableSong *source);
 void ncm_mutable_song_move(MutableSong *dest, MutableSong *source);
 
-int32 ncm_mutable_song_set_tag(MutableSong *, enum NcmTagsField, int32 idx,
+int32 ncm_mutable_song_set_tag(MutableSong *, enum TagsField, int32 idx,
                                char *, int32 value_len);
-int32 ncm_mutable_song_set_tags(MutableSong *, enum NcmTagsField,
+int32 ncm_mutable_song_set_tags(MutableSong *, enum TagsField,
                                 char *value, int32 value_len, char *separator,
                                 int32 separator_len);
-bool ncm_mutable_song_has_tag_view(MutableSong *, enum NcmTagsField, int32,
+bool ncm_mutable_song_has_tag_view(MutableSong *, enum TagsField, int32,
                                    StringView *);
-void ncm_mutable_song_get_tag_buffer(MutableSong *, enum NcmTagsField,
+void ncm_mutable_song_get_tag_buffer(MutableSong *, enum TagsField,
                                      int32, StrBuilder *);
-StrBuilder ncm_mutable_song_tags_buffer(MutableSong *, enum NcmTagsField,
+StrBuilder ncm_mutable_song_tags_buffer(MutableSong *, enum TagsField,
                                         char *, int32, bool);
 int32 ncm_mutable_song_load_originals_from_song(MutableSong *, NcmSong *);
 

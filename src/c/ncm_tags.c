@@ -148,7 +148,7 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
     }
 
     for (uint32 i = 0; i < NCM_TAGS_FIELD_COUNT; i += 1) {
-        enum NcmTagsField field = (enum NcmTagsField)i;
+        enum TagsField field = (enum TagsField)i;
         char *property;
 
         switch (field) {
