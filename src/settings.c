@@ -356,8 +356,8 @@ settings_parse_color(char *value, int32 value_len, NcColor *color,
         return status;
     }
     status = settings_parse_single_color(value + underscore + 1,
-                                         value_len - underscore - 1, true,
-                                         &background, ncm_error);
+                                         value_len - underscore - 1,
+                                         true, &background, ncm_error);
     if (status < 0) {
         return status;
     }
@@ -987,7 +987,8 @@ configuration_apply_runtime(Configuration *config, MpdClient *client,
     }
     ncm_mpd_client_set_port(client, (uint16)config->mpd_port);
     if (config->mpd_password_len > 0) {
-        status = ncm_mpd_client_set_password(client, config->mpd_password,
+        status = ncm_mpd_client_set_password(client,
+                                             config->mpd_password,
                                              config->mpd_password_len,
                                              ncm_error);
         if (status < 0) {
@@ -1075,7 +1076,7 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
 static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
-    enum NcmTagType parsed;                                                    \
+    enum NcmTagType parsed;                                                  \
     int32 status;                                                              \
     status = settings_parse_mpd_tag(value, value_len, &parsed);                \
     if (status < 0) {                                                          \
@@ -1208,8 +1209,7 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
 static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
-    return settings_parse_screen_list(&config->NAME,                           \
-                                      &config->PREVIOUS_FIELD,                 \
+    return settings_parse_screen_list(&config->NAME, &config->PREVIOUS_FIELD,  \
                                       value, value_len, ncm_error);            \
 }
 

@@ -36,10 +36,6 @@ int x = function_with_long_name_must_be_broken_twice(long_argument,
                                                      window_height);
 ```
 
-- src/screens/nc_visualizer.c
-- src/ui_state.c
-- src/curses/nc_scrollpad.c
-- src/settings.c
 - src/c/ncm_mutable_song.c
 - src/screens/nc_tag_edit.c
 - src/screens/app_screens.c

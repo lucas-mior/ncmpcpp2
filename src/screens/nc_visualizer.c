@@ -295,8 +295,7 @@ visualizer_update_callback(NcScreen *screen) {
             StrBuilder message = {0};
 
             SB_APPEND(&message, "Could not enable visualizer output: ");
-            SB_APPEND(&message, ncm_error.message,
-                      ncm_error.message_len);
+            SB_APPEND(&message, ncm_error.message, ncm_error.message_len);
             ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                                 message.data, message.len);
             sb_free(&message);
@@ -333,7 +332,8 @@ visualizer_update_callback(NcScreen *screen) {
         return;
     }
 
-    visualizer_screen_draw(visualizer, visualizer->samples_rendered.data,
+    visualizer_screen_draw(visualizer,
+                           visualizer->samples_rendered.data,
                            visualizer->samples_rendered.cap);
     nc_window_refresh(&visualizer->window);
     return;
@@ -462,8 +462,8 @@ visualizer_system_open_udp(void *user, char *location, int32 location_len,
 }
 
 static int32
-visualizer_system_read_source(void *user, int32 fd, void *buffer,
-                              int32 buffer_size) {
+visualizer_system_read_source(void *user, int32 fd,
+                              void *buffer, int32 buffer_size) {
     (void)user;
     return (int32)read64(fd, buffer, buffer_size);
 }
@@ -662,15 +662,16 @@ visualizer_screen_open_data_source(VisualizerScreen *screen) {
                 return -NCM_ERROR_UNAVAILABLE;
             }
             fd = screen->data_source_hooks.open_udp(
-                screen->data_source_hooks.user, location,
-                screen->source_location.len, port, screen->source_port.len);
+                screen->data_source_hooks.user,
+                location, screen->source_location.len,
+                port, screen->source_port.len);
         } else {
             if (screen->data_source_hooks.open_fifo == NULL) {
                 return -NCM_ERROR_UNAVAILABLE;
             }
             fd = screen->data_source_hooks.open_fifo(
-                screen->data_source_hooks.user, location,
-                screen->source_location.len);
+                screen->data_source_hooks.user,
+                location, screen->source_location.len);
         }
 
         if (fd < 0) {
@@ -746,8 +747,7 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
         StrBuilder message = {0};
 
         SB_APPEND(&message, "Could not fetch outputs: ");
-        SB_APPEND(&message, ncm_error.message,
-                  ncm_error.message_len);
+        SB_APPEND(&message, ncm_error.message, ncm_error.message_len);
         ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                             message.data, message.len);
         sb_free(&message);
@@ -906,8 +906,9 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
 
         sb_set(&screen->visualizer_chars,
                visualizer_chars, visualizer_chars_len);
-        next = utf8_next_position(screen->visualizer_chars.data,
-                                  screen->visualizer_chars.len, 0);
+        next = utf8_next_position(
+            screen->visualizer_chars.data, screen->visualizer_chars.len,
+            0);
         screen->point_char_offset = 0;
         screen->point_char_len = next;
         screen->bar_char_offset = next;
@@ -1327,8 +1328,8 @@ visualizer_draw_wave(VisualizerScreen *screen,
         point_y = (int32)((double)point_y*(double)height/65536.0);
 
         visualizer_draw_character(screen, x, base_y + point_y,
-                                  visualizer_color(screen, point_y,
-                                                   half_height, false),
+                                  visualizer_color(screen, point_y, half_height,
+                                                   false),
                                   false, character, character_len);
 
         if ((x > 0) && (((prev_y - point_y) > 1)
@@ -1337,21 +1338,21 @@ visualizer_draw_wave(VisualizerScreen *screen,
 
             if (prev_y < point_y) {
                 for (int32 y = prev_y; y < point_y; y += 1) {
+                    NcFormattedColor *color;
+
+                    color = visualizer_color(screen, y, half_height, false);
                     visualizer_draw_character(screen, x - (y < half),
-                                              base_y + y,
-                                              visualizer_color(screen, y,
-                                                               half_height,
-                                                               false),
-                                              false, character, character_len);
+                                              base_y + y, color, false,
+                                              character, character_len);
                 }
             } else {
                 for (int32 y = prev_y; y > point_y; y -= 1) {
+                    NcFormattedColor *color;
+
+                    color = visualizer_color(screen, y, half_height, false);
                     visualizer_draw_character(screen, x - (y > half),
-                                              base_y + y,
-                                              visualizer_color(screen, y,
-                                                               half_height,
-                                                               false),
-                                              false, character, character_len);
+                                              base_y + y, color, false,
+                                              character, character_len);
                 }
             }
         }
@@ -1767,6 +1768,7 @@ visualizer_screen_draw(VisualizerScreen *screen,
 
             for (int32 i = 0; i < channel_samples; i += 1) {
                 double distance;
+                NcFormattedColor *color;
                 int32 x;
                 int32 y;
 
@@ -1785,12 +1787,13 @@ visualizer_screen_draw(VisualizerScreen *screen,
                                 /32768.0*(double)bottom_half_height);
                 }
                 distance = sqrt((double)x*(double)x + 4.0*(double)y*(double)y);
+                color = visualizer_color(screen, distance, radius, true);
 
-                visualizer_draw_character(screen, left_half_width + x,
+                visualizer_draw_character(screen,
+                                          left_half_width + x,
                                           top_half_height + y,
-                                          visualizer_color(screen, distance,
-                                                           radius, true),
-                                          false, character, character_len);
+                                          color, false,
+                                          character, character_len);
             }
             break;
         }
@@ -1831,16 +1834,15 @@ visualizer_screen_draw(VisualizerScreen *screen,
             double x2 = SQUARE((double)x);
             double y2 = SQUARE((double)y);
             double max_radius = sqrt(x2 + y2);
+            NcFormattedColor *color;
 
             x = (int32)((double)x*radius);
             y = (int32)((double)y*radius);
+            color = visualizer_color(screen, sqrt(x2 + y2), max_radius, false);
 
-            visualizer_draw_character(screen, half_width + x,
-                                      ellipse_half_height + y,
-                                      visualizer_color(screen,
-                                                       sqrt(x2 + y2),
-                                                       max_radius, false),
-                                      false, character, character_len);
+            visualizer_draw_character(screen,
+                                      half_width + x, ellipse_half_height + y,
+                                      color, false, character, character_len);
         }
         break;
     }
