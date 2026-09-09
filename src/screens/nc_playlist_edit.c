@@ -336,9 +336,9 @@ playlist_edit_update_callback(NcScreen *screen) {
     playlists = nc_playlist_entry_menu_base(&editor->playlists);
     if (editor->playlists_update_requested
         || (nc_menu_item_count(playlists) <= 0)) {
-        status =
-            playlist_edit_screen_reload_playlists_from_mpd(editor, &global_mpd,
-                                                           &ncm_error);
+        status = playlist_edit_screen_reload_playlists_from_mpd(editor,
+                                                                &global_mpd,
+                                                                &ncm_error);
         if (status < 0) {
             editor->playlists_update_requested = false;
             playlist_edit_report_error(STRLIT("Could not fetch playlists"),
