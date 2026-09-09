@@ -74,7 +74,7 @@ typedef struct Configuration {
     int32 NAME;
 #define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)                        \
     double NAME;
-#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT)                              \
+#define XX_ENUM(NAME, DEFAULT, ENUM_PREFIX_)                              \
     ENUM_PREFIX_ NAME;
 #define XX_MPD_TAG(NAME, DEFAULT)                                         \
     enum NcmTagType NAME;

@@ -58,10 +58,10 @@
 
 #if !defined(XX_ENUM)
 #if defined(XX_OPTION)
-#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT) \
+#define XX_ENUM(NAME, DEFAULT, ENUM_PREFIX_) \
     XX_OPTION(NAME, DEFAULT, ENUM_PREFIX_)
 #else
-#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT)
+#define XX_ENUM(NAME, DEFAULT, ENUM_PREFIX_)
 #endif
 #endif
 

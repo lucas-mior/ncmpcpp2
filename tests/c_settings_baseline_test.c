@@ -82,7 +82,7 @@ settings_assert_generated_empty(Configuration *config) {
     ASSERT(config->NAME == 0);
 #define XX_DOUBLE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     ASSERT(config->NAME == 0);
-#define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT_VALUE) \
+#define XX_ENUM(NAME, DEFAULT_VALUE, ENUM_PREFIX_) \
     ASSERT(config->NAME == (ENUM_PREFIX_)0);
 #define XX_MPD_TAG(NAME, DEFAULT_VALUE) \
     ASSERT(config->NAME == NCM_TAG_UNKNOWN);
