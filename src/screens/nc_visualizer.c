@@ -1254,8 +1254,6 @@ visualizer_screen_split_stereo(VisualizerScreen *screen,
 void
 visualizer_screen_apply_auto_scale(VisualizerScreen *screen,
                                    int16 *samples, int32 samples_len) {
-    double scale;
-    int32 scaled;
 
     if (!screen->autoscale) {
         return;
@@ -1263,6 +1261,7 @@ visualizer_screen_apply_auto_scale(VisualizerScreen *screen,
 
     screen->auto_scale_multiplier += 1.0 / (double)screen->fps;
     for (int32 i = 0; i < samples_len; i += 1) {
+        double scale;
         if (samples[i] == 0) {
             continue;
         }
@@ -1276,6 +1275,7 @@ visualizer_screen_apply_auto_scale(VisualizerScreen *screen,
         return;
     }
     for (int32 i = 0; i < samples_len; i += 1) {
+        int32 scaled;
         scaled = (int32)((double)samples[i]*screen->auto_scale_multiplier);
         samples[i] = visualizer_clamp_sample(scaled);
     }
