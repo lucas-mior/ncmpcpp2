@@ -395,8 +395,9 @@ library_mouse_select(MediaLibraryScreen *screen,
         if (media_library_screen_add_item_to_playlist(screen, play,
                                                       &ncm_error) < 0) {
             if (ncm_error_is_set(&ncm_error)) {
-                ncm_statusbar_print_cstring(Config.message_delay_time,
-                                            ncm_error.message);
+                ncm_statusbar_print(Config.message_delay_time,
+                                    ncm_error.message,
+                                    strlen32(ncm_error.message));
             }
         }
     }
@@ -598,8 +599,8 @@ library_update(NcScreen *screen) {
     status = media_library_screen_update(library, &ncm_error);
     if (status < 0) {
         if (ncm_error_is_set(&ncm_error)) {
-            ncm_statusbar_print_cstring(Config.message_delay_time,
-                                        ncm_error.message);
+            ncm_statusbar_print(Config.message_delay_time,
+                                ncm_error.message, strlen32(ncm_error.message));
         }
         return;
     }
@@ -2061,8 +2062,8 @@ media_library_screen_selected_songs(MediaLibraryScreen *screen,
     status = media_library_screen_selected_songs_checked(screen, songs,
                                                          &ncm_error);
     if ((status < 0) && ncm_error_is_set(&ncm_error)) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    ncm_error.message);
+        ncm_statusbar_print(Config.message_delay_time,
+                            ncm_error.message, strlen32(ncm_error.message));
     }
     return status;
 }
@@ -3144,7 +3145,7 @@ media_library_screen_add_item_to_playlist(
 
         if (message.len > 0) {
             ncm_statusbar_print(Config.message_delay_time,
-                                message.data, message.len);
+                                            message.data, message.len);
         }
         sb_free(&message);
     }

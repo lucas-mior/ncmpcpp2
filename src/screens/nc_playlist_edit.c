@@ -313,7 +313,8 @@ playlist_edit_report_error(char *context, int32 context_len,
         SB_APPEND(&message, ": ");
         SB_APPEND(&message, ncm_error->message, strlen32(ncm_error->message));
     }
-    ncm_statusbar_print_cstring(Config.message_delay_time, message.data);
+    ncm_statusbar_print(Config.message_delay_time,
+                        message.data, strlen32(message.data));
     sb_free(&message);
     return;
 }
@@ -1434,8 +1435,8 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
         return playlist_edit_show_screen(screen);
     }
 
-    ncm_statusbar_print_cstring(Config.message_delay_time,
-                                "Jumping to song...");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Jumping to song..."));
     status = playlist_edit_locate_song_in_playlist_range(screen, client, song,
                                                          playlist_pos + 1,
                                                          playlist_count,
@@ -1478,8 +1479,8 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
         ncm_song_destroy(&current_song);
     }
 
-    ncm_statusbar_print_cstring(Config.message_delay_time,
-                                "Song was not found in playlists");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Song was not found in playlists"));
     return ncm_error_set_status(ncm_error, -ENOENT,
                                 STRLIT("song was not found in playlists"));
 }

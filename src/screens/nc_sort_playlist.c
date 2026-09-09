@@ -189,9 +189,9 @@ sort_dialog_add_row(SortPlaylistDialog *dialog, char *label, int32 label_len,
 static void
 sort_dialog_show_move_hint(void *user) {
     (void)user;
-    ncm_statusbar_print_cstring(Config.message_delay_time,
-                                "Move tag types up and down to adjust sort "
-                                "order");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Move tag types up and down to adjust sort "
+                                "order"));
     return;
 }
 
@@ -246,7 +246,8 @@ sort_dialog_run_sort(void *user) {
 
     dialog = user;
     getters_len = sort_dialog_get_order(dialog, getters, LENGTH(getters));
-    ncm_statusbar_print_cstring(Config.message_delay_time, "Sorting...");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Sorting..."));
     ncm_error_clear(&ncm_error);
     status = ncm_playlist_sort_range(&dialog->songs, dialog->start_position,
                                      getters, getters_len,
@@ -257,13 +258,14 @@ sort_dialog_run_sort(void *user) {
     }
 
     if (status == 0) {
-        ncm_statusbar_print_cstring(Config.message_delay_time, "Range sorted");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Range sorted"));
     } else if (ncm_error_is_set(&ncm_error)) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    ncm_error.message);
+        ncm_statusbar_print(Config.message_delay_time,
+                            ncm_error.message, strlen32(ncm_error.message));
     } else {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Could not sort playlist");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Could not sort playlist"));
     }
 
     sort_dialog_finish(dialog);

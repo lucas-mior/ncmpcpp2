@@ -330,12 +330,6 @@ ncm_statusbar_print(int32 delay_seconds, char *message, int32 message_len) {
 }
 
 void
-ncm_statusbar_print_cstring(int32 delay_seconds, char *message) {
-    ncm_statusbar_print(delay_seconds, message, optional_strlen32(message));
-    return;
-}
-
-void
 ncm_statusbar_mpd_idle_callback(void) {
     NcmError ncm_error;
 

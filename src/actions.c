@@ -486,8 +486,8 @@ action_runtime_switch_to_next_screen(bool reverse) {
 static void
 action_runtime_mpd_error(NcmError *ncm_error) {
     if (ncm_error_is_set(ncm_error)) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    ncm_error->message);
+        ncm_statusbar_print(Config.message_delay_time,
+                            ncm_error->message, strlen32(ncm_error->message));
     }
     return;
 }
@@ -1090,8 +1090,8 @@ action_runtime_confirm(char *message, int32 message_len) {
     ncm_statusbar_scoped_lock_destroy(&scoped_lock);
 
     if ((status <= 0) || (answer == 'n')) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Action cancelled");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Action cancelled"));
         return false;
     }
     return true;
@@ -1118,8 +1118,8 @@ action_runtime_set_crossfade(void) {
     ncm_error_clear(&ncm_error);
     if (ncm_parse_int32(input.data, input.len, &seconds, &ncm_error) < 0) {
         sb_free(&input);
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Crossfade must be a non-negative number");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Crossfade must be a non-negative number"));
         return 0;
     }
     sb_free(&input);
@@ -1156,8 +1156,8 @@ action_runtime_set_volume(void) {
     if (ncm_parse_int32(input.data, input.len, &volume, &ncm_error) < 0
         || (volume > 100)) {
         sb_free(&input);
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Volume must be between 0 and 100");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Volume must be between 0 and 100"));
         return 0;
     }
     sb_free(&input);
@@ -1247,9 +1247,9 @@ action_runtime_add_random_items(void) {
     ncm_error_clear(&ncm_error);
     if (ncm_parse_int32(input.data, input.len, &number, &ncm_error) < 0) {
         sb_free(&input);
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Random item count must be a non-negative "
-                                    "number");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Random item count must be a non-negative "
+                                    "number"));
         return 0;
     }
     sb_free(&input);
@@ -1608,8 +1608,8 @@ action_runtime_save_playlist(void) {
                                                    &ncm_error) == 0;
         }
         if (success) {
-            ncm_statusbar_print_cstring(Config.message_delay_time,
-                                        "Playlist overwritten");
+            ncm_statusbar_print(Config.message_delay_time,
+                                STRLIT("Playlist overwritten"));
         }
     } else if (success) {
         action_runtime_print_message(STRLIT("Playlist saved as \""),
@@ -1656,8 +1656,8 @@ action_runtime_apply_filter(void) {
         ncm_error_clear(&ncm_error);
         (void)current_screen_apply_filter(previous_filter.data,
                                           previous_filter.len, &ncm_error);
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Action cancelled");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Action cancelled"));
         sb_free(&previous_filter);
         sb_free(&filter);
         return 0;
@@ -1671,8 +1671,8 @@ action_runtime_apply_filter(void) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
     if (filter.len == 0) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Filtering disabled");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Filtering disabled"));
     } else {
         action_runtime_print_message(STRLIT("Using filter \""),
                                      filter.data, filter.len, STRLIT("\""));
@@ -1703,7 +1703,8 @@ action_runtime_find(void) {
         return 0;
     }
 
-    ncm_statusbar_print_cstring(Config.message_delay_time, "Searching...");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Searching..."));
     ncm_error_clear(&ncm_error);
     status = current_screen_search(NCM_SEARCH_DIRECTION_FORWARD, token.data,
                                    token.len, false, false, &ncm_error);
@@ -1714,10 +1715,11 @@ action_runtime_find(void) {
     found = status > 0;
 
     if ((token.len == 0) || found) {
-        ncm_statusbar_print_cstring(Config.message_delay_time, "Done");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Done"));
     } else {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "No matching patterns found");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("No matching patterns found"));
     }
 
     sb_free(&token);
@@ -1775,8 +1777,8 @@ action_runtime_find_item(enum SearchDirection direction) {
                                         Config.default_find_mode, false,
                                         &ncm_error);
         }
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Action cancelled");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Action cancelled"));
         action_runtime_search_prompt_destroy(&state);
         sb_free(&previous_constraint);
         sb_free(&constraint);
@@ -1785,8 +1787,8 @@ action_runtime_find_item(enum SearchDirection direction) {
 
     if (constraint.len == 0) {
         current_screen_clear_search_constraint();
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Constraint unset");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Constraint unset"));
     } else {
         if (!ncm_search_prompt_state_has_cached_result(&state, constraint.data,
                                                        constraint.len, NULL)) {
@@ -2365,7 +2367,8 @@ action_runtime_add_prompt(void) {
             path_text = "";
         }
 
-        ncm_statusbar_print_cstring(0, "Adding...");
+        ncm_statusbar_print(0,
+                            STRLIT("Adding..."));
         ncm_error_clear(&ncm_error);
         success = ncm_mpd_client_add(&global_mpd, path_text, &added,
                                      &ncm_error) == 0;
@@ -2422,7 +2425,8 @@ action_runtime_load_prompt(void) {
             name_text = "";
         }
 
-        ncm_statusbar_print_cstring(0, "Loading...");
+        ncm_statusbar_print(0,
+                            STRLIT("Loading..."));
         ncm_error_clear(&ncm_error);
         if (ncm_mpd_client_load_playlist(&global_mpd, name_text, &loaded,
                                           &ncm_error) < 0) {
@@ -2596,16 +2600,16 @@ action_runtime_delete_browser_items(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     if (!Config.allow_for_physical_item_deletion) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Flag \"allow_for_physical_item_deletion\" "
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Flag \"allow_for_physical_item_deletion\" "
                                     "needs to be enabled in configuration "
-                                    "file");
+                                    "file"));
         return -NCM_ERROR_UNAVAILABLE;
     }
     if (!browser_screen_is_local(screen) && (Config.mpd_music_dir_len <= 0)) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Proper mpd_music_dir variable has to be "
-                                    "set in configuration file");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Proper mpd_music_dir variable has to be "
+                                    "set in configuration file"));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -2636,12 +2640,14 @@ action_runtime_delete_browser_items(void) {
         return 0;
     }
 
-    ncm_statusbar_print_cstring(Config.message_delay_time, "Deleting items...");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Deleting items..."));
     ncm_error_clear(&ncm_error);
     if (browser_screen_delete_items(screen, &global_mpd, &ncm_error) < 0) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
-    ncm_statusbar_print_cstring(Config.message_delay_time, "Item(s) deleted");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Item(s) deleted"));
     return 0;
 }
 
@@ -2681,7 +2687,8 @@ action_runtime_delete_main_playlist_items(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    ncm_statusbar_print_cstring(Config.message_delay_time, "Deleting items...");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Deleting items..."));
     action_runtime_sort_positions(positions, count, true);
     ncm_error_clear(&ncm_error);
     for (int32 i = 0; i < count; i += 1) {
@@ -2695,7 +2702,8 @@ action_runtime_delete_main_playlist_items(void) {
     free2(positions, count*SIZEOF(*positions));
     ncm_song_array_destroy(&songs);
     (void)ncm_status_update_full(&global_mpd, NULL, &ncm_error);
-    ncm_statusbar_print_cstring(Config.message_delay_time, "Item(s) deleted");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Item(s) deleted"));
     return 0;
 }
 
@@ -2733,7 +2741,8 @@ action_runtime_delete_playlist_edit_items(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    ncm_statusbar_print_cstring(Config.message_delay_time, "Deleting items...");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Deleting items..."));
     action_runtime_sort_positions(positions, count, true);
     ncm_error_clear(&ncm_error);
     for (int32 i = 0; i < count; i += 1) {
@@ -2750,7 +2759,8 @@ action_runtime_delete_playlist_edit_items(void) {
     ncm_playlist_destroy(&playlist);
     ncm_song_array_destroy(&songs);
     playlist_edit_screen_request_content_update(screen);
-    ncm_statusbar_print_cstring(Config.message_delay_time, "Item(s) deleted");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Item(s) deleted"));
     return 0;
 }
 
@@ -2833,11 +2843,11 @@ action_runtime_delete_stored_playlists(void) {
 
     playlist_edit_screen_request_playlists_update(screen);
     if (has_selected) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Playlists deleted");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Playlists deleted"));
     } else {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Playlist deleted");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Playlist deleted"));
     }
     return 0;
 }
@@ -2867,8 +2877,8 @@ action_runtime_clear_playlist(bool main_playlist) {
         }
         playlist_screen_clear(app_screen_playlist());
         (void)ncm_status_update_full(&global_mpd, NULL, &ncm_error);
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Playlist cleared");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Playlist cleared"));
         return 0;
     }
 
@@ -2968,8 +2978,8 @@ action_runtime_crop_playlist(bool main_playlist) {
 
     ncm_error_clear(&ncm_error);
     if (main_playlist) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Cropping playlist...");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Cropping playlist..."));
         if (ncm_mpd_client_clear_queue(&global_mpd, &ncm_error) < 0) {
             ncm_song_array_destroy(&songs);
             return action_runtime_mpd_error_status(&ncm_error);
@@ -2983,8 +2993,8 @@ action_runtime_crop_playlist(bool main_playlist) {
         }
         (void)ncm_status_update_full(&global_mpd, NULL, &ncm_error);
         ncm_song_array_destroy(&songs);
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Playlist cropped");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Playlist cropped"));
         return 0;
     }
 
@@ -3154,9 +3164,9 @@ action_runtime_move_selected_items(bool down) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     if ((menu = action_runtime_current_menu()) && nc_menu_is_filtered(menu)) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Moving items is disabled in filtered "
-                                    "playlist");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Moving items is disabled in filtered "
+                                    "playlist"));
         return 0;
     }
 
@@ -3298,9 +3308,9 @@ action_runtime_move_playlist_edit_items_to(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     if (nc_menu_is_filtered(menu)) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Moving items is disabled in filtered "
-                                    "playlist");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Moving items is disabled in filtered "
+                                    "playlist"));
         return 0;
     }
 
@@ -3451,8 +3461,8 @@ action_runtime_reverse_playlist(void) {
     }
 
     last -= 1;
-    ncm_statusbar_print_cstring(Config.message_delay_time,
-                                "Reversing range...");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Reversing range..."));
     ncm_error_clear(&ncm_error);
     success = ncm_mpd_client_start_command_list(&global_mpd, &ncm_error) == 0;
     while (success && (first < last)) {
@@ -3479,7 +3489,8 @@ action_runtime_reverse_playlist(void) {
     }
 
     (void)ncm_status_update_full(&global_mpd, NULL, &ncm_error);
-    ncm_statusbar_print_cstring(Config.message_delay_time, "Range reversed");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Range reversed"));
     return 0;
 }
 
@@ -3512,7 +3523,8 @@ action_runtime_shuffle_playlist(void) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
     (void)ncm_status_update_full(&global_mpd, NULL, &ncm_error);
-    ncm_statusbar_print_cstring(Config.message_delay_time, "Range shuffled");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Range shuffled"));
     return 0;
 }
 
@@ -3530,9 +3542,9 @@ action_runtime_set_selected_items_priority(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     if (ncm_mpd_client_version(&global_mpd) < 17) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Priorities are supported in MPD >= "
-                                    "0.17.0");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Priorities are supported in MPD >= "
+                                    "0.17.0"));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -3547,8 +3559,8 @@ action_runtime_set_selected_items_priority(void) {
     if (ncm_parse_int32(input.data, input.len, &priority, &ncm_error) < 0
         || (priority > 255)) {
         sb_free(&input);
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Priority must be between 0 and 255");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Priority must be between 0 and 255"));
         return 0;
     }
     sb_free(&input);
@@ -3558,7 +3570,8 @@ action_runtime_set_selected_items_priority(void) {
         app_screen_playlist(), &global_mpd, priority, &ncm_error) < 0) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
-    ncm_statusbar_print_cstring(Config.message_delay_time, "Priority set");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Priority set"));
     return 0;
 }
 
@@ -3593,9 +3606,9 @@ action_runtime_jump_to_position_in_song(void) {
     if (action_runtime_parse_seek_position(input.data, input.len, total,
                                            &target) < 0) {
         sb_free(&input);
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Invalid format ([h]:[mm]:[ss], [m]:[ss], "
-                                    "[s]s, [%]%, [%] accepted)");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Invalid format ([h]:[mm]:[ss], [m]:[ss], "
+                                    "[s]s, [%]%, [%] accepted)"));
         return 0;
     }
     sb_free(&input);
@@ -3657,8 +3670,8 @@ action_runtime_select_album(void) {
     }
     sb_free(&album);
 
-    ncm_statusbar_print_cstring(Config.message_delay_time,
-                                "Album around cursor position selected");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Album around cursor position selected"));
     return 0;
 }
 
@@ -3699,8 +3712,8 @@ action_runtime_select_found_items(void) {
     found = status > 0;
 
     if (found) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Searching for items...");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Searching for items..."));
         (void)nc_menu_set_current_selected(menu, true);
         while (true) {
             status = current_screen_search(NCM_SEARCH_DIRECTION_FORWARD,
@@ -3716,8 +3729,8 @@ action_runtime_select_found_items(void) {
             }
             (void)nc_menu_set_current_selected(menu, true);
         }
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Found items selected");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Found items selected"));
     }
     nc_menu_highlight_position(menu, original, height);
     nc_screen_finish_list_change(app_controller_current_screen());
@@ -4003,8 +4016,8 @@ action_runtime_jump_to_playing_song(void) {
         success = playlist_screen_locate_position(app_screen_playlist(),
                                                   position) > 0;
         if (!success) {
-            ncm_statusbar_print_cstring(Config.message_delay_time,
-                                        "Song is filtered out");
+            ncm_statusbar_print(Config.message_delay_time,
+                                STRLIT("Song is filtered out"));
         }
         return 0;
     }
@@ -4090,7 +4103,8 @@ action_runtime_jump_to_media_library(void) {
 
     status = action_runtime_switch_to_screen(SCREEN_TYPE_MEDIA_LIBRARY);
     if (status == 0) {
-        ncm_statusbar_print_cstring(0, "Jumping to song...");
+        ncm_statusbar_print(0,
+                            STRLIT("Jumping to song..."));
         ncm_error_clear(&ncm_error);
         status = media_library_screen_locate_song(app_screen_media_library(),
                                                   &song, &ncm_error);
@@ -4110,9 +4124,9 @@ action_runtime_jump_to_tag_edit(void) {
     int32 status;
 
     if (Config.mpd_music_dir_len <= 0) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Proper mpd_music_dir variable has to be "
-                                    "set in configuration file");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Proper mpd_music_dir variable has to be "
+                                    "set in configuration file"));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -4368,13 +4382,13 @@ action_runtime_change_browse_mode(void) {
     if (browser_screen_change_browse_mode(browser, &global_mpd,
                                           &ncm_error) < 0) {
         if (ncm_error.code == EINVAL) {
-            ncm_statusbar_print_cstring(Config.message_delay_time,
-                                        "For browsing local filesystem "
+            ncm_statusbar_print(Config.message_delay_time,
+                                STRLIT("For browsing local filesystem "
                                         "connection to MPD via UNIX Socket "
-                                        "is required");
+                                        "is required"));
         } else if (ncm_error_is_set(&ncm_error)) {
-            ncm_statusbar_print_cstring(Config.message_delay_time,
-                                        ncm_error.message);
+            ncm_statusbar_print(Config.message_delay_time,
+                                ncm_error.message, strlen32(ncm_error.message));
         }
         return -NCM_ERROR_UNAVAILABLE;
     }
@@ -4384,7 +4398,8 @@ action_runtime_change_browse_mode(void) {
     } else {
         message = "Browse mode: MPD database";
     }
-    ncm_statusbar_print_cstring(Config.message_delay_time, message);
+    ncm_statusbar_print(Config.message_delay_time,
+                        message, strlen32(message));
     return 0;
 }
 
@@ -4424,7 +4439,8 @@ action_runtime_toggle_browser_sort_mode(void) {
         message = "Sort songs by: type";
         break;
     }
-    ncm_statusbar_print_cstring(Config.message_delay_time, message);
+    ncm_statusbar_print(Config.message_delay_time,
+                        message, strlen32(message));
     (void)browser_screen_sort(app_screen_browser());
     app_controller_request_current_screen_update();
     return 0;
@@ -4475,11 +4491,11 @@ action_runtime_toggle_media_library_sort_mode(void) {
         return status;
     }
     if (sort_by_mtime) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Sorting library by: modification time");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Sorting library by: modification time"));
     } else {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Sorting library by: name");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Sorting library by: name"));
     }
     return 0;
 }
@@ -4532,8 +4548,8 @@ action_runtime_toggle_replay_gain_mode(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    ncm_statusbar_print_cstring(0,
-                                "Replay gain: off [o], track [t], album [a]");
+    ncm_statusbar_print(0,
+                        STRLIT("Replay gain: off [o], track [t], album [a]"));
     choice = 'o';
     status = ncm_statusbar_prompt_return_one_of(window, "ota", 3, &choice);
     if (status < 0) {
@@ -4596,9 +4612,9 @@ ncm_action_edit_song(NcmSong *song) {
         return -EINVAL;
     }
     if (Config.mpd_music_dir_len <= 0) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Proper mpd_music_dir variable has to be "
-                                    "set in configuration file");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Proper mpd_music_dir variable has to be "
+                                    "set in configuration file"));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -4614,13 +4630,13 @@ ncm_action_edit_song(NcmSong *song) {
         status = action_runtime_switch_to_screen(SCREEN_TYPE_TINY_TAG_EDIT);
         break;
     case TINY_TAG_EDIT_OPEN_STREAM:
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Streams can't be edited");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Streams can't be edited"));
         break;
     case TINY_TAG_EDIT_OPEN_MISSING_MUSIC_DIRECTORY:
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Proper mpd_music_dir variable has to be "
-                                    "set in configuration file");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Proper mpd_music_dir variable has to be "
+                                    "set in configuration file"));
         break;
     case TINY_TAG_EDIT_OPEN_UNREADABLE_FILE:
         path_width = COLS - STRLIT_LEN("Couldn't read file \"\"");
@@ -4633,8 +4649,8 @@ ncm_action_edit_song(NcmSong *song) {
         break;
     case TINY_TAG_EDIT_OPEN_INVALID_ARGUMENT:
     case TINY_TAG_EDIT_OPEN_PREPARE_FAILED:
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Couldn't prepare tiny tag editor");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Couldn't prepare tiny tag editor"));
         break;
     case TINY_TAG_EDIT_OPEN_COUNT:
     default:
@@ -4695,15 +4711,15 @@ action_runtime_toggle_screen_lock(void) {
         app_screens_request_registered_resize();
         app_screen_lyrics_set_resize();
         app_controller_resize_current_screen();
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Screen unlocked");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Screen unlocked"));
         return 0;
     }
 
     if (((current = app_controller_current_screen()) == NULL)
         || !nc_screen_is_lockable(current)) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Current screen can't be locked");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Current screen can't be locked"));
         return 0;
     }
 
@@ -4714,8 +4730,8 @@ action_runtime_toggle_screen_lock(void) {
                         "(20-80): "), initial, true, NULL, NULL, &input);
         if (!prompted) {
             sb_free(&input);
-            ncm_statusbar_print_cstring(Config.message_delay_time,
-                                        "Action aborted");
+            ncm_statusbar_print(Config.message_delay_time,
+                                STRLIT("Action aborted"));
             return 0;
         }
 
@@ -4733,7 +4749,7 @@ action_runtime_toggle_screen_lock(void) {
         sb_printf(&message, "Error: value is out of bounds "
                   "([20, 80] expected, %d given)", part);
         ncm_statusbar_print(Config.message_delay_time,
-                            message.data, message.len);
+                                    message.data, message.len);
         sb_free(&message);
         return 0;
     }
@@ -4742,11 +4758,11 @@ action_runtime_toggle_screen_lock(void) {
     if (app_controller_lock_current_screen() == 0) {
         sb_printf(&message, "Screen locked (with %d%% width)", part);
         ncm_statusbar_print(Config.message_delay_time,
-                            message.data, message.len);
+                                    message.data, message.len);
         sb_free(&message);
     } else {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Current screen can't be locked");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Current screen can't be locked"));
     }
     return 0;
 }
@@ -4758,9 +4774,9 @@ action_runtime_mpd_music_dir_is_set(void) {
         return true;
     }
 
-    ncm_statusbar_print_cstring(Config.message_delay_time,
-                                "Proper mpd_music_dir variable"
-                                " has to be set in configuration file");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Proper mpd_music_dir variable"
+                                " has to be set in configuration file"));
     return false;
 }
 
@@ -4913,8 +4929,8 @@ action_runtime_update_tag_directory(StrBuilder *shared_directory, bool valid) {
             return action_runtime_mpd_error_status(&ncm_error);
         }
     }
-    ncm_statusbar_print_cstring(Config.message_delay_time,
-                                "Tags updated successfully");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Tags updated successfully"));
     return 0;
 }
 
@@ -4967,7 +4983,8 @@ action_runtime_edit_library_tag(void) {
         goto cleanup;
     }
 
-    ncm_statusbar_print_cstring(0, "Updating tags...");
+    ncm_statusbar_print(0,
+                        STRLIT("Updating tags..."));
     ncm_error_clear(&ncm_error);
     if (ncm_mpd_client_start_search(&global_mpd, true, &ncm_error) < 0
         || ncm_mpd_client_add_search_tag(&global_mpd,
@@ -5013,7 +5030,7 @@ action_runtime_edit_library_tag(void) {
                 SB_APPEND(&message, error_message,
                           optional_strlen32(error_message));
                 ncm_statusbar_print(Config.message_delay_time,
-                                    message.data, message.len);
+                                                    message.data, message.len);
                 sb_free(&message);
             }
             ncm_mutable_song_destroy(&mutable_song);
@@ -5087,13 +5104,14 @@ action_runtime_edit_library_album(void) {
                                                      &songs, &ncm_error);
     if (status < 0) {
         if (ncm_error_is_set(&ncm_error)) {
-            ncm_statusbar_print_cstring(Config.message_delay_time,
-                                        ncm_error.message);
+            ncm_statusbar_print(Config.message_delay_time,
+                                ncm_error.message, strlen32(ncm_error.message));
         }
         goto cleanup;
     }
 
-    ncm_statusbar_print_cstring(0, "Updating tags...");
+    ncm_statusbar_print(0,
+                        STRLIT("Updating tags..."));
     for (int32 i = 0; (status == 0) && (i < songs.len); i += 1) {
         NcmSong *song = &songs.items[i];
         StringView directory;
@@ -5205,8 +5223,8 @@ action_runtime_toggle_lyrics_fetcher(void) {
     fetcher = lyrics_screen_toggle_fetcher(app_screen_lyrics(),
                                            &Config.lyrics_fetchers);
     if (fetcher == NULL) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Using all lyrics fetchers");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Using all lyrics fetchers"));
         return 0;
     }
 
@@ -5229,9 +5247,9 @@ action_runtime_edit_lyrics(void) {
     bool success;
 
     if (Config.external_editor_len <= 0) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "external_editor variable has to be set in "
-                                    "configuration file");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("external_editor variable has to be set in "
+                                    "configuration file"));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -5245,15 +5263,15 @@ action_runtime_edit_lyrics(void) {
         Config.store_lyrics_in_song_dir,
         Config.generate_win32_compatible_filenames);
     if (status < 0) {
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "failed to build lyrics "
-                                    "filename");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("failed to build lyrics "
+                                    "filename"));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    ncm_statusbar_print_cstring(Config.message_delay_time,
-                                "Opening lyrics in external "
-                                "editor...");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Opening lyrics in external "
+                                "editor..."));
     filename = lyrics_screen_filename(lyrics);
     ncm_string_append_shell_escaped_single_quotes(&escaped, filename->data,
                                                   filename->len);
@@ -5318,8 +5336,8 @@ action_runtime_fetch_lyrics_background(void) {
     }
 
     ncm_song_array_destroy(&songs);
-    ncm_statusbar_print_cstring(Config.message_delay_time,
-                                "Selected songs queued for lyrics fetching");
+    ncm_statusbar_print(Config.message_delay_time,
+                        STRLIT("Selected songs queued for lyrics fetching"));
     return 0;
 }
 
@@ -5929,9 +5947,9 @@ action_runtime_builtin_can_run(ActionRuntime *runtime,
             return false;
         }
         if (ncm_mpd_client_version(&global_mpd) < 17) {
-            ncm_statusbar_print_cstring(Config.message_delay_time,
-                                        "Priorities are supported in MPD >= "
-                                        "0.17.0");
+            ncm_statusbar_print(Config.message_delay_time,
+                                STRLIT("Priorities are supported in MPD >= "
+                                        "0.17.0"));
             return false;
         }
         return true;
@@ -6135,11 +6153,11 @@ action_runtime_builtin_run(ActionRuntime *runtime, enum ActionType type) {
             }
         }
         if (Config.autocenter_mode) {
-            ncm_statusbar_print_cstring(Config.message_delay_time,
-                                        "Centering playing song: on");
+            ncm_statusbar_print(Config.message_delay_time,
+                                STRLIT("Centering playing song: on"));
         } else {
-            ncm_statusbar_print_cstring(Config.message_delay_time,
-                                        "Centering playing song: off");
+            ncm_statusbar_print(Config.message_delay_time,
+                                STRLIT("Centering playing song: off"));
         }
         return 0;
     case ACTION_UPDATE_DATABASE:
@@ -6201,8 +6219,8 @@ action_runtime_builtin_run(ActionRuntime *runtime, enum ActionType type) {
         for (int32 i = first; i < last; i += 1) {
             (void)nc_menu_set_position_selected(menu, i, true);
         }
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Range selected");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Range selected"));
         return 0;
     }
     case ACTION_REVERSE_SELECTION: {
@@ -6212,14 +6230,14 @@ action_runtime_builtin_run(ActionRuntime *runtime, enum ActionType type) {
             return -NCM_ERROR_UNAVAILABLE;
         }
         ncm_menu_reverse_selection(menu, action_runtime_menu_item_source(menu));
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Selection reversed");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Selection reversed"));
         return 0;
     }
     case ACTION_REMOVE_SELECTION:
         nc_menu_clear_selection(action_runtime_current_menu());
-        ncm_statusbar_print_cstring(Config.message_delay_time,
-                                    "Selection removed");
+        ncm_statusbar_print(Config.message_delay_time,
+                            STRLIT("Selection removed"));
         return 0;
     case ACTION_ADD_SELECTED_ITEMS: {
         NcmSongArray songs = {0};
@@ -6360,11 +6378,11 @@ action_runtime_builtin_run(ActionRuntime *runtime, enum ActionType type) {
     case ACTION_TOGGLE_FIND_MODE:
         Config.default_find_mode = !Config.default_find_mode;
         if (Config.default_find_mode) {
-            ncm_statusbar_print_cstring(Config.message_delay_time,
-                                        "Search mode: Wrapped");
+            ncm_statusbar_print(Config.message_delay_time,
+                                STRLIT("Search mode: Wrapped"));
         } else {
-            ncm_statusbar_print_cstring(Config.message_delay_time,
-                                        "Search mode: Normal");
+            ncm_statusbar_print(Config.message_delay_time,
+                                STRLIT("Search mode: Normal"));
         }
         return 0;
     case ACTION_START_SEARCHING: {
