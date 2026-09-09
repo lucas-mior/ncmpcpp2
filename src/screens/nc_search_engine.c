@@ -52,6 +52,7 @@ static void
 search_display(SearchEngineScreen *search) {
     NcMenu *menu;
     NcWindow *window;
+
     if (!search->prepared) {
         search_engine_screen_prepare_static_rows(search);
     }
@@ -61,8 +62,8 @@ search_display(SearchEngineScreen *search) {
     window = search_engine_screen_window(search);
 
     nc_window_display(window);
-    nc_menu_refresh(menu, window, nc_window_width(window),
-                    nc_window_height(window));
+    nc_menu_refresh(menu, window,
+                    nc_window_width(window), nc_window_height(window));
     return;
 }
 
