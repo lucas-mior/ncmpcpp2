@@ -1424,9 +1424,8 @@ tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
         NcMenu *menu = nc_tag_row_menu_base(&screen->tags);
 
         for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-            NcmMutableSong *item;
+            NcmMutableSong *item = nc_menu_active_item_at(menu, i);
 
-            item = nc_menu_active_item_at(menu, i);
             if ((item->uri != NULL)
                 && STREQUAL(item->uri, item->uri_len,
                             preserved_uri.data, preserved_uri.len)) {
