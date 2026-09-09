@@ -434,9 +434,8 @@ playlist_edit_mouse_callback(NcScreen *screen, MEVENT event) {
             playlist_edit_screen_previous_column(editor);
         }
         if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
-            NcMenu *menu;
+            NcMenu *menu = nc_playlist_entry_menu_base(&editor->playlists);
 
-            menu = nc_playlist_entry_menu_base(&editor->playlists);
             if ((y >= 0) && (y < nc_menu_item_count(menu))
                 && (nc_menu_goto_selectable(menu, y) >= 0)) {
                 playlist_edit_finish_playlist_change(editor);
