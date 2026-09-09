@@ -2898,10 +2898,10 @@ library_move_to_tag(MediaLibraryScreen *screen, char *tag, int32 tag_len) {
 
     menu = nc_media_library_tag_menu_base(&screen->tags);
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        NcMediaLibraryTagRow *row;
+        NcMediaLibraryTagRow *row = nc_menu_active_item_at(menu, i);
 
-        row = nc_menu_active_item_at(menu, i);
         ASSERT(row != NULL);
+
         if (STREQUAL(row->tag, row->tag_len, tag, tag_len)) {
             nc_menu_goto_selectable(menu, i);
             return 1;
