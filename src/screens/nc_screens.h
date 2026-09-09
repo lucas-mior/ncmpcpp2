@@ -174,28 +174,28 @@
 
 #define NCM_APP_SCREEN_DIRECT_ACCESSOR_TYPES(XX)                               \
   XX(browser, BrowserScreen, browser_screen,                                   \
-    browser_screen_base(&browser_screen))                                      \
+     browser_screen_base(&browser_screen))                                     \
   XX(lastfm, LastfmScreen, lastfm_screen,                                      \
-    lastfm_screen_base(&lastfm_screen))                                        \
+     lastfm_screen_base(&lastfm_screen))                                       \
   XX(lyrics, LyricsScreen, lyrics_screen,                                      \
-    lyrics_screen_base(&lyrics_screen))                                        \
+     lyrics_screen_base(&lyrics_screen))                                       \
   XX(playlist, PlaylistScreen, playlist_screen,                                \
-    playlist_screen_base(&playlist_screen))                                    \
+     playlist_screen_base(&playlist_screen))                                   \
   XX(playlist_edit, PlaylistEditScreen, playlist_edit_screen,                  \
-    playlist_edit_screen_base(&playlist_edit_screen))                          \
+     playlist_edit_screen_base(&playlist_edit_screen))                         \
   XX(selected_items_adder, SelectedItemsAdderScreen,                           \
-    selected_items_adder_screen,                                               \
-    selected_items_adder_screen_base(&selected_items_adder_screen))            \
+     selected_items_adder_screen,                                              \
+     selected_items_adder_screen_base(&selected_items_adder_screen))           \
   XX(sort_playlist_dialog, SortPlaylistDialog, sort_playlist_dialog,           \
-    sort_playlist_dialog_base(&sort_playlist_dialog))                          \
+     sort_playlist_dialog_base(&sort_playlist_dialog))                         \
   XX(search_engine, SearchEngineScreen, search_engine_screen,                  \
-    search_engine_screen_base(&search_engine_screen))                          \
+     search_engine_screen_base(&search_engine_screen))                         \
   XX(media_library, MediaLibraryScreen, media_library_screen,                  \
-    media_library_screen_base(&media_library_screen))                          \
+     media_library_screen_base(&media_library_screen))                         \
   XX(tag_edit, TagEditScreen, tag_edit_screen,                                 \
-    tag_edit_screen_base(&tag_edit_screen))                                    \
+     tag_edit_screen_base(&tag_edit_screen))                                   \
   XX(tiny_tag_edit, TinyTagEditScreen, tiny_tag_edit_screen,                   \
-    tiny_tag_edit_screen_base(&tiny_tag_edit_screen))
+     tiny_tag_edit_screen_base(&tiny_tag_edit_screen))
 
 #define NCM_APP_SCREEN_WRAPPED_ACCESSOR_TYPES(XX)                              \
     XX(help, nc_help_screen_base(&help_screen.screen))                         \
