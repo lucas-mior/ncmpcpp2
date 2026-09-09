@@ -243,8 +243,9 @@ search_build_constraint_row(SearchEngineScreen *screen, int32 idx,
 
     nc_buffer_clear(buffer);
     search_append_format(buffer, NC_FORMAT_BOLD);
-    nc_buffer_append_data(buffer, search_constraint_names[idx],
-                          strlen32(search_constraint_names[idx]));
+    nc_buffer_append_data(buffer,
+                          search_constraint_names[idx],
+                          search_constraint_name_lengths[idx]);
     while (buffer->len < 13) {
         nc_buffer_append_char(buffer, ' ');
     }
