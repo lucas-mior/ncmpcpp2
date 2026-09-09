@@ -901,8 +901,8 @@ playlist_edit_apply_geometry(PlaylistEditScreen *screen) {
 
 void
 playlist_edit_screen_set_geometry(PlaylistEditScreen *screen,
-                                    int32 start_x, int32 width,
-                                    int32 main_start_y, int32 main_height) {
+                                  int32 start_x, int32 width,
+                                  int32 main_start_y, int32 main_height) {
     if (screen == NULL) {
         return;
     }
