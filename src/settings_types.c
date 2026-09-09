@@ -96,12 +96,15 @@ NCM_ARRAY_DEFINE_APPEND(column_array, ColumnArray, Column,
 
 static void
 configuration_init_unchecked(Configuration *config) {
-#define XX_BOOL(NAME, DEFAULT_VALUE) config->NAME = false;
+#define XX_BOOL(NAME, DEFAULT_VALUE) \
+    config->NAME = false;
 #define XX_STRING(NAME, DEFAULT_VALUE)                                         \
     config->NAME = NULL;                                                       \
     config->NAME##_len = 0;
-#define XX_PATH(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
-#define XX_DIR(NAME, DEFAULT_VALUE) XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_PATH(NAME, DEFAULT_VALUE) \
+    XX_STRING(NAME, DEFAULT_VALUE)
+#define XX_DIR(NAME, DEFAULT_VALUE) \
+    XX_STRING(NAME, DEFAULT_VALUE)
 #define XX_INTEGER(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)                      \
     config->NAME = 0;
 #define XX_DOUBLE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM)                       \
