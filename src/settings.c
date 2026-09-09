@@ -1243,8 +1243,7 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
 static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
-    return settings_parse_columns(&config->NAME,                               \
-                                  &config->FORMAT_FIELD,                       \
+    return settings_parse_columns(&config->NAME, &config->FORMAT_FIELD,        \
                                   value, value_len, ncm_error);                \
 }
 
