@@ -15,7 +15,7 @@ line *before* the first one, so that they at least do not mix with other
 arguments in the call and are aligned.
 Example
 ```c
-// bad
+// bad (note how width and height are unaligned)
 int x = function_with_long_name_must_be_broken(long_argument, window_width,
                                                window_height);
 // bad (avoid breaking before the first argument, even if that would make width
