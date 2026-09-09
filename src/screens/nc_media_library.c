@@ -993,6 +993,7 @@ media_library_screen_destroy(MediaLibraryScreen *screen) {
         screen->hooks.destroy(screen->hooks.user);
     }
     screen->hooks = (MediaLibraryHooks){0};
+
     return;
 }
 
