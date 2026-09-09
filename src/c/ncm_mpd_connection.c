@@ -33,7 +33,7 @@ ncm_mpd_connection_cstring_copy(char *dst, int32 dst_cap, char *src) {
 }
 
 static void
-ncm_mpd_connection_set_error(NcmMpdConnection *connection, enum mpd_error code,
+ncm_mpd_connection_set_error(MpdConnection *connection, enum mpd_error code,
                              enum mpd_server_error server_code, bool clearable,
                              char *message) {
     int32 message_len;
@@ -48,7 +48,7 @@ ncm_mpd_connection_set_error(NcmMpdConnection *connection, enum mpd_error code,
 }
 
 static int32
-ncm_mpd_connection_require_connected(NcmMpdConnection *connection) {
+ncm_mpd_connection_require_connected(MpdConnection *connection) {
     if (connection == NULL) {
         return -EINVAL;
     }
@@ -130,7 +130,7 @@ ncm_mpd_connection_mpd_directory(char *directory) {
 }
 
 static int32
-ncm_mpd_connection_recv_song(NcmMpdConnection *connection, NcmSong *song) {
+ncm_mpd_connection_recv_song(MpdConnection *connection, NcmSong *song) {
     struct mpd_song *mpd_song;
     int32 status;
 
@@ -151,7 +151,7 @@ ncm_mpd_connection_recv_song(NcmMpdConnection *connection, NcmSong *song) {
 }
 
 static int32
-ncm_mpd_connection_recv_song_list(NcmMpdConnection *connection,
+ncm_mpd_connection_recv_song_list(MpdConnection *connection,
                                   NcmMpdSongList *songs) {
     NcmSong song = {0};
 
@@ -176,7 +176,7 @@ ncm_mpd_connection_recv_song_list(NcmMpdConnection *connection,
 }
 
 static int32
-ncm_mpd_connection_recv_pair_list(NcmMpdConnection *connection, char *name,
+ncm_mpd_connection_recv_pair_list(MpdConnection *connection, char *name,
                                   StringViewList *strings) {
     struct mpd_pair *pair;
 
@@ -445,7 +445,7 @@ ncm_mpd_playlist_list_clear(NcmMpdPlaylistList *list) {
 }
 
 void
-ncm_mpd_connection_destroy(NcmMpdConnection *connection) {
+ncm_mpd_connection_destroy(MpdConnection *connection) {
     if (connection == NULL) {
         return;
     }
@@ -456,7 +456,7 @@ ncm_mpd_connection_destroy(NcmMpdConnection *connection) {
 }
 
 int32
-ncm_mpd_connection_connect(NcmMpdConnection *connection,
+ncm_mpd_connection_connect(MpdConnection *connection,
                            char *host, uint16 port, int32 timeout_ms) {
     int32 status;
 
@@ -485,7 +485,7 @@ ncm_mpd_connection_connect(NcmMpdConnection *connection,
 }
 
 void
-ncm_mpd_connection_disconnect(NcmMpdConnection *connection) {
+ncm_mpd_connection_disconnect(MpdConnection *connection) {
     if (connection == NULL) {
         return;
     }
@@ -498,7 +498,7 @@ ncm_mpd_connection_disconnect(NcmMpdConnection *connection) {
 }
 
 bool
-ncm_mpd_connection_is_connected(NcmMpdConnection *connection) {
+ncm_mpd_connection_is_connected(MpdConnection *connection) {
     if (connection == NULL) {
         return false;
     }
@@ -507,14 +507,14 @@ ncm_mpd_connection_is_connected(NcmMpdConnection *connection) {
 }
 
 int32
-ncm_mpd_connection_fd(NcmMpdConnection *connection) {
+ncm_mpd_connection_fd(MpdConnection *connection) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     return mpd_connection_get_fd(connection->mpd);
 }
 
 int32
-ncm_mpd_connection_set_timeout(NcmMpdConnection *connection, int32 timeout_ms) {
+ncm_mpd_connection_set_timeout(MpdConnection *connection, int32 timeout_ms) {
     if (connection == NULL) {
         return -EINVAL;
     }
@@ -527,7 +527,7 @@ ncm_mpd_connection_set_timeout(NcmMpdConnection *connection, int32 timeout_ms) {
 }
 
 int32
-ncm_mpd_connection_send_idle(NcmMpdConnection *connection,
+ncm_mpd_connection_send_idle(MpdConnection *connection,
                              enum mpd_idle events) {
     (void)events;
 
@@ -541,7 +541,7 @@ ncm_mpd_connection_send_idle(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_recv_idle(NcmMpdConnection *connection, bool disable_timeout,
+ncm_mpd_connection_recv_idle(MpdConnection *connection, bool disable_timeout,
                              enum mpd_idle *out_events) {
     enum mpd_idle events;
     int32 status;
@@ -559,7 +559,7 @@ ncm_mpd_connection_recv_idle(NcmMpdConnection *connection, bool disable_timeout,
 }
 
 int32
-ncm_mpd_connection_noidle(NcmMpdConnection *connection) {
+ncm_mpd_connection_noidle(MpdConnection *connection) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     if (!mpd_send_noidle(connection->mpd)) {
@@ -570,7 +570,7 @@ ncm_mpd_connection_noidle(NcmMpdConnection *connection) {
 }
 
 int32
-ncm_mpd_connection_check_error(NcmMpdConnection *connection) {
+ncm_mpd_connection_check_error(MpdConnection *connection) {
     enum mpd_error code;
     enum mpd_server_error server_code;
     bool clearable;
@@ -628,7 +628,7 @@ ncm_mpd_connection_check_error(NcmMpdConnection *connection) {
 }
 
 char *
-ncm_mpd_connection_error(NcmMpdConnection *connection) {
+ncm_mpd_connection_error(MpdConnection *connection) {
     if (connection == NULL) {
         return NULL;
     }
@@ -637,7 +637,7 @@ ncm_mpd_connection_error(NcmMpdConnection *connection) {
 }
 
 void
-ncm_mpd_connection_clear_error(NcmMpdConnection *connection) {
+ncm_mpd_connection_clear_error(MpdConnection *connection) {
     if (connection == NULL) {
         return;
     }
@@ -650,7 +650,7 @@ ncm_mpd_connection_clear_error(NcmMpdConnection *connection) {
 }
 
 enum mpd_error
-ncm_mpd_connection_error_code(NcmMpdConnection *connection) {
+ncm_mpd_connection_error_code(MpdConnection *connection) {
     if (connection == NULL) {
         return MPD_ERROR_SUCCESS;
     }
@@ -659,7 +659,7 @@ ncm_mpd_connection_error_code(NcmMpdConnection *connection) {
 }
 
 enum mpd_server_error
-ncm_mpd_connection_server_error_code(NcmMpdConnection *connection) {
+ncm_mpd_connection_server_error_code(MpdConnection *connection) {
     if (connection == NULL) {
         return (enum mpd_server_error)0;
     }
@@ -668,7 +668,7 @@ ncm_mpd_connection_server_error_code(NcmMpdConnection *connection) {
 }
 
 bool
-ncm_mpd_connection_error_is_clearable(NcmMpdConnection *connection) {
+ncm_mpd_connection_error_is_clearable(MpdConnection *connection) {
     if (connection == NULL) {
         return false;
     }
@@ -677,7 +677,7 @@ ncm_mpd_connection_error_is_clearable(NcmMpdConnection *connection) {
 }
 
 int32
-ncm_mpd_connection_get_stats(NcmMpdConnection *connection,
+ncm_mpd_connection_get_stats(MpdConnection *connection,
                              NcmMpdStats *out_stats) {
     struct mpd_stats *stats;
     int32 status;
@@ -711,7 +711,7 @@ ncm_mpd_connection_get_stats(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_get_status(NcmMpdConnection *connection,
+ncm_mpd_connection_get_status(MpdConnection *connection,
                               NcmMpdStatus *out_status) {
     struct mpd_status *mpd_status;
     char *error;
@@ -761,7 +761,7 @@ ncm_mpd_connection_get_status(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_version(NcmMpdConnection *connection) {
+ncm_mpd_connection_version(MpdConnection *connection) {
     uint *version;
 
     if (!ncm_mpd_connection_is_connected(connection)) {
@@ -777,7 +777,7 @@ ncm_mpd_connection_version(NcmMpdConnection *connection) {
 }
 
 int32
-ncm_mpd_connection_send_password(NcmMpdConnection *connection, char *password) {
+ncm_mpd_connection_send_password(MpdConnection *connection, char *password) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (password == NULL) {
         return 0;
@@ -794,7 +794,7 @@ ncm_mpd_connection_send_password(NcmMpdConnection *connection, char *password) {
 }
 
 int32
-ncm_mpd_connection_start_command_list(NcmMpdConnection *connection) {
+ncm_mpd_connection_start_command_list(MpdConnection *connection) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     if (!mpd_command_list_begin(connection->mpd, true)) {
@@ -805,7 +805,7 @@ ncm_mpd_connection_start_command_list(NcmMpdConnection *connection) {
 }
 
 int32
-ncm_mpd_connection_commit_command_list(NcmMpdConnection *connection) {
+ncm_mpd_connection_commit_command_list(MpdConnection *connection) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     if (!mpd_command_list_end(connection->mpd)) {
@@ -816,7 +816,7 @@ ncm_mpd_connection_commit_command_list(NcmMpdConnection *connection) {
 }
 
 int32
-ncm_mpd_connection_get_supported_extensions(NcmMpdConnection *connection,
+ncm_mpd_connection_get_supported_extensions(MpdConnection *connection,
                                             StringViewList *strings) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (strings == NULL) {
@@ -831,7 +831,7 @@ ncm_mpd_connection_get_supported_extensions(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_get_replay_gain_mode(NcmMpdConnection *connection,
+ncm_mpd_connection_get_replay_gain_mode(MpdConnection *connection,
                                         enum NcmMpdReplayGainMode *mode) {
     struct mpd_pair *pair;
     char *name;
@@ -882,7 +882,7 @@ ncm_mpd_connection_get_replay_gain_mode(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_set_replay_gain_mode(NcmMpdConnection *connection,
+ncm_mpd_connection_set_replay_gain_mode(MpdConnection *connection,
                                         enum NcmMpdReplayGainMode mode) {
     char *name;
 
@@ -912,7 +912,7 @@ ncm_mpd_connection_set_replay_gain_mode(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_get_playlists(NcmMpdConnection *connection,
+ncm_mpd_connection_get_playlists(MpdConnection *connection,
                                  NcmMpdPlaylistList *playlists) {
     struct mpd_playlist *playlist;
     NcmPlaylist item = {0};
@@ -970,7 +970,7 @@ ncm_mpd_connection_get_playlists(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_list_all_song_uris(NcmMpdConnection *connection, char *path,
+ncm_mpd_connection_list_all_song_uris(MpdConnection *connection, char *path,
                                       StringViewList *strings) {
     char *directory;
 
@@ -988,7 +988,7 @@ ncm_mpd_connection_list_all_song_uris(NcmMpdConnection *connection, char *path,
 }
 
 int32
-ncm_mpd_connection_get_url_handlers(NcmMpdConnection *connection,
+ncm_mpd_connection_get_url_handlers(MpdConnection *connection,
                                     StringViewList *strings) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (strings == NULL) {
@@ -1003,7 +1003,7 @@ ncm_mpd_connection_get_url_handlers(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_get_tag_types(NcmMpdConnection *connection,
+ncm_mpd_connection_get_tag_types(MpdConnection *connection,
                                  StringViewList *strings) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (strings == NULL) {
@@ -1018,7 +1018,7 @@ ncm_mpd_connection_get_tag_types(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_get_current_song(NcmMpdConnection *connection,
+ncm_mpd_connection_get_current_song(MpdConnection *connection,
                                     NcmSong *song) {
     int32 status;
 
@@ -1041,7 +1041,7 @@ ncm_mpd_connection_get_current_song(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_get_queue(NcmMpdConnection *connection,
+ncm_mpd_connection_get_queue(MpdConnection *connection,
                              NcmMpdSongList *songs) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (songs == NULL) {
@@ -1056,7 +1056,7 @@ ncm_mpd_connection_get_queue(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_get_queue_changes(NcmMpdConnection *connection,
+ncm_mpd_connection_get_queue_changes(MpdConnection *connection,
                                      int32 version, NcmMpdSongList *songs) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (songs == NULL) {
@@ -1071,7 +1071,7 @@ ncm_mpd_connection_get_queue_changes(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_get_playlist_content(NcmMpdConnection *connection,
+ncm_mpd_connection_get_playlist_content(MpdConnection *connection,
                                         char *path, NcmMpdSongList *songs) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (songs == NULL) {
@@ -1086,7 +1086,7 @@ ncm_mpd_connection_get_playlist_content(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_get_playlist_content_no_info(NcmMpdConnection *connection,
+ncm_mpd_connection_get_playlist_content_no_info(MpdConnection *connection,
     char *path, NcmMpdSongList *songs) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (songs == NULL) {
@@ -1101,7 +1101,7 @@ ncm_mpd_connection_get_playlist_content_no_info(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_get_directory(NcmMpdConnection *connection, char *path,
+ncm_mpd_connection_get_directory(MpdConnection *connection, char *path,
                                  NcmMpdItemList *items) {
     struct mpd_entity *entity;
     NcmMpdItem item = {0};
@@ -1162,7 +1162,7 @@ ncm_mpd_connection_get_directory(NcmMpdConnection *connection, char *path,
 }
 
 int32
-ncm_mpd_connection_get_directory_songs(NcmMpdConnection *connection, char *path,
+ncm_mpd_connection_get_directory_songs(MpdConnection *connection, char *path,
                                        NcmMpdSongList *songs) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (songs == NULL) {
@@ -1178,7 +1178,7 @@ ncm_mpd_connection_get_directory_songs(NcmMpdConnection *connection, char *path,
 }
 
 int32
-ncm_mpd_connection_list_all_songs(NcmMpdConnection *connection, char *path,
+ncm_mpd_connection_list_all_songs(MpdConnection *connection, char *path,
                                   NcmMpdSongList *songs) {
     struct mpd_entity *entity;
     struct mpd_song *mpd_song;
@@ -1227,7 +1227,7 @@ ncm_mpd_connection_list_all_songs(NcmMpdConnection *connection, char *path,
 }
 
 int32
-ncm_mpd_connection_start_search_songs(NcmMpdConnection *connection,
+ncm_mpd_connection_start_search_songs(MpdConnection *connection,
                                       bool exact_match) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1239,7 +1239,7 @@ ncm_mpd_connection_start_search_songs(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_add_search_tag(NcmMpdConnection *connection,
+ncm_mpd_connection_add_search_tag(MpdConnection *connection,
                                   enum mpd_tag_type tag, char *value) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1252,7 +1252,7 @@ ncm_mpd_connection_add_search_tag(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_add_search_any(NcmMpdConnection *connection, char *value) {
+ncm_mpd_connection_add_search_any(MpdConnection *connection, char *value) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     if (!mpd_search_add_any_tag_constraint(connection->mpd,
@@ -1264,7 +1264,7 @@ ncm_mpd_connection_add_search_any(NcmMpdConnection *connection, char *value) {
 }
 
 int32
-ncm_mpd_connection_add_search_uri(NcmMpdConnection *connection, char *value) {
+ncm_mpd_connection_add_search_uri(MpdConnection *connection, char *value) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     if (!mpd_search_add_uri_constraint(connection->mpd, MPD_OPERATOR_DEFAULT,
@@ -1276,7 +1276,7 @@ ncm_mpd_connection_add_search_uri(NcmMpdConnection *connection, char *value) {
 }
 
 int32
-ncm_mpd_connection_commit_search_songs(NcmMpdConnection *connection,
+ncm_mpd_connection_commit_search_songs(MpdConnection *connection,
                                        NcmMpdSongList *songs) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (songs == NULL) {
@@ -1291,7 +1291,7 @@ ncm_mpd_connection_commit_search_songs(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_list_tag_values(NcmMpdConnection *connection,
+ncm_mpd_connection_list_tag_values(MpdConnection *connection,
                                    enum mpd_tag_type tag,
                                    StringViewList *strings) {
     struct mpd_pair *pair;
@@ -1323,7 +1323,7 @@ ncm_mpd_connection_list_tag_values(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_update_database(NcmMpdConnection *connection, char *path,
+ncm_mpd_connection_update_database(MpdConnection *connection, char *path,
                                    int32 *id) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1349,7 +1349,7 @@ ncm_mpd_connection_update_database(NcmMpdConnection *connection, char *path,
 }
 
 int32
-ncm_mpd_connection_get_outputs(NcmMpdConnection *connection,
+ncm_mpd_connection_get_outputs(MpdConnection *connection,
                                NcmMpdOutputList *outputs) {
     struct mpd_output *output;
     NcmMpdOutput *item;
@@ -1408,7 +1408,7 @@ ncm_mpd_connection_get_outputs(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_enable_output(NcmMpdConnection *connection, int32 id) {
+ncm_mpd_connection_enable_output(MpdConnection *connection, int32 id) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_enable_output(connection->mpd, (uint32)id);
@@ -1416,7 +1416,7 @@ ncm_mpd_connection_enable_output(NcmMpdConnection *connection, int32 id) {
 }
 
 int32
-ncm_mpd_connection_disable_output(NcmMpdConnection *connection, int32 id) {
+ncm_mpd_connection_disable_output(MpdConnection *connection, int32 id) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_disable_output(connection->mpd, (uint32)id);
@@ -1424,7 +1424,7 @@ ncm_mpd_connection_disable_output(NcmMpdConnection *connection, int32 id) {
 }
 
 int32
-ncm_mpd_connection_play(NcmMpdConnection *connection) {
+ncm_mpd_connection_play(MpdConnection *connection) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_play(connection->mpd);
@@ -1432,7 +1432,7 @@ ncm_mpd_connection_play(NcmMpdConnection *connection) {
 }
 
 int32
-ncm_mpd_connection_play_pos(NcmMpdConnection *connection, int32 pos) {
+ncm_mpd_connection_play_pos(MpdConnection *connection, int32 pos) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_play_pos(connection->mpd, (uint)pos);
@@ -1440,7 +1440,7 @@ ncm_mpd_connection_play_pos(NcmMpdConnection *connection, int32 pos) {
 }
 
 int32
-ncm_mpd_connection_play_id(NcmMpdConnection *connection, int32 id) {
+ncm_mpd_connection_play_id(MpdConnection *connection, int32 id) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_play_id(connection->mpd, (uint)id);
@@ -1448,7 +1448,7 @@ ncm_mpd_connection_play_id(NcmMpdConnection *connection, int32 id) {
 }
 
 int32
-ncm_mpd_connection_toggle_pause(NcmMpdConnection *connection) {
+ncm_mpd_connection_toggle_pause(MpdConnection *connection) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_toggle_pause(connection->mpd);
@@ -1456,7 +1456,7 @@ ncm_mpd_connection_toggle_pause(NcmMpdConnection *connection) {
 }
 
 int32
-ncm_mpd_connection_stop(NcmMpdConnection *connection) {
+ncm_mpd_connection_stop(MpdConnection *connection) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_stop(connection->mpd);
@@ -1464,7 +1464,7 @@ ncm_mpd_connection_stop(NcmMpdConnection *connection) {
 }
 
 int32
-ncm_mpd_connection_next(NcmMpdConnection *connection) {
+ncm_mpd_connection_next(MpdConnection *connection) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_next(connection->mpd);
@@ -1472,7 +1472,7 @@ ncm_mpd_connection_next(NcmMpdConnection *connection) {
 }
 
 int32
-ncm_mpd_connection_previous(NcmMpdConnection *connection) {
+ncm_mpd_connection_previous(MpdConnection *connection) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_previous(connection->mpd);
@@ -1480,7 +1480,7 @@ ncm_mpd_connection_previous(NcmMpdConnection *connection) {
 }
 
 int32
-ncm_mpd_connection_seek_pos(NcmMpdConnection *connection,
+ncm_mpd_connection_seek_pos(MpdConnection *connection,
                             int32 pos, int32 seconds) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1489,7 +1489,7 @@ ncm_mpd_connection_seek_pos(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_set_repeat(NcmMpdConnection *connection, bool mode) {
+ncm_mpd_connection_set_repeat(MpdConnection *connection, bool mode) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_repeat(connection->mpd, mode);
@@ -1497,7 +1497,7 @@ ncm_mpd_connection_set_repeat(NcmMpdConnection *connection, bool mode) {
 }
 
 int32
-ncm_mpd_connection_set_random(NcmMpdConnection *connection, bool mode) {
+ncm_mpd_connection_set_random(MpdConnection *connection, bool mode) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_random(connection->mpd, mode);
@@ -1505,7 +1505,7 @@ ncm_mpd_connection_set_random(NcmMpdConnection *connection, bool mode) {
 }
 
 int32
-ncm_mpd_connection_set_single(NcmMpdConnection *connection, bool mode) {
+ncm_mpd_connection_set_single(MpdConnection *connection, bool mode) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_single(connection->mpd, mode);
@@ -1513,7 +1513,7 @@ ncm_mpd_connection_set_single(NcmMpdConnection *connection, bool mode) {
 }
 
 int32
-ncm_mpd_connection_set_consume(NcmMpdConnection *connection, bool mode) {
+ncm_mpd_connection_set_consume(MpdConnection *connection, bool mode) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_consume(connection->mpd, mode);
@@ -1521,7 +1521,7 @@ ncm_mpd_connection_set_consume(NcmMpdConnection *connection, bool mode) {
 }
 
 int32
-ncm_mpd_connection_set_crossfade(NcmMpdConnection *connection, int32 seconds) {
+ncm_mpd_connection_set_crossfade(MpdConnection *connection, int32 seconds) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_crossfade(connection->mpd, (uint32)seconds);
@@ -1529,7 +1529,7 @@ ncm_mpd_connection_set_crossfade(NcmMpdConnection *connection, int32 seconds) {
 }
 
 int32
-ncm_mpd_connection_set_volume(NcmMpdConnection *connection, int32 vol) {
+ncm_mpd_connection_set_volume(MpdConnection *connection, int32 vol) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_set_volume(connection->mpd, (uint32)vol);
@@ -1537,7 +1537,7 @@ ncm_mpd_connection_set_volume(NcmMpdConnection *connection, int32 vol) {
 }
 
 int32
-ncm_mpd_connection_change_volume(NcmMpdConnection *connection, int32 change) {
+ncm_mpd_connection_change_volume(MpdConnection *connection, int32 change) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_change_volume(connection->mpd, change);
@@ -1545,7 +1545,7 @@ ncm_mpd_connection_change_volume(NcmMpdConnection *connection, int32 change) {
 }
 
 int32
-ncm_mpd_connection_move(NcmMpdConnection *connection, int32 from, int32 to,
+ncm_mpd_connection_move(MpdConnection *connection, int32 from, int32 to,
                         bool command_list_active) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1559,7 +1559,7 @@ ncm_mpd_connection_move(NcmMpdConnection *connection, int32 from, int32 to,
 }
 
 int32
-ncm_mpd_connection_swap(NcmMpdConnection *connection, int32 from, int32 to,
+ncm_mpd_connection_swap(MpdConnection *connection, int32 from, int32 to,
                         bool command_list_active) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1573,7 +1573,7 @@ ncm_mpd_connection_swap(NcmMpdConnection *connection, int32 from, int32 to,
 }
 
 int32
-ncm_mpd_connection_shuffle(NcmMpdConnection *connection) {
+ncm_mpd_connection_shuffle(MpdConnection *connection) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_shuffle(connection->mpd);
@@ -1581,7 +1581,7 @@ ncm_mpd_connection_shuffle(NcmMpdConnection *connection) {
 }
 
 int32
-ncm_mpd_connection_shuffle_range(NcmMpdConnection *connection,
+ncm_mpd_connection_shuffle_range(MpdConnection *connection,
                                  int32 start, int32 end) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1590,7 +1590,7 @@ ncm_mpd_connection_shuffle_range(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_clear_queue(NcmMpdConnection *connection) {
+ncm_mpd_connection_clear_queue(MpdConnection *connection) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_clear(connection->mpd);
@@ -1598,7 +1598,7 @@ ncm_mpd_connection_clear_queue(NcmMpdConnection *connection) {
 }
 
 int32
-ncm_mpd_connection_set_priority_id(NcmMpdConnection *connection,
+ncm_mpd_connection_set_priority_id(MpdConnection *connection,
                                    int32 id, int32 prio,
                                    bool command_list_active) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
@@ -1613,7 +1613,7 @@ ncm_mpd_connection_set_priority_id(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_add_song(NcmMpdConnection *connection, char *path,
+ncm_mpd_connection_add_song(MpdConnection *connection, char *path,
                             int32 pos, bool command_list_active, int32 *id) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1641,7 +1641,7 @@ ncm_mpd_connection_add_song(NcmMpdConnection *connection, char *path,
 }
 
 int32
-ncm_mpd_connection_add(NcmMpdConnection *connection, char *path,
+ncm_mpd_connection_add(MpdConnection *connection, char *path,
                        bool command_list_active, bool *added) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1667,7 +1667,7 @@ ncm_mpd_connection_add(NcmMpdConnection *connection, char *path,
 }
 
 int32
-ncm_mpd_connection_delete(NcmMpdConnection *connection,
+ncm_mpd_connection_delete(MpdConnection *connection,
                           int32 pos, bool command_list_active) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1681,7 +1681,7 @@ ncm_mpd_connection_delete(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_clear_playlist(NcmMpdConnection *connection,
+ncm_mpd_connection_clear_playlist(MpdConnection *connection,
                                   char *playlist) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1690,7 +1690,7 @@ ncm_mpd_connection_clear_playlist(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_add_to_playlist(NcmMpdConnection *connection,
+ncm_mpd_connection_add_to_playlist(MpdConnection *connection,
                                    char *playlist, char *path,
                                    bool command_list_active) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
@@ -1705,7 +1705,7 @@ ncm_mpd_connection_add_to_playlist(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_playlist_move(NcmMpdConnection *connection, char *playlist,
+ncm_mpd_connection_playlist_move(MpdConnection *connection, char *playlist,
                                  int32 from, int32 to,
                                  bool command_list_active) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
@@ -1720,7 +1720,7 @@ ncm_mpd_connection_playlist_move(NcmMpdConnection *connection, char *playlist,
 }
 
 int32
-ncm_mpd_connection_playlist_delete(NcmMpdConnection *connection, char *playlist,
+ncm_mpd_connection_playlist_delete(MpdConnection *connection, char *playlist,
                                    int32 pos, bool command_list_active) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1734,7 +1734,7 @@ ncm_mpd_connection_playlist_delete(NcmMpdConnection *connection, char *playlist,
 }
 
 int32
-ncm_mpd_connection_rename_playlist(NcmMpdConnection *connection,
+ncm_mpd_connection_rename_playlist(MpdConnection *connection,
                                    char *from, char *to) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1743,7 +1743,7 @@ ncm_mpd_connection_rename_playlist(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_delete_playlist(NcmMpdConnection *connection,
+ncm_mpd_connection_delete_playlist(MpdConnection *connection,
                                    char *playlist) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1752,7 +1752,7 @@ ncm_mpd_connection_delete_playlist(NcmMpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_load_playlist(NcmMpdConnection *connection, char *playlist,
+ncm_mpd_connection_load_playlist(MpdConnection *connection, char *playlist,
                                  bool *loaded) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -1765,7 +1765,7 @@ ncm_mpd_connection_load_playlist(NcmMpdConnection *connection, char *playlist,
 }
 
 int32
-ncm_mpd_connection_save_playlist(NcmMpdConnection *connection, char *playlist) {
+ncm_mpd_connection_save_playlist(MpdConnection *connection, char *playlist) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_send_save(connection->mpd, playlist);

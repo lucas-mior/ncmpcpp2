@@ -186,7 +186,7 @@ ncm_mpd_client_init(MpdClient *client) {
         return;
     }
 
-    client->connection = (NcmMpdConnection){0};
+    client->connection = (MpdConnection){0};
     client->host = (StrBuilder){0};
     client->password = (StrBuilder){0};
     ncm_mpd_client_set_buffer(&client->host, STRLIT("localhost"));
