@@ -1641,6 +1641,7 @@ playlist_edit_screen_apply_active_filter(PlaylistEditScreen *screen,
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing playlist editor"));
     }
+
     menu = playlist_edit_screen_active_menu(screen);
     if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
         regex = &screen->content_filter_regex;
