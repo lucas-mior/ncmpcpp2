@@ -1532,43 +1532,43 @@ nc_window_apply_format(NcWindow *window, enum NcFormat format) {
     switch (format) {
     case NC_FORMAT_BOLD:
         nc_window_incr_format(window,
-                              &window->bold_counter, nc_window_bold);
+                              &window->bold_count, nc_window_bold);
         break;
     case NC_FORMAT_NO_BOLD:
         nc_window_decr_format(window,
-                              &window->bold_counter, nc_window_bold);
+                              &window->bold_count, nc_window_bold);
         break;
     case NC_FORMAT_UNDERLINE:
         nc_window_incr_format(window,
-                              &window->underline_counter, nc_window_underline);
+                              &window->underline_count, nc_window_underline);
         break;
     case NC_FORMAT_NO_UNDERLINE:
         nc_window_decr_format(window,
-                              &window->underline_counter, nc_window_underline);
+                              &window->underline_count, nc_window_underline);
         break;
     case NC_FORMAT_REVERSE:
         nc_window_incr_format(window,
-                              &window->reverse_counter, nc_window_reverse);
+                              &window->reverse_count, nc_window_reverse);
         break;
     case NC_FORMAT_NO_REVERSE:
         nc_window_decr_format(window,
-                              &window->reverse_counter, nc_window_reverse);
+                              &window->reverse_count, nc_window_reverse);
         break;
     case NC_FORMAT_ALT_CHARSET:
         nc_window_incr_format(window,
-                              &window->alt_charset_counter, nc_window_alt_charset);
+                              &window->alt_charset_count, nc_window_alt_charset);
         break;
     case NC_FORMAT_NO_ALT_CHARSET:
         nc_window_decr_format(window,
-                              &window->alt_charset_counter, nc_window_alt_charset);
+                              &window->alt_charset_count, nc_window_alt_charset);
         break;
     case NC_FORMAT_ITALIC:
         nc_window_incr_format(window,
-                              &window->italic_counter, nc_window_italic);
+                              &window->italic_count, nc_window_italic);
         break;
     case NC_FORMAT_NO_ITALIC:
         nc_window_decr_format(window,
-                              &window->italic_counter, nc_window_italic);
+                              &window->italic_count, nc_window_italic);
         break;
     case NC_FORMAT_COUNT:
     default:
