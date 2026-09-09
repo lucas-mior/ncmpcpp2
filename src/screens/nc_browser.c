@@ -1855,7 +1855,7 @@ browser_screen_can_rename_directory(BrowserScreen *screen) {
 
     ncm_error_clear(&ncm_error);
     return (browser_current_directory_item_path(screen, &path, &ncm_error) == 0)
-        && (screen->local_browser || (Config.mpd_music_dir_len > 0));
+            && (screen->local_browser || (Config.mpd_music_dir_len > 0));
 }
 
 bool
