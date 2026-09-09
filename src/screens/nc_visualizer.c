@@ -1364,8 +1364,7 @@ static void
 visualizer_draw_wave_filled(VisualizerScreen *screen,
                             int16 *samples, int32 samples_len,
                             int32 y_offset, int32 height) {
-    char *character = screen->visualizer_chars.data
-                      + screen->bar_char_offset;
+    char *character = screen->visualizer_chars.data + screen->bar_char_offset;
     int32 character_len = screen->bar_char_len;
     int32 width = nc_window_width(&screen->window);
     int32 samples_per_column;
