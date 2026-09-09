@@ -75,9 +75,11 @@ settings_assert_generated_empty(Configuration *config) {
     ASSERT(config->NAME == NULL); \
     ASSERT(config->NAME##_len == 0);
 #define XX_PATH(NAME, DEFAULT_VALUE) \
-    XX_STRING(NAME, DEFAULT_VALUE)
+    ASSERT(config->NAME == NULL); \
+    ASSERT(config->NAME##_len == 0);
 #define XX_DIR(NAME, DEFAULT_VALUE) \
-    XX_STRING(NAME, DEFAULT_VALUE)
+    ASSERT(config->NAME == NULL); \
+    ASSERT(config->NAME##_len == 0);
 #define XX_INTEGER(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
     ASSERT(config->NAME == 0);
 #define XX_DOUBLE(NAME, DEFAULT_VALUE, MINIMUM, MAXIMUM) \
