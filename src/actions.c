@@ -441,8 +441,8 @@ action_runtime_switch_to_next_screen(bool reverse) {
         if ((current = app_controller_previous_screen()) == NULL) {
             return -NCM_ERROR_UNAVAILABLE;
         }
-        return nc_screen_switcher_switch_to(
-            current, current->has_to_be_resized);
+        return nc_screen_switcher_switch_to(current,
+                                            current->has_to_be_resized);
     }
 
     if (sequence->len <= 0) {
@@ -990,8 +990,9 @@ action_runtime_search_prompt_apply(ActionRuntimeSearchPrompt *state, char *text,
     ncm_error_clear(ncm_error);
     status = action_runtime_search_from_prompt_start(state, text, text_len,
                                                      &last_found, ncm_error);
-    finish_status = ncm_search_prompt_state_finish_result(
-        state, text, text_len, status == 0, last_found);
+    finish_status = ncm_search_prompt_state_finish_result(state, text, text_len,
+                                                          status == 0,
+                                                          last_found);
     if (finish_status < 0) {
         return finish_status;
     }
@@ -1203,8 +1204,9 @@ action_runtime_add_random_items(void) {
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window, STRLIT("Add random? [s]ongs/[a]rtists/"
                                          "album [A]rtists/al[b]ums "));
-        status = ncm_statusbar_prompt_return_one_of(
-            window, values, LENGTH(values), &random_type);
+        status = ncm_statusbar_prompt_return_one_of(window, values,
+                                                    LENGTH(values),
+                                                    &random_type);
     }
     ncm_statusbar_scoped_lock_destroy(&scoped_lock);
     if (status < 0) {
@@ -1244,9 +1246,9 @@ action_runtime_add_random_items(void) {
     ncm_error_clear(&ncm_error);
     if (ncm_parse_int32(input.data, input.len, &number, &ncm_error) < 0) {
         sb_free(&input);
-        ncm_statusbar_print_cstring(
-            Config.message_delay_time,
-            "Random item count must be a non-negative number");
+        ncm_statusbar_print_cstring(Config.message_delay_time,
+                                    "Random item count must be a non-negative "
+                                    "number");
         return 0;
     }
     sb_free(&input);
@@ -1257,12 +1259,16 @@ action_runtime_add_random_items(void) {
 
     ncm_error_clear(&ncm_error);
     if (random_type == 's') {
-        success = ncm_mpd_client_add_random_songs(
-            &global_mpd, count, Config.random_exclude_pattern,
-            Config.random_exclude_pattern_len, &ncm_error) == 0;
+        char *exclude_pattern = Config.random_exclude_pattern;
+        int32 exclude_pattern_len = Config.random_exclude_pattern_len;
+
+        success = ncm_mpd_client_add_random_songs(&global_mpd, count,
+                                                  exclude_pattern,
+                                                  exclude_pattern_len,
+                                                  &ncm_error) == 0;
     } else {
-        success = ncm_mpd_client_add_random_tag(
-            &global_mpd, tag_type, count, &ncm_error) == 0;
+        success = ncm_mpd_client_add_random_tag(&global_mpd, tag_type, count,
+                                                &ncm_error) == 0;
     }
     if (!success) {
         return action_runtime_mpd_error_status(&ncm_error);
@@ -1321,11 +1327,11 @@ action_runtime_toggle_separators_between_albums(void) {
     Config.playlist_separate_albums = !Config.playlist_separate_albums;
     app_controller_request_current_screen_resize();
     if (Config.playlist_separate_albums) {
-        action_runtime_print_toggle(
-            STRLIT("Separators between albums: "), "on");
+        action_runtime_print_toggle(STRLIT("Separators between albums: "),
+                                    "on");
     } else {
-        action_runtime_print_toggle(
-            STRLIT("Separators between albums: "), "off");
+        action_runtime_print_toggle(STRLIT("Separators between albums: "),
+                                    "off");
     }
     return 0;
 }
@@ -1337,11 +1343,11 @@ action_runtime_toggle_lyrics_update_on_song_change(void) {
     }
     Config.follow_now_playing_lyrics = !Config.follow_now_playing_lyrics;
     if (Config.follow_now_playing_lyrics) {
-        action_runtime_print_toggle(
-            STRLIT("Update lyrics if song changes: "), "on");
+        action_runtime_print_toggle(STRLIT("Update lyrics if song changes: "),
+                                    "on");
     } else {
-        action_runtime_print_toggle(
-            STRLIT("Update lyrics if song changes: "), "off");
+        action_runtime_print_toggle(STRLIT("Update lyrics if song changes: "),
+                                    "off");
     }
     return 0;
 }
@@ -1351,11 +1357,13 @@ action_runtime_toggle_fetching_lyrics_in_background(void) {
     Config.fetch_lyrics_for_current_song_in_background =
         !Config.fetch_lyrics_for_current_song_in_background;
     if (Config.fetch_lyrics_for_current_song_in_background) {
-        action_runtime_print_toggle(
-            STRLIT("Fetching lyrics for playing songs in background: "), "on");
+        action_runtime_print_toggle(STRLIT("Fetching lyrics for playing "
+                                            "songs in background: "),
+                                    "on");
     } else {
-        action_runtime_print_toggle(
-            STRLIT("Fetching lyrics for playing songs in background: "), "off");
+        action_runtime_print_toggle(STRLIT("Fetching lyrics for playing "
+                                            "songs in background: "),
+                                    "off");
     }
     return 0;
 }
@@ -1521,8 +1529,9 @@ action_runtime_execute_command(void) {
         return 0;
     }
 
-    command = ncm_bindings_configuration_find_command(
-        &Bindings, command_name.data, command_name.len);
+    command = ncm_bindings_configuration_find_command(&Bindings,
+                                                      command_name.data,
+                                                      command_name.len);
     if (command == NULL) {
         action_runtime_print_message(STRLIT("No command named \""),
                                      command_name.data, command_name.len,
@@ -1723,6 +1732,7 @@ action_runtime_find_item(enum SearchDirection direction) {
     NcmError ncm_error;
     bool old_autocenter_mode;
     bool prompted;
+    NcPromptShouldContinueFunc *should_continue;
     char prompt[64];
     int32 prompt_len;
 
@@ -1748,9 +1758,10 @@ action_runtime_find_item(enum SearchDirection direction) {
 
     old_autocenter_mode = Config.autocenter_mode;
     Config.autocenter_mode = false;
-    prompted = action_runtime_prompt_string(
-        prompt, prompt_len, "", false,
-        action_runtime_search_prompt_should_continue, &state, &constraint);
+    should_continue = action_runtime_search_prompt_should_continue;
+    prompted = action_runtime_prompt_string(prompt, prompt_len, "", false,
+                                            should_continue, &state,
+                                            &constraint);
     Config.autocenter_mode = old_autocenter_mode;
 
     if (!prompted) {
@@ -1776,12 +1787,12 @@ action_runtime_find_item(enum SearchDirection direction) {
         ncm_statusbar_print_cstring(Config.message_delay_time,
                                     "Constraint unset");
     } else {
-        if (!ncm_search_prompt_state_has_cached_result(
-            &state, constraint.data, constraint.len, NULL)) {
+        if (!ncm_search_prompt_state_has_cached_result(&state, constraint.data,
+                                                       constraint.len, NULL)) {
             ncm_error_clear(&ncm_error);
-            if (action_runtime_search_prompt_apply(
-                &state, constraint.data, constraint.len, NULL,
-                &ncm_error) < 0) {
+            if (action_runtime_search_prompt_apply(&state, constraint.data,
+                                                   constraint.len, NULL,
+                                                   &ncm_error) < 0) {
                 action_runtime_search_prompt_destroy(&state);
                 sb_free(&previous_constraint);
                 sb_free(&constraint);
@@ -2057,9 +2068,10 @@ action_runtime_song_tag_at(int32 pos, enum NcmSongGetter getter,
         if ((mutable_song = nc_menu_active_item_at(menu, pos)) == NULL) {
             return -NCM_ERROR_UNAVAILABLE;
         }
-        *tag = ncm_mutable_song_tags_buffer(
-            mutable_song, field, Config.tags_separator,
-            Config.tags_separator_len, Config.show_duplicate_tags);
+        *tag = ncm_mutable_song_tags_buffer(mutable_song, field,
+                                            Config.tags_separator,
+                                            Config.tags_separator_len,
+                                            Config.show_duplicate_tags);
         return 0;
     }
 #endif
@@ -2166,14 +2178,14 @@ action_runtime_selected_songs(NcmSongArray *songs) {
     case NCM_SCREEN_TYPE_PLAYLIST:
         return playlist_screen_selected_songs(app_screen_playlist(), songs);
     case NCM_SCREEN_TYPE_PLAYLIST_EDITOR:
-        return playlist_edit_screen_selected_songs(
-            app_screen_playlist_edit(), songs);
+        return playlist_edit_screen_selected_songs(app_screen_playlist_edit(),
+                                                   songs);
     case NCM_SCREEN_TYPE_SEARCH_ENGINE:
-        return search_engine_screen_selected_songs(
-            app_screen_search_engine(), songs);
+        return search_engine_screen_selected_songs(app_screen_search_engine(),
+                                                   songs);
     case NCM_SCREEN_TYPE_MEDIA_LIBRARY:
-        return media_library_screen_selected_songs(
-            app_screen_media_library(), songs);
+        return media_library_screen_selected_songs(app_screen_media_library(),
+                                                   songs);
 #if defined(HAVE_TAGLIB_H)
     case NCM_SCREEN_TYPE_TAG_EDIT:
         return tag_edit_screen_selected_songs(app_screen_tag_edit(), songs);
@@ -2223,20 +2235,20 @@ action_runtime_current_song(NcmSong *song) {
     case NCM_SCREEN_TYPE_PLAYLIST:
         return playlist_screen_current_song(app_screen_playlist(), song);
     case NCM_SCREEN_TYPE_PLAYLIST_EDITOR:
-        if (playlist_edit_screen_current_song(
-            app_screen_playlist_edit(), song) > 0) {
+        if (playlist_edit_screen_current_song(app_screen_playlist_edit(),
+                                              song) > 0) {
             return 0;
         }
         return -NCM_ERROR_NOT_FOUND;
     case NCM_SCREEN_TYPE_SEARCH_ENGINE:
-        if (search_engine_screen_current_song(
-            app_screen_search_engine(), song) > 0) {
+        if (search_engine_screen_current_song(app_screen_search_engine(),
+                                              song) > 0) {
             return 0;
         }
         return -NCM_ERROR_NOT_FOUND;
     case NCM_SCREEN_TYPE_MEDIA_LIBRARY:
-        if (media_library_screen_current_song(
-            app_screen_media_library(), song) > 0) {
+        if (media_library_screen_current_song(app_screen_media_library(),
+                                              song) > 0) {
             return 0;
         }
         return -NCM_ERROR_NOT_FOUND;
@@ -2361,8 +2373,8 @@ action_runtime_add_prompt(void) {
             bool loaded = false;
 
             ncm_error_clear(&ncm_error);
-            success = ncm_mpd_client_load_playlist(
-                &global_mpd, path_text, &loaded, &ncm_error) == 0;
+            success = ncm_mpd_client_load_playlist(&global_mpd, path_text,
+                                                   &loaded, &ncm_error) == 0;
             sb_free(&path);
             if (!success) {
                 return action_runtime_mpd_error_status(&ncm_error);
@@ -2583,17 +2595,16 @@ action_runtime_delete_browser_items(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     if (!Config.allow_for_physical_item_deletion) {
-        ncm_statusbar_print_cstring(
-            Config.message_delay_time,
-            "Flag \"allow_for_physical_item_deletion\" needs to be "
-            "enabled in configuration file");
+        ncm_statusbar_print_cstring(Config.message_delay_time,
+                                    "Flag \"allow_for_physical_item_deletion\" "
+                                    "needs to be enabled in configuration "
+                                    "file");
         return -NCM_ERROR_UNAVAILABLE;
     }
     if (!browser_screen_is_local(screen) && (Config.mpd_music_dir_len <= 0)) {
-        ncm_statusbar_print_cstring(
-            Config.message_delay_time,
-            "Proper mpd_music_dir variable has to be set in "
-            "configuration file");
+        ncm_statusbar_print_cstring(Config.message_delay_time,
+                                    "Proper mpd_music_dir variable has to be "
+                                    "set in configuration file");
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -2931,8 +2942,8 @@ action_runtime_crop_playlist(bool main_playlist) {
             ncm_song_array_destroy(&songs);
             return 0;
         }
-        success = playlist_screen_selected_songs(
-            app_screen_playlist(), &songs) == 0;
+        success = playlist_screen_selected_songs(app_screen_playlist(),
+                                                 &songs) == 0;
     } else if (action_runtime_current_screen_is(
         NCM_SCREEN_TYPE_PLAYLIST_EDITOR)) {
         if (!action_runtime_playlist_edit_has_playlists()) {
@@ -3142,9 +3153,9 @@ action_runtime_move_selected_items(bool down) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     if ((menu = action_runtime_current_menu()) && nc_menu_is_filtered(menu)) {
-        ncm_statusbar_print_cstring(
-            Config.message_delay_time,
-            "Moving items is disabled in filtered playlist");
+        ncm_statusbar_print_cstring(Config.message_delay_time,
+                                    "Moving items is disabled in filtered "
+                                    "playlist");
         return 0;
     }
 
@@ -3286,9 +3297,9 @@ action_runtime_move_playlist_edit_items_to(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     if (nc_menu_is_filtered(menu)) {
-        ncm_statusbar_print_cstring(
-            Config.message_delay_time,
-            "Moving items is disabled in filtered playlist");
+        ncm_statusbar_print_cstring(Config.message_delay_time,
+                                    "Moving items is disabled in filtered "
+                                    "playlist");
         return 0;
     }
 
@@ -3340,9 +3351,10 @@ action_runtime_move_playlist_edit_items_to(void) {
         && (target > positions[0])) {
         destination = target - count;
         for (int32 i = count; success && (i > 0); i -= 1) {
-            success = ncm_mpd_client_playlist_move(
-                &global_mpd, playlist.path, positions[i - 1],
-                destination + i - 1, &ncm_error) == 0;
+            success = ncm_mpd_client_playlist_move(&global_mpd, playlist.path,
+                                                   positions[i - 1],
+                                                   destination + i - 1,
+                                                   &ncm_error) == 0;
         }
     } else if (success) {
         destination = target;
@@ -3517,14 +3529,14 @@ action_runtime_set_selected_items_priority(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     if (ncm_mpd_client_version(&global_mpd) < 17) {
-        ncm_statusbar_print_cstring(
-            Config.message_delay_time,
-            "Priorities are supported in MPD >= 0.17.0");
+        ncm_statusbar_print_cstring(Config.message_delay_time,
+                                    "Priorities are supported in MPD >= "
+                                    "0.17.0");
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    prompted = action_runtime_prompt_string(
-        STRLIT("Set priority [0-255]: "), "", false, NULL, NULL, &input);
+    prompted = action_runtime_prompt_string(STRLIT("Set priority [0-255]: "),
+                                            "", false, NULL, NULL, &input);
     if (!prompted) {
         sb_free(&input);
         return 0;
@@ -3987,8 +3999,8 @@ action_runtime_jump_to_playing_song(void) {
     }
 
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_PLAYLIST)) {
-        success = playlist_screen_locate_position(
-            app_screen_playlist(), position) > 0;
+        success = playlist_screen_locate_position(app_screen_playlist(),
+                                                  position) > 0;
         if (!success) {
             ncm_statusbar_print_cstring(Config.message_delay_time,
                                         "Song is filtered out");
@@ -4053,9 +4065,9 @@ action_runtime_jump_to_playlist_edit(void) {
     }
 
     ncm_error_clear(&ncm_error);
-    status = playlist_edit_screen_locate_playlist(
-        app_screen_playlist_edit(), &global_mpd, path.data, path.len,
-        &ncm_error);
+    status = playlist_edit_screen_locate_playlist(app_screen_playlist_edit(),
+                                                  &global_mpd, path.data,
+                                                  path.len, &ncm_error);
     if (status < 0) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
@@ -4079,8 +4091,8 @@ action_runtime_jump_to_media_library(void) {
     if (status == 0) {
         ncm_statusbar_print_cstring(0, "Jumping to song...");
         ncm_error_clear(&ncm_error);
-        status = media_library_screen_locate_song(
-            app_screen_media_library(), &song, &ncm_error);
+        status = media_library_screen_locate_song(app_screen_media_library(),
+                                                  &song, &ncm_error);
         if (status < 0) {
             status = action_runtime_mpd_error_status(&ncm_error);
         }
@@ -4097,10 +4109,9 @@ action_runtime_jump_to_tag_edit(void) {
     int32 status;
 
     if (Config.mpd_music_dir_len <= 0) {
-        ncm_statusbar_print_cstring(
-            Config.message_delay_time,
-            "Proper mpd_music_dir variable has to be set in "
-            "configuration file");
+        ncm_statusbar_print_cstring(Config.message_delay_time,
+                                    "Proper mpd_music_dir variable has to be "
+                                    "set in configuration file");
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -4151,8 +4162,9 @@ action_runtime_edit_directory_name(void) {
         }
 
         ncm_error_clear(&ncm_error);
-        success = browser_screen_rename_current_directory(
-            browser, name.data, name.len, &global_mpd, &ncm_error) == 0;
+        success = browser_screen_rename_current_directory(browser, name.data,
+                                                          name.len, &global_mpd,
+                                                          &ncm_error) == 0;
         if (success) {
             action_runtime_print_renamed(STRLIT("Directory renamed to \""),
                                          &name);
@@ -4193,8 +4205,8 @@ action_runtime_edit_playlist_name(void) {
             return -NCM_ERROR_UNAVAILABLE;
         }
 
-        prompted = action_runtime_prompt_string(
-            STRLIT("Playlist: "), path.data, false, NULL, NULL, &name);
+        prompted = action_runtime_prompt_string(STRLIT("Playlist: "), path.data,
+                                                false, NULL, NULL, &name);
         if (!prompted) {
             sb_free(&name);
             return 0;
@@ -4206,8 +4218,9 @@ action_runtime_edit_playlist_name(void) {
         }
 
         ncm_error_clear(&ncm_error);
-        success = browser_screen_rename_current_playlist(
-            browser, name.data, name.len, &global_mpd, &ncm_error) == 0;
+        success = browser_screen_rename_current_playlist(browser, name.data,
+                                                         name.len, &global_mpd,
+                                                         &ncm_error) == 0;
         if (success) {
             action_runtime_print_renamed(STRLIT("Playlist renamed to \""),
                                          &name);
@@ -4236,8 +4249,8 @@ action_runtime_edit_playlist_name(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    prompted = action_runtime_prompt_string(
-        STRLIT("Playlist: "), playlist.path, false, NULL, NULL, &name);
+    prompted = action_runtime_prompt_string(STRLIT("Playlist: "), playlist.path,
+                                            false, NULL, NULL, &name);
     if (!prompted) {
         sb_free(&name);
         ncm_playlist_destroy(&playlist);
@@ -4301,9 +4314,9 @@ action_runtime_toggle_display_mode(void) {
         playlist_screen_update_column_title(app_screen_playlist());
         app_controller_request_current_screen_resize();
         app_controller_refresh_current_screen();
-        action_runtime_print_toggle(
-            STRLIT("Playlist display mode: "),
-            ncm_display_mode_str(Config.playlist_display_mode));
+        action_runtime_print_toggle(STRLIT("Playlist display mode: "),
+                                    ncm_display_mode_str(
+                                        Config.playlist_display_mode));
         return 0;
     }
     case NCM_SCREEN_TYPE_PLAYLIST_EDITOR:
@@ -4354,10 +4367,10 @@ action_runtime_change_browse_mode(void) {
     if (browser_screen_change_browse_mode(browser, &global_mpd,
                                           &ncm_error) < 0) {
         if (ncm_error.code == EINVAL) {
-            ncm_statusbar_print_cstring(
-                Config.message_delay_time,
-                "For browsing local filesystem connection to MPD "
-                "via UNIX Socket is required");
+            ncm_statusbar_print_cstring(Config.message_delay_time,
+                                        "For browsing local filesystem "
+                                        "connection to MPD via UNIX Socket "
+                                        "is required");
         } else if (ncm_error_is_set(&ncm_error)) {
             ncm_statusbar_print_cstring(Config.message_delay_time,
                                         ncm_error.message);
@@ -4455,8 +4468,8 @@ action_runtime_toggle_media_library_sort_mode(void) {
     if (!action_runtime_current_screen_is(NCM_SCREEN_TYPE_MEDIA_LIBRARY)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    status = media_library_screen_toggle_sort_mode(
-        app_screen_media_library(), &sort_by_mtime);
+    status = media_library_screen_toggle_sort_mode(app_screen_media_library(),
+                                                   &sort_by_mtime);
     if (status < 0) {
         return status;
     }
@@ -4558,12 +4571,12 @@ action_runtime_save_tag_changes(void) {
         if (!tag_edit_screen_save_action_available(app_screen_tag_edit())) {
             return -NCM_ERROR_UNAVAILABLE;
         }
-        return tag_edit_screen_save_modified(
-            app_screen_tag_edit(), Config.mpd_music_dir);
+        return tag_edit_screen_save_modified(app_screen_tag_edit(),
+                                             Config.mpd_music_dir);
     }
     if (action_runtime_current_screen_is(NCM_SCREEN_TYPE_TINY_TAG_EDIT)) {
-        return tiny_tag_edit_screen_run_row(
-            app_screen_tiny_tag_edit(), TINY_TAG_EDIT_SAVE_ROW);
+        return tiny_tag_edit_screen_run_row(app_screen_tiny_tag_edit(),
+                                            TINY_TAG_EDIT_SAVE_ROW);
     }
 #endif
     return -NCM_ERROR_UNAVAILABLE;
@@ -4582,17 +4595,19 @@ ncm_action_edit_song(NcmSong *song) {
         return -EINVAL;
     }
     if (Config.mpd_music_dir_len <= 0) {
-        ncm_statusbar_print_cstring(
-            Config.message_delay_time,
-            "Proper mpd_music_dir variable has to be set in "
-            "configuration file");
+        ncm_statusbar_print_cstring(Config.message_delay_time,
+                                    "Proper mpd_music_dir variable has to be "
+                                    "set in configuration file");
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    open_result = tiny_tag_edit_screen_open_song(
-        app_screen_tiny_tag_edit(), song, Config.mpd_music_dir,
-        Config.mpd_music_dir_len, Config.tags_separator,
-        Config.tags_separator_len, Config.show_duplicate_tags, &path);
+    open_result = tiny_tag_edit_screen_open_song(app_screen_tiny_tag_edit(),
+                                                 song, Config.mpd_music_dir,
+                                                 Config.mpd_music_dir_len,
+                                                 Config.tags_separator,
+                                                 Config.tags_separator_len,
+                                                 Config.show_duplicate_tags,
+                                                 &path);
     switch (open_result) {
     case TINY_TAG_EDIT_OPEN_SUCCESS:
         status = action_runtime_switch_to_screen(NCM_SCREEN_TYPE_TINY_TAG_EDIT);
@@ -4602,10 +4617,9 @@ ncm_action_edit_song(NcmSong *song) {
                                     "Streams can't be edited");
         break;
     case TINY_TAG_EDIT_OPEN_MISSING_MUSIC_DIRECTORY:
-        ncm_statusbar_print_cstring(
-            Config.message_delay_time,
-            "Proper mpd_music_dir variable has to be set in "
-            "configuration file");
+        ncm_statusbar_print_cstring(Config.message_delay_time,
+                                    "Proper mpd_music_dir variable has to be "
+                                    "set in configuration file");
         break;
     case TINY_TAG_EDIT_OPEN_UNREADABLE_FILE:
         path_width = COLS - STRLIT_LEN("Couldn't read file \"\"");
@@ -4932,8 +4946,9 @@ action_runtime_edit_library_tag(void) {
     SB_APPEND(&prompt, ncm_tag_type_name(Config.media_library_primary_tag),
         optional_strlen32(ncm_tag_type_name(Config.media_library_primary_tag)));
     SB_APPEND(&prompt, ": ");
-    prompted = action_runtime_prompt_string(
-        prompt.data, prompt.len, current_tag.data, false, NULL, NULL, &new_tag);
+    prompted = action_runtime_prompt_string(prompt.data, prompt.len,
+                                            current_tag.data, false, NULL, NULL,
+                                            &new_tag);
     if (!prompted) {
         status = 0;
         goto cleanup;
@@ -4954,9 +4969,9 @@ action_runtime_edit_library_tag(void) {
     ncm_statusbar_print_cstring(0, "Updating tags...");
     ncm_error_clear(&ncm_error);
     if (ncm_mpd_client_start_search(&global_mpd, true, &ncm_error) < 0
-        || ncm_mpd_client_add_search_tag(
-            &global_mpd, Config.media_library_primary_tag, current_tag.data,
-            &ncm_error) < 0
+        || ncm_mpd_client_add_search_tag(&global_mpd,
+                                         Config.media_library_primary_tag,
+                                         current_tag.data, &ncm_error) < 0
         || ncm_mpd_client_commit_search_songs(&global_mpd, &songs,
                                                &ncm_error) < 0) {
         status = action_runtime_mpd_error_status(&ncm_error);
@@ -4972,9 +4987,10 @@ action_runtime_edit_library_tag(void) {
 
         status = ncm_mutable_song_load_originals_from_song(&mutable_song, song);
         if (status == 0) {
-            status = ncm_mutable_song_set_tags(
-                &mutable_song, field, new_tag.data, new_tag.len,
-                Config.tags_separator, Config.tags_separator_len);
+            status = ncm_mutable_song_set_tags(&mutable_song, field,
+                                               new_tag.data, new_tag.len,
+                                               Config.tags_separator,
+                                               Config.tags_separator_len);
         }
         if (status < 0) {
             ncm_mutable_song_destroy(&mutable_song);
@@ -5066,8 +5082,8 @@ action_runtime_edit_library_album(void) {
         goto cleanup;
     }
 
-    status = media_library_screen_copy_visible_songs(
-        app_screen_media_library(), &songs, &ncm_error);
+    status = media_library_screen_copy_visible_songs(app_screen_media_library(),
+                                                     &songs, &ncm_error);
     if (status < 0) {
         if (ncm_error_is_set(&ncm_error)) {
             ncm_statusbar_print_cstring(Config.message_delay_time,
@@ -5193,9 +5209,10 @@ action_runtime_toggle_lyrics_fetcher(void) {
         return 0;
     }
 
-    action_runtime_print_message(
-        STRLIT("Using lyrics fetcher: "), ncm_lyrics_fetcher_name(fetcher),
-        ncm_lyrics_fetcher_name_len(fetcher), STRLIT(""));
+    action_runtime_print_message(STRLIT("Using lyrics fetcher: "),
+                                 ncm_lyrics_fetcher_name(fetcher),
+                                 ncm_lyrics_fetcher_name_len(fetcher),
+                                 STRLIT(""));
     return 0;
 }
 
@@ -5290,8 +5307,9 @@ action_runtime_fetch_lyrics_background(void) {
 
     ncm_error_clear(&ncm_error);
     for (int32 i = 0; i < songs.len; i += 1) {
-        status = lyrics_screen_fetch_in_background(
-            app_screen_lyrics(), &songs.items[i], true, &ncm_error);
+        status = lyrics_screen_fetch_in_background(app_screen_lyrics(),
+                                                   &songs.items[i], true,
+                                                   &ncm_error);
         if (status < 0) {
             ncm_song_array_destroy(&songs);
             return action_runtime_mpd_error_status(&ncm_error);
@@ -5910,9 +5928,9 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
             return false;
         }
         if (ncm_mpd_client_version(&global_mpd) < 17) {
-            ncm_statusbar_print_cstring(
-                Config.message_delay_time,
-                "Priorities are supported in MPD >= 0.17.0");
+            ncm_statusbar_print_cstring(Config.message_delay_time,
+                                        "Priorities are supported in MPD >= "
+                                        "0.17.0");
             return false;
         }
         return true;
@@ -6111,8 +6129,8 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
 
             position = ncm_status_state_current_song_position();
             if (position >= 0) {
-                (void)playlist_screen_locate_position(
-                    app_screen_playlist(), position);
+                (void)playlist_screen_locate_position(app_screen_playlist(),
+                                                      position);
             }
         }
         if (Config.autocenter_mode) {
@@ -6352,8 +6370,8 @@ action_runtime_builtin_run(NcmActionRuntime *runtime, enum NcmActionType type) {
         NcmError ncm_error;
 
         ncm_error_clear(&ncm_error);
-        return search_engine_screen_start_searching(
-            app_screen_search_engine(), &global_mpd, &ncm_error);
+        return search_engine_screen_start_searching(app_screen_search_engine(),
+                                                    &global_mpd, &ncm_error);
     }
     case NCM_ACTION_SET_SELECTED_ITEMS_PRIORITY:
         return action_runtime_set_selected_items_priority();

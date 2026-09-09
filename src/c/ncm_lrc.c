@@ -209,8 +209,8 @@ ncm_lrc_parse(NcmLrcDocument *document, char *data, int32 data_len,
                                             &unsigned_value);
                 if (status < 0) {
                     ncm_lrc_document_destroy_unchecked(&parsed);
-                    return ncm_error_set_status(
-                        ncm_error, status, STRLIT("malformed LRC offset"));
+                    return ncm_error_set_status(ncm_error, status,
+                                                STRLIT("malformed LRC offset"));
                 }
 
                 signed_value = sign*unsigned_value;
@@ -281,9 +281,9 @@ ncm_lrc_parse(NcmLrcDocument *document, char *data, int32 data_len,
 
                     if (tag_len < STRLIT_LEN("0:00")) {
                         ncm_lrc_document_destroy_unchecked(&parsed);
-                        return ncm_error_set_status(
-                            ncm_error, -NCM_ERROR_PARSE,
-                            STRLIT("malformed LRC line"));
+                        return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                                                    STRLIT("malformed LRC "
+                                                           "line"));
                     }
 
                     colon = -1;
@@ -292,57 +292,61 @@ ncm_lrc_parse(NcmLrcDocument *document, char *data, int32 data_len,
                         if (tag[i] == ':') {
                             if (colon >= 0) {
                                 ncm_lrc_document_destroy_unchecked(&parsed);
-                                return ncm_error_set_status(
-                                    ncm_error, -NCM_ERROR_PARSE,
-                                    STRLIT("malformed LRC line"));
+                                return ncm_error_set_status(ncm_error,
+                                                            -NCM_ERROR_PARSE,
+                                                            STRLIT("malformed "
+                                                                   "LRC line"));
                             }
                             colon = i;
                         } else if (tag[i] == '.') {
                             if (dot >= 0) {
                                 ncm_lrc_document_destroy_unchecked(&parsed);
-                                return ncm_error_set_status(
-                                    ncm_error, -NCM_ERROR_PARSE,
-                                    STRLIT("malformed LRC line"));
+                                return ncm_error_set_status(ncm_error,
+                                                            -NCM_ERROR_PARSE,
+                                                            STRLIT("malformed "
+                                                                   "LRC line"));
                             }
                             dot = i;
                         }
                     }
                     if ((colon <= 0) || (colon + 2 >= tag_len)) {
                         ncm_lrc_document_destroy_unchecked(&parsed);
-                        return ncm_error_set_status(
-                            ncm_error, -NCM_ERROR_PARSE,
-                            STRLIT("malformed LRC line"));
+                        return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                                                    STRLIT("malformed LRC "
+                                                           "line"));
                     }
                     if ((dot >= 0) && (dot != colon + 3)) {
                         ncm_lrc_document_destroy_unchecked(&parsed);
-                        return ncm_error_set_status(
-                            ncm_error, -NCM_ERROR_PARSE,
-                            STRLIT("malformed LRC line"));
+                        return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                                                    STRLIT("malformed LRC "
+                                                           "line"));
                     }
                     if ((dot < 0) && ((colon + 3) != tag_len)) {
                         ncm_lrc_document_destroy_unchecked(&parsed);
-                        return ncm_error_set_status(
-                            ncm_error, -NCM_ERROR_PARSE,
-                            STRLIT("malformed LRC line"));
+                        return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                                                    STRLIT("malformed LRC "
+                                                           "line"));
                     }
 
                     status = ncm_lrc_parse_uint(tag, colon, &minutes);
                     if (status < 0) {
                         ncm_lrc_document_destroy_unchecked(&parsed);
-                        return ncm_error_set_status(
-                            ncm_error, status, STRLIT("malformed LRC line"));
+                        return ncm_error_set_status(ncm_error, status,
+                                                    STRLIT("malformed LRC "
+                                                           "line"));
                     }
                     status = ncm_lrc_parse_uint(tag + colon + 1, 2, &seconds);
                     if (status < 0) {
                         ncm_lrc_document_destroy_unchecked(&parsed);
-                        return ncm_error_set_status(
-                            ncm_error, status, STRLIT("malformed LRC line"));
+                        return ncm_error_set_status(ncm_error, status,
+                                                    STRLIT("malformed LRC "
+                                                           "line"));
                     }
                     if (seconds >= 60) {
                         ncm_lrc_document_destroy_unchecked(&parsed);
-                        return ncm_error_set_status(
-                            ncm_error, -NCM_ERROR_PARSE,
-                            STRLIT("malformed LRC line"));
+                        return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                                                    STRLIT("malformed LRC "
+                                                           "line"));
                     }
 
                     milliseconds = 0;
@@ -350,17 +354,18 @@ ncm_lrc_parse(NcmLrcDocument *document, char *data, int32 data_len,
                         frac_len = tag_len - dot - 1;
                         if ((frac_len <= 0) || (frac_len > 3)) {
                             ncm_lrc_document_destroy_unchecked(&parsed);
-                            return ncm_error_set_status(
-                                ncm_error, -NCM_ERROR_PARSE,
-                                STRLIT("malformed LRC line"));
+                            return ncm_error_set_status(ncm_error,
+                                                        -NCM_ERROR_PARSE,
+                                                        STRLIT("malformed LRC "
+                                                               "line"));
                         }
                         status = ncm_lrc_parse_uint(tag + dot + 1, frac_len,
                                                     &milliseconds);
                         if (status < 0) {
                             ncm_lrc_document_destroy_unchecked(&parsed);
-                            return ncm_error_set_status(
-                                ncm_error, status,
-                                STRLIT("malformed LRC line"));
+                            return ncm_error_set_status(ncm_error, status,
+                                                        STRLIT("malformed LRC "
+                                                               "line"));
                         }
                         if (frac_len == 1) {
                             milliseconds *= 100;
@@ -371,38 +376,38 @@ ncm_lrc_parse(NcmLrcDocument *document, char *data, int32 data_len,
 
                     if (minutes > (MAXOF(value) - seconds)/60) {
                         ncm_lrc_document_destroy_unchecked(&parsed);
-                        return ncm_error_set_status(
-                            ncm_error, -NCM_ERROR_PARSE,
-                            STRLIT("malformed LRC line"));
+                        return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                                                    STRLIT("malformed LRC "
+                                                           "line"));
                     }
                     value = minutes*60 + seconds;
                     if (value > (MAXOF(value) - milliseconds)/1000) {
                         ncm_lrc_document_destroy_unchecked(&parsed);
-                        return ncm_error_set_status(
-                            ncm_error, -NCM_ERROR_PARSE,
-                            STRLIT("malformed LRC line"));
+                        return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                                                    STRLIT("malformed LRC "
+                                                           "line"));
                     }
                     value = value*1000 + milliseconds;
                     if ((parsed.offset_ms > 0)
                         && (value > (MAXOF(value) - parsed.offset_ms))) {
                         ncm_lrc_document_destroy_unchecked(&parsed);
-                        return ncm_error_set_status(
-                            ncm_error, -NCM_ERROR_PARSE,
-                            STRLIT("malformed LRC line"));
+                        return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                                                    STRLIT("malformed LRC "
+                                                           "line"));
                     }
                     if ((parsed.offset_ms < 0)
                         && (value < (MINOF(value) - parsed.offset_ms))) {
                         ncm_lrc_document_destroy_unchecked(&parsed);
-                        return ncm_error_set_status(
-                            ncm_error, -NCM_ERROR_PARSE,
-                            STRLIT("malformed LRC line"));
+                        return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                                                    STRLIT("malformed LRC "
+                                                           "line"));
                     }
                     value += parsed.offset_ms;
                     if ((value < MINOF(time_ms)) || (value > MAXOF(time_ms))) {
                         ncm_lrc_document_destroy_unchecked(&parsed);
-                        return ncm_error_set_status(
-                            ncm_error, -NCM_ERROR_PARSE,
-                            STRLIT("malformed LRC line"));
+                        return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                                                    STRLIT("malformed LRC "
+                                                           "line"));
                     }
 
                     time_ms = (int32)value;
@@ -428,9 +433,9 @@ ncm_lrc_parse(NcmLrcDocument *document, char *data, int32 data_len,
                         } else {
                             new_cap *= 2;
                         }
-                        parsed.entries = realloc2(
-                            parsed.entries, parsed.entries_cap,
-                            new_cap, SIZEOF(*parsed.entries));
+                        parsed.entries = realloc2(parsed.entries,
+                                                  parsed.entries_cap, new_cap,
+                                                  SIZEOF(*parsed.entries));
                         parsed.entries_cap = new_cap;
                     }
 

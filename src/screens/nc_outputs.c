@@ -79,9 +79,9 @@ nc_outputs_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     }
 
     if ((event.bstate & BUTTON1_PRESSED) || (event.bstate & BUTTON3_PRESSED)) {
-        (void)nc_menu_goto_selectable(&outputs->menu, y);
+        nc_menu_goto_selectable(&outputs->menu, y);
         if (event.bstate & BUTTON3_PRESSED) {
-            (void)nc_outputs_screen_toggle_current(outputs);
+            nc_outputs_screen_toggle_current(outputs);
         }
     }
     return;
@@ -272,9 +272,7 @@ nc_outputs_screen_toggle_current(NcOutputsScreen *screen) {
     NcOutputsItem *output;
     int32 status;
 
-    if (screen == NULL) {
-        return -EINVAL;
-    }
+    ASSERT(screen != NULL);
     if ((output = nc_menu_current_item(&screen->menu)) == NULL) {
         return -NCM_ERROR_UNAVAILABLE;
     }

@@ -391,8 +391,9 @@ lyrics_screen_update_sync_line_force(LyricsScreen *screen, bool force) {
         return true;
     }
 
-    active_line = ncm_lrc_document_entry_at_time(
-        &screen->lrc, ncm_status_state_elapsed_time_ms());
+    active_line =
+        ncm_lrc_document_entry_at_time(&screen->lrc,
+                                       ncm_status_state_elapsed_time_ms());
     if (!force && (active_line == screen->active_lrc_line)) {
         return false;
     }
@@ -519,8 +520,10 @@ lyrics_filename_from_song_with_extension(StrBuilder *filename,
         }
         basename_len = filename->len - basename_start;
         if (basename_len > 0) {
-            ncm_string_remove_invalid_filename_chars(
-                filename->data + basename_start, &basename_len, win32_filename);
+            char *basename = filename->data + basename_start;
+
+            ncm_string_remove_invalid_filename_chars(basename, &basename_len,
+                                                     win32_filename);
             filename->len = basename_start + basename_len;
             filename->data[filename->len] = '\0';
         }
@@ -863,9 +866,11 @@ lyrics_job_run(void *user, NcmError *ncm_error) {
 
         status = 0;
         for (int32 i = 0; i < Config.lyrics_fetchers.fetchers.len; i += 1) {
-            fetch_status = lyrics_job_fetch_one(
-                job, &Config.lyrics_fetchers.fetchers.items[i],
-                &artist, &title);
+            NcmLyricsFetcherDef *current_fetcher;
+
+            current_fetcher = &Config.lyrics_fetchers.fetchers.items[i];
+            fetch_status = lyrics_job_fetch_one(job, current_fetcher,
+                                                &artist, &title);
             if (fetch_status > 0) {
                 status = fetch_status;
                 break;
@@ -1006,8 +1011,10 @@ lyrics_screen_start_foreground_fetch(LyricsScreen *screen,
     if (active_fetcher) {
         lyrics_append_fetching(&screen->display, active_fetcher);
     } else if (Config.lyrics_fetchers.fetchers.len > 0) {
-        lyrics_append_fetching(
-            &screen->display, &Config.lyrics_fetchers.fetchers.items[0]);
+        NcmLyricsFetcherDef *first_fetcher;
+
+        first_fetcher = &Config.lyrics_fetchers.fetchers.items[0];
+        lyrics_append_fetching(&screen->display, first_fetcher);
     }
     nc_lyrics_screen_request_refresh(&screen->screen);
 
@@ -1059,8 +1066,8 @@ lyrics_screen_fetch(LyricsScreen *screen, NcmSong *song,
         win32_filename, STRLIT(".lrc"));
     if (status < 0) {
         sb_free(&lrc_filename);
-        return ncm_error_set_status(
-            ncm_error, status, STRLIT("failed to build lyrics filename"));
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("failed to build lyrics filename"));
     }
     status = lyrics_filename_from_song(&txt_filename, song,
                                        Config.mpd_music_dir,
@@ -1072,8 +1079,8 @@ lyrics_screen_fetch(LyricsScreen *screen, NcmSong *song,
     if (status < 0) {
         sb_free(&txt_filename);
         sb_free(&lrc_filename);
-        return ncm_error_set_status(
-            ncm_error, status, STRLIT("failed to build lyrics filename"));
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("failed to build lyrics filename"));
     }
     lrc_found = ncm_fs_path_is_existing(lrc_filename.data, lrc_filename.len);
     txt_found = ncm_fs_path_is_existing(txt_filename.data, txt_filename.len);
@@ -1259,8 +1266,9 @@ lyrics_start_next_background(LyricsScreen *screen, NcmError *ncm_error) {
     }
 
     if (queued->notify) {
-        StrBuilder formatted = ncm_format_render_string(
-            &Config.song_status_format, &queued->song);
+        StrBuilder formatted =
+            ncm_format_render_string(&Config.song_status_format,
+                                     &queued->song);
 
         sb_clear(&screen->consumer_message);
         SB_APPEND(&screen->consumer_message, "Fetching lyrics for \"");
@@ -1538,8 +1546,8 @@ lyrics_buffer_find(NcBuffer *buffer,
 
     state.buffer = buffer;
     data = nc_buffer_data(buffer);
-    match_count = ncm_regex_for_each_match(
-        &regex, data, buffer->len, lyrics_find_match_callback, &state);
+    match_count = ncm_regex_for_each_match(&regex, data, buffer->len,
+                                           lyrics_find_match_callback, &state);
     ncm_regex_destroy(&regex);
     if (match_count > 0) {
         return 1;
@@ -1589,6 +1597,7 @@ lyrics_buffer_clear_sync_highlight(NcBuffer *buffer) {
 void
 lyrics_buffer_highlight_sync_line(NcBuffer *buffer, int32 start, int32 end) {
     NcFormattedColor highlight;
+    NcColor color = nc_color_make(COLOR_WHITE, COLOR_BLACK, false, false);
 
     if (buffer == NULL) {
         return;
@@ -1602,8 +1611,7 @@ lyrics_buffer_highlight_sync_line(NcBuffer *buffer, int32 start, int32 end) {
         end = buffer->len;
     }
 
-    nc_formatted_color_init_color(
-        &highlight, nc_color_make(COLOR_WHITE, COLOR_BLACK, false, false));
+    nc_formatted_color_init_color(&highlight, color);
     nc_formatted_color_add_format(&highlight, NC_FORMAT_BOLD);
     nc_buffer_add_formatted_color(buffer, start, &highlight,
                                   LYRICS_SYNC_PROPERTY_ID);

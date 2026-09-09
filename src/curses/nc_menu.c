@@ -105,8 +105,8 @@ menu_is_separator(NcMenu *menu, void *item) {
     if (menu->display_callbacks.is_separator == NULL) {
         return false;
     }
-    return menu->display_callbacks.is_separator(
-        item, menu->display_callbacks.user);
+    return menu->display_callbacks.is_separator(item,
+                                                menu->display_callbacks.user);
 }
 
 static bool
@@ -944,13 +944,14 @@ nc_menu_clear_filtered_items(NcMenu *menu) {
 
 void
 nc_menu_apply_filter(NcMenu *menu) {
+    void *user = menu->display_callbacks.user;
+
     nc_menu_clear_filtered_items(menu);
     for (int32 i = 0; i < menu_array_count(menu, NC_MENU_ITEMS_ALL); i += 1) {
         void *item = menu->all_items[i];
 
         if (menu->display_callbacks.matches_filter
-            && menu->display_callbacks.matches_filter(
-                menu, item, menu->display_callbacks.user)) {
+            && menu->display_callbacks.matches_filter(menu, item, user)) {
             ASSERT(item);
             ARRAY_PUSH(menu->filtered_items, item);
             ARRAY_PUSH(menu->filtered_item_flags,

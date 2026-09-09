@@ -23,60 +23,6 @@ Only keep line break before the first argument on the very very rare occasion
 that it does not fit in a single line (80 column rule). Remember to try to keep
 associated pointer + len pairs together.
 
-- src/curses/nc_cyclic_buffer.c
-- src/c/ncm_tags.c
-- src/config.c
-- src/screens/nc_tag_edit.c
-- src/screens/nc_browser.c
-- src/c/ncm_mpd_connection.c
-- src/actions.c
-- src/c/ncm_enums.c
-- src/title.c
-- src/screen_actions.c
-- src/screens/nc_playlist.c
-- src/c/ncm_job.c
-- src/screens/nc_help.c
-- src/lastfm_service.c
-- src/settings.c
-- src/c/ncm_conversion.c
-- src/screens/nc_playlist_edit.c
-- src/c/ncm_app_arrays.c
-- src/c/ncm_c.c
-- src/c/ncm_format.c
-- src/curl_handle.c
-- src/c/ncm_mpd_client.c
-- src/curses/nc_app_menus.c
-- src/c/ncm_utilities.c
-- src/screens/nc_screens.c
-- src/c/ncm_fs.c
-- src/curses/nc_formatted_color.c
-- src/screens/nc_lyrics.c
-- src/c/ncm_playlist.c
-- src/c/ncm_mpd_item.c
-- src/screens/nc_visualizer.c
-- src/c/ncm_type_conversions.c
-- src/c/ncm_taglib.c
-- src/ui_state.c
-- src/screens/nc_lastfm.c
-- src/screens/nc_outputs.c
-- src/c/ncm_comparators.c
-- src/global.c
-- src/screens/nc_tiny_tag_edit.c
-- src/screens/nc_search_engine.c
-- src/c/ncm_playlist_sort.c
-- src/lyrics_fetcher.c
-- src/screens/nc_scrollpad_screen.c
-- src/c/ncm_display.c
-- src/c/ncm_mutable_song.c
-- src/c/ncm_search_prompt.c
-- src/c/ncm_string.c
-- src/c/ncm_lrc.c
-- src/curses/nc_menu.c
-- src/curses/nc_buffer.c
-- src/screens/nc_screen_switcher.c
-- src/main.c
-- src/app_state.c
-- src/c/ncm_error.c
 
 ## Utility function creep
 Functions that do the (almost) the same thing are redefined in different places.
@@ -127,8 +73,6 @@ list and try the next and so on. When you end up changing a .c file, send me the
 result as a tar ball (but include all the changes of the previous prompts as
 well).
 
-- src/curses/nc_cyclic_buffer.c
-- src/screens/nc_outputs.c
 - src/curses/nc_scrollpad.c
 - src/statusbar.c
 - src/app_legacy_bridge.c
@@ -139,7 +83,6 @@ well).
 - src/screens/nc_help.c
 - src/c/ncm_taglib.c
 - src/screens/nc_server_info.c
-- src/main.c
 - src/c/ncm_mpd_item.c
 - src/screens/nc_song_info.c
 - src/c/ncm_app_arrays.c
@@ -149,7 +92,6 @@ well).
 - src/c/ncm_string.c
 - src/c/ncm_enums.c
 - src/title.c
-- src/app_state.c
 - src/app_controller.c
 - src/helpers.c
 - src/c/ncm_option_parser.c
@@ -158,14 +100,12 @@ well).
 - src/c/ncm_path.c
 - src/c/ncm_directory.c
 - src/c/ncm_playlist.c
-- src/c/ncm_error.c
 - src/screens/screen_type.c
 - src/c/ncm_macro_utilities.c
 - src/c/ncm_search_prompt.c
 - src/ui_state.c
 - src/curses/nc_formatted_color.c
 - src/global.c
-- src/c/ncm_c.c
 - src/screens/nc_screens.c
 - src/curses/nc_curses.c
 

@@ -87,9 +87,10 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
                 ncm_song_getter_from_char(column->type[j]);
 
             if (getter != NCM_SONG_GETTER_NONE) {
-                StrBuilder tag_value = ncm_song_tags_buffer(
-                    song, getter, Config.tags_separator,
-                    Config.tags_separator_len, Config.show_duplicate_tags);
+                StrBuilder tag_value =
+                    ncm_song_tags_buffer(song, getter, Config.tags_separator,
+                                         Config.tags_separator_len,
+                                         Config.show_duplicate_tags);
 
                 if (tag_value.len > 0) {
                     sb_move(&value, &tag_value);
