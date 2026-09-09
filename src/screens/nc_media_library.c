@@ -2197,6 +2197,7 @@ media_library_screen_selected_songs_checked(
             if (!any_selected && (i != nc_menu_highlight(menu))) {
                 continue;
             }
+
             row = nc_menu_active_item_at(menu, i);
             library_query_from_album(screen, row, &query);
             status = library_append_query_songs(screen, &query, songs,
