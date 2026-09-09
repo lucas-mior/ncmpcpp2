@@ -187,8 +187,7 @@ int32 ncm_song_priority(NcmSong *);
 time_t ncm_song_mtime(NcmSong *);
 bool ncm_song_is_empty(NcmSong *);
 
-bool ncm_song_has_tag_view(NcmSong *, enum mpd_tag_type, int32,
-                           StringView *);
+bool ncm_song_has_tag_view(NcmSong *, enum mpd_tag_type, int32, StringView *);
 bool ncm_song_has_uri_view(NcmSong *, int32, StringView *);
 bool ncm_song_has_name_view(NcmSong *, int32, StringView *);
 bool ncm_song_has_directory_view(NcmSong *, int32, StringView *);
