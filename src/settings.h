@@ -69,9 +69,11 @@ typedef struct Configuration {
     char *NAME;                                                                \
     int32 NAME##_len;
 #define XX_PATH(NAME, DEFAULT)                                                 \
-    XX_STRING(NAME, DEFAULT)
+    char *NAME;                                                                \
+    int32 NAME##_len;
 #define XX_DIR(NAME, DEFAULT)                                                  \
-    XX_STRING(NAME, DEFAULT)
+    char *NAME;                                                                \
+    int32 NAME##_len;
 #define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM)                            \
     int32 NAME;
 #define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)                             \
