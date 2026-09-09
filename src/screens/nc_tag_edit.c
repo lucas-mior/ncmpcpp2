@@ -1902,8 +1902,8 @@ tag_edit_directory_filter(NcMenu *menu, void *item, void *user) {
         return true;
     }
     return tag_edit_directory_matches_regex(pair,
-                                              &screen->directory_filter_regex,
-                                              true);
+                                            &screen->directory_filter_regex,
+                                            true);
 }
 
 static NcMenuDisplayCallbacks
@@ -2130,18 +2130,18 @@ tag_edit_layout(TagEditScreen *screen) {
     screen->parser_helper_start_x = screen->parser_start_x
                                     + screen->parser_width_one;
 
-    nc_window_move_to(&screen->directories_window, screen->start_x,
-                      screen->main_start_y);
-    nc_window_resize(&screen->directories_window, screen->left_width,
-                     screen->main_height);
-    nc_window_move_to(&screen->tag_types_window, screen->middle_start_x,
-                      screen->main_start_y);
-    nc_window_resize(&screen->tag_types_window, screen->middle_width,
-                     screen->main_height);
-    nc_window_move_to(&screen->tags_window, screen->right_start_x,
-                      screen->main_start_y);
-    nc_window_resize(&screen->tags_window, screen->right_width,
-                     screen->main_height);
+    nc_window_move_to(&screen->directories_window,
+                      screen->start_x, screen->main_start_y);
+    nc_window_resize(&screen->directories_window,
+                     screen->left_width, screen->main_height);
+    nc_window_move_to(&screen->tag_types_window,
+                      screen->middle_start_x, screen->main_start_y);
+    nc_window_resize(&screen->tag_types_window,
+                     screen->middle_width, screen->main_height);
+    nc_window_move_to(&screen->tags_window,
+                      screen->right_start_x, screen->main_start_y);
+    nc_window_resize(&screen->tags_window,
+                     screen->right_width, screen->main_height);
 
     nc_window_move_to(&screen->parser_dialog_window,
                       screen->parser_dialog_start_x,
@@ -2532,10 +2532,12 @@ tag_edit_screen_enter_directory(TagEditScreen *screen) {
     if (screen->active_focus != TAG_EDIT_FOCUS_DIRECTORIES) {
         return -NCM_ERROR_UNAVAILABLE;
     }
+
     status = tag_edit_screen_current_directory_path(screen, &path);
     if (status < 0) {
         return status;
     }
+
     has_subdirectories = false;
     if (path.len > 0) {
         ncm_error_clear(&ncm_error);
@@ -2557,6 +2559,7 @@ tag_edit_screen_enter_directory(TagEditScreen *screen) {
     screen->directories_update_requested = true;
     screen->observed_dir_valid = false;
     tag_edit_update_titles(screen, true);
+
     return 0;
 }
 
