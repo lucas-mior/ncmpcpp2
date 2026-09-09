@@ -3250,7 +3250,7 @@ tag_edit_save_song_callback(NcmMutableSong *song, void *user) {
             context->shared_directory_valid = true;
         } else if (!STREQUAL(context->shared_directory.data,
                              context->shared_directory.len,
-                       directory, directory_len)) {
+                             directory, directory_len)) {
             StrBuilder shared = {0};
 
             shared =
