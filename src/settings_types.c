@@ -33,9 +33,7 @@ settings_column_array_init_item(void *item) {
     column->name = NULL;
     column->type = NULL;
     column->name_len = 0;
-    column->name_cap = 0;
     column->type_len = 0;
-    column->type_cap = 0;
     column->width = 0;
     column->stretch_limit = -1;
     column->color = nc_color_default();
@@ -50,8 +48,8 @@ static void
 settings_column_array_destroy_item(void *item) {
     Column *column = item;
 
-    stupid_string_free(&column->name, &column->name_len, &column->name_cap);
-    stupid_string_free(&column->type, &column->type_len, &column->type_cap);
+    stupid_string_free(&column->name, &column->name_len);
+    stupid_string_free(&column->type, &column->type_len);
     return;
 }
 

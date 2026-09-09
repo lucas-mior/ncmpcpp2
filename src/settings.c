@@ -718,8 +718,8 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
 
             if (colon >= 0) {
                 stupid_string_set(&column->name, &column->name_len,
-                                    &column->name_cap, tag.data + colon + 1,
-                                    tag.len - colon - 1);
+                                  tag.data + colon + 1,
+                                  tag.len - colon - 1);
                 type_len = colon;
             }
             for (int32 i = 0; i < type_len; i += 1) {
@@ -737,8 +737,7 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
                 default:
                     if (ncm_song_getter_from_char(ch) != SONG_GETTER_NONE) {
                         int32 new_len = column->type_len + 1;
-                        int32 new_cap = new_len + 1;
-                        char *new_data = malloc2(new_cap);
+                        char *new_data = malloc2(new_len + 1);
 
                         if (column->type_len > 0) {
                             memcpy64(new_data, column->type, column->type_len);
@@ -746,11 +745,10 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
                         new_data[column->type_len] = ch;
                         new_data[new_len] = '\0';
 
-                        free2(column->type, column->type_cap);
+                        free2(column->type, column->type_len + 1);
 
                         column->type = new_data;
                         column->type_len = new_len;
-                        column->type_cap = new_cap;
                     }
                     break;
                 }

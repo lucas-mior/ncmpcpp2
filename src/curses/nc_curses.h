@@ -497,7 +497,6 @@ typedef struct NcSearchRow {
 typedef struct NcMediaLibraryTagRow {
     char *tag;
     int32 tag_len;
-    int32 tag_cap;
     time_t mtime;
 } NcMediaLibraryTagRow;
 
@@ -517,7 +516,6 @@ typedef struct NcMediaLibraryAlbumRow {
 typedef struct NcEditorActionRow {
     char *label;
     int32 label_len;
-    int32 label_cap;
 
     void (*run)(void *);
     void *user;

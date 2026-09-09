@@ -1507,7 +1507,7 @@ library_append_tag(MediaLibraryTagArray *tags,
     NcMediaLibraryTagRow *row;
 
     row = media_library_tag_array_append(tags);
-    stupid_string_set(&row->tag, &row->tag_len, &row->tag_cap, tag, tag_len);
+    stupid_string_set(&row->tag, &row->tag_len, tag, tag_len);
     row->mtime = mtime;
     return;
 }
@@ -3209,7 +3209,7 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
             NcMediaLibraryTagRow row = {0};
             NcMenu *base;
 
-            stupid_string_set(&row.tag, &row.tag_len, &row.tag_cap,
+            stupid_string_set(&row.tag, &row.tag_len,
                               primary_value.data, primary_value.len);
             row.mtime = song->last_modified;
             nc_media_library_tag_menu_add(&screen->tags, &row);

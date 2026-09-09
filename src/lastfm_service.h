@@ -15,7 +15,6 @@ enum NcmLastfmServiceType {
 typedef struct NcmLastfmResult {
     char *text;
     int32 text_len;
-    int32 text_cap;
     bool success;
 } NcmLastfmResult;
 
@@ -33,9 +32,7 @@ typedef struct NcmLastfmService {
     char *lang;
 
     int32 artist_len;
-    int32 artist_cap;
     int32 lang_len;
-    int32 lang_cap;
 
     enum NcmLastfmServiceType type;
 } NcmLastfmService;

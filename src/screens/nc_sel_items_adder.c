@@ -18,8 +18,7 @@ adder_add_action_row(NcEditorActionMenu *menu, char *label,
     NcEditorActionRow row;
 
     row = (NcEditorActionRow){0};
-    row.label_cap = label_len + 1;
-    row.label = malloc2(row.label_cap);
+    row.label = malloc2(label_len + 1);
     memcpy64(row.label, label, label_len);
     row.label[label_len] = '\0';
     row.label_len = label_len;

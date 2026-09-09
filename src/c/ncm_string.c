@@ -6,41 +6,35 @@
 #include "c/ncm_c.h"
 
 void
-stupid_string_free(char **data, int32 *len, int32 *cap) {
-    free2(*data, *cap);
+stupid_string_free(char **data, int32 *len) {
+    free2(*data, *len + 1);
     *data = NULL;
     *len = 0;
-    *cap = 0;
     return;
 }
 
 void
-stupid_string_set(char **dest, int32 *dest_len, int32 *dest_cap,
-                  char *source, int32 source_len) {
+stupid_string_set(char **dest, int32 *dest_len, char *source,
+                  int32 source_len) {
     char *copy;
-    int32 cap;
 
     ASSERT(dest != NULL);
     ASSERT(dest_len != NULL);
-    ASSERT(dest_cap != NULL);
     ASSERT_NON_NEGATIVE(source_len);
     ASSERT((source != NULL) || (source_len == 0));
 
-    free2(*dest, *dest_cap);
+    free2(*dest, *dest_len + 1);
     *dest = NULL;
     *dest_len = 0;
-    *dest_cap = 0;
 
     if (source_len == 0) {
         return;
     }
-    cap = source_len + 1;
-    copy = malloc2(cap);
+    copy = malloc2(source_len + 1);
     memcpy64(copy, source, source_len);
     copy[source_len] = '\0';
     *dest = copy;
     *dest_len = source_len;
-    *dest_cap = cap;
     return;
 }
 
