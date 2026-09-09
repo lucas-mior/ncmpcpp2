@@ -1190,9 +1190,7 @@ library_active_column_state(MediaLibraryScreen *screen) {
 
 StrBuilder *
 media_library_screen_active_filter_constraint(MediaLibraryScreen *screen) {
-    MediaLibraryColumnState *state;
-
-    state = library_active_column_state(screen);
+    MediaLibraryColumnState *state = library_active_column_state(screen);
     return &state->filter_constraint;
 }
 
