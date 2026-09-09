@@ -1,5 +1,7 @@
 #include "cbase.h"
 
+#include "nc_screens.h"
+
 #if defined(__INCLUDE_LEVEL__) && (__INCLUDE_LEVEL__ == 0)
 #define NC_SCREEN_IMPL_TYPE             nc_screen_impl_type
 #define NC_SCREEN_IMPL_PREFIX           nc_screen_impl_prefix
