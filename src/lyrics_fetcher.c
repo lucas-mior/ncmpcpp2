@@ -2205,22 +2205,22 @@ lyrics_append_direct_url(NcmLyricsFetcherDef *fetcher, StrBuilder *candidate,
         break;
     case NCM_LYRICS_FETCHER_TEKSTOWO:
         SB_APPEND(candidate, "https://www.tekstowo.pl/");
-        status = lyrics_append_slug_profile(candidate, pair.artist, artist,
-                                            artist_len);
+        status = lyrics_append_slug_profile(candidate, pair.artist,
+                                            artist, artist_len);
         if (status >= 0) {
             sb_append_byte(candidate, '/');
-            status = lyrics_append_slug_profile(candidate, pair.title, title,
-                                                title_len);
+            status = lyrics_append_slug_profile(candidate, pair.title,
+                                                title, title_len);
         }
         break;
     case NCM_LYRICS_FETCHER_VAGALUME:
         SB_APPEND(candidate, "https://www.vagalume.com.br/");
-        status = lyrics_append_slug_profile(candidate, pair.artist, artist,
-                                            artist_len);
+        status = lyrics_append_slug_profile(candidate, pair.artist,
+                                            artist, artist_len);
         if (status >= 0) {
             sb_append_byte(candidate, '/');
-            status = lyrics_append_slug_profile(candidate, pair.title, title,
-                                                title_len);
+            status = lyrics_append_slug_profile(candidate, pair.title,
+                                                title, title_len);
         }
         if (status >= 0) {
             SB_APPEND(candidate, ".html");
