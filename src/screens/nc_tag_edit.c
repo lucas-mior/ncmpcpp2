@@ -1082,16 +1082,13 @@ tag_edit_run_current(NcScreen *screen) {
                                                  editor->pattern.data,
                                                  editor->pattern.len);
                 for (int32 i = 0; i < editor->recent_patterns.len; i += 1) {
+                    StrBuilder *pattern;
                     if (i == existing) {
                         continue;
                     }
-                    {
-                        StrBuilder *pattern;
 
-                        pattern = &editor->recent_patterns.items[i];
-                        str_builder_array_append_copy(&replacement,
-                                                      pattern);
-                    }
+                    pattern = &editor->recent_patterns.items[i];
+                    str_builder_array_append_copy(&replacement, pattern);
                 }
                 str_builder_array_move(&editor->recent_patterns,
                                        &replacement);
