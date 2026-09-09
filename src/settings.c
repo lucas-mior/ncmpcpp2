@@ -1205,8 +1205,8 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
 static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
-    return settings_parse_lyrics_fetchers(                                     \
-        &config->NAME, value, value_len, ncm_error);                           \
+    return settings_parse_lyrics_fetchers(&config->NAME, value, value_len,     \
+                                          ncm_error);                          \
 }
 
 #define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                          \
