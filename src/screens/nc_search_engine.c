@@ -513,8 +513,6 @@ search_draw_row(NcMenu *menu, NcWindow *window, void *item,
     } else {
         NcBuffer left = {0};
         NcBuffer right = {0};
-        int32 right_width;
-        int32 right_x;
         int32 y;
 
         ncm_format_render_buffer(&Config.song_list_format, &row->song,
@@ -522,10 +520,10 @@ search_draw_row(NcMenu *menu, NcWindow *window, void *item,
         search_print_buffer(window, &left);
 
         if (right.len > 0) {
-            right_width = search_buffer_width(&right);
-            right_x = search_screen_width(screen)
-                      - search_menu_suffix_width(menu, pos)
-                      - right_width;
+            int32 right_width = search_buffer_width(&right);
+            int32 right_x = search_screen_width(screen)
+                            - search_menu_suffix_width(menu, pos)
+                            - right_width;
             if (right_x < 0) {
                 right_x = 0;
             }
