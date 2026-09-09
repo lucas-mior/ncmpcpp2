@@ -1637,7 +1637,7 @@ browser_delete_path_recursive(char *path, int32 path_len, NcmError *ncm_error) {
                 return ncm_error_ok(ncm_error);
             }
             message_len = SNPRINTF(message, "rmdir '%.*s': %s",
-                                   path_len, path, strerror(code));
+                                            path_len, path, strerror(code));
             status = ncm_error_set_status(ncm_error, -code, message,
                                           message_len);
             free2(copy, path_len + 1);
