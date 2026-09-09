@@ -422,19 +422,14 @@ library_mouse_select(MediaLibraryScreen *screen,
 
 static void
 library_mouse_button_pressed(NcScreen *screen, MEVENT event) {
-    MediaLibraryScreen *library;
-    NcMenu *tag_menu;
+    MediaLibraryScreen *library = library_from_screen(screen);
+    NcMenu *tag_menu = nc_media_library_tag_menu_base(&library->tags);
+    bool right_click = (event.bstate & BUTTON3_PRESSED) != 0;
+    int32 x = event.x;
+    int32 y = event.y;
     NcMenu *album_menu;
     NcMenu *song_menu;
-    bool right_click;
-    int32 x;
-    int32 y;
 
-    library = library_from_screen(screen);
-    right_click = (event.bstate & BUTTON3_PRESSED) != 0;
-    x = event.x;
-    y = event.y;
-    tag_menu = nc_media_library_tag_menu_base(&library->tags);
     if (media_library_screen_column_is_visible(library,
                                                MEDIA_LIBRARY_COLUMN_TAGS)
         && nc_window_has_coords(&library->tags_window, &x, &y)) {
