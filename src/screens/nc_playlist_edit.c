@@ -60,7 +60,8 @@ playlist_edit_update_titles(PlaylistEditScreen *screen, bool update_windows) {
         nc_window_set_title(&screen->playlists_window,
                             screen->playlists_title.data,
                             screen->playlists_title.len);
-        nc_window_set_title(&screen->content_window, screen->content_title.data,
+        nc_window_set_title(&screen->content_window,
+                            screen->content_title.data,
                             screen->content_title.len);
     }
     return;
