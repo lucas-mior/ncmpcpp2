@@ -88,12 +88,12 @@ ncm_mpd_song_list_push(NcmMpdSongList *list, NcmSong *song) {
 }
 
 static void
-ncm_mpd_string_list_push(NcmStringViewList *list, char *value) {
+ncm_mpd_string_list_push(StringViewList *list, char *value) {
     int32 old_capacity;
     int32 new_capacity;
     int32 value_len;
     int32 index;
-    NcmStringView *string;
+    StringView *string;
 
     if (list->count >= list->capacity) {
         old_capacity = list->capacity;
@@ -177,7 +177,7 @@ ncm_mpd_connection_recv_song_list(NcmMpdConnection *connection,
 
 static int32
 ncm_mpd_connection_recv_pair_list(NcmMpdConnection *connection, char *name,
-                                  NcmStringViewList *strings) {
+                                  StringViewList *strings) {
     struct mpd_pair *pair;
 
     ncm_mpd_string_list_clear(strings);
@@ -344,34 +344,34 @@ ncm_mpd_item_list_to_directory_array(NcmMpdItemList *list,
 }
 
 void
-ncm_mpd_string_list_destroy(NcmStringViewList *list) {
+ncm_mpd_string_list_destroy(StringViewList *list) {
     if (list == NULL) {
         return;
     }
 
     ncm_mpd_string_list_clear(list);
     free2(list->items, list->capacity*SIZEOF(*list->items));
-    *list = (NcmStringViewList){0};
+    *list = (StringViewList){0};
 
     return;
 }
 
 void
-ncm_mpd_string_list_clear(NcmStringViewList *list) {
+ncm_mpd_string_list_clear(StringViewList *list) {
     if (list == NULL) {
         return;
     }
 
     for (int32 i = 0; i < list->count; i += 1) {
         free2(list->items[i].data, list->items[i].len + 1);
-        list->items[i] = (NcmStringView){0};
+        list->items[i] = (StringView){0};
     }
     list->count = 0;
     return;
 }
 
 int32
-ncm_mpd_string_list_count(NcmStringViewList *list) {
+ncm_mpd_string_list_count(StringViewList *list) {
     if (list == NULL) {
         return 0;
     }
@@ -379,8 +379,8 @@ ncm_mpd_string_list_count(NcmStringViewList *list) {
     return list->count;
 }
 
-NcmStringView *
-ncm_mpd_string_list_at(NcmStringViewList *list, int32 idx) {
+StringView *
+ncm_mpd_string_list_at(StringViewList *list, int32 idx) {
     if (list == NULL) {
         return NULL;
     }
@@ -817,7 +817,7 @@ ncm_mpd_connection_commit_command_list(NcmMpdConnection *connection) {
 
 int32
 ncm_mpd_connection_get_supported_extensions(NcmMpdConnection *connection,
-                                            NcmStringViewList *strings) {
+                                            StringViewList *strings) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (strings == NULL) {
         return -EINVAL;
@@ -971,7 +971,7 @@ ncm_mpd_connection_get_playlists(NcmMpdConnection *connection,
 
 int32
 ncm_mpd_connection_list_all_song_uris(NcmMpdConnection *connection, char *path,
-                                      NcmStringViewList *strings) {
+                                      StringViewList *strings) {
     char *directory;
 
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
@@ -989,7 +989,7 @@ ncm_mpd_connection_list_all_song_uris(NcmMpdConnection *connection, char *path,
 
 int32
 ncm_mpd_connection_get_url_handlers(NcmMpdConnection *connection,
-                                    NcmStringViewList *strings) {
+                                    StringViewList *strings) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (strings == NULL) {
         return -EINVAL;
@@ -1004,7 +1004,7 @@ ncm_mpd_connection_get_url_handlers(NcmMpdConnection *connection,
 
 int32
 ncm_mpd_connection_get_tag_types(NcmMpdConnection *connection,
-                                 NcmStringViewList *strings) {
+                                 StringViewList *strings) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (strings == NULL) {
         return -EINVAL;
@@ -1293,7 +1293,7 @@ ncm_mpd_connection_commit_search_songs(NcmMpdConnection *connection,
 int32
 ncm_mpd_connection_list_tag_values(NcmMpdConnection *connection,
                                    enum mpd_tag_type tag,
-                                   NcmStringViewList *strings) {
+                                   StringViewList *strings) {
     struct mpd_pair *pair;
 
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));

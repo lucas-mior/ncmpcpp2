@@ -480,12 +480,12 @@ ncm_lrc_parse(NcmLrcDocument *document, char *data, int32 data_len,
     return 0;
 }
 
-static NcmStringView
+static StringView
 ncm_lrc_entry_text_unchecked(NcmLrcDocument *document, NcmLrcEntry *entry) {
-    NcmStringView view;
+    StringView view;
 
     if (entry->text_len <= 0) {
-        return (NcmStringView){.data = ""};
+        return (StringView){.data = ""};
     }
 
     view.data = document->text.data + entry->text_start;
@@ -520,7 +520,7 @@ ncm_lrc_document_render_plain(NcmLrcDocument *document,
     ncm_lrc_document_clear_buffer_positions(document);
     for (int32 i = 0; i < document->entries_len; i += 1) {
         NcmLrcEntry *entry = &document->entries[i];
-        NcmStringView text;
+        StringView text;
 
         if (i > 0) {
             target->append(target->user, line_break, STRLIT_LEN("\n"));

@@ -439,7 +439,7 @@ adder_action_position_current_song(void *user) {
 }
 
 static void
-adder_song_album_view(NcmSong *song, NcmStringView *album) {
+adder_song_album_view(NcmSong *song, StringView *album) {
     if (!ncm_song_has_tag_view(song, MPD_TAG_ALBUM, 0, album)) {
         ncm_string_view_set(album, "", 0);
     }
@@ -451,8 +451,8 @@ adder_action_position_current_album(void *user) {
     SelectedItemsAdderScreen *screen;
     NcmSong current;
     NcmSong next;
-    NcmStringView album;
-    NcmStringView next_album;
+    StringView album;
+    StringView next_album;
     int32 position;
 
     screen = user;

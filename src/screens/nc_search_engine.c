@@ -378,7 +378,7 @@ search_run_current(NcScreen *base_screen) {
 static bool
 search_row_matches(SearchEngineScreen *screen,
                    NcSearchRow *row, NcmRegex *regex) {
-    NcmStringView view;
+    StringView view;
 
     if (!row->is_song) {
         return false;
@@ -933,7 +933,7 @@ search_insert_buffer_with_flags(SearchEngineScreen *screen,
 }
 
 static bool
-search_song_has_field_view(NcmSong *song, int32 field, NcmStringView *view) {
+search_song_has_field_view(NcmSong *song, int32 field, StringView *view) {
     enum mpd_tag_type tag;
 
     if (field == 5) {
@@ -1165,7 +1165,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                             for (int32 field = 1;
                                  field < SEARCH_ENGINE_CONSTRAINT_COUNT;
                                  field += 1) {
-                                NcmStringView value;
+                                StringView value;
 
                                 if (!search_song_has_field_view(song, field,
                                                                  &value)) {
@@ -1199,7 +1199,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                          field < SEARCH_ENGINE_CONSTRAINT_COUNT;
                          field += 1) {
                         StrBuilder *constraint;
-                        NcmStringView value;
+                        StringView value;
 
                         constraint = &screen->constraints[field];
                         if (constraint->len <= 0) {

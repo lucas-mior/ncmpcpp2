@@ -198,7 +198,7 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
             return status;
         }
         for (int32 value_i = 0; ; value_i += 1) {
-            NcmStringView value = {0};
+            StringView value = {0};
 
             if (!callback(field, value_i, &value, user)) {
                 break;

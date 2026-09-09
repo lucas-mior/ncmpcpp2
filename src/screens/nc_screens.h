@@ -1078,7 +1078,7 @@ typedef struct MediaLibraryColumnState {
 } MediaLibraryColumnState;
 
 typedef struct MediaLibraryHooks {
-    int32 (*list_tags)(void *, enum mpd_tag_type, NcmStringViewList *,
+    int32 (*list_tags)(void *, enum mpd_tag_type, StringViewList *,
                        NcmError *);
     int32 (*list_all_songs)(void *, NcmMpdSongList *, NcmError *);
     int32 (*search_songs)(void *, MediaLibrarySongQuery *, NcmMpdSongList *,
@@ -1172,7 +1172,7 @@ void media_library_screen_format_song_row(MediaLibraryScreen *, NcmSong *,
                                           NcBuffer *);
 
 int32 media_library_tags_from_strings(MediaLibraryTagArray *,
-                                      NcmStringViewList *);
+                                      StringViewList *);
 int32 media_library_tags_from_songs(MediaLibraryTagArray *, NcmMpdSongList *,
                                     enum mpd_tag_type);
 int32 media_library_albums_from_songs(MediaLibraryAlbumArray *,
@@ -1211,7 +1211,7 @@ void media_library_screen_finish_list_change(MediaLibraryScreen *);
 int32 media_library_screen_update(MediaLibraryScreen *, NcmError *);
 
 int32 media_library_screen_list_tags(MediaLibraryScreen *, enum mpd_tag_type,
-                                     NcmStringViewList *, NcmError *);
+                                     StringViewList *, NcmError *);
 int32 media_library_screen_list_all_songs(MediaLibraryScreen *,
                                           NcmMpdSongList *, NcmError *);
 int32 media_library_screen_search_songs(MediaLibraryScreen *,
@@ -1690,7 +1690,7 @@ int32 sort_playlist_dialog_move_current_down(SortPlaylistDialog *);
 #include "cbase/xenums.c"
 
 typedef struct TagEditHooks {
-    enum TagEditPromptResult (*prompt)(void *, char *, int32, NcmStringView,
+    enum TagEditPromptResult (*prompt)(void *, char *, int32, StringView,
                                          StrBuilder *);
     bool (*confirm)(void *, char *, int32);
     void (*status_message)(void *, char *, int32);
@@ -1794,8 +1794,8 @@ void tag_edit_screen_clear_directories(TagEditScreen *);
 void tag_edit_screen_clear_stale_tags(TagEditScreen *);
 void tag_edit_screen_finish_directory_change(TagEditScreen *);
 void tag_edit_screen_set_current_dir(TagEditScreen *, char *, int32);
-int32 tag_edit_screen_current_dir(TagEditScreen *, NcmStringView *);
-int32 tag_edit_screen_current_directory_path(TagEditScreen *, NcmStringView *);
+int32 tag_edit_screen_current_dir(TagEditScreen *, StringView *);
+int32 tag_edit_screen_current_directory_path(TagEditScreen *, StringView *);
 int32 tag_edit_screen_enter_directory(TagEditScreen *);
 int32 tag_edit_screen_go_to_parent(TagEditScreen *);
 int32 tag_edit_screen_locate_song(TagEditScreen *, NcmSong *);
@@ -1887,7 +1887,7 @@ enum TinyTagEditRow {
 
 typedef struct TinyTagEditHooks {
     enum TinyTagEditPromptResult (*prompt)(void *, char *, int32,
-                                             NcmStringView, StrBuilder *);
+                                             StringView, StrBuilder *);
     void (*status_message)(void *, char *, int32);
     int32 (*taglib_open)(void *, NcmTaglibFile *, char *, int32);
     int32 (*taglib_audio_properties)(void *, NcmTaglibFile *,
@@ -1982,7 +1982,7 @@ void browser_screen_clear(BrowserScreen *);
 void browser_screen_add_item_move(BrowserScreen *, NcmMpdItem *);
 int32 browser_screen_sort(BrowserScreen *);
 int32 browser_screen_set_current_directory(BrowserScreen *, char *, int32);
-NcmStringView browser_screen_current_directory(BrowserScreen *);
+StringView browser_screen_current_directory(BrowserScreen *);
 void browser_screen_update_title_text(BrowserScreen *);
 void browser_screen_update_column_title(BrowserScreen *);
 void browser_screen_draw_header(BrowserScreen *);
@@ -2000,8 +2000,8 @@ int32 browser_screen_current_song(BrowserScreen *, NcmSong *);
 int32 browser_screen_selected_songs(BrowserScreen *, NcmSongArray *);
 int32 browser_screen_delete_items(BrowserScreen *, NcmMpdClient *, NcmError *);
 bool browser_screen_has_current_directory_path(BrowserScreen *,
-                                               NcmStringView *);
-bool browser_screen_has_current_playlist_path(BrowserScreen *, NcmStringView *);
+                                               StringView *);
+bool browser_screen_has_current_playlist_path(BrowserScreen *, StringView *);
 bool browser_screen_can_rename_directory(BrowserScreen *);
 bool browser_screen_can_rename_playlist(BrowserScreen *);
 int32 browser_screen_rename_current_directory(BrowserScreen *, char *, int32,

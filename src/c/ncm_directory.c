@@ -82,7 +82,7 @@ ncm_directory_move(NcmDirectory *dest, NcmDirectory *source) {
 }
 
 bool
-ncm_directory_has_path_view(NcmDirectory *directory, NcmStringView *view) {
+ncm_directory_has_path_view(NcmDirectory *directory, StringView *view) {
     if (view) {
         view->data = NULL;
         view->len = 0;

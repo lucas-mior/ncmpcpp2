@@ -26,8 +26,8 @@ struct OutputsScreen {
 
 struct ServerInfoScreen {
     NcServerInfoScreen screen;
-    NcmStringViewList url_handlers;
-    NcmStringViewList tag_types;
+    StringViewList url_handlers;
+    StringViewList tag_types;
     int64 timer;
     bool initialized;
 };
@@ -710,7 +710,7 @@ statusbar_prompt_should_continue(char *text, void *user) {
 
 static enum PromptResult
 prompt_buffer(char *label, int32 label_len,
-              NcmStringView initial, StrBuilder *result, bool bold_label) {
+              StringView initial, StrBuilder *result, bool bold_label) {
     NcmStatusbarScopedLock scoped_lock;
     enum NcPromptStatus status;
     NcPrompt prompt = {0};
@@ -761,7 +761,7 @@ prompt_buffer(char *label, int32 label_len,
 
 static enum TagEditPromptResult
 tag_edit_hook_prompt(
-    void *user, char *label, int32 label_len, NcmStringView initial,
+    void *user, char *label, int32 label_len, StringView initial,
     StrBuilder *result) {
     enum PromptResult prompt_result;
 
@@ -849,7 +849,7 @@ app_screen_tag_edit_init(void) {
 
 static enum TinyTagEditPromptResult
 tiny_tag_edit_prompt(
-    void *user, char *label, int32 label_len, NcmStringView initial,
+    void *user, char *label, int32 label_len, StringView initial,
     StrBuilder *result) {
     enum PromptResult prompt_result;
 
@@ -1509,7 +1509,7 @@ server_info_render(void *user, NcBuffer *buffer) {
 
     append_bold_label(buffer, "URL Handlers:");
     for (int32 i = 0; i < owner->url_handlers.count; i += 1) {
-        NcmStringView *handler = &owner->url_handlers.items[i];
+        StringView *handler = &owner->url_handlers.items[i];
 
         if (i == 0) {
             nc_buffer_append_cstring(buffer, " ");
@@ -1522,7 +1522,7 @@ server_info_render(void *user, NcBuffer *buffer) {
 
     append_bold_label(buffer, "Tag Types:");
     for (int32 i = 0; i < owner->tag_types.count; i += 1) {
-        NcmStringView *tag = &owner->tag_types.items[i];
+        StringView *tag = &owner->tag_types.items[i];
 
         if (i == 0) {
             nc_buffer_append_cstring(buffer, " ");
@@ -1586,8 +1586,8 @@ app_screen_server_info_init(void) {
     hooks.title = server_info_title;
     hooks.destroy = server_info_destroy;
     hooks.user = &server_info_screen;
-    server_info_screen.url_handlers = (NcmStringViewList){0};
-    server_info_screen.tag_types = (NcmStringViewList){0};
+    server_info_screen.url_handlers = (StringViewList){0};
+    server_info_screen.tag_types = (StringViewList){0};
     nc_server_info_screen_init(&server_info_screen.screen, hooks,
                                ui_state_screen_width(),
                                ui_state_screen_height(),

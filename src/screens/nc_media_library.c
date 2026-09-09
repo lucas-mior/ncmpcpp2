@@ -56,7 +56,7 @@ library_mpd_list_all_songs(void *user, NcmMpdSongList *songs,
 
 static int32
 library_mpd_list_tags(void *user, enum mpd_tag_type tag_type,
-                      NcmStringViewList *tags, NcmError *ncm_error) {
+                      StringViewList *tags, NcmError *ncm_error) {
     NcmMpdClient *client = user;
 
     ASSERT(client != NULL);
@@ -1543,15 +1543,15 @@ library_append_album(MediaLibraryAlbumArray *albums, char *tag, int32 tag_len,
 
 static bool
 library_song_has_first_tag(NcmSong *song, enum mpd_tag_type tag,
-                           NcmStringView *view) {
+                           StringView *view) {
     ASSERT(view != NULL);
-    *view = (NcmStringView){0};
+    *view = (StringView){0};
     return ncm_song_has_tag_view(song, tag, 0, view);
 }
 
 int32
 media_library_tags_from_strings(MediaLibraryTagArray *tags,
-                                NcmStringViewList *strings) {
+                                StringViewList *strings) {
     MediaLibraryTagArray replacement = {0};
 
     if ((tags == NULL) || (strings == NULL)) {
@@ -1559,7 +1559,7 @@ media_library_tags_from_strings(MediaLibraryTagArray *tags,
     }
 
     for (int32 i = 0; i < ncm_mpd_string_list_count(strings); i += 1) {
-        NcmStringView *string;
+        StringView *string;
 
         string = ncm_mpd_string_list_at(strings, i);
         if (library_find_tag(&replacement, string->data, string->len) >= 0) {
@@ -1583,7 +1583,7 @@ media_library_tags_from_songs(MediaLibraryTagArray *tags, NcmMpdSongList *songs,
 
     for (int32 i = 0; i < ncm_mpd_song_list_count(songs); i += 1) {
         NcmSong *song = ncm_mpd_song_list_at(songs, i);
-        NcmStringView primary_value;
+        StringView primary_value;
 
         for (int32 j = 0;
              ncm_song_has_tag_view(song, primary_tag, j, &primary_value);
@@ -1630,8 +1630,8 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
         NcmSong *song = ncm_mpd_song_list_at(songs, i);
 
         if (mode == MEDIA_LIBRARY_MODE_THREE_COLUMNS) {
-            NcmStringView album = {0};
-            NcmStringView date = {0};
+            StringView album = {0};
+            StringView date = {0};
             int32 existing;
 
             library_song_has_first_tag(song, MPD_TAG_ALBUM, &album);
@@ -1659,9 +1659,9 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
                                      NC_MENU_ITEM_SELECTABLE);
             }
         } else {
-            NcmStringView album = {0};
-            NcmStringView date = {0};
-            NcmStringView primary_value = {0};
+            StringView album = {0};
+            StringView date = {0};
+            StringView primary_value = {0};
 
             library_song_has_first_tag(song, MPD_TAG_ALBUM, &album);
             library_song_has_first_tag(song, MPD_TAG_DATE, &date);
@@ -2544,7 +2544,7 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
 
     if (library_has_pending_tags(screen)) {
         MediaLibraryTagArray tags = {0};
-        NcmStringViewList strings = {0};
+        StringViewList strings = {0};
         NcmMpdSongList songs = {0};
         enum mpd_tag_type primary_tag;
         int32 status;
@@ -2965,7 +2965,7 @@ library_move_to_album(MediaLibraryScreen *screen, char *tag, int32 tag_len,
 int32
 media_library_screen_list_tags(
     MediaLibraryScreen *screen, enum mpd_tag_type tag_type,
-    NcmStringViewList *tags, NcmError *ncm_error) {
+    StringViewList *tags, NcmError *ncm_error) {
     if ((screen == NULL) || (screen->hooks.list_tags == NULL)) {
         return ncm_error_set_status(ncm_error, -ENOSYS,
                                     STRLIT("tag hook is unavailable"));
@@ -3156,9 +3156,9 @@ media_library_screen_add_item_to_playlist(
 int32
 media_library_screen_locate_song(MediaLibraryScreen *screen,
                                  NcmSong *song, NcmError *ncm_error) {
-    NcmStringView primary_value;
-    NcmStringView album;
-    NcmStringView date;
+    StringView primary_value;
+    StringView album;
+    StringView date;
     char *album_date;
     char *album_tag;
     int32 album_date_len;

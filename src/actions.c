@@ -676,7 +676,7 @@ action_runtime_volume(int32 change) {
 
 static int32
 action_runtime_update_database(void) {
-    NcmStringView view;
+    StringView view;
     NcmError ncm_error;
     char *path = "/";
 
@@ -1624,7 +1624,7 @@ action_runtime_save_playlist(void) {
 
 static int32
 action_runtime_apply_filter(void) {
-    NcmStringView current_filter;
+    StringView current_filter;
     StrBuilder filter = {0};
     StrBuilder previous_filter = {0};
     NcmError ncm_error;
@@ -1726,7 +1726,7 @@ action_runtime_find(void) {
 static int32
 action_runtime_find_item(enum SearchDirection direction) {
     ActionRuntimeSearchPrompt state;
-    NcmStringView current_constraint;
+    StringView current_constraint;
     StrBuilder constraint = {0};
     StrBuilder previous_constraint = {0};
     NcmError ncm_error;
@@ -1815,7 +1815,7 @@ action_runtime_find_item(enum SearchDirection direction) {
 
 static int32
 action_runtime_repeat_search(enum SearchDirection direction) {
-    NcmStringView constraint;
+    StringView constraint;
     NcmError ncm_error;
     int32 status;
 
@@ -2543,7 +2543,7 @@ action_runtime_add_item_to_playlist(bool play) {
 
 static int32
 action_runtime_browser_item_name(NcmMpdItem *item, StrBuilder *name) {
-    NcmStringView view;
+    StringView view;
     int32 basename;
 
     sb_clear(name);
@@ -3663,7 +3663,7 @@ action_runtime_select_album(void) {
 
 static int32
 action_runtime_select_found_items(void) {
-    NcmStringView constraint;
+    StringView constraint;
     NcMenu *menu;
     NcmError ncm_error;
     int32 original;
@@ -4047,7 +4047,7 @@ action_runtime_jump_to_playing_song(void) {
 static int32
 action_runtime_jump_to_playlist_edit(void) {
     BrowserScreen *browser = app_screen_browser();
-    NcmStringView path;
+    StringView path;
     NcmError ncm_error;
     int32 status;
 
@@ -4104,7 +4104,7 @@ action_runtime_jump_to_media_library(void) {
 static int32
 action_runtime_jump_to_tag_edit(void) {
 #if defined(HAVE_TAGLIB_H)
-    NcmStringView directory;
+    StringView directory;
     NcmSong song;
     int32 status;
 
@@ -4136,7 +4136,7 @@ action_runtime_jump_to_tag_edit(void) {
 
 static int32
 action_runtime_edit_directory_name(void) {
-    NcmStringView path;
+    StringView path;
     StrBuilder name = {0};
     NcmError ncm_error;
     bool prompted;
@@ -4191,7 +4191,7 @@ action_runtime_edit_playlist_name(void) {
     BrowserScreen *browser = app_screen_browser();
     PlaylistEditScreen *screen = app_screen_playlist_edit();
     NcmPlaylist playlist;
-    NcmStringView path;
+    StringView path;
     StrBuilder name = {0};
     NcmError ncm_error;
     bool prompted;
@@ -4814,14 +4814,14 @@ action_runtime_can_edit_library_album(void) {
 }
 
 static bool
-action_runtime_song_uri_view(NcmSong *song, NcmStringView *uri) {
-    *uri = (NcmStringView){0};
+action_runtime_song_uri_view(NcmSong *song, StringView *uri) {
+    *uri = (StringView){0};
     return ncm_song_has_uri_view(song, 0, uri);
 }
 
 static bool
-action_runtime_song_name_or_uri_view(NcmSong *song, NcmStringView *view) {
-    *view = (NcmStringView){0};
+action_runtime_song_name_or_uri_view(NcmSong *song, StringView *view) {
+    *view = (StringView){0};
     if (ncm_song_has_name_view(song, 0, view)) {
         return true;
     }
@@ -4855,7 +4855,7 @@ action_runtime_shared_directory_update(StrBuilder *shared_directory,
 
 static void
 action_runtime_print_updating_song(NcmSong *song) {
-    NcmStringView name;
+    StringView name;
     StrBuilder message = {0};
 
     if (!action_runtime_song_name_or_uri_view(song, &name)) {
@@ -4873,7 +4873,7 @@ action_runtime_print_updating_song(NcmSong *song) {
 static void
 action_runtime_print_album_file_error(char *prefix, int32 prefix_len,
                                       NcmSong *song) {
-    NcmStringView uri;
+    StringView uri;
     int32 width;
     int32 uri_len;
 
@@ -4983,7 +4983,7 @@ action_runtime_edit_library_tag(void) {
          i += 1) {
         NcmSong *song = ncm_mpd_song_list_at(&songs, i);
         NcmMutableSong mutable_song = {0};
-        NcmStringView uri;
+        StringView uri;
 
         status = ncm_mutable_song_load_originals_from_song(&mutable_song, song);
         if (status == 0) {
@@ -5000,7 +5000,7 @@ action_runtime_edit_library_tag(void) {
         action_runtime_print_updating_song(song);
         status = ncm_mutable_song_write(&mutable_song, Config.mpd_music_dir);
         if (status < 0) {
-            NcmStringView name;
+            StringView name;
 
             if (action_runtime_song_name_or_uri_view(song, &name)) {
                 StrBuilder message = {0};
@@ -5095,8 +5095,8 @@ action_runtime_edit_library_album(void) {
     ncm_statusbar_print_cstring(0, "Updating tags...");
     for (int32 i = 0; (status == 0) && (i < songs.len); i += 1) {
         NcmSong *song = &songs.items[i];
-        NcmStringView directory;
-        NcmStringView uri;
+        StringView directory;
+        StringView uri;
         NcmTaglibFile file = {0};
 
         action_runtime_print_updating_song(song);
@@ -5367,7 +5367,7 @@ action_runtime_show_lyrics(void) {
 static int32
 action_runtime_show_artist_info(void) {
     NcmSong song = {0};
-    NcmStringView artist = {0};
+    StringView artist = {0};
     NcmError ncm_error;
     char *media_library_artist = NULL;
     int32 media_library_artist_len = 0;
@@ -5910,7 +5910,7 @@ action_runtime_builtin_can_run(NcmActionRuntime *runtime,
                && (ncm_status_state_total_time() > 0)
                && (ncm_status_state_current_song_position() >= 0);
     case NCM_ACTION_SELECT_FOUND_ITEMS: {
-        NcmStringView constraint;
+        StringView constraint;
 
         if (!current_screen_can_search()) {
             return false;

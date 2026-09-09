@@ -204,7 +204,7 @@ test_option_table_shape(void) {
 static void
 test_declared_defaults_and_cleanup(void) {
     Configuration config = {0};
-    NcmStringViewArray paths = {0};
+    StringViewArray paths = {0};
     NcmError ncm_error = {0};
 
     configuration_init(&config);
@@ -253,7 +253,7 @@ test_declared_defaults_and_cleanup(void) {
 static void
 test_runtime_application_is_separate(void) {
     Configuration config = {0};
-    NcmStringViewArray paths = {0};
+    StringViewArray paths = {0};
     NcmError ncm_error = {0};
     StrBuilder previous_term = {0};
     char *term;
@@ -814,9 +814,9 @@ test_cross_field_validation_is_post_parse(void) {
         "visualizer_spectrum_hz_min = 200\n"
         "visualizer_spectrum_hz_max = 100\n";
     Configuration config = {0};
-    NcmStringViewArray paths = {0};
+    StringViewArray paths = {0};
     NcmError ncm_error = {0};
-    NcmStringView *path_view;
+    StringView *path_view;
     char path[PATH_MAX];
     int32 contents_len = SIZEOF(contents) - 1;
     int32 fd;
@@ -851,9 +851,9 @@ test_duplicate_option_is_rejected(void) {
     static char first_contents[] = "lines_scrolled = 4\n";
     static char second_contents[] = "lines_scrolled = 6\n";
     Configuration config = {0};
-    NcmStringViewArray paths = {0};
+    StringViewArray paths = {0};
     NcmError ncm_error = {0};
-    NcmStringView *path_view;
+    StringView *path_view;
     char first_path[PATH_MAX];
     char second_path[PATH_MAX];
     int32 first_len = SIZEOF(first_contents) - 1;
@@ -900,9 +900,9 @@ static void
 test_duplicate_state_is_per_read(void) {
     static char contents[] = "lines_scrolled = 4\n";
     Configuration config = {0};
-    NcmStringViewArray paths = {0};
+    StringViewArray paths = {0};
     NcmError ncm_error = {0};
-    NcmStringView *path_view;
+    StringView *path_view;
     char path[PATH_MAX];
     int32 contents_len = SIZEOF(contents) - 1;
     int32 fd;

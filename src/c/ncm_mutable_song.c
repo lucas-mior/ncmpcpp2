@@ -165,7 +165,7 @@ ncm_mutable_song_destroy_unchecked(NcmMutableSong *song) {
 static bool
 ncm_mutable_song_has_tag_view_unchecked(NcmMutableSong *song,
                                         enum NcmTagsField field, int32 idx,
-                                        NcmStringView *view) {
+                                        StringView *view) {
     NcmMutableSongTag *tag;
 
     if ((tag = ncm_mutable_song_find_tag(song, field, idx)) == NULL) {
@@ -182,7 +182,7 @@ ncm_mutable_song_has_tag_view_unchecked(NcmMutableSong *song,
 
 static bool
 ncm_mutable_song_write_callback(enum NcmTagsField field, int32 idx,
-                                NcmStringView *value, void *user) {
+                                StringView *value, void *user) {
     NcmMutableSong *song = user;
     return ncm_mutable_song_has_tag_view_unchecked(song, field, idx, value);
 }
@@ -340,7 +340,7 @@ ncm_mutable_song_set_tags(NcmMutableSong *song, enum NcmTagsField field,
 bool
 ncm_mutable_song_has_tag_view(NcmMutableSong *song,
                               enum NcmTagsField field, int32 idx,
-                              NcmStringView *view) {
+                              StringView *view) {
     if (view == NULL) {
         return false;
     }
@@ -362,7 +362,7 @@ static void
 ncm_mutable_song_get_tag_buffer_unchecked(NcmMutableSong *song,
                                           enum NcmTagsField field, int32 idx,
                                           StrBuilder *buffer) {
-    NcmStringView view;
+    StringView view;
 
     sb_clear(buffer);
     if (field == NCM_TAGS_FIELD_TRACK) {
@@ -471,7 +471,7 @@ ncm_mutable_song_tags_buffer(NcmMutableSong *song, enum NcmTagsField field,
 int32
 ncm_mutable_song_load_originals_from_song(NcmMutableSong *dest,
                                           NcmSong *source) {
-    NcmStringView view;
+    StringView view;
 
     if (dest == NULL) {
         return -EINVAL;
@@ -549,7 +549,7 @@ ncm_mutable_song_set_new_name(NcmMutableSong *song, char *new_name,
 }
 
 bool
-ncm_mutable_song_has_new_name_view(NcmMutableSong *song, NcmStringView *view) {
+ncm_mutable_song_has_new_name_view(NcmMutableSong *song, StringView *view) {
     if (view == NULL) {
         return false;
     }
