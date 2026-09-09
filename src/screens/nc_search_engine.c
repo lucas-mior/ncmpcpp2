@@ -243,7 +243,8 @@ search_build_constraint_row(SearchEngineScreen *screen, int32 idx,
 
     nc_buffer_clear(buffer);
     search_append_format(buffer, NC_FORMAT_BOLD);
-    nc_buffer_append_cstring(buffer, search_constraint_names[idx]);
+    nc_buffer_append_data(buffer, search_constraint_names[idx],
+                          strlen32(search_constraint_names[idx]));
     while (buffer->len < 13) {
         nc_buffer_append_char(buffer, ' ');
     }
@@ -739,7 +740,7 @@ search_build_search_mode_row(SearchEngineScreen *screen, NcBuffer *buffer) {
         && (screen->search_mode < SEARCH_ENGINE_SEARCH_MODE_COUNT)) {
         mode_name = search_mode_names[screen->search_mode];
     }
-    nc_buffer_append_cstring(buffer, mode_name);
+    nc_buffer_append_data(buffer, mode_name, strlen32(mode_name));
     return;
 }
 
@@ -1279,12 +1280,12 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
         search_insert_buffer_with_flags(screen,
                                         SEARCH_ENGINE_RESULT_SEPARATOR_ROW,
                                         &buffer, NC_MENU_ITEM_SEPARATOR);
-        nc_buffer_append_cstring(&buffer, "Search results: Found ");
+        nc_buffer_append_data(&buffer, STRLIT("Search results: Found "));
         nc_buffer_append_int64(&buffer, songs.len);
         if (songs.len == 1) {
-            nc_buffer_append_cstring(&buffer, " song");
+            nc_buffer_append_data(&buffer, STRLIT(" song"));
         } else {
-            nc_buffer_append_cstring(&buffer, " songs");
+            nc_buffer_append_data(&buffer, STRLIT(" songs"));
         }
         search_insert_buffer_with_flags(screen,
                                         SEARCH_ENGINE_RESULT_SUMMARY_ROW,

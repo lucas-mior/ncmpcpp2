@@ -394,7 +394,7 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
     title = ncm_lastfm_service_name(&screen->service);
     lastfm_set_title(screen, title, strlen32(title));
     nc_buffer_clear(&screen->buffer);
-    nc_buffer_append_cstring(&screen->buffer, (char *)LASTFM_FETCHING);
+    nc_buffer_append_data(&screen->buffer, STRLIT(LASTFM_FETCHING));
     screen->refresh_window = true;
     return ncm_error_ok(ncm_error);
 }
