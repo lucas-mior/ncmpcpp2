@@ -669,8 +669,7 @@ playlist_edit_screen_init(PlaylistEditScreen *screen,
     callbacks.refresh = playlist_edit_refresh_callback;
     callbacks.refresh_window = playlist_edit_refresh_window_callback;
     callbacks.scroll = playlist_edit_scroll_callback;
-    callbacks.list_change_finished =
-        playlist_edit_finish_list_change_callback;
+    callbacks.list_change_finished = playlist_edit_finish_list_change_callback;
     callbacks.switch_to = playlist_edit_switch_to_callback;
     callbacks.resize = playlist_edit_resize_callback;
     callbacks.window_timeout_callback = playlist_edit_timeout_callback;
