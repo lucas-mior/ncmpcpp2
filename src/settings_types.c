@@ -181,7 +181,6 @@ configuration_destroy(Configuration *config) {
     XX_STRING(NAME, DEFAULT)
 #define XX_FORMATTED_COLOR(NAME, DEFAULT)                                 \
     nc_formatted_color_destroy(&config->NAME);
-#define XX_BORDER(NAME, DEFAULT)
 #define XX_FORMAT(NAME, DEFAULT, FLAGS)                                   \
     ncm_format_ast_destroy(&config->NAME);
 #define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                           \
