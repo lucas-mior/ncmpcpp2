@@ -1,3 +1,5 @@
+// this is here just to silence clangd warnings on config_options.h
+
 #define XX(A, B, ...) char *A = B;
 #define XX_DIR                   XX
 #define XX_COLUMNS               XX
