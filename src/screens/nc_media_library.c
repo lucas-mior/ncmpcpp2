@@ -1582,10 +1582,9 @@ media_library_tags_from_songs(MediaLibraryTagArray *tags, NcmMpdSongList *songs,
     }
 
     for (int32 i = 0; i < ncm_mpd_song_list_count(songs); i += 1) {
-        NcmSong *song;
+        NcmSong *song = ncm_mpd_song_list_at(songs, i);
         NcmStringView primary_value;
 
-        song = ncm_mpd_song_list_at(songs, i);
         for (int32 j = 0;
              ncm_song_has_tag_view(song, primary_tag, j, &primary_value);
              j += 1) {
