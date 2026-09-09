@@ -722,15 +722,16 @@ configure(int32 argc, char **argv) {
             LyricsFetcherDef fetcher = {0};
             LyricsResult result = {0};
 
-            ncm_lyrics_fetcher_def_set_name(&fetcher, tests[i].name,
-                                            tests[i].name_len);
+            ncm_lyrics_fetcher_def_set_name(&fetcher,
+                                            tests[i].name, tests[i].name_len);
 
-            printf("%-20.*s : ", ncm_lyrics_fetcher_name_len(&fetcher),
+            printf("%-20.*s : ",
+                   ncm_lyrics_fetcher_name_len(&fetcher),
                    ncm_lyrics_fetcher_name(&fetcher));
             fflush(stdout);
-            ncm_lyrics_fetcher_fetch(&fetcher, &result, tests[i].artist,
-                                     tests[i].artist_len, tests[i].title,
-                                     tests[i].title_len);
+            ncm_lyrics_fetcher_fetch(&fetcher, &result,
+                                     tests[i].artist, tests[i].artist_len,
+                                     tests[i].title, tests[i].title_len);
             if (result.success) {
                 printf("ok\n");
             } else {
