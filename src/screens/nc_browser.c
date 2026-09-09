@@ -950,7 +950,7 @@ browser_compare_song_sort_format(NcmMpdItem *right, NcmMpdItem *left) {
     StrBuilder left_buffer;
     StringView right_view;
     StringView left_view;
-    int32 comparison;
+    int32 comp;
 
     right_buffer = ncm_format_render_string(&Config.browser_sort_format,
                                             ncm_mpd_item_song(right));
@@ -958,10 +958,10 @@ browser_compare_song_sort_format(NcmMpdItem *right, NcmMpdItem *left) {
                                            ncm_mpd_item_song(left));
     right_view = ncm_string_view_make(right_buffer.data, right_buffer.len);
     left_view = ncm_string_view_make(left_buffer.data, left_buffer.len);
-    comparison = browser_compare_views(right_view, left_view);
+    comp = browser_compare_views(right_view, left_view);
     sb_free(&left_buffer);
     sb_free(&right_buffer);
-    return comparison;
+    return comp;
 }
 
 static int32
@@ -1027,28 +1027,28 @@ browser_screen_sort(BrowserScreen *screen) {
             NcmMpdItem *right = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, j);
             int32 left_rank = browser_item_sort_rank(right);
             int32 right_rank = browser_item_sort_rank(left);
-            int32 comparison;
+            int32 comp;
 
             if (left_rank < right_rank) {
-                comparison = -1;
+                comp = -1;
             } else if (left_rank > right_rank) {
-                comparison = 1;
+                comp = 1;
             } else {
-                comparison = 0;
+                comp = 0;
                 switch (Config.browser_sort_mode) {
                 case NCM_SORT_MODE_TYPE:
                     break;
                 case NCM_SORT_MODE_NAME:
                     switch (ncm_mpd_item_kind(right)) {
                     case NCM_MPD_ITEM_DIRECTORY:
-                        comparison = browser_compare_directory_names(right,
+                        comp = browser_compare_directory_names(right,
                                                                      left);
                         break;
                     case NCM_MPD_ITEM_SONG:
-                        comparison = browser_compare_song_names(right, left);
+                        comp = browser_compare_song_names(right, left);
                         break;
                     case NCM_MPD_ITEM_PLAYLIST:
-                        comparison = browser_compare_playlist_names(right,
+                        comp = browser_compare_playlist_names(right,
                                                                     left);
                         break;
                     case NCM_MPD_ITEM_COUNT:
@@ -1059,15 +1059,15 @@ browser_screen_sort(BrowserScreen *screen) {
                 case NCM_SORT_MODE_CUSTOM_FORMAT:
                     switch (ncm_mpd_item_kind(right)) {
                     case NCM_MPD_ITEM_DIRECTORY:
-                        comparison = browser_compare_directory_names(right,
+                        comp = browser_compare_directory_names(right,
                                                                      left);
                         break;
                     case NCM_MPD_ITEM_PLAYLIST:
-                        comparison = browser_compare_playlist_names(right,
+                        comp = browser_compare_playlist_names(right,
                                                                     left);
                         break;
                     case NCM_MPD_ITEM_SONG:
-                        comparison = browser_compare_song_sort_format(right,
+                        comp = browser_compare_song_sort_format(right,
                                                                       left);
                         break;
                     case NCM_MPD_ITEM_COUNT:
@@ -1078,15 +1078,15 @@ browser_screen_sort(BrowserScreen *screen) {
                 case NCM_SORT_MODE_MODIFICATION_TIME:
                     switch (ncm_mpd_item_kind(right)) {
                     case NCM_MPD_ITEM_DIRECTORY:
-                        comparison = browser_compare_directory_times(right,
+                        comp = browser_compare_directory_times(right,
                                                                      left);
                         break;
                     case NCM_MPD_ITEM_PLAYLIST:
-                        comparison = browser_compare_playlist_times(right,
+                        comp = browser_compare_playlist_times(right,
                                                                     left);
                         break;
                     case NCM_MPD_ITEM_SONG:
-                        comparison = browser_compare_song_times(right, left);
+                        comp = browser_compare_song_times(right, left);
                         break;
                     case NCM_MPD_ITEM_COUNT:
                     default:
@@ -1099,7 +1099,7 @@ browser_screen_sort(BrowserScreen *screen) {
                     break;
                 }
             }
-            if (comparison >= 0) {
+            if (comp >= 0) {
                 break;
             }
             nc_menu_swap_item_slots(menu, NC_MENU_ITEMS_ALL, j - 1, j);
