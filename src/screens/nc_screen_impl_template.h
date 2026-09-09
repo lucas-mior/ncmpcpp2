@@ -15,12 +15,12 @@ NcScreen *nc_screen_impl_dummy_base(NcScreenImplDummy *);
 #define NC_SCREEN_IMPL_PREFIX          nc_screen_impl_dummy
 #define NC_SCREEN_IMPL_PUBLIC_PREFIX   nc_screen_impl_dummy
 #define NC_SCREEN_IMPL_BASE_FIELD      nc_screen_impl_base_field
-#define NC_SCREEN_IMPL_BASE_EXPR(screen)                                      \
+#define NC_SCREEN_IMPL_BASE_EXPR(screen)                                       \
     (&(screen)->NC_SCREEN_IMPL_BASE_FIELD)
 #define NC_SCREEN_IMPL_WINDOW_FIELD    nc_screen_impl_window_field
 #define NC_SCREEN_IMPL_SCROLLPAD_FIELD nc_screen_impl_scrollpad_field
 #define NC_SCREEN_IMPL_NO_GEOMETRY_ACCESSORS
-#define NC_SCREEN_IMPL_REFRESH_CALLBACK(screen)                              \
+#define NC_SCREEN_IMPL_REFRESH_CALLBACK(screen)                                \
     ((void)(screen))
 #endif
 
