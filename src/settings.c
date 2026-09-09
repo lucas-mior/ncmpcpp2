@@ -1298,16 +1298,7 @@ configuration_read(Configuration *config, StringViewArray *config_paths,
             len = SNPRINTF(message,
                            "failed to read configuration file '%.*s': %s",
                            path.len, path.data, strerror(error_code));
-            if (len < 0) {
-                ncm_error_set_status(ncm_error, content_len,
-                                     STRLIT("failed to read "
-                                            "configuration file"));
-            } else {
-                if (len >= SIZEOF(message)) {
-                    len = SIZEOF(message) - 1;
-                }
-                ncm_error_set_status(ncm_error, content_len, message, len);
-            }
+            ncm_error_set_status(ncm_error, content_len, message, len);
             status = settings_report_or_ignore(ncm_error, ignore_errors);
             sb_free(&path_buffer);
             if (status < 0) {
