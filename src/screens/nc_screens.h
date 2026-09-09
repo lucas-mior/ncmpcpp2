@@ -136,7 +136,7 @@
     SCREEN_TYPES(SCREEN_TYPE_XENUM_FIELD)
 
 
-#define NCM_APP_SCREEN_DIRECT_STORAGE_TYPES(XX)                \
+#define APP_SCREEN_DIRECT_STORAGE_TYPES(XX)                \
     XX(BrowserScreen, browser_screen)                          \
     XX(LastfmScreen, lastfm_screen)                            \
     XX(LyricsScreen, lyrics_screen)                            \
@@ -150,13 +150,13 @@
     XX(TagEditScreen, tag_edit_screen)                         \
     XX(TinyTagEditScreen, tiny_tag_edit_screen)
 
-#define NCM_APP_SCREEN_WRAPPED_STORAGE_TYPES(XX)               \
+#define APP_SCREEN_WRAPPED_STORAGE_TYPES(XX)               \
     XX(HelpScreen, help_screen)                                \
     XX(OutputsScreen, outputs_screen)                          \
     XX(ServerInfoScreen, server_info_screen)                   \
     XX(SongInfoScreen, song_info_screen)
 
-#define NCM_APP_SCREEN_INIT_FLAGS(XX)                          \
+#define APP_SCREEN_INIT_FLAGS(XX)                          \
     XX(browser_screen_initialized)                             \
     XX(lastfm_screen_initialized)                              \
     XX(lyrics_screen_initialized)                              \
@@ -170,7 +170,7 @@
     XX(tiny_tag_edit_screen_initialized)                       \
     XX(playlist_screen_initialized)
 
-#define NCM_APP_SCREEN_DIRECT_ACCESSOR_TYPES(XX)                               \
+#define APP_SCREEN_DIRECT_ACCESSOR_TYPES(XX)                               \
   XX(browser, BrowserScreen, browser_screen,                                   \
      browser_screen_base(&browser_screen))                                     \
   XX(lastfm, LastfmScreen, lastfm_screen,                                      \
@@ -195,15 +195,15 @@
   XX(tiny_tag_edit, TinyTagEditScreen, tiny_tag_edit_screen,                   \
      tiny_tag_edit_screen_base(&tiny_tag_edit_screen))
 
-#define NCM_APP_SCREEN_WRAPPED_ACCESSOR_TYPES(XX)                              \
+#define APP_SCREEN_WRAPPED_ACCESSOR_TYPES(XX)                              \
     XX(help, nc_help_screen_base(&help_screen.screen))                         \
     XX(server_info, nc_server_info_screen_base(&server_info_screen.screen))    \
     XX(song_info, nc_song_info_screen_base(&song_info_screen.screen))
 
-#define NCM_APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(XX)           \
+#define APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(XX)           \
     XX(help, app_screen_help, NcHelpScreen, &help_screen.screen)
 
-#define NCM_APP_SCREEN_STANDARD_REGISTER_TYPES(XX)                \
+#define APP_SCREEN_STANDARD_REGISTER_TYPES(XX)                \
     XX(browser)                                                   \
     XX(help)                                                      \
     XX(lastfm)                                                    \
@@ -219,11 +219,11 @@
     XX(server_info)                                               \
     XX(outputs)
 
-#define NCM_APP_SCREEN_REPLACE_REGISTER_TYPES(XX)                 \
+#define APP_SCREEN_REPLACE_REGISTER_TYPES(XX)                 \
     XX(selected_items_adder, NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER) \
     XX(sort_playlist_dialog, NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG)
 
-#define NCM_APP_SCREEN_SIMPLE_SWITCH_TYPES(XX)                    \
+#define APP_SCREEN_SIMPLE_SWITCH_TYPES(XX)                    \
     XX(browser)                                                   \
     XX(help)                                                      \
     XX(playlist)                                                  \
@@ -236,10 +236,10 @@
     XX(server_info)                                               \
     XX(outputs)
 
-#define NCM_APP_SCREEN_REGISTER_SWITCH_TYPES(XX)                  \
+#define APP_SCREEN_REGISTER_SWITCH_TYPES(XX)                  \
     XX(tiny_tag_edit)
 
-#define NCM_APP_SCREEN_IS_CURRENT_TYPES(XX)                       \
+#define APP_SCREEN_IS_CURRENT_TYPES(XX)                       \
     XX(browser)                                                   \
     XX(help)                                                      \
     XX(lastfm)                                                    \
@@ -258,36 +258,36 @@
     XX(outputs)
 
 #if defined(ENABLE_OUTPUTS)
-#define NCM_APP_SCREEN_ENABLED_OUTPUTS(XX) XX(outputs)
-#define NCM_APP_SCREEN_ENABLED_OUTPUTS_RESIZE(XX)               \
+#define APP_SCREEN_ENABLED_OUTPUTS(XX) XX(outputs)
+#define APP_SCREEN_ENABLED_OUTPUTS_RESIZE(XX)               \
     XX(outputs, NC_SCREEN_TYPE_OUTPUTS)
 #else
-#define NCM_APP_SCREEN_ENABLED_OUTPUTS(XX)
-#define NCM_APP_SCREEN_ENABLED_OUTPUTS_RESIZE(XX)
+#define APP_SCREEN_ENABLED_OUTPUTS(XX)
+#define APP_SCREEN_ENABLED_OUTPUTS_RESIZE(XX)
 #endif
 
 #if defined(HAVE_TAGLIB_H)
-#define NCM_APP_SCREEN_ENABLED_TAG_EDIT(XX)                   \
+#define APP_SCREEN_ENABLED_TAG_EDIT(XX)                   \
     XX(tag_edit)                                              \
     XX(tiny_tag_edit)
-#define NCM_APP_SCREEN_ENABLED_TAG_EDIT_RESIZE(XX)            \
+#define APP_SCREEN_ENABLED_TAG_EDIT_RESIZE(XX)            \
     XX(tag_edit, NC_SCREEN_TYPE_TAG_EDIT)                     \
     XX(tiny_tag_edit, NC_SCREEN_TYPE_TINY_TAG_EDIT)
 #else
-#define NCM_APP_SCREEN_ENABLED_TAG_EDIT(XX)
-#define NCM_APP_SCREEN_ENABLED_TAG_EDIT_RESIZE(XX)
+#define APP_SCREEN_ENABLED_TAG_EDIT(XX)
+#define APP_SCREEN_ENABLED_TAG_EDIT_RESIZE(XX)
 #endif
 
 #if defined(ENABLE_VISUALIZER)
-#define NCM_APP_SCREEN_ENABLED_VISUALIZER(XX) XX(visualizer)
-#define NCM_APP_SCREEN_ENABLED_VISUALIZER_RESIZE(XX)            \
+#define APP_SCREEN_ENABLED_VISUALIZER(XX) XX(visualizer)
+#define APP_SCREEN_ENABLED_VISUALIZER_RESIZE(XX)            \
     XX(visualizer, NC_SCREEN_TYPE_VISUALIZER)
 #else
-#define NCM_APP_SCREEN_ENABLED_VISUALIZER(XX)
-#define NCM_APP_SCREEN_ENABLED_VISUALIZER_RESIZE(XX)
+#define APP_SCREEN_ENABLED_VISUALIZER(XX)
+#define APP_SCREEN_ENABLED_VISUALIZER_RESIZE(XX)
 #endif
 
-#define NCM_APP_SCREEN_INIT_ALL_TYPES(XX)                         \
+#define APP_SCREEN_INIT_ALL_TYPES(XX)                         \
     XX(browser)                                                   \
     XX(help)                                                      \
     XX(lastfm)                                                    \
@@ -300,11 +300,11 @@
     XX(server_info)                                               \
     XX(song_info)                                                 \
     XX(sort_playlist_dialog)                                      \
-    NCM_APP_SCREEN_ENABLED_TAG_EDIT(XX)                           \
-    NCM_APP_SCREEN_ENABLED_VISUALIZER(XX)                         \
-    NCM_APP_SCREEN_ENABLED_OUTPUTS(XX)
+    APP_SCREEN_ENABLED_TAG_EDIT(XX)                           \
+    APP_SCREEN_ENABLED_VISUALIZER(XX)                         \
+    APP_SCREEN_ENABLED_OUTPUTS(XX)
 
-#define NCM_APP_SCREEN_REGISTER_INITIAL_TYPES(XX)                 \
+#define APP_SCREEN_REGISTER_INITIAL_TYPES(XX)                 \
     XX(browser)                                                   \
     XX(help)                                                      \
     XX(lastfm)                                                    \
@@ -313,13 +313,13 @@
     XX(selected_items_adder)                                      \
     XX(song_info)                                                 \
     XX(server_info)                                               \
-    NCM_APP_SCREEN_ENABLED_VISUALIZER(XX)                         \
-    NCM_APP_SCREEN_ENABLED_TAG_EDIT(XX)                           \
-    NCM_APP_SCREEN_ENABLED_OUTPUTS(XX)                            \
+    APP_SCREEN_ENABLED_VISUALIZER(XX)                         \
+    APP_SCREEN_ENABLED_TAG_EDIT(XX)                           \
+    APP_SCREEN_ENABLED_OUTPUTS(XX)                            \
     XX(playlist)                                                  \
     XX(playlist_edit)
 
-#define NCM_APP_SCREEN_RESIZE_REQUEST_TYPES(XX)                   \
+#define APP_SCREEN_RESIZE_REQUEST_TYPES(XX)                   \
     XX(browser, NC_SCREEN_TYPE_BROWSER)                           \
     XX(help, NC_SCREEN_TYPE_HELP)                                 \
     XX(lastfm, NC_SCREEN_TYPE_LASTFM)                             \
@@ -332,9 +332,9 @@
     XX(server_info, NC_SCREEN_TYPE_SERVER_INFO)                   \
     XX(song_info, NC_SCREEN_TYPE_SONG_INFO)                       \
     XX(sort_playlist_dialog, NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG) \
-    NCM_APP_SCREEN_ENABLED_TAG_EDIT_RESIZE(XX)                    \
-    NCM_APP_SCREEN_ENABLED_VISUALIZER_RESIZE(XX)                  \
-    NCM_APP_SCREEN_ENABLED_OUTPUTS_RESIZE(XX)
+    APP_SCREEN_ENABLED_TAG_EDIT_RESIZE(XX)                    \
+    APP_SCREEN_ENABLED_VISUALIZER_RESIZE(XX)                  \
+    APP_SCREEN_ENABLED_OUTPUTS_RESIZE(XX)
 
 #define NC_SCREEN_DEFAULT_WINDOW_TIMEOUT 500
 
@@ -2017,42 +2017,42 @@ int32 app_screens_switch_to_type(enum ScreenType);
 int32 app_screens_lock_current(void);
 enum ScreenType app_screens_current_type(void);
 
-#define NCM_APP_SCREEN_DECLARE_COMMON(suffix)          \
+#define APP_SCREEN_DECLARE_COMMON(suffix)          \
     void app_screen_##suffix##_init(void);             \
     void app_screen_##suffix##_register(void);         \
     bool app_screen_##suffix##_is_current(void);       \
     NcScreen *app_screen_##suffix##_base(void);
 
-NCM_APP_SCREEN_IS_CURRENT_TYPES(NCM_APP_SCREEN_DECLARE_COMMON)
+APP_SCREEN_IS_CURRENT_TYPES(APP_SCREEN_DECLARE_COMMON)
 
-#undef NCM_APP_SCREEN_DECLARE_COMMON
+#undef APP_SCREEN_DECLARE_COMMON
 
-#define NCM_APP_SCREEN_DECLARE_DIRECT_ACCESSOR(                                \
+#define APP_SCREEN_DECLARE_DIRECT_ACCESSOR(                                \
     suffix, type, storage, base_expr                                           \
 )                                                                              \
     type *app_screen_##suffix(void);
 
-NCM_APP_SCREEN_DIRECT_ACCESSOR_TYPES(NCM_APP_SCREEN_DECLARE_DIRECT_ACCESSOR)
+APP_SCREEN_DIRECT_ACCESSOR_TYPES(APP_SCREEN_DECLARE_DIRECT_ACCESSOR)
 
-#undef NCM_APP_SCREEN_DECLARE_DIRECT_ACCESSOR
+#undef APP_SCREEN_DECLARE_DIRECT_ACCESSOR
 
-#define NCM_APP_SCREEN_DECLARE_TYPED_WRAPPED_ACCESSOR(                         \
+#define APP_SCREEN_DECLARE_TYPED_WRAPPED_ACCESSOR(                         \
     suffix, function, type, expr                                               \
 )                                                                              \
     type *function(void);
 
-NCM_APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(
-    NCM_APP_SCREEN_DECLARE_TYPED_WRAPPED_ACCESSOR)
+APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(
+    APP_SCREEN_DECLARE_TYPED_WRAPPED_ACCESSOR)
 
-#undef NCM_APP_SCREEN_DECLARE_TYPED_WRAPPED_ACCESSOR
+#undef APP_SCREEN_DECLARE_TYPED_WRAPPED_ACCESSOR
 
-#define NCM_APP_SCREEN_DECLARE_VOID_SWITCH(suffix)                             \
+#define APP_SCREEN_DECLARE_VOID_SWITCH(suffix)                             \
     void app_screen_##suffix##_switch_to(void);
 
-NCM_APP_SCREEN_SIMPLE_SWITCH_TYPES(NCM_APP_SCREEN_DECLARE_VOID_SWITCH)
-NCM_APP_SCREEN_REGISTER_SWITCH_TYPES(NCM_APP_SCREEN_DECLARE_VOID_SWITCH)
+APP_SCREEN_SIMPLE_SWITCH_TYPES(APP_SCREEN_DECLARE_VOID_SWITCH)
+APP_SCREEN_REGISTER_SWITCH_TYPES(APP_SCREEN_DECLARE_VOID_SWITCH)
 
-#undef NCM_APP_SCREEN_DECLARE_VOID_SWITCH
+#undef APP_SCREEN_DECLARE_VOID_SWITCH
 
 void app_screen_lastfm_switch_to(void);
 VisualizerScreen *app_screen_visualizer(void);
