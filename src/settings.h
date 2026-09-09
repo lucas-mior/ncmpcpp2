@@ -91,7 +91,7 @@ typedef struct Configuration {
 #define XX_RATIO(NAME, DEFAULT_VALUE, EXPECTED_LEN) NcmInt32Array NAME;
 #define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE) \
     NcmFormattedColorArray NAME;
-#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE) NcmLyricsFetcherRegistry NAME;
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE) LyricsFetcherRegistry NAME;
 #define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD) \
     ScreenTypeArray NAME; \
     bool PREVIOUS_FIELD;

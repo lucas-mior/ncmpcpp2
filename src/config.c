@@ -720,8 +720,8 @@ configure(int32 argc, char **argv) {
         };
 
         for (int32 i = 0; i < LENGTH(tests); i += 1) {
-            NcmLyricsFetcherDef fetcher = {0};
-            NcmLyricsResult result = {0};
+            LyricsFetcherDef fetcher = {0};
+            LyricsResult result = {0};
 
             ncm_lyrics_fetcher_def_set_name(&fetcher, tests[i].name,
                                             tests[i].name_len);

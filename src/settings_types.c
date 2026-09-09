@@ -137,7 +137,7 @@ configuration_init_unchecked(Configuration *config) {
 #define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE)                           \
     config->NAME = (NcmFormattedColorArray){0};
 #define XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)                                \
-    config->NAME = (NcmLyricsFetcherRegistry){0};
+    config->NAME = (LyricsFetcherRegistry){0};
 #define XX_SCREEN_LIST(NAME, DEFAULT_VALUE, PREVIOUS_FIELD)                    \
     config->NAME = (ScreenTypeArray){0};                                       \
     config->PREVIOUS_FIELD = false;

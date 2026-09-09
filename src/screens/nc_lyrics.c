@@ -26,8 +26,8 @@ struct LyricsJob {
     LyricsScreen *screen;
     NcmSong song;
     StrBuilder filename;
-    NcmLyricsFetcherDef *fetcher;
-    NcmLyricsResult result;
+    LyricsFetcherDef *fetcher;
+    LyricsResult result;
     NcBuffer log;
     pthread_mutex_t log_mutex;
     bool log_dirty;
@@ -318,7 +318,7 @@ lyrics_screen_init(LyricsScreen *screen, int32 start_x, int32 width,
     screen->filename = (StrBuilder){0};
 
     screen->lrc = (NcmLrcDocument){0};
-    screen->result = (NcmLyricsResult){0};
+    screen->result = (LyricsResult){0};
     ncm_job_queue_init(&screen->jobs);
     screen->foreground_job = NULL;
     screen->queued_songs = NULL;
@@ -750,7 +750,7 @@ lyrics_screen_save_file(LyricsScreen *screen,
 
 static LyricsJob *
 lyrics_job_create(LyricsScreen *screen, NcmSong *song,
-                  NcmLyricsFetcherDef *fetcher, bool notify, bool background) {
+                  LyricsFetcherDef *fetcher, bool notify, bool background) {
     bool win32_filename;
     LyricsJob *job = malloc2(SIZEOF(*job));
 
@@ -776,7 +776,7 @@ lyrics_job_create(LyricsScreen *screen, NcmSong *song,
 }
 
 static void
-lyrics_append_fetching(NcBuffer *buffer, NcmLyricsFetcherDef *fetcher) {
+lyrics_append_fetching(NcBuffer *buffer, LyricsFetcherDef *fetcher) {
     char *name;
     int32 name_len;
     int32 fetcher_position;
@@ -797,7 +797,7 @@ lyrics_append_fetching(NcBuffer *buffer, NcmLyricsFetcherDef *fetcher) {
 }
 
 static void
-lyrics_job_append_fetch_error(LyricsJob *job, NcmLyricsResult *result) {
+lyrics_job_append_fetch_error(LyricsJob *job, LyricsResult *result) {
     NcColor red = nc_color_make(COLOR_RED, NC_COLOR_CURRENT, false, false);
 
     pthread_mutex_lock(&job->log_mutex);
@@ -813,7 +813,7 @@ lyrics_job_append_fetch_error(LyricsJob *job, NcmLyricsResult *result) {
 }
 
 static int32
-lyrics_job_fetch_one(LyricsJob *job, NcmLyricsFetcherDef *fetcher,
+lyrics_job_fetch_one(LyricsJob *job, LyricsFetcherDef *fetcher,
                      StrBuilder *artist, StrBuilder *title) {
     int32 status;
 
@@ -866,7 +866,7 @@ lyrics_job_run(void *user, NcmError *ncm_error) {
 
         status = 0;
         for (int32 i = 0; i < Config.lyrics_fetchers.fetchers.len; i += 1) {
-            NcmLyricsFetcherDef *current_fetcher;
+            LyricsFetcherDef *current_fetcher;
 
             current_fetcher = &Config.lyrics_fetchers.fetchers.items[i];
             fetch_status = lyrics_job_fetch_one(job, current_fetcher,
@@ -988,10 +988,10 @@ lyrics_job_destroy(void *user) {
 
 static int32
 lyrics_screen_start_foreground_fetch(LyricsScreen *screen,
-    NcmSong *song, NcmLyricsFetcherDef *fetcher,
+    NcmSong *song, LyricsFetcherDef *fetcher,
     StrBuilder *filename, NcmError *ncm_error) {
     LyricsJob *job;
-    NcmLyricsFetcherDef *active_fetcher;
+    LyricsFetcherDef *active_fetcher;
     int32 status;
 
     lyrics_screen_clear_lyrics_state(screen, LYRICS_MODE_FETCH_LOG);
@@ -1011,7 +1011,7 @@ lyrics_screen_start_foreground_fetch(LyricsScreen *screen,
     if (active_fetcher) {
         lyrics_append_fetching(&screen->display, active_fetcher);
     } else if (Config.lyrics_fetchers.fetchers.len > 0) {
-        NcmLyricsFetcherDef *first_fetcher;
+        LyricsFetcherDef *first_fetcher;
 
         first_fetcher = &Config.lyrics_fetchers.fetchers.items[0];
         lyrics_append_fetching(&screen->display, first_fetcher);
@@ -1042,7 +1042,7 @@ lyrics_screen_start_foreground_fetch(LyricsScreen *screen,
 
 int32
 lyrics_screen_fetch(LyricsScreen *screen, NcmSong *song,
-                    NcmLyricsFetcherDef *fetcher, NcmError *ncm_error) {
+                    LyricsFetcherDef *fetcher, NcmError *ncm_error) {
     StrBuilder next_filename = {0};
     StrBuilder lrc_filename = {0};
     StrBuilder txt_filename = {0};
@@ -1439,9 +1439,9 @@ lyrics_screen_refetch_current(LyricsScreen *screen, NcmError *ncm_error) {
     return;
 }
 
-NcmLyricsFetcherDef *
+LyricsFetcherDef *
 lyrics_screen_toggle_fetcher(LyricsScreen *screen,
-                             NcmLyricsFetcherRegistry *registry) {
+                             LyricsFetcherRegistry *registry) {
     int32 idx;
 
     if ((registry == NULL) || (registry->fetchers.len <= 0)) {
