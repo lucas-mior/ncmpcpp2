@@ -1213,9 +1213,8 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
 static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
-    return settings_parse_screen_list(                                         \
-        &config->NAME, &config->PREVIOUS_FIELD, value, value_len,              \
-        ncm_error);                                                            \
+    return settings_parse_screen_list(&config->NAME, &config->PREVIOUS_FIELD,  \
+                                      value, value_len, ncm_error);            \
 }
 
 #define XX_NAMED_BOOL(NAME, DEFAULT, TRUE_VALUE, FALSE_VALUE)                  \
