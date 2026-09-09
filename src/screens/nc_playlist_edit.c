@@ -282,13 +282,10 @@ playlist_edit_displayed_playlist_is_current(PlaylistEditScreen *screen) {
 
 static int32
 playlist_edit_timeout_callback(NcScreen *screen) {
-    PlaylistEditScreen *editor;
-    NcMenu *playlists;
-    NcMenu *content;
+    PlaylistEditScreen *editor = playlist_edit_from_screen(screen);
+    NcMenu *playlists = nc_playlist_entry_menu_base(&editor->playlists);
+    NcMenu *content = nc_song_menu_base(&editor->content);
 
-    editor = playlist_edit_from_screen(screen);
-    playlists = nc_playlist_entry_menu_base(&editor->playlists);
-    content = nc_song_menu_base(&editor->content);
     if ((editor->fetching_delay_ms >= 0)
         && (nc_menu_item_count(content) <= 0)
         && ((nc_menu_item_count(playlists) <= 0)
