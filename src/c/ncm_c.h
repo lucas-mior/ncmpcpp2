@@ -9,10 +9,10 @@
 #include <mpd/tag.h>
 #include <regex.h>
 
-typedef struct NcmStringView {
+typedef struct StringView {
     char *data;
     int32 len;
-} NcmStringView;
+} StringView;
 
 typedef struct NcmError {
     char message[256];
@@ -73,14 +73,14 @@ struct mpd_song;
 #include "cbase/xenums.c"
 
 typedef struct NcmTagsReplayGainInfo {
-    NcmStringView reference_loudness;
-    NcmStringView track_gain;
-    NcmStringView track_peak;
-    NcmStringView album_gain;
-    NcmStringView album_peak;
+    StringView reference_loudness;
+    StringView track_gain;
+    StringView track_peak;
+    StringView album_gain;
+    StringView album_peak;
 } NcmTagsReplayGainInfo;
 
-typedef bool NcmTagsGetFieldCallback(enum NcmTagsField, int32, NcmStringView *,
+typedef bool NcmTagsGetFieldCallback(enum NcmTagsField, int32, StringView *,
                                      void *);
 
 void ncm_tags_set_attribute(struct mpd_song *, char *name, char *value);
@@ -188,10 +188,10 @@ time_t ncm_song_mtime(NcmSong *);
 bool ncm_song_is_empty(NcmSong *);
 
 bool ncm_song_has_tag_view(NcmSong *, enum mpd_tag_type, int32,
-                           NcmStringView *);
-bool ncm_song_has_uri_view(NcmSong *, int32, NcmStringView *);
-bool ncm_song_has_name_view(NcmSong *, int32, NcmStringView *);
-bool ncm_song_has_directory_view(NcmSong *, int32, NcmStringView *);
+                           StringView *);
+bool ncm_song_has_uri_view(NcmSong *, int32, StringView *);
+bool ncm_song_has_name_view(NcmSong *, int32, StringView *);
+bool ncm_song_has_directory_view(NcmSong *, int32, StringView *);
 bool ncm_song_is_from_database(NcmSong *);
 bool ncm_song_is_stream(NcmSong *);
 
@@ -246,7 +246,7 @@ int32 ncm_mutable_song_set_tags(NcmMutableSong *, enum NcmTagsField,
                                 char *value, int32 value_len, char *separator,
                                 int32 separator_len);
 bool ncm_mutable_song_has_tag_view(NcmMutableSong *, enum NcmTagsField, int32,
-                                   NcmStringView *);
+                                   StringView *);
 void ncm_mutable_song_get_tag_buffer(NcmMutableSong *, enum NcmTagsField,
                                      int32, StrBuilder *);
 StrBuilder ncm_mutable_song_tags_buffer(NcmMutableSong *, enum NcmTagsField,
@@ -254,7 +254,7 @@ StrBuilder ncm_mutable_song_tags_buffer(NcmMutableSong *, enum NcmTagsField,
 int32 ncm_mutable_song_load_originals_from_song(NcmMutableSong *, NcmSong *);
 
 int32 ncm_mutable_song_set_new_name(NcmMutableSong *, char *, int32);
-bool ncm_mutable_song_has_new_name_view(NcmMutableSong *, NcmStringView *);
+bool ncm_mutable_song_has_new_name_view(NcmMutableSong *, StringView *);
 
 int32 ncm_mutable_song_duration(NcmMutableSong *);
 int32 ncm_mutable_song_mtime(NcmMutableSong *);
@@ -275,7 +275,7 @@ void ncm_directory_destroy(NcmDirectory *);
 void ncm_directory_move(NcmDirectory *dest, NcmDirectory *source);
 int32 ncm_directory_set(NcmDirectory *, char *, int32, time_t);
 int32 ncm_directory_copy(NcmDirectory *dest, NcmDirectory *source);
-bool ncm_directory_has_path_view(NcmDirectory *, NcmStringView *);
+bool ncm_directory_has_path_view(NcmDirectory *, StringView *);
 time_t ncm_directory_last_modified(NcmDirectory *);
 int32 ncm_directory_from_mpd_directory(NcmDirectory *, struct mpd_directory *);
 
@@ -291,7 +291,7 @@ void ncm_playlist_destroy(NcmPlaylist *);
 void ncm_playlist_move(NcmPlaylist *dest, NcmPlaylist *source);
 int32 ncm_playlist_set(NcmPlaylist *, char *, int32, time_t);
 int32 ncm_playlist_copy(NcmPlaylist *dest, NcmPlaylist *source);
-bool ncm_playlist_has_path_view(NcmPlaylist *, NcmStringView *);
+bool ncm_playlist_has_path_view(NcmPlaylist *, StringView *);
 time_t ncm_playlist_last_modified(NcmPlaylist *);
 int32 ncm_playlist_from_mpd_playlist(NcmPlaylist *, struct mpd_playlist *);
 
@@ -677,12 +677,12 @@ int32 ncm_sample_buffer_get_clamped(NcmSampleBuffer *, int32 samples_len,
                                     int16 *, int32 dest_len);
 void ncm_sample_buffer_resize(NcmSampleBuffer *, int32);
 
-NCM_ARRAY_DECLARE_TYPE(NcmStringViewArray, NcmStringView)
-NCM_ARRAY_DECLARE_CLEAR(ncm_string_view_array, NcmStringViewArray)
-NCM_ARRAY_DECLARE_DESTROY(ncm_string_view_array, NcmStringViewArray)
-NCM_ARRAY_DECLARE_RESERVE(ncm_string_view_array, NcmStringViewArray)
+NCM_ARRAY_DECLARE_TYPE(StringViewArray, StringView)
+NCM_ARRAY_DECLARE_CLEAR(ncm_string_view_array, StringViewArray)
+NCM_ARRAY_DECLARE_DESTROY(ncm_string_view_array, StringViewArray)
+NCM_ARRAY_DECLARE_RESERVE(ncm_string_view_array, StringViewArray)
 NCM_ARRAY_DECLARE_APPEND(ncm_string_view_array,
-                         NcmStringViewArray, NcmStringView)
+                         StringViewArray, StringView)
 
 NCM_ARRAY_DECLARE_TYPE(NcmSongArray, NcmSong)
 NCM_ARRAY_DECLARE_CLEAR(ncm_song_array, NcmSongArray)
@@ -779,11 +779,11 @@ typedef struct NcmMpdItemList {
     int32 capacity;
 } NcmMpdItemList;
 
-typedef struct NcmStringViewList {
-    NcmStringView *items;
+typedef struct StringViewList {
+    StringView *items;
     int32 count;
     int32 capacity;
-} NcmStringViewList;
+} StringViewList;
 
 typedef struct NcmMpdOutput {
     int32 id;
@@ -858,7 +858,7 @@ int32 ncm_mpd_connection_send_password(NcmMpdConnection *, char *);
 int32 ncm_mpd_connection_start_command_list(NcmMpdConnection *);
 int32 ncm_mpd_connection_commit_command_list(NcmMpdConnection *);
 int32 ncm_mpd_connection_get_supported_extensions(NcmMpdConnection *,
-                                                  NcmStringViewList *);
+                                                  StringViewList *);
 int32 ncm_mpd_connection_get_replay_gain_mode(NcmMpdConnection *,
                                               enum NcmMpdReplayGainMode *);
 int32 ncm_mpd_connection_set_replay_gain_mode(NcmMpdConnection *,
@@ -866,10 +866,10 @@ int32 ncm_mpd_connection_set_replay_gain_mode(NcmMpdConnection *,
 int32 ncm_mpd_connection_get_playlists(NcmMpdConnection *,
                                        NcmMpdPlaylistList *);
 int32 ncm_mpd_connection_list_all_song_uris(NcmMpdConnection *, char *,
-                                            NcmStringViewList *);
+                                            StringViewList *);
 int32 ncm_mpd_connection_get_url_handlers(NcmMpdConnection *,
-                                          NcmStringViewList *);
-int32 ncm_mpd_connection_get_tag_types(NcmMpdConnection *, NcmStringViewList *);
+                                          StringViewList *);
+int32 ncm_mpd_connection_get_tag_types(NcmMpdConnection *, StringViewList *);
 
 void ncm_mpd_song_list_destroy(NcmMpdSongList *);
 void ncm_mpd_song_list_clear(NcmMpdSongList *);
@@ -884,10 +884,10 @@ int32 ncm_mpd_item_list_to_item_array(NcmMpdItemList *, NcmMpdItemArray *);
 int32 ncm_mpd_item_list_to_directory_array(NcmMpdItemList *,
                                            NcmDirectoryArray *);
 
-void ncm_mpd_string_list_destroy(NcmStringViewList *);
-void ncm_mpd_string_list_clear(NcmStringViewList *);
-int32 ncm_mpd_string_list_count(NcmStringViewList *);
-NcmStringView *ncm_mpd_string_list_at(NcmStringViewList *, int32);
+void ncm_mpd_string_list_destroy(StringViewList *);
+void ncm_mpd_string_list_clear(StringViewList *);
+int32 ncm_mpd_string_list_count(StringViewList *);
+StringView *ncm_mpd_string_list_at(StringViewList *, int32);
 
 void ncm_mpd_output_list_destroy(NcmMpdOutputList *);
 void ncm_mpd_output_list_clear(NcmMpdOutputList *);
@@ -918,7 +918,7 @@ int32 ncm_mpd_connection_add_search_uri(NcmMpdConnection *, char *);
 int32 ncm_mpd_connection_commit_search_songs(NcmMpdConnection *,
                                              NcmMpdSongList *);
 int32 ncm_mpd_connection_list_tag_values(NcmMpdConnection *, enum mpd_tag_type,
-                                         NcmStringViewList *);
+                                         StringViewList *);
 
 int32 ncm_mpd_connection_update_database(NcmMpdConnection *, char *, int32 *);
 int32 ncm_mpd_connection_get_outputs(NcmMpdConnection *, NcmMpdOutputList *);
@@ -1034,7 +1034,7 @@ int32 ncm_mpd_client_get_playlist_content(NcmMpdClient *, char *,
 int32 ncm_mpd_client_get_playlist_content_no_info(NcmMpdClient *, char *,
                                                   NcmMpdSongList *, NcmError *);
 int32 ncm_mpd_client_get_supported_extensions(NcmMpdClient *,
-                                              NcmStringViewList *, NcmError *);
+                                              StringViewList *, NcmError *);
 
 int32 ncm_mpd_client_set_repeat(NcmMpdClient *, bool, NcmError *);
 int32 ncm_mpd_client_set_random(NcmMpdClient *, bool, NcmError *);
@@ -1088,7 +1088,7 @@ int32 ncm_mpd_client_commit_search_songs(NcmMpdClient *, NcmMpdSongList *,
 int32 ncm_mpd_client_get_playlists(NcmMpdClient *, NcmMpdPlaylistList *,
                                    NcmError *);
 int32 ncm_mpd_client_get_list(NcmMpdClient *, enum mpd_tag_type,
-                              NcmStringViewList *, NcmError *);
+                              StringViewList *, NcmError *);
 int32 ncm_mpd_client_get_directory_recursive(NcmMpdClient *, char *,
                                              NcmMpdSongList *, NcmError *);
 int32 ncm_mpd_client_get_songs(NcmMpdClient *, char *, NcmMpdSongList *,
@@ -1101,9 +1101,9 @@ int32 ncm_mpd_client_get_outputs(NcmMpdClient *, NcmMpdOutputList *,
                                  NcmError *);
 int32 ncm_mpd_client_enable_output(NcmMpdClient *, int32, NcmError *);
 int32 ncm_mpd_client_disable_output(NcmMpdClient *, int32, NcmError *);
-int32 ncm_mpd_client_get_url_handlers(NcmMpdClient *, NcmStringViewList *,
+int32 ncm_mpd_client_get_url_handlers(NcmMpdClient *, StringViewList *,
                                       NcmError *);
-int32 ncm_mpd_client_get_tag_types(NcmMpdClient *, NcmStringViewList *,
+int32 ncm_mpd_client_get_tag_types(NcmMpdClient *, StringViewList *,
                                    NcmError *);
 
 #include "configura.h"
@@ -1357,9 +1357,9 @@ bool ncm_search_prompt_state_has_cached_result(NcmSearchPromptState *, char *,
 int32 ncm_search_prompt_state_finish_result(NcmSearchPromptState *, char *,
                                             int32, bool search_ok, bool found);
 
-NcmStringView ncm_string_view_make(char *, int32);
-void ncm_string_view_set(NcmStringView *, char *, int32);
-void ncm_string_view_clear(NcmStringView *);
+StringView ncm_string_view_make(char *, int32);
+void ncm_string_view_set(StringView *, char *, int32);
+void ncm_string_view_clear(StringView *);
 
 void ncm_string_lowercase_ascii(char *, int32);
 int32 ncm_string_find_char(char *, int32, char);

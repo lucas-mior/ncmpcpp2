@@ -6,10 +6,10 @@
 #include "c/ncm_c.h"
 
 bool current_screen_can_filter(void);
-NcmStringView current_screen_current_filter(void);
+StringView current_screen_current_filter(void);
 int32 current_screen_apply_filter(char *, int32, NcmError *);
 bool current_screen_can_search(void);
-NcmStringView current_screen_current_search_constraint(void);
+StringView current_screen_current_search_constraint(void);
 int32 current_screen_search(enum SearchDirection, char *, int32, bool wrap,
                             bool skip_current, NcmError *);
 void current_screen_clear_search_constraint(void);

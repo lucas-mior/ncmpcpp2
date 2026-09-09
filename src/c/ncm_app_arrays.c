@@ -81,12 +81,12 @@ static NcmArrayItemCallbacks ncm_app_array_mpd_item_callbacks = {
     .copy = ncm_app_array_mpd_item_copy,
 };
 
-NCM_ARRAY_DEFINE_CLEAR(ncm_string_view_array, NcmStringViewArray,
+NCM_ARRAY_DEFINE_CLEAR(ncm_string_view_array, StringViewArray,
                        &ncm_app_array_no_callbacks)
-NCM_ARRAY_DEFINE_DESTROY(ncm_string_view_array, NcmStringViewArray)
-NCM_ARRAY_DEFINE_RESERVE(ncm_string_view_array, NcmStringViewArray)
-NCM_ARRAY_DEFINE_APPEND(ncm_string_view_array, NcmStringViewArray,
-                        NcmStringView, &ncm_app_array_no_callbacks)
+NCM_ARRAY_DEFINE_DESTROY(ncm_string_view_array, StringViewArray)
+NCM_ARRAY_DEFINE_RESERVE(ncm_string_view_array, StringViewArray)
+NCM_ARRAY_DEFINE_APPEND(ncm_string_view_array, StringViewArray,
+                        StringView, &ncm_app_array_no_callbacks)
 
 NCM_ARRAY_DEFINE_CLEAR(ncm_song_array, NcmSongArray,
                        &ncm_app_array_song_callbacks)

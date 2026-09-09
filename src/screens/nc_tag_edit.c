@@ -688,7 +688,7 @@ tag_edit_prompt_tag_value(TagEditScreen *screen,
     if (screen->hooks.prompt == NULL) {
         prompt_result = TAG_EDIT_PROMPT_ERROR;
     } else {
-        NcmStringView initial_view;
+        StringView initial_view;
 
         ncm_string_view_set(&initial_view, initial.data, initial.len);
         prompt_result = screen->hooks.prompt(screen->hooks.user, label,
@@ -902,8 +902,8 @@ tag_edit_run_current(NcScreen *screen) {
             result = tag_edit_prompt_tag_value(editor, field, false);
         } else if (action == TAG_EDIT_TAG_TYPE_ACTION_FILENAME) {
             NcmMutableSong *song;
-            NcmStringView current_name;
-            NcmStringView initial;
+            StringView current_name;
+            StringView initial;
             StrBuilder input = {0};
             enum TagEditPromptResult prompt_result;
             int32 dot = -1;
@@ -940,7 +940,7 @@ tag_edit_run_current(NcScreen *screen) {
             } else if (input.len <= 0) {
                 result = true;
             } else {
-                NcmStringView stem_name;
+                StringView stem_name;
                 StrBuilder new_name = {0};
                 int32 stem_dot = -1;
 
@@ -1019,7 +1019,7 @@ tag_edit_run_current(NcScreen *screen) {
 
             if (editor->hooks.prompt != NULL) {
                 StrBuilder input = {0};
-                NcmStringView initial;
+                StringView initial;
                 enum TagEditPromptResult prompt_result;
 
                 initial.data = editor->pattern.data;
@@ -1321,7 +1321,7 @@ tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
     }
     for (int32 i = 0; i < directories.len; i += 1) {
         NcmDirectory *directory = &directories.items[i];
-        NcmStringView path;
+        StringView path;
         int32 basename_start;
 
         if (!ncm_directory_has_path_view(directory, &path)) {
@@ -1390,8 +1390,8 @@ tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
         ncm_song_move(&current, &songs.items[i]);
         while (j > 0) {
             NcmSong *left = &songs.items[j - 1];
-            NcmStringView left_uri;
-            NcmStringView right_uri;
+            StringView left_uri;
+            StringView right_uri;
             int32 comparison;
 
             if (!ncm_song_has_uri_view(left, 0, &left_uri)) {
@@ -2489,9 +2489,9 @@ tag_edit_screen_set_current_dir(TagEditScreen *screen,
 }
 
 int32
-tag_edit_screen_current_dir(TagEditScreen *screen, NcmStringView *view) {
+tag_edit_screen_current_dir(TagEditScreen *screen, StringView *view) {
     if (view) {
-        *view = (NcmStringView){0};
+        *view = (StringView){0};
     }
     if ((screen == NULL) || (view == NULL)) {
         return -EINVAL;
@@ -2506,11 +2506,11 @@ tag_edit_screen_current_dir(TagEditScreen *screen, NcmStringView *view) {
 
 int32
 tag_edit_screen_current_directory_path(TagEditScreen *screen,
-                                         NcmStringView *view) {
+                                         StringView *view) {
     char *path;
     int32 path_len;
 
-    *view = (NcmStringView){0};
+    *view = (StringView){0};
     if (!tag_edit_current_directory_path(screen, &path, &path_len)) {
         return -NCM_ERROR_NOT_FOUND;
     }
@@ -2520,7 +2520,7 @@ tag_edit_screen_current_directory_path(TagEditScreen *screen,
 
 int32
 tag_edit_screen_enter_directory(TagEditScreen *screen) {
-    NcmStringView path = {0};
+    StringView path = {0};
     NcmDirectoryArray directories = {0};
     NcmError ncm_error;
     int32 status;
@@ -2601,8 +2601,8 @@ tag_edit_screen_go_to_parent(TagEditScreen *screen) {
 
 int32
 tag_edit_screen_locate_song(TagEditScreen *screen, NcmSong *song) {
-    NcmStringView directory;
-    NcmStringView uri;
+    StringView directory;
+    StringView uri;
     StrBuilder parent = {0};
     NcmError ncm_error;
     int32 parent_len;
@@ -2735,7 +2735,7 @@ int32
 tag_edit_screen_rename_current_directory(TagEditScreen *screen, char *music_dir,
                                            int32 music_dir_len) {
     StrBuilderPair *pair;
-    NcmStringView initial;
+    StringView initial;
     StrBuilder name = {0};
     StrBuilder old_path = {0};
     StrBuilder new_path = {0};
@@ -3105,7 +3105,7 @@ tag_edit_screen_apply_tag_to_selection(TagEditScreen *screen,
 static int32
 tag_edit_number_song_callback(NcmMutableSong *song, void *user) {
     TrackNumberer *numberer = user;
-    NcmStringView view;
+    StringView view;
     char buffer[64];
     int32 len;
 
@@ -3150,7 +3150,7 @@ tag_edit_capitalize_song_callback(NcmMutableSong *song, void *user) {
         enum NcmTagsField field = ncm_song_info_tags[fi].field;
 
         for (int32 i = 0; ; i += 1) {
-            NcmStringView view;
+            StringView view;
             StrBuilder converted = {0};
             int32 converted_len;
 
@@ -3189,7 +3189,7 @@ tag_edit_lower_song_callback(NcmMutableSong *song, void *user) {
         enum NcmTagsField field = ncm_song_info_tags[j].field;
 
         for (int32 i = 0; ; i += 1) {
-            NcmStringView view;
+            StringView view;
             StrBuilder buffer = {0};
 
             if (!ncm_mutable_song_has_tag_view(song, field, i, &view)) {

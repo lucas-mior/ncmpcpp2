@@ -182,7 +182,7 @@ current_screen_can_filter(void) {
     return current_screen_filter_buffer();
 }
 
-NcmStringView
+StringView
 current_screen_current_filter(void) {
     StrBuilder *buffer;
 
@@ -248,7 +248,7 @@ current_screen_apply_filter(char *pattern, int32 pattern_len,
     return ncm_error_ok(ncm_error);
 }
 
-NcmStringView
+StringView
 current_screen_current_search_constraint(void) {
     StrBuilder *buffer;
 

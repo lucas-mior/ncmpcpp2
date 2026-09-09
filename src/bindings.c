@@ -74,7 +74,7 @@ ncm_trim_end(char *string, int32 string_len) {
 
 static int32
 ncm_extract_enclosed(char *line, int32 line_len, char open, char close,
-                     NcmStringView *result) {
+                     StringView *result) {
     int32 start;
     int32 end;
 
@@ -930,7 +930,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
     while ((status >= 0) && !last_line) {
         int32 len;
         int32 start;
-        NcmStringView enclosed;
+        StringView enclosed;
 
         errno = 0;
         if (fgets(line, SIZEOF(line), file) == NULL) {
@@ -1057,7 +1057,7 @@ ncm_bindings_configuration_read(NcmBindingsConfiguration *bindings, char *path,
             in_progress = IN_PROGRESS_KEY;
         } else if (isspace((uint8)line[0])) {
             NcmBindingAction action;
-            NcmStringView argument;
+            StringView argument;
             int32 action_start;
             int32 action_len;
             int32 name_len;

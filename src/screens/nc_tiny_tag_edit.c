@@ -95,8 +95,8 @@ static int32
 tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
     enum TinyTagEditPromptResult prompt_result;
     enum NcmTagsField field;
-    NcmStringView initial;
-    NcmStringView current_name;
+    StringView initial;
+    StringView current_name;
     StrBuilder input = {0};
     StrBuilder tag_value;
     NcMenu *menu;
@@ -156,7 +156,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
     }
 
     if (row == TINY_TAG_EDIT_FILE_NAME_EDIT_ROW) {
-        NcmStringView name;
+        StringView name;
         NcBuffer row_buffer = {0};
         StrBuilder new_name = {0};
 

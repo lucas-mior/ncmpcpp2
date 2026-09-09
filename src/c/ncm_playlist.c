@@ -105,7 +105,7 @@ ncm_playlist_move(NcmPlaylist *dest, NcmPlaylist *source) {
 }
 
 bool
-ncm_playlist_has_path_view(NcmPlaylist *playlist, NcmStringView *view) {
+ncm_playlist_has_path_view(NcmPlaylist *playlist, StringView *view) {
     if (view) {
         view->data = NULL;
         view->len = 0;

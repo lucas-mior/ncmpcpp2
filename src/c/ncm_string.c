@@ -44,9 +44,9 @@ stupid_string_set(char **dest, int32 *dest_len, int32 *dest_cap,
     return;
 }
 
-NcmStringView
+StringView
 ncm_string_view_make(char *data, int32 len) {
-    NcmStringView result;
+    StringView result;
 
     result.data = data;
     result.len = len;
@@ -60,7 +60,7 @@ ncm_string_view_make(char *data, int32 len) {
 }
 
 void
-ncm_string_view_set(NcmStringView *view, char *data, int32 len) {
+ncm_string_view_set(StringView *view, char *data, int32 len) {
     if (view == NULL) {
         return;
     }
@@ -70,9 +70,9 @@ ncm_string_view_set(NcmStringView *view, char *data, int32 len) {
 }
 
 void
-ncm_string_view_clear(NcmStringView *view) {
+ncm_string_view_clear(StringView *view) {
     if (view) {
-        *view = (NcmStringView){0};
+        *view = (StringView){0};
     }
     return;
 }

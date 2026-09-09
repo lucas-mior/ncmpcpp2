@@ -389,7 +389,7 @@ ncm_song_is_empty(NcmSong *song) {
 
 static bool
 ncm_song_has_tag_view_unchecked(NcmSong *song, enum mpd_tag_type tag,
-                                int32 idx, NcmStringView *view) {
+                                int32 idx, StringView *view) {
     int32 seen;
 
     ncm_string_view_clear(view);
@@ -410,7 +410,7 @@ ncm_song_has_tag_view_unchecked(NcmSong *song, enum mpd_tag_type tag,
 }
 
 static bool
-ncm_song_has_uri_view_unchecked(NcmSong *song, int32 idx, NcmStringView *view) {
+ncm_song_has_uri_view_unchecked(NcmSong *song, int32 idx, StringView *view) {
     ncm_string_view_clear(view);
     if (idx != 0) {
         return false;
@@ -425,7 +425,7 @@ ncm_song_has_uri_view_unchecked(NcmSong *song, int32 idx, NcmStringView *view) {
 
 static bool
 ncm_song_is_stream_unchecked(NcmSong *song) {
-    NcmStringView uri;
+    StringView uri;
 
     if (!ncm_song_has_uri_view_unchecked(song, 0, &uri)) {
         return false;
@@ -437,8 +437,8 @@ ncm_song_is_stream_unchecked(NcmSong *song) {
 
 static bool
 ncm_song_has_name_view_unchecked(NcmSong *song, int32 idx,
-                                 NcmStringView *view) {
-    NcmStringView uri;
+                                 StringView *view) {
+    StringView uri;
     int32 basename;
 
     if (ncm_song_has_tag_view_unchecked(song, MPD_TAG_NAME, idx, view)) {
@@ -463,8 +463,8 @@ ncm_song_has_name_view_unchecked(NcmSong *song, int32 idx,
 
 static bool
 ncm_song_has_directory_view_unchecked(NcmSong *song, int32 idx,
-                                      NcmStringView *view) {
-    NcmStringView uri;
+                                      StringView *view) {
+    StringView uri;
     int32 basename;
 
     ncm_string_view_clear(view);
@@ -493,7 +493,7 @@ ncm_song_has_directory_view_unchecked(NcmSong *song, int32 idx,
 
 static bool
 ncm_song_is_from_database_unchecked(NcmSong *song) {
-    NcmStringView uri;
+    StringView uri;
 
     if (!ncm_song_has_uri_view_unchecked(song, 0, &uri)) {
         return false;
@@ -510,7 +510,7 @@ ncm_song_is_from_database_unchecked(NcmSong *song) {
 
 bool
 ncm_song_has_tag_view(NcmSong *song, enum mpd_tag_type tag, int32 idx,
-                      NcmStringView *view) {
+                      StringView *view) {
     if ((song == NULL) || (idx < 0)) {
         ncm_string_view_clear(view);
         return false;
@@ -520,7 +520,7 @@ ncm_song_has_tag_view(NcmSong *song, enum mpd_tag_type tag, int32 idx,
 }
 
 bool
-ncm_song_has_uri_view(NcmSong *song, int32 idx, NcmStringView *view) {
+ncm_song_has_uri_view(NcmSong *song, int32 idx, StringView *view) {
     if (song == NULL) {
         ncm_string_view_clear(view);
         return false;
@@ -530,7 +530,7 @@ ncm_song_has_uri_view(NcmSong *song, int32 idx, NcmStringView *view) {
 }
 
 bool
-ncm_song_has_name_view(NcmSong *song, int32 idx, NcmStringView *view) {
+ncm_song_has_name_view(NcmSong *song, int32 idx, StringView *view) {
     if ((song == NULL) || (idx < 0)) {
         ncm_string_view_clear(view);
         return false;
@@ -540,7 +540,7 @@ ncm_song_has_name_view(NcmSong *song, int32 idx, NcmStringView *view) {
 }
 
 bool
-ncm_song_has_directory_view(NcmSong *song, int32 idx, NcmStringView *view) {
+ncm_song_has_directory_view(NcmSong *song, int32 idx, StringView *view) {
     if (song == NULL) {
         ncm_string_view_clear(view);
         return false;
@@ -642,7 +642,7 @@ static StrBuilder
 ncm_song_getter_buffer_unchecked(NcmSong *song, enum NcmSongGetter getter,
                                  int32 idx) {
     StrBuilder buffer = {0};
-    NcmStringView view;
+    StringView view;
     char number_buffer[32];
     int32 copy_len;
     int32 len;
@@ -810,8 +810,8 @@ ncm_song_tags_buffer(NcmSong *song, enum NcmSongGetter getter,
 
 bool
 ncm_song_is_equal(NcmSong *a, NcmSong *b) {
-    NcmStringView a_uri;
-    NcmStringView b_uri;
+    StringView a_uri;
+    StringView b_uri;
 
     if ((a == NULL) || (b == NULL)) {
         return a == b;
