@@ -259,7 +259,7 @@ ncm_configuration_options_parse(NcmConfigurationOptions *options,
                 options->port_provided = true;
             } else if (STREQUAL(name, name_len, "current-song")) {
                 options->current_song = true;
-                if (value != NULL) {
+                if (value) {
                     configuration_copy_string(&options->current_song_format,
                                               value, value_len);
                 } else if ((i + 1 < argc) && !((strlen32(argv[i + 1]) > 1)
