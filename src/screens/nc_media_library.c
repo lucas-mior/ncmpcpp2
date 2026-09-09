@@ -1590,8 +1590,8 @@ media_library_tags_from_songs(MediaLibraryTagArray *tags, NcmMpdSongList *songs,
              j += 1) {
             int32 existing;
 
-            existing = library_find_tag(&replacement, primary_value.data,
-                                        primary_value.len);
+            existing = library_find_tag(&replacement,
+                                        primary_value.data, primary_value.len);
             if (existing >= 0) {
                 if (song->last_modified > replacement.items[existing].mtime) {
                     replacement.items[existing].mtime =
