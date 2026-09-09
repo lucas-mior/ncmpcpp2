@@ -4,6 +4,7 @@
 #include "cbase.h"
 
 #include "c/ncm_c.h"
+#include "ncmpcpp2_mpd.h"
 
 #define NCM_MPD_RETURN_IF_ERROR(expression) \
     do { \
@@ -39,13 +40,121 @@ ncm_mpd_connection_set_error(MpdConnection *connection,
                              bool clearable, char *message) {
     int32 message_len;
 
-    connection->error_code = code;
-    connection->server_error_code = server_code;
+    switch (code) {
+    case MPD_ERROR_SUCCESS:
+        connection->error_code = NCM_MPD_ERROR_SUCCESS;
+        break;
+    case MPD_ERROR_OOM:
+        connection->error_code = NCM_MPD_ERROR_OOM;
+        break;
+    case MPD_ERROR_ARGUMENT:
+        connection->error_code = NCM_MPD_ERROR_ARGUMENT;
+        break;
+    case MPD_ERROR_STATE:
+        connection->error_code = NCM_MPD_ERROR_STATE;
+        break;
+    case MPD_ERROR_TIMEOUT:
+        connection->error_code = NCM_MPD_ERROR_TIMEOUT;
+        break;
+    case MPD_ERROR_SYSTEM:
+        connection->error_code = NCM_MPD_ERROR_SYSTEM;
+        break;
+    case MPD_ERROR_RESOLVER:
+        connection->error_code = NCM_MPD_ERROR_RESOLVER;
+        break;
+    case MPD_ERROR_CLOSED:
+        connection->error_code = NCM_MPD_ERROR_CLOSED;
+        break;
+    case MPD_ERROR_MALFORMED:
+        connection->error_code = NCM_MPD_ERROR_MALFORMED;
+        break;
+    case MPD_ERROR_SERVER:
+    default:
+        connection->error_code = NCM_MPD_ERROR_SERVER;
+        break;
+    }
+
+    switch (server_code) {
+    case MPD_SERVER_ERROR_EXIST:
+        connection->server_error_code = NCM_MPD_SERVER_ERROR_EXIST;
+        break;
+    case MPD_SERVER_ERROR_NO_EXIST:
+        connection->server_error_code = NCM_MPD_SERVER_ERROR_NO_EXIST;
+        break;
+    case MPD_SERVER_ERROR_PERMISSION:
+        connection->server_error_code = NCM_MPD_SERVER_ERROR_PERMISSION;
+        break;
+    case MPD_SERVER_ERROR_UNK:
+        connection->server_error_code = NCM_MPD_SERVER_ERROR_NONE;
+        break;
+    default:
+        connection->server_error_code = NCM_MPD_SERVER_ERROR_UNKNOWN;
+        break;
+    }
     connection->error_clearable = clearable;
 
     message_len = optional_strlen32(message);
-    ncm_error_set(&connection->ncm_error, (int32)code, message, message_len);
+    ncm_error_set(&connection->ncm_error, (int32)connection->error_code,
+                  message, message_len);
     return;
+}
+
+static enum mpd_tag_type
+ncm_mpd_connection_tag_type(enum NcmTagType tag) {
+    switch (tag) {
+    case NCM_TAG_ARTIST:
+        return MPD_TAG_ARTIST;
+    case NCM_TAG_ALBUM:
+        return MPD_TAG_ALBUM;
+    case NCM_TAG_ALBUM_ARTIST:
+        return MPD_TAG_ALBUM_ARTIST;
+    case NCM_TAG_TITLE:
+        return MPD_TAG_TITLE;
+    case NCM_TAG_TRACK:
+        return MPD_TAG_TRACK;
+    case NCM_TAG_NAME:
+        return MPD_TAG_NAME;
+    case NCM_TAG_GENRE:
+        return MPD_TAG_GENRE;
+    case NCM_TAG_DATE:
+        return MPD_TAG_DATE;
+    case NCM_TAG_COMPOSER:
+        return MPD_TAG_COMPOSER;
+    case NCM_TAG_PERFORMER:
+        return MPD_TAG_PERFORMER;
+    case NCM_TAG_COMMENT:
+        return MPD_TAG_COMMENT;
+    case NCM_TAG_DISC:
+        return MPD_TAG_DISC;
+    case NCM_TAG_UNKNOWN:
+    case NCM_TAG_MUSICBRAINZ_ARTISTID:
+    case NCM_TAG_MUSICBRAINZ_ALBUMID:
+    case NCM_TAG_MUSICBRAINZ_ALBUMARTISTID:
+    case NCM_TAG_MUSICBRAINZ_TRACKID:
+    case NCM_TAG_MUSICBRAINZ_RELEASETRACKID:
+    case NCM_TAG_ORIGINAL_DATE:
+    case NCM_TAG_ARTIST_SORT:
+    case NCM_TAG_ALBUM_ARTIST_SORT:
+    case NCM_TAG_ALBUM_SORT:
+    case NCM_TAG_LABEL:
+    case NCM_TAG_MUSICBRAINZ_WORKID:
+    case NCM_TAG_GROUPING:
+    case NCM_TAG_WORK:
+    case NCM_TAG_CONDUCTOR:
+    case NCM_TAG_COMPOSER_SORT:
+    case NCM_TAG_ENSEMBLE:
+    case NCM_TAG_MOVEMENT:
+    case NCM_TAG_MOVEMENTNUMBER:
+    case NCM_TAG_LOCATION:
+    case NCM_TAG_MOOD:
+    case NCM_TAG_TITLE_SORT:
+    case NCM_TAG_MUSICBRAINZ_RELEASEGROUPID:
+    case NCM_TAG_SHOWMOVEMENT:
+    case NCM_TAG_DISCSUBTITLE:
+    case NCM_TAG_COUNT:
+    default:
+        return MPD_TAG_UNKNOWN;
+    }
 }
 
 static int32
@@ -141,7 +250,7 @@ ncm_mpd_connection_recv_song(MpdConnection *connection, NcmSong *song) {
         return 0;
     }
 
-    status = ncm_song_from_mpd_song_copy(song, mpd_song);
+    status = ncm_mpd_item_song_from_mpd_song_copy(song, mpd_song);
     mpd_song_free(mpd_song);
     if (status < 0) {
         ncm_mpd_connection_set_error(connection,
@@ -534,13 +643,37 @@ ncm_mpd_connection_set_timeout(MpdConnection *connection, int32 timeout_ms) {
 }
 
 int32
-ncm_mpd_connection_send_idle(MpdConnection *connection,
-                             enum mpd_idle events) {
-    (void)events;
+ncm_mpd_connection_send_idle(MpdConnection *connection, int32 events) {
+    enum mpd_idle mpd_events = (enum mpd_idle)0;
 
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
-    if (!mpd_send_idle(connection->mpd)) {
+    if ((events & NCM_MPD_IDLE_DATABASE) != 0) {
+        mpd_events |= MPD_IDLE_DATABASE;
+    }
+    if ((events & NCM_MPD_IDLE_STORED_PLAYLIST) != 0) {
+        mpd_events |= MPD_IDLE_STORED_PLAYLIST;
+    }
+    if ((events & NCM_MPD_IDLE_PLAYLIST) != 0) {
+        mpd_events |= MPD_IDLE_PLAYLIST;
+    }
+    if ((events & NCM_MPD_IDLE_PLAYER) != 0) {
+        mpd_events |= MPD_IDLE_PLAYER;
+    }
+    if ((events & NCM_MPD_IDLE_MIXER) != 0) {
+        mpd_events |= MPD_IDLE_MIXER;
+    }
+    if ((events & NCM_MPD_IDLE_OUTPUT) != 0) {
+        mpd_events |= MPD_IDLE_OUTPUT;
+    }
+    if ((events & NCM_MPD_IDLE_UPDATE) != 0) {
+        mpd_events |= MPD_IDLE_UPDATE;
+    }
+    if ((events & NCM_MPD_IDLE_OPTIONS) != 0) {
+        mpd_events |= MPD_IDLE_OPTIONS;
+    }
+
+    if (!mpd_send_idle_mask(connection->mpd, mpd_events)) {
         return ncm_mpd_connection_check_error(connection);
     }
 
@@ -549,15 +682,42 @@ ncm_mpd_connection_send_idle(MpdConnection *connection,
 
 int32
 ncm_mpd_connection_recv_idle(MpdConnection *connection, bool disable_timeout,
-                             enum mpd_idle *out_events) {
-    enum mpd_idle events;
+                             int32 *out_events) {
+    enum mpd_idle mpd_events;
+    int32 events;
     int32 status;
 
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
-    events = (enum mpd_idle)mpd_recv_idle(connection->mpd, disable_timeout);
+    mpd_events = (enum mpd_idle)mpd_recv_idle(connection->mpd, disable_timeout);
     mpd_response_finish(connection->mpd);
     status = ncm_mpd_connection_check_error(connection);
+
+    events = 0;
+    if ((mpd_events & MPD_IDLE_DATABASE) != 0) {
+        events |= NCM_MPD_IDLE_DATABASE;
+    }
+    if ((mpd_events & MPD_IDLE_STORED_PLAYLIST) != 0) {
+        events |= NCM_MPD_IDLE_STORED_PLAYLIST;
+    }
+    if ((mpd_events & MPD_IDLE_PLAYLIST) != 0) {
+        events |= NCM_MPD_IDLE_PLAYLIST;
+    }
+    if ((mpd_events & MPD_IDLE_PLAYER) != 0) {
+        events |= NCM_MPD_IDLE_PLAYER;
+    }
+    if ((mpd_events & MPD_IDLE_MIXER) != 0) {
+        events |= NCM_MPD_IDLE_MIXER;
+    }
+    if ((mpd_events & MPD_IDLE_OUTPUT) != 0) {
+        events |= NCM_MPD_IDLE_OUTPUT;
+    }
+    if ((mpd_events & MPD_IDLE_UPDATE) != 0) {
+        events |= NCM_MPD_IDLE_UPDATE;
+    }
+    if ((mpd_events & MPD_IDLE_OPTIONS) != 0) {
+        events |= NCM_MPD_IDLE_OPTIONS;
+    }
     if (out_events) {
         *out_events = events;
     }
@@ -652,25 +812,25 @@ ncm_mpd_connection_clear_error(MpdConnection *connection) {
     }
 
     ncm_error_clear(&connection->ncm_error);
-    connection->error_code = MPD_ERROR_SUCCESS;
-    connection->server_error_code = (enum mpd_server_error)0;
+    connection->error_code = NCM_MPD_ERROR_SUCCESS;
+    connection->server_error_code = NCM_MPD_SERVER_ERROR_NONE;
     connection->error_clearable = false;
     return;
 }
 
-enum mpd_error
+enum NcmMpdError
 ncm_mpd_connection_error_code(MpdConnection *connection) {
     if (connection == NULL) {
-        return MPD_ERROR_SUCCESS;
+        return NCM_MPD_ERROR_SUCCESS;
     }
 
     return connection->error_code;
 }
 
-enum mpd_server_error
+enum NcmMpdServerError
 ncm_mpd_connection_server_error_code(MpdConnection *connection) {
     if (connection == NULL) {
-        return (enum mpd_server_error)0;
+        return NCM_MPD_SERVER_ERROR_NONE;
     }
 
     return connection->server_error_code;
@@ -753,7 +913,21 @@ ncm_mpd_connection_get_status(MpdConnection *connection,
     out_status->consume = mpd_status_get_consume(mpd_status);
     out_status->queue_length = (int32)mpd_status_get_queue_length(mpd_status);
     out_status->queue_version = (int32)mpd_status_get_queue_version(mpd_status);
-    out_status->state = mpd_status_get_state(mpd_status);
+    switch (mpd_status_get_state(mpd_status)) {
+    case MPD_STATE_STOP:
+        out_status->state = NCM_MPD_STATE_STOP;
+        break;
+    case MPD_STATE_PLAY:
+        out_status->state = NCM_MPD_STATE_PLAY;
+        break;
+    case MPD_STATE_PAUSE:
+        out_status->state = NCM_MPD_STATE_PAUSE;
+        break;
+    case MPD_STATE_UNKNOWN:
+    default:
+        out_status->state = NCM_MPD_STATE_UNKNOWN;
+        break;
+    }
     out_status->crossfade = (int32)mpd_status_get_crossfade(mpd_status);
     out_status->song_pos = mpd_status_get_song_pos(mpd_status);
     out_status->song_id = mpd_status_get_song_id(mpd_status);
@@ -965,7 +1139,7 @@ ncm_mpd_connection_get_playlists(MpdConnection *connection,
         }
 
         item = (NcmPlaylist){0};
-        err = ncm_playlist_from_mpd_playlist(&item, playlist);
+        err = ncm_mpd_item_playlist_from_mpd_playlist(&item, playlist);
         mpd_playlist_free(playlist);
         if (err < 0) {
             ncm_playlist_destroy(&item);
@@ -1221,7 +1395,7 @@ ncm_mpd_connection_list_all_songs(MpdConnection *connection, char *path,
         if (mpd_entity_get_type(entity) == MPD_ENTITY_TYPE_SONG) {
             mpd_song = (struct mpd_song *)mpd_entity_get_song(entity);
             song = (NcmSong){0};
-            err = ncm_song_from_mpd_song_copy(&song, mpd_song);
+            err = ncm_mpd_item_song_from_mpd_song_copy(&song, mpd_song);
             if (err < 0) {
                 ncm_song_destroy(&song);
                 ncm_mpd_connection_set_error(connection,
@@ -1259,11 +1433,18 @@ ncm_mpd_connection_start_search_songs(MpdConnection *connection,
 
 int32
 ncm_mpd_connection_add_search_tag(MpdConnection *connection,
-                                  enum mpd_tag_type tag, char *value) {
+                                  enum NcmTagType tag, char *value) {
+    enum mpd_tag_type mpd_tag;
+
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
+    mpd_tag = ncm_mpd_connection_tag_type(tag);
+    if (mpd_tag == MPD_TAG_UNKNOWN) {
+        return -EINVAL;
+    }
+
     if (!mpd_search_add_tag_constraint(connection->mpd, MPD_OPERATOR_DEFAULT,
-                                       tag, value)) {
+                                       mpd_tag, value)) {
         return ncm_mpd_connection_check_error(connection);
     }
 
@@ -1311,16 +1492,22 @@ ncm_mpd_connection_commit_search_songs(MpdConnection *connection,
 
 int32
 ncm_mpd_connection_list_tag_values(MpdConnection *connection,
-                                   enum mpd_tag_type tag,
+                                   enum NcmTagType tag,
                                    StringViewList *strings) {
     struct mpd_pair *pair;
+    enum mpd_tag_type mpd_tag;
 
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (strings == NULL) {
         return -EINVAL;
     }
 
-    if (!mpd_search_db_tags(connection->mpd, tag)) {
+    mpd_tag = ncm_mpd_connection_tag_type(tag);
+    if (mpd_tag == MPD_TAG_UNKNOWN) {
+        return -EINVAL;
+    }
+
+    if (!mpd_search_db_tags(connection->mpd, mpd_tag)) {
         return ncm_mpd_connection_check_error(connection);
     }
     if (!mpd_search_commit(connection->mpd)) {
@@ -1329,7 +1516,7 @@ ncm_mpd_connection_list_tag_values(MpdConnection *connection,
 
     ncm_mpd_string_list_clear(strings);
     while (true) {
-        if ((pair = mpd_recv_pair_tag(connection->mpd, tag)) == NULL) {
+        if ((pair = mpd_recv_pair_tag(connection->mpd, mpd_tag)) == NULL) {
             break;
         }
 

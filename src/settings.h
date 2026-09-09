@@ -77,7 +77,7 @@ typedef struct Configuration {
 #define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT)                                   \
     ENUM_PREFIX_ NAME;
 #define XX_MPD_TAG(NAME, DEFAULT)                                              \
-    enum mpd_tag_type NAME;
+    enum NcmTagType NAME;
 #define XX_STARTUP_SCREEN(NAME, DEFAULT)                                       \
     SCREEN_TYPE_ NAME;
 #define XX_OPT_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE)  \

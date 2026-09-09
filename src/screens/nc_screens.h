@@ -1046,7 +1046,7 @@ typedef struct MediaLibrarySongQuery {
     int32 album_len;
     int32 date_len;
 
-    enum mpd_tag_type primary_tag;
+    enum NcmTagType primary_tag;
     bool match_primary_tag;
     bool match_album;
     bool match_date;
@@ -1062,7 +1062,7 @@ typedef struct MediaLibraryColumnState {
 } MediaLibraryColumnState;
 
 typedef struct MediaLibraryHooks {
-    int32 (*list_tags)(void *, enum mpd_tag_type, StringViewList *,
+    int32 (*list_tags)(void *, enum NcmTagType, StringViewList *,
                        NcmError *);
     int32 (*list_all_songs)(void *, NcmMpdSongList *, NcmError *);
     int32 (*search_songs)(void *, MediaLibrarySongQuery *, NcmMpdSongList *,
@@ -1158,15 +1158,15 @@ void media_library_screen_format_song_row(MediaLibraryScreen *, NcmSong *,
 int32 media_library_tags_from_strings(MediaLibraryTagArray *,
                                       StringViewList *);
 int32 media_library_tags_from_songs(MediaLibraryTagArray *, NcmMpdSongList *,
-                                    enum mpd_tag_type);
+                                    enum NcmTagType);
 int32 media_library_albums_from_songs(MediaLibraryAlbumArray *,
                                       NcmMpdSongList *, enum MediaLibraryMode,
-                                      enum mpd_tag_type, char *, int32);
+                                      enum NcmTagType, char *, int32);
 int32 media_library_songs_from_list(NcmSongArray *, NcmMpdSongList *);
 
 int32 media_library_screen_toggle_sort_mode(MediaLibraryScreen *, bool *);
 int32 media_library_screen_set_primary_tag_type(MediaLibraryScreen *,
-                                                enum mpd_tag_type);
+                                                enum NcmTagType);
 void media_library_screen_request_database_update(MediaLibraryScreen *);
 int32 media_library_screen_refresh_inactive_songs(MediaLibraryScreen *);
 
@@ -1194,7 +1194,7 @@ void media_library_screen_request_songs_update(MediaLibraryScreen *);
 void media_library_screen_finish_list_change(MediaLibraryScreen *);
 int32 media_library_screen_update(MediaLibraryScreen *, NcmError *);
 
-int32 media_library_screen_list_tags(MediaLibraryScreen *, enum mpd_tag_type,
+int32 media_library_screen_list_tags(MediaLibraryScreen *, enum NcmTagType,
                                      StringViewList *, NcmError *);
 int32 media_library_screen_list_all_songs(MediaLibraryScreen *,
                                           NcmMpdSongList *, NcmError *);

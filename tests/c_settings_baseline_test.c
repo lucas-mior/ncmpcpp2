@@ -85,7 +85,7 @@ settings_assert_generated_empty(Configuration *config) {
 #define XX_ENUM(NAME, ENUM_PREFIX_, DEFAULT_VALUE) \
     ASSERT(config->NAME == (ENUM_PREFIX_)0);
 #define XX_MPD_TAG(NAME, DEFAULT_VALUE) \
-    ASSERT(config->NAME == MPD_TAG_UNKNOWN);
+    ASSERT(config->NAME == NCM_TAG_UNKNOWN);
 #define XX_STARTUP_SCREEN(NAME, DEFAULT_VALUE) \
     ASSERT(config->NAME == SCREEN_TYPE_COUNT);
 #define XX_OPT_STARTUP_SCREEN( \
@@ -237,7 +237,7 @@ test_declared_defaults_and_cleanup(void) {
     ASSERT(config.search_engine_display_mode == NCM_DISPLAY_MODE_CLASSIC);
     ASSERT(config.playlist_edit_display_mode == NCM_DISPLAY_MODE_CLASSIC);
     ASSERT(config.user_interface == NCM_DESIGN_CLASSIC);
-    ASSERT(config.media_library_primary_tag == MPD_TAG_ARTIST);
+    ASSERT(config.media_library_primary_tag == NCM_TAG_ARTIST);
     ASSERT(config.space_add_mode == NCM_SPACE_ADD_MODE_ADD_REMOVE);
     ASSERT(config.startup_screen == SCREEN_TYPE_PLAYLIST);
 
@@ -527,10 +527,10 @@ test_enum_options(void) {
 
     ASSERT_ZERO(settings_test_apply(
         apply_media_library_primary_tag, &config, "performer"));
-    ASSERT(config.media_library_primary_tag == MPD_TAG_PERFORMER);
+    ASSERT(config.media_library_primary_tag == NCM_TAG_PERFORMER);
     ASSERT(settings_test_apply(
         apply_media_library_primary_tag, &config, "invalid") < 0);
-    ASSERT(config.media_library_primary_tag == MPD_TAG_PERFORMER);
+    ASSERT(config.media_library_primary_tag == NCM_TAG_PERFORMER);
 
     ASSERT_ZERO(settings_test_apply(
         apply_startup_screen, &config, "playlist"));

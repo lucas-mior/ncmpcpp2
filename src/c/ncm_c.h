@@ -4,7 +4,6 @@
 #include "cbase.h"
 
 #include "configura.h"
-#include "ncmpcpp2_mpd.h"
 
 #include <regex.h>
 
@@ -49,8 +48,6 @@ int32 ncm_error_ok(NcmError *);
 void stupid_string_free(char **, int32 *len);
 void stupid_string_set(char **, int32 *dest_len, char *, int32);
 
-struct mpd_song;
-
 #define ENUM_NAME TagsField
 #define ENUM_PREFIX_ NCM_TAGS_FIELD_
 #define ENUM_BITFLAGS 0
@@ -79,8 +76,6 @@ typedef struct NcmTagsReplayGainInfo {
 typedef bool NcmTagsGetFieldCallback(enum TagsField, int32, StringView *,
                                      void *);
 
-void ncm_tags_set_attribute(struct mpd_song *, char *name, char *value);
-int32 ncm_tags_read_song(struct mpd_song *);
 int32 ncm_tags_write(char *music_dir, char *uri, bool, char *directory,
                      char *new_name, NcmTagsGetFieldCallback *, void *);
 
@@ -119,17 +114,56 @@ int32 ncm_tags_write(char *music_dir, char *uri, bool, char *directory,
 
 int32 ncm_channels_to_string(int32 channels, char *, int32 buffer_cap);
 int32 ncm_color_index_from_char(char);
-char *ncm_tag_type_name(enum mpd_tag_type);
-enum mpd_tag_type ncm_char_to_tag_type(char);
+enum NcmTagType {
+    NCM_TAG_UNKNOWN = 0,
+    NCM_TAG_ARTIST,
+    NCM_TAG_ALBUM,
+    NCM_TAG_ALBUM_ARTIST,
+    NCM_TAG_TITLE,
+    NCM_TAG_TRACK,
+    NCM_TAG_NAME,
+    NCM_TAG_GENRE,
+    NCM_TAG_DATE,
+    NCM_TAG_COMPOSER,
+    NCM_TAG_PERFORMER,
+    NCM_TAG_COMMENT,
+    NCM_TAG_DISC,
+    NCM_TAG_MUSICBRAINZ_ARTISTID,
+    NCM_TAG_MUSICBRAINZ_ALBUMID,
+    NCM_TAG_MUSICBRAINZ_ALBUMARTISTID,
+    NCM_TAG_MUSICBRAINZ_TRACKID,
+    NCM_TAG_MUSICBRAINZ_RELEASETRACKID,
+    NCM_TAG_ORIGINAL_DATE,
+    NCM_TAG_ARTIST_SORT,
+    NCM_TAG_ALBUM_ARTIST_SORT,
+    NCM_TAG_ALBUM_SORT,
+    NCM_TAG_LABEL,
+    NCM_TAG_MUSICBRAINZ_WORKID,
+    NCM_TAG_GROUPING,
+    NCM_TAG_WORK,
+    NCM_TAG_CONDUCTOR,
+    NCM_TAG_COMPOSER_SORT,
+    NCM_TAG_ENSEMBLE,
+    NCM_TAG_MOVEMENT,
+    NCM_TAG_MOVEMENTNUMBER,
+    NCM_TAG_LOCATION,
+    NCM_TAG_MOOD,
+    NCM_TAG_TITLE_SORT,
+    NCM_TAG_MUSICBRAINZ_RELEASEGROUPID,
+    NCM_TAG_SHOWMOVEMENT,
+    NCM_TAG_DISCSUBTITLE,
+    NCM_TAG_COUNT,
+};
+
+char *ncm_tag_type_name(enum NcmTagType);
+enum NcmTagType ncm_char_to_tag_type(char);
 enum SongGetter ncm_song_getter_from_char(char);
-enum mpd_tag_type ncm_song_getter_to_tag_type(enum SongGetter);
+enum NcmTagType ncm_song_getter_to_tag_type(enum SongGetter);
 enum TagsField ncm_tags_field_from_char(char);
-enum TagsField ncm_tags_field_from_tag_type(enum mpd_tag_type);
-enum mpd_tag_type ncm_tags_field_to_tag_type(enum TagsField);
+enum TagsField ncm_tags_field_from_tag_type(enum NcmTagType);
+enum NcmTagType ncm_tags_field_to_tag_type(enum TagsField);
 enum SongGetter ncm_tags_field_to_song_getter(enum TagsField);
 enum TagsField ncm_song_getter_to_tags_field(enum SongGetter);
-
-struct mpd_song;
 
 #define ENUM_NAME NcmSongOwnership
 #define ENUM_PREFIX_ NCM_SONG_
@@ -142,7 +176,7 @@ struct mpd_song;
 typedef struct NcmSongTag {
     char *value;
     int32 value_len;
-    enum mpd_tag_type type;
+    enum NcmTagType type;
 } NcmSongTag;
 
 typedef struct NcmSong {
@@ -163,10 +197,8 @@ typedef struct NcmSong {
 void ncm_song_destroy(NcmSong *);
 void ncm_song_move(NcmSong *dest, NcmSong *source);
 int32 ncm_song_copy(NcmSong *dest, NcmSong *source);
-int32 ncm_song_from_mpd_song(NcmSong *, struct mpd_song *);
-int32 ncm_song_from_mpd_song_copy(NcmSong *, struct mpd_song *);
 int32 ncm_song_set_uri(NcmSong *, char *, int32);
-int32 ncm_song_add_tag(NcmSong *, enum mpd_tag_type, char *, int32);
+int32 ncm_song_add_tag(NcmSong *, enum NcmTagType, char *, int32);
 void ncm_song_set_duration(NcmSong *, int32);
 void ncm_song_set_position(NcmSong *, int32);
 void ncm_song_set_id(NcmSong *, int32);
@@ -179,7 +211,7 @@ int32 ncm_song_priority(NcmSong *);
 time_t ncm_song_mtime(NcmSong *);
 bool ncm_song_is_empty(NcmSong *);
 
-bool ncm_song_has_tag_view(NcmSong *, enum mpd_tag_type, int32, StringView *);
+bool ncm_song_has_tag_view(NcmSong *, enum NcmTagType, int32, StringView *);
 bool ncm_song_has_uri_view(NcmSong *, int32, StringView *);
 bool ncm_song_has_name_view(NcmSong *, int32, StringView *);
 bool ncm_song_has_directory_view(NcmSong *, int32, StringView *);
@@ -254,8 +286,6 @@ bool mutable_song_is_modified(MutableSong *);
 void mutable_song_clear_modifications(MutableSong *);
 int32 mutable_song_write(MutableSong *, char *);
 
-struct mpd_directory;
-
 typedef struct NcmDirectory {
     char *path;
     int32 path_len;
@@ -268,10 +298,6 @@ int32 ncm_directory_set(NcmDirectory *, char *, int32, time_t);
 int32 ncm_directory_copy(NcmDirectory *dest, NcmDirectory *source);
 bool ncm_directory_has_path_view(NcmDirectory *, StringView *);
 time_t ncm_directory_last_modified(NcmDirectory *);
-int32 ncm_directory_from_mpd_directory(NcmDirectory *, struct mpd_directory *);
-
-struct mpd_playlist;
-
 typedef struct NcmPlaylist {
     char *path;
     int32 path_len;
@@ -284,10 +310,6 @@ int32 ncm_playlist_set(NcmPlaylist *, char *, int32, time_t);
 int32 ncm_playlist_copy(NcmPlaylist *dest, NcmPlaylist *source);
 bool ncm_playlist_has_path_view(NcmPlaylist *, StringView *);
 time_t ncm_playlist_last_modified(NcmPlaylist *);
-int32 ncm_playlist_from_mpd_playlist(NcmPlaylist *, struct mpd_playlist *);
-
-struct mpd_entity;
-
 #define ENUM_NAME NcmMpdItemKind
 #define ENUM_PREFIX_ NCM_MPD_ITEM_
 #define ENUM_BITFLAGS 0
@@ -314,7 +336,11 @@ void ncm_mpd_item_move(NcmMpdItem *dest, NcmMpdItem *source);
 int32 ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source);
 int32 ncm_mpd_item_set_song(NcmMpdItem *, NcmSong *);
 int32 ncm_mpd_item_set_directory(NcmMpdItem *, NcmDirectory *);
-int32 ncm_mpd_item_from_entity_copy(NcmMpdItem *, struct mpd_entity *);
+int32 ncm_mpd_item_from_entity_copy(NcmMpdItem *, void *);
+int32 ncm_mpd_item_song_from_mpd_song_copy(NcmSong *, void *);
+int32 ncm_mpd_item_playlist_from_mpd_playlist(NcmPlaylist *, void *);
+void ncm_mpd_item_local_song(NcmSong *, char *path, int32 path_len,
+                             time_t mtime);
 enum NcmMpdItemKind ncm_mpd_item_kind(NcmMpdItem *);
 NcmSong *ncm_mpd_item_song(NcmMpdItem *);
 NcmDirectory *ncm_mpd_item_directory(NcmMpdItem *);
@@ -738,11 +764,50 @@ bool ncm_regex_matches(NcmRegex *, char *, int32);
 int32 ncm_regex_for_each_match(NcmRegex *, char *, int32,
                                NcmRegexMatchCallback *, void *);
 
+enum NcmMpdError {
+    NCM_MPD_ERROR_SUCCESS = 0,
+    NCM_MPD_ERROR_OOM,
+    NCM_MPD_ERROR_ARGUMENT,
+    NCM_MPD_ERROR_STATE,
+    NCM_MPD_ERROR_TIMEOUT,
+    NCM_MPD_ERROR_SYSTEM,
+    NCM_MPD_ERROR_RESOLVER,
+    NCM_MPD_ERROR_CLOSED,
+    NCM_MPD_ERROR_MALFORMED,
+    NCM_MPD_ERROR_SERVER,
+};
+
+enum NcmMpdServerError {
+    NCM_MPD_SERVER_ERROR_NONE = 0,
+    NCM_MPD_SERVER_ERROR_EXIST,
+    NCM_MPD_SERVER_ERROR_NO_EXIST,
+    NCM_MPD_SERVER_ERROR_PERMISSION,
+    NCM_MPD_SERVER_ERROR_UNKNOWN,
+};
+
+enum NcmMpdIdle {
+    NCM_MPD_IDLE_DATABASE = 1 << 0,
+    NCM_MPD_IDLE_STORED_PLAYLIST = 1 << 1,
+    NCM_MPD_IDLE_PLAYLIST = 1 << 2,
+    NCM_MPD_IDLE_PLAYER = 1 << 3,
+    NCM_MPD_IDLE_MIXER = 1 << 4,
+    NCM_MPD_IDLE_OUTPUT = 1 << 5,
+    NCM_MPD_IDLE_UPDATE = 1 << 6,
+    NCM_MPD_IDLE_OPTIONS = 1 << 7,
+};
+
+enum NcmMpdState {
+    NCM_MPD_STATE_UNKNOWN = 0,
+    NCM_MPD_STATE_STOP,
+    NCM_MPD_STATE_PLAY,
+    NCM_MPD_STATE_PAUSE,
+};
+
 typedef struct MpdConnection {
-    struct mpd_connection *mpd;
+    void *mpd;
     NcmError ncm_error;
-    enum mpd_error error_code;
-    enum mpd_server_error server_error_code;
+    enum NcmMpdError error_code;
+    enum NcmMpdServerError server_error_code;
     bool error_clearable;
 } MpdConnection;
 
@@ -810,7 +875,7 @@ typedef struct NcmMpdStatus {
     bool consume;
     int32 queue_length;
     int32 queue_version;
-    enum mpd_state state;
+    enum NcmMpdState state;
     int32 crossfade;
     int32 song_pos;
     int32 song_id;
@@ -831,13 +896,13 @@ bool ncm_mpd_connection_is_connected(MpdConnection *);
 int32 ncm_mpd_connection_fd(MpdConnection *);
 int32 ncm_mpd_connection_set_timeout(MpdConnection *, int32);
 int32 ncm_mpd_connection_noidle(MpdConnection *);
-int32 ncm_mpd_connection_send_idle(MpdConnection *, enum mpd_idle);
-int32 ncm_mpd_connection_recv_idle(MpdConnection *, bool, enum mpd_idle *);
+int32 ncm_mpd_connection_send_idle(MpdConnection *, int32);
+int32 ncm_mpd_connection_recv_idle(MpdConnection *, bool, int32 *);
 int32 ncm_mpd_connection_check_error(MpdConnection *);
 char *ncm_mpd_connection_error(MpdConnection *);
 void ncm_mpd_connection_clear_error(MpdConnection *);
-enum mpd_error ncm_mpd_connection_error_code(MpdConnection *);
-enum mpd_server_error ncm_mpd_connection_server_error_code(MpdConnection *);
+enum NcmMpdError ncm_mpd_connection_error_code(MpdConnection *);
+enum NcmMpdServerError ncm_mpd_connection_server_error_code(MpdConnection *);
 bool ncm_mpd_connection_error_is_clearable(MpdConnection *);
 int32 ncm_mpd_connection_get_stats(MpdConnection *, NcmMpdStats *);
 int32 ncm_mpd_connection_get_status(MpdConnection *, NcmMpdStatus *);
@@ -900,13 +965,13 @@ int32 ncm_mpd_connection_get_directory_songs(MpdConnection *, char *,
 int32 ncm_mpd_connection_list_all_songs(MpdConnection *, char *,
                                         NcmMpdSongList *);
 int32 ncm_mpd_connection_start_search_songs(MpdConnection *, bool);
-int32 ncm_mpd_connection_add_search_tag(MpdConnection *, enum mpd_tag_type,
+int32 ncm_mpd_connection_add_search_tag(MpdConnection *, enum NcmTagType,
                                         char *);
 int32 ncm_mpd_connection_add_search_any(MpdConnection *, char *);
 int32 ncm_mpd_connection_add_search_uri(MpdConnection *, char *);
 int32 ncm_mpd_connection_commit_search_songs(MpdConnection *,
                                              NcmMpdSongList *);
-int32 ncm_mpd_connection_list_tag_values(MpdConnection *, enum mpd_tag_type,
+int32 ncm_mpd_connection_list_tag_values(MpdConnection *, enum NcmTagType,
                                          StringViewList *);
 
 int32 ncm_mpd_connection_update_database(MpdConnection *, char *, int32 *);
@@ -985,8 +1050,8 @@ int32 ncm_mpd_client_send_password(MpdClient *, NcmError *);
 int32 ncm_mpd_client_idle(MpdClient *, NcmError *);
 int32 ncm_mpd_client_noidle(MpdClient *, int32 *, NcmError *);
 
-enum mpd_error ncm_mpd_client_error_code(MpdClient *);
-enum mpd_server_error ncm_mpd_client_server_error_code(MpdClient *);
+enum NcmMpdError ncm_mpd_client_error_code(MpdClient *);
+enum NcmMpdServerError ncm_mpd_client_server_error_code(MpdClient *);
 bool ncm_mpd_client_error_is_clearable(MpdClient *);
 char *ncm_mpd_client_error_message(MpdClient *);
 
@@ -1043,7 +1108,7 @@ int32 ncm_mpd_client_add_song_value(MpdClient *, NcmSong *, int32, int32 *,
 int32 ncm_mpd_client_add_song_list(MpdClient *, NcmMpdSongList *, int32,
                                    NcmError *);
 int32 ncm_mpd_client_add(MpdClient *, char *, bool *, NcmError *);
-int32 ncm_mpd_client_add_random_tag(MpdClient *, enum mpd_tag_type, int32,
+int32 ncm_mpd_client_add_random_tag(MpdClient *, enum NcmTagType, int32,
                                     NcmError *);
 int32 ncm_mpd_client_add_random_songs(MpdClient *, int32 number, char *,
                                       int32 exclude_pattern_len, NcmError *);
@@ -1064,7 +1129,7 @@ int32 ncm_mpd_client_rename_playlist(MpdClient *, char *from, char *to,
                                      NcmError *);
 
 int32 ncm_mpd_client_start_search(MpdClient *, bool, NcmError *);
-int32 ncm_mpd_client_add_search_tag(MpdClient *, enum mpd_tag_type, char *,
+int32 ncm_mpd_client_add_search_tag(MpdClient *, enum NcmTagType, char *,
                                     NcmError *);
 int32 ncm_mpd_client_add_search_any(MpdClient *, char *, NcmError *);
 int32 ncm_mpd_client_add_search_uri(MpdClient *, char *, NcmError *);
@@ -1073,7 +1138,7 @@ int32 ncm_mpd_client_commit_search_songs(MpdClient *, NcmMpdSongList *,
 
 int32 ncm_mpd_client_get_playlists(MpdClient *, NcmMpdPlaylistList *,
                                    NcmError *);
-int32 ncm_mpd_client_get_list(MpdClient *, enum mpd_tag_type,
+int32 ncm_mpd_client_get_list(MpdClient *, enum NcmTagType,
                               StringViewList *, NcmError *);
 int32 ncm_mpd_client_get_directory_recursive(MpdClient *, char *,
                                              NcmMpdSongList *, NcmError *);

@@ -77,8 +77,8 @@ app_bridge_report_mpd_error(NcmError *ncm_error) {
         }
     }
 
-    if ((ncm_mpd_client_error_code(&global_mpd) == MPD_ERROR_SERVER)
-        || (ncm_error && (ncm_error->code == MPD_ERROR_SERVER))) {
+    if ((ncm_mpd_client_error_code(&global_mpd) == NCM_MPD_ERROR_SERVER)
+        || (ncm_error && (ncm_error->code == NCM_MPD_ERROR_SERVER))) {
         SB_APPEND(&output, "MPD: ");
     } else {
         SB_APPEND(&output, "ncmpcpp: ");
@@ -311,7 +311,7 @@ ncmpcpp_connect_or_report(void) {
 
     if (ncm_mpd_client_version(&global_mpd) < 16) {
         ncm_mpd_client_disconnect(&global_mpd);
-        ncm_error_set(&ncm_error, MPD_ERROR_STATE,
+        ncm_error_set(&ncm_error, NCM_MPD_ERROR_STATE,
                       STRLIT("MPD < 0.16.0 is not supported"));
         app_bridge_report_mpd_error(&ncm_error);
     }

@@ -1191,7 +1191,7 @@ action_runtime_add_random_items(void) {
     int32 count;
     int32 source_name_len;
     int32 number;
-    enum mpd_tag_type tag_type = MPD_TAG_ARTIST;
+    enum NcmTagType tag_type = NCM_TAG_ARTIST;
     char random_type = 0;
     int32 status = 0;
     bool prompted;
@@ -1587,7 +1587,7 @@ action_runtime_save_playlist(void) {
     success = ncm_mpd_client_save_playlist(&global_mpd, name.data,
                                             &ncm_error) == 0;
     if (!success && (ncm_mpd_client_server_error_code(&global_mpd)
-            == MPD_SERVER_ERROR_EXIST)) {
+            == NCM_MPD_SERVER_ERROR_EXIST)) {
         StrBuilder question = {0};
 
         SB_APPEND(&question, "Playlist \"");
@@ -2342,7 +2342,7 @@ action_runtime_add_prompt(void) {
     StrBuilder path = {0};
     StrBuilder message = {0};
     NcmError ncm_error;
-    enum mpd_server_error server_error;
+    enum NcmMpdServerError server_error;
     bool prompted;
     bool success;
 
@@ -2373,7 +2373,7 @@ action_runtime_add_prompt(void) {
         success = ncm_mpd_client_add(&global_mpd, path_text, &added,
                                      &ncm_error) == 0;
         server_error = ncm_mpd_client_server_error_code(&global_mpd);
-        if (!success && (server_error == MPD_SERVER_ERROR_NO_EXIST)) {
+        if (!success && (server_error == NCM_MPD_SERVER_ERROR_NO_EXIST)) {
             bool loaded = false;
 
             ncm_error_clear(&ncm_error);
@@ -2388,7 +2388,7 @@ action_runtime_add_prompt(void) {
     }
     sb_free(&path);
 
-    if (!success && (server_error != (enum mpd_server_error)0)) {
+    if (!success && (server_error != NCM_MPD_SERVER_ERROR_NONE)) {
         SB_APPEND(&message, "Error while adding item: ");
         if (ncm_error_is_set(&ncm_error)) {
             SB_APPEND(&message, ncm_error.message,
@@ -4449,7 +4449,7 @@ action_runtime_toggle_browser_sort_mode(void) {
 static int32
 action_runtime_toggle_library_tag_type(void) {
     MediaLibraryScreen *screen = app_screen_media_library();
-    enum mpd_tag_type tag_type = MPD_TAG_ARTIST;
+    enum NcmTagType tag_type = NCM_TAG_ARTIST;
     enum MediaLibraryColumn column;
 
     if (!action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
@@ -4462,16 +4462,16 @@ action_runtime_toggle_library_tag_type(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    if (Config.media_library_primary_tag == MPD_TAG_ARTIST) {
-        tag_type = MPD_TAG_ALBUM_ARTIST;
-    } else if (Config.media_library_primary_tag == MPD_TAG_ALBUM_ARTIST) {
-        tag_type = MPD_TAG_DATE;
-    } else if (Config.media_library_primary_tag == MPD_TAG_DATE) {
-        tag_type = MPD_TAG_GENRE;
-    } else if (Config.media_library_primary_tag == MPD_TAG_GENRE) {
-        tag_type = MPD_TAG_COMPOSER;
-    } else if (Config.media_library_primary_tag == MPD_TAG_COMPOSER) {
-        tag_type = MPD_TAG_PERFORMER;
+    if (Config.media_library_primary_tag == NCM_TAG_ARTIST) {
+        tag_type = NCM_TAG_ALBUM_ARTIST;
+    } else if (Config.media_library_primary_tag == NCM_TAG_ALBUM_ARTIST) {
+        tag_type = NCM_TAG_DATE;
+    } else if (Config.media_library_primary_tag == NCM_TAG_DATE) {
+        tag_type = NCM_TAG_GENRE;
+    } else if (Config.media_library_primary_tag == NCM_TAG_GENRE) {
+        tag_type = NCM_TAG_COMPOSER;
+    } else if (Config.media_library_primary_tag == NCM_TAG_COMPOSER) {
+        tag_type = NCM_TAG_PERFORMER;
     }
 
     return media_library_screen_set_primary_tag_type(screen, tag_type);
@@ -4674,7 +4674,7 @@ action_runtime_media_library_current_artist_tag(char **artist,
     if (!action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
         return false;
     }
-    if (Config.media_library_primary_tag != MPD_TAG_ARTIST) {
+    if (Config.media_library_primary_tag != NCM_TAG_ARTIST) {
         return false;
     }
 
@@ -5409,7 +5409,7 @@ action_runtime_show_artist_info(void) {
             ncm_song_destroy(&song);
             return -NCM_ERROR_UNAVAILABLE;
         }
-        has_artist = ncm_song_has_tag_view(&song, MPD_TAG_ARTIST, 0, &artist);
+        has_artist = ncm_song_has_tag_view(&song, NCM_TAG_ARTIST, 0, &artist);
     }
 
     if (has_artist && (artist.len > 0)) {

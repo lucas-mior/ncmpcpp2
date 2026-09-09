@@ -279,7 +279,7 @@ static bool
 adder_try_add_current_song(SelectedItemsAdderScreen *screen, NcmSong *song,
                            int32 position, bool *added, bool *success) {
     NcmError ncm_error;
-    enum mpd_server_error server_error;
+    enum NcmMpdServerError server_error;
     int32 message_len;
     int32 status;
 
@@ -292,7 +292,7 @@ adder_try_add_current_song(SelectedItemsAdderScreen *screen, NcmSong *song,
         return true;
     }
 
-    if (ncm_error.code == MPD_ERROR_SERVER) {
+    if (ncm_error.code == NCM_MPD_ERROR_SERVER) {
         server_error = ncm_mpd_client_server_error_code(screen->client);
         message_len = optional_strlen32(ncm_error.message);
         ncm_status_handle_server_error_value(screen->client,
@@ -439,7 +439,7 @@ adder_action_position_current_song(void *user) {
 
 static void
 adder_song_album_view(NcmSong *song, StringView *album) {
-    if (!ncm_song_has_tag_view(song, MPD_TAG_ALBUM, 0, album)) {
+    if (!ncm_song_has_tag_view(song, NCM_TAG_ALBUM, 0, album)) {
         ncm_string_view_set(album, "", 0);
     }
     return;

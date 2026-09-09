@@ -30,11 +30,11 @@ library_mpd_search_songs(void *user, MediaLibrarySongQuery *query,
                                                query->primary_value, ncm_error);
     }
     if ((status == 0) && query->match_album) {
-        status = ncm_mpd_client_add_search_tag(client, MPD_TAG_ALBUM,
+        status = ncm_mpd_client_add_search_tag(client, NCM_TAG_ALBUM,
                                                query->album, ncm_error);
     }
     if ((status == 0) && query->match_date) {
-        status = ncm_mpd_client_add_search_tag(client, MPD_TAG_DATE,
+        status = ncm_mpd_client_add_search_tag(client, NCM_TAG_DATE,
                                                query->date, ncm_error);
     }
     if (status == 0) {
@@ -55,7 +55,7 @@ library_mpd_list_all_songs(void *user, NcmMpdSongList *songs,
 }
 
 static int32
-library_mpd_list_tags(void *user, enum mpd_tag_type tag_type,
+library_mpd_list_tags(void *user, enum NcmTagType tag_type,
                       StringViewList *tags, NcmError *ncm_error) {
     MpdClient *client = user;
 
@@ -1322,7 +1322,7 @@ media_library_screen_format_album_row(MediaLibraryScreen *screen,
         }
         SB_APPEND(&raw, " - ");
     }
-    if ((Config.media_library_primary_tag != MPD_TAG_DATE)
+    if ((Config.media_library_primary_tag != NCM_TAG_DATE)
         && !Config.media_library_hide_album_dates
         && row->date && (row->date_len > 0)) {
         sb_append_byte(&raw, '(');
@@ -1543,7 +1543,7 @@ library_append_album(MediaLibraryAlbumArray *albums, char *tag, int32 tag_len,
 }
 
 static bool
-library_song_has_first_tag(NcmSong *song, enum mpd_tag_type tag,
+library_song_has_first_tag(NcmSong *song, enum NcmTagType tag,
                            StringView *view) {
     ASSERT(view != NULL);
     *view = (StringView){0};
@@ -1575,10 +1575,10 @@ media_library_tags_from_strings(MediaLibraryTagArray *tags,
 
 int32
 media_library_tags_from_songs(MediaLibraryTagArray *tags, NcmMpdSongList *songs,
-                              enum mpd_tag_type primary_tag) {
+                              enum NcmTagType primary_tag) {
     MediaLibraryTagArray replacement = {0};
 
-    if ((tags == NULL) || (songs == NULL) || (primary_tag == MPD_TAG_UNKNOWN)) {
+    if ((tags == NULL) || (songs == NULL) || (primary_tag == NCM_TAG_UNKNOWN)) {
         return -EINVAL;
     }
 
@@ -1613,7 +1613,7 @@ int32
 media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
                                 NcmMpdSongList *songs,
                                 enum MediaLibraryMode mode,
-                                enum mpd_tag_type primary_tag,
+                                enum NcmTagType primary_tag,
                                 char *selected_tag, int32 selected_tag_len) {
     MediaLibraryAlbumArray replacement = {0};
     MediaLibraryAlbumItem *separator;
@@ -1622,7 +1622,7 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
     if ((albums == NULL) || (songs == NULL)
         || (mode < MEDIA_LIBRARY_MODE_THREE_COLUMNS)
         || (mode >= MEDIA_LIBRARY_MODE_COUNT)
-        || (primary_tag == MPD_TAG_UNKNOWN) || (selected_tag_len < 0)
+        || (primary_tag == NCM_TAG_UNKNOWN) || (selected_tag_len < 0)
         || ((selected_tag == NULL) && (selected_tag_len > 0))) {
         return -EINVAL;
     }
@@ -1635,8 +1635,8 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
             StringView date = {0};
             int32 existing;
 
-            library_song_has_first_tag(song, MPD_TAG_ALBUM, &album);
-            library_song_has_first_tag(song, MPD_TAG_DATE, &date);
+            library_song_has_first_tag(song, NCM_TAG_ALBUM, &album);
+            library_song_has_first_tag(song, NCM_TAG_DATE, &date);
             if (!Config.media_library_albums_split_by_date) {
                 ncm_string_view_clear(&date);
             }
@@ -1664,8 +1664,8 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
             StringView date = {0};
             StringView primary_value = {0};
 
-            library_song_has_first_tag(song, MPD_TAG_ALBUM, &album);
-            library_song_has_first_tag(song, MPD_TAG_DATE, &date);
+            library_song_has_first_tag(song, NCM_TAG_ALBUM, &album);
+            library_song_has_first_tag(song, NCM_TAG_DATE, &date);
             if (!Config.media_library_albums_split_by_date) {
                 ncm_string_view_clear(&date);
             }
@@ -1879,8 +1879,8 @@ library_reset_observed_highlights(MediaLibraryScreen *screen) {
 
 int32
 media_library_screen_set_primary_tag_type(MediaLibraryScreen *screen,
-                                          enum mpd_tag_type tag_type) {
-    if ((screen == NULL) || (tag_type == MPD_TAG_UNKNOWN)) {
+                                          enum NcmTagType tag_type) {
+    if ((screen == NULL) || (tag_type == NCM_TAG_UNKNOWN)) {
         return -EINVAL;
     }
 
@@ -2547,7 +2547,7 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
         MediaLibraryTagArray tags = {0};
         StringViewList strings = {0};
         NcmMpdSongList songs = {0};
-        enum mpd_tag_type primary_tag;
+        enum NcmTagType primary_tag;
         int32 status;
 
         primary_tag = Config.media_library_primary_tag;
@@ -2965,7 +2965,7 @@ library_move_to_album(MediaLibraryScreen *screen, char *tag, int32 tag_len,
 
 int32
 media_library_screen_list_tags(
-    MediaLibraryScreen *screen, enum mpd_tag_type tag_type,
+    MediaLibraryScreen *screen, enum NcmTagType tag_type,
     StringViewList *tags, NcmError *ncm_error) {
     if ((screen == NULL) || (screen->hooks.list_tags == NULL)) {
         return ncm_error_set_status(ncm_error, -ENOSYS,
@@ -3184,8 +3184,8 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
                                     STRLIT("song is not from the database"));
     }
 
-    library_song_has_first_tag(song, MPD_TAG_ALBUM, &album);
-    library_song_has_first_tag(song, MPD_TAG_DATE, &date);
+    library_song_has_first_tag(song, NCM_TAG_ALBUM, &album);
+    library_song_has_first_tag(song, NCM_TAG_DATE, &date);
     album_date = date.data;
     album_date_len = date.len;
     if (!Config.media_library_albums_split_by_date) {
