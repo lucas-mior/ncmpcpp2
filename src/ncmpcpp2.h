@@ -410,8 +410,7 @@ ncm_tag_type_parse_settings_name(char *value, int32 value_len,
 static inline enum NcmTagType
 ncm_primary_tag_next(enum NcmTagType tag) {
     static enum NcmTagType tags[NCM_PRIMARY_TAG_COUNT] = {
-#define NCM_PRIMARY_TAG_ARRAY_ENTRY(suffix, DISP, CHAR,                    \
-                                    getter_char, flags)                        \
+#define NCM_PRIMARY_TAG_ARRAY_ENTRY(suffix, DISP, CHAR, getter_char, flags) \
         CAT(TAG_, suffix),
 
         TAG_PRIMARY_DEFS(NCM_PRIMARY_TAG_ARRAY_ENTRY)
