@@ -387,9 +387,9 @@ tag_edit_update_titles(TagEditScreen *screen, bool update_windows) {
         SB_APPEND(&screen->directories_title, "Directories");
         SB_APPEND(&screen->tag_types_title, "Tag types");
         SB_APPEND(&screen->tags_title, "Tags");
-        if (screen->parser_mode == TAG_EDIT_PARSER_TAGS_FROM_FILENAME) {
+        if (screen->parser_mode == TAG_EDIT_PARSER_MODE_TAGS_FROM_FILENAME) {
             SB_APPEND(&screen->parser_title, "Get tags from filename");
-        } else if (screen->parser_mode == TAG_EDIT_PARSER_RENAME_FILES) {
+        } else if (screen->parser_mode == TAG_EDIT_PARSER_MODE_RENAME_FILES) {
             SB_APPEND(&screen->parser_title, "Rename files");
         } else {
             SB_APPEND(&screen->parser_title, "Pattern");
@@ -958,7 +958,7 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
 
         song = nc_menu_active_item_at(tags, i);
         ASSERT(song != NULL);
-        if (screen->parser_mode == TAG_EDIT_PARSER_TAGS_FROM_FILENAME) {
+        if (screen->parser_mode == TAG_EDIT_PARSER_MODE_TAGS_FROM_FILENAME) {
             if (!apply && song->name) {
                 SB_APPEND(&screen->parser_preview, song->name, song->name_len);
                 SB_APPEND(&screen->parser_preview, ":\n");
@@ -974,7 +974,7 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
             if (!apply) {
                 sb_append_byte(&screen->parser_preview, '\n');
             }
-        } else if (screen->parser_mode == TAG_EDIT_PARSER_RENAME_FILES) {
+        } else if (screen->parser_mode == TAG_EDIT_PARSER_MODE_RENAME_FILES) {
             StrBuilder stem = {0};
             StrBuilder new_name = {0};
             int32 extension_start;
@@ -1187,6 +1187,7 @@ tag_edit_run_current(NcScreen *screen) {
     case TAG_EDIT_FOCUS_PARSER_CHOICE: {
         NcMenu *menu;
         int32 choice;
+        enum TagEditParserMode mode;
 
         menu = nc_editor_string_menu_base(&editor->parser_dialog);
         if (!nc_menu_current_is_selectable(menu)) {
@@ -1194,13 +1195,13 @@ tag_edit_run_current(NcScreen *screen) {
         }
         choice = nc_menu_highlight(menu);
         if (choice == 0) {
-            enum TagEditParserMode mode = TAG_EDIT_PARSER_TAGS_FROM_FILENAME;
+            mode = TAG_EDIT_PARSER_MODE_TAGS_FROM_FILENAME;
             tag_edit_screen_show_parser_actions(editor, mode);
             return 0;
         }
         if (choice == 1) {
-            tag_edit_screen_show_parser_actions(editor,
-                                                TAG_EDIT_PARSER_RENAME_FILES);
+            mode = TAG_EDIT_PARSER_MODE_RENAME_FILES;
+            tag_edit_screen_show_parser_actions(editor, mode);
             return 0;
         }
         if (choice == 2) {
@@ -1741,7 +1742,7 @@ tag_edit_mouse_move_to_parser_focus(TagEditScreen *screen,
         tag_edit_set_focus(screen, focus);
         return true;
     }
-    if (screen->parser_mode == TAG_EDIT_PARSER_NONE) {
+    if (screen->parser_mode == TAG_EDIT_PARSER_MODE_NONE) {
         return false;
     }
     if ((focus == TAG_EDIT_FOCUS_PARSER_ACTIONS)
@@ -2465,7 +2466,7 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
     screen->last_known_directory_count = 0;
     screen->last_known_tag_count = 0;
     screen->window_timeout_ms = -1;
-    screen->parser_mode = TAG_EDIT_PARSER_NONE;
+    screen->parser_mode = TAG_EDIT_PARSER_MODE_NONE;
     screen->directories_update_requested = false;
     screen->tags_update_requested = false;
     screen->directory_filter_enabled = false;
@@ -2519,7 +2520,8 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
     tag_edit_observe_current_directory(screen);
     nc_screen_init_ops(&screen->screen, tag_edit_callbacks, screen,
                        NC_SCREEN_TYPE_TAG_EDIT);
-    tag_edit_screen_prepare_parser_rows(screen, TAG_EDIT_PARSER_NONE, NULL, 0);
+    tag_edit_screen_prepare_parser_rows(screen, TAG_EDIT_PARSER_MODE_NONE,
+                                        NULL, 0);
     return;
 }
 
@@ -3801,7 +3803,7 @@ tag_edit_screen_prepare_parser_rows(TagEditScreen *screen,
     screen->parser_mode = mode;
     if (pattern) {
         tag_edit_set_pattern(screen, pattern, pattern_len);
-    } else if ((mode != TAG_EDIT_PARSER_NONE) && (screen->pattern.len <= 0)
+    } else if ((mode != TAG_EDIT_PARSER_MODE_NONE) && (screen->pattern.len <= 0)
                && Config.default_tag_edit_pattern) {
         tag_edit_set_pattern(screen, Config.default_tag_edit_pattern,
                              Config.default_tag_edit_pattern_len);
@@ -3821,7 +3823,7 @@ tag_edit_screen_prepare_parser_rows(TagEditScreen *screen,
                                STRLIT("Cancel"),
                                NC_MENU_ITEM_SELECTABLE);
 
-    if (mode == TAG_EDIT_PARSER_NONE) {
+    if (mode == TAG_EDIT_PARSER_MODE_NONE) {
         tag_edit_reset_parser_navigation(screen);
         return;
     }
@@ -3871,10 +3873,10 @@ tag_edit_screen_show_parser_dialog(TagEditScreen *screen) {
     NcMenu *menu = nc_editor_string_menu_base(&screen->parser_dialog);
 
     if (nc_menu_item_count(menu) <= 0) {
-        tag_edit_screen_prepare_parser_rows(screen, TAG_EDIT_PARSER_NONE,
+        tag_edit_screen_prepare_parser_rows(screen, TAG_EDIT_PARSER_MODE_NONE,
                                             NULL, 0);
     }
-    screen->parser_mode = TAG_EDIT_PARSER_NONE;
+    screen->parser_mode = TAG_EDIT_PARSER_MODE_NONE;
     tag_edit_set_focus(screen, TAG_EDIT_FOCUS_PARSER_CHOICE);
     return;
 }
@@ -3882,7 +3884,7 @@ tag_edit_screen_show_parser_dialog(TagEditScreen *screen) {
 void
 tag_edit_screen_show_parser_actions(TagEditScreen *screen,
                                     enum TagEditParserMode mode) {
-    if (mode == TAG_EDIT_PARSER_NONE) {
+    if (mode == TAG_EDIT_PARSER_MODE_NONE) {
         return;
     }
     if (!screen->recent_patterns_loaded) {
@@ -3967,7 +3969,7 @@ tag_edit_screen_show_parser_actions(TagEditScreen *screen,
 
 void
 tag_edit_screen_show_parser_legend(TagEditScreen *screen) {
-    if (screen->parser_mode == TAG_EDIT_PARSER_NONE) {
+    if (screen->parser_mode == TAG_EDIT_PARSER_MODE_NONE) {
         return;
     }
     tag_edit_set_focus(screen, TAG_EDIT_FOCUS_PARSER_LEGEND);
@@ -3976,7 +3978,7 @@ tag_edit_screen_show_parser_legend(TagEditScreen *screen) {
 
 void
 tag_edit_screen_show_parser_preview(TagEditScreen *screen) {
-    if (screen->parser_mode == TAG_EDIT_PARSER_NONE) {
+    if (screen->parser_mode == TAG_EDIT_PARSER_MODE_NONE) {
         return;
     }
     tag_edit_set_focus(screen, TAG_EDIT_FOCUS_PARSER_PREVIEW);
@@ -3985,7 +3987,7 @@ tag_edit_screen_show_parser_preview(TagEditScreen *screen) {
 
 void
 tag_edit_screen_close_parser(TagEditScreen *screen) {
-    screen->parser_mode = TAG_EDIT_PARSER_NONE;
+    screen->parser_mode = TAG_EDIT_PARSER_MODE_NONE;
     tag_edit_set_focus(screen, TAG_EDIT_FOCUS_TAG_TYPES);
     return;
 }
