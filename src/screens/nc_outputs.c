@@ -24,9 +24,11 @@ nc_outputs_resize(NcScreen *screen) {
     if (outputs->hooks.resize_layout) {
         outputs->hooks.resize_layout(outputs->hooks.user, outputs);
     }
-    nc_window_resize(&outputs->window, nc_outputs_screen_width(outputs),
+    nc_window_resize(&outputs->window,
+                     nc_outputs_screen_width(outputs),
                      nc_outputs_screen_height(outputs));
-    nc_window_move_to(&outputs->window, nc_outputs_screen_start_x(outputs),
+    nc_window_move_to(&outputs->window,
+                      nc_outputs_screen_start_x(outputs),
                       nc_outputs_screen_start_y(outputs));
     if (outputs->hooks.resize_background) {
         outputs->hooks.resize_background(outputs->hooks.user);
@@ -194,12 +196,15 @@ nc_outputs_screen_init(NcOutputsScreen *screen, NcOutputsHooks hooks,
     screen->mouse_scroll_whole_page = mouse_scroll_whole_page;
     nc_scrollpad_screen_init(&screen->menu_screen, nc_outputs_ops,
                              hooks.user, NC_SCREEN_TYPE_OUTPUTS, 0, 0, 0, 0);
-    nc_outputs_screen_set_geometry(screen, start_x, width, main_start_y,
-                                   main_height);
-    nc_window_init(&screen->window, nc_outputs_screen_start_x(screen),
+    nc_outputs_screen_set_geometry(screen,
+                                   start_x, width,
+                                   main_start_y, main_height);
+    nc_window_init(&screen->window,
+                   nc_outputs_screen_start_x(screen),
                    nc_outputs_screen_start_y(screen),
                    nc_outputs_screen_width(screen),
-                   nc_outputs_screen_height(screen), STRLIT(""), color, border);
+                   nc_outputs_screen_height(screen),
+                   STRLIT(""), color, border);
     screen->menu = (NcMenu){0};
     nc_menu_set_item_callbacks(&screen->menu, (NcMenuItemCallbacks){
         .item_size = SIZEOF(NcOutputsItem),
@@ -218,8 +223,9 @@ void
 nc_outputs_screen_set_geometry(NcOutputsScreen *screen,
                                int32 start_x, int32 width,
                                int32 main_start_y, int32 main_height) {
-    nc_scrollpad_screen_set_main_area(&screen->menu_screen, start_x,
-                                      width, main_start_y, main_height);
+    nc_scrollpad_screen_set_main_area(&screen->menu_screen,
+                                      start_x, width,
+                                      main_start_y, main_height);
     return;
 }
 
@@ -281,8 +287,8 @@ nc_outputs_screen_toggle_current(NcOutputsScreen *screen) {
     }
 
     status = screen->hooks.toggle_output(screen->hooks.user, output->id,
-                                         output->enabled, output->name,
-                                         output->name_len);
+                                         output->enabled,
+                                         output->name, output->name_len);
     if (status < 0) {
         return status;
     }
