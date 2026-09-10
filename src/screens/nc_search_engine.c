@@ -374,6 +374,22 @@ search_run_current(NcScreen *base_screen) {
     return -NCM_ERROR_UNAVAILABLE;
 }
 
+static int32
+search_toggle_display_mode(NcScreen *base) {
+    StrBuilder message = {0};
+    enum DisplayMode mode;
+    mode = search_engine_screen_toggle_display_mode(
+        (SearchEngineScreen *)base);
+    sb_printf(&message, "Search engine display mode: %s",
+              ncm_display_mode_str(mode));
+    search_engine_screen_status_message((SearchEngineScreen *)base,
+                                        message.data, message.len);
+    sb_free(&message);
+    nc_screen_request_resize(base);
+    nc_screen_refresh(base);
+    return 0;
+}
+
 #define NC_SCREEN_IMPL_TYPE SearchEngineScreen
 #define NC_SCREEN_IMPL_PREFIX search
 #define NC_SCREEN_IMPL_PUBLIC_PREFIX search_engine_screen
@@ -625,6 +641,8 @@ search_engine_screen_init(SearchEngineScreen *screen,
     screen->registered = false;
 
     ops = search_ops;
+    ops.capabilities |= NC_SCREEN_CAPABILITY_DISPLAY_MODE;
+    ops.toggle_display_mode = search_toggle_display_mode;
     nc_screen_init_ops(&screen->screen, ops, screen,
                        NC_SCREEN_TYPE_SEARCH_ENGINE);
     menu = search_engine_screen_menu(screen);

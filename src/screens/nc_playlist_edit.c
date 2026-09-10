@@ -635,6 +635,14 @@ playlist_edit_destroy_callback(NcScreen *screen) {
     return;
 }
 
+static int32
+playlist_edit_toggle_display_mode(NcScreen *base) {
+    Config.playlist_edit_display_mode =
+        nc_screen_next_display_mode(Config.playlist_edit_display_mode);
+    nc_screen_request_resize(base);
+    return 0;
+}
+
 static bool
 playlist_edit_search_text_matches(NcmRegex *regex, char *data, int32 len) {
     if (data == NULL) {
@@ -804,7 +812,8 @@ playlist_edit_screen_init(PlaylistEditScreen *screen,
                              |NC_SCREEN_CAPABILITY_SEARCH
                              |NC_SCREEN_CAPABILITY_SONGS
                              |NC_SCREEN_CAPABILITY_COLUMNS
-                             |NC_SCREEN_CAPABILITY_TAGS;
+                             |NC_SCREEN_CAPABILITY_TAGS
+                             |NC_SCREEN_CAPABILITY_DISPLAY_MODE;
     callbacks.current_menu = playlist_edit_menu_capability;
     callbacks.current_menu_height = playlist_edit_menu_height_capability;
     callbacks.current_filter = playlist_edit_filter_constraint_capability;
@@ -818,6 +827,7 @@ playlist_edit_screen_init(PlaylistEditScreen *screen,
     NC_SCREEN_COLUMN_CAPABILITY_SET_OPS(callbacks, playlist_edit);
     callbacks.tag_menu = playlist_edit_tag_menu_capability;
     callbacks.song_tag_at = playlist_edit_tag_at_capability;
+    callbacks.toggle_display_mode = playlist_edit_toggle_display_mode;
 
     nc_playlist_entry_menu_init(&screen->playlists);
     nc_song_menu_init(&screen->content);
