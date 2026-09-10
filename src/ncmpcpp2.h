@@ -179,30 +179,30 @@ ncm_tag_name_to_camel_compact(char *out, int32 out_cap,
 #define NCM_TAG_SEARCH_MPD_DECLS(XX)                                         \
   NCM_TAG_SEARCH_MPD(XX, NAME, Filename)
 
-#define NCM_TAG_EXTENDED_DECLS(XX)                                             \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_ARTISTID, Musicbrainz Artist Id)            \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_ALBUMID, Musicbrainz Album Id)              \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_ALBUMARTISTID, Musicbrainz Album Artist Id) \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_TRACKID,  Musicbrainz Track Id)             \
+#define NCM_TAG_EXTENDED_DECLS(XX)                                               \
+  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_ARTISTID, Musicbrainz Artist Id)              \
+  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_ALBUMID, Musicbrainz Album Id)                \
+  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_ALBUMARTISTID, Musicbrainz Album Artist Id)   \
+  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_TRACKID,  Musicbrainz Track Id)               \
   NCM_TAG_NON_DISP(XX, MUSICBRAINZ_RELEASETRACKID, Musicbrainz Release Track Id) \
-  NCM_TAG_NON_DISP(XX, ORIGINAL_DATE, Original Date)                           \
-  NCM_TAG_NON_DISP(XX, ARTIST_SORT, Artist Sort)                        \
-  NCM_TAG_NON_DISP(XX, ALBUM_ARTIST_SORT, Album Artist Sort)            \
-  NCM_TAG_NON_DISP(XX, ALBUM_SORT, Album Sort)                          \
-  NCM_TAG_NON_DISP(XX, LABEL, Label)                                    \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_WORKID, Musicbrainz Work Id)         \
-  NCM_TAG_NON_DISP(XX, GROUPING, Grouping)                              \
-  NCM_TAG_NON_DISP(XX, WORK, Work)                                      \
-  NCM_TAG_NON_DISP(XX, CONDUCTOR, Conductor)                            \
-  NCM_TAG_NON_DISP(XX, COMPOSER_SORT, Composer Sort)                    \
-  NCM_TAG_NON_DISP(XX, ENSEMBLE, Ensemble)                              \
-  NCM_TAG_NON_DISP(XX, MOVEMENT, Movement)                              \
-  NCM_TAG_NON_DISP(XX, MOVEMENTNUMBER, Movement Number)                 \
-  NCM_TAG_NON_DISP(XX, LOCATION, Location)                              \
-  NCM_TAG_NON_DISP(XX, MOOD, Mood)                                      \
-  NCM_TAG_NON_DISP(XX, TITLE_SORT, Title Sort)                          \
+  NCM_TAG_NON_DISP(XX, ORIGINAL_DATE, Original Date)                             \
+  NCM_TAG_NON_DISP(XX, ARTIST_SORT, Artist Sort)                                 \
+  NCM_TAG_NON_DISP(XX, ALBUM_ARTIST_SORT, Album Artist Sort)                     \
+  NCM_TAG_NON_DISP(XX, ALBUM_SORT, Album Sort)                                   \
+  NCM_TAG_NON_DISP(XX, LABEL, Label)                                             \
+  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_WORKID, Musicbrainz Work Id)                  \
+  NCM_TAG_NON_DISP(XX, GROUPING, Grouping)                                       \
+  NCM_TAG_NON_DISP(XX, WORK, Work)                                               \
+  NCM_TAG_NON_DISP(XX, CONDUCTOR, Conductor)                                     \
+  NCM_TAG_NON_DISP(XX, COMPOSER_SORT, Composer Sort)                             \
+  NCM_TAG_NON_DISP(XX, ENSEMBLE, Ensemble)                                       \
+  NCM_TAG_NON_DISP(XX, MOVEMENT, Movement)                                       \
+  NCM_TAG_NON_DISP(XX, MOVEMENTNUMBER, Movement Number)                          \
+  NCM_TAG_NON_DISP(XX, LOCATION, Location)                                       \
+  NCM_TAG_NON_DISP(XX, MOOD, Mood)                                               \
+  NCM_TAG_NON_DISP(XX, TITLE_SORT, Title Sort)                                   \
   NCM_TAG_NON_DISP(XX, MUSICBRAINZ_RELEASEGROUPID, Musicbrainz Release Group Id) \
-  NCM_TAG_NON_DISP(XX, SHOWMOVEMENT, Show Movement)                     \
+  NCM_TAG_NON_DISP(XX, SHOWMOVEMENT, Show Movement)                              \
   NCM_TAG_NON_DISP(XX, DISCSUBTITLE, Disc Subtitle)
 
 #define NCM_TAG_NON_DISP_DECLS(XX)                                        \
