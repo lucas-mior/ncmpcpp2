@@ -22,7 +22,7 @@ static bool ncm_taglib_is_initialized;
 
 static NcmTaglibPropertyMap ncm_taglib_properties[] = {
 #define NCM_TAGLIB_PROPERTY_MAP(tag, display, tag_char, field, getter,        \
-                                getter_char, mpd, flags)                     \
+                                getter_char, flags)                     \
     {                                                                        \
         .tag = tag,                                                          \
     },

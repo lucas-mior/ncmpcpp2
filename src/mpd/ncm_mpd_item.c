@@ -184,9 +184,8 @@ ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
     return 0;
 }
 
-#define NCM_MPD_ITEM_TAG_ENTRY(tag, display, tag_char, field, getter,       \
-                               getter_char, mpd, flags)                    \
-    {CAT(MPD_TAG_, mpd), tag},
+#define NCM_MPD_ITEM_TAG_ENTRY(suffix)                                      \
+    {CAT(MPD_TAG_, suffix), CAT(NCM_TAG_, suffix)},
 
 int32
 ncm_mpd_item_song_from_mpd_song_copy(NcmSong *dest, void *mpd_song) {
