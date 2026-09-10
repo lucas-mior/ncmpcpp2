@@ -85,9 +85,6 @@ nc_window_init(NcWindow *window,
 ```
 
 # List for the first 2 problems:
-- src/c/ncm_error.c
-- src/screens/nc_server_info.c
-- src/config.c
 - src/status.c
 - src/app_controller.h
 - src/config_options.h
