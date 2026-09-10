@@ -556,8 +556,7 @@ ncm_tag_type_taglib_property_len(enum NcmTagType tag, char *out, int32 cap) {
 }
 
 static inline int32
-ncm_tag_type_taglib_name_len(enum NcmTagType tag, char *out,
-                             int32 cap) {
+ncm_tag_type_taglib_name_len(enum NcmTagType tag, char *out, int32 cap) {
     ASSERT(out != NULL);
     ASSERT(cap > 0);
 
