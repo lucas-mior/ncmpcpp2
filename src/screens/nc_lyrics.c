@@ -650,7 +650,6 @@ lyrics_screen_load_file(LyricsScreen *screen,
     char *content;
     char *line;
     int32 content_len;
-    int32 line_len;
     int32 status;
     bool lrc_file;
 
@@ -694,6 +693,7 @@ lyrics_screen_load_file(LyricsScreen *screen,
         line = content;
         while (line < content_end) {
             char *line_end;
+            int32 line_len;
             char *next;
 
             if ((line_end = memchr64(line, '\n', content_end - line))) {
