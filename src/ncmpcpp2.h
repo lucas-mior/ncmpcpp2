@@ -343,14 +343,13 @@ static inline int32
 ncm_tag_type_settings_name_len(enum NcmTagType tag, char *out,
                                int32 cap) {
     switch ((int32)tag) {
-#define TAG_SETTINGS_NAME_CASE(suffix, DISP, CHAR,                         \
-                                   getter_char, flags)                         \
-    case CAT(TAG_, suffix):                                                    \
-        if (TAG_DISPLAY_NAME_LEN(DISP) >= cap) {                               \
-            out[0] = '\0';                                                     \
-            return -1;                                                         \
-        }                                                                      \
-        return ascii_normalize_lower_snake(out, TAG_DISPLAY_NAME(DISP),        \
+#define TAG_SETTINGS_NAME_CASE(suffix, DISP, CHAR, getter_char, flags)   \
+    case CAT(TAG_, suffix):                                              \
+        if (TAG_DISPLAY_NAME_LEN(DISP) >= cap) {                         \
+            out[0] = '\0';                                               \
+            return -1;                                                   \
+        }                                                                \
+        return ascii_normalize_lower_snake(out, TAG_DISPLAY_NAME(DISP),  \
                                            TAG_DISPLAY_NAME_LEN(DISP));
 
     TAG_PRIMARY_DEFS(TAG_SETTINGS_NAME_CASE)
