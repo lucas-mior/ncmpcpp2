@@ -17,17 +17,25 @@ enum NcmBindingActionKind {
     NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND,
 };
 
+typedef struct NcmBindingActionArgument {
+    char *data;
+    int32 len;
+    int32 cap;
+} NcmBindingActionArgument;
+
+typedef struct NcmBindingActionKeys {
+    NcKey *data;
+    int32 len;
+} NcmBindingActionKeys;
+
 typedef struct NcmBindingAction {
-    char *argument;
-    NcKey *keys;
-
-    int32 argument_len;
-    int32 argument_cap;
-    int32 keys_len;
-
-    enum ActionType type;
     enum NcmBindingActionKind kind;
-    enum ScreenType screen_type;
+    union {
+        enum ActionType type;
+        enum ScreenType screen_type;
+        NcmBindingActionArgument argument;
+        NcmBindingActionKeys keys;
+    } value;
 } NcmBindingAction;
 
 typedef struct NcmBinding {
