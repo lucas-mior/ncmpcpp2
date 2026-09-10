@@ -40,14 +40,13 @@ struct SongInfoScreen {
     bool initialized;
 };
 
-#define NCM_SONG_INFO_TAG_ENTRY(tag_value, display, tag_char,              \
-                                field_suffix, getter_suffix, getter_char,  \
-                                flags)                                     \
+#define NCM_SONG_INFO_TAG_ENTRY(suffix, display, tag_char, getter_char,    \
+                                flags)                                      \
     {                                                                       \
         .name = NCM_TAG_DISPLAY_NAME(display),                              \
         .name_len = NCM_TAG_DISPLAY_NAME_LEN(display),                      \
-        .get = CAT(SONG_GETTER_, getter_suffix),                            \
-        .field = CAT(NCM_TAGS_FIELD_, field_suffix),                        \
+        .get = CAT(SONG_GETTER_, suffix),                                   \
+        .field = CAT(NCM_TAGS_FIELD_, suffix),                              \
     },
 
 NcmSongInfoMetadata ncm_song_info_tags[] = {
