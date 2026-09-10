@@ -3771,12 +3771,14 @@ tag_edit_screen_prepare_parser_rows(TagEditScreen *screen,
         return;
     }
     tag_edit_append_parser_row(&screen->parser_rows,
-                                 STRLIT("Get tags from filename"),
-                                 NC_MENU_ITEM_SELECTABLE);
-    tag_edit_append_parser_row(&screen->parser_rows, STRLIT("Rename files"),
-                                 NC_MENU_ITEM_SELECTABLE);
-    tag_edit_append_parser_row(&screen->parser_rows, STRLIT("Cancel"),
-                                 NC_MENU_ITEM_SELECTABLE);
+                               STRLIT("Get tags from filename"),
+                               NC_MENU_ITEM_SELECTABLE);
+    tag_edit_append_parser_row(&screen->parser_rows,
+                               STRLIT("Rename files"),
+                               NC_MENU_ITEM_SELECTABLE);
+    tag_edit_append_parser_row(&screen->parser_rows,
+                               STRLIT("Cancel"),
+                               NC_MENU_ITEM_SELECTABLE);
     {
         StrBuilder row = {0};
 
