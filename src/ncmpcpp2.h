@@ -179,18 +179,13 @@ ncm_tag_name_to_camel_compact(char *out, int32 out_cap,
 #define NCM_TAG_SEARCH_MPD_DECLS(XX)                                         \
   NCM_TAG_SEARCH_MPD(XX, NAME, Filename)
 
-#define NCM_TAG_EXTENDED_DECLS(XX)                                           \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_ARTISTID,                            \
-                           Musicbrainz Artist Id)                          \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_ALBUMID,                             \
-                           Musicbrainz Album Id)                           \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_ALBUMARTISTID,                       \
-                           Musicbrainz Album Artist Id)                    \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_TRACKID,                             \
-                           Musicbrainz Track Id)                           \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_RELEASETRACKID,                      \
-                           Musicbrainz Release Track Id)                   \
-  NCM_TAG_NON_DISP(XX, ORIGINAL_DATE, Original Date)                    \
+#define NCM_TAG_EXTENDED_DECLS(XX)                                             \
+  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_ARTISTID, Musicbrainz Artist Id)            \
+  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_ALBUMID, Musicbrainz Album Id)              \
+  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_ALBUMARTISTID, Musicbrainz Album Artist Id) \
+  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_TRACKID,  Musicbrainz Track Id)             \
+  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_RELEASETRACKID, Musicbrainz Release Track Id) \
+  NCM_TAG_NON_DISP(XX, ORIGINAL_DATE, Original Date)                           \
   NCM_TAG_NON_DISP(XX, ARTIST_SORT, Artist Sort)                        \
   NCM_TAG_NON_DISP(XX, ALBUM_ARTIST_SORT, Album Artist Sort)            \
   NCM_TAG_NON_DISP(XX, ALBUM_SORT, Album Sort)                          \
