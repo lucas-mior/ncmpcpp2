@@ -39,68 +39,40 @@ struct SongInfoScreen {
     bool initialized;
 };
 
+#define NCM_SONG_INFO_TAGS(XX)                                          \
+    XX("Title", SONG_GETTER_TITLE, NCM_TAGS_FIELD_TITLE)                \
+    XX("Artist", SONG_GETTER_ARTIST, NCM_TAGS_FIELD_ARTIST)             \
+    XX("Album Artist", SONG_GETTER_ALBUM_ARTIST,                         \
+       NCM_TAGS_FIELD_ALBUM_ARTIST)                                      \
+    XX("Album", SONG_GETTER_ALBUM, NCM_TAGS_FIELD_ALBUM)                \
+    XX("Date", SONG_GETTER_DATE, NCM_TAGS_FIELD_DATE)                   \
+    XX("Track", SONG_GETTER_TRACK, NCM_TAGS_FIELD_TRACK)                \
+    XX("Genre", SONG_GETTER_GENRE, NCM_TAGS_FIELD_GENRE)                \
+    XX("Composer", SONG_GETTER_COMPOSER, NCM_TAGS_FIELD_COMPOSER)       \
+    XX("Performer", SONG_GETTER_PERFORMER, NCM_TAGS_FIELD_PERFORMER)    \
+    XX("Disc", SONG_GETTER_DISC, NCM_TAGS_FIELD_DISC)                   \
+    XX("Comment", SONG_GETTER_COMMENT, NCM_TAGS_FIELD_COMMENT)
+
+#define NCM_SONG_INFO_TAG_ENTRY(tag_name, tag_get, tag_field) \
+    {                                                         \
+        .name = tag_name,                                     \
+        .name_len = STRLIT_LEN(tag_name),                     \
+        .get = tag_get,                                       \
+        .field = tag_field,                                   \
+    },
+
 NcmSongInfoMetadata ncm_song_info_tags[] = {
-    {
-        .name = "Title",
-        .get = SONG_GETTER_TITLE,
-        .field = NCM_TAGS_FIELD_TITLE,
-    },
-    {
-        .name = "Artist",
-        .get = SONG_GETTER_ARTIST,
-        .field = NCM_TAGS_FIELD_ARTIST,
-    },
-    {
-        .name = "Album Artist",
-        .get = SONG_GETTER_ALBUM_ARTIST,
-        .field = NCM_TAGS_FIELD_ALBUM_ARTIST,
-    },
-    {
-        .name = "Album",
-        .get = SONG_GETTER_ALBUM,
-        .field = NCM_TAGS_FIELD_ALBUM,
-    },
-    {
-        .name = "Date",
-        .get = SONG_GETTER_DATE,
-        .field = NCM_TAGS_FIELD_DATE,
-    },
-    {
-        .name = "Track",
-        .get = SONG_GETTER_TRACK,
-        .field = NCM_TAGS_FIELD_TRACK,
-    },
-    {
-        .name = "Genre",
-        .get = SONG_GETTER_GENRE,
-        .field = NCM_TAGS_FIELD_GENRE,
-    },
-    {
-        .name = "Composer",
-        .get = SONG_GETTER_COMPOSER,
-        .field = NCM_TAGS_FIELD_COMPOSER,
-    },
-    {
-        .name = "Performer",
-        .get = SONG_GETTER_PERFORMER,
-        .field = NCM_TAGS_FIELD_PERFORMER,
-    },
-    {
-        .name = "Disc",
-        .get = SONG_GETTER_DISC,
-        .field = NCM_TAGS_FIELD_DISC,
-    },
-    {
-        .name = "Comment",
-        .get = SONG_GETTER_COMMENT,
-        .field = NCM_TAGS_FIELD_COMMENT,
-    },
+    NCM_SONG_INFO_TAGS(NCM_SONG_INFO_TAG_ENTRY)
     {
         .name = NULL,
+        .name_len = 0,
         .get = SONG_GETTER_NONE,
         .field = NCM_TAGS_FIELD_COUNT,
     },
 };
+
+#undef NCM_SONG_INFO_TAG_ENTRY
+#undef NCM_SONG_INFO_TAGS
 static void
 app_request_registered_resize(enum NcScreenType type) {
     NcScreen *screen;
@@ -1685,7 +1657,7 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
         append_format(buffer, NC_FORMAT_BOLD);
         nc_buffer_append_data(buffer, STRLIT("\n"));
         nc_buffer_append_data(buffer, ncm_song_info_tags[i].name,
-                              strlen32(ncm_song_info_tags[i].name));
+                              ncm_song_info_tags[i].name_len);
         nc_buffer_append_data(buffer, STRLIT(":"));
         append_format(buffer, NC_FORMAT_NO_BOLD);
         nc_buffer_append_data(buffer, STRLIT(" "));
