@@ -108,7 +108,8 @@ XX_ENUM(browser_display_mode, "classic", NCM_DISPLAY_MODE_)
 XX_ENUM(search_engine_display_mode, "classic", NCM_DISPLAY_MODE_)
 XX_ENUM(playlist_edit_display_mode, "classic", NCM_DISPLAY_MODE_)
 XX_ENUM(user_interface, "classic", NCM_DESIGN_)
-XX_MPD_TAG(media_library_primary_tag, "artist")
+XX_MPD_TAG(media_library_primary_tag,
+           NCM_PRIMARY_TAG_DEFAULT_SETTINGS_NAME)
 XX_ENUM(space_add_mode, "add_remove", NCM_SPACE_ADD_MODE_)
 XX_STARTUP_SCREEN(startup_screen, "playlist")
 

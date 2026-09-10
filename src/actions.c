@@ -3751,7 +3751,7 @@ action_runtime_toggle_browser_sort_mode(void) {
 static int32
 action_runtime_toggle_library_tag_type(void) {
     MediaLibraryScreen *screen = app_screen_media_library();
-    enum NcmTagType tag_type = NCM_TAG_ARTIST;
+    enum NcmTagType tag_type;
     enum MediaLibraryColumn column;
 
     if (!action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
@@ -3764,18 +3764,7 @@ action_runtime_toggle_library_tag_type(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    if (Config.media_library_primary_tag == NCM_TAG_ARTIST) {
-        tag_type = NCM_TAG_ALBUM_ARTIST;
-    } else if (Config.media_library_primary_tag == NCM_TAG_ALBUM_ARTIST) {
-        tag_type = NCM_TAG_DATE;
-    } else if (Config.media_library_primary_tag == NCM_TAG_DATE) {
-        tag_type = NCM_TAG_GENRE;
-    } else if (Config.media_library_primary_tag == NCM_TAG_GENRE) {
-        tag_type = NCM_TAG_COMPOSER;
-    } else if (Config.media_library_primary_tag == NCM_TAG_COMPOSER) {
-        tag_type = NCM_TAG_PERFORMER;
-    }
-
+    tag_type = ncm_primary_tag_next(Config.media_library_primary_tag);
     return media_library_screen_set_primary_tag_type(screen, tag_type);
 }
 
