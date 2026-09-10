@@ -3553,9 +3553,9 @@ tag_edit_compile_constraint(NcmRegex *regex,
 
 int32
 tag_edit_screen_apply_directory_filter(TagEditScreen *screen,
-                                         char *pattern, int32 pattern_len,
-                                         uint32 regex_flags,
-                                         NcmError *ncm_error) {
+                                       char *pattern, int32 pattern_len,
+                                       uint32 regex_flags,
+                                       NcmError *ncm_error) {
     int32 status;
 
     if (screen == NULL) {
