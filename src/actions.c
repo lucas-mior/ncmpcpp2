@@ -4753,93 +4753,230 @@ action_runtime_mouse_event(void) {
     return 0;
 }
 
-static bool
-action_runtime_builtin_can_run(ActionRuntime *runtime,
-                               enum ActionType type) {
-    (void)runtime;
+#define ACTION_REQ_FIELDS(XX)                                               \
+    XX(ACTION_REQ_MPD_CONNECTED)                                           \
+    XX(ACTION_REQ_VOLUME)                                                  \
+    XX(ACTION_REQ_PLAYER_NOT_STOPPED)                                      \
+    XX(ACTION_REQ_TOTAL_TIME)                                              \
+    XX(ACTION_REQ_CURRENT_SONG_POSITION)                                   \
+    XX(ACTION_REQ_CURRENT_SONG)                                            \
+    XX(ACTION_REQ_SELECTED_SONGS)                                          \
+    XX(ACTION_REQ_CURRENT_MENU)                                            \
+    XX(ACTION_REQ_MENU_SELECTABLE_ITEM)                                    \
+    XX(ACTION_REQ_MENU_SELECTION)                                          \
+    XX(ACTION_REQ_FILTER)                                                  \
+    XX(ACTION_REQ_FIND)                                                    \
+    XX(ACTION_REQ_SEARCH)                                                  \
+    XX(ACTION_REQ_PREVIOUS_COLUMN)                                         \
+    XX(ACTION_REQ_NEXT_COLUMN)                                             \
+    XX(ACTION_REQ_DISPLAY_MODE)                                            \
+    XX(ACTION_REQ_CAN_SHOW_LOCKED_SCREEN)                                  \
+    XX(ACTION_REQ_CAN_SHOW_INACTIVE_SCREEN)                                \
+    XX(ACTION_REQ_TAGLIB)                                                  \
+    XX(ACTION_REQ_MPD_MUSIC_DIR)                                           \
+    XX(ACTION_REQ_NOT_TINY_TAG_EDIT)
 
+#define ENUM_NAME ActionRequirement
+#define ENUM_PREFIX_ ACTION_REQ_
+#define ENUM_BITFLAGS 1
+#define ENUM_FIELDS ACTION_REQ_FIELDS(XX)
+#include "cbase/xenums.c"
+enum ActionScreenRequirement {
+    ACTION_SCREEN_IS_TARGET = 1,
+    ACTION_SCREEN_IS_NOT_TARGET,
+};
+
+typedef struct ActionAvailability {
+    enum ActionRequirement requirements;
+    enum ActionScreenRequirement screen_requirement;
+    enum ScreenType screen_type;
+    int32 argument;
+    bool custom;
+} ActionAvailability;
+
+#define AR0 ACTION_REQ_NONE
+#define AR_MPD ACTION_REQ_MPD_CONNECTED
+#define AR_VOL ACTION_REQ_VOLUME
+#define AR_ACTIVE ACTION_REQ_PLAYER_NOT_STOPPED
+#define AR_TOTAL ACTION_REQ_TOTAL_TIME
+#define AR_POS ACTION_REQ_CURRENT_SONG_POSITION
+#define AR_SONG ACTION_REQ_CURRENT_SONG
+#define AR_SONGS ACTION_REQ_SELECTED_SONGS
+#define AR_MENU ACTION_REQ_CURRENT_MENU
+#define AR_SELECT ACTION_REQ_MENU_SELECTABLE_ITEM
+#define AR_SELECTION ACTION_REQ_MENU_SELECTION
+#define AR_FILTER ACTION_REQ_FILTER
+#define AR_FIND ACTION_REQ_FIND
+#define AR_SEARCH ACTION_REQ_SEARCH
+#define AR_PREV_COL ACTION_REQ_PREVIOUS_COLUMN
+#define AR_NEXT_COL ACTION_REQ_NEXT_COLUMN
+#define AR_DISPLAY ACTION_REQ_DISPLAY_MODE
+#define AR_LOCK ACTION_REQ_CAN_SHOW_LOCKED_SCREEN
+#define AR_INACTIVE ACTION_REQ_CAN_SHOW_INACTIVE_SCREEN
+#define AR_TAGLIB ACTION_REQ_TAGLIB
+#define AR_MUSIC_DIR ACTION_REQ_MPD_MUSIC_DIR
+#define AR_NOT_TINY ACTION_REQ_NOT_TINY_TAG_EDIT
+
+#define A(reqs) {reqs}
+#define AS(reqs, screen_req, target) {reqs, screen_req, target}
+#define C(reqs) {reqs, 0, 0, 0, true}
+#define CA(reqs, value) {reqs, 0, 0, value, true}
+#define SC(reqs, screen_req, target) {reqs, screen_req, target, 0, true}
+
+#define ACTION_MPD_AVAILABILITY(XX)                                         \
+    XX(ACTION_PREVIOUS)                                                     \
+    XX(ACTION_NEXT)                                                         \
+    XX(ACTION_STOP)                                                         \
+    XX(ACTION_PLAY)                                                         \
+    XX(ACTION_SAVE_PLAYLIST)                                                \
+    XX(ACTION_UPDATE_DATABASE)                                              \
+    XX(ACTION_TOGGLE_REPEAT)                                                \
+    XX(ACTION_TOGGLE_RANDOM)                                                \
+    XX(ACTION_TOGGLE_SINGLE)                                                \
+    XX(ACTION_TOGGLE_CONSUME)                                               \
+    XX(ACTION_TOGGLE_CROSSFADE)                                             \
+    XX(ACTION_SET_CROSSFADE)                                                \
+    XX(ACTION_CLEAR_MAIN_PLAYLIST)                                          \
+    XX(ACTION_TOGGLE_REPLAY_GAIN_MODE)                                      \
+    XX(ACTION_ADD_RANDOM_ITEMS)
+
+#define ACTION_SEARCH_AVAILABILITY(XX)                                      \
+    XX(ACTION_FIND_ITEM_FORWARD)                                            \
+    XX(ACTION_FIND_ITEM_BACKWARD)                                           \
+    XX(ACTION_NEXT_FOUND_ITEM)                                              \
+    XX(ACTION_PREVIOUS_FOUND_ITEM)
+
+#define ACTION_MPD_AVAILABLE(action) [action] = A(AR_MPD),
+#define ACTION_SEARCH_AVAILABLE(action) [action] = A(AR_SEARCH),
+
+static const ActionAvailability action_availability_table[ACTION_COUNT] = {
+    ACTION_MPD_AVAILABILITY(ACTION_MPD_AVAILABLE)
+    ACTION_SEARCH_AVAILABILITY(ACTION_SEARCH_AVAILABLE)
+
+    [ACTION_MOUSE_EVENT] = C(AR0),
+    [ACTION_SCROLL_UP_ARTIST] = CA(AR0, SONG_GETTER_ARTIST),
+    [ACTION_SCROLL_UP_ALBUM] = CA(AR0, SONG_GETTER_ALBUM),
+    [ACTION_SCROLL_DOWN_ARTIST] = CA(AR0, SONG_GETTER_ARTIST),
+    [ACTION_SCROLL_DOWN_ALBUM] = CA(AR0, SONG_GETTER_ALBUM),
+    [ACTION_JUMP_TO_PARENT_DIRECTORY] = C(AR0),
+    [ACTION_RUN_ACTION] = C(AR0),
+    [ACTION_PREVIOUS_COLUMN] = A(AR_PREV_COL),
+    [ACTION_NEXT_COLUMN] = A(AR_NEXT_COL),
+    [ACTION_MASTER_SCREEN] = A(AR_LOCK),
+    [ACTION_SLAVE_SCREEN] = A(AR_INACTIVE),
+    [ACTION_VOLUME_UP] = A(AR_MPD|AR_VOL),
+    [ACTION_VOLUME_DOWN] = A(AR_MPD|AR_VOL),
+    [ACTION_ADD_ITEM_TO_PLAYLIST] = C(AR_MPD),
+    [ACTION_PLAY_ITEM] = C(AR_MPD),
+    [ACTION_DELETE_PLAYLIST_ITEMS] = C(AR_MPD),
+    [ACTION_DELETE_STORED_PLAYLIST] = C(AR_MPD),
+    [ACTION_DELETE_BROWSER_ITEMS] = SC(AR0, ACTION_SCREEN_IS_TARGET,
+                                       SCREEN_TYPE_BROWSER),
+    [ACTION_REPLAY_SONG] = A(AR_MPD|AR_POS),
+    [ACTION_PAUSE] = A(AR_ACTIVE),
+    [ACTION_MOVE_SORT_ORDER_UP] = AS(AR0, ACTION_SCREEN_IS_TARGET,
+                                    SCREEN_TYPE_SORT_PLAYLIST_DIALOG),
+    [ACTION_MOVE_SORT_ORDER_DOWN] = AS(AR0, ACTION_SCREEN_IS_TARGET,
+                                      SCREEN_TYPE_SORT_PLAYLIST_DIALOG),
+    [ACTION_MOVE_SELECTED_ITEMS_UP] = C(AR_MPD),
+    [ACTION_MOVE_SELECTED_ITEMS_DOWN] = C(AR_MPD),
+    [ACTION_MOVE_SELECTED_ITEMS_TO] = C(AR_MPD),
+    [ACTION_SEEK_FORWARD] = A(AR_MPD|AR_ACTIVE|AR_TOTAL),
+    [ACTION_SEEK_BACKWARD] = A(AR_MPD|AR_ACTIVE|AR_TOTAL),
+    [ACTION_TOGGLE_DISPLAY_MODE] = A(AR_DISPLAY),
+    [ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE] = AS(
+        AR0, ACTION_SCREEN_IS_TARGET, SCREEN_TYPE_LYRICS),
+    [ACTION_JUMP_TO_PLAYING_SONG] = A(AR_MPD|AR_POS),
+    [ACTION_SHUFFLE] = SC(AR_MPD, ACTION_SCREEN_IS_TARGET,
+                          SCREEN_TYPE_PLAYLIST),
+    [ACTION_START_SEARCHING] = SC(AR0, ACTION_SCREEN_IS_TARGET,
+                                  SCREEN_TYPE_SEARCH_ENGINE),
+    [ACTION_SAVE_TAG_CHANGES] = C(AR0),
+    [ACTION_SET_VOLUME] = A(AR_MPD|AR_VOL),
+    [ACTION_ENTER_DIRECTORY] = C(AR0),
+    [ACTION_EDIT_SONG] = AS(AR_TAGLIB|AR_MUSIC_DIR|AR_SONG,
+                           ACTION_SCREEN_IS_NOT_TARGET, SCREEN_TYPE_LYRICS),
+    [ACTION_EDIT_LIBRARY_TAG] = C(AR_TAGLIB),
+    [ACTION_EDIT_LIBRARY_ALBUM] = C(AR_TAGLIB),
+    [ACTION_EDIT_DIRECTORY_NAME] = C(AR0),
+    [ACTION_EDIT_PLAYLIST_NAME] = C(AR_MPD),
+    [ACTION_EDIT_LYRICS] = AS(AR0, ACTION_SCREEN_IS_TARGET,
+                             SCREEN_TYPE_LYRICS),
+    [ACTION_JUMP_TO_BROWSER] = A(AR_SONG),
+    [ACTION_JUMP_TO_MEDIA_LIBRARY] = A(AR_SONG),
+    [ACTION_JUMP_TO_PLAYLIST_EDITOR] = C(AR0),
+    [ACTION_JUMP_TO_TAG_EDIT] = A(AR_TAGLIB|AR_MUSIC_DIR|AR_SONG),
+    [ACTION_JUMP_TO_POSITION_IN_SONG] = A(
+        AR_MPD|AR_ACTIVE|AR_TOTAL|AR_POS),
+    [ACTION_SELECT_ITEM] = A(AR_SELECT),
+    [ACTION_SELECT_RANGE] = A(AR_SELECTION),
+    [ACTION_REVERSE_SELECTION] = A(AR_MENU),
+    [ACTION_REMOVE_SELECTION] = A(AR_MENU),
+    [ACTION_SELECT_ALBUM] = CA(AR0, SONG_GETTER_ALBUM),
+    [ACTION_SELECT_FOUND_ITEMS] = C(AR_SEARCH),
+    [ACTION_ADD_SELECTED_ITEMS] = A(AR_SONGS),
+    [ACTION_CROP_MAIN_PLAYLIST] = SC(AR_MPD|AR_SONGS,
+                                     ACTION_SCREEN_IS_TARGET,
+                                     SCREEN_TYPE_PLAYLIST),
+    [ACTION_CROP_PLAYLIST] = C(AR_MPD),
+    [ACTION_CLEAR_PLAYLIST] = C(AR_MPD),
+    [ACTION_SORT_PLAYLIST] = SC(AR_MPD, ACTION_SCREEN_IS_TARGET,
+                                SCREEN_TYPE_PLAYLIST),
+    [ACTION_REVERSE_PLAYLIST] = SC(AR_MPD, ACTION_SCREEN_IS_TARGET,
+                                   SCREEN_TYPE_PLAYLIST),
+    [ACTION_APPLY_FILTER] = A(AR_FILTER),
+    [ACTION_FIND] = A(AR_FIND),
+    [ACTION_FETCH_LYRICS_IN_BACKGROUND] = A(AR_SONGS),
+    [ACTION_REFETCH_LYRICS] = AS(AR0, ACTION_SCREEN_IS_TARGET,
+                                SCREEN_TYPE_LYRICS),
+    [ACTION_SET_SELECTED_ITEMS_PRIORITY] = SC(AR_MPD|AR_SONGS,
+                                              ACTION_SCREEN_IS_TARGET,
+                                              SCREEN_TYPE_PLAYLIST),
+    [ACTION_TOGGLE_OUTPUT] = C(AR0),
+    [ACTION_TOGGLE_VISUALIZATION_TYPE] = C(AR0),
+    [ACTION_SHOW_ARTIST_INFO] = C(AR0),
+    [ACTION_SHOW_LYRICS] = C(AR0),
+    [ACTION_SHOW_HELP] = AS(AR_NOT_TINY, ACTION_SCREEN_IS_NOT_TARGET,
+                           SCREEN_TYPE_HELP),
+    [ACTION_SHOW_PLAYLIST] = AS(AR_NOT_TINY, ACTION_SCREEN_IS_NOT_TARGET,
+                               SCREEN_TYPE_PLAYLIST),
+    [ACTION_SHOW_BROWSER] = AS(AR0, ACTION_SCREEN_IS_NOT_TARGET,
+                              SCREEN_TYPE_BROWSER),
+    [ACTION_CHANGE_BROWSE_MODE] = AS(AR0, ACTION_SCREEN_IS_TARGET,
+                                    SCREEN_TYPE_BROWSER),
+    [ACTION_RESET_SEARCH_ENGINE] = AS(AR0, ACTION_SCREEN_IS_TARGET,
+                                     SCREEN_TYPE_SEARCH_ENGINE),
+    [ACTION_SHOW_MEDIA_LIBRARY] = AS(AR_NOT_TINY, ACTION_SCREEN_IS_NOT_TARGET,
+                                    SCREEN_TYPE_MEDIA_LIBRARY),
+    [ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE] = AS(
+        AR0, ACTION_SCREEN_IS_TARGET, SCREEN_TYPE_MEDIA_LIBRARY),
+    [ACTION_SHOW_PLAYLIST_EDITOR] = AS(AR_NOT_TINY,
+                                      ACTION_SCREEN_IS_NOT_TARGET,
+                                      SCREEN_TYPE_PLAYLIST_EDITOR),
+    [ACTION_SHOW_TAG_EDIT] = A(AR_TAGLIB),
+    [ACTION_SHOW_OUTPUTS] = C(AR_NOT_TINY),
+    [ACTION_SHOW_VISUALIZER] = C(AR_NOT_TINY),
+    [ACTION_SHOW_SERVER_INFO] = A(AR_NOT_TINY),
+    [ACTION_TOGGLE_LIBRARY_TAG_TYPE] = C(AR0),
+    [ACTION_TOGGLE_BROWSER_SORT_MODE] = AS(AR0, ACTION_SCREEN_IS_TARGET,
+                                          SCREEN_TYPE_BROWSER),
+    [ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE] = AS(
+        AR0, ACTION_SCREEN_IS_TARGET, SCREEN_TYPE_MEDIA_LIBRARY),
+};
+
+static bool
+action_availability_custom_can_run(enum ActionType type, int32 argument) {
     switch (type) {
-    case ACTION_DUMMY:
-    case ACTION_UPDATE_ENVIRONMENT:
-    case ACTION_SCROLL_UP:
-    case ACTION_SCROLL_DOWN:
-    case ACTION_PAGE_UP:
-    case ACTION_PAGE_DOWN:
-    case ACTION_MOVE_HOME:
-    case ACTION_MOVE_END:
-    case ACTION_TOGGLE_INTERFACE:
-    case ACTION_QUIT:
-    case ACTION_NEXT_SCREEN:
-    case ACTION_PREVIOUS_SCREEN:
-    case ACTION_SHOW_SEARCH_ENGINE:
-    case ACTION_SHOW_SONG_INFO:
-    case ACTION_TOGGLE_SCREEN_LOCK:
-    case ACTION_TOGGLE_PLAYING_SONG_CENTERING:
-    case ACTION_TOGGLE_MOUSE:
-    case ACTION_TOGGLE_BITRATE_VISIBILITY:
-    case ACTION_TOGGLE_ADD_MODE:
-    case ACTION_TOGGLE_LYRICS_FETCHER:
-    case ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND:
-    case ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS:
-        return true;
-    case ACTION_SCROLL_UP_ARTIST:
-    case ACTION_SCROLL_DOWN_ARTIST:
-        return action_runtime_tag_scroll_available(SONG_GETTER_ARTIST);
-    case ACTION_SCROLL_UP_ALBUM:
-    case ACTION_SCROLL_DOWN_ALBUM:
-        return action_runtime_tag_scroll_available(SONG_GETTER_ALBUM);
-    case ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE:
-        return app_screen_lyrics_is_current();
-    case ACTION_SHOW_HELP:
-        if (action_runtime_current_screen_is(SCREEN_TYPE_HELP)) {
-            return false;
-        }
-#if defined(HAVE_TAGLIB_H)
-        if (action_runtime_current_screen_is(SCREEN_TYPE_TINY_TAG_EDIT)) {
-            return false;
-        }
-#endif
-        return true;
-    case ACTION_SHOW_PLAYLIST:
-        if (action_runtime_current_screen_is(SCREEN_TYPE_PLAYLIST)) {
-            return false;
-        }
-#if defined(HAVE_TAGLIB_H)
-        if (action_runtime_current_screen_is(SCREEN_TYPE_TINY_TAG_EDIT)) {
-            return false;
-        }
-#endif
-        return true;
-    case ACTION_SHOW_PLAYLIST_EDITOR:
-        if (action_runtime_current_screen_is(SCREEN_TYPE_PLAYLIST_EDITOR)) {
-            return false;
-        }
-#if defined(HAVE_TAGLIB_H)
-        if (action_runtime_current_screen_is(SCREEN_TYPE_TINY_TAG_EDIT)) {
-            return false;
-        }
-#endif
-        return true;
-    case ACTION_SHOW_SERVER_INFO:
-#if defined(HAVE_TAGLIB_H)
-        if (action_runtime_current_screen_is(SCREEN_TYPE_TINY_TAG_EDIT)) {
-            return false;
-        }
-#endif
-        return true;
     case ACTION_MOUSE_EVENT:
         return Config.mouse_support;
-    case ACTION_SHOW_MEDIA_LIBRARY:
-        if (action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
-            return false;
-        }
-#if defined(HAVE_TAGLIB_H)
-        if (action_runtime_current_screen_is(SCREEN_TYPE_TINY_TAG_EDIT)) {
-            return false;
-        }
-#endif
-        return true;
+    case ACTION_SCROLL_UP_ARTIST:
+    case ACTION_SCROLL_DOWN_ARTIST:
+    case ACTION_SCROLL_UP_ALBUM:
+    case ACTION_SCROLL_DOWN_ALBUM:
+    case ACTION_SELECT_ALBUM:
+        return action_runtime_tag_scroll_available((enum SongGetter)argument);
     case ACTION_JUMP_TO_PARENT_DIRECTORY:
+    case ACTION_ENTER_DIRECTORY:
         if (action_runtime_current_screen_is(SCREEN_TYPE_BROWSER)) {
             return true;
         }
@@ -4848,29 +4985,9 @@ action_runtime_builtin_can_run(ActionRuntime *runtime,
 #else
         return false;
 #endif
-    case ACTION_PREVIOUS_COLUMN:
-        return action_runtime_previous_column_available();
-    case ACTION_NEXT_COLUMN:
-        return action_runtime_next_column_available();
-    case ACTION_MASTER_SCREEN:
-        return app_controller_can_show_locked_screen();
-    case ACTION_SLAVE_SCREEN:
-        return app_controller_can_show_inactive_screen();
-    case ACTION_PAUSE:
-        return ncm_status_state_player() != NCM_STATUS_PLAYER_STOP;
-    case ACTION_PLAY:
-    case ACTION_STOP:
-    case ACTION_NEXT:
-    case ACTION_PREVIOUS:
-        return ncm_mpd_client_is_connected(&global_mpd);
-    case ACTION_VOLUME_UP:
-    case ACTION_VOLUME_DOWN:
-        return ncm_mpd_client_is_connected(&global_mpd)
-               && (ncm_status_state_volume() >= 0);
+    case ACTION_RUN_ACTION:
+        return nc_screen_can_run_current(app_controller_current_screen());
     case ACTION_ADD_ITEM_TO_PLAYLIST:
-        if (!ncm_mpd_client_is_connected(&global_mpd)) {
-            return false;
-        }
         if (action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
             return media_library_screen_has_available_item(
                 app_screen_media_library());
@@ -4880,9 +4997,6 @@ action_runtime_builtin_can_run(ActionRuntime *runtime,
         }
         return action_runtime_has_selected_songs();
     case ACTION_PLAY_ITEM:
-        if (!ncm_mpd_client_is_connected(&global_mpd)) {
-            return false;
-        }
         if (action_runtime_current_screen_is(SCREEN_TYPE_PLAYLIST)) {
             return action_runtime_has_current_song();
         }
@@ -4895,41 +5009,27 @@ action_runtime_builtin_can_run(ActionRuntime *runtime,
         }
         return action_runtime_has_selected_songs();
     case ACTION_DELETE_PLAYLIST_ITEMS:
-        if (!ncm_mpd_client_is_connected(&global_mpd)) {
-            return false;
-        }
+    case ACTION_MOVE_SELECTED_ITEMS_UP:
+    case ACTION_MOVE_SELECTED_ITEMS_DOWN:
         if (action_runtime_current_screen_is(SCREEN_TYPE_PLAYLIST)) {
             return action_runtime_has_selected_songs();
         }
         return action_runtime_playlist_edit_content_is_active()
                && action_runtime_playlist_edit_has_content();
     case ACTION_DELETE_STORED_PLAYLIST:
-        return ncm_mpd_client_is_connected(&global_mpd)
-               && action_runtime_playlist_edit_playlists_is_active()
-               && action_runtime_playlist_edit_has_playlists();
-    case ACTION_REPLAY_SONG:
-        return ncm_mpd_client_is_connected(&global_mpd)
-               && (ncm_status_state_current_song_position() >= 0);
-    case ACTION_RUN_ACTION:
-        return nc_screen_can_run_current(app_controller_current_screen());
-    case ACTION_MOVE_SORT_ORDER_UP:
-    case ACTION_MOVE_SORT_ORDER_DOWN:
-        return action_runtime_current_screen_is(
-            SCREEN_TYPE_SORT_PLAYLIST_DIALOG);
-    case ACTION_MOVE_SELECTED_ITEMS_UP:
-    case ACTION_MOVE_SELECTED_ITEMS_DOWN:
-        if (!ncm_mpd_client_is_connected(&global_mpd)) {
+    case ACTION_CROP_PLAYLIST:
+    case ACTION_CLEAR_PLAYLIST:
+        return action_runtime_playlist_edit_has_playlists();
+    case ACTION_DELETE_BROWSER_ITEMS:
+        if (!Config.allow_for_physical_item_deletion) {
             return false;
         }
-        if (action_runtime_current_screen_is(SCREEN_TYPE_PLAYLIST)) {
-            return action_runtime_has_selected_songs();
+        if (!browser_screen_is_local(app_screen_browser())
+            && (Config.mpd_music_dir_len <= 0)) {
+            return false;
         }
-        return action_runtime_playlist_edit_content_is_active()
-               && action_runtime_playlist_edit_has_content();
+        return action_runtime_menu_has_items();
     case ACTION_MOVE_SELECTED_ITEMS_TO:
-        if (!ncm_mpd_client_is_connected(&global_mpd)) {
-            return false;
-        }
         if (action_runtime_current_screen_is(SCREEN_TYPE_PLAYLIST)) {
             return nc_menu_has_selected(
                 playlist_screen_menu(app_screen_playlist()));
@@ -4938,45 +5038,13 @@ action_runtime_builtin_can_run(ActionRuntime *runtime,
                && nc_menu_has_selected(
                    nc_song_menu_base(playlist_edit_screen_content(
                        app_screen_playlist_edit())));
-    case ACTION_ADD:
-    case ACTION_LOAD:
-        return true;
-    case ACTION_SEEK_FORWARD:
-    case ACTION_SEEK_BACKWARD:
-        return ncm_mpd_client_is_connected(&global_mpd)
-               && (ncm_status_state_player() != NCM_STATUS_PLAYER_STOP)
-               && (ncm_status_state_total_time() > 0);
-    case ACTION_TOGGLE_DISPLAY_MODE:
-        return nc_screen_has_capability(
-            current_screen(), NC_SCREEN_CAPABILITY_DISPLAY_MODE);
-    case ACTION_TOGGLE_REPEAT:
-    case ACTION_TOGGLE_RANDOM:
-    case ACTION_TOGGLE_SINGLE:
-    case ACTION_TOGGLE_CONSUME:
-    case ACTION_TOGGLE_CROSSFADE:
-    case ACTION_UPDATE_DATABASE:
-    case ACTION_TOGGLE_REPLAY_GAIN_MODE:
-    case ACTION_CLEAR_MAIN_PLAYLIST:
-    case ACTION_SET_CROSSFADE:
-    case ACTION_ADD_RANDOM_ITEMS:
-        return ncm_mpd_client_is_connected(&global_mpd);
-    case ACTION_SET_VOLUME:
-        return ncm_mpd_client_is_connected(&global_mpd)
-               && (ncm_status_state_volume() >= 0);
     case ACTION_SHUFFLE: {
         int32 first;
         int32 last;
 
-        if (!ncm_mpd_client_is_connected(&global_mpd)
-            || !action_runtime_current_screen_is(SCREEN_TYPE_PLAYLIST)) {
-            return false;
-        }
         return action_runtime_playlist_range(action_runtime_current_menu(),
                                              &first, &last) == 0;
     }
-    case ACTION_JUMP_TO_PLAYING_SONG:
-        return ncm_mpd_client_is_connected(&global_mpd)
-               && (ncm_status_state_current_song_position() >= 0);
     case ACTION_SAVE_TAG_CHANGES:
 #if defined(HAVE_TAGLIB_H)
         if (action_runtime_current_screen_is(SCREEN_TYPE_TAG_EDIT)) {
@@ -4986,78 +5054,23 @@ action_runtime_builtin_can_run(ActionRuntime *runtime,
 #else
         return false;
 #endif
-    case ACTION_ENTER_DIRECTORY:
-        return action_runtime_current_screen_is(SCREEN_TYPE_BROWSER)
-#if defined(HAVE_TAGLIB_H)
-               || action_runtime_current_screen_is(SCREEN_TYPE_TAG_EDIT)
-#endif
-            ;
-    case ACTION_EDIT_SONG:
-#if defined(HAVE_TAGLIB_H)
-        return !action_runtime_current_screen_is(SCREEN_TYPE_LYRICS)
-               && (Config.mpd_music_dir_len > 0)
-               && action_runtime_has_current_song();
-#else
-        return false;
-#endif
-    case ACTION_JUMP_TO_BROWSER:
-        return action_runtime_has_current_song();
     case ACTION_JUMP_TO_PLAYLIST_EDITOR:
         if (action_runtime_current_screen_is(SCREEN_TYPE_BROWSER)) {
             NcmMpdItem *item;
 
             item = browser_screen_current_item(app_screen_browser());
-            return item
-                   && (ncm_mpd_item_kind(item) == NCM_MPD_ITEM_PLAYLIST);
+            return item && (ncm_mpd_item_kind(item) == NCM_MPD_ITEM_PLAYLIST);
         }
         return true;
-    case ACTION_JUMP_TO_MEDIA_LIBRARY:
-        return action_runtime_has_current_song();
-    case ACTION_JUMP_TO_TAG_EDIT:
-#if defined(HAVE_TAGLIB_H)
-        return (Config.mpd_music_dir_len > 0)
-               && action_runtime_has_current_song();
-#else
-        return false;
-#endif
-    case ACTION_SELECT_ITEM:
-        return action_runtime_menu_has_selectable_item();
-    case ACTION_SELECT_RANGE:
-        return action_runtime_menu_has_selection();
-    case ACTION_REVERSE_SELECTION:
-    case ACTION_REMOVE_SELECTION:
-        if (action_runtime_current_menu() == NULL) {
-            return false;
-        }
-        return true;
-    case ACTION_ADD_SELECTED_ITEMS:
-        return action_runtime_has_selected_songs();
     case ACTION_CROP_MAIN_PLAYLIST:
-        if (!ncm_mpd_client_is_connected(&global_mpd)
-            || !action_runtime_current_screen_is(SCREEN_TYPE_PLAYLIST)) {
-            return false;
-        }
-        return (playlist_screen_song_count(app_screen_playlist()) > 1)
-               && action_runtime_has_selected_songs();
-    case ACTION_CROP_PLAYLIST:
-    case ACTION_CLEAR_PLAYLIST:
-        return ncm_mpd_client_is_connected(&global_mpd)
-               && action_runtime_current_screen_is(
-                   SCREEN_TYPE_PLAYLIST_EDITOR)
-               && action_runtime_playlist_edit_has_playlists();
+        return playlist_screen_song_count(app_screen_playlist()) > 1;
     case ACTION_SORT_PLAYLIST:
-        return ncm_mpd_client_is_connected(&global_mpd)
-               && action_runtime_current_screen_is(SCREEN_TYPE_PLAYLIST)
-               && playlist_screen_has_sortable_range(app_screen_playlist());
+        return playlist_screen_has_sortable_range(app_screen_playlist());
     case ACTION_REVERSE_PLAYLIST: {
         NcMenu *menu;
         int32 first;
         int32 last;
 
-        if (!ncm_mpd_client_is_connected(&global_mpd)
-            || !action_runtime_current_screen_is(SCREEN_TYPE_PLAYLIST)) {
-            return false;
-        }
         if (((menu = action_runtime_current_menu()) == NULL)
             || (nc_menu_item_count(menu) <= 0)) {
             return false;
@@ -5065,27 +5078,19 @@ action_runtime_builtin_can_run(ActionRuntime *runtime,
         return ncm_menu_find_full_selected_range(
             menu, action_runtime_menu_item_source(menu), &first, &last) == 0;
     }
-    case ACTION_TOGGLE_BROWSER_SORT_MODE:
-        return action_runtime_current_screen_is(SCREEN_TYPE_BROWSER);
-    case ACTION_TOGGLE_LIBRARY_TAG_TYPE:
-        if (action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
-            MediaLibraryScreen *library = app_screen_media_library();
-            enum MediaLibraryColumn column;
+    case ACTION_TOGGLE_LIBRARY_TAG_TYPE: {
+        MediaLibraryScreen *library;
+        enum MediaLibraryColumn column;
 
-            column = media_library_screen_active_column(library);
-            return (column == MEDIA_LIBRARY_COLUMN_TAGS)
-                   || ((media_library_screen_column_count(library) == 2)
-                       && (column == MEDIA_LIBRARY_COLUMN_ALBUMS));
+        if (!action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
+            return false;
         }
-        return false;
-    case ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE:
-        return action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY);
-    case ACTION_FETCH_LYRICS_IN_BACKGROUND:
-        return action_runtime_has_selected_songs();
-    case ACTION_EDIT_LYRICS:
-        return action_runtime_current_screen_is(SCREEN_TYPE_LYRICS);
-    case ACTION_REFETCH_LYRICS:
-        return action_runtime_current_screen_is(SCREEN_TYPE_LYRICS);
+        library = app_screen_media_library();
+        column = media_library_screen_active_column(library);
+        return (column == MEDIA_LIBRARY_COLUMN_TAGS)
+               || ((media_library_screen_column_count(library) == 2)
+                   && (column == MEDIA_LIBRARY_COLUMN_ALBUMS));
+    }
     case ACTION_SHOW_ARTIST_INFO:
         if (action_runtime_current_screen_is(SCREEN_TYPE_LASTFM)) {
             return true;
@@ -5097,37 +5102,9 @@ action_runtime_builtin_can_run(ActionRuntime *runtime,
     case ACTION_SHOW_LYRICS:
         return action_runtime_current_screen_is(SCREEN_TYPE_LYRICS)
                || action_runtime_has_current_song();
-    case ACTION_SHOW_OUTPUTS:
-#if defined(ENABLE_OUTPUTS)
-        if (action_runtime_current_screen_is(SCREEN_TYPE_OUTPUTS)) {
-            return false;
-        }
-#if defined(HAVE_TAGLIB_H)
-        if (action_runtime_current_screen_is(SCREEN_TYPE_TINY_TAG_EDIT)) {
-            return false;
-        }
-#endif
-        return true;
-#else
-        return false;
-#endif
     case ACTION_TOGGLE_OUTPUT:
 #if defined(ENABLE_OUTPUTS)
         return action_runtime_current_screen_is(SCREEN_TYPE_OUTPUTS);
-#else
-        return false;
-#endif
-    case ACTION_SHOW_VISUALIZER:
-#if defined(ENABLE_VISUALIZER)
-        if (action_runtime_current_screen_is(SCREEN_TYPE_VISUALIZER)) {
-            return false;
-        }
-#if defined(HAVE_TAGLIB_H)
-        if (action_runtime_current_screen_is(SCREEN_TYPE_TINY_TAG_EDIT)) {
-            return false;
-        }
-#endif
-        return true;
 #else
         return false;
 #endif
@@ -5137,68 +5114,23 @@ action_runtime_builtin_can_run(ActionRuntime *runtime,
 #else
         return false;
 #endif
-    case ACTION_SHOW_TAG_EDIT:
-#if defined(HAVE_TAGLIB_H)
-        return true;
-#else
-        return false;
-#endif
-    case ACTION_SHOW_BROWSER:
-        return !action_runtime_current_screen_is(SCREEN_TYPE_BROWSER);
-    case ACTION_CHANGE_BROWSE_MODE:
-        return action_runtime_current_screen_is(SCREEN_TYPE_BROWSER);
-    case ACTION_RESET_SEARCH_ENGINE:
-        return action_runtime_current_screen_is(SCREEN_TYPE_SEARCH_ENGINE);
-    case ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE:
-        return action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY);
-    case ACTION_EXECUTE_COMMAND:
-        return true;
-    case ACTION_APPLY_FILTER:
-        return current_screen_can_filter();
-    case ACTION_FIND:
-        return current_screen_can_find();
-    case ACTION_FIND_ITEM_FORWARD:
-    case ACTION_FIND_ITEM_BACKWARD:
-    case ACTION_NEXT_FOUND_ITEM:
-    case ACTION_PREVIOUS_FOUND_ITEM:
-        return current_screen_can_search();
-    case ACTION_TOGGLE_FIND_MODE:
-        return true;
     case ACTION_START_SEARCHING:
-        return action_runtime_current_screen_is(SCREEN_TYPE_SEARCH_ENGINE)
-               && !search_engine_screen_has_locked_constraints(
-                   app_screen_search_engine());
-    case ACTION_SAVE_PLAYLIST:
-        return ncm_mpd_client_is_connected(&global_mpd);
-    case ACTION_JUMP_TO_POSITION_IN_SONG:
-        return ncm_mpd_client_is_connected(&global_mpd)
-               && (ncm_status_state_player() != NCM_STATUS_PLAYER_STOP)
-               && (ncm_status_state_total_time() > 0)
-               && (ncm_status_state_current_song_position() >= 0);
+        return !search_engine_screen_has_locked_constraints(
+            app_screen_search_engine());
     case ACTION_SELECT_FOUND_ITEMS: {
         StringView constraint;
 
-        if (!current_screen_can_search()) {
-            return false;
-        }
         constraint = current_screen_current_search_constraint();
         return action_runtime_menu_has_items() && constraint.data
                && (constraint.len > 0);
     }
-    case ACTION_SELECT_ALBUM:
-        return action_runtime_tag_scroll_available(SONG_GETTER_ALBUM);
     case ACTION_SET_SELECTED_ITEMS_PRIORITY:
-        return ncm_mpd_client_is_connected(&global_mpd)
-               && action_runtime_current_screen_is(SCREEN_TYPE_PLAYLIST)
-               && action_runtime_has_selected_songs()
-               && (ncm_mpd_client_version(&global_mpd) >= 17);
+        return ncm_mpd_client_version(&global_mpd) >= 17;
     case ACTION_EDIT_PLAYLIST_NAME:
         if (action_runtime_current_screen_is(SCREEN_TYPE_BROWSER)) {
-            return ncm_mpd_client_is_connected(&global_mpd)
-                   && browser_screen_can_rename_playlist(app_screen_browser());
+            return browser_screen_can_rename_playlist(app_screen_browser());
         }
-        return ncm_mpd_client_is_connected(&global_mpd)
-               && action_runtime_playlist_edit_playlists_is_active()
+        return action_runtime_playlist_edit_playlists_is_active()
                && action_runtime_playlist_edit_has_playlists();
     case ACTION_EDIT_DIRECTORY_NAME:
         if (action_runtime_current_screen_is(SCREEN_TYPE_BROWSER)) {
@@ -5212,34 +5144,101 @@ action_runtime_builtin_can_run(ActionRuntime *runtime,
         }
 #endif
         return false;
-    case ACTION_DELETE_BROWSER_ITEMS:
-        if (!action_runtime_current_screen_is(SCREEN_TYPE_BROWSER)) {
-            return false;
-        }
-        if (!Config.allow_for_physical_item_deletion) {
-            return false;
-        }
-        if (!browser_screen_is_local(app_screen_browser())
-            && (Config.mpd_music_dir_len <= 0)) {
-            return false;
-        }
-        return action_runtime_menu_has_items();
     case ACTION_EDIT_LIBRARY_TAG:
-#if defined(HAVE_TAGLIB_H)
         return action_runtime_can_edit_library_tag();
-#else
-        return false;
-#endif
     case ACTION_EDIT_LIBRARY_ALBUM:
-#if defined(HAVE_TAGLIB_H)
         return action_runtime_can_edit_library_album();
+    case ACTION_SHOW_OUTPUTS:
+#if defined(ENABLE_OUTPUTS)
+        return !action_runtime_current_screen_is(SCREEN_TYPE_OUTPUTS);
 #else
         return false;
 #endif
-    case ACTION_COUNT:
+    case ACTION_SHOW_VISUALIZER:
+#if defined(ENABLE_VISUALIZER)
+        return !action_runtime_current_screen_is(SCREEN_TYPE_VISUALIZER);
+#else
+        return false;
+#endif
     default:
         return false;
     }
+}
+
+#define CHECK_REQUIREMENT(req, expr)                                         \
+    if ((requirements & (req)) && !(expr)) {                                \
+        return false;                                                       \
+    }
+
+static bool
+action_availability_requirements_met(enum ActionRequirement requirements) {
+#if !defined(HAVE_TAGLIB_H)
+    if (requirements & AR_TAGLIB) {
+        return false;
+    }
+#endif
+#if defined(HAVE_TAGLIB_H)
+    CHECK_REQUIREMENT(AR_NOT_TINY,
+                      !action_runtime_current_screen_is(
+                          SCREEN_TYPE_TINY_TAG_EDIT));
+#endif
+    CHECK_REQUIREMENT(AR_MPD, ncm_mpd_client_is_connected(&global_mpd));
+    CHECK_REQUIREMENT(AR_VOL, ncm_status_state_volume() >= 0);
+    CHECK_REQUIREMENT(AR_ACTIVE,
+                      ncm_status_state_player() != NCM_STATUS_PLAYER_STOP);
+    CHECK_REQUIREMENT(AR_TOTAL, ncm_status_state_total_time() > 0);
+    CHECK_REQUIREMENT(AR_POS,
+                      ncm_status_state_current_song_position() >= 0);
+    CHECK_REQUIREMENT(AR_SONG, action_runtime_has_current_song());
+    CHECK_REQUIREMENT(AR_SONGS, action_runtime_has_selected_songs());
+    CHECK_REQUIREMENT(AR_MENU, action_runtime_current_menu() != NULL);
+    CHECK_REQUIREMENT(AR_SELECT, action_runtime_menu_has_selectable_item());
+    CHECK_REQUIREMENT(AR_SELECTION, action_runtime_menu_has_selection());
+    CHECK_REQUIREMENT(AR_FILTER, current_screen_can_filter());
+    CHECK_REQUIREMENT(AR_FIND, current_screen_can_find());
+    CHECK_REQUIREMENT(AR_SEARCH, current_screen_can_search());
+    CHECK_REQUIREMENT(AR_PREV_COL, action_runtime_previous_column_available());
+    CHECK_REQUIREMENT(AR_NEXT_COL, action_runtime_next_column_available());
+    CHECK_REQUIREMENT(AR_DISPLAY,
+                      nc_screen_has_capability(
+                          current_screen(), NC_SCREEN_CAPABILITY_DISPLAY_MODE));
+    CHECK_REQUIREMENT(AR_LOCK, app_controller_can_show_locked_screen());
+    CHECK_REQUIREMENT(AR_INACTIVE, app_controller_can_show_inactive_screen());
+    CHECK_REQUIREMENT(AR_MUSIC_DIR, Config.mpd_music_dir_len > 0);
+    return true;
+}
+
+#undef CHECK_REQUIREMENT
+static bool
+action_availability_can_run(enum ActionType type) {
+    ActionAvailability availability;
+
+    if ((uint32)type >= ACTION_COUNT) {
+        return false;
+    }
+
+    availability = action_availability_table[type];
+    if (!action_availability_requirements_met(availability.requirements)) {
+        return false;
+    }
+    if ((availability.screen_requirement == ACTION_SCREEN_IS_TARGET)
+        && !action_runtime_current_screen_is(availability.screen_type)) {
+        return false;
+    }
+    if ((availability.screen_requirement == ACTION_SCREEN_IS_NOT_TARGET)
+        && action_runtime_current_screen_is(availability.screen_type)) {
+        return false;
+    }
+    if (availability.custom) {
+        return action_availability_custom_can_run(type, availability.argument);
+    }
+    return true;
+}
+
+static bool
+action_runtime_builtin_can_run(ActionRuntime *runtime, enum ActionType type) {
+    (void)runtime;
+    return action_availability_can_run(type);
 }
 
 static int32
