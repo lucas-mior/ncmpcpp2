@@ -1404,9 +1404,9 @@ void ncm_search_prompt_state_destroy(SearchPromptState *);
 void ncm_search_prompt_state_set_start_position(SearchPromptState *, int32);
 bool ncm_search_prompt_state_has_cached_result(SearchPromptState *,
                                                char *, int32, bool *);
-void ncm_search_prompt_state_finish_result(SearchPromptState *,
-                                           char *, int32,
-                                           bool search_ok, bool found);
+int32 ncm_search_prompt_state_finish_result(SearchPromptState *,
+                                            char *, int32,
+                                            bool search_ok, bool found);
 
 StringView ncm_string_view(char *, int32);
 void ncm_string_view_set(StringView *, char *, int32);
