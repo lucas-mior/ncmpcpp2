@@ -443,10 +443,9 @@ ncm_song_getter_display_name(enum SongGetter getter) {
 static inline int32
 ncm_song_getter_tag_name_len(enum SongGetter getter, char **out) {
     switch (getter) {
-#define NCM_SONG_GETTER_TAG_NAME_CASE(suffix, DISP, CHAR,                  \
-                                       getter_char, flags)                     \
-    case CAT(SONG_GETTER_, suffix):                                            \
-        *out = TAG_DISPLAY_NAME(DISP);                                         \
+#define NCM_SONG_GETTER_TAG_NAME_CASE(suffix, DISP, CHAR, getter_char, flags) \
+    case CAT(SONG_GETTER_, suffix):                                           \
+        *out = TAG_DISPLAY_NAME(DISP);                                        \
         return TAG_DISPLAY_NAME_LEN(DISP);
 
     NCM_SONG_GETTER_TAG_DEFS(NCM_SONG_GETTER_TAG_NAME_CASE)
