@@ -1057,11 +1057,11 @@ test_search_constraint_metadata(void) {
     ASSERT_EQUAL(metadata->name, metadata->name_len, "Any");
     ASSERT(metadata->name_len == strlen32(metadata->name));
 
-#define TEST_SEARCH_CONSTRAINT(tag, display, alias, tag_char, field, getter, \
-                               getter_char, taglib_property, taglib_name,   \
-                               settings_name, mpd, flags)                  \
+#define TEST_SEARCH_CONSTRAINT(tag_id, display, alias, tag_char, field,       \
+                               getter, getter_char, taglib_property,        \
+                               taglib_name, settings_name, mpd, flags)      \
     metadata = search_constraint_metadata(idx);                             \
-    ASSERT(metadata->tag == tag);                                            \
+    ASSERT(metadata->tag == tag_id);                                         \
     ASSERT_EQUAL(metadata->name, metadata->name_len, #alias);                \
     ASSERT(metadata->name_len == strlen32(metadata->name));                  \
     idx += 1;
@@ -1077,13 +1077,13 @@ static void
 test_song_info_tag_metadata(void) {
     int32 idx = 0;
 
-#define TEST_SONG_INFO_TAG(tag, display, alias, tag_char, field, getter,      \
+#define TEST_SONG_INFO_TAG(tag, display, alias, tag_char, field_id, getter,   \
                            getter_char, taglib_property, taglib_name,        \
                            settings_name, mpd, flags)                       \
     ASSERT_EQUAL(ncm_song_info_tags[idx].name,                               \
                  ncm_song_info_tags[idx].name_len, display);                 \
     ASSERT(ncm_song_info_tags[idx].name_len == STRLIT_LEN(display));         \
-    ASSERT(ncm_song_info_tags[idx].field == CAT(NCM_TAGS_FIELD_, field));    \
+    ASSERT(ncm_song_info_tags[idx].field == CAT(NCM_TAGS_FIELD_, field_id)); \
     ASSERT(ncm_song_info_tags[idx].get == CAT(SONG_GETTER_, getter));        \
     idx += 1;
 
