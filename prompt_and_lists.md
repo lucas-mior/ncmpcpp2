@@ -85,13 +85,6 @@ nc_window_init(NcWindow *window,
 ```
 
 # List for the first 2 problems:
-- src/mpd/ncm_mpd.c
-- src/helpers.c
-- src/screens/nc_sort_playlist.c
-- src/helpers.h
-- src/c/ncm_enums.c
-- src/screens/nc_outputs.c
-- src/screens/nc_tag_edit.c
 - src/c/ncm_error.c
 - src/screens/nc_server_info.c
 - src/config.c
