@@ -197,23 +197,23 @@ lyrics_display(LyricsScreen *screen) {
 #include "screens/nc_screen_impl_template.h"
 
 static StringView
-lyrics_search_constraint_capability(void *user) {
-    LyricsScreen *screen = user;
+lyrics_search_constraint_capability(NcScreen *base) {
+    LyricsScreen *screen = (LyricsScreen *)base;
 
     return ncm_string_view(screen->search_constraint.data,
                            screen->search_constraint.len);
 }
 
 static void
-lyrics_search_clear_capability(void *user) {
-    LyricsScreen *screen = user;
+lyrics_search_clear_capability(NcScreen *base) {
+    LyricsScreen *screen = (LyricsScreen *)base;
 
     sb_clear(&screen->search_constraint);
     return;
 }
 
 static int32
-lyrics_search_capability(void *user, enum SearchDirection direction,
+lyrics_search_capability(NcScreen *base, enum SearchDirection direction,
                          char *pattern, int32 pattern_len,
                          uint32 regex_flags, bool wrap, bool skip_current,
                          NcmError *ncm_error) {
@@ -221,14 +221,15 @@ lyrics_search_capability(void *user, enum SearchDirection direction,
     (void)regex_flags;
     (void)wrap;
     (void)skip_current;
-    return lyrics_screen_find(user, pattern, pattern_len, ncm_error);
+    return lyrics_screen_find((LyricsScreen *)base, pattern, pattern_len,
+                              ncm_error);
 }
 
 static int32
-lyrics_current_song_capability(void *user, NcmSong *song) {
+lyrics_current_song_capability(NcScreen *base, NcmSong *song) {
     NcmSong *current;
 
-    current = lyrics_screen_song(user);
+    current = lyrics_screen_song((LyricsScreen *)base);
     if ((current == NULL) || (song == NULL)) {
         return -NCM_ERROR_NOT_FOUND;
     }
@@ -340,7 +341,17 @@ void
 lyrics_screen_init(LyricsScreen *screen, int32 start_x, int32 width,
                    int32 main_start_y, int32 main_height,
                    NcColor color, NcBorder border, int32 lines_scrolled) {
-    nc_lyrics_screen_init(&screen->screen, lyrics_ops, screen, start_x,
+    NcScreenOps ops;
+
+    ops = lyrics_ops;
+    ops.capabilities = NC_SCREEN_CAPABILITY_SEARCH
+                       |NC_SCREEN_CAPABILITY_FIND
+                       |NC_SCREEN_CAPABILITY_SONGS;
+    ops.current_search_constraint = lyrics_search_constraint_capability;
+    ops.clear_search_constraint = lyrics_search_clear_capability;
+    ops.search = lyrics_search_capability;
+    ops.current_song = lyrics_current_song_capability;
+    nc_lyrics_screen_init(&screen->screen, ops, screen, start_x,
                           width, main_start_y, main_height);
     nc_window_init(&screen->window, nc_lyrics_screen_start_x(&screen->screen),
                    nc_lyrics_screen_start_y(&screen->screen),
@@ -352,19 +363,6 @@ lyrics_screen_init(LyricsScreen *screen, int32 start_x, int32 width,
     screen->display = (NcBuffer){0};
 
     screen->search_constraint = (StrBuilder){0};
-    nc_screen_set_search_capability(lyrics_screen_base(screen),
-                                    (NcScreenSearchCapability){
-        .user = screen,
-        .can_find = true,
-        .current_constraint = lyrics_search_constraint_capability,
-        .clear_constraint = lyrics_search_clear_capability,
-        .search = lyrics_search_capability,
-    });
-    nc_screen_set_song_capability(lyrics_screen_base(screen),
-                                  (NcScreenSongCapability){
-        .user = screen,
-        .current_song = lyrics_current_song_capability,
-    });
     screen->title = (StrBuilder){0};
     screen->song = (NcmSong){0};
     screen->filename = (StrBuilder){0};

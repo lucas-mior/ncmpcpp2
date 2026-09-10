@@ -100,20 +100,20 @@ playlist_edit_from_screen(NcScreen *screen) {
 }
 
 static NcMenu *
-playlist_edit_menu_capability(void *user) {
-    return playlist_edit_screen_active_menu(user);
+playlist_edit_menu_capability(NcScreen *base) {
+    return playlist_edit_screen_active_menu((PlaylistEditScreen *)base);
 }
 
 static int32
-playlist_edit_menu_height_capability(void *user) {
-    PlaylistEditScreen *screen = user;
+playlist_edit_menu_height_capability(NcScreen *base) {
+    PlaylistEditScreen *screen = (PlaylistEditScreen *)base;
 
     return screen->main_height;
 }
 
 static StringView
-playlist_edit_filter_constraint_capability(void *user) {
-    PlaylistEditScreen *screen = user;
+playlist_edit_filter_constraint_capability(NcScreen *base) {
+    PlaylistEditScreen *screen = (PlaylistEditScreen *)base;
     StrBuilder *constraint;
 
     if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
@@ -125,16 +125,17 @@ playlist_edit_filter_constraint_capability(void *user) {
 }
 
 static int32
-playlist_edit_filter_apply_capability(void *user, char *pattern,
+playlist_edit_filter_apply_capability(NcScreen *base, char *pattern,
                                       int32 pattern_len, uint32 regex_flags,
                                       NcmError *ncm_error) {
-    return playlist_edit_screen_apply_active_filter(user, pattern, pattern_len,
-                                                    regex_flags, ncm_error);
+    return playlist_edit_screen_apply_active_filter((PlaylistEditScreen *)base,
+                                                   pattern, pattern_len,
+                                                   regex_flags, ncm_error);
 }
 
 static StringView
-playlist_edit_search_constraint_capability(void *user) {
-    PlaylistEditScreen *screen = user;
+playlist_edit_search_constraint_capability(NcScreen *base) {
+    PlaylistEditScreen *screen = (PlaylistEditScreen *)base;
     StrBuilder *constraint;
 
     if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
@@ -146,8 +147,8 @@ playlist_edit_search_constraint_capability(void *user) {
 }
 
 static void
-playlist_edit_search_clear_capability(void *user) {
-    PlaylistEditScreen *screen = user;
+playlist_edit_search_clear_capability(NcScreen *base) {
+    PlaylistEditScreen *screen = (PlaylistEditScreen *)base;
     StrBuilder *constraint;
     bool *enabled;
 
@@ -164,23 +165,25 @@ playlist_edit_search_clear_capability(void *user) {
 }
 
 static int32
-playlist_edit_search_capability(void *user, enum SearchDirection direction,
+playlist_edit_search_capability(NcScreen *base, enum SearchDirection direction,
                                 char *pattern, int32 pattern_len,
                                 uint32 regex_flags, bool wrap,
                                 bool skip_current, NcmError *ncm_error) {
     bool forward;
 
     forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
-    return playlist_edit_screen_search_active(user, pattern, pattern_len,
+    return playlist_edit_screen_search_active((PlaylistEditScreen *)base,
+                                              pattern, pattern_len,
                                               regex_flags, forward, wrap,
                                               skip_current, ncm_error);
 }
 
 static int32
-playlist_edit_current_song_capability(void *user, NcmSong *song) {
+playlist_edit_current_song_capability(NcScreen *base, NcmSong *song) {
     int32 status;
 
-    status = playlist_edit_screen_current_song(user, song);
+    status = playlist_edit_screen_current_song((PlaylistEditScreen *)base,
+                                               song);
     if (status > 0) {
         return 0;
     }
@@ -191,35 +194,38 @@ playlist_edit_current_song_capability(void *user, NcmSong *song) {
 }
 
 static int32
-playlist_edit_selected_songs_capability(void *user, NcmSongArray *songs) {
-    return playlist_edit_screen_selected_songs(user, songs);
+playlist_edit_selected_songs_capability(NcScreen *base, NcmSongArray *songs) {
+    return playlist_edit_screen_selected_songs((PlaylistEditScreen *)base,
+                                               songs);
 }
 
 static bool
-playlist_edit_previous_column_available_capability(void *user) {
-    return playlist_edit_screen_can_move_to_previous_column(user);
+playlist_edit_previous_column_available_capability(NcScreen *base) {
+    return playlist_edit_screen_can_move_to_previous_column(
+        (PlaylistEditScreen *)base);
 }
 
 static bool
-playlist_edit_next_column_available_capability(void *user) {
-    return playlist_edit_screen_can_move_to_next_column(user);
+playlist_edit_next_column_available_capability(NcScreen *base) {
+    return playlist_edit_screen_can_move_to_next_column(
+        (PlaylistEditScreen *)base);
 }
 
 static int32
-playlist_edit_previous_column_capability(void *user) {
-    playlist_edit_screen_previous_column(user);
+playlist_edit_previous_column_capability(NcScreen *base) {
+    playlist_edit_screen_previous_column((PlaylistEditScreen *)base);
     return 0;
 }
 
 static int32
-playlist_edit_next_column_capability(void *user) {
-    playlist_edit_screen_next_column(user);
+playlist_edit_next_column_capability(NcScreen *base) {
+    playlist_edit_screen_next_column((PlaylistEditScreen *)base);
     return 0;
 }
 
 static NcMenu *
-playlist_edit_tag_menu_capability(void *user) {
-    PlaylistEditScreen *screen = user;
+playlist_edit_tag_menu_capability(NcScreen *base) {
+    PlaylistEditScreen *screen = (PlaylistEditScreen *)base;
 
     if (screen->active_column != PLAYLIST_EDITOR_COLUMN_CONTENT) {
         return NULL;
@@ -228,9 +234,9 @@ playlist_edit_tag_menu_capability(void *user) {
 }
 
 static int32
-playlist_edit_tag_at_capability(void *user, int32 pos, enum SongGetter getter,
-                                StrBuilder *tag) {
-    PlaylistEditScreen *screen = user;
+playlist_edit_tag_at_capability(NcScreen *base, int32 pos,
+                                enum SongGetter getter, StrBuilder *tag) {
+    PlaylistEditScreen *screen = (PlaylistEditScreen *)base;
     NcmSong *song;
 
     if ((tag == NULL)
@@ -827,6 +833,30 @@ playlist_edit_screen_init(PlaylistEditScreen *screen,
     callbacks.lockable = true;
     callbacks.mergable = true;
     callbacks.destroy = playlist_edit_destroy_callback;
+    callbacks.capabilities = NC_SCREEN_CAPABILITY_MENU
+                             |NC_SCREEN_CAPABILITY_FILTER
+                             |NC_SCREEN_CAPABILITY_SEARCH
+                             |NC_SCREEN_CAPABILITY_SONGS
+                             |NC_SCREEN_CAPABILITY_COLUMNS
+                             |NC_SCREEN_CAPABILITY_TAGS;
+    callbacks.current_menu = playlist_edit_menu_capability;
+    callbacks.current_menu_height = playlist_edit_menu_height_capability;
+    callbacks.current_filter = playlist_edit_filter_constraint_capability;
+    callbacks.apply_filter = playlist_edit_filter_apply_capability;
+    callbacks.current_search_constraint =
+        playlist_edit_search_constraint_capability;
+    callbacks.clear_search_constraint = playlist_edit_search_clear_capability;
+    callbacks.search = playlist_edit_search_capability;
+    callbacks.current_song = playlist_edit_current_song_capability;
+    callbacks.selected_songs = playlist_edit_selected_songs_capability;
+    callbacks.previous_column_available =
+        playlist_edit_previous_column_available_capability;
+    callbacks.next_column_available =
+        playlist_edit_next_column_available_capability;
+    callbacks.previous_column = playlist_edit_previous_column_capability;
+    callbacks.next_column = playlist_edit_next_column_capability;
+    callbacks.tag_menu = playlist_edit_tag_menu_capability;
+    callbacks.song_tag_at = playlist_edit_tag_at_capability;
 
     nc_playlist_entry_menu_init(&screen->playlists);
     nc_song_menu_init(&screen->content);
@@ -883,43 +913,6 @@ playlist_edit_screen_init(PlaylistEditScreen *screen,
                                         main_start_y, main_height);
     nc_screen_init_ops(&screen->screen, callbacks, screen,
                        NC_SCREEN_TYPE_PLAYLIST_EDITOR);
-    nc_screen_set_menu_capability(&screen->screen, (NcScreenMenuCapability){
-        .user = screen,
-        .current_menu = playlist_edit_menu_capability,
-        .height = playlist_edit_menu_height_capability,
-    });
-    nc_screen_set_filter_capability(&screen->screen,
-                                    (NcScreenFilterCapability){
-        .user = screen,
-        .current_constraint = playlist_edit_filter_constraint_capability,
-        .apply = playlist_edit_filter_apply_capability,
-    });
-    nc_screen_set_search_capability(&screen->screen,
-                                    (NcScreenSearchCapability){
-        .user = screen,
-        .current_constraint = playlist_edit_search_constraint_capability,
-        .clear_constraint = playlist_edit_search_clear_capability,
-        .search = playlist_edit_search_capability,
-    });
-    nc_screen_set_song_capability(&screen->screen, (NcScreenSongCapability){
-        .user = screen,
-        .current_song = playlist_edit_current_song_capability,
-        .selected_songs = playlist_edit_selected_songs_capability,
-    });
-    nc_screen_set_column_capability(&screen->screen,
-                                    (NcScreenColumnCapability){
-        .user = screen,
-        .previous_available =
-            playlist_edit_previous_column_available_capability,
-        .next_available = playlist_edit_next_column_available_capability,
-        .previous = playlist_edit_previous_column_capability,
-        .next = playlist_edit_next_column_capability,
-    });
-    nc_screen_set_tag_capability(&screen->screen, (NcScreenTagCapability){
-        .user = screen,
-        .menu = playlist_edit_tag_menu_capability,
-        .tag_at = playlist_edit_tag_at_capability,
-    });
     {
         NcMenu *playlists = nc_playlist_entry_menu_base(&screen->playlists);
         NcMenu *content = nc_song_menu_base(&screen->content);

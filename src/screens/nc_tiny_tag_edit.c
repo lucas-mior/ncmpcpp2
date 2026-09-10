@@ -11,8 +11,9 @@
 #include "ui_state.h"
 
 static NcMenu *
-tiny_editor_menu_capability(void *user) {
-    return nc_editor_buffer_menu_base(tiny_tag_edit_screen_rows(user));
+tiny_editor_menu_capability(NcScreen *base) {
+    return nc_editor_buffer_menu_base(
+        tiny_tag_edit_screen_rows((TinyTagEditScreen *)base));
 }
 
 static int32
@@ -450,6 +451,7 @@ tiny_tag_edit_screen_init(TinyTagEditScreen *screen, int32 start_x, int32 width,
                           int32 main_start_y, int32 main_height,
                           NcColor color, NcBorder border) {
     NcMenuDisplayCallbacks display_callbacks = {0};
+    NcScreenOps ops;
     NcMenu *menu;
 
     nc_editor_buffer_menu_init(&screen->rows);
@@ -479,12 +481,11 @@ tiny_tag_edit_screen_init(TinyTagEditScreen *screen, int32 start_x, int32 width,
     screen->show_duplicate_tags = false;
     screen->registered = false;
 
-    nc_screen_init_ops(&screen->screen, tiny_editor_ops, screen,
+    ops = tiny_editor_ops;
+    ops.capabilities = NC_SCREEN_CAPABILITY_MENU;
+    ops.current_menu = tiny_editor_menu_capability;
+    nc_screen_init_ops(&screen->screen, ops, screen,
                        NC_SCREEN_TYPE_TINY_TAG_EDIT);
-    nc_screen_set_menu_capability(&screen->screen, (NcScreenMenuCapability){
-        .user = screen,
-        .current_menu = tiny_editor_menu_capability,
-    });
     return;
 }
 

@@ -105,23 +105,23 @@ lastfm_display(LastfmScreen *screen) {
 #include "screens/nc_screen_impl_template.h"
 
 static StringView
-lastfm_search_constraint_capability(void *user) {
-    LastfmScreen *screen = user;
+lastfm_search_constraint_capability(NcScreen *base) {
+    LastfmScreen *screen = (LastfmScreen *)base;
 
     return ncm_string_view(screen->search_constraint.data,
                            screen->search_constraint.len);
 }
 
 static void
-lastfm_search_clear_capability(void *user) {
-    LastfmScreen *screen = user;
+lastfm_search_clear_capability(NcScreen *base) {
+    LastfmScreen *screen = (LastfmScreen *)base;
 
     sb_clear(&screen->search_constraint);
     return;
 }
 
 static int32
-lastfm_search_capability(void *user, enum SearchDirection direction,
+lastfm_search_capability(NcScreen *base, enum SearchDirection direction,
                          char *pattern, int32 pattern_len,
                          uint32 regex_flags, bool wrap, bool skip_current,
                          NcmError *ncm_error) {
@@ -129,7 +129,8 @@ lastfm_search_capability(void *user, enum SearchDirection direction,
     (void)regex_flags;
     (void)wrap;
     (void)skip_current;
-    return lastfm_screen_find(user, pattern, pattern_len, ncm_error);
+    return lastfm_screen_find((LastfmScreen *)base, pattern, pattern_len,
+                              ncm_error);
 }
 
 void
@@ -195,7 +196,14 @@ void
 lastfm_screen_init(LastfmScreen *screen, int32 start_x, int32 width,
                    int32 main_start_y, int32 main_height,
                    NcColor color, NcBorder border, int32 lines_scrolled) {
-    nc_lastfm_screen_init(&screen->screen, lastfm_ops, screen, start_x, width,
+    NcScreenOps ops;
+
+    ops = lastfm_ops;
+    ops.capabilities = NC_SCREEN_CAPABILITY_SEARCH|NC_SCREEN_CAPABILITY_FIND;
+    ops.current_search_constraint = lastfm_search_constraint_capability;
+    ops.clear_search_constraint = lastfm_search_clear_capability;
+    ops.search = lastfm_search_capability;
+    nc_lastfm_screen_init(&screen->screen, ops, screen, start_x, width,
                           main_start_y, main_height);
 
     nc_window_init(&screen->window,
@@ -210,14 +218,6 @@ lastfm_screen_init(LastfmScreen *screen, int32 start_x, int32 width,
 
     screen->buffer = (NcBuffer){0};
     screen->search_constraint = (StrBuilder){0};
-    nc_screen_set_search_capability(lastfm_screen_base(screen),
-                                    (NcScreenSearchCapability){
-        .user = screen,
-        .can_find = true,
-        .current_constraint = lastfm_search_constraint_capability,
-        .clear_constraint = lastfm_search_clear_capability,
-        .search = lastfm_search_capability,
-    });
     screen->service = (NcmLastfmService){0};
     screen->result = (NcmLastfmResult){0};
     ncm_job_queue_init(&screen->jobs);

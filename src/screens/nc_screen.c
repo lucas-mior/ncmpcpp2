@@ -162,7 +162,6 @@ nc_screen_init_ops(NcScreen *screen, NcScreenOps ops,
 
     screen->ops_storage = ops;
     screen->ops = &screen->ops_storage;
-    screen->capabilities = (NcScreenCapabilities){0};
     screen->user = user;
     screen->type = type;
     screen->has_to_be_resized = false;
@@ -171,52 +170,13 @@ nc_screen_init_ops(NcScreen *screen, NcScreenOps ops,
     return;
 }
 
-void
-nc_screen_set_menu_capability(NcScreen *screen,
-                              NcScreenMenuCapability capability) {
-    ASSERT(screen != NULL);
-    screen->capabilities.menu = capability;
-    return;
-}
-
-void
-nc_screen_set_filter_capability(NcScreen *screen,
-                                NcScreenFilterCapability capability) {
-    ASSERT(screen != NULL);
-    screen->capabilities.filter = capability;
-    return;
-}
-
-void
-nc_screen_set_search_capability(NcScreen *screen,
-                                NcScreenSearchCapability capability) {
-    ASSERT(screen != NULL);
-    screen->capabilities.search = capability;
-    return;
-}
-
-void
-nc_screen_set_song_capability(NcScreen *screen,
-                              NcScreenSongCapability capability) {
-    ASSERT(screen != NULL);
-    screen->capabilities.songs = capability;
-    return;
-}
-
-void
-nc_screen_set_column_capability(NcScreen *screen,
-                                NcScreenColumnCapability capability) {
-    ASSERT(screen != NULL);
-    screen->capabilities.columns = capability;
-    return;
-}
-
-void
-nc_screen_set_tag_capability(NcScreen *screen,
-                             NcScreenTagCapability capability) {
-    ASSERT(screen != NULL);
-    screen->capabilities.tags = capability;
-    return;
+static bool
+nc_screen_has_capability(NcScreen *screen,
+                         enum NcScreenCapabilityFlag capability) {
+    if (screen == NULL) {
+        return false;
+    }
+    return (screen->ops->capabilities & capability) != 0;
 }
 
 NcWindow *
@@ -347,41 +307,41 @@ nc_screen_request_update(NcScreen *screen) {
 
 NcMenu *
 nc_screen_current_menu(NcScreen *screen) {
-    if ((screen == NULL) || (screen->capabilities.menu.current_menu == NULL)) {
+    if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_MENU)
+        || (screen->ops->current_menu == NULL)) {
         return NULL;
     }
-    return screen->capabilities.menu.current_menu(
-        screen->capabilities.menu.user);
+    return screen->ops->current_menu(screen);
 }
 
 int32
 nc_screen_current_menu_height(NcScreen *screen) {
-    if ((screen == NULL) || (screen->capabilities.menu.height == NULL)) {
+    if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_MENU)
+        || (screen->ops->current_menu_height == NULL)) {
         return ui_state_main_height();
     }
-    return screen->capabilities.menu.height(screen->capabilities.menu.user);
+    return screen->ops->current_menu_height(screen);
 }
 
 bool
 nc_screen_can_filter(NcScreen *screen) {
-    if ((screen == NULL) || (screen->capabilities.filter.apply == NULL)) {
+    if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_FILTER)
+        || (screen->ops->apply_filter == NULL)) {
         return false;
     }
-    if (screen->capabilities.filter.can_filter) {
-        return screen->capabilities.filter.can_filter(
-            screen->capabilities.filter.user);
+    if (screen->ops->can_filter) {
+        return screen->ops->can_filter(screen);
     }
     return true;
 }
 
 StringView
 nc_screen_current_filter(NcScreen *screen) {
-    if ((screen == NULL)
-        || (screen->capabilities.filter.current_constraint == NULL)) {
+    if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_FILTER)
+        || (screen->ops->current_filter == NULL)) {
         return ncm_string_view(NULL, 0);
     }
-    return screen->capabilities.filter.current_constraint(
-        screen->capabilities.filter.user);
+    return screen->ops->current_filter(screen);
 }
 
 int32
@@ -390,19 +350,18 @@ nc_screen_apply_filter(NcScreen *screen, char *pattern, int32 pattern_len,
     if (!nc_screen_can_filter(screen)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    return screen->capabilities.filter.apply(screen->capabilities.filter.user,
-                                             pattern, pattern_len,
-                                             regex_flags, ncm_error);
+    return screen->ops->apply_filter(screen, pattern, pattern_len,
+                                     regex_flags, ncm_error);
 }
 
 bool
 nc_screen_can_search(NcScreen *screen) {
-    if ((screen == NULL) || (screen->capabilities.search.search == NULL)) {
+    if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_SEARCH)
+        || (screen->ops->search == NULL)) {
         return false;
     }
-    if (screen->capabilities.search.can_search) {
-        return screen->capabilities.search.can_search(
-            screen->capabilities.search.user);
+    if (screen->ops->can_search) {
+        return screen->ops->can_search(screen);
     }
     return true;
 }
@@ -412,27 +371,25 @@ nc_screen_can_find(NcScreen *screen) {
     if (!nc_screen_can_search(screen)) {
         return false;
     }
-    return screen->capabilities.search.can_find;
+    return nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_FIND);
 }
 
 StringView
 nc_screen_current_search_constraint(NcScreen *screen) {
-    if ((screen == NULL)
-        || (screen->capabilities.search.current_constraint == NULL)) {
+    if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_SEARCH)
+        || (screen->ops->current_search_constraint == NULL)) {
         return ncm_string_view(NULL, 0);
     }
-    return screen->capabilities.search.current_constraint(
-        screen->capabilities.search.user);
+    return screen->ops->current_search_constraint(screen);
 }
 
 void
 nc_screen_clear_search_constraint(NcScreen *screen) {
-    if ((screen == NULL)
-        || (screen->capabilities.search.clear_constraint == NULL)) {
+    if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_SEARCH)
+        || (screen->ops->clear_search_constraint == NULL)) {
         return;
     }
-    screen->capabilities.search.clear_constraint(
-        screen->capabilities.search.user);
+    screen->ops->clear_search_constraint(screen);
     return;
 }
 
@@ -443,87 +400,81 @@ nc_screen_search(NcScreen *screen, enum SearchDirection direction,
     if (!nc_screen_can_search(screen)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    return screen->capabilities.search.search(screen->capabilities.search.user,
-                                              direction, pattern, pattern_len,
-                                              regex_flags, wrap,
-                                              skip_current, ncm_error);
+    return screen->ops->search(screen, direction, pattern, pattern_len,
+                               regex_flags, wrap, skip_current, ncm_error);
 }
 
 int32
 nc_screen_current_song(NcScreen *screen, NcmSong *song) {
-    if ((screen == NULL) || (screen->capabilities.songs.current_song == NULL)) {
+    if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_SONGS)
+        || (screen->ops->current_song == NULL)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    return screen->capabilities.songs.current_song(
-        screen->capabilities.songs.user, song);
+    return screen->ops->current_song(screen, song);
 }
 
 int32
 nc_screen_selected_songs(NcScreen *screen, NcmSongArray *songs) {
-    if ((screen == NULL)
-        || (screen->capabilities.songs.selected_songs == NULL)) {
+    if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_SONGS)
+        || (screen->ops->selected_songs == NULL)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    return screen->capabilities.songs.selected_songs(
-        screen->capabilities.songs.user, songs);
+    return screen->ops->selected_songs(screen, songs);
 }
 
 bool
 nc_screen_previous_column_available(NcScreen *screen) {
-    if ((screen == NULL)
-        || (screen->capabilities.columns.previous_available == NULL)) {
+    if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_COLUMNS)
+        || (screen->ops->previous_column_available == NULL)) {
         return false;
     }
-    return screen->capabilities.columns.previous_available(
-        screen->capabilities.columns.user);
+    return screen->ops->previous_column_available(screen);
 }
 
 bool
 nc_screen_next_column_available(NcScreen *screen) {
-    if ((screen == NULL)
-        || (screen->capabilities.columns.next_available == NULL)) {
+    if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_COLUMNS)
+        || (screen->ops->next_column_available == NULL)) {
         return false;
     }
-    return screen->capabilities.columns.next_available(
-        screen->capabilities.columns.user);
+    return screen->ops->next_column_available(screen);
 }
 
 int32
 nc_screen_previous_column(NcScreen *screen) {
     if (!nc_screen_previous_column_available(screen)
-        || (screen->capabilities.columns.previous == NULL)) {
+        || (screen->ops->previous_column == NULL)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    return screen->capabilities.columns.previous(
-        screen->capabilities.columns.user);
+    return screen->ops->previous_column(screen);
 }
 
 int32
 nc_screen_next_column(NcScreen *screen) {
     if (!nc_screen_next_column_available(screen)
-        || (screen->capabilities.columns.next == NULL)) {
+        || (screen->ops->next_column == NULL)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    return screen->capabilities.columns.next(
-        screen->capabilities.columns.user);
+    return screen->ops->next_column(screen);
 }
 
 NcMenu *
 nc_screen_tag_menu(NcScreen *screen) {
-    if ((screen == NULL) || (screen->capabilities.tags.menu == NULL)) {
+    if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_TAGS)
+        || (screen->ops->tag_menu == NULL)) {
         return NULL;
     }
-    return screen->capabilities.tags.menu(screen->capabilities.tags.user);
+    return screen->ops->tag_menu(screen);
 }
 
 int32
 nc_screen_song_tag_at(NcScreen *screen, int32 pos, enum SongGetter getter,
                       StrBuilder *tag) {
-    if ((screen == NULL) || (screen->capabilities.tags.tag_at == NULL)) {
+    if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_TAGS)
+        || (screen->ops->song_tag_at == NULL)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    return screen->capabilities.tags.tag_at(screen->capabilities.tags.user, pos,
-                                            getter, tag);
+    return screen->ops->song_tag_at(screen, pos, getter, tag);
 }
 
 void

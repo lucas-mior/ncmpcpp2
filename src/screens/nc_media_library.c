@@ -15,50 +15,52 @@
 // callbacks
 
 static NcMenu *
-media_library_menu_capability(void *user) {
-    return media_library_screen_active_menu(user);
+media_library_menu_capability(NcScreen *base) {
+    return media_library_screen_active_menu((MediaLibraryScreen *)base);
 }
 
 static int32
-media_library_menu_height_capability(void *user) {
-    MediaLibraryScreen *screen = user;
+media_library_menu_height_capability(NcScreen *base) {
+    MediaLibraryScreen *screen = (MediaLibraryScreen *)base;
 
     return nc_window_height(media_library_screen_active_window(screen));
 }
 
 static StringView
-media_library_filter_constraint_capability(void *user) {
+media_library_filter_constraint_capability(NcScreen *base) {
     StrBuilder *constraint;
 
-    constraint = media_library_screen_active_filter_constraint(user);
+    constraint = media_library_screen_active_filter_constraint(
+        (MediaLibraryScreen *)base);
     return ncm_string_view(constraint->data, constraint->len);
 }
 
 static int32
-media_library_filter_apply_capability(void *user, char *pattern,
+media_library_filter_apply_capability(NcScreen *base, char *pattern,
                                       int32 pattern_len, uint32 regex_flags,
                                       NcmError *ncm_error) {
     (void)regex_flags;
-    return media_library_screen_apply_filter(user, pattern, pattern_len,
-                                             ncm_error);
+    return media_library_screen_apply_filter((MediaLibraryScreen *)base,
+                                             pattern, pattern_len, ncm_error);
 }
 
 static StringView
-media_library_search_constraint_capability(void *user) {
+media_library_search_constraint_capability(NcScreen *base) {
     StrBuilder *constraint;
 
-    constraint = media_library_screen_active_search_constraint(user);
+    constraint = media_library_screen_active_search_constraint(
+        (MediaLibraryScreen *)base);
     return ncm_string_view(constraint->data, constraint->len);
 }
 
 static void
-media_library_search_clear_capability(void *user) {
-    media_library_screen_clear_search(user);
+media_library_search_clear_capability(NcScreen *base) {
+    media_library_screen_clear_search((MediaLibraryScreen *)base);
     return;
 }
 
 static int32
-media_library_search_capability(void *user, enum SearchDirection direction,
+media_library_search_capability(NcScreen *base, enum SearchDirection direction,
                                 char *pattern, int32 pattern_len,
                                 uint32 regex_flags, bool wrap,
                                 bool skip_current, NcmError *ncm_error) {
@@ -66,15 +68,17 @@ media_library_search_capability(void *user, enum SearchDirection direction,
 
     (void)regex_flags;
     forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
-    return media_library_screen_search(user, pattern, pattern_len, forward,
-                                       wrap, skip_current, ncm_error);
+    return media_library_screen_search((MediaLibraryScreen *)base, pattern,
+                                       pattern_len, forward, wrap,
+                                       skip_current, ncm_error);
 }
 
 static int32
-media_library_current_song_capability(void *user, NcmSong *song) {
+media_library_current_song_capability(NcScreen *base, NcmSong *song) {
     int32 status;
 
-    status = media_library_screen_current_song(user, song);
+    status = media_library_screen_current_song((MediaLibraryScreen *)base,
+                                               song);
     if (status > 0) {
         return 0;
     }
@@ -85,35 +89,38 @@ media_library_current_song_capability(void *user, NcmSong *song) {
 }
 
 static int32
-media_library_selected_songs_capability(void *user, NcmSongArray *songs) {
-    return media_library_screen_selected_songs(user, songs);
+media_library_selected_songs_capability(NcScreen *base, NcmSongArray *songs) {
+    return media_library_screen_selected_songs((MediaLibraryScreen *)base,
+                                               songs);
 }
 
 static bool
-media_library_previous_column_available_capability(void *user) {
-    return media_library_screen_can_move_to_previous_column(user);
+media_library_previous_column_available_capability(NcScreen *base) {
+    return media_library_screen_can_move_to_previous_column(
+        (MediaLibraryScreen *)base);
 }
 
 static bool
-media_library_next_column_available_capability(void *user) {
-    return media_library_screen_can_move_to_next_column(user);
+media_library_next_column_available_capability(NcScreen *base) {
+    return media_library_screen_can_move_to_next_column(
+        (MediaLibraryScreen *)base);
 }
 
 static int32
-media_library_previous_column_capability(void *user) {
-    media_library_screen_previous_column(user);
+media_library_previous_column_capability(NcScreen *base) {
+    media_library_screen_previous_column((MediaLibraryScreen *)base);
     return 0;
 }
 
 static int32
-media_library_next_column_capability(void *user) {
-    media_library_screen_next_column(user);
+media_library_next_column_capability(NcScreen *base) {
+    media_library_screen_next_column((MediaLibraryScreen *)base);
     return 0;
 }
 
 static NcMenu *
-media_library_tag_menu_capability(void *user) {
-    MediaLibraryScreen *screen = user;
+media_library_tag_menu_capability(NcScreen *base) {
+    MediaLibraryScreen *screen = (MediaLibraryScreen *)base;
 
     if (media_library_screen_active_column(screen)
         != MEDIA_LIBRARY_COLUMN_SONGS) {
@@ -123,9 +130,9 @@ media_library_tag_menu_capability(void *user) {
 }
 
 static int32
-media_library_tag_at_capability(void *user, int32 pos, enum SongGetter getter,
-                                StrBuilder *tag) {
-    MediaLibraryScreen *screen = user;
+media_library_tag_at_capability(NcScreen *base, int32 pos,
+                                enum SongGetter getter, StrBuilder *tag) {
+    MediaLibraryScreen *screen = (MediaLibraryScreen *)base;
     NcmSong *song;
 
     if ((tag == NULL)
@@ -1003,6 +1010,7 @@ media_library_screen_init(MediaLibraryScreen *screen, MediaLibraryHooks hooks,
                           int32 main_start_y, int32 main_height,
                           NcColor color, NcBorder border) {
     NcMenuDisplayCallbacks callbacks;
+    NcScreenOps ops;
     NcMenu *tag_menu;
     NcMenu *album_menu;
     NcMenu *song_menu;
@@ -1090,45 +1098,31 @@ media_library_screen_init(MediaLibraryScreen *screen, MediaLibraryHooks hooks,
     nc_menu_set_centered_cursor(album_menu, Config.centered_cursor);
     nc_menu_set_centered_cursor(song_menu, Config.centered_cursor);
 
-    nc_screen_init_ops(&screen->screen, library_callbacks, screen,
+    ops = library_callbacks;
+    ops.capabilities = NC_SCREEN_CAPABILITY_MENU
+                       |NC_SCREEN_CAPABILITY_FILTER
+                       |NC_SCREEN_CAPABILITY_SEARCH
+                       |NC_SCREEN_CAPABILITY_SONGS
+                       |NC_SCREEN_CAPABILITY_COLUMNS
+                       |NC_SCREEN_CAPABILITY_TAGS;
+    ops.current_menu = media_library_menu_capability;
+    ops.current_menu_height = media_library_menu_height_capability;
+    ops.current_filter = media_library_filter_constraint_capability;
+    ops.apply_filter = media_library_filter_apply_capability;
+    ops.current_search_constraint = media_library_search_constraint_capability;
+    ops.clear_search_constraint = media_library_search_clear_capability;
+    ops.search = media_library_search_capability;
+    ops.current_song = media_library_current_song_capability;
+    ops.selected_songs = media_library_selected_songs_capability;
+    ops.previous_column_available =
+        media_library_previous_column_available_capability;
+    ops.next_column_available = media_library_next_column_available_capability;
+    ops.previous_column = media_library_previous_column_capability;
+    ops.next_column = media_library_next_column_capability;
+    ops.tag_menu = media_library_tag_menu_capability;
+    ops.song_tag_at = media_library_tag_at_capability;
+    nc_screen_init_ops(&screen->screen, ops, screen,
                        NC_SCREEN_TYPE_MEDIA_LIBRARY);
-    nc_screen_set_menu_capability(&screen->screen, (NcScreenMenuCapability){
-        .user = screen,
-        .current_menu = media_library_menu_capability,
-        .height = media_library_menu_height_capability,
-    });
-    nc_screen_set_filter_capability(&screen->screen,
-                                    (NcScreenFilterCapability){
-        .user = screen,
-        .current_constraint = media_library_filter_constraint_capability,
-        .apply = media_library_filter_apply_capability,
-    });
-    nc_screen_set_search_capability(&screen->screen,
-                                    (NcScreenSearchCapability){
-        .user = screen,
-        .current_constraint = media_library_search_constraint_capability,
-        .clear_constraint = media_library_search_clear_capability,
-        .search = media_library_search_capability,
-    });
-    nc_screen_set_song_capability(&screen->screen, (NcScreenSongCapability){
-        .user = screen,
-        .current_song = media_library_current_song_capability,
-        .selected_songs = media_library_selected_songs_capability,
-    });
-    nc_screen_set_column_capability(&screen->screen,
-                                    (NcScreenColumnCapability){
-        .user = screen,
-        .previous_available =
-            media_library_previous_column_available_capability,
-        .next_available = media_library_next_column_available_capability,
-        .previous = media_library_previous_column_capability,
-        .next = media_library_next_column_capability,
-    });
-    nc_screen_set_tag_capability(&screen->screen, (NcScreenTagCapability){
-        .user = screen,
-        .menu = media_library_tag_menu_capability,
-        .tag_at = media_library_tag_at_capability,
-    });
     library_update_menu_highlights(screen);
     library_layout(screen);
     return;

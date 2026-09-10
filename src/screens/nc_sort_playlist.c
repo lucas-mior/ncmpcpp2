@@ -12,8 +12,9 @@
 #include "ui_state.h"
 
 static NcMenu *
-sort_dialog_menu_capability(void *user) {
-    return nc_editor_sort_menu_base(sort_playlist_dialog_menu(user));
+sort_dialog_menu_capability(NcScreen *base) {
+    return nc_editor_sort_menu_base(
+        sort_playlist_dialog_menu((SortPlaylistDialog *)base));
 }
 
 static void
@@ -339,6 +340,7 @@ sort_playlist_dialog_init(SortPlaylistDialog *dialog,
                           int32 width, int32 height,
                           NcColor color, NcBorder border) {
     NcMenuDisplayCallbacks display_callbacks = {0};
+    NcScreenOps ops;
     NcMenu *menu;
 
     nc_editor_sort_menu_init(&dialog->rows);
@@ -362,12 +364,11 @@ sort_playlist_dialog_init(SortPlaylistDialog *dialog,
     dialog->start_position = 0;
     dialog->ignore_leading_the = false;
     dialog->ready = false;
-    nc_screen_init_ops(&dialog->screen, sort_dialog_ops, dialog,
+    ops = sort_dialog_ops;
+    ops.capabilities = NC_SCREEN_CAPABILITY_MENU;
+    ops.current_menu = sort_dialog_menu_capability;
+    nc_screen_init_ops(&dialog->screen, ops, dialog,
                        NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG);
-    nc_screen_set_menu_capability(&dialog->screen, (NcScreenMenuCapability){
-        .user = dialog,
-        .current_menu = sort_dialog_menu_capability,
-    });
     sort_dialog_populate_defaults(dialog);
     return;
 }
