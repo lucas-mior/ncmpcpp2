@@ -346,8 +346,11 @@ ncm_tag_type_settings_name_len(enum NcmTagType tag, char *out,
 #define TAG_SETTINGS_NAME_CASE(suffix, DISP, CHAR,                         \
                                    getter_char, flags)                         \
     case CAT(TAG_, suffix):                                                    \
-        return ascii_normalize_lower_snake(out, cap,                           \
-                                           TAG_DISPLAY_NAME(DISP),             \
+        if (TAG_DISPLAY_NAME_LEN(DISP) >= cap) {                               \
+            out[0] = '\0';                                                     \
+            return -1;                                                         \
+        }                                                                      \
+        return ascii_normalize_lower_snake(out, TAG_DISPLAY_NAME(DISP),        \
                                            TAG_DISPLAY_NAME_LEN(DISP));
 
     TAG_PRIMARY_DEFS(TAG_SETTINGS_NAME_CASE)
@@ -388,8 +391,10 @@ ncm_tag_type_parse_settings_name(char *value, int32 value_len,
 
     ASSERT(result != NULL);
 
-    normalized_len = ascii_normalize_upper_snake(normalized, LENGTH(normalized),
-                                                 value, value_len);
+    if ((value_len < 0) || (value_len >= LENGTH(normalized))) {
+        return false;
+    }
+    normalized_len = ascii_normalize_upper_snake(normalized, value, value_len);
     if (normalized_len <= 0) {
         return false;
     }
@@ -522,12 +527,12 @@ ncm_tag_type_taglib_property_len(enum NcmTagType tag, char *out, int32 cap) {
     switch ((int32)tag) {
 #define TAGLIB_PROPERTY_CASE(suffix, DISP, CHAR, getter_char, flags) \
     case CAT(TAG_, suffix):                                          \
-        result = ascii_normalize_upper_compact(                      \
-            out, cap, TAG_DISPLAY_NAME(DISP),                        \
-            TAG_DISPLAY_NAME_LEN(DISP));                             \
-        if (result < 0) {                                            \
-            return result;                                           \
+        if (TAG_DISPLAY_NAME_LEN(DISP) >= cap) {                     \
+            out[0] = '\0';                                           \
+            return -1;                                               \
         }                                                            \
+        result = ascii_normalize_upper_compact(                      \
+            out, TAG_DISPLAY_NAME(DISP), TAG_DISPLAY_NAME_LEN(DISP));\
         if (((flags) & TAG_FLAG_TAGLIB_NUMBER) == 0) {               \
             return result;                                           \
         }                                                            \
@@ -559,9 +564,12 @@ ncm_tag_type_taglib_name_len(enum NcmTagType tag, char *out, int32 cap) {
 #define TAGLIB_NAME_CASE(suffix, DISP, CHAR,                               \
                               getter_char, flags)                          \
     case CAT(TAG_, suffix):                                                \
+        if (TAG_DISPLAY_NAME_LEN(DISP) >= cap) {                           \
+            out[0] = '\0';                                                 \
+            return -1;                                                     \
+        }                                                                  \
         return ascii_normalize_camel_compact(                              \
-            out, cap, TAG_DISPLAY_NAME(DISP),                              \
-            TAG_DISPLAY_NAME_LEN(DISP));
+            out, TAG_DISPLAY_NAME(DISP), TAG_DISPLAY_NAME_LEN(DISP));
 
     TAGLIB_TAG_DEFS(TAGLIB_NAME_CASE)
 

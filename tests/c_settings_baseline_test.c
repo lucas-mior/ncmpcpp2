@@ -939,26 +939,22 @@ settings_test_tag_name_normalization(char *name, int32 name_len,
     char buffer[64] = {0};
     int32 len;
 
-    len = ascii_normalize_lower_snake(buffer, SIZEOF(buffer), name, name_len);
+    len = ascii_normalize_lower_snake(buffer, name, name_len);
     ASSERT_EQUAL(buffer, len, lower_snake);
 
-    len = ascii_normalize_upper_snake(buffer, SIZEOF(buffer), name, name_len);
+    len = ascii_normalize_upper_snake(buffer, name, name_len);
     ASSERT_EQUAL(buffer, len, upper_snake);
 
-    len = ascii_normalize_upper_compact(buffer, SIZEOF(buffer), name,
-                                        name_len);
+    len = ascii_normalize_upper_compact(buffer, name, name_len);
     ASSERT_EQUAL(buffer, len, upper_compact);
 
-    len = ascii_normalize_camel_compact(buffer, SIZEOF(buffer), name,
-                                        name_len);
+    len = ascii_normalize_camel_compact(buffer, name, name_len);
     ASSERT_EQUAL(buffer, len, camel_compact);
     return;
 }
 
 static void
 test_tag_name_normalization(void) {
-    char buffer[4] = {0};
-
     settings_test_tag_name_normalization(STRLIT("Artist"),
                                          "artist", "ARTIST",
                                          "ARTIST", "Artist");
@@ -973,9 +969,6 @@ test_tag_name_normalization(void) {
         "musicbrainz_release_group_id", "MUSICBRAINZ_RELEASE_GROUP_ID",
         "MUSICBRAINZRELEASEGROUPID", "MusicbrainzReleaseGroupId");
 
-    ASSERT(ascii_normalize_lower_snake(buffer, SIZEOF(buffer),
-                                       STRLIT("Album")) < 0);
-    ASSERT_EQUAL(buffer, STRLIT_LEN(""), "");
     return;
 }
 

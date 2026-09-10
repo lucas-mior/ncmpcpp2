@@ -25,20 +25,14 @@ ascii_normalization_upper(char c) {
 }
 
 int32
-ascii_normalize_lower_snake(char *out, int32 cap,
-                            char *string, int32 string_len) {
+ascii_normalize_lower_snake(char *out, char *string, int32 string_len) {
     int32 written = 0;
 
     ASSERT(out != NULL);
-    ASSERT(cap > 0);
     ASSERT(string_len >= 0);
     ASSERT((string != NULL) || (string_len == 0));
 
     for (int32 i = 0; i < string_len; i += 1) {
-        if (written + 1 >= cap) {
-            out[0] = '\0';
-            return -1;
-        }
         if (string[i] == ' ') {
             out[written] = '_';
         } else {
@@ -51,20 +45,14 @@ ascii_normalize_lower_snake(char *out, int32 cap,
 }
 
 int32
-ascii_normalize_upper_snake(char *out, int32 cap,
-                            char *string, int32 string_len) {
+ascii_normalize_upper_snake(char *out, char *string, int32 string_len) {
     int32 written = 0;
 
     ASSERT(out != NULL);
-    ASSERT(cap > 0);
     ASSERT(string_len >= 0);
     ASSERT((string != NULL) || (string_len == 0));
 
     for (int32 i = 0; i < string_len; i += 1) {
-        if (written + 1 >= cap) {
-            out[0] = '\0';
-            return -1;
-        }
         if (string[i] == ' ') {
             out[written] = '_';
         } else {
@@ -77,22 +65,16 @@ ascii_normalize_upper_snake(char *out, int32 cap,
 }
 
 int32
-ascii_normalize_upper_compact(char *out, int32 cap,
-                              char *string, int32 string_len) {
+ascii_normalize_upper_compact(char *out, char *string, int32 string_len) {
     int32 written = 0;
 
     ASSERT(out != NULL);
-    ASSERT(cap > 0);
     ASSERT(string_len >= 0);
     ASSERT((string != NULL) || (string_len == 0));
 
     for (int32 i = 0; i < string_len; i += 1) {
         if (string[i] == ' ') {
             continue;
-        }
-        if (written + 1 >= cap) {
-            out[0] = '\0';
-            return -1;
         }
         out[written] = ascii_normalization_upper(string[i]);
         written += 1;
@@ -102,13 +84,11 @@ ascii_normalize_upper_compact(char *out, int32 cap,
 }
 
 int32
-ascii_normalize_camel_compact(char *out, int32 cap,
-                              char *string, int32 string_len) {
+ascii_normalize_camel_compact(char *out, char *string, int32 string_len) {
     bool capitalize = true;
     int32 written = 0;
 
     ASSERT(out != NULL);
-    ASSERT(cap > 0);
     ASSERT(string_len >= 0);
     ASSERT((string != NULL) || (string_len == 0));
 
@@ -116,10 +96,6 @@ ascii_normalize_camel_compact(char *out, int32 cap,
         if (string[i] == ' ') {
             capitalize = true;
             continue;
-        }
-        if (written + 1 >= cap) {
-            out[0] = '\0';
-            return -1;
         }
         if (capitalize) {
             out[written] = ascii_normalization_upper(string[i]);
