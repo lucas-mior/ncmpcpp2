@@ -184,6 +184,11 @@ ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
     return 0;
 }
 
+#define NCM_MPD_ITEM_TAG_ENTRY(tag, name, alias, tag_char, field, getter,   \
+                               getter_char, taglib_property, taglib_name,   \
+                               settings_name, mpd, flags)                  \
+    {CAT(MPD_TAG_, mpd), tag},
+
 int32
 ncm_mpd_item_song_from_mpd_song_copy(NcmSong *dest, void *mpd_song) {
     NcmSong replacement = {0};
@@ -192,21 +197,10 @@ ncm_mpd_item_song_from_mpd_song_copy(NcmSong *dest, void *mpd_song) {
         enum mpd_tag_type mpd;
         enum NcmTagType ncm;
     } tags[] = {
-        {MPD_TAG_ARTIST, NCM_TAG_ARTIST},
-        {MPD_TAG_ALBUM, NCM_TAG_ALBUM},
-        {MPD_TAG_ALBUM_ARTIST, NCM_TAG_ALBUM_ARTIST},
-        {MPD_TAG_TITLE, NCM_TAG_TITLE},
-        {MPD_TAG_TRACK, NCM_TAG_TRACK},
-        {MPD_TAG_NAME, NCM_TAG_NAME},
-        {MPD_TAG_GENRE, NCM_TAG_GENRE},
-        {MPD_TAG_DATE, NCM_TAG_DATE},
-        {MPD_TAG_COMPOSER, NCM_TAG_COMPOSER},
-        {MPD_TAG_PERFORMER, NCM_TAG_PERFORMER},
-        {MPD_TAG_COMMENT, NCM_TAG_COMMENT},
-        {MPD_TAG_DISC, NCM_TAG_DISC},
+        NCM_MPD_TAG_DEFS(NCM_MPD_ITEM_TAG_ENTRY)
     };
     char *uri;
-    int32 tags_len = (int32)(SIZEOF(tags)/SIZEOF(tags[0]));
+    int32 tags_len = NCM_MPD_TAG_COUNT;
     int32 status;
 
     if (dest == NULL) {
@@ -250,6 +244,8 @@ ncm_mpd_item_song_from_mpd_song_copy(NcmSong *dest, void *mpd_song) {
     *dest = replacement;
     return 0;
 }
+
+#undef NCM_MPD_ITEM_TAG_ENTRY
 
 int32
 ncm_mpd_item_playlist_from_mpd_playlist(NcmPlaylist *dest, void *mpd_playlist) {

@@ -313,6 +313,8 @@ enum {
     NCM_SEARCH_CONSTRAINT_COUNT = NCM_SEARCH_TAG_COUNT + 1,
     NCM_TAGLIB_TAG_COUNT = 0
         NCM_TAGLIB_TAG_DEFS(NCM_TAG_COUNT_RECORD),
+    NCM_MPD_TAG_COUNT = 0
+        NCM_MPD_TAG_DEFS(NCM_TAG_COUNT_RECORD),
     NCM_TAG_SORT_COUNT = 0
         NCM_TAG_SORT_DEFS(NCM_TAG_COUNT_RECORD),
 };
@@ -444,6 +446,8 @@ _Static_assert((int32)NCM_SONG_INFO_TAG_COUNT
 _Static_assert((int32)NCM_TAGLIB_TAG_COUNT
                == (int32)NCM_TAGS_FIELD_COUNT,
                "taglib tag count changed");
+_Static_assert(NCM_MPD_TAG_COUNT == 12,
+               "mpd tag count changed");
 
 #define ENUM_NAME SongGetter
 #define ENUM_PREFIX_ SONG_GETTER_

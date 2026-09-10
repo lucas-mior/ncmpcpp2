@@ -109,63 +109,23 @@ ncm_mpd_connection_set_error(MpdConnection *connection,
     return;
 }
 
+#define NCM_MPD_CONNECTION_TAG_TYPE_CASE(                                  \
+    tag, name, alias, tag_char, field, getter, getter_char,                \
+    taglib_property, taglib_name, settings_name, mpd, flags                \
+)                                                                          \
+    case tag:                                                              \
+        return CAT(MPD_TAG_, mpd);
+
 static enum mpd_tag_type
 ncm_mpd_connection_tag_type(enum NcmTagType tag) {
     switch (tag) {
-    case NCM_TAG_ARTIST:
-        return MPD_TAG_ARTIST;
-    case NCM_TAG_ALBUM:
-        return MPD_TAG_ALBUM;
-    case NCM_TAG_ALBUM_ARTIST:
-        return MPD_TAG_ALBUM_ARTIST;
-    case NCM_TAG_TITLE:
-        return MPD_TAG_TITLE;
-    case NCM_TAG_TRACK:
-        return MPD_TAG_TRACK;
-    case NCM_TAG_NAME:
-        return MPD_TAG_NAME;
-    case NCM_TAG_GENRE:
-        return MPD_TAG_GENRE;
-    case NCM_TAG_DATE:
-        return MPD_TAG_DATE;
-    case NCM_TAG_COMPOSER:
-        return MPD_TAG_COMPOSER;
-    case NCM_TAG_PERFORMER:
-        return MPD_TAG_PERFORMER;
-    case NCM_TAG_COMMENT:
-        return MPD_TAG_COMMENT;
-    case NCM_TAG_DISC:
-        return MPD_TAG_DISC;
-    case NCM_TAG_UNKNOWN:
-    case NCM_TAG_MUSICBRAINZ_ARTISTID:
-    case NCM_TAG_MUSICBRAINZ_ALBUMID:
-    case NCM_TAG_MUSICBRAINZ_ALBUMARTISTID:
-    case NCM_TAG_MUSICBRAINZ_TRACKID:
-    case NCM_TAG_MUSICBRAINZ_RELEASETRACKID:
-    case NCM_TAG_ORIGINAL_DATE:
-    case NCM_TAG_ARTIST_SORT:
-    case NCM_TAG_ALBUM_ARTIST_SORT:
-    case NCM_TAG_ALBUM_SORT:
-    case NCM_TAG_LABEL:
-    case NCM_TAG_MUSICBRAINZ_WORKID:
-    case NCM_TAG_GROUPING:
-    case NCM_TAG_WORK:
-    case NCM_TAG_CONDUCTOR:
-    case NCM_TAG_COMPOSER_SORT:
-    case NCM_TAG_ENSEMBLE:
-    case NCM_TAG_MOVEMENT:
-    case NCM_TAG_MOVEMENTNUMBER:
-    case NCM_TAG_LOCATION:
-    case NCM_TAG_MOOD:
-    case NCM_TAG_TITLE_SORT:
-    case NCM_TAG_MUSICBRAINZ_RELEASEGROUPID:
-    case NCM_TAG_SHOWMOVEMENT:
-    case NCM_TAG_DISCSUBTITLE:
-    case NCM_TAG_COUNT:
+    NCM_MPD_TAG_DEFS(NCM_MPD_CONNECTION_TAG_TYPE_CASE)
     default:
         return MPD_TAG_UNKNOWN;
     }
 }
+
+#undef NCM_MPD_CONNECTION_TAG_TYPE_CASE
 
 static int32
 ncm_mpd_connection_require_connected(MpdConnection *connection) {
