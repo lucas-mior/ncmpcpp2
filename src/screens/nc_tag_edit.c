@@ -778,7 +778,7 @@ tag_edit_build_parser_legend(TagEditScreen *screen) {
 
     sb_clear(&screen->parser_legend);
 
-    TAG_EDIT_PARSER_DEFS(TAG_EDIT_APPEND_PARSER_FIELD)
+    TAG_DEFAULT_ORDER_DEFS(TAG_EDIT_APPEND_PARSER_FIELD)
     SB_APPEND(&screen->parser_legend, "\nFiles:\n");
 
     tags = nc_tag_row_menu_base(&screen->tags);

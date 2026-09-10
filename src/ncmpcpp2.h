@@ -148,7 +148,7 @@
     TAG_FIELD_MPD_NUM_DECLS(XX)                                                \
     TAG_SEARCH_MPD_DECLS(XX)
 
-#define TAG_SORT_DEFS(XX)                                                      \
+#define TAG_DEFAULT_ORDER_DEFS(XX)                                             \
     TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                                     \
     TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                         \
     TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                       \
@@ -159,19 +159,6 @@
     TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                                 \
     TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                               \
     TAG_FIELD_MPD(XX, TITLE, Title, 't')                                       \
-    TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')
-
-#define TAG_EDIT_PARSER_DEFS(XX)                                               \
-    TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                                     \
-    TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                         \
-    TAG_FIELD_MPD(XX, TITLE, Title, 't')                                       \
-    TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                       \
-    TAG_FIELD_MPD(XX, DATE, Date, 'y')                                         \
-    TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                              \
-    TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                       \
-    TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                                 \
-    TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                               \
-    TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                                \
     TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')
 
 #define TAG_COUNT_RECORD(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS) + 1
@@ -193,10 +180,8 @@ enum {
         TAG_MPD_DEFS(TAG_COUNT_RECORD),
     NCM_PRIMARY_TAG_COUNT = 0
         TAG_PRIMARY_DEFS(TAG_COUNT_RECORD),
-    TAG_SORT_COUNT = 0
-        TAG_SORT_DEFS(TAG_COUNT_RECORD),
-    TAG_EDIT_PARSER_COUNT = 0
-        TAG_EDIT_PARSER_DEFS(TAG_COUNT_RECORD),
+    TAG_DEFAULT_ORDER_COUNT = 0
+        TAG_DEFAULT_ORDER_DEFS(TAG_COUNT_RECORD),
 };
 
 #undef TAG_COUNT_RECORD
