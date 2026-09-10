@@ -75,25 +75,21 @@
        NULL, NONE, NCM_TAG_META_FLAGS_NONE)
 
 #define NCM_TAG_RECORD_ARTIST(XX)                                            \
-    XX(NCM_TAG_ARTIST, Artist, 'a', ARTIST, ARTIST, 'a',                    \
-       "ARTIST", "Artist", "artist", ARTIST,                              \
-       NCM_TAG_META_FLAGS_FIELD_PRIMARY|NCM_TAG_META_FLAG_MPD)
+    NCM_TAG_RECORD_FIELD_PRIMARY_MPD(XX, ARTIST, Artist, 'a',               \
+                                     "ARTIST", "Artist", "artist")
 
 #define NCM_TAG_RECORD_ALBUM(XX)                                             \
-    XX(NCM_TAG_ALBUM, Album, 'b', ALBUM, ALBUM, 'b',                        \
-       "ALBUM", "Album", NULL, ALBUM,                                      \
-       NCM_TAG_META_FLAGS_FIELD_SEARCH|NCM_TAG_META_FLAG_MPD)
+    NCM_TAG_RECORD_FIELD_SEARCH_MPD(XX, ALBUM, Album, 'b',                  \
+                                    "ALBUM", "Album")
 
 #define NCM_TAG_RECORD_ALBUM_ARTIST(XX)                                      \
-    XX(NCM_TAG_ALBUM_ARTIST, Album Artist, 'A', ALBUM_ARTIST,               \
-       ALBUM_ARTIST, 'A', "ALBUMARTIST", "AlbumArtist",                    \
-       "album_artist", ALBUM_ARTIST,                                        \
-       NCM_TAG_META_FLAGS_FIELD_PRIMARY|NCM_TAG_META_FLAG_MPD)
+    NCM_TAG_RECORD_FIELD_PRIMARY_MPD(XX, ALBUM_ARTIST, Album Artist, 'A',   \
+                                     "ALBUMARTIST", "AlbumArtist",          \
+                                     "album_artist")
 
 #define NCM_TAG_RECORD_TITLE(XX)                                             \
-    XX(NCM_TAG_TITLE, Title, 't', TITLE, TITLE, 't',                         \
-       "TITLE", "Title", NULL, TITLE,                                      \
-       NCM_TAG_META_FLAGS_FIELD_SEARCH|NCM_TAG_META_FLAG_MPD)
+    NCM_TAG_RECORD_FIELD_SEARCH_MPD(XX, TITLE, Title, 't',                  \
+                                    "TITLE", "Title")
 
 #define NCM_TAG_RECORD_TRACK(XX)                                             \
     XX(NCM_TAG_TRACK, Track, 'n', TRACK, TRACK, 'N',                         \
@@ -105,29 +101,25 @@
        NULL, NAME, NCM_TAG_META_FLAG_SEARCH|NCM_TAG_META_FLAG_MPD)
 
 #define NCM_TAG_RECORD_GENRE(XX)                                             \
-    XX(NCM_TAG_GENRE, Genre, 'g', GENRE, GENRE, 'g',                         \
-       "GENRE", "Genre", "genre", GENRE,                                  \
-       NCM_TAG_META_FLAGS_FIELD_PRIMARY|NCM_TAG_META_FLAG_MPD)
+    NCM_TAG_RECORD_FIELD_PRIMARY_MPD(XX, GENRE, Genre, 'g',                 \
+                                     "GENRE", "Genre", "genre")
 
 #define NCM_TAG_RECORD_DATE(XX)                                              \
-    XX(NCM_TAG_DATE, Date, 'y', DATE, DATE, 'y',                             \
-       "DATE", "Date", "date", DATE,                                      \
-       NCM_TAG_META_FLAGS_FIELD_PRIMARY|NCM_TAG_META_FLAG_MPD)
+    NCM_TAG_RECORD_FIELD_PRIMARY_MPD(XX, DATE, Date, 'y',                   \
+                                     "DATE", "Date", "date")
 
 #define NCM_TAG_RECORD_COMPOSER(XX)                                          \
-    XX(NCM_TAG_COMPOSER, Composer, 'c', COMPOSER, COMPOSER, 'c',            \
-       "COMPOSER", "Composer", "composer", COMPOSER,                     \
-       NCM_TAG_META_FLAGS_FIELD_PRIMARY|NCM_TAG_META_FLAG_MPD)
+    NCM_TAG_RECORD_FIELD_PRIMARY_MPD(XX, COMPOSER, Composer, 'c',           \
+                                     "COMPOSER", "Composer", "composer")
 
 #define NCM_TAG_RECORD_PERFORMER(XX)                                         \
-    XX(NCM_TAG_PERFORMER, Performer, 'p', PERFORMER, PERFORMER, 'p',        \
-       "PERFORMER", "Performer", "performer", PERFORMER,                 \
-       NCM_TAG_META_FLAGS_FIELD_PRIMARY|NCM_TAG_META_FLAG_MPD)
+    NCM_TAG_RECORD_FIELD_PRIMARY_MPD(XX, PERFORMER, Performer, 'p',         \
+                                     "PERFORMER", "Performer",             \
+                                     "performer")
 
 #define NCM_TAG_RECORD_COMMENT(XX)                                           \
-    XX(NCM_TAG_COMMENT, Comment, 'C', COMMENT, COMMENT, 'C',                \
-       "COMMENT", "Comment", NULL, COMMENT,                                \
-       NCM_TAG_META_FLAGS_FIELD_SEARCH|NCM_TAG_META_FLAG_MPD)
+    NCM_TAG_RECORD_FIELD_SEARCH_MPD(XX, COMMENT, Comment, 'C',              \
+                                    "COMMENT", "Comment")
 
 #define NCM_TAG_RECORD_DISC(XX)                                              \
     XX(NCM_TAG_DISC, Disc, 'd', DISC, DISC, 'd',                             \
