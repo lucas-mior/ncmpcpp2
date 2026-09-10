@@ -609,9 +609,8 @@ ncm_tags_field_taglib_property_len(enum TagsField field, char *out,
 static inline char
 ncm_tags_field_format_char(enum TagsField field) {
     switch (field) {
-#define TAGS_FIELD_FORMAT_CHAR_CASE(suffix, DISP, CHAR,                    \
-                                         getter_char, flags)                   \
-    case CAT(TAGS_FIELD_, suffix):                                             \
+#define TAGS_FIELD_FORMAT_CHAR_CASE(suffix, DISP, CHAR, getter_char, flags) \
+    case CAT(TAGS_FIELD_, suffix):                                          \
         return CHAR;
 
     TAG_FIELD_DEFS(TAGS_FIELD_FORMAT_CHAR_CASE)
