@@ -4974,7 +4974,7 @@ static const ActionAvailability action_availability_table[ACTION_COUNT] = {
 
 static bool
 action_availability_custom_can_run(enum ActionType type, int32 argument) {
-    switch (type) {
+    switch ((int32)type) {
     case ACTION_MOUSE_EVENT:
         return Config.mouse_support;
     case ACTION_SCROLL_UP_ARTIST:
@@ -5174,9 +5174,11 @@ action_availability_custom_can_run(enum ActionType type, int32 argument) {
 }
 
 #define CHECK_REQUIREMENT(req, expr)                                         \
-    if ((requirements & (req)) && !(expr)) {                                \
-        return false;                                                       \
-    }
+    do {                                                                    \
+        if ((requirements & (req)) && !(expr)) {                            \
+            return false;                                                   \
+        }                                                                   \
+    } while (0)
 
 static bool
 action_availability_requirements_met(enum ActionRequirement requirements) {
