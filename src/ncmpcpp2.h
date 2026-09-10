@@ -162,8 +162,7 @@ ncm_tag_name_to_camel_compact(char *out, int32 out_cap,
 
 #define TAG_FIELD_MPD_NUM(XX, suffix, display, tag_char, getter_char)          \
   XX(suffix, display, tag_char, getter_char,                                   \
-     TAG_FLAGS_FIELD|TAG_FLAG_MPD                                    \
-     |TAG_FLAG_TAGLIB_NUMBER)
+     TAG_FLAGS_FIELD|TAG_FLAG_MPD|TAG_FLAG_TAGLIB_NUMBER)
 
 #define TAG_SEARCH_MPD(XX, suffix, display)                                    \
   XX(suffix, display, '\0', '\0',                                              \
