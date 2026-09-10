@@ -15,19 +15,16 @@
 #if defined(HAVE_TAGLIB_H)
 
 typedef struct NcmTaglibPropertyMap {
-    char *property;
-    char *name;
+    enum NcmTagType tag;
 } NcmTaglibPropertyMap;
 
 static bool ncm_taglib_is_initialized;
 
 static NcmTaglibPropertyMap ncm_taglib_properties[] = {
-#define NCM_TAGLIB_PROPERTY_MAP(tag, display, tag_char, field, getter,    \
-                                getter_char, taglib_property, taglib_name, \
-                                mpd, flags)                 \
+#define NCM_TAGLIB_PROPERTY_MAP(tag, display, tag_char, field, getter,        \
+                                getter_char, mpd, flags)                     \
     {                                                                        \
-        .property = taglib_property,                                         \
-        .name = taglib_name,                                                 \
+        .tag = tag,                                                          \
     },
 
     NCM_TAGLIB_TAG_DEFS(NCM_TAGLIB_PROPERTY_MAP)
@@ -160,17 +157,26 @@ ncm_taglib_read_mapped_properties(NcmTaglibFile *file,
 
     count = 0;
     for (int32 i = 0; i < LENGTH(ncm_taglib_properties); i += 1) {
+        char property[NCM_TAGLIB_PROPERTY_CAP];
+        char name[NCM_TAGLIB_NAME_CAP];
         char **values;
+        int32 property_len;
+        int32 name_len;
 
-        if ((values = taglib_property_get(handle,
-                                          ncm_taglib_properties[i].property))
-            == NULL) {
+        property_len = ncm_tag_type_taglib_property_len(
+            ncm_taglib_properties[i].tag, property, LENGTH(property));
+        name_len = ncm_tag_type_taglib_name_len(ncm_taglib_properties[i].tag,
+                                                name, LENGTH(name));
+        ASSERT(property_len > 0);
+        ASSERT(name_len > 0);
+
+        if ((values = taglib_property_get(handle, property)) == NULL) {
             continue;
         }
 
         for (int32 j = 0; values[j] != NULL; j += 1) {
             if (!ncm_taglib_value_is_empty(values[j])) {
-                callback(ncm_taglib_properties[i].name, values[j], user);
+                callback(name, values[j], user);
                 count += 1;
             }
         }
