@@ -27,6 +27,49 @@
 #define NCM_TAG_DISPLAY_NAME(display) #display
 #define NCM_TAG_DISPLAY_NAME_LEN(display) STRLIT_LEN(#display)
 
+#define NCM_TAG_RECORD_FULL(XX, tag, display, tag_char, field, getter,       \
+                            getter_char, taglib_property, taglib_name,      \
+                            settings_name, mpd, flags)                     \
+    XX(tag, display, tag_char, field, getter, getter_char,                  \
+       taglib_property, taglib_name, settings_name, mpd, flags)
+
+#define NCM_TAG_RECORD_FIELD_PRIMARY_MPD(XX, suffix, display, tag_char,      \
+                                         taglib_property, taglib_name,       \
+                                         settings_name)                     \
+    NCM_TAG_RECORD_FULL(XX, CAT(NCM_TAG_, suffix), display, tag_char,        \
+                        suffix, suffix, tag_char, taglib_property,          \
+                        taglib_name, settings_name, suffix,                 \
+                        NCM_TAG_META_FLAGS_FIELD_PRIMARY                    \
+                        |NCM_TAG_META_FLAG_MPD)
+
+#define NCM_TAG_RECORD_FIELD_SEARCH_MPD(XX, suffix, display, tag_char,       \
+                                        taglib_property, taglib_name)        \
+    NCM_TAG_RECORD_FULL(XX, CAT(NCM_TAG_, suffix), display, tag_char,        \
+                        suffix, suffix, tag_char, taglib_property,          \
+                        taglib_name, NULL, suffix,                          \
+                        NCM_TAG_META_FLAGS_FIELD_SEARCH                     \
+                        |NCM_TAG_META_FLAG_MPD)
+
+#define NCM_TAG_RECORD_FIELD_MPD(XX, suffix, display, tag_char, getter_char, \
+                                 taglib_property, taglib_name)              \
+    NCM_TAG_RECORD_FULL(XX, CAT(NCM_TAG_, suffix), display, tag_char,        \
+                        suffix, suffix, getter_char, taglib_property,       \
+                        taglib_name, NULL, suffix,                          \
+                        NCM_TAG_META_FLAGS_FIELD|NCM_TAG_META_FLAG_MPD)
+
+#define NCM_TAG_RECORD_SEARCH_MPD(XX, suffix, display)                      \
+    NCM_TAG_RECORD_FULL(XX, CAT(NCM_TAG_, suffix), display, '\0', NONE,     \
+                        NONE, '\0', NULL, NULL, NULL, suffix,              \
+                        NCM_TAG_META_FLAG_SEARCH|NCM_TAG_META_FLAG_MPD)
+
+#define NCM_TAG_RECORD_NON_DISPLAY(XX, suffix, display)                     \
+    NCM_TAG_RECORD_FULL(XX, CAT(NCM_TAG_, suffix), display, '\0', NONE,     \
+                        NONE, '\0', NULL, NULL, NULL, NONE,                \
+                        NCM_TAG_META_FLAGS_NONE)
+
+#define NCM_TAG_RECORD_UNKNOWN_NON_DISPLAY(XX)                              \
+    NCM_TAG_RECORD_NON_DISPLAY(XX, UNKNOWN, Unknown)
+
 #define NCM_TAG_RECORD_UNKNOWN(XX)                                           \
     XX(NCM_TAG_UNKNOWN, Unknown, '\0', NONE, NONE, '\0', NULL, NULL,        \
        NULL, NONE, NCM_TAG_META_FLAGS_NONE)
