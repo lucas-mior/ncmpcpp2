@@ -338,14 +338,13 @@ enum {
 #undef NCM_TAG_COUNT_RECORD
 
 #define NCM_TAG_TYPE_ENUM_FIELD(suffix, display, tag_char, getter_char, flags) \
-    XX(CAT(NCM_TAG_, suffix))
+  XX(CAT(NCM_TAG_, suffix))
 
 #define NCM_TAG_TYPE_ENUM_FIELDS                                               \
-    NCM_TAG_DEFS(NCM_TAG_TYPE_ENUM_FIELD)
+  NCM_TAG_DEFS(NCM_TAG_TYPE_ENUM_FIELD)
 
-#define NCM_TAGS_FIELD_ENUM_FIELD(suffix, display, tag_char, getter_char,      \
-                                  flags)                                       \
-    XX(CAT(NCM_TAGS_FIELD_, suffix), display)
+#define NCM_TAGS_FIELD_ENUM_FIELD(suffix, display, tag_char, getter_char, flags) \
+  XX(CAT(NCM_TAGS_FIELD_, suffix), display)
 
 #define NCM_TAGS_FIELD_ENUM_FIELDS                                             \
     NCM_TAG_FIELD_DEFS(NCM_TAGS_FIELD_ENUM_FIELD)
