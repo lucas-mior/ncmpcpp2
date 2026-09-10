@@ -1115,6 +1115,7 @@ static int32
 action_runtime_toggle_fetch_lyrics_in_background(void) {
     Config.fetch_lyrics_for_current_song_in_background =
         !Config.fetch_lyrics_for_current_song_in_background;
+
     if (Config.fetch_lyrics_for_current_song_in_background) {
         action_runtime_print_toggle(STRLIT("Fetching lyrics for playing "
                                             "songs in background: "),
