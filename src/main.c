@@ -42,8 +42,6 @@
 #include "helpers.c"
 #include "lastfm_service.c"
 #include "lyrics_fetcher.c"
-#include "screen_actions.c"
-
 #include "settings.c"
 #include "settings_types.c"
 #include "status.c"

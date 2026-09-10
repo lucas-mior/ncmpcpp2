@@ -13,6 +13,7 @@ const NcScreenOps nc_screen_default_ops = {
     .refresh_window = nc_screen_noop_refresh_window,
     .scroll = nc_screen_noop_scroll,
     .list_change_finished = nc_screen_noop_list_change_finished,
+    .action_change_finished = nc_screen_default_action_change_finished,
     .can_run_current = nc_screen_default_can_run_current,
     .run_current = nc_screen_default_run_current,
     .switch_to = nc_screen_noop_switch_to,
@@ -54,6 +55,12 @@ nc_screen_noop_scroll(NcScreen *screen, enum NcScroll where) {
 void
 nc_screen_noop_list_change_finished(NcScreen *screen) {
     (void)screen;
+    return;
+}
+
+void
+nc_screen_default_action_change_finished(NcScreen *screen) {
+    nc_screen_refresh_window(screen);
     return;
 }
 
@@ -128,6 +135,10 @@ nc_screen_init_ops(NcScreen *screen, NcScreenOps ops,
     }
     if (ops.list_change_finished == NULL) {
         ops.list_change_finished = nc_screen_default_ops.list_change_finished;
+    }
+    if (ops.action_change_finished == NULL) {
+        ops.action_change_finished =
+            nc_screen_default_ops.action_change_finished;
     }
     if ((ops.can_run_current == NULL) && (ops.run_current != NULL)) {
         ops.can_run_current = nc_screen_run_current_is_available;
@@ -206,6 +217,12 @@ nc_screen_scroll(NcScreen *screen, enum NcScroll where) {
 void
 nc_screen_finish_list_change(NcScreen *screen) {
     screen->ops->list_change_finished(screen);
+    return;
+}
+
+void
+nc_screen_finish_action_change(NcScreen *screen) {
+    screen->ops->action_change_finished(screen);
     return;
 }
 
