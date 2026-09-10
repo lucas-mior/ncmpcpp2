@@ -648,7 +648,6 @@ lyrics_screen_load_file(LyricsScreen *screen,
                         char *filename, int32 filename_len,
                         NcmError *ncm_error) {
     char *content;
-    char *content_end;
     char *line;
     int32 content_len;
     int32 line_len;
@@ -689,9 +688,9 @@ lyrics_screen_load_file(LyricsScreen *screen,
         screen->mode = LYRICS_MODE_SYNCHRONIZED;
     } else {
         bool first = true;
-        ncm_lrc_document_clear(&screen->lrc);
+        char *content_end = content + content_len;
 
-        content_end = content + content_len;
+        ncm_lrc_document_clear(&screen->lrc);
         line = content;
         while (line < content_end) {
             char *line_end;
