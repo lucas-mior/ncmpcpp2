@@ -261,6 +261,14 @@
     NCM_TAG_RECORD_COMPOSER(XX)                                              \
     NCM_TAG_RECORD_PERFORMER(XX)
 
+#define NCM_TAG_SETTINGS_NAME_VALUE(tag, name, alias, tag_char, field,        \
+                                    getter, getter_char, taglib_property,     \
+                                    taglib_name, settings_name, mpd, flags)   \
+    settings_name
+
+#define NCM_PRIMARY_TAG_DEFAULT_SETTINGS_NAME                                 \
+    NCM_TAG_RECORD_ARTIST(NCM_TAG_SETTINGS_NAME_VALUE)
+
 #define NCM_TAGLIB_TAG_DEFS(XX)                                              \
     NCM_TAG_RECORD_TITLE(XX)                                                 \
     NCM_TAG_RECORD_ARTIST(XX)                                                \
@@ -315,6 +323,8 @@ enum {
         NCM_TAGLIB_TAG_DEFS(NCM_TAG_COUNT_RECORD),
     NCM_MPD_TAG_COUNT = 0
         NCM_MPD_TAG_DEFS(NCM_TAG_COUNT_RECORD),
+    NCM_PRIMARY_TAG_COUNT = 0
+        NCM_TAG_PRIMARY_DEFS(NCM_TAG_COUNT_RECORD),
     NCM_TAG_SORT_COUNT = 0
         NCM_TAG_SORT_DEFS(NCM_TAG_COUNT_RECORD),
 };
@@ -448,6 +458,8 @@ _Static_assert((int32)NCM_TAGLIB_TAG_COUNT
                "taglib tag count changed");
 _Static_assert(NCM_MPD_TAG_COUNT == 12,
                "mpd tag count changed");
+_Static_assert(NCM_PRIMARY_TAG_COUNT == 6,
+               "primary tag count changed");
 
 #define ENUM_NAME SongGetter
 #define ENUM_PREFIX_ SONG_GETTER_
@@ -467,6 +479,48 @@ _Static_assert(SONG_GETTER_PRIORITY == 17,
                "SongGetter order changed: PRIORITY");
 _Static_assert(SONG_GETTER_COUNT == 18,
                "SongGetter count changed");
+
+
+static inline bool
+ncm_tag_type_parse_settings_name(char *value, int32 value_len,
+                                 enum NcmTagType *result) {
+#define NCM_TAG_SETTINGS_NAME_CASE(tag, name, alias, tag_char, field, getter, \
+                                   getter_char, taglib_property, taglib_name, \
+                                   settings_name, mpd, flags)                \
+    if (STREQUAL(value, value_len, settings_name)) {                         \
+        *result = tag;                                                       \
+        return true;                                                         \
+    }
+
+    NCM_TAG_PRIMARY_DEFS(NCM_TAG_SETTINGS_NAME_CASE)
+
+#undef NCM_TAG_SETTINGS_NAME_CASE
+    return false;
+}
+
+static inline enum NcmTagType
+ncm_primary_tag_next(enum NcmTagType tag) {
+    static enum NcmTagType tags[NCM_PRIMARY_TAG_COUNT] = {
+#define NCM_PRIMARY_TAG_ARRAY_ENTRY(tag, name, alias, tag_char, field, getter, \
+                                    getter_char, taglib_property, taglib_name, \
+                                    settings_name, mpd, flags)               \
+        tag,
+
+        NCM_TAG_PRIMARY_DEFS(NCM_PRIMARY_TAG_ARRAY_ENTRY)
+
+#undef NCM_PRIMARY_TAG_ARRAY_ENTRY
+    };
+
+    for (int32 i = 0; i < NCM_PRIMARY_TAG_COUNT; i += 1) {
+        if (tags[i] == tag) {
+            if (i + 1 >= NCM_PRIMARY_TAG_COUNT) {
+                return tags[0];
+            }
+            return tags[i + 1];
+        }
+    }
+    return tags[0];
+}
 
 static inline int32
 ncm_song_getter_display_name_len(enum SongGetter getter, char **out) {

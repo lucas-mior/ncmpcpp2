@@ -596,28 +596,7 @@ settings_parse_startup_screen(char *value, int32 value_len,
 static int32
 settings_parse_mpd_tag(char *value, int32 value_len,
                        enum NcmTagType *result) {
-    if (STREQUAL(value, value_len, "artist")) {
-        *result = NCM_TAG_ARTIST;
-        return 0;
-    }
-    if (STREQUAL(value, value_len, "album_artist")) {
-        *result = NCM_TAG_ALBUM_ARTIST;
-        return 0;
-    }
-    if (STREQUAL(value, value_len, "date")) {
-        *result = NCM_TAG_DATE;
-        return 0;
-    }
-    if (STREQUAL(value, value_len, "genre")) {
-        *result = NCM_TAG_GENRE;
-        return 0;
-    }
-    if (STREQUAL(value, value_len, "composer")) {
-        *result = NCM_TAG_COMPOSER;
-        return 0;
-    }
-    if (STREQUAL(value, value_len, "performer")) {
-        *result = NCM_TAG_PERFORMER;
+    if (ncm_tag_type_parse_settings_name(value, value_len, result)) {
         return 0;
     }
     return -NCM_ERROR_PARSE;
