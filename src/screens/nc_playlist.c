@@ -245,6 +245,13 @@ playlist_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     return;
 }
 
+static void
+playlist_action_change_finished(NcScreen *screen) {
+    playlist_screen_request_highlighting((PlaylistScreen *)screen);
+    nc_screen_refresh_window(screen);
+    return;
+}
+
 #define NC_SCREEN_IMPL_TYPE PlaylistScreen
 #define NC_SCREEN_IMPL_PREFIX playlist
 #define NC_SCREEN_IMPL_PUBLIC_PREFIX playlist_screen
@@ -271,6 +278,8 @@ playlist_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 #define NC_SCREEN_IMPL_TITLE_CALLBACK playlist_title
 #define NC_SCREEN_IMPL_UPDATE_CALLBACK playlist_update
 #define NC_SCREEN_IMPL_MOUSE_CALLBACK playlist_mouse_button_pressed
+#define NC_SCREEN_IMPL_ACTION_CHANGE_FINISHED_CALLBACK \
+    playlist_action_change_finished
 #define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK playlist_screen_destroy
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
