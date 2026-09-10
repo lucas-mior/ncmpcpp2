@@ -1202,21 +1202,21 @@ test_tag_edit_parser_metadata(void) {
                                         CAT(TAGS_FIELD_, suffix));       \
     idx += 1;
 
-    TAG_EDIT_PARSER_DEFS(TEST_PARSER_FIELD)
+    TAG_DEFAULT_ORDER_DEFS(TEST_PARSER_FIELD)
 
 #undef TEST_PARSER_FIELD
-    ASSERT(idx == TAG_EDIT_PARSER_COUNT);
+    ASSERT(idx == TAG_DEFAULT_ORDER_COUNT);
     ASSERT_EQUAL(legend.data, legend.len,
                  "%a - artist\n"
                  "%A - album artist\n"
-                 "%t - title\n"
                  "%b - album\n"
-                 "%y - date\n"
+                 "%d - disc\n"
                  "%n - track number\n"
                  "%g - genre\n"
+                 "%y - date\n"
                  "%c - composer\n"
                  "%p - performer\n"
-                 "%d - disc\n"
+                 "%t - title\n"
                  "%C - comment\n");
     sb_free(&legend);
     return;
