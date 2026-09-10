@@ -3739,7 +3739,7 @@ static void
 tag_edit_append_parser_action_label(TagEditScreen *screen,
                                     char *label, int32 label_len) {
     tag_edit_append_parser_action_row(screen, label, label_len,
-                                        NC_MENU_ITEM_SELECTABLE);
+                                      NC_MENU_ITEM_SELECTABLE);
     return;
 }
 
