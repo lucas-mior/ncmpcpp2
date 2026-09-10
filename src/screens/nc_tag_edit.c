@@ -3770,6 +3770,7 @@ tag_edit_screen_prepare_parser_rows(TagEditScreen *screen,
         tag_edit_reset_parser_navigation(screen);
         return;
     }
+
     tag_edit_append_parser_row(&screen->parser_rows,
                                STRLIT("Get tags from filename"),
                                NC_MENU_ITEM_SELECTABLE);
@@ -3779,6 +3780,7 @@ tag_edit_screen_prepare_parser_rows(TagEditScreen *screen,
     tag_edit_append_parser_row(&screen->parser_rows,
                                STRLIT("Cancel"),
                                NC_MENU_ITEM_SELECTABLE);
+
     {
         StrBuilder row = {0};
 
