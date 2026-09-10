@@ -168,6 +168,22 @@ void nc_window_init(NcWindow *, int32 start_x, int32 start_y, int32 width,
 void nc_window_init(NcWindow *,
                     int32 start_x, int32 start_y, int32 width, int32 height,
                     char *, int32 title_len, NcColor, NcBorder);
+
+// bad
+void
+nc_window_init(NcWindow *window, int32 start_x, int32 start_y,
+               int32 width, int32 height, char *title,
+               int32 title_len, NcColor color, NcBorder border) {
+    // do stuff
+}
+
+// good
+void
+nc_window_init(NcWindow *window,
+               int32 start_x, int32 start_y, int32 width, int32 height,
+               char *title, int32 title_len, NcColor color, NcBorder border) {
+    // do stuff
+}
 ```
 
 ## Utility function creep
