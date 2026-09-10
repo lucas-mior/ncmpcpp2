@@ -28,12 +28,12 @@
 #define TAG_DISPLAY_NAME(DISP) #DISP
 #define TAG_DISPLAY_NAME_LEN(DISP) STRLIT_LEN(#DISP)
 
-#define TAG_FIELD_MPD(XX, suffix, DISP, CHAR)                  \
-  XX(suffix, DISP, CHAR, CHAR,                             \
+#define TAG_FIELD_MPD(XX, suffix, DISP, CHAR)                      \
+  XX(suffix, DISP, CHAR, CHAR,                                     \
      TAG_FLAGS_FIELD_SEARCH|TAG_FLAG_MPD)
 
-#define TAG_FIELD_MPD_NUM(XX, suffix, DISP, CHAR, getter_char) \
-  XX(suffix, DISP, CHAR, getter_char,                          \
+#define TAG_FIELD_MPD_NUM(XX, suffix, DISP, CHAR, getter_char)     \
+  XX(suffix, DISP, CHAR, getter_char,                              \
      TAG_FLAGS_FIELD|TAG_FLAG_MPD|TAG_FLAG_TAGLIB_NUMBER)
 
 #define TAG_SEARCH_MPD(XX, suffix, DISP)                           \
