@@ -3971,7 +3971,7 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
     mask_pos = 0;
     file_pos = 0;
     while (tag_edit_next_mask_tag(mask, mask_len, mask_pos,
-                                    &percent_pos, &tag_char)) {
+                                  &percent_pos, &tag_char)) {
         int32 next_mask_pos;
         int32 next_percent_pos;
         int32 value_end;
