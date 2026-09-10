@@ -69,46 +69,8 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
         enum TagsField field = (enum TagsField)i;
         char *property;
 
-        switch (field) {
-        case NCM_TAGS_FIELD_TITLE:
-            property = "TITLE";
-            break;
-        case NCM_TAGS_FIELD_ARTIST:
-            property = "ARTIST";
-            break;
-        case NCM_TAGS_FIELD_ALBUM_ARTIST:
-            property = "ALBUMARTIST";
-            break;
-        case NCM_TAGS_FIELD_ALBUM:
-            property = "ALBUM";
-            break;
-        case NCM_TAGS_FIELD_DATE:
-            property = "DATE";
-            break;
-        case NCM_TAGS_FIELD_TRACK:
-            property = "TRACKNUMBER";
-            break;
-        case NCM_TAGS_FIELD_GENRE:
-            property = "GENRE";
-            break;
-        case NCM_TAGS_FIELD_COMPOSER:
-            property = "COMPOSER";
-            break;
-        case NCM_TAGS_FIELD_PERFORMER:
-            property = "PERFORMER";
-            break;
-        case NCM_TAGS_FIELD_DISC:
-            property = "DISCNUMBER";
-            break;
-        case NCM_TAGS_FIELD_COMMENT:
-            property = "COMMENT";
-            break;
-        case NCM_TAGS_FIELD_COUNT:
-        default:
-            ncm_taglib_file_close(&file);
-            free2(old_path, old_path_len + 1);
-            return -EINVAL;
-        }
+        property = ncm_tags_field_taglib_property(field);
+        ASSERT(property != NULL);
 
         if ((status = ncm_taglib_clear_property(&file, property)) < 0) {
             ncm_taglib_file_close(&file);

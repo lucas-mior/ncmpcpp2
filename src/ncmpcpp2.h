@@ -311,6 +311,8 @@ enum {
     NCM_SEARCH_TAG_COUNT = 0
         NCM_TAG_SEARCH_DEFS(NCM_TAG_COUNT_RECORD),
     NCM_SEARCH_CONSTRAINT_COUNT = NCM_SEARCH_TAG_COUNT + 1,
+    NCM_TAGLIB_TAG_COUNT = 0
+        NCM_TAGLIB_TAG_DEFS(NCM_TAG_COUNT_RECORD),
     NCM_TAG_SORT_COUNT = 0
         NCM_TAG_SORT_DEFS(NCM_TAG_COUNT_RECORD),
 };
@@ -439,6 +441,9 @@ _Static_assert(NCM_TAGS_FIELD_COUNT == 11,
 _Static_assert((int32)NCM_SONG_INFO_TAG_COUNT
                == (int32)NCM_TAGS_FIELD_COUNT,
                "song-info tag count changed");
+_Static_assert((int32)NCM_TAGLIB_TAG_COUNT
+               == (int32)NCM_TAGS_FIELD_COUNT,
+               "taglib tag count changed");
 
 #define ENUM_NAME SongGetter
 #define ENUM_PREFIX_ SONG_GETTER_
@@ -552,6 +557,25 @@ ncm_song_getter_sort_label_len(enum SongGetter getter, char **out) {
 
     *out = "";
     return 0;
+}
+
+static inline char *
+ncm_tags_field_taglib_property(enum TagsField field) {
+    switch (field) {
+#define NCM_TAGLIB_FIELD_PROPERTY_CASE(tag, name, alias, tag_char, field_id, \
+                                       getter, getter_char, taglib_property, \
+                                       taglib_name, settings_name, mpd,      \
+                                       flags)                                \
+    case CAT(NCM_TAGS_FIELD_, field_id):                                     \
+        return taglib_property;
+
+    NCM_TAGLIB_TAG_DEFS(NCM_TAGLIB_FIELD_PROPERTY_CASE)
+
+#undef NCM_TAGLIB_FIELD_PROPERTY_CASE
+    case NCM_TAGS_FIELD_COUNT:
+    default:
+        return NULL;
+    }
 }
 
 static inline char
