@@ -297,8 +297,7 @@ mutable_song_set_tags(MutableSong *song, enum TagsField field,
 }
 
 bool
-mutable_song_has_tag_view(MutableSong *song,
-                          enum TagsField field, int32 idx,
+mutable_song_has_tag_view(MutableSong *song, enum TagsField field, int32 idx,
                           StringView *view) {
     if (view == NULL) {
         return false;
