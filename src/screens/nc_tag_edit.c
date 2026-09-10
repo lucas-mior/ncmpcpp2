@@ -3436,10 +3436,9 @@ tag_edit_save_song_callback(MutableSong *song, void *user) {
                              directory, directory_len)) {
             StrBuilder shared = {0};
 
-            shared =
-                ncm_string_shared_directory(context->shared_directory.data,
-                                            context->shared_directory.len,
-                                            directory, directory_len);
+            shared = ncm_string_shared_directory(context->shared_directory.data,
+                                                 context->shared_directory.len,
+                                                 directory, directory_len);
             sb_free(&context->shared_directory);
             context->shared_directory = shared;
         }
