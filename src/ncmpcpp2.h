@@ -317,14 +317,13 @@ ncm_tag_type_canonical_name_len(enum NcmTagType tag, char **out) {
 static inline int32
 ncm_tag_type_display_name_len(enum NcmTagType tag, char **out) {
     switch (tag) {
-#define TAG_DISPLAY_NAME_CASE(suffix, DISP, CHAR,                          \
-                                  getter_char, flags)                          \
-    case CAT(TAG_, suffix):                                                    \
-        if (((flags) & TAG_FLAG_DISPLAY) == 0) {                               \
-            *out = "";                                                         \
-            return 0;                                                          \
-        }                                                                      \
-        *out = TAG_DISPLAY_NAME(DISP);                                         \
+#define TAG_DISPLAY_NAME_CASE(suffix, DISP, CHAR, getter_char, flags) \
+    case CAT(TAG_, suffix):                                           \
+        if (((flags) & TAG_FLAG_DISPLAY) == 0) {                      \
+            *out = "";                                                \
+            return 0;                                                 \
+        }                                                             \
+        *out = TAG_DISPLAY_NAME(DISP);                                \
         return TAG_DISPLAY_NAME_LEN(DISP);
 
     TAG_DEFS(TAG_DISPLAY_NAME_CASE)
