@@ -3126,7 +3126,7 @@ tag_edit_copy_selected_song_at(TagEditScreen *screen,
     ncm_song_set_mtime(&song, source->mtime);
     for (int32 i = 0; i < source->tags_len; i += 1) {
         MutableSongTag *tag = &source->tags[i];
-        enum NcmTagType type = ncm_tags_field_to_tag_type(tag->field);
+        enum TagType type = ncm_tags_field_to_tag_type(tag->field);
         char *value = tag->original;
         int32 value_len = tag->original_len;
 
@@ -4149,7 +4149,7 @@ tag_edit_generate_filename(MutableSong *song,
         ncm_song_set_mtime(&format_song, song->mtime);
         for (int32 i = 0; i < song->tags_len; i += 1) {
             MutableSongTag *tag = &song->tags[i];
-            enum NcmTagType type = ncm_tags_field_to_tag_type(tag->field);
+            enum TagType type = ncm_tags_field_to_tag_type(tag->field);
             char *value;
             int32 value_len;
 

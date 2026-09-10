@@ -1021,7 +1021,7 @@ ncm_mpd_client_start_search(MpdClient *client, bool exact_match,
 }
 
 int32
-ncm_mpd_client_add_search_tag(MpdClient *client, enum NcmTagType tag,
+ncm_mpd_client_add_search_tag(MpdClient *client, enum TagType tag,
                               char *value, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_require_connected(client, ncm_error));
     NCM_CLIENT_TRY_MPD(client,
@@ -1069,7 +1069,7 @@ ncm_mpd_client_commit_search_songs(MpdClient *client, NcmMpdSongList *songs,
 }
 
 int32
-ncm_mpd_client_get_list(MpdClient *client, enum NcmTagType tag,
+ncm_mpd_client_get_list(MpdClient *client, enum TagType tag,
                         StringViewList *strings, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
     NCM_CLIENT_TRY_MPD(client,
@@ -1189,7 +1189,7 @@ ncm_mpd_client_disable_output(MpdClient *client, int32 id,
 }
 
 int32
-ncm_mpd_client_add_random_tag(MpdClient *client, enum NcmTagType tag,
+ncm_mpd_client_add_random_tag(MpdClient *client, enum TagType tag,
                               int32 number, NcmError *ncm_error) {
     StringViewList tags;
     NcmMpdSongList songs;

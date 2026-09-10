@@ -953,7 +953,7 @@ action_runtime_add_random_items(void) {
     int32 count;
     int32 source_name_len;
     int32 number;
-    enum NcmTagType tag_type = TAG_ARTIST;
+    enum TagType tag_type = TAG_ARTIST;
     char random_type = 0;
     int32 status = 0;
     bool prompted;
@@ -3751,7 +3751,7 @@ action_runtime_toggle_browser_sort_mode(void) {
 static int32
 action_runtime_toggle_library_tag_type(void) {
     MediaLibraryScreen *screen = app_screen_media_library();
-    enum NcmTagType tag_type;
+    enum TagType tag_type;
     enum MediaLibraryColumn column;
 
     if (!action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
@@ -4423,7 +4423,7 @@ action_runtime_edit_library_album(void) {
         NcmSong *song = &songs.items[i];
         StringView directory;
         StringView uri;
-        NcmTaglibFile file = {0};
+        TaglibFile file = {0};
 
         action_runtime_print_updating_song(song);
         sb_clear(&path);

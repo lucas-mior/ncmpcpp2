@@ -558,8 +558,8 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
                                char *tag_separator, int32 tag_separator_len,
                                bool show_duplicate_tags, StrBuilder *path) {
     MutableSong edited = {0};
-    NcmTaglibAudioProperties properties = {0};
-    NcmTaglibFile file;
+    TaglibAudioProperties properties = {0};
+    TaglibFile file;
     NcBuffer row;
     char channel_buffer[32];
     char duration_buffer[32];
@@ -602,7 +602,7 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     }
     SB_APPEND(path, screen->edited.uri, screen->edited.uri_len);
 
-    file = (NcmTaglibFile){0};
+    file = (TaglibFile){0};
     if (screen->hooks.taglib_open) {
         status = screen->hooks.taglib_open(screen->hooks.user, &file,
                                            path->data, path->len);

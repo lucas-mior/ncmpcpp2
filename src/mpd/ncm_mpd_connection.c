@@ -115,7 +115,7 @@ ncm_mpd_connection_set_error(MpdConnection *connection,
         return CAT(MPD_TAG_, suffix);
 
 static enum mpd_tag_type
-ncm_mpd_connection_tag_type(enum NcmTagType tag) {
+ncm_mpd_connection_tag_type(enum TagType tag) {
     switch ((int32)tag) {
     TAG_MPD_DEFS(NCM_MPD_CONNECTION_TAG_TYPE_CASE)
     default:
@@ -1409,7 +1409,7 @@ ncm_mpd_connection_start_search_songs(MpdConnection *connection,
 
 int32
 ncm_mpd_connection_add_search_tag(MpdConnection *connection,
-                                  enum NcmTagType tag, char *value) {
+                                  enum TagType tag, char *value) {
     enum mpd_tag_type mpd_tag;
 
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
@@ -1468,7 +1468,7 @@ ncm_mpd_connection_commit_search_songs(MpdConnection *connection,
 
 int32
 ncm_mpd_connection_list_tag_values(MpdConnection *connection,
-                                   enum NcmTagType tag,
+                                   enum TagType tag,
                                    StringViewList *strings) {
     struct mpd_pair *pair;
     enum mpd_tag_type mpd_tag;

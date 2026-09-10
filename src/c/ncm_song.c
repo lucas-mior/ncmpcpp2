@@ -123,7 +123,7 @@ ncm_song_set_uri_unchecked(NcmSong *song, char *uri, int32 uri_len) {
 }
 
 static void
-ncm_song_add_tag_unchecked(NcmSong *song, enum NcmTagType type,
+ncm_song_add_tag_unchecked(NcmSong *song, enum TagType type,
                            char *value, int32 value_len) {
     NcmSongTag *tag;
 
@@ -216,7 +216,7 @@ ncm_song_set_uri(NcmSong *song, char *uri, int32 uri_len) {
 }
 
 int32
-ncm_song_add_tag(NcmSong *song, enum NcmTagType type,
+ncm_song_add_tag(NcmSong *song, enum TagType type,
                  char *value, int32 value_len) {
     if (song == NULL) {
         return -EINVAL;
@@ -325,7 +325,7 @@ ncm_song_is_empty(NcmSong *song) {
 }
 
 static bool
-ncm_song_has_tag_view_unchecked(NcmSong *song, enum NcmTagType tag,
+ncm_song_has_tag_view_unchecked(NcmSong *song, enum TagType tag,
                                 int32 idx, StringView *view) {
     int32 seen;
 
@@ -446,7 +446,7 @@ ncm_song_is_from_database_unchecked(NcmSong *song) {
 }
 
 bool
-ncm_song_has_tag_view(NcmSong *song, enum NcmTagType tag, int32 idx,
+ncm_song_has_tag_view(NcmSong *song, enum TagType tag, int32 idx,
                       StringView *view) {
     if ((song == NULL) || (idx < 0)) {
         ncm_string_view_clear(view);
@@ -584,7 +584,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
     int32 copy_len;
     int32 len;
     int32 slash;
-    enum NcmTagType tag;
+    enum TagType tag;
 
     switch (getter) {
     case SONG_GETTER_LENGTH:

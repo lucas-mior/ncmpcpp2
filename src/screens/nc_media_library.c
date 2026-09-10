@@ -158,7 +158,7 @@ library_mpd_list_all_songs(void *user, NcmMpdSongList *songs,
 }
 
 static int32
-library_mpd_list_tags(void *user, enum NcmTagType tag_type,
+library_mpd_list_tags(void *user, enum TagType tag_type,
                       StringViewList *tags, NcmError *ncm_error) {
     MpdClient *client = user;
 
@@ -1668,7 +1668,7 @@ library_append_album(MediaLibraryAlbumArray *albums, char *tag, int32 tag_len,
 }
 
 static bool
-library_song_has_first_tag(NcmSong *song, enum NcmTagType tag,
+library_song_has_first_tag(NcmSong *song, enum TagType tag,
                            StringView *view) {
     ASSERT(view != NULL);
     *view = (StringView){0};
@@ -1700,7 +1700,7 @@ media_library_tags_from_strings(MediaLibraryTagArray *tags,
 
 int32
 media_library_tags_from_songs(MediaLibraryTagArray *tags, NcmMpdSongList *songs,
-                              enum NcmTagType primary_tag) {
+                              enum TagType primary_tag) {
     MediaLibraryTagArray replacement = {0};
 
     if ((tags == NULL) || (songs == NULL) || (primary_tag == TAG_UNKNOWN)) {
@@ -1738,7 +1738,7 @@ int32
 media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
                                 NcmMpdSongList *songs,
                                 enum MediaLibraryMode mode,
-                                enum NcmTagType primary_tag,
+                                enum TagType primary_tag,
                                 char *selected_tag, int32 selected_tag_len) {
     MediaLibraryAlbumArray replacement = {0};
     MediaLibraryAlbumItem *separator;
@@ -2004,7 +2004,7 @@ library_reset_observed_highlights(MediaLibraryScreen *screen) {
 
 int32
 media_library_screen_set_primary_tag_type(MediaLibraryScreen *screen,
-                                          enum NcmTagType tag_type) {
+                                          enum TagType tag_type) {
     if ((screen == NULL) || (tag_type == TAG_UNKNOWN)) {
         return -EINVAL;
     }
@@ -2672,7 +2672,7 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
         MediaLibraryTagArray tags = {0};
         StringViewList strings = {0};
         NcmMpdSongList songs = {0};
-        enum NcmTagType primary_tag;
+        enum TagType primary_tag;
         int32 status;
 
         primary_tag = Config.media_library_primary_tag;
@@ -3090,7 +3090,7 @@ library_move_to_album(MediaLibraryScreen *screen, char *tag, int32 tag_len,
 
 int32
 media_library_screen_list_tags(
-    MediaLibraryScreen *screen, enum NcmTagType tag_type,
+    MediaLibraryScreen *screen, enum TagType tag_type,
     StringViewList *tags, NcmError *ncm_error) {
     if ((screen == NULL) || (screen->hooks.list_tags == NULL)) {
         return ncm_error_set_status(ncm_error, -ENOSYS,

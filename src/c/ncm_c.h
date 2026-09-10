@@ -50,19 +50,19 @@ int32 ncm_error_ok(NcmError *);
 void stupid_string_free(char **, int32 *len);
 void stupid_string_set(char **, int32 *dest_len, char *, int32);
 
-typedef struct NcmTagsReplayGainInfo {
+typedef struct TagsReplayGainInfo {
     StringView reference_loudness;
     StringView track_gain;
     StringView track_peak;
     StringView album_gain;
     StringView album_peak;
-} NcmTagsReplayGainInfo;
+} TagsReplayGainInfo;
 
-typedef bool NcmTagsGetFieldCallback(enum TagsField, int32, StringView *,
+typedef bool TagsGetFieldCallback(enum TagsField, int32, StringView *,
                                      void *);
 
 int32 ncm_tags_write(char *music_dir, char *uri, bool, char *directory,
-                     char *new_name, NcmTagsGetFieldCallback *, void *);
+                     char *new_name, TagsGetFieldCallback *, void *);
 
 #define ENUM_NAME NcmItemType
 #define ENUM_PREFIX_ NCM_ITEM_
@@ -75,14 +75,14 @@ int32 ncm_tags_write(char *music_dir, char *uri, bool, char *directory,
 
 int32 ncm_channels_to_string(int32 channels, char *, int32 buffer_cap);
 int32 ncm_color_index_from_char(char);
-int32 ncm_tag_type_name_len(enum NcmTagType, char **);
-char *ncm_tag_type_name(enum NcmTagType);
-enum NcmTagType ncm_char_to_tag_type(char);
+int32 ncm_tag_type_name_len(enum TagType, char **);
+char *ncm_tag_type_name(enum TagType);
+enum TagType ncm_char_to_tag_type(char);
 enum SongGetter ncm_song_getter_from_char(char);
-enum NcmTagType ncm_song_getter_to_tag_type(enum SongGetter);
+enum TagType ncm_song_getter_to_tag_type(enum SongGetter);
 enum TagsField ncm_tags_field_from_char(char);
-enum TagsField ncm_tags_field_from_tag_type(enum NcmTagType);
-enum NcmTagType ncm_tags_field_to_tag_type(enum TagsField);
+enum TagsField ncm_tags_field_from_tag_type(enum TagType);
+enum TagType ncm_tags_field_to_tag_type(enum TagsField);
 enum SongGetter ncm_tags_field_to_song_getter(enum TagsField);
 enum TagsField ncm_song_getter_to_tags_field(enum SongGetter);
 
@@ -97,7 +97,7 @@ enum TagsField ncm_song_getter_to_tags_field(enum SongGetter);
 typedef struct NcmSongTag {
     char *value;
     int32 value_len;
-    enum NcmTagType type;
+    enum TagType type;
 } NcmSongTag;
 
 typedef struct NcmSong {
@@ -119,7 +119,7 @@ void ncm_song_destroy(NcmSong *);
 void ncm_song_move(NcmSong *dest, NcmSong *source);
 int32 ncm_song_copy(NcmSong *dest, NcmSong *source);
 int32 ncm_song_set_uri(NcmSong *, char *, int32);
-int32 ncm_song_add_tag(NcmSong *, enum NcmTagType, char *, int32);
+int32 ncm_song_add_tag(NcmSong *, enum TagType, char *, int32);
 void ncm_song_set_duration(NcmSong *, int32);
 void ncm_song_set_position(NcmSong *, int32);
 void ncm_song_set_id(NcmSong *, int32);
@@ -132,7 +132,7 @@ int32 ncm_song_priority(NcmSong *);
 time_t ncm_song_mtime(NcmSong *);
 bool ncm_song_is_empty(NcmSong *);
 
-bool ncm_song_has_tag_view(NcmSong *, enum NcmTagType, int32, StringView *);
+bool ncm_song_has_tag_view(NcmSong *, enum TagType, int32, StringView *);
 bool ncm_song_has_uri_view(NcmSong *, int32, StringView *);
 bool ncm_song_has_name_view(NcmSong *, int32, StringView *);
 bool ncm_song_has_directory_view(NcmSong *, int32, StringView *);
@@ -886,13 +886,13 @@ int32 ncm_mpd_connection_get_directory_songs(MpdConnection *, char *,
 int32 ncm_mpd_connection_list_all_songs(MpdConnection *, char *,
                                         NcmMpdSongList *);
 int32 ncm_mpd_connection_start_search_songs(MpdConnection *, bool);
-int32 ncm_mpd_connection_add_search_tag(MpdConnection *, enum NcmTagType,
+int32 ncm_mpd_connection_add_search_tag(MpdConnection *, enum TagType,
                                         char *);
 int32 ncm_mpd_connection_add_search_any(MpdConnection *, char *);
 int32 ncm_mpd_connection_add_search_uri(MpdConnection *, char *);
 int32 ncm_mpd_connection_commit_search_songs(MpdConnection *,
                                              NcmMpdSongList *);
-int32 ncm_mpd_connection_list_tag_values(MpdConnection *, enum NcmTagType,
+int32 ncm_mpd_connection_list_tag_values(MpdConnection *, enum TagType,
                                          StringViewList *);
 
 int32 ncm_mpd_connection_update_database(MpdConnection *, char *, int32 *);
@@ -1029,7 +1029,7 @@ int32 ncm_mpd_client_add_song_value(MpdClient *, NcmSong *, int32, int32 *,
 int32 ncm_mpd_client_add_song_list(MpdClient *, NcmMpdSongList *, int32,
                                    NcmError *);
 int32 ncm_mpd_client_add(MpdClient *, char *, bool *, NcmError *);
-int32 ncm_mpd_client_add_random_tag(MpdClient *, enum NcmTagType, int32,
+int32 ncm_mpd_client_add_random_tag(MpdClient *, enum TagType, int32,
                                     NcmError *);
 int32 ncm_mpd_client_add_random_songs(MpdClient *, int32 number, char *,
                                       int32 exclude_pattern_len, NcmError *);
@@ -1050,7 +1050,7 @@ int32 ncm_mpd_client_rename_playlist(MpdClient *, char *from, char *to,
                                      NcmError *);
 
 int32 ncm_mpd_client_start_search(MpdClient *, bool, NcmError *);
-int32 ncm_mpd_client_add_search_tag(MpdClient *, enum NcmTagType, char *,
+int32 ncm_mpd_client_add_search_tag(MpdClient *, enum TagType, char *,
                                     NcmError *);
 int32 ncm_mpd_client_add_search_any(MpdClient *, char *, NcmError *);
 int32 ncm_mpd_client_add_search_uri(MpdClient *, char *, NcmError *);
@@ -1059,7 +1059,7 @@ int32 ncm_mpd_client_commit_search_songs(MpdClient *, NcmMpdSongList *,
 
 int32 ncm_mpd_client_get_playlists(MpdClient *, NcmMpdPlaylistList *,
                                    NcmError *);
-int32 ncm_mpd_client_get_list(MpdClient *, enum NcmTagType,
+int32 ncm_mpd_client_get_list(MpdClient *, enum TagType,
                               StringViewList *, NcmError *);
 int32 ncm_mpd_client_get_directory_recursive(MpdClient *, char *,
                                              NcmMpdSongList *, NcmError *);
@@ -1345,28 +1345,28 @@ void ncm_string_append_shell_escaped_single_quotes(StrBuilder *, char *, int32);
 int32 ncm_path_basename_start(char *, int32);
 int32 ncm_string_parent_directory_len(char *, int32);
 
-typedef struct NcmTaglibFile {
+typedef struct TaglibFile {
     void *handle;
-} NcmTaglibFile;
+} TaglibFile;
 
-typedef struct NcmTaglibAudioProperties {
+typedef struct TaglibAudioProperties {
     int32 length;
     int32 bitrate;
     int32 sample_rate;
     int32 channels;
-} NcmTaglibAudioProperties;
+} TaglibAudioProperties;
 
-typedef void NcmTaglibPairCallback(char *name, char *value, void *);
-int32 ncm_taglib_file_open(NcmTaglibFile *, char *);
-void ncm_taglib_file_close(NcmTaglibFile *);
-int32 ncm_taglib_file_save(NcmTaglibFile *);
-int32 ncm_taglib_file_audio_properties(NcmTaglibFile *,
-                                       NcmTaglibAudioProperties *);
-int32 ncm_taglib_read_mapped_properties(NcmTaglibFile *,
-                                        NcmTaglibPairCallback *, void *);
-int32 ncm_taglib_clear_property(NcmTaglibFile *, char *);
-int32 ncm_taglib_append_property(NcmTaglibFile *, char *property, char *value);
-bool ncm_taglib_file_can_set_extended_tags(NcmTaglibFile *);
+typedef void TaglibPairCallback(char *name, char *value, void *);
+int32 ncm_taglib_file_open(TaglibFile *, char *);
+void ncm_taglib_file_close(TaglibFile *);
+int32 ncm_taglib_file_save(TaglibFile *);
+int32 ncm_taglib_file_audio_properties(TaglibFile *,
+                                       TaglibAudioProperties *);
+int32 ncm_taglib_read_mapped_properties(TaglibFile *,
+                                        TaglibPairCallback *, void *);
+int32 ncm_taglib_clear_property(TaglibFile *, char *);
+int32 ncm_taglib_append_property(TaglibFile *, char *property, char *value);
+bool ncm_taglib_file_can_set_extended_tags(TaglibFile *);
 void ncm_taglib_clear_strings(void);
 
 #include "curses/nc_curses.h"

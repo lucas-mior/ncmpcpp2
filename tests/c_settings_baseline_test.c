@@ -1068,7 +1068,7 @@ test_song_getter_conversions(void) {
 static void
 test_primary_tag_settings_parse(void) {
     char settings_name[TAG_SETTINGS_NAME_CAP];
-    enum NcmTagType parsed;
+    enum TagType parsed;
     int32 settings_name_len;
 
 #define TEST_PRIMARY_SETTING(suffix, display, tag_char, getter_char,      \
