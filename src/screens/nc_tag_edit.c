@@ -3871,8 +3871,9 @@ tag_edit_screen_show_parser_actions(TagEditScreen *screen,
                     break;
                 }
                 if ((line.len > 0)
-                    && (tag_edit_find_recent_pattern(screen, line.data,
-                                                     line.len) < 0)) {
+                    && (tag_edit_find_recent_pattern(screen,
+                                                     line.data, line.len)
+                                                      < 0)) {
                     StrBuilder *item;
 
                     item = str_builder_array_append(&screen->recent_patterns);
