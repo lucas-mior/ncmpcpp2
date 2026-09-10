@@ -5255,18 +5255,10 @@ action_runtime_builtin_can_run(ActionRuntime *runtime,
     case ACTION_SELECT_ALBUM:
         return action_runtime_tag_scroll_available(SONG_GETTER_ALBUM);
     case ACTION_SET_SELECTED_ITEMS_PRIORITY:
-        if (!ncm_mpd_client_is_connected(&global_mpd)
-            || !action_runtime_current_screen_is(SCREEN_TYPE_PLAYLIST)
-            || !action_runtime_has_selected_songs()) {
-            return false;
-        }
-        if (ncm_mpd_client_version(&global_mpd) < 17) {
-            ncm_statusbar_print(Config.message_delay_time,
-                                STRLIT("Priorities are supported in MPD >= "
-                                        "0.17.0"));
-            return false;
-        }
-        return true;
+        return ncm_mpd_client_is_connected(&global_mpd)
+               && action_runtime_current_screen_is(SCREEN_TYPE_PLAYLIST)
+               && action_runtime_has_selected_songs()
+               && (ncm_mpd_client_version(&global_mpd) >= 17);
     case ACTION_EDIT_PLAYLIST_NAME:
         if (action_runtime_current_screen_is(SCREEN_TYPE_BROWSER)) {
             return ncm_mpd_client_is_connected(&global_mpd)
