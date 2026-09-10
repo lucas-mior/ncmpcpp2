@@ -129,43 +129,38 @@ ncm_tag_name_to_camel_compact(char *out, int32 out_cap,
     return written;
 }
 
-#define NCM_TAG_RECORD_FULL(XX, tag, display, tag_char, field, getter,       \
-                            getter_char, flags)                       \
-    XX(tag, display, tag_char, field, getter, getter_char, flags)
+#define NCM_TAG_RECORD_FULL(XX, suffix, display, tag_char, getter_char,      \
+                            flags)                                          \
+    XX(suffix, display, tag_char, getter_char, flags)
 
 #define NCM_TAG_RECORD_FIELD_PRIMARY_MPD(XX, suffix, display, tag_char)      \
-    NCM_TAG_RECORD_FULL(XX, CAT(NCM_TAG_, suffix), display, tag_char,        \
-                        suffix, suffix, tag_char,                           \
+    NCM_TAG_RECORD_FULL(XX, suffix, display, tag_char, tag_char,             \
                         NCM_TAG_META_FLAGS_FIELD_PRIMARY                    \
                         |NCM_TAG_META_FLAG_MPD)
 
 #define NCM_TAG_RECORD_FIELD_SEARCH_MPD(XX, suffix, display, tag_char)       \
-    NCM_TAG_RECORD_FULL(XX, CAT(NCM_TAG_, suffix), display, tag_char,        \
-                        suffix, suffix, tag_char,                           \
+    NCM_TAG_RECORD_FULL(XX, suffix, display, tag_char, tag_char,             \
                         NCM_TAG_META_FLAGS_FIELD_SEARCH                     \
                         |NCM_TAG_META_FLAG_MPD)
 
 #define NCM_TAG_RECORD_FIELD_MPD(XX, suffix, display, tag_char, getter_char) \
-    NCM_TAG_RECORD_FULL(XX, CAT(NCM_TAG_, suffix), display, tag_char,        \
-                        suffix, suffix, getter_char,                        \
+    NCM_TAG_RECORD_FULL(XX, suffix, display, tag_char, getter_char,          \
                         NCM_TAG_META_FLAGS_FIELD|NCM_TAG_META_FLAG_MPD)
 
-#define NCM_TAG_RECORD_FIELD_MPD_NUM(XX, suffix, display, tag_char,        \
-                                     getter_char)                          \
-    NCM_TAG_RECORD_FULL(XX, CAT(NCM_TAG_, suffix), display, tag_char,        \
-                        suffix, suffix, getter_char,                        \
+#define NCM_TAG_RECORD_FIELD_MPD_NUM(XX, suffix, display, tag_char,          \
+                                     getter_char)                            \
+    NCM_TAG_RECORD_FULL(XX, suffix, display, tag_char, getter_char,          \
                         NCM_TAG_META_FLAGS_FIELD                            \
                         |NCM_TAG_META_FLAG_MPD                              \
                         |NCM_TAG_META_FLAG_TAGLIB_NUMBER)
 
 #define NCM_TAG_RECORD_SEARCH_MPD(XX, suffix, display)                      \
-    NCM_TAG_RECORD_FULL(XX, CAT(NCM_TAG_, suffix), display, '\0', NONE,     \
-                        NONE, '\0',                                        \
+    NCM_TAG_RECORD_FULL(XX, suffix, display, '\0', '\0',                  \
                         NCM_TAG_META_FLAG_SEARCH|NCM_TAG_META_FLAG_MPD)
 
 #define NCM_TAG_RECORD_NON_DISPLAY(XX, suffix, display)                     \
-    NCM_TAG_RECORD_FULL(XX, CAT(NCM_TAG_, suffix), display, '\0', NONE,     \
-                        NONE, '\0', NCM_TAG_META_FLAGS_NONE)
+    NCM_TAG_RECORD_FULL(XX, suffix, display, '\0', '\0',                  \
+                        NCM_TAG_META_FLAGS_NONE)
 
 #define NCM_TAG_RECORD_UNKNOWN_NON_DISPLAY(XX)                              \
     NCM_TAG_RECORD_NON_DISPLAY(XX, UNKNOWN, Unknown)
@@ -415,8 +410,8 @@ ncm_tag_name_to_camel_compact(char *out, int32 out_cap,
     NCM_TAG_RECORD_DISC(XX)                                                  \
     NCM_TAG_RECORD_COMMENT(XX)
 
-#define NCM_TAG_COUNT_RECORD(tag, display, tag_char, field, getter,          \
-                             getter_char, flags)                            \
+#define NCM_TAG_COUNT_RECORD(suffix, display, tag_char, getter_char,       \
+                             flags)                                          \
     + 1
 
 #define NCM_MPD_TAG_COUNT_RECORD(suffix) + 1
@@ -446,16 +441,16 @@ enum {
 #undef NCM_TAG_COUNT_RECORD
 #undef NCM_MPD_TAG_COUNT_RECORD
 
-#define NCM_TAG_TYPE_ENUM_FIELD(tag, display, tag_char, field, getter,     \
-                                getter_char, flags)                  \
-    XX(tag)
+#define NCM_TAG_TYPE_ENUM_FIELD(suffix, display, tag_char, getter_char,   \
+                                flags)                                      \
+    XX(CAT(NCM_TAG_, suffix))
 
 #define NCM_TAG_TYPE_ENUM_FIELDS                                             \
     NCM_TAG_DEFS(NCM_TAG_TYPE_ENUM_FIELD)
 
-#define NCM_TAGS_FIELD_ENUM_FIELD(tag, display, tag_char, field, getter,   \
-                                  getter_char, flags)                \
-    XX(CAT(NCM_TAGS_FIELD_, field), display)
+#define NCM_TAGS_FIELD_ENUM_FIELD(suffix, display, tag_char, getter_char, \
+                                  flags)                                  \
+    XX(CAT(NCM_TAGS_FIELD_, suffix), display)
 
 #define NCM_TAGS_FIELD_ENUM_FIELDS                                           \
     NCM_TAG_FIELD_DEFS(NCM_TAGS_FIELD_ENUM_FIELD)
@@ -512,9 +507,9 @@ enum {
 #define NCM_SONG_GETTER_NON_TAG_ENUM_FIELD(getter, display, getter_char)     \
     XX(getter, display)
 
-#define NCM_SONG_GETTER_TAG_ENUM_FIELD(tag, display, tag_char, field,      \
-                                        getter, getter_char, flags)   \
-    XX(CAT(SONG_GETTER_, getter), display)
+#define NCM_SONG_GETTER_TAG_ENUM_FIELD(suffix, display, tag_char,         \
+                                        getter_char, flags)                \
+    XX(CAT(SONG_GETTER_, suffix), display)
 
 #define NCM_SONG_GETTER_ENUM_FIELDS                                          \
     NCM_SONG_GETTER_RECORD_NONE(NCM_SONG_GETTER_NON_TAG_ENUM_FIELD)          \
@@ -549,9 +544,9 @@ enum {
 static inline int32
 ncm_tag_type_canonical_name_len(enum NcmTagType tag, char **out) {
     switch (tag) {
-#define NCM_TAG_CANONICAL_NAME_CASE(tag, display, tag_char, field, getter, \
-                                    getter_char, flags)               \
-    case tag:                                                                 \
+#define NCM_TAG_CANONICAL_NAME_CASE(suffix, display, tag_char,            \
+                                    getter_char, flags)                   \
+    case CAT(NCM_TAG_, suffix):                                               \
         *out = NCM_TAG_DISPLAY_NAME(display);                                  \
         return NCM_TAG_DISPLAY_NAME_LEN(display);
 
@@ -568,9 +563,9 @@ ncm_tag_type_canonical_name_len(enum NcmTagType tag, char **out) {
 static inline int32
 ncm_tag_type_display_name_len(enum NcmTagType tag, char **out) {
     switch (tag) {
-#define NCM_TAG_DISPLAY_NAME_CASE(tag, display, tag_char, field, getter,   \
-                                  getter_char, flags)                \
-    case tag:                                                                 \
+#define NCM_TAG_DISPLAY_NAME_CASE(suffix, display, tag_char,               \
+                                  getter_char, flags)                       \
+    case CAT(NCM_TAG_, suffix):                                               \
         if (((flags) & NCM_TAG_META_FLAG_DISPLAY) == 0) {                     \
             *out = "";                                                        \
             return 0;                                                         \
@@ -592,9 +587,9 @@ static inline int32
 ncm_tag_type_settings_name_len(enum NcmTagType tag, char *out,
                                int32 out_cap) {
     switch ((int32)tag) {
-#define NCM_TAG_SETTINGS_NAME_CASE(tag, display, tag_char, field, getter,  \
-                                   getter_char, flags)               \
-    case tag:                                                                 \
+#define NCM_TAG_SETTINGS_NAME_CASE(suffix, display, tag_char,              \
+                                   getter_char, flags)                       \
+    case CAT(NCM_TAG_, suffix):                                               \
         return ncm_tag_name_to_lower_snake(out, out_cap,                     \
                                            NCM_TAG_DISPLAY_NAME(display),     \
                                            NCM_TAG_DISPLAY_NAME_LEN(display));
@@ -626,14 +621,14 @@ ncm_tag_type_parse_settings_name(char *value, int32 value_len,
         return false;
     }
 
-#define NCM_TAG_SETTINGS_NAME_PARSE_CASE(tag, display, tag_char, field,    \
-                                          getter, getter_char, flags)  \
+#define NCM_TAG_SETTINGS_NAME_PARSE_CASE(suffix, display, tag_char,        \
+                                          getter_char, flags)                 \
     settings_name_len = ncm_tag_type_settings_name_len(                      \
-        tag, settings_name, LENGTH(settings_name));                          \
+        CAT(NCM_TAG_, suffix), settings_name, LENGTH(settings_name));         \
     ASSERT(settings_name_len >= 0);                                           \
     if (STREQUAL(normalized, normalized_len,                                  \
                  settings_name, settings_name_len)) {                        \
-        *result = tag;                                                        \
+        *result = CAT(NCM_TAG_, suffix);                                      \
         return true;                                                          \
     }
 
@@ -646,9 +641,9 @@ ncm_tag_type_parse_settings_name(char *value, int32 value_len,
 static inline enum NcmTagType
 ncm_primary_tag_next(enum NcmTagType tag) {
     static enum NcmTagType tags[NCM_PRIMARY_TAG_COUNT] = {
-#define NCM_PRIMARY_TAG_ARRAY_ENTRY(tag, display, tag_char, field, getter, \
-                                    getter_char, flags)               \
-        tag,
+#define NCM_PRIMARY_TAG_ARRAY_ENTRY(suffix, display, tag_char,           \
+                                    getter_char, flags)                      \
+        CAT(NCM_TAG_, suffix),
 
         NCM_TAG_PRIMARY_DEFS(NCM_PRIMARY_TAG_ARRAY_ENTRY)
 
@@ -679,9 +674,9 @@ ncm_song_getter_display_name(enum SongGetter getter) {
 static inline int32
 ncm_song_getter_tag_name_len(enum SongGetter getter, char **out) {
     switch (getter) {
-#define NCM_SONG_GETTER_TAG_NAME_CASE(tag, display, tag_char, field,       \
-                                       getter, getter_char, flags)    \
-    case CAT(SONG_GETTER_, getter):                                           \
+#define NCM_SONG_GETTER_TAG_NAME_CASE(suffix, display, tag_char,          \
+                                       getter_char, flags)                   \
+    case CAT(SONG_GETTER_, suffix):                                           \
         *out = NCM_TAG_DISPLAY_NAME(display);                                  \
         return NCM_TAG_DISPLAY_NAME_LEN(display);
 
@@ -718,9 +713,9 @@ ncm_song_getter_column_title_len(enum SongGetter getter, char **out) {
     case SONG_GETTER_TRACK_NUMBER:
         *out = "Track";
         return STRLIT_LEN("Track");
-#define NCM_SONG_GETTER_TAG_TITLE_CASE(tag, display, tag_char, field,      \
-                                        getter, getter_char, flags)   \
-    case CAT(SONG_GETTER_, getter):                                           \
+#define NCM_SONG_GETTER_TAG_TITLE_CASE(suffix, display, tag_char,         \
+                                        getter_char, flags)                  \
+    case CAT(SONG_GETTER_, suffix):                                           \
         *out = NCM_TAG_DISPLAY_NAME(display);                                  \
         return NCM_TAG_DISPLAY_NAME_LEN(display);
 
@@ -761,9 +756,9 @@ ncm_tag_type_taglib_property_len(enum NcmTagType tag, char *out,
     ASSERT(out_cap > 0);
 
     switch ((int32)tag) {
-#define NCM_TAGLIB_PROPERTY_CASE(tag, display, tag_char, field, getter,    \
-                                  getter_char, flags)                 \
-    case tag:                                                                 \
+#define NCM_TAGLIB_PROPERTY_CASE(suffix, display, tag_char,               \
+                                  getter_char, flags)                       \
+    case CAT(NCM_TAG_, suffix):                                               \
         result = ncm_tag_name_to_upper_compact(                              \
             out, out_cap, NCM_TAG_DISPLAY_NAME(display),                     \
             NCM_TAG_DISPLAY_NAME_LEN(display));                              \
@@ -799,9 +794,9 @@ ncm_tag_type_taglib_name_len(enum NcmTagType tag, char *out,
     ASSERT(out_cap > 0);
 
     switch ((int32)tag) {
-#define NCM_TAGLIB_NAME_CASE(tag, display, tag_char, field, getter,        \
-                              getter_char, flags)                     \
-    case tag:                                                                 \
+#define NCM_TAGLIB_NAME_CASE(suffix, display, tag_char,                   \
+                              getter_char, flags)                           \
+    case CAT(NCM_TAG_, suffix):                                               \
         return ncm_tag_name_to_camel_compact(                                \
             out, out_cap, NCM_TAG_DISPLAY_NAME(display),                     \
             NCM_TAG_DISPLAY_NAME_LEN(display));
@@ -825,10 +820,11 @@ ncm_tags_field_taglib_property_len(enum TagsField field, char *out,
     ASSERT(out_cap > 0);
 
     switch (field) {
-#define NCM_TAGLIB_FIELD_PROPERTY_CASE(tag, display, tag_char, field_id,   \
-                                        getter, getter_char, flags)    \
-    case CAT(NCM_TAGS_FIELD_, field_id):                                      \
-        return ncm_tag_type_taglib_property_len(tag, out, out_cap);
+#define NCM_TAGLIB_FIELD_PROPERTY_CASE(suffix, display, tag_char,         \
+                                        getter_char, flags)                  \
+    case CAT(NCM_TAGS_FIELD_, suffix):                                        \
+        return ncm_tag_type_taglib_property_len(CAT(NCM_TAG_, suffix),       \
+                                                out, out_cap);
 
     NCM_TAGLIB_TAG_DEFS(NCM_TAGLIB_FIELD_PROPERTY_CASE)
 
@@ -845,10 +841,9 @@ ncm_tags_field_taglib_property_len(enum TagsField field, char *out,
 static inline char
 ncm_tags_field_format_char(enum TagsField field) {
     switch (field) {
-#define NCM_TAGS_FIELD_FORMAT_CHAR_CASE(tag, display, tag_char,            \
-                                         field_id, getter, getter_char,     \
-                                         flags)                            \
-    case CAT(NCM_TAGS_FIELD_, field_id):                                      \
+#define NCM_TAGS_FIELD_FORMAT_CHAR_CASE(suffix, display, tag_char,       \
+                                         getter_char, flags)                 \
+    case CAT(NCM_TAGS_FIELD_, suffix):                                        \
         return tag_char;
 
     NCM_TAG_FIELD_DEFS(NCM_TAGS_FIELD_FORMAT_CHAR_CASE)
@@ -880,9 +875,9 @@ ncm_song_getter_format_char(enum SongGetter getter) {
 #define NCM_SONG_GETTER_NON_TAG_CHAR_CASE(getter, display, getter_char)      \
     case getter:                                                               \
         return getter_char;
-#define NCM_SONG_GETTER_TAG_CHAR_CASE(tag, display, tag_char, field,       \
-                                       getter, getter_char, flags)    \
-    case CAT(SONG_GETTER_, getter):                                            \
+#define NCM_SONG_GETTER_TAG_CHAR_CASE(suffix, display, tag_char,          \
+                                       getter_char, flags)                   \
+    case CAT(SONG_GETTER_, suffix):                                            \
         return getter_char;
 
     NCM_SONG_GETTER_RECORD_NONE(NCM_SONG_GETTER_NON_TAG_CHAR_CASE)

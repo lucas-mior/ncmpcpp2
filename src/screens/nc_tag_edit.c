@@ -766,10 +766,10 @@ tag_edit_append_parser_legend_field(StrBuilder *legend,
     return;
 }
 
-#define TAG_EDIT_APPEND_PARSER_FIELD(tag, display, tag_char, field,         \
-                                     getter, getter_char, flags)       \
-    tag_edit_append_parser_legend_field(&screen->parser_legend,               \
-                                        CAT(NCM_TAGS_FIELD_, field));
+#define TAG_EDIT_APPEND_PARSER_FIELD(suffix, display, tag_char, getter_char, \
+                                     flags)                                  \
+    tag_edit_append_parser_legend_field(&screen->parser_legend,              \
+                                        CAT(NCM_TAGS_FIELD_, suffix));
 
 static void
 tag_edit_build_parser_legend(TagEditScreen *screen) {
