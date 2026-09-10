@@ -368,9 +368,8 @@ ncm_tag_type_settings_name_len(enum NcmTagType tag, char *out,
 static inline bool
 ncm_tag_type_is_primary(enum NcmTagType tag) {
     switch ((int32)tag) {
-#define TAG_IS_PRIMARY_CASE(suffix, DISP, CHAR, getter_char,               \
-                                flags)                                         \
-    case CAT(TAG_, suffix):                                                    \
+#define TAG_IS_PRIMARY_CASE(suffix, DISP, CHAR, getter_char, flags) \
+    case CAT(TAG_, suffix):                                         \
         return true;
 
     TAG_PRIMARY_DEFS(TAG_IS_PRIMARY_CASE)
