@@ -3222,8 +3222,8 @@ tag_edit_screen_next_column(TagEditScreen *screen) {
 
 static int32
 tag_edit_for_each_target(TagEditScreen *screen,
-                           int32 (*cb)(MutableSong *song, void *user),
-                           void *user) {
+                         int32 (*callback)(MutableSong *song, void *user),
+                         void *user) {
     NcMenu *menu = nc_tag_row_menu_base(&screen->tags);
     bool has_selected = nc_menu_has_selected(menu);
     int32 count = 0;
@@ -3238,7 +3238,7 @@ tag_edit_for_each_target(TagEditScreen *screen,
 
         song = nc_menu_active_item_at(menu, i);
         ASSERT(song != NULL);
-        status = cb(song, user);
+        status = callback(song, user);
         if (status < 0) {
             return status;
         }
