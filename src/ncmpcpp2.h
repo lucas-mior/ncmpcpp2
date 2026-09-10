@@ -301,9 +301,7 @@ ncm_tag_name_to_camel_compact(char *out, int32 out_cap,
     TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                                \
     TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')
 
-#define TAG_COUNT_RECORD(suffix, display, tag_char, getter_char,               \
-                             flags)                                            \
-    + 1
+#define TAG_COUNT_RECORD(suffix, display, tag_char, getter_char, flags) + 1
 
 
 enum {
