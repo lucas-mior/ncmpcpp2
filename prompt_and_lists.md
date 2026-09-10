@@ -1,10 +1,30 @@
 # Prompt
 
-For the first of the problems below
-(Related argument pairs not grouped together),
-identify instances of it in the first file in the list below it. Then fix those
+For the first and second of the problems below
+(Breaking function calls before the first argument and
+ Related argument pairs not grouped together),
+identify instances of them in the first file in the list below it. Then fix those
 instances and remove the file from the list. If the first file in the list does
-not have the problem, try the next one without asking first.
+not have the problems, try the next one without asking first.
+
+# List for the first 2 problems:
+
+## breaking function calls before the first argument and not aligning
+For instance, this is bad:
+```c
+status = ncm_fs_rename(
+    old_real_path.data, old_real_path.len,
+    new_real_path.data, new_real_path.len, ncm_error)
+```
+Replace with:
+```c
+status = ncm_fs_rename(old_real_path.data, old_real_path.len,
+                       new_real_path.data, new_real_path.len,
+                       ncm_error);
+```
+Only keep line break before the first argument on the very very rare occasion
+that it does not fit in a single line (80 column rule). Remember to try to keep
+associated pointer + len pairs together.
 
 ## Related argument pairs not grouped together
 Make sure that related argument pairs in function headers and calls are together
@@ -35,86 +55,6 @@ int x = function_with_long_name_must_be_broken_twice(long_argument,
                                                      window_width,
                                                      window_height);
 ```
-
-- src/c/ncm_mutable_song.c
-- src/screens/nc_tag_edit.c
-- src/screens/app_screens.c
-- src/c/ncm_c.c
-- src/statusbar.c
-- src/title.c
-- src/curses/nc_menu.c
-- src/screens/nc_outputs.c
-- src/c/ncm_tags.c
-- src/status.c
-- src/c/ncm_search_prompt.c
-- src/curses/nc_formatted_color.c
-- src/c/ncm_option_parser.c
-- src/screens/nc_screen_switcher.c
-- src/c/ncm_playlist_sort.c
-- src/curses/nc_app_menus.c
-- src/screens/nc_playlist_edit.c
-- src/c/ncm_error.c
-- src/screen_actions.c
-- src/screens/nc_help.c
-- src/c/ncm_job.c
-- src/bindings.c
-- src/curses/nc_buffer.c
-- src/lyrics_fetcher.c
-- src/c/ncm_song.c
-- src/screens/nc_screens.c
-- src/c/ncm_format.c
-- src/screens/nc_sort_playlist.c
-- src/lastfm_service.c
-- src/c/ncm_lrc.c
-- src/c/ncm_html.c
-- src/c/ncm_string.c
-- src/c/ncm_path.c
-- src/screens/screen_type.c
-- src/c/ncm_mpd_client.c
-- src/app_state.c
-- src/global.c
-- src/c/ncm_enums.c
-- src/screens/nc_sel_items_adder.c
-- src/curses/nc_cyclic_buffer.c
-- src/curses/nc_window.c
-- src/c/ncm_app_arrays.c
-- src/screens/nc_lyrics.c
-- src/screens/nc_playlist.c
-- src/c/ncm_display.c
-- src/curl_handle.c
-- src/c/ncm_fs.c
-- src/c/ncm_playlist.c
-- src/helpers.c
-- src/actions.c
-- src/c/ncm_directory.c
-- src/app_legacy_bridge.c
-- src/screens/nc_media_library.c
-- src/c/ncm_sample_buffer.c
-- src/screens/nc_screen.c
-- src/c/ncm_regex.c
-- src/settings_types.c
-- src/screens/nc_song_info.c
-- src/c/ncm_type_conversions.c
-- src/screens/nc_server_info.c
-- src/c/ncm_mpd_item.c
-
-## breaking function calls before the first argument and not aligning
-For instance, this is bad:
-```c
-status = ncm_fs_rename(
-    old_real_path.data, old_real_path.len,
-    new_real_path.data, new_real_path.len, ncm_error)
-```
-Replace with:
-```c
-status = ncm_fs_rename(old_real_path.data, old_real_path.len,
-                       new_real_path.data, new_real_path.len,
-                       ncm_error);
-```
-Only keep line break before the first argument on the very very rare occasion
-that it does not fit in a single line (80 column rule). Remember to try to keep
-associated pointer + len pairs together.
-
 
 ## Utility function creep
 Functions that do the (almost) the same thing are redefined in different places.
