@@ -3933,7 +3933,7 @@ tag_edit_screen_close_parser(TagEditScreen *screen) {
 
 static bool
 tag_edit_next_mask_tag(char *mask, int32 mask_len, int32 start,
-                         int32 *percent_pos, char *tag_char) {
+                       int32 *percent_pos, char *tag_char) {
     for (int32 i = start; i + 1 < mask_len; i += 1) {
         if (mask[i] == '%') {
             *percent_pos = i;
