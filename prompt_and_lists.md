@@ -11,34 +11,6 @@ updated zip with the project because I made external changes, then you can start
 accumlating from there, not from the beginning of the chat.
 
 # List for the first 2 problems:
-- src/settings.h
-- src/app_state.h
-- src/curses/nc_formatted_color.c
-- src/lastfm_service.c
-- src/curses/nc_scrollpad.c
-- src/mpd/ncm_mpd_connection.c
-- src/screens/nc_screens.h
-- src/config_options_pass.h
-- src/screens/nc_lastfm.c
-- src/c/ncm_c.c
-- src/app_state.c
-- src/actions.h
-- src/c/ncm_search_prompt.c
-- src/c/ncm_fs.c
-- src/mpd/ncmpcpp2_mpd.h
-- src/title.c
-- src/c/ncm_conversion.c
-- src/mpd/ncm_mpd_item.c
-- src/bindings.c
-- src/screens/screen_type.c
-- src/lyrics_fetcher.c
-- src/c/ncm_path.c
-- src/screens/nc_screen.c
-- src/app_legacy_bridge.h
-- src/screens/nc_tiny_tag_edit.c
-- src/screens/nc_sel_items_adder.c
-- src/bindings.h
-- src/mpd/ncm_mpd_client.c
 - src/mpd/ncm_mpd.c
 - src/helpers.c
 - src/screens/nc_sort_playlist.c
@@ -218,28 +190,5 @@ If the next file also does not have the anti pattern, also remove it from the
 list and try the next and so on. When you end up changing a .c file, send me the
 result as a tar ball (but include all the changes of the previous prompts as
 well).
-
-- src/screens/nc_server_info.c
-- src/c/ncm_mpd_item.c
-- src/screens/nc_song_info.c
-- src/c/ncm_html.c
-- src/c/ncm_conversion.c
-- src/c/ncm_regex.c
-- src/c/ncm_string.c
-- src/c/ncm_enums.c
-- src/title.c
-- src/app_controller.c
-- src/helpers.c
-- src/c/ncm_option_parser.c
-- src/curl_handle.c
-- src/c/ncm_path.c
-- src/c/ncm_playlist.c
-- src/screens/screen_type.c
-- src/c/ncm_macro_utilities.c
-- src/c/ncm_search_prompt.c
-- src/ui_state.c
-- src/curses/nc_formatted_color.c
-- src/global.c
-- src/screens/nc_screens.c
 
 ## Functions that are never called (dead code)

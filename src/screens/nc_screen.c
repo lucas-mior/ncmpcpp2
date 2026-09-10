@@ -476,9 +476,8 @@ nc_screen_append_menu_song_at(NcMenu *menu, int32 pos,
 }
 
 int32
-nc_screen_collect_selected_menu_songs(
-    NcMenu *menu, NcmSongArray *songs,
-    NcScreenMenuSongCallback *song_callback) {
+nc_screen_collect_selected_menu_songs(NcMenu *menu, NcmSongArray *songs,
+                                      NcScreenMenuSongCallback *song_callback) {
     if (songs == NULL) {
         return -EINVAL;
     }

@@ -172,7 +172,7 @@ int32 ncm_action_add_song_to_playlist(NcmSong *, bool, int32);
 
 int32 ncm_action_type_parse(char *, int32, enum ActionType *);
 bool ncm_action_can_run(enum ActionType, void *);
-bool ncm_action_immediate_command_prompt_should_stop(StrBuilder *, char *,
-                                                     int32);
+bool ncm_action_immediate_command_prompt_should_stop(StrBuilder *,
+                                                     char *, int32);
 
 #endif /* ACTIONS_H */

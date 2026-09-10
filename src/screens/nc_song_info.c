@@ -122,9 +122,7 @@ nc_song_info_screen_prepare_current(NcSongInfoScreen *screen) {
     NcBuffer next_buffer = {0};
     int32 status;
 
-    if (screen == NULL) {
-        return -EINVAL;
-    }
+    ASSERT(screen != NULL);
     if (screen->hooks.render == NULL) {
         return -NCM_ERROR_UNAVAILABLE;
     }

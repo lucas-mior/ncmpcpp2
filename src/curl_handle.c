@@ -22,9 +22,8 @@ write_data(char *buffer, size_t size, size_t nmemb, void *data) {
     }
     bytes = size*nmemb;
     writer = data;
-    if ((writer == NULL) || (writer->buffer == NULL)) {
-        return 0;
-    }
+    ASSERT(writer != NULL);
+    ASSERT(writer->buffer != NULL);
     if ((writer->buffer->len >= INT32_MAX)
         || (bytes > (size_t)(INT32_MAX - writer->buffer->len - 1))) {
         return 0;

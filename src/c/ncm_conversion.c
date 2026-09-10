@@ -6,10 +6,8 @@
 #include "c/ncm_c.h"
 
 static int32
-ncm_conversion_copy_source(StrBuilder *buffer, char *source, int32 source_len,
-                           NcmError *ncm_error) {
-    sb_clear(buffer);
-
+ncm_conversion_validate_source(char *source, int32 source_len,
+                               NcmError *ncm_error) {
     if (source == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing conversion source"));
@@ -19,8 +17,18 @@ ncm_conversion_copy_source(StrBuilder *buffer, char *source, int32 source_len,
                                     STRLIT("negative source length"));
     }
 
-    SB_APPEND(buffer, source, source_len);
     return ncm_error_ok(ncm_error);
+}
+
+static void
+ncm_conversion_copy_source(StrBuilder *buffer, char *source, int32 source_len) {
+    ASSERT(buffer != NULL);
+    ASSERT(source != NULL);
+    ASSERT(source_len >= 0);
+
+    sb_clear(buffer);
+    SB_APPEND(buffer, source, source_len);
+    return;
 }
 
 static bool
@@ -63,11 +71,11 @@ ncm_parse_int64(char *source, int32 source_len, int64 *out,
                                     STRLIT("missing conversion output"));
     }
 
-    status = ncm_conversion_copy_source(&buffer, source, source_len, ncm_error);
+    status = ncm_conversion_validate_source(source, source_len, ncm_error);
     if (status < 0) {
-        sb_free(&buffer);
         return status;
     }
+    ncm_conversion_copy_source(&buffer, source, source_len);
 
     if (buffer.len <= 0) {
         status = ncm_conversion_set_parse_error(ncm_error, source, source_len);
@@ -140,11 +148,11 @@ ncm_parse_double(char *source, int32 source_len, double *out,
                                     STRLIT("missing conversion output"));
     }
 
-    status = ncm_conversion_copy_source(&buffer, source, source_len, ncm_error);
+    status = ncm_conversion_validate_source(source, source_len, ncm_error);
     if (status < 0) {
-        sb_free(&buffer);
         return status;
     }
+    ncm_conversion_copy_source(&buffer, source, source_len);
 
     if (buffer.len <= 0) {
         status = ncm_conversion_set_parse_error(ncm_error, source, source_len);

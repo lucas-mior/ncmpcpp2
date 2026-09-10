@@ -432,8 +432,8 @@ lyrics_append_query(StrBuilder *buffer, char *string, int32 string_len) {
 
 static void
 lyrics_fetcher_build_url(LyricsFetcherDef *fetcher, StrBuilder *url,
-                         char *artist, int32 artist_len, char *title,
-                         int32 title_len) {
+                         char *artist, int32 artist_len,
+                         char *title, int32 title_len) {
     char *domain;
     int32 domain_len;
 
@@ -459,8 +459,8 @@ lyrics_fetcher_build_url(LyricsFetcherDef *fetcher, StrBuilder *url,
 
 int32
 ncm_lyrics_fetcher_build_url(LyricsFetcherDef *fetcher, StrBuilder *url,
-                             char *artist, int32 artist_len, char *title,
-                             int32 title_len) {
+                             char *artist, int32 artist_len,
+                             char *title, int32 title_len) {
     if ((fetcher == NULL) || (url == NULL) || (artist == NULL)
         || (artist_len <= 0) || (title == NULL) || (title_len <= 0)) {
         return -EINVAL;
@@ -1014,8 +1014,8 @@ lyrics_starts_with_ignore_case(char *string, int32 string_len,
 }
 
 static int32
-lyrics_find_ignore_case(char *data, int32 data_len, char *needle,
-                        int32 needle_len, int32 start) {
+lyrics_find_ignore_case(char *data, int32 data_len,
+                        char *needle, int32 needle_len, int32 start) {
     if ((data == NULL) || (data_len < 0) || (start < 0)) {
         return -1;
     }
@@ -1080,8 +1080,8 @@ lyrics_find_tag_end(char *data, int32 data_len, int32 start) {
 }
 
 static int32
-lyrics_extract_divs(StrBuilder *out, char *data, int32 data_len, char *marker,
-                    int32 marker_len, bool append_all) {
+lyrics_extract_divs(StrBuilder *out, char *data, int32 data_len,
+                    char *marker, int32 marker_len, bool append_all) {
     int32 pos;
     int32 status;
     bool found;
@@ -1241,8 +1241,8 @@ lyrics_url_path_starts_with(char *url, int32 url_len, int32 path_start,
         return false;
     }
     return lyrics_starts_with_ignore_case(url + path_start,
-                                          path_end - path_start, prefix,
-                                          prefix_len);
+                                          path_end - path_start,
+                                          prefix, prefix_len);
 }
 
 static bool
@@ -1376,14 +1376,13 @@ lyrics_url_best_slug_score(LyricsFetcherDef *fetcher,
                     prefix_separator = candid[candid_len - wanted_len - 1];
                     suffix_separator = candid[wanted_len];
                     if (lyrics_starts_with_ignore_case(candid, candid_len,
-                                                       wanted_data,
-                                                       wanted_len)
+                                                       wanted_data, wanted_len)
                         && lyrics_slug_match_separator(suffix_separator)) {
                         score = 40;
-                    } else if (lyrics_starts_with_ignore_case(suffix,
-                                                              wanted_len,
-                                                              wanted_data,
-                                                              wanted_len)) {
+                    } else if (
+                        lyrics_starts_with_ignore_case(suffix, wanted_len,
+                                                       wanted_data, wanted_len)
+                    ) {
                         if (lyrics_slug_match_separator(prefix_separator)) {
                             score = 35;
                         }
@@ -1404,8 +1403,7 @@ lyrics_url_best_slug_score(LyricsFetcherDef *fetcher,
                 } else if (wanted_len > candid_len) {
                     char suffix_separator = wanted_data[candid_len];
 
-                    if (lyrics_starts_with_ignore_case(wanted_data,
-                                                       wanted_len,
+                    if (lyrics_starts_with_ignore_case(wanted_data, wanted_len,
                                                        candid, candid_len)
                         && lyrics_slug_match_separator(suffix_separator)) {
                         score = 20;
@@ -1536,8 +1534,9 @@ lyrics_decode_quoted(StrBuilder *out, char *data, int32 data_len,
 }
 
 static int32
-lyrics_json_value_start(char *data, int32 data_len, char *key,
-                        int32 key_len, int32 start, int32 *value_start) {
+lyrics_json_value_start(char *data, int32 data_len,
+                        char *key, int32 key_len, int32 start,
+                        int32 *value_start) {
     StrBuilder pattern = {0};
     char *match;
     int32 key_pos;
@@ -1592,9 +1591,9 @@ lyrics_update_first_match(char *data, int32 data_len, int32 start,
 }
 
 static int32
-lyrics_curl_perform(StrBuilder *data, char *url, int32 url_len, char *referer,
-                    int32 referer_len, bool follow_redirect,
-                    int32 timeout_seconds) {
+lyrics_curl_perform(StrBuilder *data, char *url, int32 url_len,
+                    char *referer, int32 referer_len,
+                    bool follow_redirect, int32 timeout_seconds) {
     if (lyrics_test_perform) {
         return lyrics_test_perform(data, url, url_len, referer, referer_len,
                                    follow_redirect, timeout_seconds,
@@ -1627,8 +1626,8 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
     bool plain_text;
 
     *retry = false;
-    status = lyrics_curl_perform(&data, url->data, url->len, referer,
-                                 referer_len, true, 15);
+    status = lyrics_curl_perform(&data, url->data, url->len,
+                                 referer, referer_len, true, 15);
     if (status < 0) {
         message = lyrics_status_error(status, &message_len);
         lyrics_result_set(result, false, message, message_len);
@@ -1785,9 +1784,9 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
             if (marker >= 0) {
                 marker += STRLIT_LEN("window.__PRELOADED_STATE__ = "
                                       "JSON.parse('");
-                extract_status = lyrics_decode_quoted(&json, content_data,
-                                                        content_len, marker,
-                                                        '\'', &json_end);
+                extract_status = lyrics_decode_quoted(&json,
+                                                      content_data, content_len,
+                                                      marker, '\'', &json_end);
                 if (extract_status == 0) {
                     if (json.len <= 0) {
                         lyrics_data = -1;
@@ -1833,11 +1832,11 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
                 break;
             }
 
-            fallback_status = lyrics_extract_divs(out, content_data,
-                                                  content_len,
+            fallback_status = lyrics_extract_divs(out,
+                                                  content_data, content_len,
                                                   STRLIT("data-lyrics-"
                                                          "container=\"true\""),
-                                                    true);
+                                                  true);
             if (fallback_status == 0) {
                 extract_status = 0;
             } else if (extract_status != -NCM_ERROR_PARSE) {
@@ -2038,8 +2037,8 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
                                                      lyrics_pos,
                                                      &value_start);
             if (extract_status == 0) {
-                extract_status = lyrics_decode_quoted(out, content_data,
-                                                      content_len,
+                extract_status = lyrics_decode_quoted(out,
+                                                      content_data, content_len,
                                                       value_start, '"',
                                                       &value_end);
             }
@@ -2059,8 +2058,8 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
             if (extract_status == 0) {
                 break;
             }
-            fallback_status = lyrics_extract_divs(out, content_data,
-                                                  content_len,
+            fallback_status = lyrics_extract_divs(out,
+                                                  content_data, content_len,
                                                   STRLIT("id=lyrics"),
                                                   false);
             if (fallback_status == 0) {
@@ -2135,8 +2134,9 @@ lyrics_direct_legacy_slug_profile(LyricsSlugProfile profile) {
 
 static int32
 lyrics_append_direct_url(LyricsFetcherDef *fetcher, StrBuilder *candidate,
-                         LyricsDirectSlugPair pair, char *artist,
-                         int32 artist_len, char *title, int32 title_len) {
+                         LyricsDirectSlugPair pair,
+                         char *artist, int32 artist_len,
+                         char *title, int32 title_len) {
     int32 status;
 
     sb_clear(candidate);
@@ -2294,8 +2294,9 @@ lyrics_collect_direct_urls(LyricsFetcherDef *fetcher, StrBuilderArray *urls,
     for (int32 i = 0; i < LENGTH(pairs); i += 1) {
         StrBuilder *item;
 
-        status = lyrics_append_direct_url(fetcher, &candidate, pairs[i], artist,
-                                          artist_len, title, title_len);
+        status = lyrics_append_direct_url(fetcher, &candidate, pairs[i],
+                                          artist, artist_len,
+                                          title, title_len);
         if (status < 0) {
             break;
         }
@@ -2518,8 +2519,8 @@ lyrics_url_query_has_key(char *url, int32 url_len,
         (void)value;
         (void)value_len;
         if ((key != NULL) && (key_len == wanted_key_len)
-            && lyrics_starts_with_ignore_case(key, key_len, wanted_key,
-                                              wanted_key_len)) {
+            && lyrics_starts_with_ignore_case(key, key_len,
+                                              wanted_key, wanted_key_len)) {
             return true;
         }
     }

@@ -60,8 +60,8 @@ tiny_editor_buffer_mutable_tag(NcBuffer *buffer, MutableSong *song,
     name_len = NCM_TAGS_FIELD_alias_len(field, &name);
     tiny_editor_buffer_key_value(buffer, name, name_len, NULL, 0);
     value = mutable_song_tags_buffer(song, field,
-                                         tag_separator, tag_separator_len,
-                                         show_duplicate_tags);
+                                     tag_separator, tag_separator_len,
+                                     show_duplicate_tags);
     nc_buffer_append_data(buffer, value.data, value.len);
     sb_free(&value);
     return;
@@ -110,14 +110,18 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
     if ((row >= (int32)TINY_TAG_EDIT_FIRST_TAG_ROW)
         && (row <= (int32)TINY_TAG_EDIT_LAST_TAG_ROW)) {
         char *field_name;
+        char *tag_separator;
         int32 field_name_len;
+        int32 tag_separator_len;
         NcBuffer row_buffer = {0};
 
         field = (enum TagsField)(row - (int32)TINY_TAG_EDIT_FIRST_TAG_ROW);
+        tag_separator = screen->tag_separator.data;
+        tag_separator_len = screen->tag_separator.len;
+
         tag_value = mutable_song_tags_buffer(&screen->edited, field,
-                                                 screen->tag_separator.data,
-                                                 screen->tag_separator.len,
-                                                 screen->show_duplicate_tags);
+                                             tag_separator, tag_separator_len,
+                                             screen->show_duplicate_tags);
         initial.data = tag_value.data;
         initial.len = tag_value.len;
         field_name_len = NCM_TAGS_FIELD_alias_len(field, &field_name);
@@ -140,14 +144,12 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         }
 
         mutable_song_set_tags(&screen->edited, field,
-                                  sb_opt_cstr(&input), input.len,
-                                  screen->tag_separator.data,
-                                  screen->tag_separator.len);
+                              sb_opt_cstr(&input), input.len,
+                              tag_separator, tag_separator_len);
         sb_free(&input);
 
         tiny_editor_buffer_mutable_tag(&row_buffer, &screen->edited, field,
-                                       screen->tag_separator.data,
-                                       screen->tag_separator.len,
+                                       tag_separator, tag_separator_len,
                                        screen->show_duplicate_tags);
         nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL,
                              TINY_TAG_EDIT_TAG_ROW(field), &row_buffer);
@@ -160,8 +162,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         NcBuffer row_buffer = {0};
         StrBuilder new_name = {0};
 
-        if (!mutable_song_has_new_name_view(&screen->edited,
-                                                &current_name)) {
+        if (!mutable_song_has_new_name_view(&screen->edited, &current_name)) {
             current_name.data = screen->edited.name;
             current_name.len = screen->edited.name_len;
         }
@@ -197,8 +198,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
             return 0;
         }
 
-        if (!mutable_song_has_new_name_view(&screen->edited,
-                                                &current_name)) {
+        if (!mutable_song_has_new_name_view(&screen->edited, &current_name)) {
             current_name.data = screen->edited.name;
             current_name.len = screen->edited.name_len;
         }
@@ -214,8 +214,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
             SB_APPEND(&new_name,
                       &current_name.data[dot], current_name.len - dot);
         }
-        mutable_song_set_new_name(&screen->edited,
-                                      new_name.data, new_name.len);
+        mutable_song_set_new_name(&screen->edited, new_name.data, new_name.len);
         sb_free(&new_name);
         sb_free(&input);
 
@@ -241,7 +240,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
                                               screen->music_dir.data);
         } else {
             status = mutable_song_write(&screen->edited,
-                                            screen->music_dir.data);
+                                        screen->music_dir.data);
         }
         if (status < 0) {
             error_len = SNPRINTF(error_buffer, "Error while writing tags: %s",

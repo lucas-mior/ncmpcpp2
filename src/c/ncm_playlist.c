@@ -7,6 +7,8 @@
 
 void
 ncm_playlist_destroy(NcmPlaylist *playlist) {
+    ASSERT(playlist != NULL);
+
     free2(playlist->path, playlist->path_len + 1);
 
     playlist->path = NULL;
@@ -20,19 +22,12 @@ int32
 ncm_playlist_set(NcmPlaylist *playlist,
                  char *path, int32 path_len,
                  time_t last_modified) {
-    NcmPlaylist replacement;
+    NcmPlaylist replacement = {0};
 
-    if (playlist == NULL) {
-        return -EINVAL;
-    }
-    if (path == NULL) {
-        return -EINVAL;
-    }
-    if (path_len < 0) {
-        return -EINVAL;
-    }
+    ASSERT(playlist != NULL);
+    ASSERT(path != NULL);
+    ASSERT(path_len >= 0);
 
-    replacement = (NcmPlaylist){0};
     replacement.path = malloc2(path_len + 1);
     replacement.path_len = path_len;
     replacement.last_modified = last_modified;
@@ -46,12 +41,9 @@ ncm_playlist_set(NcmPlaylist *playlist,
 
 int32
 ncm_playlist_copy(NcmPlaylist *dest, NcmPlaylist *source) {
-    if (dest == NULL) {
-        return -EINVAL;
-    }
-    if (source == NULL) {
-        return -EINVAL;
-    }
+    ASSERT(dest != NULL);
+    ASSERT(source != NULL);
+
     if (source->path == NULL) {
         ncm_playlist_destroy(dest);
         return 0;
@@ -63,19 +55,14 @@ ncm_playlist_copy(NcmPlaylist *dest, NcmPlaylist *source) {
 
 void
 ncm_playlist_move(NcmPlaylist *dest, NcmPlaylist *source) {
-    if (dest == NULL) {
-        return;
-    }
+    ASSERT(dest != NULL);
+    ASSERT(source != NULL);
+
     if (dest == source) {
         return;
     }
 
     ncm_playlist_destroy(dest);
-    if (source == NULL) {
-        *dest = (NcmPlaylist){0};
-        return;
-    }
-
     *dest = *source;
     *source = (NcmPlaylist){0};
     return;
@@ -83,12 +70,11 @@ ncm_playlist_move(NcmPlaylist *dest, NcmPlaylist *source) {
 
 bool
 ncm_playlist_has_path_view(NcmPlaylist *playlist, StringView *view) {
+    ASSERT(playlist != NULL);
+
     if (view) {
         view->data = NULL;
         view->len = 0;
-    }
-    if (playlist == NULL) {
-        return false;
     }
     if (playlist->path == NULL) {
         return false;
@@ -103,9 +89,7 @@ ncm_playlist_has_path_view(NcmPlaylist *playlist, StringView *view) {
 
 time_t
 ncm_playlist_last_modified(NcmPlaylist *playlist) {
-    if (playlist == NULL) {
-        return 0;
-    }
+    ASSERT(playlist != NULL);
 
     return playlist->last_modified;
 }

@@ -13,8 +13,9 @@
 #include "ui_state.h"
 
 static void
-adder_add_action_row(NcEditorActionMenu *menu, char *label,
-                     int32 label_len, void (*run)(void *), void *user) {
+adder_add_action_row(NcEditorActionMenu *menu,
+                     char *label, int32 label_len,
+                     void (*run)(void *), void *user) {
     NcEditorActionRow row;
 
     row = (NcEditorActionRow){0};
@@ -28,10 +29,6 @@ adder_add_action_row(NcEditorActionMenu *menu, char *label,
     nc_editor_action_row_destroy(&row);
     return;
 }
-
-static void adder_add_action_row(NcEditorActionMenu *menu, char *label,
-                                  int32 label_len, void (*run)(void *),
-                                  void *user);
 
 static StringView
 selected_items_adder_search_constraint_capability(NcScreen *base) {
@@ -52,10 +49,11 @@ selected_items_adder_search_clear_capability(NcScreen *base) {
 
 static int32
 selected_items_adder_search_capability(NcScreen *base,
-                                      enum SearchDirection direction,
-                                      char *pattern, int32 pattern_len,
-                                      uint32 regex_flags, bool wrap,
-                                      bool skip_current, NcmError *ncm_error) {
+                                       enum SearchDirection direction,
+                                       char *pattern, int32 pattern_len,
+                                       uint32 regex_flags, bool wrap,
+                                       bool skip_current,
+                                       NcmError *ncm_error) {
     SelectedItemsAdderScreen *screen = (SelectedItemsAdderScreen *)base;
     bool forward;
     int32 status;
@@ -378,8 +376,8 @@ adder_finish(SelectedItemsAdderScreen *screen) {
 }
 
 static void
-adder_add_to_current_playlist(SelectedItemsAdderScreen *screen, int32 position
-) {
+adder_add_to_current_playlist(SelectedItemsAdderScreen *screen,
+                              int32 position) {
     StrBuilder message = {0};
     char *suffix;
     bool added;
@@ -565,9 +563,10 @@ adder_action_position_cancel(void *user) {
 }
 
 void
-selected_items_adder_screen_init(
-    SelectedItemsAdderScreen *screen, int32 start_x, int32 start_y,
-    int32 width, int32 height, NcColor color, NcBorder border) {
+selected_items_adder_screen_init(SelectedItemsAdderScreen *screen,
+                                 int32 start_x, int32 start_y,
+                                 int32 width, int32 height,
+                                 NcColor color, NcBorder border) {
     NcMenuDisplayCallbacks display_callbacks = {0};
     NcScreenOps ops;
     NcMenu *playlist_menu;
@@ -585,10 +584,11 @@ selected_items_adder_screen_init(
     nc_menu_set_highlight_suffix(position_menu, &Config.current_item_suffix);
     nc_menu_set_cyclic_scrolling(position_menu, Config.cyclic_scrolling);
     nc_menu_set_centered_cursor(position_menu, Config.centered_cursor);
-    nc_window_init(&screen->playlist_window, start_x, start_y, width,
-                   height, STRLIT("Add selected item(s) to..."), color, border);
-    nc_window_init(&screen->position_window, start_x, start_y, width,
-                   height, STRLIT("Where?"), color, border);
+    nc_window_init(&screen->playlist_window, start_x, start_y,
+                   width, height, STRLIT("Add selected item(s) to..."),
+                   color, border);
+    nc_window_init(&screen->position_window, start_x, start_y,
+                   width, height, STRLIT("Where?"), color, border);
     screen->selected_songs = (NcmSongArray){0};
     screen->search_regex = (NcmRegex){0};
 
@@ -827,9 +827,10 @@ adder_action_cancel_target(void *user) {
 }
 
 int32
-selected_items_adder_screen_open(
-    SelectedItemsAdderScreen *screen, NcmSongArray *songs,
-    PlaylistScreen *playlist, MpdClient *client, NcmError *ncm_error) {
+selected_items_adder_screen_open(SelectedItemsAdderScreen *screen,
+                                 NcmSongArray *songs,
+                                 PlaylistScreen *playlist, MpdClient *client,
+                                 NcmError *ncm_error) {
     NcmMpdPlaylistList playlists;
     NcmSongArray selected_songs = {0};
     NcmError playlist_error;
@@ -963,7 +964,7 @@ selected_items_adder_screen_open(
                                                       j);
                 if (ncm_compare_locale_strings(right->label, right->label_len,
                                                left->label, left->label_len,
-                    Config.ignore_leading_the) < 0) {
+                                               Config.ignore_leading_the) < 0) {
                     smallest = j;
                 }
             }
@@ -1019,8 +1020,8 @@ selected_items_adder_screen_run_current(SelectedItemsAdderScreen *screen) {
 }
 
 int32
-selected_items_adder_screen_return_to_previous(SelectedItemsAdderScreen *screen
-) {
+selected_items_adder_screen_return_to_previous(
+    SelectedItemsAdderScreen *screen) {
     if (screen == NULL) {
         return -EINVAL;
     }
@@ -1038,10 +1039,11 @@ adder_position_matches(NcMenu *menu, int32 pos, void *user) {
 }
 
 int32
-selected_items_adder_screen_search(
-    SelectedItemsAdderScreen *screen, char *pattern,
-    int32 pattern_len, uint32 regex_flags, bool forward, bool wrap,
-    bool skip_current, NcmError *ncm_error) {
+selected_items_adder_screen_search(SelectedItemsAdderScreen *screen,
+                                   char *pattern, int32 pattern_len,
+                                   uint32 regex_flags, bool forward,
+                                   bool wrap, bool skip_current,
+                                   NcmError *ncm_error) {
     NcmRegex regex;
     NcMenu *menu;
     NcWindow *window;
