@@ -980,8 +980,7 @@ test_tag_type_names(void) {
     int32 name_len;
 
 #define TEST_TAG_TYPE_NAME(tag, display, tag_char, field, getter,            \
-                           getter_char, taglib_property, taglib_name,        \
-                           mpd, flags)                       \
+                           getter_char, mpd, flags)                          \
     name_len = ncm_tag_type_name_len(tag, &name);                            \
     if (((flags) & NCM_TAG_META_FLAG_DISPLAY) == 0) {                        \
         ASSERT_EQUAL(name, name_len, "");                                     \
@@ -1003,8 +1002,7 @@ test_tag_type_names(void) {
 static void
 test_tag_char_and_field_conversions(void) {
 #define TEST_FIELD_CONVERSION(tag, display, tag_char, field, getter,          \
-                              getter_char, taglib_property, taglib_name,     \
-                              mpd, flags)                    \
+                              getter_char, mpd, flags)                       \
     ASSERT(ncm_char_to_tag_type(tag_char) == tag);                           \
     ASSERT(ncm_tags_field_from_char(tag_char)                                \
            == CAT(NCM_TAGS_FIELD_, field));                                  \
@@ -1041,8 +1039,7 @@ test_song_getter_conversions(void) {
         ASSERT(ncm_song_getter_format_char(getter) == getter_char);          \
     }
 #define TEST_TAG_GETTER_CHAR(tag, display, tag_char, field, getter,          \
-                             getter_char, taglib_property, taglib_name,      \
-                             mpd, flags)                     \
+                             getter_char, mpd, flags)                       \
     ASSERT(ncm_song_getter_from_char(getter_char)                            \
            == CAT(SONG_GETTER_, getter));                                    \
     ASSERT(ncm_song_getter_format_char(CAT(SONG_GETTER_, getter))            \
@@ -1076,8 +1073,7 @@ test_primary_tag_settings_parse(void) {
     int32 settings_name_len;
 
 #define TEST_PRIMARY_SETTING(tag, display, tag_char, field, getter,          \
-                             getter_char, taglib_property, taglib_name,      \
-                             mpd, flags)                                     \
+                             getter_char, mpd, flags)                       \
     settings_name_len = ncm_tag_type_settings_name_len(                     \
         tag, settings_name, LENGTH(settings_name));                          \
     ASSERT(settings_name_len > 0);                                           \
@@ -1101,6 +1097,37 @@ test_primary_tag_settings_parse(void) {
     return;
 }
 
+
+static void
+test_taglib_metadata(void) {
+    char buffer[NCM_TAGLIB_PROPERTY_CAP];
+    int32 len;
+
+    len = ncm_tag_type_taglib_property_len(NCM_TAG_ALBUM_ARTIST,
+                                           buffer, LENGTH(buffer));
+    ASSERT_EQUAL(buffer, len, "ALBUMARTIST");
+    len = ncm_tag_type_taglib_name_len(NCM_TAG_ALBUM_ARTIST,
+                                       buffer, LENGTH(buffer));
+    ASSERT_EQUAL(buffer, len, "AlbumArtist");
+
+    len = ncm_tag_type_taglib_property_len(NCM_TAG_TRACK,
+                                           buffer, LENGTH(buffer));
+    ASSERT_EQUAL(buffer, len, "TRACKNUMBER");
+    len = ncm_tag_type_taglib_name_len(NCM_TAG_TRACK,
+                                       buffer, LENGTH(buffer));
+    ASSERT_EQUAL(buffer, len, "Track");
+
+    len = ncm_tags_field_taglib_property_len(NCM_TAGS_FIELD_DISC,
+                                             buffer, LENGTH(buffer));
+    ASSERT_EQUAL(buffer, len, "DISCNUMBER");
+
+    ASSERT(ncm_tag_type_taglib_property_len(NCM_TAG_NAME,
+                                            buffer, LENGTH(buffer)) < 0);
+    ASSERT(ncm_tags_field_taglib_property_len(NCM_TAGS_FIELD_COUNT,
+                                              buffer, LENGTH(buffer)) < 0);
+    return;
+}
+
 static void
 test_search_constraint_metadata(void) {
     SearchConstraintMetadata *metadata;
@@ -1112,8 +1139,7 @@ test_search_constraint_metadata(void) {
     ASSERT(metadata->name_len == strlen32(metadata->name));
 
 #define TEST_SEARCH_CONSTRAINT(tag_id, display, tag_char, field, getter,     \
-                               getter_char, taglib_property, taglib_name,   \
-                               mpd, flags)                  \
+                               getter_char, mpd, flags)                    \
     metadata = search_constraint_metadata(idx);                              \
     ASSERT(metadata->tag == tag_id);                                         \
     ASSERT_EQUAL(metadata->name, metadata->name_len,                         \
@@ -1133,8 +1159,7 @@ test_song_info_tag_metadata(void) {
     int32 idx = 0;
 
 #define TEST_SONG_INFO_TAG(tag, display, tag_char, field_id, getter,         \
-                           getter_char, taglib_property, taglib_name,        \
-                           mpd, flags)                       \
+                           getter_char, mpd, flags)                          \
     ASSERT_EQUAL(ncm_song_info_tags[idx].name,                               \
                  ncm_song_info_tags[idx].name_len,                           \
                  NCM_TAG_DISPLAY_NAME(display));                             \
@@ -1163,8 +1188,7 @@ test_tag_edit_parser_metadata(void) {
     int32 idx = 0;
 
 #define TEST_PARSER_FIELD(tag, display, tag_char, field, getter,              \
-                          getter_char, taglib_property, taglib_name,         \
-                          mpd, flags)                        \
+                          getter_char, mpd, flags)                           \
     ASSERT(ncm_tags_field_format_char(CAT(NCM_TAGS_FIELD_, field))           \
            == tag_char);                                                     \
     name_len = ncm_tags_field_parser_name_len(CAT(NCM_TAGS_FIELD_, field),   \
@@ -1203,6 +1227,7 @@ main(void) {
     test_tag_char_and_field_conversions();
     test_song_getter_conversions();
     test_primary_tag_settings_parse();
+    test_taglib_metadata();
     test_search_constraint_metadata();
     test_song_info_tag_metadata();
     test_tag_edit_parser_metadata();
