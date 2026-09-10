@@ -3960,6 +3960,7 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
     if (song->name == NULL) {
         return -NCM_ERROR_NOT_FOUND;
     }
+
     name_len = song->name_len;
     for (int32 i = song->name_len - 1; i >= 0; i -= 1) {
         if (song->name[i] == '.') {
@@ -3968,6 +3969,7 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
         }
     }
     SB_APPEND(&file, song->name, name_len);
+
     mask_pos = 0;
     file_pos = 0;
     while (tag_edit_next_mask_tag(mask, mask_len, mask_pos,
