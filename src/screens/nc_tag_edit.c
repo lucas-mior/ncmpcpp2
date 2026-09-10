@@ -3569,6 +3569,7 @@ tag_edit_screen_apply_directory_filter(TagEditScreen *screen,
         screen->directory_filter_enabled = false;
         nc_menu_show_all_items(nc_editor_pair_menu_base(&screen->directories));
         tag_edit_update_titles(screen, true);
+
         return ncm_error_ok(ncm_error);
     }
     if ((status = tag_edit_compile_constraint(&screen->directory_filter_regex,
