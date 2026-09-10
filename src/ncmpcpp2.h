@@ -300,6 +300,23 @@
     NCM_TAG_RECORD_PERFORMER(XX)                                             \
     NCM_TAG_RECORD_TITLE(XX)
 
+#define NCM_TAG_COUNT_RECORD(tag, name, alias, tag_char, field, getter, \
+                             getter_char, taglib_property, taglib_name, \
+                             settings_name, mpd, flags) \
+    + 1
+
+enum {
+    NCM_SONG_INFO_TAG_COUNT = 0
+        NCM_TAG_SONG_INFO_DEFS(NCM_TAG_COUNT_RECORD),
+    NCM_SEARCH_TAG_COUNT = 0
+        NCM_TAG_SEARCH_DEFS(NCM_TAG_COUNT_RECORD),
+    NCM_SEARCH_CONSTRAINT_COUNT = NCM_SEARCH_TAG_COUNT + 1,
+    NCM_TAG_SORT_COUNT = 0
+        NCM_TAG_SORT_DEFS(NCM_TAG_COUNT_RECORD),
+};
+
+#undef NCM_TAG_COUNT_RECORD
+
 #define NCM_TAG_TYPE_ENUM_FIELD(tag, name, alias, tag_char, field, getter,   \
                                 getter_char, taglib_property, taglib_name,   \
                                 settings_name, mpd, flags)                  \
@@ -419,6 +436,9 @@ _Static_assert(NCM_TAGS_FIELD_COMMENT == 10,
                "TagsField order changed: COMMENT");
 _Static_assert(NCM_TAGS_FIELD_COUNT == 11,
                "TagsField count changed");
+_Static_assert((int32)NCM_SONG_INFO_TAG_COUNT
+               == (int32)NCM_TAGS_FIELD_COUNT,
+               "song-info tag count changed");
 
 #define ENUM_NAME SongGetter
 #define ENUM_PREFIX_ SONG_GETTER_
@@ -447,6 +467,91 @@ ncm_song_getter_display_name_len(enum SongGetter getter, char **out) {
 static inline char *
 ncm_song_getter_display_name(enum SongGetter getter) {
     return SONG_GETTER_alias(getter);
+}
+
+static inline int32
+ncm_song_getter_tag_name_len(enum SongGetter getter, char **out) {
+    switch (getter) {
+#define NCM_SONG_GETTER_TAG_NAME_CASE(tag, name, alias, tag_char, field,     \
+                                      getter, getter_char, taglib_property,  \
+                                      taglib_name, settings_name, mpd, flags) \
+    case CAT(SONG_GETTER_, getter):                                           \
+        *out = name;                                                          \
+        return STRLIT_LEN(name);
+
+    NCM_SONG_GETTER_TAG_DEFS(NCM_SONG_GETTER_TAG_NAME_CASE)
+
+#undef NCM_SONG_GETTER_TAG_NAME_CASE
+    case SONG_GETTER_NONE:
+    case SONG_GETTER_LENGTH:
+    case SONG_GETTER_DIRECTORY:
+    case SONG_GETTER_NAME:
+    case SONG_GETTER_URI:
+    case SONG_GETTER_TRACK_NUMBER:
+    case SONG_GETTER_PRIORITY:
+    case SONG_GETTER_COUNT:
+    default:
+        *out = "";
+        return 0;
+    }
+}
+
+static inline int32
+ncm_song_getter_column_title_len(enum SongGetter getter, char **out) {
+    switch (getter) {
+    case SONG_GETTER_LENGTH:
+        *out = "Time";
+        return STRLIT_LEN("Time");
+    case SONG_GETTER_DIRECTORY:
+        *out = "Directory";
+        return STRLIT_LEN("Directory");
+    case SONG_GETTER_NAME:
+        *out = "Filename";
+        return STRLIT_LEN("Filename");
+    case SONG_GETTER_URI:
+        *out = "Filepath";
+        return STRLIT_LEN("Filepath");
+    case SONG_GETTER_TRACK_NUMBER:
+        *out = "Track";
+        return STRLIT_LEN("Track");
+    case SONG_GETTER_PRIORITY:
+        *out = "Priority";
+        return STRLIT_LEN("Priority");
+#define NCM_SONG_GETTER_TAG_TITLE_CASE(tag, name, alias, tag_char, field,    \
+                                       getter, getter_char, taglib_property, \
+                                       taglib_name, settings_name, mpd,      \
+                                       flags)                                \
+    case CAT(SONG_GETTER_, getter):                                           \
+        *out = name;                                                          \
+        return STRLIT_LEN(name);
+
+    NCM_SONG_GETTER_TAG_DEFS(NCM_SONG_GETTER_TAG_TITLE_CASE)
+
+#undef NCM_SONG_GETTER_TAG_TITLE_CASE
+    case SONG_GETTER_NONE:
+    case SONG_GETTER_COUNT:
+    default:
+        *out = "?";
+        return STRLIT_LEN("?");
+    }
+}
+
+static inline int32
+ncm_song_getter_sort_label_len(enum SongGetter getter, char **out) {
+    int32 len;
+
+    if (getter == SONG_GETTER_URI) {
+        *out = "Filename";
+        return STRLIT_LEN("Filename");
+    }
+
+    len = ncm_song_getter_tag_name_len(getter, out);
+    if (len > 0) {
+        return len;
+    }
+
+    *out = "";
+    return 0;
 }
 
 static inline char

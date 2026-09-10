@@ -284,31 +284,28 @@ sort_dialog_cancel(void *user) {
 }
 
 static void
+sort_dialog_add_sort_getter_row(SortPlaylistDialog *dialog,
+                                enum SongGetter getter) {
+    char *label;
+    int32 label_len;
+
+    label_len = ncm_song_getter_sort_label_len(getter, &label);
+    ASSERT(label_len > 0);
+    sort_dialog_add_row(dialog, label, label_len, getter,
+                        sort_dialog_show_move_hint, dialog);
+    return;
+}
+
+#define SORT_DIALOG_ADD_TAG_ROW(tag, name, alias, tag_char, field, getter, \
+                                getter_char, taglib_property, taglib_name, \
+                                settings_name, mpd, flags)                 \
+    sort_dialog_add_sort_getter_row(dialog, CAT(SONG_GETTER_, getter));
+
+static void
 sort_dialog_populate_defaults(SortPlaylistDialog *dialog) {
     nc_menu_clear_items(nc_editor_sort_menu_base(&dialog->rows));
-    sort_dialog_add_row(dialog, STRLIT("Artist"), SONG_GETTER_ARTIST,
-                        sort_dialog_show_move_hint, dialog);
-    sort_dialog_add_row(dialog, STRLIT("Album artist"),
-                        SONG_GETTER_ALBUM_ARTIST,
-                        sort_dialog_show_move_hint, dialog);
-    sort_dialog_add_row(dialog, STRLIT("Album"), SONG_GETTER_ALBUM,
-                        sort_dialog_show_move_hint, dialog);
-    sort_dialog_add_row(dialog, STRLIT("Disc"), SONG_GETTER_DISC,
-                        sort_dialog_show_move_hint, dialog);
-    sort_dialog_add_row(dialog, STRLIT("Track"), SONG_GETTER_TRACK,
-                        sort_dialog_show_move_hint, dialog);
-    sort_dialog_add_row(dialog, STRLIT("Genre"), SONG_GETTER_GENRE,
-                        sort_dialog_show_move_hint, dialog);
-    sort_dialog_add_row(dialog, STRLIT("Date"), SONG_GETTER_DATE,
-                        sort_dialog_show_move_hint, dialog);
-    sort_dialog_add_row(dialog, STRLIT("Composer"), SONG_GETTER_COMPOSER,
-                        sort_dialog_show_move_hint, dialog);
-    sort_dialog_add_row(dialog, STRLIT("Performer"), SONG_GETTER_PERFORMER,
-                        sort_dialog_show_move_hint, dialog);
-    sort_dialog_add_row(dialog, STRLIT("Title"), SONG_GETTER_TITLE,
-                        sort_dialog_show_move_hint, dialog);
-    sort_dialog_add_row(dialog, STRLIT("Filename"), SONG_GETTER_URI,
-                        sort_dialog_show_move_hint, dialog);
+    NCM_TAG_SORT_DEFS(SORT_DIALOG_ADD_TAG_ROW)
+    sort_dialog_add_sort_getter_row(dialog, SONG_GETTER_URI);
     nc_editor_sort_menu_add_separator(&dialog->rows);
     sort_dialog_add_row(dialog, STRLIT("Sort"), SONG_GETTER_NONE,
                         sort_dialog_run_sort, dialog);
@@ -316,6 +313,8 @@ sort_dialog_populate_defaults(SortPlaylistDialog *dialog) {
                         sort_dialog_cancel, dialog);
     return;
 }
+
+#undef SORT_DIALOG_ADD_TAG_ROW
 
 static void
 sort_dialog_draw_row(NcMenu *menu, NcWindow *window, void *item,

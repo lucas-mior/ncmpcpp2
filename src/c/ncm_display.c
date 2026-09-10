@@ -184,63 +184,16 @@ ncm_display_column_title(StrBuilder *buffer, struct Column *columns,
             SB_APPEND(&name, column->name, column->name_len);
         } else {
             for (int32 j = 0; j < column->type_len; j += 1) {
+                enum SongGetter getter;
+                char *title;
+                int32 title_len;
+
                 if (j > 0) {
                     sb_append_byte(&name, '/');
                 }
-                switch (column->type[j]) {
-                case 'l':
-                    SB_APPEND(&name, "Time");
-                    break;
-                case 'f':
-                    SB_APPEND(&name, "Filename");
-                    break;
-                case 'D':
-                    SB_APPEND(&name, "Directory");
-                    break;
-                case 'F':
-                    SB_APPEND(&name, "Filepath");
-                    break;
-                case 'a':
-                    SB_APPEND(&name, "Artist");
-                    break;
-                case 'A':
-                    SB_APPEND(&name, "Album Artist");
-                    break;
-                case 't':
-                    SB_APPEND(&name, "Title");
-                    break;
-                case 'b':
-                    SB_APPEND(&name, "Album");
-                    break;
-                case 'y':
-                    SB_APPEND(&name, "Date");
-                    break;
-                case 'n':
-                case 'N':
-                    SB_APPEND(&name, "Track");
-                    break;
-                case 'g':
-                    SB_APPEND(&name, "Genre");
-                    break;
-                case 'c':
-                    SB_APPEND(&name, "Composer");
-                    break;
-                case 'p':
-                    SB_APPEND(&name, "Performer");
-                    break;
-                case 'd':
-                    SB_APPEND(&name, "Disc");
-                    break;
-                case 'C':
-                    SB_APPEND(&name, "Comment");
-                    break;
-                case 'P':
-                    SB_APPEND(&name, "Priority");
-                    break;
-                default:
-                    SB_APPEND(&name, "?");
-                    break;
-                }
+                getter = ncm_song_getter_from_char(column->type[j]);
+                title_len = ncm_song_getter_column_title_len(getter, &title);
+                SB_APPEND(&name, title, title_len);
             }
         }
         cut_len = utf8_cut_width(name.data, name.len, width);

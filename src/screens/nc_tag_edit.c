@@ -24,6 +24,18 @@ enum TagEditParserActionRow {
 
 #define TAG_EDIT_PATTERN_HISTORY_MAX 30
 
+#define TAG_EDIT_FILENAME_ROW (NCM_SONG_INFO_TAG_COUNT + 1)
+
+static bool
+tag_edit_choice_is_field(int32 choice) {
+    return (choice >= 0) && (choice < NCM_SONG_INFO_TAG_COUNT);
+}
+
+static bool
+tag_edit_choice_is_filename(int32 choice) {
+    return choice == TAG_EDIT_FILENAME_ROW;
+}
+
 #define ENUM_NAME TagEditTagTypeAction
 #define ENUM_PREFIX_ TAG_EDIT_TAG_TYPE_ACTION_
 #define ENUM_BITFLAGS 0
@@ -78,7 +90,7 @@ tag_edit_draw_tag(NcMenu *menu, NcWindow *window, void *item,
 
     tag_types = nc_editor_string_menu_base(&screen->tag_types);
     choice = nc_menu_highlight(tag_types);
-    if ((choice >= 0) && (choice < 11)) {
+    if (tag_edit_choice_is_field(choice)) {
         StrBuilder tag;
         enum TagsField field = ncm_song_info_tags[choice].field;
 
@@ -97,7 +109,7 @@ tag_edit_draw_tag(NcMenu *menu, NcWindow *window, void *item,
             nc_buffer_append_data(&buffer, tag.data, tag.len);
         }
         sb_free(&tag);
-    } else if (choice == 12) {
+    } else if (tag_edit_choice_is_filename(choice)) {
         nc_buffer_append_data(&buffer, song->name, song->name_len);
         if (song->new_name && (song->new_name_len > 0)) {
             tag_edit_append_formatted_color(&buffer, &Config.color2);
@@ -567,7 +579,7 @@ tag_edit_current_tag_type_action(TagEditScreen *screen,
         return TAG_EDIT_TAG_TYPE_ACTION_NONE;
     }
 
-    if ((choice >= 0) && (choice < 11)) {
+    if (tag_edit_choice_is_field(choice)) {
         *field = ncm_song_info_tags[choice].field;
         if ((ncm_song_info_tags[choice].field == NCM_TAGS_FIELD_TRACK)
             && (screen->active_focus == TAG_EDIT_FOCUS_TAG_TYPES)) {
@@ -575,7 +587,7 @@ tag_edit_current_tag_type_action(TagEditScreen *screen,
         }
         return TAG_EDIT_TAG_TYPE_ACTION_FIELD;
     }
-    if (STREQUAL(row->data, row->len, "Filename")) {
+    if (tag_edit_choice_is_filename(choice)) {
         return TAG_EDIT_TAG_TYPE_ACTION_FILENAME;
     }
     if (STREQUAL(row->data, row->len, "Capitalize First Letters")) {
@@ -2139,9 +2151,9 @@ tag_edit_tag_matches_regex(TagEditScreen *screen,
 
     tag_types = nc_editor_string_menu_base(&screen->tag_types);
     choice = nc_menu_highlight(tag_types);
-    if ((choice >= 0) && (choice < 11)) {
+    if (tag_edit_choice_is_field(choice)) {
         field = ncm_song_info_tags[choice].field;
-    } else if (choice == 12) {
+    } else if (tag_edit_choice_is_filename(choice)) {
         field = NCM_TAGS_FIELD_COUNT;
     } else {
         return false;
@@ -2436,14 +2448,21 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
         NcEditorStringMenu *menu = &screen->tag_types;
 
         nc_menu_clear_items(nc_editor_string_menu_base(menu));
-        for (int32 i = 0; ncm_song_info_tags[i].name; i += 1) {
+        for (int32 i = 0; i < NCM_SONG_INFO_TAG_COUNT; i += 1) {
             tag_edit_append_string_row(menu, ncm_song_info_tags[i].name,
                                        ncm_song_info_tags[i].name_len,
                                        NC_MENU_ITEM_SELECTABLE);
         }
         nc_editor_string_menu_add_separator(menu);
-        tag_edit_append_string_row(menu, STRLIT("Filename"),
-                                   NC_MENU_ITEM_SELECTABLE);
+        {
+            char *label;
+            int32 label_len;
+
+            label_len = ncm_song_getter_display_name_len(SONG_GETTER_NAME,
+                                                         &label);
+            tag_edit_append_string_row(menu, label, label_len,
+                                       NC_MENU_ITEM_SELECTABLE);
+        }
         nc_editor_string_menu_add_separator(menu);
         if (Config.titles_visibility) {
             tag_edit_append_string_row(menu, STRLIT("Options"),
@@ -3158,7 +3177,8 @@ tag_edit_screen_next_column_available(TagEditScreen *screen) {
         tags = nc_tag_row_menu_base(&screen->tags);
         choice = nc_menu_highlight(tag_types);
         return (nc_menu_item_count(tags) > 0)
-               && (((choice >= 0) && (choice < 11)) || (choice == 12));
+               && (tag_edit_choice_is_field(choice)
+                   || tag_edit_choice_is_filename(choice));
     }
     if (screen->active_focus == TAG_EDIT_FOCUS_PARSER_ACTIONS) {
         return true;
@@ -3324,7 +3344,7 @@ static int32
 tag_edit_capitalize_song_callback(MutableSong *song, void *user) {
     (void)user;
 
-    for (int32 fi = 0; ncm_song_info_tags[fi].name; fi += 1) {
+    for (int32 fi = 0; fi < NCM_SONG_INFO_TAG_COUNT; fi += 1) {
         enum TagsField field = ncm_song_info_tags[fi].field;
 
         for (int32 i = 0; ; i += 1) {
@@ -3362,7 +3382,7 @@ tag_edit_screen_capitalize_first_letters(TagEditScreen *screen) {
 static int32
 tag_edit_lower_song_callback(MutableSong *song, void *user) {
     (void)user;
-    for (int32 j = 0; ncm_song_info_tags[j].name; j += 1) {
+    for (int32 j = 0; j < NCM_SONG_INFO_TAG_COUNT; j += 1) {
         enum TagsField field = ncm_song_info_tags[j].field;
 
         for (int32 i = 0; ; i += 1) {
