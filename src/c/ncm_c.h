@@ -75,6 +75,7 @@ int32 ncm_tags_write(char *music_dir, char *uri, bool, char *directory,
 
 int32 ncm_channels_to_string(int32 channels, char *, int32 buffer_cap);
 int32 ncm_color_index_from_char(char);
+int32 ncm_tag_type_name_len(enum NcmTagType, char **);
 char *ncm_tag_type_name(enum NcmTagType);
 enum NcmTagType ncm_char_to_tag_type(char);
 enum SongGetter ncm_song_getter_from_char(char);

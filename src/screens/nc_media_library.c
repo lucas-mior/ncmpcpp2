@@ -307,9 +307,11 @@ library_update_titles(MediaLibraryScreen *screen, bool update_windows) {
     sb_clear(&screen->albums_title);
     sb_clear(&screen->songs_title);
     if (Config.titles_visibility) {
-        char *tag_type_name =
-            ncm_tag_type_name(Config.media_library_primary_tag);
-        int32 tag_type_name_len = optional_strlen32(tag_type_name);
+        char *tag_type_name;
+        int32 tag_type_name_len;
+
+        tag_type_name_len = ncm_tag_type_name_len(
+            Config.media_library_primary_tag, &tag_type_name);
 
         SB_APPEND(&screen->tags_title, tag_type_name, tag_type_name_len);
         sb_append_byte(&screen->tags_title, 's');
@@ -3201,16 +3203,18 @@ media_library_screen_add_item_to_playlist(
         NcMediaLibraryAlbumRow *album;
         StrBuilder message = {0};
         char *tag_name;
+        int32 tag_name_len;
         bool result = status == 0;
 
         if (screen->active_column == MEDIA_LIBRARY_COLUMN_TAGS) {
             NcMediaLibraryTagRow *tag =
                 media_library_screen_current_tag(screen);
 
-            tag_name = ncm_tag_type_name(Config.media_library_primary_tag);
+            tag_name_len = ncm_tag_type_name_len(
+                Config.media_library_primary_tag, &tag_name);
 
             SB_APPEND(&message, "Songs with ");
-            for (int32 i = 0; tag_name[i] != '\0'; i += 1) {
+            for (int32 i = 0; i < tag_name_len; i += 1) {
                 char ch = tag_name[i];
 
                 if ((ch >= 'A') && (ch <= 'Z')) {
@@ -3227,9 +3231,10 @@ media_library_screen_add_item_to_playlist(
         } else if (screen->active_column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
             if ((album = media_library_screen_current_album(screen))
                 && album->all_tracks_entry) {
-                tag_name = ncm_tag_type_name(Config.media_library_primary_tag);
+                tag_name_len = ncm_tag_type_name_len(
+                    Config.media_library_primary_tag, &tag_name);
                 SB_APPEND(&message, "Songs with ");
-                for (int32 i = 0; tag_name[i] != '\0'; i += 1) {
+                for (int32 i = 0; i < tag_name_len; i += 1) {
                     char ch = tag_name[i];
 
                     if ((ch >= 'A') && (ch <= 'Z')) {
