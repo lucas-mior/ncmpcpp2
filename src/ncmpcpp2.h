@@ -72,6 +72,33 @@ ncm_tag_name_to_lower_snake(char *out, int32 out_cap,
     return written;
 }
 
+
+static inline int32
+ncm_tag_name_to_upper_snake(char *out, int32 out_cap,
+                            char *name, int32 name_len) {
+    int32 written = 0;
+
+    ASSERT(out != NULL);
+    ASSERT(out_cap > 0);
+    ASSERT(name_len >= 0);
+    ASSERT((name != NULL) || (name_len == 0));
+
+    for (int32 i = 0; i < name_len; i += 1) {
+        if (written + 1 >= out_cap) {
+            out[0] = '\0';
+            return -1;
+        }
+        if (name[i] == ' ') {
+            out[written] = '_';
+        } else {
+            out[written] = ncm_tag_name_ascii_upper(name[i]);
+        }
+        written += 1;
+    }
+    out[written] = '\0';
+    return written;
+}
+
 static inline int32
 ncm_tag_name_to_upper_compact(char *out, int32 out_cap,
                               char *name, int32 name_len) {
@@ -607,35 +634,49 @@ ncm_tag_type_settings_name_len(enum NcmTagType tag, char *out,
 }
 
 static inline bool
+ncm_tag_type_is_primary(enum NcmTagType tag) {
+    switch ((int32)tag) {
+#define NCM_TAG_IS_PRIMARY_CASE(suffix, display, tag_char, getter_char,     \
+                                flags)                                        \
+    case CAT(NCM_TAG_, suffix):                                               \
+        return true;
+
+    NCM_TAG_PRIMARY_DEFS(NCM_TAG_IS_PRIMARY_CASE)
+
+#undef NCM_TAG_IS_PRIMARY_CASE
+    case NCM_TAG_COUNT:
+    default:
+        return false;
+    }
+}
+
+static inline bool
 ncm_tag_type_parse_settings_name(char *value, int32 value_len,
                                  enum NcmTagType *result) {
     char normalized[NCM_TAG_SETTINGS_NAME_CAP];
-    char settings_name[NCM_TAG_SETTINGS_NAME_CAP];
+    enum NcmTagType parsed;
     int32 normalized_len;
-    int32 settings_name_len;
 
-    normalized_len = ncm_tag_name_to_lower_snake(normalized,
+    ASSERT(result != NULL);
+
+    normalized_len = ncm_tag_name_to_upper_snake(normalized,
                                                 LENGTH(normalized),
                                                 value, value_len);
-    if (normalized_len < 0) {
+    if (normalized_len <= 0) {
+        return false;
+    }
+    if (BEGINS_WITH_4(normalized, normalized_len,
+                      "NCM_TAG_", STRLIT_LEN("NCM_TAG_")) != NULL) {
         return false;
     }
 
-#define NCM_TAG_SETTINGS_NAME_PARSE_CASE(suffix, display, tag_char,        \
-                                          getter_char, flags)                 \
-    settings_name_len = ncm_tag_type_settings_name_len(                      \
-        CAT(NCM_TAG_, suffix), settings_name, LENGTH(settings_name));         \
-    ASSERT(settings_name_len >= 0);                                           \
-    if (STREQUAL(normalized, normalized_len,                                  \
-                 settings_name, settings_name_len)) {                        \
-        *result = CAT(NCM_TAG_, suffix);                                      \
-        return true;                                                          \
+    parsed = NCM_TAG_parse(normalized, normalized_len);
+    if (!ncm_tag_type_is_primary(parsed)) {
+        return false;
     }
 
-    NCM_TAG_PRIMARY_DEFS(NCM_TAG_SETTINGS_NAME_PARSE_CASE)
-
-#undef NCM_TAG_SETTINGS_NAME_PARSE_CASE
-    return false;
+    *result = parsed;
+    return true;
 }
 
 static inline enum NcmTagType
