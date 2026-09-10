@@ -125,7 +125,6 @@ NcmCommand *ncm_bindings_config_find_command(NcmBindingsConfiguration *,
 int32 ncm_bindings_config_get(NcmBindingsConfiguration *, NcKey,
                               NcmBindingSlice *);
 
-NcKey ncm_bindings_string_to_key(char *, int32);
 NcKey ncm_read_key(NcWindow *);
 int32 ncm_bindings_key_name(NcKey, char *, int32);
 
