@@ -6,9 +6,9 @@ For the first and second of the problems below
 identify instances of them in the first file in the list below it. Then fix
 those instances and remove the file from the list. If the first file in the list
 does not have the problems, try the next one without asking first. Accumulate
-the changes in the tarball that you send. If I send you an updated zip with the
-project because I made external changes, then you can start accumlating from
-there, not from the beginning of the chat.
+the changes in the tarball that you send for each prompt. If I send you an
+updated zip with the project because I made external changes, then you can start
+accumlating from there, not from the beginning of the chat.
 
 # List for the first 2 problems:
 - src/global.c
