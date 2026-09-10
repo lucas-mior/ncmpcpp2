@@ -3592,8 +3592,8 @@ tag_edit_screen_apply_directory_filter(TagEditScreen *screen,
 
 int32
 tag_edit_screen_apply_tag_filter(TagEditScreen *screen,
-                                   char *pattern, int32 pattern_len,
-                                   uint32 regex_flags, NcmError *ncm_error) {
+                                 char *pattern, int32 pattern_len,
+                                 uint32 regex_flags, NcmError *ncm_error) {
     int32 status;
 
     if (screen == NULL) {
