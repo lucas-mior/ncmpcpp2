@@ -75,17 +75,8 @@ media_library_search_capability(NcScreen *base, enum SearchDirection direction,
 
 static int32
 media_library_current_song_capability(NcScreen *base, NcmSong *song) {
-    int32 status;
-
-    status = media_library_screen_current_song((MediaLibraryScreen *)base,
-                                               song);
-    if (status > 0) {
-        return 0;
-    }
-    if (status == 0) {
-        return -NCM_ERROR_NOT_FOUND;
-    }
-    return status;
+    return nc_screen_optional_song_status(
+        media_library_screen_current_song((MediaLibraryScreen *)base, song));
 }
 
 static int32
@@ -133,22 +124,14 @@ static int32
 media_library_tag_at_capability(NcScreen *base, int32 pos,
                                 enum SongGetter getter, StrBuilder *tag) {
     MediaLibraryScreen *screen = (MediaLibraryScreen *)base;
-    NcmSong *song;
 
-    if ((tag == NULL)
-        || (media_library_screen_active_column(screen)
-            != MEDIA_LIBRARY_COLUMN_SONGS)) {
+    if (media_library_screen_active_column(screen)
+        != MEDIA_LIBRARY_COLUMN_SONGS) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    song = nc_menu_active_item_at(media_library_screen_active_menu(screen),
-                                  pos);
-    if (song == NULL) {
-        return -NCM_ERROR_UNAVAILABLE;
-    }
-    *tag = ncm_song_tags_buffer(song, getter, Config.tags_separator,
-                                Config.tags_separator_len,
-                                Config.show_duplicate_tags);
-    return 0;
+    return nc_screen_menu_song_tag_at(media_library_screen_active_menu(screen),
+                                      pos, getter, tag,
+                                      nc_screen_menu_item_as_song);
 }
 
 static int32

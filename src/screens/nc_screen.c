@@ -405,6 +405,109 @@ nc_screen_search(NcScreen *screen, enum SearchDirection direction,
 }
 
 int32
+nc_screen_optional_song_status(int32 status) {
+    if (status > 0) {
+        return 0;
+    }
+    if (status == 0) {
+        return -NCM_ERROR_NOT_FOUND;
+    }
+    return status;
+}
+
+NcmSong *
+nc_screen_menu_item_as_song(void *item) {
+    return item;
+}
+
+static int32
+nc_screen_song_tags_buffer(NcmSong *song, enum SongGetter getter,
+                           StrBuilder *tag) {
+    if ((song == NULL) || (tag == NULL)) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    *tag = ncm_song_tags_buffer(song, getter, Config.tags_separator,
+                                Config.tags_separator_len,
+                                Config.show_duplicate_tags);
+    return 0;
+}
+
+int32
+nc_screen_menu_song_tag_at(NcMenu *menu, int32 pos,
+                          enum SongGetter getter, StrBuilder *tag,
+                          NcScreenMenuSongCallback *song_callback) {
+    NcmSong *song;
+
+    if ((menu == NULL) || (song_callback == NULL)) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    song = song_callback(nc_menu_active_item_at(menu, pos));
+    return nc_screen_song_tags_buffer(song, getter, tag);
+}
+
+static void
+nc_screen_append_menu_song_at(NcMenu *menu, int32 pos,
+                              NcmSongArray *songs,
+                              NcScreenMenuSongCallback *song_callback) {
+    NcmSong *song;
+
+    song = song_callback(nc_menu_active_item_at(menu, pos));
+    if (song != NULL) {
+        ncm_song_array_append_copy(songs, song);
+    }
+    return;
+}
+
+int32
+nc_screen_collect_selected_menu_songs(
+    NcMenu *menu, NcmSongArray *songs,
+    NcScreenMenuSongCallback *song_callback) {
+    if (songs == NULL) {
+        return -EINVAL;
+    }
+    if ((menu == NULL) || (song_callback == NULL)) {
+        return -EINVAL;
+    }
+    if (nc_menu_item_count(menu) <= 0) {
+        return 0;
+    }
+    if (!nc_menu_has_selected(menu)) {
+        nc_screen_append_menu_song_at(menu, nc_menu_highlight(menu), songs,
+                                      song_callback);
+        return 0;
+    }
+    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        if (nc_menu_position_is_selected(menu, i)) {
+            nc_screen_append_menu_song_at(menu, i, songs, song_callback);
+        }
+    }
+    return 0;
+}
+
+int32
+nc_screen_menu_mutable_song_tag_at(NcMenu *menu, int32 pos,
+                                  enum SongGetter getter, StrBuilder *tag) {
+    MutableSong *song;
+    enum TagsField field;
+
+    if ((menu == NULL) || (tag == NULL)) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    field = ncm_song_getter_to_tags_field(getter);
+    if (field == NCM_TAGS_FIELD_COUNT) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    song = nc_menu_active_item_at(menu, pos);
+    if (song == NULL) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    *tag = mutable_song_tags_buffer(song, field, Config.tags_separator,
+                                    Config.tags_separator_len,
+                                    Config.show_duplicate_tags);
+    return 0;
+}
+
+int32
 nc_screen_current_song(NcScreen *screen, NcmSong *song) {
     if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_SONGS)
         || (screen->ops->current_song == NULL)) {

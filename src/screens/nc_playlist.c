@@ -262,6 +262,9 @@ playlist_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 #define NC_SCREEN_IMPL_FILTER_APPLY_CALLBACK playlist_screen_apply_filter
 #define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD search_constraint
 #define NC_SCREEN_IMPL_SEARCH_CALLBACK playlist_screen_search
+#define NC_SCREEN_IMPL_CURRENT_SONG_CALLBACK playlist_screen_current_song
+#define NC_SCREEN_IMPL_SELECTED_SONGS_CALLBACK playlist_screen_selected_songs
+#define NC_SCREEN_IMPL_TAG_ITEM_SONG_CALLBACK nc_screen_menu_item_as_song
 #define NC_SCREEN_IMPL_REFRESH_CALLBACK playlist_display
 #define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK playlist_switch_to
 #define NC_SCREEN_IMPL_RESIZE_CALLBACK playlist_resize
@@ -272,37 +275,6 @@ playlist_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
-
-static int32
-playlist_current_song_capability(NcScreen *base, NcmSong *song) {
-    return playlist_screen_current_song((PlaylistScreen *)base, song);
-}
-
-static int32
-playlist_selected_songs_capability(NcScreen *base, NcmSongArray *songs) {
-    return playlist_screen_selected_songs((PlaylistScreen *)base, songs);
-}
-
-static NcMenu *
-playlist_tag_menu_capability(NcScreen *base) {
-    return playlist_screen_menu((PlaylistScreen *)base);
-}
-
-static int32
-playlist_tag_at_capability(NcScreen *base, int32 pos, enum SongGetter getter,
-                           StrBuilder *tag) {
-    NcmSong *song;
-
-    song = nc_menu_active_item_at(playlist_screen_menu((PlaylistScreen *)base),
-                                  pos);
-    if ((song == NULL) || (tag == NULL)) {
-        return -NCM_ERROR_UNAVAILABLE;
-    }
-    *tag = ncm_song_tags_buffer(song, getter, Config.tags_separator,
-                                Config.tags_separator_len,
-                                Config.show_duplicate_tags);
-    return 0;
-}
 
 static bool
 playlist_song_is_now_playing(NcmSong *song) {
@@ -453,12 +425,6 @@ playlist_screen_init(PlaylistScreen *screen, int32 start_x,
     screen->highlighting_requested = false;
 
     ops = playlist_ops;
-    ops.capabilities |= NC_SCREEN_CAPABILITY_SONGS
-                        |NC_SCREEN_CAPABILITY_TAGS;
-    ops.current_song = playlist_current_song_capability;
-    ops.selected_songs = playlist_selected_songs_capability;
-    ops.tag_menu = playlist_tag_menu_capability;
-    ops.song_tag_at = playlist_tag_at_capability;
     nc_playlist_screen_init(&screen->screen, ops, screen,
                             nc_song_menu_base(&screen->songs), start_x,
                             width, main_start_y, main_height);
@@ -987,34 +953,8 @@ playlist_screen_locate_position(PlaylistScreen *screen, int32 position) {
     return 0;
 }
 
-static void
-playlist_append_position(NcMenu *menu, int32 pos, NcmSongArray *songs) {
-    NcmSong *song;
-
-    song = nc_menu_active_item_at(menu, pos);
-    ASSERT(song != NULL);
-    ncm_song_array_append_copy(songs, song);
-    return;
-}
-
-static bool
-playlist_append_selected(NcMenu *menu, NcmSongArray *songs) {
-    bool found;
-
-    found = false;
-    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        if (nc_menu_position_is_selected(menu, i)) {
-            playlist_append_position(menu, i, songs);
-            found = true;
-        }
-    }
-    return found;
-}
-
 int32
 playlist_screen_selected_songs(PlaylistScreen *screen, NcmSongArray *songs) {
-    NcMenu *menu;
-
     if (songs == NULL) {
         return -EINVAL;
     }
@@ -1022,16 +962,9 @@ playlist_screen_selected_songs(PlaylistScreen *screen, NcmSongArray *songs) {
     if (screen == NULL) {
         return -EINVAL;
     }
-
-    menu = playlist_storage_menu(screen);
-    if (playlist_append_selected(menu, songs)) {
-        return 0;
-    }
-    if (nc_menu_item_count(menu) <= 0) {
-        return 0;
-    }
-    playlist_append_position(menu, nc_menu_highlight(menu), songs);
-    return 0;
+    return nc_screen_collect_selected_menu_songs(playlist_storage_menu(screen),
+                                                songs,
+                                                nc_screen_menu_item_as_song);
 }
 
 static int32
