@@ -3310,10 +3310,9 @@ tag_edit_number_song_callback(MutableSong *song, void *user) {
 
 int32
 tag_edit_screen_number_tracks(TagEditScreen *screen, bool extended) {
-    TrackNumberer numberer;
-    NcMenu *menu;
+    TrackNumberer numberer = {0};
+    NcMenu *menu = nc_tag_row_menu_base(&screen->tags);
 
-    menu = nc_tag_row_menu_base(&screen->tags);
     numberer.current = 1;
     if (nc_menu_has_selected(menu)) {
         numberer.total = nc_menu_selected_count(menu);
