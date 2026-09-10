@@ -791,12 +791,9 @@ lyrics_job_create(LyricsScreen *screen, NcmSong *song,
 
 static void
 lyrics_append_fetching(NcBuffer *buffer, LyricsFetcherDef *fetcher) {
-    char *name;
-    int32 name_len;
     int32 fetcher_position;
-
-    name = ncm_lyrics_fetcher_name(fetcher);
-    name_len = ncm_lyrics_fetcher_name_len(fetcher);
+    char *name = ncm_lyrics_fetcher_name(fetcher);
+    int32 name_len = ncm_lyrics_fetcher_name_len(fetcher);
 
     nc_buffer_append_data(buffer, STRLIT("Fetching lyrics from "));
     fetcher_position = buffer->len;
