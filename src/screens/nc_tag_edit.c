@@ -3989,7 +3989,7 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
         file_pos += separator_len;
         next_mask_pos = percent_pos + 2;
         if (tag_edit_next_mask_tag(mask, mask_len, next_mask_pos,
-                                     &next_percent_pos, &next_tag_char)) {
+                                   &next_percent_pos, &next_tag_char)) {
             int32 literal_len = next_percent_pos - next_mask_pos;
             int32 found = -1;
 
