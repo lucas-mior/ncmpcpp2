@@ -173,7 +173,7 @@ nc_buffer_append_char(NcBuffer *buffer, char ch) {
 void
 nc_buffer_append_int64(NcBuffer *buffer, int64 value) {
     nc_buffer_reserve(buffer, 22);
-    buffer->len += itoa2(buffer->data, 22, value);
+    buffer->len += itoa2(buffer->data + buffer->len, 22, value);
     return;
 }
 
