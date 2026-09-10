@@ -189,214 +189,126 @@ ncm_tag_name_to_camel_compact(char *out, int32 out_cap,
     NCM_TAG_RECORD_FULL(XX, suffix, display, '\0', '\0',                  \
                         NCM_TAG_META_FLAGS_NONE)
 
-#define NCM_TAG_RECORD_UNKNOWN_NON_DISPLAY(XX)                              \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, UNKNOWN, Unknown)
+#define NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, suffix, display, tag_char)        \
+    NCM_TAG_RECORD_FIELD_PRIMARY_MPD(XX, suffix, display, tag_char)
 
-#define NCM_TAG_RECORD_UNKNOWN(XX)                                           \
-    NCM_TAG_RECORD_UNKNOWN_NON_DISPLAY(XX)
+#define NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, suffix, display, tag_char)         \
+    NCM_TAG_RECORD_FIELD_SEARCH_MPD(XX, suffix, display, tag_char)
 
-#define NCM_TAG_RECORD_ARTIST(XX)                                            \
-    NCM_TAG_RECORD_FIELD_PRIMARY_MPD(XX, ARTIST, Artist, 'a')
+#define NCM_TAG_DECL_FIELD_MPD_NUM(XX, suffix, display, tag_char,            \
+                                   getter_char)                              \
+    NCM_TAG_RECORD_FIELD_MPD_NUM(XX, suffix, display, tag_char, getter_char)
 
-#define NCM_TAG_RECORD_ALBUM(XX)                                             \
-    NCM_TAG_RECORD_FIELD_SEARCH_MPD(XX, ALBUM, Album, 'b')
+#define NCM_TAG_DECL_SEARCH_MPD(XX, suffix, display)                         \
+    NCM_TAG_RECORD_SEARCH_MPD(XX, suffix, display)
 
-#define NCM_TAG_RECORD_ALBUM_ARTIST(XX)                                      \
-    NCM_TAG_RECORD_FIELD_PRIMARY_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')
+#define NCM_TAG_DECL_NON_DISPLAY(XX, suffix, display)                        \
+    NCM_TAG_RECORD_NON_DISPLAY(XX, suffix, display)
 
-#define NCM_TAG_RECORD_TITLE(XX)                                             \
-    NCM_TAG_RECORD_FIELD_SEARCH_MPD(XX, TITLE, Title, 't')
+#define NCM_TAG_FIELD_PRIMARY_MPD_DECLS(XX)                                  \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, ARTIST, Artist, 'a')                  \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')      \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, DATE, Date, 'y')                      \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, GENRE, Genre, 'g')                    \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, COMPOSER, Composer, 'c')              \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, PERFORMER, Performer, 'p')
 
-#define NCM_TAG_RECORD_TRACK(XX)                                             \
-    NCM_TAG_RECORD_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')
+#define NCM_TAG_FIELD_SEARCH_MPD_DECLS(XX)                                   \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, ALBUM, Album, 'b')                     \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, TITLE, Title, 't')                     \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, COMMENT, Comment, 'C')
 
-#define NCM_TAG_RECORD_NAME(XX)                                              \
-    NCM_TAG_RECORD_SEARCH_MPD(XX, NAME, Filename)
+#define NCM_TAG_FIELD_MPD_NUM_DECLS(XX)                                      \
+    NCM_TAG_DECL_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                   \
+    NCM_TAG_DECL_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')
 
-#define NCM_TAG_RECORD_GENRE(XX)                                             \
-    NCM_TAG_RECORD_FIELD_PRIMARY_MPD(XX, GENRE, Genre, 'g')
+#define NCM_TAG_SEARCH_MPD_DECLS(XX)                                         \
+    NCM_TAG_DECL_SEARCH_MPD(XX, NAME, Filename)
 
-#define NCM_TAG_RECORD_DATE(XX)                                              \
-    NCM_TAG_RECORD_FIELD_PRIMARY_MPD(XX, DATE, Date, 'y')
+#define NCM_TAG_EXTENDED_DECLS(XX)                                           \
+    NCM_TAG_DECL_NON_DISPLAY(XX, MUSICBRAINZ_ARTISTID,                       \
+                             Musicbrainz Artist Id)                          \
+    NCM_TAG_DECL_NON_DISPLAY(XX, MUSICBRAINZ_ALBUMID,                        \
+                             Musicbrainz Album Id)                           \
+    NCM_TAG_DECL_NON_DISPLAY(XX, MUSICBRAINZ_ALBUMARTISTID,                  \
+                             Musicbrainz Album Artist Id)                    \
+    NCM_TAG_DECL_NON_DISPLAY(XX, MUSICBRAINZ_TRACKID,                        \
+                             Musicbrainz Track Id)                           \
+    NCM_TAG_DECL_NON_DISPLAY(XX, MUSICBRAINZ_RELEASETRACKID,                 \
+                             Musicbrainz Release Track Id)                   \
+    NCM_TAG_DECL_NON_DISPLAY(XX, ORIGINAL_DATE, Original Date)               \
+    NCM_TAG_DECL_NON_DISPLAY(XX, ARTIST_SORT, Artist Sort)                   \
+    NCM_TAG_DECL_NON_DISPLAY(XX, ALBUM_ARTIST_SORT, Album Artist Sort)       \
+    NCM_TAG_DECL_NON_DISPLAY(XX, ALBUM_SORT, Album Sort)                     \
+    NCM_TAG_DECL_NON_DISPLAY(XX, LABEL, Label)                               \
+    NCM_TAG_DECL_NON_DISPLAY(XX, MUSICBRAINZ_WORKID, Musicbrainz Work Id)    \
+    NCM_TAG_DECL_NON_DISPLAY(XX, GROUPING, Grouping)                         \
+    NCM_TAG_DECL_NON_DISPLAY(XX, WORK, Work)                                 \
+    NCM_TAG_DECL_NON_DISPLAY(XX, CONDUCTOR, Conductor)                       \
+    NCM_TAG_DECL_NON_DISPLAY(XX, COMPOSER_SORT, Composer Sort)               \
+    NCM_TAG_DECL_NON_DISPLAY(XX, ENSEMBLE, Ensemble)                         \
+    NCM_TAG_DECL_NON_DISPLAY(XX, MOVEMENT, Movement)                         \
+    NCM_TAG_DECL_NON_DISPLAY(XX, MOVEMENTNUMBER, Movement Number)            \
+    NCM_TAG_DECL_NON_DISPLAY(XX, LOCATION, Location)                         \
+    NCM_TAG_DECL_NON_DISPLAY(XX, MOOD, Mood)                                 \
+    NCM_TAG_DECL_NON_DISPLAY(XX, TITLE_SORT, Title Sort)                     \
+    NCM_TAG_DECL_NON_DISPLAY(XX, MUSICBRAINZ_RELEASEGROUPID,                 \
+                             Musicbrainz Release Group Id)                   \
+    NCM_TAG_DECL_NON_DISPLAY(XX, SHOWMOVEMENT, Show Movement)                \
+    NCM_TAG_DECL_NON_DISPLAY(XX, DISCSUBTITLE, Disc Subtitle)
 
-#define NCM_TAG_RECORD_COMPOSER(XX)                                          \
-    NCM_TAG_RECORD_FIELD_PRIMARY_MPD(XX, COMPOSER, Composer, 'c')
-
-#define NCM_TAG_RECORD_PERFORMER(XX)                                         \
-    NCM_TAG_RECORD_FIELD_PRIMARY_MPD(XX, PERFORMER, Performer, 'p')
-
-#define NCM_TAG_RECORD_COMMENT(XX)                                           \
-    NCM_TAG_RECORD_FIELD_SEARCH_MPD(XX, COMMENT, Comment, 'C')
-
-#define NCM_TAG_RECORD_DISC(XX)                                              \
-    NCM_TAG_RECORD_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')
-
-#define NCM_TAG_RECORD_MUSICBRAINZ_ARTISTID(XX)                              \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, MUSICBRAINZ_ARTISTID,                     \
-                               Musicbrainz Artist Id)
-
-#define NCM_TAG_RECORD_MUSICBRAINZ_ALBUMID(XX)                               \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, MUSICBRAINZ_ALBUMID,                      \
-                               Musicbrainz Album Id)
-
-#define NCM_TAG_RECORD_MUSICBRAINZ_ALBUMARTISTID(XX)                         \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, MUSICBRAINZ_ALBUMARTISTID,                \
-                               Musicbrainz Album Artist Id)
-
-#define NCM_TAG_RECORD_MUSICBRAINZ_TRACKID(XX)                               \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, MUSICBRAINZ_TRACKID,                      \
-                               Musicbrainz Track Id)
-
-#define NCM_TAG_RECORD_MUSICBRAINZ_RELEASETRACKID(XX)                        \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, MUSICBRAINZ_RELEASETRACKID,               \
-                               Musicbrainz Release Track Id)
-
-#define NCM_TAG_RECORD_ORIGINAL_DATE(XX)                                     \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, ORIGINAL_DATE, Original Date)
-
-#define NCM_TAG_RECORD_ARTIST_SORT(XX)                                       \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, ARTIST_SORT, Artist Sort)
-
-#define NCM_TAG_RECORD_ALBUM_ARTIST_SORT(XX)                                 \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, ALBUM_ARTIST_SORT, Album Artist Sort)
-
-#define NCM_TAG_RECORD_ALBUM_SORT(XX)                                        \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, ALBUM_SORT, Album Sort)
-
-#define NCM_TAG_RECORD_LABEL(XX)                                             \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, LABEL, Label)
-
-#define NCM_TAG_RECORD_MUSICBRAINZ_WORKID(XX)                                \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, MUSICBRAINZ_WORKID, Musicbrainz Work Id)
-
-#define NCM_TAG_RECORD_GROUPING(XX)                                          \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, GROUPING, Grouping)
-
-#define NCM_TAG_RECORD_WORK(XX)                                              \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, WORK, Work)
-
-#define NCM_TAG_RECORD_CONDUCTOR(XX)                                         \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, CONDUCTOR, Conductor)
-
-#define NCM_TAG_RECORD_COMPOSER_SORT(XX)                                     \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, COMPOSER_SORT, Composer Sort)
-
-#define NCM_TAG_RECORD_ENSEMBLE(XX)                                          \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, ENSEMBLE, Ensemble)
-
-#define NCM_TAG_RECORD_MOVEMENT(XX)                                          \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, MOVEMENT, Movement)
-
-#define NCM_TAG_RECORD_MOVEMENTNUMBER(XX)                                    \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, MOVEMENTNUMBER, Movement Number)
-
-#define NCM_TAG_RECORD_LOCATION(XX)                                          \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, LOCATION, Location)
-
-#define NCM_TAG_RECORD_MOOD(XX)                                              \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, MOOD, Mood)
-
-#define NCM_TAG_RECORD_TITLE_SORT(XX)                                        \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, TITLE_SORT, Title Sort)
-
-#define NCM_TAG_RECORD_MUSICBRAINZ_RELEASEGROUPID(XX)                        \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, MUSICBRAINZ_RELEASEGROUPID,               \
-                               Musicbrainz Release Group Id)
-
-#define NCM_TAG_RECORD_SHOWMOVEMENT(XX)                                      \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, SHOWMOVEMENT, Show Movement)
-
-#define NCM_TAG_RECORD_DISCSUBTITLE(XX)                                      \
-    NCM_TAG_RECORD_NON_DISPLAY(XX, DISCSUBTITLE, Disc Subtitle)
+#define NCM_TAG_NON_DISPLAY_DECLS(XX)                                        \
+    NCM_TAG_DECL_NON_DISPLAY(XX, UNKNOWN, Unknown)                           \
+    NCM_TAG_EXTENDED_DECLS(XX)
 
 #define NCM_TAG_DEFS(XX)                                                     \
-    NCM_TAG_RECORD_UNKNOWN(XX)                                               \
-    NCM_TAG_RECORD_ARTIST(XX)                                                \
-    NCM_TAG_RECORD_ALBUM(XX)                                                 \
-    NCM_TAG_RECORD_ALBUM_ARTIST(XX)                                          \
-    NCM_TAG_RECORD_TITLE(XX)                                                 \
-    NCM_TAG_RECORD_TRACK(XX)                                                 \
-    NCM_TAG_RECORD_NAME(XX)                                                  \
-    NCM_TAG_RECORD_GENRE(XX)                                                 \
-    NCM_TAG_RECORD_DATE(XX)                                                  \
-    NCM_TAG_RECORD_COMPOSER(XX)                                              \
-    NCM_TAG_RECORD_PERFORMER(XX)                                             \
-    NCM_TAG_RECORD_COMMENT(XX)                                               \
-    NCM_TAG_RECORD_DISC(XX)                                                  \
-    NCM_TAG_RECORD_MUSICBRAINZ_ARTISTID(XX)                                  \
-    NCM_TAG_RECORD_MUSICBRAINZ_ALBUMID(XX)                                   \
-    NCM_TAG_RECORD_MUSICBRAINZ_ALBUMARTISTID(XX)                             \
-    NCM_TAG_RECORD_MUSICBRAINZ_TRACKID(XX)                                   \
-    NCM_TAG_RECORD_MUSICBRAINZ_RELEASETRACKID(XX)                            \
-    NCM_TAG_RECORD_ORIGINAL_DATE(XX)                                         \
-    NCM_TAG_RECORD_ARTIST_SORT(XX)                                           \
-    NCM_TAG_RECORD_ALBUM_ARTIST_SORT(XX)                                     \
-    NCM_TAG_RECORD_ALBUM_SORT(XX)                                            \
-    NCM_TAG_RECORD_LABEL(XX)                                                 \
-    NCM_TAG_RECORD_MUSICBRAINZ_WORKID(XX)                                    \
-    NCM_TAG_RECORD_GROUPING(XX)                                              \
-    NCM_TAG_RECORD_WORK(XX)                                                  \
-    NCM_TAG_RECORD_CONDUCTOR(XX)                                             \
-    NCM_TAG_RECORD_COMPOSER_SORT(XX)                                         \
-    NCM_TAG_RECORD_ENSEMBLE(XX)                                              \
-    NCM_TAG_RECORD_MOVEMENT(XX)                                              \
-    NCM_TAG_RECORD_MOVEMENTNUMBER(XX)                                        \
-    NCM_TAG_RECORD_LOCATION(XX)                                              \
-    NCM_TAG_RECORD_MOOD(XX)                                                  \
-    NCM_TAG_RECORD_TITLE_SORT(XX)                                            \
-    NCM_TAG_RECORD_MUSICBRAINZ_RELEASEGROUPID(XX)                            \
-    NCM_TAG_RECORD_SHOWMOVEMENT(XX)                                          \
-    NCM_TAG_RECORD_DISCSUBTITLE(XX)
+    NCM_TAG_DECL_NON_DISPLAY(XX, UNKNOWN, Unknown)                           \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, ARTIST, Artist, 'a')                  \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, ALBUM, Album, 'b')                     \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')      \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, TITLE, Title, 't')                     \
+    NCM_TAG_DECL_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                   \
+    NCM_TAG_DECL_SEARCH_MPD(XX, NAME, Filename)                              \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, GENRE, Genre, 'g')                    \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, DATE, Date, 'y')                      \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, COMPOSER, Composer, 'c')              \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, PERFORMER, Performer, 'p')            \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, COMMENT, Comment, 'C')                 \
+    NCM_TAG_DECL_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                     \
+    NCM_TAG_EXTENDED_DECLS(XX)
 
 #define NCM_TAG_FIELD_DEFS(XX)                                               \
-    NCM_TAG_RECORD_TITLE(XX)                                                 \
-    NCM_TAG_RECORD_ARTIST(XX)                                                \
-    NCM_TAG_RECORD_ALBUM_ARTIST(XX)                                          \
-    NCM_TAG_RECORD_ALBUM(XX)                                                 \
-    NCM_TAG_RECORD_DATE(XX)                                                  \
-    NCM_TAG_RECORD_TRACK(XX)                                                 \
-    NCM_TAG_RECORD_GENRE(XX)                                                 \
-    NCM_TAG_RECORD_COMPOSER(XX)                                              \
-    NCM_TAG_RECORD_PERFORMER(XX)                                             \
-    NCM_TAG_RECORD_DISC(XX)                                                  \
-    NCM_TAG_RECORD_COMMENT(XX)
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, TITLE, Title, 't')                     \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, ARTIST, Artist, 'a')                  \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')      \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, ALBUM, Album, 'b')                     \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, DATE, Date, 'y')                      \
+    NCM_TAG_DECL_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                   \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, GENRE, Genre, 'g')                    \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, COMPOSER, Composer, 'c')              \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, PERFORMER, Performer, 'p')            \
+    NCM_TAG_DECL_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                     \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, COMMENT, Comment, 'C')
 
 #define NCM_TAG_SONG_INFO_DEFS(XX) NCM_TAG_FIELD_DEFS(XX)
 
 #define NCM_TAG_SEARCH_DEFS(XX)                                              \
-    NCM_TAG_RECORD_ARTIST(XX)                                                \
-    NCM_TAG_RECORD_ALBUM_ARTIST(XX)                                          \
-    NCM_TAG_RECORD_TITLE(XX)                                                 \
-    NCM_TAG_RECORD_ALBUM(XX)                                                 \
-    NCM_TAG_RECORD_NAME(XX)                                                  \
-    NCM_TAG_RECORD_COMPOSER(XX)                                              \
-    NCM_TAG_RECORD_PERFORMER(XX)                                             \
-    NCM_TAG_RECORD_GENRE(XX)                                                 \
-    NCM_TAG_RECORD_DATE(XX)                                                  \
-    NCM_TAG_RECORD_COMMENT(XX)
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, ARTIST, Artist, 'a')                  \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')      \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, TITLE, Title, 't')                     \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, ALBUM, Album, 'b')                     \
+    NCM_TAG_DECL_SEARCH_MPD(XX, NAME, Filename)                              \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, COMPOSER, Composer, 'c')              \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, PERFORMER, Performer, 'p')            \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, GENRE, Genre, 'g')                    \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, DATE, Date, 'y')                      \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, COMMENT, Comment, 'C')
 
-#define NCM_TAG_PRIMARY_DEFS(XX)                                             \
-    NCM_TAG_RECORD_ARTIST(XX)                                                \
-    NCM_TAG_RECORD_ALBUM_ARTIST(XX)                                          \
-    NCM_TAG_RECORD_DATE(XX)                                                  \
-    NCM_TAG_RECORD_GENRE(XX)                                                 \
-    NCM_TAG_RECORD_COMPOSER(XX)                                              \
-    NCM_TAG_RECORD_PERFORMER(XX)
+#define NCM_TAG_PRIMARY_DEFS(XX) NCM_TAG_FIELD_PRIMARY_MPD_DECLS(XX)
 
 #define NCM_PRIMARY_TAG_DEFAULT_SETTINGS_NAME "artist"
 
-#define NCM_TAGLIB_TAG_DEFS(XX)                                              \
-    NCM_TAG_RECORD_TITLE(XX)                                                 \
-    NCM_TAG_RECORD_ARTIST(XX)                                                \
-    NCM_TAG_RECORD_ALBUM_ARTIST(XX)                                          \
-    NCM_TAG_RECORD_ALBUM(XX)                                                 \
-    NCM_TAG_RECORD_DATE(XX)                                                  \
-    NCM_TAG_RECORD_TRACK(XX)                                                 \
-    NCM_TAG_RECORD_GENRE(XX)                                                 \
-    NCM_TAG_RECORD_COMPOSER(XX)                                              \
-    NCM_TAG_RECORD_PERFORMER(XX)                                             \
-    NCM_TAG_RECORD_DISC(XX)                                                  \
-    NCM_TAG_RECORD_COMMENT(XX)
+#define NCM_TAGLIB_TAG_DEFS(XX) NCM_TAG_FIELD_DEFS(XX)
 
 #define NCM_MPD_TAG_DEFS(XX)                                                 \
     XX(ARTIST)                                                              \
@@ -413,29 +325,29 @@ ncm_tag_name_to_camel_compact(char *out, int32 out_cap,
     XX(DISC)
 
 #define NCM_TAG_SORT_DEFS(XX)                                                \
-    NCM_TAG_RECORD_ARTIST(XX)                                                \
-    NCM_TAG_RECORD_ALBUM_ARTIST(XX)                                          \
-    NCM_TAG_RECORD_ALBUM(XX)                                                 \
-    NCM_TAG_RECORD_DISC(XX)                                                  \
-    NCM_TAG_RECORD_TRACK(XX)                                                 \
-    NCM_TAG_RECORD_GENRE(XX)                                                 \
-    NCM_TAG_RECORD_DATE(XX)                                                  \
-    NCM_TAG_RECORD_COMPOSER(XX)                                              \
-    NCM_TAG_RECORD_PERFORMER(XX)                                             \
-    NCM_TAG_RECORD_TITLE(XX)
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, ARTIST, Artist, 'a')                  \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')      \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, ALBUM, Album, 'b')                     \
+    NCM_TAG_DECL_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                     \
+    NCM_TAG_DECL_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                   \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, GENRE, Genre, 'g')                    \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, DATE, Date, 'y')                      \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, COMPOSER, Composer, 'c')              \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, PERFORMER, Performer, 'p')            \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, TITLE, Title, 't')
 
 #define NCM_TAG_EDIT_PARSER_DEFS(XX)                                         \
-    NCM_TAG_RECORD_ARTIST(XX)                                                \
-    NCM_TAG_RECORD_ALBUM_ARTIST(XX)                                          \
-    NCM_TAG_RECORD_TITLE(XX)                                                 \
-    NCM_TAG_RECORD_ALBUM(XX)                                                 \
-    NCM_TAG_RECORD_DATE(XX)                                                  \
-    NCM_TAG_RECORD_TRACK(XX)                                                 \
-    NCM_TAG_RECORD_GENRE(XX)                                                 \
-    NCM_TAG_RECORD_COMPOSER(XX)                                              \
-    NCM_TAG_RECORD_PERFORMER(XX)                                             \
-    NCM_TAG_RECORD_DISC(XX)                                                  \
-    NCM_TAG_RECORD_COMMENT(XX)
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, ARTIST, Artist, 'a')                  \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')      \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, TITLE, Title, 't')                     \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, ALBUM, Album, 'b')                     \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, DATE, Date, 'y')                      \
+    NCM_TAG_DECL_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                   \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, GENRE, Genre, 'g')                    \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, COMPOSER, Composer, 'c')              \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, PERFORMER, Performer, 'p')            \
+    NCM_TAG_DECL_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                     \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, COMMENT, Comment, 'C')
 
 #define NCM_TAG_COUNT_RECORD(suffix, display, tag_char, getter_char,       \
                              flags)                                          \
@@ -513,19 +425,19 @@ enum {
     NCM_SONG_GETTER_RECORD_PRIORITY(XX)
 
 #define NCM_SONG_GETTER_TAG_HEAD_DEFS(XX)                                    \
-    NCM_TAG_RECORD_ARTIST(XX)                                                \
-    NCM_TAG_RECORD_ALBUM_ARTIST(XX)                                          \
-    NCM_TAG_RECORD_TITLE(XX)                                                 \
-    NCM_TAG_RECORD_ALBUM(XX)                                                 \
-    NCM_TAG_RECORD_DATE(XX)
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, ARTIST, Artist, 'a')                  \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')      \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, TITLE, Title, 't')                     \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, ALBUM, Album, 'b')                     \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, DATE, Date, 'y')
 
 #define NCM_SONG_GETTER_TAG_TAIL_DEFS(XX)                                    \
-    NCM_TAG_RECORD_TRACK(XX)                                                 \
-    NCM_TAG_RECORD_GENRE(XX)                                                 \
-    NCM_TAG_RECORD_COMPOSER(XX)                                              \
-    NCM_TAG_RECORD_PERFORMER(XX)                                             \
-    NCM_TAG_RECORD_DISC(XX)                                                  \
-    NCM_TAG_RECORD_COMMENT(XX)
+    NCM_TAG_DECL_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                   \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, GENRE, Genre, 'g')                    \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, COMPOSER, Composer, 'c')              \
+    NCM_TAG_DECL_FIELD_PRIMARY_MPD(XX, PERFORMER, Performer, 'p')            \
+    NCM_TAG_DECL_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                     \
+    NCM_TAG_DECL_FIELD_SEARCH_MPD(XX, COMMENT, Comment, 'C')
 
 #define NCM_SONG_GETTER_TAG_DEFS(XX)                                         \
     NCM_SONG_GETTER_TAG_HEAD_DEFS(XX)                                        \
