@@ -171,9 +171,9 @@ void nc_window_init(NcWindow *,
 
 // bad
 void
-nc_window_init(NcWindow *window, int32 start_x, int32 start_y,
-               int32 width, int32 height, char *title,
-               int32 title_len, NcColor color, NcBorder border) {
+nc_window_init(NcWindow *window, int32 start_x, int32 start_y, int32 width,
+               int32 height, char *title, int32 title_len,
+               NcColor color, NcBorder border) {
     // do stuff
 }
 
