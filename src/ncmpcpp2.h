@@ -346,7 +346,8 @@ ncm_tag_type_settings_name_len(enum NcmTagType tag, char *out,
             out[0] = '\0';                                               \
             return -1;                                                   \
         }                                                                \
-        return ascii_normalize_lower_snake(out, TAG_DISPLAY_NAME(DISP),  \
+        return ascii_normalize_lower_snake(out,                          \
+                                           TAG_DISPLAY_NAME(DISP),       \
                                            TAG_DISPLAY_NAME_LEN(DISP));
 
     TAG_PRIMARY_DEFS(TAG_SETTINGS_NAME_CASE)
