@@ -11,8 +11,6 @@ updated zip with the project because I made external changes, then you can start
 accumlating from there, not from the beginning of the chat.
 
 # List for the first 2 problems:
-- src/global.c
-- src/actions.c
 - src/c/ncm_job.c
 - src/screens/nc_help.c
 - src/screens/nc_screen_switcher.c
