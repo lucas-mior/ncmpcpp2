@@ -249,28 +249,11 @@ tag_edit_selected_songs_capability(NcScreen *base, NcmSongArray *songs) {
     return tag_edit_screen_selected_songs(tag_edit_from_screen(base), songs);
 }
 
-static bool
-tag_edit_previous_column_available_capability(NcScreen *base) {
-    return tag_edit_screen_previous_column_available(
-        tag_edit_from_screen(base));
-}
-
-static bool
-tag_edit_next_column_available_capability(NcScreen *base) {
-    return tag_edit_screen_next_column_available(tag_edit_from_screen(base));
-}
-
-static int32
-tag_edit_previous_column_capability(NcScreen *base) {
-    tag_edit_screen_previous_column(tag_edit_from_screen(base));
-    return 0;
-}
-
-static int32
-tag_edit_next_column_capability(NcScreen *base) {
-    tag_edit_screen_next_column(tag_edit_from_screen(base));
-    return 0;
-}
+NC_SCREEN_COLUMN_CAPABILITY_CALLBACKS(
+    tag_edit, TagEditScreen,
+    tag_edit_screen_previous_column_available,
+    tag_edit_screen_next_column_available,
+    tag_edit_screen_previous_column, tag_edit_screen_next_column)
 
 static NcMenu *
 tag_edit_tag_menu_capability(NcScreen *base) {

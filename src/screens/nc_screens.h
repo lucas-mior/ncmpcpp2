@@ -401,6 +401,41 @@ typedef struct NcScreenOps {
     bool mergable;
 } NcScreenOps;
 
+#define NC_SCREEN_COLUMN_CAPABILITY_CALLBACKS(PREFIX, SCREEN_TYPE,           \
+                                              PREVIOUS_AVAILABLE,            \
+                                              NEXT_AVAILABLE, PREVIOUS,      \
+                                              NEXT)                          \
+static bool                                                                  \
+PREFIX##_previous_column_available_capability(NcScreen *base) {              \
+    return PREVIOUS_AVAILABLE((SCREEN_TYPE *)base);                          \
+}                                                                            \
+                                                                             \
+static bool                                                                  \
+PREFIX##_next_column_available_capability(NcScreen *base) {                  \
+    return NEXT_AVAILABLE((SCREEN_TYPE *)base);                              \
+}                                                                            \
+                                                                             \
+static int32                                                                 \
+PREFIX##_previous_column_capability(NcScreen *base) {                        \
+    PREVIOUS((SCREEN_TYPE *)base);                                           \
+    return 0;                                                                \
+}                                                                            \
+                                                                             \
+static int32                                                                 \
+PREFIX##_next_column_capability(NcScreen *base) {                            \
+    NEXT((SCREEN_TYPE *)base);                                               \
+    return 0;                                                                \
+}
+
+#define NC_SCREEN_COLUMN_CAPABILITY_SET_OPS(OPS, PREFIX)                     \
+do {                                                                         \
+    (OPS).previous_column_available =                                        \
+        PREFIX##_previous_column_available_capability;                       \
+    (OPS).next_column_available = PREFIX##_next_column_available_capability; \
+    (OPS).previous_column = PREFIX##_previous_column_capability;             \
+    (OPS).next_column = PREFIX##_next_column_capability;                     \
+} while (0)
+
 struct NcScreen {
     const NcScreenOps *ops;
     NcScreenOps ops_storage;
