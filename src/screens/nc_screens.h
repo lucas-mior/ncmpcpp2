@@ -356,7 +356,6 @@ typedef struct NcScreenResizeParams {
 #define ENUM_FIELDS NC_SCREEN_CAPABILITY_FIELDS(XX)
 #include "cbase/xenums.c"
 
-
 typedef struct NcScreenOps {
     enum NcScreenCapabilityFlag capabilities;
 
