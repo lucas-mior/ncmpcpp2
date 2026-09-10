@@ -4090,6 +4090,10 @@ tag_edit_generate_filename(MutableSong *song,
             char *value;
             int32 value_len;
 
+            if (type == NCM_TAG_UNKNOWN) {
+                continue;
+            }
+
             if (tag->modified) {
                 value = tag->value;
                 value_len = tag->value_len;
@@ -4097,8 +4101,7 @@ tag_edit_generate_filename(MutableSong *song,
                 value = tag->original;
                 value_len = tag->original_len;
             }
-            if ((type == NCM_TAG_UNKNOWN) || (value == NULL)
-                || (value_len <= 0)) {
+            if ((value == NULL) || (value_len <= 0)) {
                 continue;
             }
             ncm_song_add_tag(&format_song, type, value, value_len);
