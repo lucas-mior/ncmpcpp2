@@ -388,9 +388,8 @@ ncm_tag_type_parse_settings_name(char *value, int32 value_len,
 
     ASSERT(result != NULL);
 
-    normalized_len = ascii_normalize_upper_snake(normalized,
-                                                LENGTH(normalized),
-                                                value, value_len);
+    normalized_len = ascii_normalize_upper_snake(normalized, LENGTH(normalized),
+                                                 value, value_len);
     if (normalized_len <= 0) {
         return false;
     }
