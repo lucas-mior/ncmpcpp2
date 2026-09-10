@@ -316,6 +316,58 @@
 #define NCM_TAGS_FIELD_ENUM_FIELDS                                           \
     NCM_TAG_FIELD_DEFS(NCM_TAGS_FIELD_ENUM_FIELD)
 
+#define NCM_SONG_GETTER_RECORD_NONE(XX)                                      \
+    XX(SONG_GETTER_NONE, none, '\0')
+
+#define NCM_SONG_GETTER_RECORD_LENGTH(XX)                                    \
+    XX(SONG_GETTER_LENGTH, Length, 'l')
+
+#define NCM_SONG_GETTER_RECORD_DIRECTORY(XX)                                 \
+    XX(SONG_GETTER_DIRECTORY, Directory, 'D')
+
+#define NCM_SONG_GETTER_RECORD_NAME(XX)                                      \
+    XX(SONG_GETTER_NAME, Filename, 'f')
+
+#define NCM_SONG_GETTER_RECORD_URI(XX)                                       \
+    XX(SONG_GETTER_URI, URI, 'F')
+
+#define NCM_SONG_GETTER_RECORD_TRACK_NUMBER(XX)                              \
+    XX(SONG_GETTER_TRACK_NUMBER, Track Number, 'n')
+
+#define NCM_SONG_GETTER_RECORD_PRIORITY(XX)                                  \
+    XX(SONG_GETTER_PRIORITY, Priority, 'P')
+
+#define NCM_SONG_GETTER_NON_TAG_DEFS(XX)                                     \
+    NCM_SONG_GETTER_RECORD_NONE(XX)                                          \
+    NCM_SONG_GETTER_RECORD_LENGTH(XX)                                        \
+    NCM_SONG_GETTER_RECORD_DIRECTORY(XX)                                     \
+    NCM_SONG_GETTER_RECORD_NAME(XX)                                          \
+    NCM_SONG_GETTER_RECORD_URI(XX)                                           \
+    NCM_SONG_GETTER_RECORD_TRACK_NUMBER(XX)                                  \
+    NCM_SONG_GETTER_RECORD_PRIORITY(XX)
+
+#define NCM_SONG_GETTER_TAG_HEAD_DEFS(XX)                                    \
+    NCM_TAG_RECORD_ARTIST(XX)                                                \
+    NCM_TAG_RECORD_ALBUM_ARTIST(XX)                                          \
+    NCM_TAG_RECORD_TITLE(XX)                                                 \
+    NCM_TAG_RECORD_ALBUM(XX)                                                 \
+    NCM_TAG_RECORD_DATE(XX)
+
+#define NCM_SONG_GETTER_TAG_TAIL_DEFS(XX)                                    \
+    NCM_TAG_RECORD_TRACK(XX)                                                 \
+    NCM_TAG_RECORD_GENRE(XX)                                                 \
+    NCM_TAG_RECORD_COMPOSER(XX)                                              \
+    NCM_TAG_RECORD_PERFORMER(XX)                                             \
+    NCM_TAG_RECORD_DISC(XX)                                                  \
+    NCM_TAG_RECORD_COMMENT(XX)
+
+#define NCM_SONG_GETTER_TAG_DEFS(XX)                                         \
+    NCM_SONG_GETTER_TAG_HEAD_DEFS(XX)                                        \
+    NCM_SONG_GETTER_TAG_TAIL_DEFS(XX)
+
+#define NCM_SONG_GETTER_NON_TAG_ENUM_FIELD(getter, alias, getter_char)       \
+    XX(getter, alias)
+
 #define NCM_SONG_GETTER_TAG_ENUM_FIELD(tag, name, alias, tag_char, field,    \
                                        getter, getter_char, taglib_property, \
                                        taglib_name, settings_name, mpd,      \
@@ -323,24 +375,16 @@
     XX(CAT(SONG_GETTER_, getter), alias)
 
 #define NCM_SONG_GETTER_ENUM_FIELDS                                          \
-    XX(SONG_GETTER_NONE, none)                                               \
-    XX(SONG_GETTER_LENGTH, Length)                                           \
-    XX(SONG_GETTER_DIRECTORY, Directory)                                     \
-    XX(SONG_GETTER_NAME, Filename)                                           \
-    XX(SONG_GETTER_URI, URI)                                                 \
-    NCM_TAG_RECORD_ARTIST(NCM_SONG_GETTER_TAG_ENUM_FIELD)                    \
-    NCM_TAG_RECORD_ALBUM_ARTIST(NCM_SONG_GETTER_TAG_ENUM_FIELD)              \
-    NCM_TAG_RECORD_TITLE(NCM_SONG_GETTER_TAG_ENUM_FIELD)                     \
-    NCM_TAG_RECORD_ALBUM(NCM_SONG_GETTER_TAG_ENUM_FIELD)                     \
-    NCM_TAG_RECORD_DATE(NCM_SONG_GETTER_TAG_ENUM_FIELD)                      \
-    XX(SONG_GETTER_TRACK_NUMBER, Track Number)                               \
-    NCM_TAG_RECORD_TRACK(NCM_SONG_GETTER_TAG_ENUM_FIELD)                     \
-    NCM_TAG_RECORD_GENRE(NCM_SONG_GETTER_TAG_ENUM_FIELD)                     \
-    NCM_TAG_RECORD_COMPOSER(NCM_SONG_GETTER_TAG_ENUM_FIELD)                  \
-    NCM_TAG_RECORD_PERFORMER(NCM_SONG_GETTER_TAG_ENUM_FIELD)                 \
-    NCM_TAG_RECORD_DISC(NCM_SONG_GETTER_TAG_ENUM_FIELD)                      \
-    NCM_TAG_RECORD_COMMENT(NCM_SONG_GETTER_TAG_ENUM_FIELD)                   \
-    XX(SONG_GETTER_PRIORITY, Priority)
+    NCM_SONG_GETTER_RECORD_NONE(NCM_SONG_GETTER_NON_TAG_ENUM_FIELD)          \
+    NCM_SONG_GETTER_RECORD_LENGTH(NCM_SONG_GETTER_NON_TAG_ENUM_FIELD)        \
+    NCM_SONG_GETTER_RECORD_DIRECTORY(NCM_SONG_GETTER_NON_TAG_ENUM_FIELD)     \
+    NCM_SONG_GETTER_RECORD_NAME(NCM_SONG_GETTER_NON_TAG_ENUM_FIELD)          \
+    NCM_SONG_GETTER_RECORD_URI(NCM_SONG_GETTER_NON_TAG_ENUM_FIELD)           \
+    NCM_SONG_GETTER_TAG_HEAD_DEFS(NCM_SONG_GETTER_TAG_ENUM_FIELD)            \
+    NCM_SONG_GETTER_RECORD_TRACK_NUMBER(                                     \
+        NCM_SONG_GETTER_NON_TAG_ENUM_FIELD)                                  \
+    NCM_SONG_GETTER_TAG_TAIL_DEFS(NCM_SONG_GETTER_TAG_ENUM_FIELD)            \
+    NCM_SONG_GETTER_RECORD_PRIORITY(NCM_SONG_GETTER_NON_TAG_ENUM_FIELD)
 
 #define ENUM_NAME NcmTagType
 #define ENUM_PREFIX_ NCM_TAG_
@@ -375,5 +419,64 @@ _Static_assert(NCM_TAGS_FIELD_COMMENT == 10,
                "TagsField order changed: COMMENT");
 _Static_assert(NCM_TAGS_FIELD_COUNT == 11,
                "TagsField count changed");
+
+#define ENUM_NAME SongGetter
+#define ENUM_PREFIX_ SONG_GETTER_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS NCM_SONG_GETTER_ENUM_FIELDS
+#include "cbase/xenums.c"
+
+_Static_assert(SONG_GETTER_NONE == 0,
+               "SongGetter order changed: NONE");
+_Static_assert(SONG_GETTER_ARTIST == 5,
+               "SongGetter order changed: ARTIST");
+_Static_assert(SONG_GETTER_TRACK_NUMBER == 10,
+               "SongGetter order changed: TRACK_NUMBER");
+_Static_assert(SONG_GETTER_TRACK == 11,
+               "SongGetter order changed: TRACK");
+_Static_assert(SONG_GETTER_PRIORITY == 17,
+               "SongGetter order changed: PRIORITY");
+_Static_assert(SONG_GETTER_COUNT == 18,
+               "SongGetter count changed");
+
+static inline int32
+ncm_song_getter_display_name_len(enum SongGetter getter, char **out) {
+    return SONG_GETTER_alias_len(getter, out);
+}
+
+static inline char *
+ncm_song_getter_display_name(enum SongGetter getter) {
+    return SONG_GETTER_alias(getter);
+}
+
+static inline char
+ncm_song_getter_format_char(enum SongGetter getter) {
+    switch (getter) {
+#define NCM_SONG_GETTER_NON_TAG_CHAR_CASE(getter, alias, getter_char) \
+    case getter:                                                               \
+        return getter_char;
+#define NCM_SONG_GETTER_TAG_CHAR_CASE(tag, name, alias, tag_char, field,      \
+                                      getter, getter_char, taglib_property,   \
+                                      taglib_name, settings_name, mpd, flags) \
+    case CAT(SONG_GETTER_, getter):                                            \
+        return getter_char;
+
+    NCM_SONG_GETTER_RECORD_NONE(NCM_SONG_GETTER_NON_TAG_CHAR_CASE)
+    NCM_SONG_GETTER_RECORD_LENGTH(NCM_SONG_GETTER_NON_TAG_CHAR_CASE)
+    NCM_SONG_GETTER_RECORD_DIRECTORY(NCM_SONG_GETTER_NON_TAG_CHAR_CASE)
+    NCM_SONG_GETTER_RECORD_NAME(NCM_SONG_GETTER_NON_TAG_CHAR_CASE)
+    NCM_SONG_GETTER_RECORD_URI(NCM_SONG_GETTER_NON_TAG_CHAR_CASE)
+    NCM_SONG_GETTER_TAG_HEAD_DEFS(NCM_SONG_GETTER_TAG_CHAR_CASE)
+    NCM_SONG_GETTER_RECORD_TRACK_NUMBER(NCM_SONG_GETTER_NON_TAG_CHAR_CASE)
+    NCM_SONG_GETTER_TAG_TAIL_DEFS(NCM_SONG_GETTER_TAG_CHAR_CASE)
+    NCM_SONG_GETTER_RECORD_PRIORITY(NCM_SONG_GETTER_NON_TAG_CHAR_CASE)
+
+#undef NCM_SONG_GETTER_NON_TAG_CHAR_CASE
+#undef NCM_SONG_GETTER_TAG_CHAR_CASE
+    case SONG_GETTER_COUNT:
+    default:
+        return '\0';
+    }
+}
 
 #endif /* NCMPCPP2_H */
