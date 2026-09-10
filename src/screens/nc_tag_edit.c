@@ -3224,14 +3224,11 @@ static int32
 tag_edit_for_each_target(TagEditScreen *screen,
                            int32 (*cb)(MutableSong *song, void *user),
                            void *user) {
-    NcMenu *menu;
-    bool has_selected;
-    int32 count;
+    NcMenu *menu = nc_tag_row_menu_base(&screen->tags);
+    bool has_selected = nc_menu_has_selected(menu);
+    int32 count = 0;
     int32 status;
 
-    menu = nc_tag_row_menu_base(&screen->tags);
-    has_selected = nc_menu_has_selected(menu);
-    count = 0;
     for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
         MutableSong *song;
 
