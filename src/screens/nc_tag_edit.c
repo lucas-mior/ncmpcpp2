@@ -3796,10 +3796,9 @@ tag_edit_screen_prepare_parser_rows(TagEditScreen *screen,
                                           NC_MENU_ITEM_INACTIVE);
         tag_edit_append_parser_separator(screen);
         for (int32 i = 0; i < screen->recent_patterns.len; i += 1) {
-            StrBuilder *recent_pattern;
-
-            recent_pattern = &screen->recent_patterns.items[i];
-            tag_edit_append_parser_action_label(screen, recent_pattern->data,
+            StrBuilder *recent_pattern = &screen->recent_patterns.items[i];
+            tag_edit_append_parser_action_label(screen,
+                                                recent_pattern->data,
                                                 recent_pattern->len);
         }
     }
