@@ -2686,7 +2686,7 @@ tag_edit_screen_current_dir(TagEditScreen *screen, StringView *view) {
 
 int32
 tag_edit_screen_current_directory_path(TagEditScreen *screen,
-                                         StringView *view) {
+                                       StringView *view) {
     char *path;
     int32 path_len;
 
