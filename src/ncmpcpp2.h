@@ -3,20 +3,20 @@
 
 #include "cbase.h"
 
-#define TAG_FLAG_ENUM_FIELDS                                              \
-  XX(TAG_FLAG_DISPLAY)                                                    \
-  XX(TAG_FLAG_WRITABLE)                                                   \
-  XX(TAG_FLAG_SONG_INFO)                                                  \
-  XX(TAG_FLAG_SEARCH)                                                     \
-  XX(TAG_FLAG_GETTER)                                                     \
-  XX(TAG_FLAG_TAGLIB)                                                     \
-  XX(TAG_FLAG_MPD)                                                        \
-  XX(TAG_FLAG_TAGLIB_NUMBER)                                              \
-  XX(TAG_FLAGS_FIELD,                                                     \
-     TAG_FLAG_DISPLAY|TAG_FLAG_WRITABLE                              \
-     |TAG_FLAG_SONG_INFO|TAG_FLAG_GETTER                             \
-     |TAG_FLAG_TAGLIB)                                                    \
-  XX(TAG_FLAGS_FIELD_SEARCH,                                              \
+#define TAG_FLAG_ENUM_FIELDS                \
+  XX(TAG_FLAG_DISPLAY)                      \
+  XX(TAG_FLAG_WRITABLE)                     \
+  XX(TAG_FLAG_SONG_INFO)                    \
+  XX(TAG_FLAG_SEARCH)                       \
+  XX(TAG_FLAG_GETTER)                       \
+  XX(TAG_FLAG_TAGLIB)                       \
+  XX(TAG_FLAG_MPD)                          \
+  XX(TAG_FLAG_TAGLIB_NUMBER)                \
+  XX(TAG_FLAGS_FIELD,                       \
+     TAG_FLAG_DISPLAY|TAG_FLAG_WRITABLE     \
+     |TAG_FLAG_SONG_INFO|TAG_FLAG_GETTER    \
+     |TAG_FLAG_TAGLIB)                      \
+  XX(TAG_FLAGS_FIELD_SEARCH,                \
      TAG_FLAGS_FIELD|TAG_FLAG_SEARCH)
 
 #define ENUM_NAME NcmTagMetaFlags
