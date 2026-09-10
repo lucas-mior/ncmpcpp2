@@ -387,6 +387,18 @@ statusbar_print_cstring_value(char *prefix, int32 prefix_len, char *value) {
     return;
 }
 
+static bool
+status_database_update_state_changed(int32 update_id) {
+    char old_state = status_db_updating;
+
+    status_db_updating = 0;
+    if (update_id != 0) {
+        status_db_updating = 'U';
+    }
+
+    return status_db_updating != old_state;
+}
+
 static char *
 status_on_off(char status) {
     if (status == 0) {
@@ -693,12 +705,10 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
     }
 
     if ((event & NCM_MPD_IDLE_UPDATE) != 0) {
-        status_db_updating = 0;
-        if (mpd_status->update_id != 0) {
-            status_db_updating = 'U';
-        }
+        bool changed;
 
-        if (status_initialized) {
+        changed = status_database_update_state_changed(mpd_status->update_id);
+        if (changed && status_initialized) {
             if (status_db_updating) {
                 statusbar_print_cstring_value(STRLIT("Database update "),
                                               "started");
