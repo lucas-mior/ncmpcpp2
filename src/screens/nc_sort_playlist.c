@@ -11,12 +11,6 @@
 #include "statusbar.h"
 #include "ui_state.h"
 
-static NcMenu *
-sort_dialog_menu_capability(NcScreen *base) {
-    return nc_editor_sort_menu_base(
-        sort_playlist_dialog_menu((SortPlaylistDialog *)base));
-}
-
 static void
 sort_dialog_refresh_rows(SortPlaylistDialog *dialog) {
     NcMenu *menu;
@@ -154,6 +148,7 @@ sort_dialog_mouse_callback(NcScreen *screen, MEVENT event) {
 #define NC_SCREEN_IMPL_BASE_FIELD screen
 #define NC_SCREEN_IMPL_WINDOW_FIELD window
 #define NC_SCREEN_IMPL_MENU(dialog) nc_editor_sort_menu_base(&(dialog)->rows)
+#define NC_SCREEN_IMPL_MENU_CAPABILITY
 #define NC_SCREEN_IMPL_REFRESH_CALLBACK sort_dialog_refresh_rows
 #define NC_SCREEN_IMPL_CAN_RUN_CURRENT_CALLBACK \
     sort_dialog_can_run_current_callback
@@ -365,8 +360,6 @@ sort_playlist_dialog_init(SortPlaylistDialog *dialog,
     dialog->ignore_leading_the = false;
     dialog->ready = false;
     ops = sort_dialog_ops;
-    ops.capabilities = NC_SCREEN_CAPABILITY_MENU;
-    ops.current_menu = sort_dialog_menu_capability;
     nc_screen_init_ops(&dialog->screen, ops, dialog,
                        NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG);
     sort_dialog_populate_defaults(dialog);

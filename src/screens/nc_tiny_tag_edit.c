@@ -10,12 +10,6 @@
 #include "title.h"
 #include "ui_state.h"
 
-static NcMenu *
-tiny_editor_menu_capability(NcScreen *base) {
-    return nc_editor_buffer_menu_base(
-        tiny_tag_edit_screen_rows((TinyTagEditScreen *)base));
-}
-
 static int32
 tiny_editor_current_row(TinyTagEditScreen *screen) {
     return nc_menu_highlight(nc_editor_buffer_menu_base(&screen->rows));
@@ -402,6 +396,7 @@ tiny_editor_mouse_callback(NcScreen *screen, MEVENT event) {
 #define NC_SCREEN_IMPL_BASE_FIELD screen
 #define NC_SCREEN_IMPL_WINDOW_FIELD window
 #define NC_SCREEN_IMPL_MENU(screen) nc_editor_buffer_menu_base(&(screen)->rows)
+#define NC_SCREEN_IMPL_MENU_CAPABILITY
 #define NC_SCREEN_IMPL_SCROLL_HEIGHT(screen) ((screen)->main_height)
 #define NC_SCREEN_IMPL_REFRESH_CALLBACK tiny_editor_display
 #define NC_SCREEN_IMPL_CAN_RUN_CURRENT_CALLBACK tiny_editor_can_run_current
@@ -482,8 +477,6 @@ tiny_tag_edit_screen_init(TinyTagEditScreen *screen, int32 start_x, int32 width,
     screen->registered = false;
 
     ops = tiny_editor_ops;
-    ops.capabilities = NC_SCREEN_CAPABILITY_MENU;
-    ops.current_menu = tiny_editor_menu_capability;
     nc_screen_init_ops(&screen->screen, ops, screen,
                        NC_SCREEN_TYPE_TINY_TAG_EDIT);
     return;
