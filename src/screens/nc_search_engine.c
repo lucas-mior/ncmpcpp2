@@ -1336,6 +1336,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
         } else {
             nc_buffer_append_data(&buffer, STRLIT(" songs"));
         }
+
         search_insert_buffer_with_flags(screen,
                                         SEARCH_ENGINE_RESULT_SUMMARY_ROW,
                                         &buffer, NC_MENU_ITEM_INACTIVE);
