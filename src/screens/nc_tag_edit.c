@@ -3501,8 +3501,8 @@ tag_edit_screen_save_modified(TagEditScreen *screen, char *music_dir) {
     context.screen = screen;
     context.music_dir = music_dir;
 
-    status = tag_edit_for_each_target(screen, tag_edit_save_song_callback,
-                                      &context);
+    status = tag_edit_for_each_target(screen,
+                                      tag_edit_save_song_callback, &context);
     if (status < 0) {
         sb_free(&context.shared_directory);
         tag_edit_screen_clear_stale_tags(screen);
