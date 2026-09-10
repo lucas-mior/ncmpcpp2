@@ -64,22 +64,27 @@ ncm_search_prompt_state_has_cached_result(SearchPromptState *state,
     return true;
 }
 
-void
+int32
 ncm_search_prompt_state_finish_result(SearchPromptState *state,
                                       char *text, int32 text_len,
                                       bool search_ok, bool found) {
+    int32 status;
+
     ASSERT(state != NULL);
     ASSERT(text != NULL);
     ASSERT(text_len >= 0);
 
     if (!search_ok) {
-        return;
+        return 0;
     }
-    sb_set(&state->last_text, text, text_len);
+    status = sb_set(&state->last_text, text, text_len);
+    if (status < 0) {
+        return status;
+    }
 
     state->has_last_result = true;
     state->last_found = found;
-    return;
+    return 0;
 }
 
 #endif /* NCM_SEARCH_PROMPT_C */

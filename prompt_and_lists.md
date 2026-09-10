@@ -10,64 +10,6 @@ the changes in the tarball that you send for each prompt. If I send you an
 updated zip with the project because I made external changes, then you can start
 accumlating from there, not from the beginning of the chat.
 
-# List for the first 2 problems:
-- src/mpd/ncm_mpd.c
-- src/helpers.c
-- src/screens/nc_sort_playlist.c
-- src/helpers.h
-- src/c/ncm_enums.c
-- src/screens/nc_outputs.c
-- src/screens/nc_tag_edit.c
-- src/c/ncm_error.c
-- src/screens/nc_server_info.c
-- src/config.c
-- src/status.c
-- src/app_controller.h
-- src/config_options.h
-- src/main.c
-- src/c/ncm_option_parser.c
-- src/screens/nc_screen_impl_template.h
-- src/c/ncm_regex.c
-- src/ui_state.h
-- src/curl_handle.c
-- src/curl_handle.h
-- src/configura.h
-- src/c/ncm_song.c
-- src/settings_types.c
-- src/c/ncm_type_conversions.c
-- src/app_controller.c
-- src/screens/nc_playlist_edit.c
-- src/statusbar.h
-- src/screens/nc_media_library.c
-- src/lastfm_service.h
-- src/c/mutable_song.c
-- src/lyrics_fetcher.h
-- src/curses/nc_window.c
-- src/screens/nc_song_info.c
-- src/c/ncm_lrc.c
-- src/settings.c
-- src/screens/nc_screens.c
-- src/c/ncm_format.c
-- src/screens/nc_scrollpad_screen.c
-- src/curses/nc_menu.c
-- src/c/ncm_playlist_sort.c
-- src/screens/nc_visualizer.c
-- src/curses/nc_cyclic_buffer.c
-- src/c/ncm_comparators.c
-- src/ui_state.c
-- src/c/ncm_utilities.c
-- src/c/ncm_html.c
-- src/screens/nc_lyrics.c
-- src/curses/nc_buffer.c
-- src/config.h
-- src/c/ncm_tags.c
-- src/c/ncm_string.c
-- src/title.h
-- src/curses/nc_curses.h
-- src/screens/nc_playlist.c
-- src/c/ncm_c.h
-- src/status.h
-
 ## breaking function calls before the first argument and not aligning
 For instance, this is bad:
 ```c
@@ -142,6 +84,65 @@ nc_window_init(NcWindow *window,
 }
 ```
 
+# List for the first 2 problems:
+- src/mpd/ncm_mpd.c
+- src/helpers.c
+- src/screens/nc_sort_playlist.c
+- src/helpers.h
+- src/c/ncm_enums.c
+- src/screens/nc_outputs.c
+- src/screens/nc_tag_edit.c
+- src/c/ncm_error.c
+- src/screens/nc_server_info.c
+- src/config.c
+- src/status.c
+- src/app_controller.h
+- src/config_options.h
+- src/main.c
+- src/c/ncm_option_parser.c
+- src/screens/nc_screen_impl_template.h
+- src/c/ncm_regex.c
+- src/ui_state.h
+- src/curl_handle.c
+- src/curl_handle.h
+- src/configura.h
+- src/c/ncm_song.c
+- src/settings_types.c
+- src/c/ncm_type_conversions.c
+- src/app_controller.c
+- src/screens/nc_playlist_edit.c
+- src/statusbar.h
+- src/screens/nc_media_library.c
+- src/lastfm_service.h
+- src/c/mutable_song.c
+- src/lyrics_fetcher.h
+- src/curses/nc_window.c
+- src/screens/nc_song_info.c
+- src/c/ncm_lrc.c
+- src/settings.c
+- src/screens/nc_screens.c
+- src/c/ncm_format.c
+- src/screens/nc_scrollpad_screen.c
+- src/curses/nc_menu.c
+- src/c/ncm_playlist_sort.c
+- src/screens/nc_visualizer.c
+- src/curses/nc_cyclic_buffer.c
+- src/c/ncm_comparators.c
+- src/ui_state.c
+- src/c/ncm_utilities.c
+- src/c/ncm_html.c
+- src/screens/nc_lyrics.c
+- src/curses/nc_buffer.c
+- src/config.h
+- src/c/ncm_tags.c
+- src/c/ncm_string.c
+- src/title.h
+- src/curses/nc_curses.h
+- src/screens/nc_playlist.c
+- src/c/ncm_c.h
+- src/status.h
+
+Ignore everything below for now:
 ## Utility function creep
 Functions that do the (almost) the same thing are redefined in different places.
 
