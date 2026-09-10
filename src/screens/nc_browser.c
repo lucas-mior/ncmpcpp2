@@ -527,51 +527,52 @@ typedef struct BrowserSearchContext {
 } BrowserSearchContext;
 
 static NcMenu *
-browser_menu_capability(void *user) {
-    return browser_screen_menu(user);
+browser_menu_capability(NcScreen *base) {
+    return browser_screen_menu((BrowserScreen *)base);
 }
 
 static int32
-browser_menu_height_capability(void *user) {
-    BrowserScreen *screen = user;
+browser_menu_height_capability(NcScreen *base) {
+    BrowserScreen *screen = (BrowserScreen *)base;
 
     return screen->main_height;
 }
 
 static StringView
-browser_filter_constraint_capability(void *user) {
-    BrowserScreen *screen = user;
+browser_filter_constraint_capability(NcScreen *base) {
+    BrowserScreen *screen = (BrowserScreen *)base;
 
     return ncm_string_view(screen->filter_constraint.data,
                            screen->filter_constraint.len);
 }
 
 static int32
-browser_filter_apply_capability(void *user, char *pattern,
+browser_filter_apply_capability(NcScreen *base, char *pattern,
                                 int32 pattern_len, uint32 regex_flags,
                                 NcmError *ncm_error) {
     (void)regex_flags;
-    return browser_screen_apply_filter(user, pattern, pattern_len, ncm_error);
+    return browser_screen_apply_filter((BrowserScreen *)base, pattern,
+                                       pattern_len, ncm_error);
 }
 
 static StringView
-browser_search_constraint_capability(void *user) {
-    BrowserScreen *screen = user;
+browser_search_constraint_capability(NcScreen *base) {
+    BrowserScreen *screen = (BrowserScreen *)base;
 
     return ncm_string_view(screen->search_constraint.data,
                            screen->search_constraint.len);
 }
 
 static void
-browser_search_clear_capability(void *user) {
-    BrowserScreen *screen = user;
+browser_search_clear_capability(NcScreen *base) {
+    BrowserScreen *screen = (BrowserScreen *)base;
 
     sb_clear(&screen->search_constraint);
     return;
 }
 
 static int32
-browser_search_capability(void *user, enum SearchDirection direction,
+browser_search_capability(NcScreen *base, enum SearchDirection direction,
                           char *pattern, int32 pattern_len,
                           uint32 regex_flags, bool wrap, bool skip_current,
                           NcmError *ncm_error) {
@@ -579,31 +580,32 @@ browser_search_capability(void *user, enum SearchDirection direction,
 
     (void)regex_flags;
     forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
-    return browser_screen_search(user, pattern, pattern_len, forward, wrap,
-                                 skip_current, ncm_error);
+    return browser_screen_search((BrowserScreen *)base, pattern, pattern_len,
+                                 forward, wrap, skip_current, ncm_error);
 }
 
 static int32
-browser_current_song_capability(void *user, NcmSong *song) {
-    return browser_screen_current_song(user, song);
+browser_current_song_capability(NcScreen *base, NcmSong *song) {
+    return browser_screen_current_song((BrowserScreen *)base, song);
 }
 
 static int32
-browser_selected_songs_capability(void *user, NcmSongArray *songs) {
-    return browser_screen_selected_songs(user, songs);
+browser_selected_songs_capability(NcScreen *base, NcmSongArray *songs) {
+    return browser_screen_selected_songs((BrowserScreen *)base, songs);
 }
 
 static NcMenu *
-browser_tag_menu_capability(void *user) {
-    return browser_screen_menu(user);
+browser_tag_menu_capability(NcScreen *base) {
+    return browser_screen_menu((BrowserScreen *)base);
 }
 
 static int32
-browser_tag_at_capability(void *user, int32 pos, enum SongGetter getter,
-                          StrBuilder *tag) {
+browser_tag_at_capability(NcScreen *base, int32 pos,
+                          enum SongGetter getter, StrBuilder *tag) {
     NcmMpdItem *item;
 
-    item = nc_menu_active_item_at(browser_screen_menu(user), pos);
+    item = nc_menu_active_item_at(
+        browser_screen_menu((BrowserScreen *)base), pos);
     if ((item == NULL) || (tag == NULL)
         || (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_SONG)) {
         return -NCM_ERROR_UNAVAILABLE;
@@ -832,6 +834,8 @@ void
 browser_screen_init(BrowserScreen *screen, int32 start_x, int32 width,
                     int32 main_start_y, int32 main_height,
                     NcColor color, NcBorder border) {
+    NcScreenOps ops;
+
     nc_browser_entry_menu_init(&screen->entries);
     nc_window_init(&screen->window, start_x, main_start_y, width, main_height,
                    NULL, 0, color, border);
@@ -866,36 +870,24 @@ browser_screen_init(BrowserScreen *screen, int32 start_x, int32 width,
     browser_screen_update_title_text(screen);
     browser_screen_update_column_title(screen);
     browser_install_menu_callbacks(screen);
-    nc_screen_init_ops(&screen->screen, browser_ops, screen,
-                       NC_SCREEN_TYPE_BROWSER);
-    nc_screen_set_menu_capability(&screen->screen, (NcScreenMenuCapability){
-        .user = screen,
-        .current_menu = browser_menu_capability,
-        .height = browser_menu_height_capability,
-    });
-    nc_screen_set_filter_capability(&screen->screen,
-                                    (NcScreenFilterCapability){
-        .user = screen,
-        .current_constraint = browser_filter_constraint_capability,
-        .apply = browser_filter_apply_capability,
-    });
-    nc_screen_set_search_capability(&screen->screen,
-                                    (NcScreenSearchCapability){
-        .user = screen,
-        .current_constraint = browser_search_constraint_capability,
-        .clear_constraint = browser_search_clear_capability,
-        .search = browser_search_capability,
-    });
-    nc_screen_set_song_capability(&screen->screen, (NcScreenSongCapability){
-        .user = screen,
-        .current_song = browser_current_song_capability,
-        .selected_songs = browser_selected_songs_capability,
-    });
-    nc_screen_set_tag_capability(&screen->screen, (NcScreenTagCapability){
-        .user = screen,
-        .menu = browser_tag_menu_capability,
-        .tag_at = browser_tag_at_capability,
-    });
+    ops = browser_ops;
+    ops.capabilities = NC_SCREEN_CAPABILITY_MENU
+                       |NC_SCREEN_CAPABILITY_FILTER
+                       |NC_SCREEN_CAPABILITY_SEARCH
+                       |NC_SCREEN_CAPABILITY_SONGS
+                       |NC_SCREEN_CAPABILITY_TAGS;
+    ops.current_menu = browser_menu_capability;
+    ops.current_menu_height = browser_menu_height_capability;
+    ops.current_filter = browser_filter_constraint_capability;
+    ops.apply_filter = browser_filter_apply_capability;
+    ops.current_search_constraint = browser_search_constraint_capability;
+    ops.clear_search_constraint = browser_search_clear_capability;
+    ops.search = browser_search_capability;
+    ops.current_song = browser_current_song_capability;
+    ops.selected_songs = browser_selected_songs_capability;
+    ops.tag_menu = browser_tag_menu_capability;
+    ops.song_tag_at = browser_tag_at_capability;
+    nc_screen_init_ops(&screen->screen, ops, screen, NC_SCREEN_TYPE_BROWSER);
     return;
 }
 

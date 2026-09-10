@@ -14,80 +14,81 @@ typedef struct SearchFindContext {
 } SearchFindContext;
 
 static NcMenu *
-search_engine_menu_capability(void *user) {
-    return search_engine_screen_menu(user);
+search_engine_menu_capability(NcScreen *base) {
+    return search_engine_screen_menu((SearchEngineScreen *)base);
 }
 
 static int32
-search_engine_menu_height_capability(void *user) {
-    SearchEngineScreen *screen = user;
+search_engine_menu_height_capability(NcScreen *base) {
+    SearchEngineScreen *screen = (SearchEngineScreen *)base;
 
     return nc_window_height(&screen->window);
 }
 
 static StringView
-search_engine_filter_constraint_capability(void *user) {
-    SearchEngineScreen *screen = user;
+search_engine_filter_constraint_capability(NcScreen *base) {
+    SearchEngineScreen *screen = (SearchEngineScreen *)base;
 
     return ncm_string_view(screen->filter_constraint.data,
                            screen->filter_constraint.len);
 }
 
 static int32
-search_engine_filter_apply_capability(void *user, char *pattern,
+search_engine_filter_apply_capability(NcScreen *base, char *pattern,
                                       int32 pattern_len, uint32 regex_flags,
                                       NcmError *ncm_error) {
     (void)regex_flags;
-    return search_engine_screen_apply_filter(user, pattern, pattern_len,
-                                             ncm_error);
+    return search_engine_screen_apply_filter((SearchEngineScreen *)base,
+                                             pattern, pattern_len, ncm_error);
 }
 
 static bool
-search_engine_search_available_capability(void *user) {
-    return search_engine_screen_can_search(user);
+search_engine_search_available_capability(NcScreen *base) {
+    return search_engine_screen_can_search((SearchEngineScreen *)base);
 }
 
 static StringView
-search_engine_search_constraint_capability(void *user) {
-    SearchEngineScreen *screen = user;
+search_engine_search_constraint_capability(NcScreen *base) {
+    SearchEngineScreen *screen = (SearchEngineScreen *)base;
 
     return ncm_string_view(screen->search_constraint.data,
                            screen->search_constraint.len);
 }
 
 static void
-search_engine_search_clear_capability(void *user) {
-    SearchEngineScreen *screen = user;
+search_engine_search_clear_capability(NcScreen *base) {
+    SearchEngineScreen *screen = (SearchEngineScreen *)base;
 
     sb_clear(&screen->search_constraint);
     return;
 }
 
 static int32
-search_engine_search_capability(void *user, enum SearchDirection direction,
+search_engine_search_capability(NcScreen *base, enum SearchDirection direction,
                                 char *pattern, int32 pattern_len,
                                 uint32 regex_flags, bool wrap,
                                 bool skip_current, NcmError *ncm_error) {
+    SearchEngineScreen *screen = (SearchEngineScreen *)base;
     int32 status;
     bool forward;
 
     (void)regex_flags;
     forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
-    status = search_engine_screen_search(user, pattern, pattern_len, forward,
-                                         wrap, skip_current, ncm_error);
+    status = search_engine_screen_search(screen, pattern, pattern_len,
+                                         forward, wrap, skip_current,
+                                         ncm_error);
     if (status >= 0) {
-        SearchEngineScreen *screen = user;
-
         sb_set(&screen->search_constraint, pattern, pattern_len);
     }
     return status;
 }
 
 static int32
-search_engine_current_song_capability(void *user, NcmSong *song) {
+search_engine_current_song_capability(NcScreen *base, NcmSong *song) {
     int32 status;
 
-    status = search_engine_screen_current_song(user, song);
+    status = search_engine_screen_current_song((SearchEngineScreen *)base,
+                                               song);
     if (status > 0) {
         return 0;
     }
@@ -98,21 +99,23 @@ search_engine_current_song_capability(void *user, NcmSong *song) {
 }
 
 static int32
-search_engine_selected_songs_capability(void *user, NcmSongArray *songs) {
-    return search_engine_screen_selected_songs(user, songs);
+search_engine_selected_songs_capability(NcScreen *base, NcmSongArray *songs) {
+    return search_engine_screen_selected_songs((SearchEngineScreen *)base,
+                                               songs);
 }
 
 static NcMenu *
-search_engine_tag_menu_capability(void *user) {
-    return search_engine_screen_menu(user);
+search_engine_tag_menu_capability(NcScreen *base) {
+    return search_engine_screen_menu((SearchEngineScreen *)base);
 }
 
 static int32
-search_engine_tag_at_capability(void *user, int32 pos, enum SongGetter getter,
-                                StrBuilder *tag) {
+search_engine_tag_at_capability(NcScreen *base, int32 pos,
+                                enum SongGetter getter, StrBuilder *tag) {
     NcSearchRow *row;
 
-    row = nc_menu_active_item_at(search_engine_screen_menu(user), pos);
+    row = nc_menu_active_item_at(
+        search_engine_screen_menu((SearchEngineScreen *)base), pos);
     if ((row == NULL) || !row->is_song || (tag == NULL)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
@@ -671,6 +674,7 @@ search_engine_screen_init(SearchEngineScreen *screen,
                           int32 start_x, int32 width,
                           int32 main_start_y, int32 main_height,
                           NcColor color, NcBorder border) {
+    NcScreenOps ops;
     NcMenu *menu;
 
     nc_search_row_menu_init(&screen->rows);
@@ -707,37 +711,26 @@ search_engine_screen_init(SearchEngineScreen *screen,
     screen->constraints_locked = false;
     screen->registered = false;
 
-    nc_screen_init_ops(&screen->screen, search_ops, screen,
+    ops = search_ops;
+    ops.capabilities = NC_SCREEN_CAPABILITY_MENU
+                       |NC_SCREEN_CAPABILITY_FILTER
+                       |NC_SCREEN_CAPABILITY_SEARCH
+                       |NC_SCREEN_CAPABILITY_SONGS
+                       |NC_SCREEN_CAPABILITY_TAGS;
+    ops.current_menu = search_engine_menu_capability;
+    ops.current_menu_height = search_engine_menu_height_capability;
+    ops.current_filter = search_engine_filter_constraint_capability;
+    ops.apply_filter = search_engine_filter_apply_capability;
+    ops.can_search = search_engine_search_available_capability;
+    ops.current_search_constraint = search_engine_search_constraint_capability;
+    ops.clear_search_constraint = search_engine_search_clear_capability;
+    ops.search = search_engine_search_capability;
+    ops.current_song = search_engine_current_song_capability;
+    ops.selected_songs = search_engine_selected_songs_capability;
+    ops.tag_menu = search_engine_tag_menu_capability;
+    ops.song_tag_at = search_engine_tag_at_capability;
+    nc_screen_init_ops(&screen->screen, ops, screen,
                        NC_SCREEN_TYPE_SEARCH_ENGINE);
-    nc_screen_set_menu_capability(&screen->screen, (NcScreenMenuCapability){
-        .user = screen,
-        .current_menu = search_engine_menu_capability,
-        .height = search_engine_menu_height_capability,
-    });
-    nc_screen_set_filter_capability(&screen->screen,
-                                    (NcScreenFilterCapability){
-        .user = screen,
-        .current_constraint = search_engine_filter_constraint_capability,
-        .apply = search_engine_filter_apply_capability,
-    });
-    nc_screen_set_search_capability(&screen->screen,
-                                    (NcScreenSearchCapability){
-        .user = screen,
-        .can_search = search_engine_search_available_capability,
-        .current_constraint = search_engine_search_constraint_capability,
-        .clear_constraint = search_engine_search_clear_capability,
-        .search = search_engine_search_capability,
-    });
-    nc_screen_set_song_capability(&screen->screen, (NcScreenSongCapability){
-        .user = screen,
-        .current_song = search_engine_current_song_capability,
-        .selected_songs = search_engine_selected_songs_capability,
-    });
-    nc_screen_set_tag_capability(&screen->screen, (NcScreenTagCapability){
-        .user = screen,
-        .menu = search_engine_tag_menu_capability,
-        .tag_at = search_engine_tag_at_capability,
-    });
     menu = search_engine_screen_menu(screen);
     nc_menu_set_display_callbacks(menu,
                                   search_display_callbacks(screen, false));

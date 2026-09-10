@@ -140,26 +140,27 @@ tag_edit_active_window(NcScreen *screen) {
 }
 
 static NcMenu *
-tag_edit_menu_capability(void *user) {
-    return tag_edit_screen_active_menu(user);
+tag_edit_menu_capability(NcScreen *base) {
+    return tag_edit_screen_active_menu(tag_edit_from_screen(base));
 }
 
 static int32
-tag_edit_menu_height_capability(void *user) {
-    return nc_window_height(tag_edit_screen_active_window(user));
+tag_edit_menu_height_capability(NcScreen *base) {
+    return nc_window_height(tag_edit_screen_active_window(
+        tag_edit_from_screen(base)));
 }
 
 static bool
-tag_edit_filter_available_capability(void *user) {
-    TagEditScreen *screen = user;
+tag_edit_filter_available_capability(NcScreen *base) {
+    TagEditScreen *screen = tag_edit_from_screen(base);
 
     return (screen->active_column == TAG_EDIT_COLUMN_DIRECTORIES)
            || (screen->active_column == TAG_EDIT_COLUMN_TAGS);
 }
 
 static StringView
-tag_edit_filter_constraint_capability(void *user) {
-    TagEditScreen *screen = user;
+tag_edit_filter_constraint_capability(NcScreen *base) {
+    TagEditScreen *screen = tag_edit_from_screen(base);
     StrBuilder *constraint;
 
     if (screen->active_column == TAG_EDIT_COLUMN_DIRECTORIES) {
@@ -173,10 +174,10 @@ tag_edit_filter_constraint_capability(void *user) {
 }
 
 static int32
-tag_edit_filter_apply_capability(void *user, char *pattern,
+tag_edit_filter_apply_capability(NcScreen *base, char *pattern,
                                  int32 pattern_len, uint32 regex_flags,
                                  NcmError *ncm_error) {
-    TagEditScreen *screen = user;
+    TagEditScreen *screen = tag_edit_from_screen(base);
 
     if (screen->active_column == TAG_EDIT_COLUMN_DIRECTORIES) {
         return tag_edit_screen_apply_directory_filter(screen, pattern,
@@ -193,16 +194,16 @@ tag_edit_filter_apply_capability(void *user, char *pattern,
 }
 
 static bool
-tag_edit_search_available_capability(void *user) {
-    TagEditScreen *screen = user;
+tag_edit_search_available_capability(NcScreen *base) {
+    TagEditScreen *screen = tag_edit_from_screen(base);
 
     return (screen->active_column == TAG_EDIT_COLUMN_DIRECTORIES)
            || (screen->active_column == TAG_EDIT_COLUMN_TAGS);
 }
 
 static StringView
-tag_edit_search_constraint_capability(void *user) {
-    TagEditScreen *screen = user;
+tag_edit_search_constraint_capability(NcScreen *base) {
+    TagEditScreen *screen = tag_edit_from_screen(base);
     StrBuilder *constraint;
 
     if (screen->active_column == TAG_EDIT_COLUMN_DIRECTORIES) {
@@ -216,8 +217,8 @@ tag_edit_search_constraint_capability(void *user) {
 }
 
 static void
-tag_edit_search_clear_capability(void *user) {
-    TagEditScreen *screen = user;
+tag_edit_search_clear_capability(NcScreen *base) {
+    TagEditScreen *screen = tag_edit_from_screen(base);
 
     if (screen->active_column == TAG_EDIT_COLUMN_DIRECTORIES) {
         screen->directory_search_enabled = false;
@@ -230,7 +231,7 @@ tag_edit_search_clear_capability(void *user) {
 }
 
 static int32
-tag_edit_search_capability(void *user, enum SearchDirection direction,
+tag_edit_search_capability(NcScreen *base, enum SearchDirection direction,
                            char *pattern, int32 pattern_len,
                            uint32 regex_flags, bool wrap, bool skip_current,
                            NcmError *ncm_error) {
@@ -238,40 +239,42 @@ tag_edit_search_capability(void *user, enum SearchDirection direction,
 
     (void)regex_flags;
     forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
-    return tag_edit_screen_search(user, pattern, pattern_len, forward, wrap,
-                                  skip_current, ncm_error);
+    return tag_edit_screen_search(tag_edit_from_screen(base), pattern,
+                                  pattern_len, forward, wrap, skip_current,
+                                  ncm_error);
 }
 
 static int32
-tag_edit_selected_songs_capability(void *user, NcmSongArray *songs) {
-    return tag_edit_screen_selected_songs(user, songs);
+tag_edit_selected_songs_capability(NcScreen *base, NcmSongArray *songs) {
+    return tag_edit_screen_selected_songs(tag_edit_from_screen(base), songs);
 }
 
 static bool
-tag_edit_previous_column_available_capability(void *user) {
-    return tag_edit_screen_previous_column_available(user);
+tag_edit_previous_column_available_capability(NcScreen *base) {
+    return tag_edit_screen_previous_column_available(
+        tag_edit_from_screen(base));
 }
 
 static bool
-tag_edit_next_column_available_capability(void *user) {
-    return tag_edit_screen_next_column_available(user);
+tag_edit_next_column_available_capability(NcScreen *base) {
+    return tag_edit_screen_next_column_available(tag_edit_from_screen(base));
 }
 
 static int32
-tag_edit_previous_column_capability(void *user) {
-    tag_edit_screen_previous_column(user);
+tag_edit_previous_column_capability(NcScreen *base) {
+    tag_edit_screen_previous_column(tag_edit_from_screen(base));
     return 0;
 }
 
 static int32
-tag_edit_next_column_capability(void *user) {
-    tag_edit_screen_next_column(user);
+tag_edit_next_column_capability(NcScreen *base) {
+    tag_edit_screen_next_column(tag_edit_from_screen(base));
     return 0;
 }
 
 static NcMenu *
-tag_edit_tag_menu_capability(void *user) {
-    TagEditScreen *screen = user;
+tag_edit_tag_menu_capability(NcScreen *base) {
+    TagEditScreen *screen = tag_edit_from_screen(base);
 
     if (screen->active_focus != TAG_EDIT_FOCUS_TAGS) {
         return NULL;
@@ -280,9 +283,9 @@ tag_edit_tag_menu_capability(void *user) {
 }
 
 static int32
-tag_edit_tag_at_capability(void *user, int32 pos, enum SongGetter getter,
-                           StrBuilder *tag) {
-    TagEditScreen *screen = user;
+tag_edit_tag_at_capability(NcScreen *base, int32 pos,
+                           enum SongGetter getter, StrBuilder *tag) {
+    TagEditScreen *screen = tag_edit_from_screen(base);
     MutableSong *song;
     enum TagsField field;
 
@@ -1959,6 +1962,12 @@ tag_edit_destroy_callback(NcScreen *screen) {
 }
 
 static NcScreenOps tag_edit_callbacks = {
+    .capabilities = NC_SCREEN_CAPABILITY_MENU
+                    |NC_SCREEN_CAPABILITY_FILTER
+                    |NC_SCREEN_CAPABILITY_SEARCH
+                    |NC_SCREEN_CAPABILITY_SONGS
+                    |NC_SCREEN_CAPABILITY_COLUMNS
+                    |NC_SCREEN_CAPABILITY_TAGS,
     .active_window = tag_edit_active_window,
     .refresh = tag_edit_refresh,
     .refresh_window = tag_edit_refresh_window,
@@ -1973,6 +1982,22 @@ static NcScreenOps tag_edit_callbacks = {
     .lockable = true,
     .mergable = true,
     .destroy = tag_edit_destroy_callback,
+    .current_menu = tag_edit_menu_capability,
+    .current_menu_height = tag_edit_menu_height_capability,
+    .can_filter = tag_edit_filter_available_capability,
+    .current_filter = tag_edit_filter_constraint_capability,
+    .apply_filter = tag_edit_filter_apply_capability,
+    .can_search = tag_edit_search_available_capability,
+    .current_search_constraint = tag_edit_search_constraint_capability,
+    .clear_search_constraint = tag_edit_search_clear_capability,
+    .search = tag_edit_search_capability,
+    .selected_songs = tag_edit_selected_songs_capability,
+    .previous_column_available = tag_edit_previous_column_available_capability,
+    .next_column_available = tag_edit_next_column_available_capability,
+    .previous_column = tag_edit_previous_column_capability,
+    .next_column = tag_edit_next_column_capability,
+    .tag_menu = tag_edit_tag_menu_capability,
+    .song_tag_at = tag_edit_tag_at_capability,
 };
 
 typedef struct TagEditSearchContext {
@@ -2452,43 +2477,6 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
     tag_edit_observe_current_directory(screen);
     nc_screen_init_ops(&screen->screen, tag_edit_callbacks, screen,
                        NC_SCREEN_TYPE_TAG_EDIT);
-    nc_screen_set_menu_capability(&screen->screen, (NcScreenMenuCapability){
-        .user = screen,
-        .current_menu = tag_edit_menu_capability,
-        .height = tag_edit_menu_height_capability,
-    });
-    nc_screen_set_filter_capability(&screen->screen,
-                                    (NcScreenFilterCapability){
-        .user = screen,
-        .can_filter = tag_edit_filter_available_capability,
-        .current_constraint = tag_edit_filter_constraint_capability,
-        .apply = tag_edit_filter_apply_capability,
-    });
-    nc_screen_set_search_capability(&screen->screen,
-                                    (NcScreenSearchCapability){
-        .user = screen,
-        .can_search = tag_edit_search_available_capability,
-        .current_constraint = tag_edit_search_constraint_capability,
-        .clear_constraint = tag_edit_search_clear_capability,
-        .search = tag_edit_search_capability,
-    });
-    nc_screen_set_song_capability(&screen->screen, (NcScreenSongCapability){
-        .user = screen,
-        .selected_songs = tag_edit_selected_songs_capability,
-    });
-    nc_screen_set_column_capability(&screen->screen,
-                                    (NcScreenColumnCapability){
-        .user = screen,
-        .previous_available = tag_edit_previous_column_available_capability,
-        .next_available = tag_edit_next_column_available_capability,
-        .previous = tag_edit_previous_column_capability,
-        .next = tag_edit_next_column_capability,
-    });
-    nc_screen_set_tag_capability(&screen->screen, (NcScreenTagCapability){
-        .user = screen,
-        .menu = tag_edit_tag_menu_capability,
-        .tag_at = tag_edit_tag_at_capability,
-    });
     tag_edit_screen_prepare_parser_rows(screen, TAG_EDIT_PARSER_NONE, NULL, 0);
     return;
 }

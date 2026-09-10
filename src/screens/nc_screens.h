@@ -341,59 +341,25 @@ typedef struct NcScreenResizeParams {
     int32 width;
 } NcScreenResizeParams;
 
-typedef struct NcScreenMenuCapability {
-    void *user;
-    NcMenu *(*current_menu)(void *);
-    int32 (*height)(void *);
-} NcScreenMenuCapability;
+#define NC_SCREEN_CAPABILITY_FIELDS(XX)                                      \
+    XX(NC_SCREEN_CAPABILITY_MENU)                                            \
+    XX(NC_SCREEN_CAPABILITY_FILTER)                                          \
+    XX(NC_SCREEN_CAPABILITY_SEARCH)                                          \
+    XX(NC_SCREEN_CAPABILITY_FIND)                                            \
+    XX(NC_SCREEN_CAPABILITY_SONGS)                                           \
+    XX(NC_SCREEN_CAPABILITY_COLUMNS)                                         \
+    XX(NC_SCREEN_CAPABILITY_TAGS)
 
-typedef struct NcScreenFilterCapability {
-    void *user;
-    bool (*can_filter)(void *);
-    StringView (*current_constraint)(void *);
-    int32 (*apply)(void *, char *, int32, uint32, NcmError *);
-} NcScreenFilterCapability;
+#define ENUM_NAME NcScreenCapabilityFlag
+#define ENUM_PREFIX_ NC_SCREEN_CAPABILITY_
+#define ENUM_BITFLAGS 1
+#define ENUM_FIELDS NC_SCREEN_CAPABILITY_FIELDS
+#include "cbase/xenums.c"
 
-typedef struct NcScreenSearchCapability {
-    void *user;
-    bool (*can_search)(void *);
-    bool can_find;
-    StringView (*current_constraint)(void *);
-    void (*clear_constraint)(void *);
-    int32 (*search)(void *, enum SearchDirection, char *, int32, uint32,
-                    bool, bool, NcmError *);
-} NcScreenSearchCapability;
-
-typedef struct NcScreenSongCapability {
-    void *user;
-    int32 (*current_song)(void *, NcmSong *);
-    int32 (*selected_songs)(void *, NcmSongArray *);
-} NcScreenSongCapability;
-
-typedef struct NcScreenColumnCapability {
-    void *user;
-    bool (*previous_available)(void *);
-    bool (*next_available)(void *);
-    int32 (*previous)(void *);
-    int32 (*next)(void *);
-} NcScreenColumnCapability;
-
-typedef struct NcScreenTagCapability {
-    void *user;
-    NcMenu *(*menu)(void *);
-    int32 (*tag_at)(void *, int32, enum SongGetter, StrBuilder *);
-} NcScreenTagCapability;
-
-typedef struct NcScreenCapabilities {
-    NcScreenMenuCapability menu;
-    NcScreenFilterCapability filter;
-    NcScreenSearchCapability search;
-    NcScreenSongCapability songs;
-    NcScreenColumnCapability columns;
-    NcScreenTagCapability tags;
-} NcScreenCapabilities;
 
 typedef struct NcScreenOps {
+    enum NcScreenCapabilityFlag capabilities;
+
     NcWindow *(*active_window)(NcScreen *);
     void (*refresh)(NcScreen *);
     void (*refresh_window)(NcScreen *);
@@ -411,6 +377,25 @@ typedef struct NcScreenOps {
     bool (*is_mergable_callback)(NcScreen *);
     void (*destroy)(NcScreen *);
 
+    NcMenu *(*current_menu)(NcScreen *);
+    int32 (*current_menu_height)(NcScreen *);
+    bool (*can_filter)(NcScreen *);
+    StringView (*current_filter)(NcScreen *);
+    int32 (*apply_filter)(NcScreen *, char *, int32, uint32, NcmError *);
+    bool (*can_search)(NcScreen *);
+    StringView (*current_search_constraint)(NcScreen *);
+    void (*clear_search_constraint)(NcScreen *);
+    int32 (*search)(NcScreen *, enum SearchDirection, char *, int32, uint32,
+                    bool, bool, NcmError *);
+    int32 (*current_song)(NcScreen *, NcmSong *);
+    int32 (*selected_songs)(NcScreen *, NcmSongArray *);
+    bool (*previous_column_available)(NcScreen *);
+    bool (*next_column_available)(NcScreen *);
+    int32 (*previous_column)(NcScreen *);
+    int32 (*next_column)(NcScreen *);
+    NcMenu *(*tag_menu)(NcScreen *);
+    int32 (*song_tag_at)(NcScreen *, int32, enum SongGetter, StrBuilder *);
+
     int32 window_timeout;
 
     bool lockable;
@@ -420,7 +405,6 @@ typedef struct NcScreenOps {
 struct NcScreen {
     const NcScreenOps *ops;
     NcScreenOps ops_storage;
-    NcScreenCapabilities capabilities;
     void *user;
     enum NcScreenType type;
     bool has_to_be_resized;
@@ -439,12 +423,6 @@ struct NcScreenRegistry {
 };
 
 void nc_screen_init_ops(NcScreen *, NcScreenOps, void *, enum NcScreenType);
-void nc_screen_set_menu_capability(NcScreen *, NcScreenMenuCapability);
-void nc_screen_set_filter_capability(NcScreen *, NcScreenFilterCapability);
-void nc_screen_set_search_capability(NcScreen *, NcScreenSearchCapability);
-void nc_screen_set_song_capability(NcScreen *, NcScreenSongCapability);
-void nc_screen_set_column_capability(NcScreen *, NcScreenColumnCapability);
-void nc_screen_set_tag_capability(NcScreen *, NcScreenTagCapability);
 NcWindow *nc_screen_default_active_window(NcScreen *);
 void nc_screen_noop_refresh(NcScreen *);
 void nc_screen_noop_refresh_window(NcScreen *);
