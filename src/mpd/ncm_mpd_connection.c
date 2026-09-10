@@ -110,7 +110,7 @@ ncm_mpd_connection_set_error(MpdConnection *connection,
 }
 
 #define NCM_MPD_CONNECTION_TAG_TYPE_CASE(                                  \
-    tag, name, alias, tag_char, field, getter, getter_char,                \
+    tag, display, tag_char, field, getter, getter_char,                    \
     taglib_property, taglib_name, settings_name, mpd, flags                \
 )                                                                          \
     case tag:                                                              \

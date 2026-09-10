@@ -766,7 +766,7 @@ tag_edit_append_parser_legend_field(StrBuilder *legend,
     return;
 }
 
-#define TAG_EDIT_APPEND_PARSER_FIELD(tag, name, alias, tag_char, field,       \
+#define TAG_EDIT_APPEND_PARSER_FIELD(tag, display, tag_char, field,       \
                                      getter, getter_char, taglib_property,    \
                                      taglib_name, settings_name, mpd, flags)  \
     tag_edit_append_parser_legend_field(&screen->parser_legend,               \

@@ -184,7 +184,7 @@ ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
     return 0;
 }
 
-#define NCM_MPD_ITEM_TAG_ENTRY(tag, name, alias, tag_char, field, getter,   \
+#define NCM_MPD_ITEM_TAG_ENTRY(tag, display, tag_char, field, getter,      \
                                getter_char, taglib_property, taglib_name,   \
                                settings_name, mpd, flags)                  \
     {CAT(MPD_TAG_, mpd), tag},

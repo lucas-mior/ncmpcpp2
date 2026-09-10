@@ -30,13 +30,13 @@ typedef struct SearchConstraintMetadata {
     enum NcmTagType tag;
 } SearchConstraintMetadata;
 
-#define SEARCH_CONSTRAINT_TAG_ENTRY(tag_value, tag_name, alias, tag_char, \
+#define SEARCH_CONSTRAINT_TAG_ENTRY(tag_value, display, tag_char,       \
                                     field_suffix, getter_suffix,             \
                                     getter_char, taglib_property,            \
                                     taglib_name, settings_name, mpd, flags)  \
     {                                                                         \
-        .name = #alias,                                                       \
-        .name_len = STRLIT_LEN(#alias),                                       \
+        .name = NCM_TAG_DISPLAY_NAME(display),                                \
+        .name_len = NCM_TAG_DISPLAY_NAME_LEN(display),                        \
         .tag = tag_value,                                                     \
     },
 

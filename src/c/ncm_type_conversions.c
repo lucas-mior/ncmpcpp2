@@ -67,22 +67,7 @@ ncm_color_index_from_char(char c) {
 
 int32
 ncm_tag_type_name_len(enum NcmTagType tag, char **out) {
-    switch (tag) {
-#define NCM_TAG_TYPE_NAME_CASE(tag, name, alias, tag_char, field, getter,     \
-                               getter_char, taglib_property, taglib_name,    \
-                               settings_name, mpd, flags)                   \
-    case tag:                                                                 \
-        *out = name;                                                          \
-        return STRLIT_LEN(name);
-
-    NCM_TAG_DEFS(NCM_TAG_TYPE_NAME_CASE)
-
-#undef NCM_TAG_TYPE_NAME_CASE
-    case NCM_TAG_COUNT:
-    default:
-        *out = "";
-        return 0;
-    }
+    return ncm_tag_type_display_name_len(tag, out);
 }
 
 char *
@@ -96,7 +81,7 @@ ncm_tag_type_name(enum NcmTagType tag) {
 enum NcmTagType
 ncm_char_to_tag_type(char c) {
     switch (c) {
-#define NCM_TAG_CHAR_CASE(tag, name, alias, tag_char, field, getter,          \
+#define NCM_TAG_CHAR_CASE(tag, display, tag_char, field, getter,             \
                           getter_char, taglib_property, taglib_name,         \
                           settings_name, mpd, flags)                         \
     case tag_char:                                                            \
@@ -116,8 +101,8 @@ ncm_song_getter_from_char(char c) {
 #define NCM_SONG_GETTER_NON_TAG_CHAR_CASE(getter, alias, getter_char)        \
     case getter_char:                                                         \
         return getter;
-#define NCM_SONG_GETTER_TAG_CHAR_CASE(tag, name, alias, tag_char, field,     \
-                                      getter, getter_char, taglib_property,  \
+#define NCM_SONG_GETTER_TAG_CHAR_CASE(tag, display, tag_char, field, getter,\
+                                      getter_char, taglib_property,          \
                                       taglib_name, settings_name, mpd, flags) \
     case getter_char:                                                         \
         return CAT(SONG_GETTER_, getter);
@@ -142,8 +127,8 @@ ncm_song_getter_from_char(char c) {
 enum NcmTagType
 ncm_song_getter_to_tag_type(enum SongGetter getter) {
     switch (getter) {
-#define NCM_SONG_GETTER_TO_TAG_CASE(tag, name, alias, tag_char, field,        \
-                                    getter, getter_char, taglib_property,    \
+#define NCM_SONG_GETTER_TO_TAG_CASE(tag, display, tag_char, field, getter,  \
+                                    getter_char, taglib_property,            \
                                     taglib_name, settings_name, mpd, flags)   \
     case CAT(SONG_GETTER_, getter):                                           \
         return tag;
@@ -167,7 +152,7 @@ ncm_song_getter_to_tag_type(enum SongGetter getter) {
 enum TagsField
 ncm_tags_field_from_tag_type(enum NcmTagType tag) {
     switch (tag) {
-#define NCM_TAG_TO_FIELD_CASE(tag, name, alias, tag_char, field, getter,      \
+#define NCM_TAG_TO_FIELD_CASE(tag, display, tag_char, field, getter,        \
                               getter_char, taglib_property, taglib_name,     \
                               settings_name, mpd, flags)                    \
     case tag:                                                                 \
@@ -216,7 +201,7 @@ ncm_tags_field_from_char(char c) {
 enum NcmTagType
 ncm_tags_field_to_tag_type(enum TagsField field) {
     switch (field) {
-#define NCM_FIELD_TO_TAG_CASE(tag, name, alias, tag_char, field, getter,      \
+#define NCM_FIELD_TO_TAG_CASE(tag, display, tag_char, field, getter,        \
                               getter_char, taglib_property, taglib_name,     \
                               settings_name, mpd, flags)                    \
     case CAT(NCM_TAGS_FIELD_, field):                                         \
@@ -234,7 +219,7 @@ ncm_tags_field_to_tag_type(enum TagsField field) {
 enum SongGetter
 ncm_tags_field_to_song_getter(enum TagsField field) {
     switch (field) {
-#define NCM_FIELD_TO_GETTER_CASE(tag, name, alias, tag_char, field, getter,   \
+#define NCM_FIELD_TO_GETTER_CASE(tag, display, tag_char, field, getter,     \
                                  getter_char, taglib_property, taglib_name,  \
                                  settings_name, mpd, flags)                 \
     case CAT(NCM_TAGS_FIELD_, field):                                         \
@@ -252,7 +237,7 @@ ncm_tags_field_to_song_getter(enum TagsField field) {
 enum TagsField
 ncm_song_getter_to_tags_field(enum SongGetter getter) {
     switch (getter) {
-#define NCM_GETTER_TO_FIELD_CASE(tag, name, alias, tag_char, field, getter,   \
+#define NCM_GETTER_TO_FIELD_CASE(tag, display, tag_char, field, getter,     \
                                  getter_char, taglib_property, taglib_name,  \
                                  settings_name, mpd, flags)                 \
     case CAT(SONG_GETTER_, getter):                                           \
