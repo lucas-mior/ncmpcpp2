@@ -118,7 +118,7 @@ ncm_mpd_connection_set_error(MpdConnection *connection,
 
 static enum mpd_tag_type
 ncm_mpd_connection_tag_type(enum NcmTagType tag) {
-    switch (tag) {
+    switch ((int32)tag) {
     NCM_MPD_TAG_DEFS(NCM_MPD_CONNECTION_TAG_TYPE_CASE)
     default:
         return MPD_TAG_UNKNOWN;
