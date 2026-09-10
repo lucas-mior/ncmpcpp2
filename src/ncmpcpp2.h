@@ -203,43 +203,43 @@ enum {
 #define TAG_TYPE_ENUM_FIELD(suffix, DISP, CHAR, getter_char, flags)        \
   XX(CAT(TAG_, suffix))
 
-#define TAG_TYPE_ENUM_FIELDS                                                   \
+#define TAG_TYPE_ENUM_FIELDS                                               \
   TAG_DEFS(TAG_TYPE_ENUM_FIELD)
 
 #define TAGS_FIELD_ENUM_FIELD(suffix, DISP, CHAR, getter_char, flags)      \
   XX(CAT(TAGS_FIELD_, suffix), DISP)
 
-#define TAGS_FIELD_ENUM_FIELDS                                                 \
+#define TAGS_FIELD_ENUM_FIELDS                                             \
   TAG_FIELD_DEFS(TAGS_FIELD_ENUM_FIELD)
 
-#define NCM_SONG_GETTER_RECORD_NONE(XX)                                        \
+#define NCM_SONG_GETTER_RECORD_NONE(XX)                                    \
   XX(SONG_GETTER_NONE, none, '\0')
 
-#define NCM_SONG_GETTER_RECORD_LENGTH(XX)                                      \
+#define NCM_SONG_GETTER_RECORD_LENGTH(XX)                                  \
   XX(SONG_GETTER_LENGTH, Length, 'l')
 
-#define NCM_SONG_GETTER_RECORD_DIRECTORY(XX)                                   \
+#define NCM_SONG_GETTER_RECORD_DIRECTORY(XX)                               \
   XX(SONG_GETTER_DIRECTORY, Directory, 'D')
 
-#define NCM_SONG_GETTER_RECORD_NAME(XX)                                        \
+#define NCM_SONG_GETTER_RECORD_NAME(XX)                                    \
   XX(SONG_GETTER_NAME, Filename, 'f')
 
-#define NCM_SONG_GETTER_RECORD_URI(XX)                                         \
+#define NCM_SONG_GETTER_RECORD_URI(XX)                                     \
   XX(SONG_GETTER_URI, URI, 'F')
 
-#define NCM_SONG_GETTER_RECORD_TRACK_NUMBER(XX)                                \
+#define NCM_SONG_GETTER_RECORD_TRACK_NUMBER(XX)                            \
   XX(SONG_GETTER_TRACK_NUMBER, Track Number, 'n')
 
-#define NCM_SONG_GETTER_RECORD_PRIORITY(XX)                                    \
+#define NCM_SONG_GETTER_RECORD_PRIORITY(XX)                                \
   XX(SONG_GETTER_PRIORITY, Priority, 'P')
 
-#define NCM_SONG_GETTER_NON_TAG_DEFS(XX)                                       \
-  NCM_SONG_GETTER_RECORD_NONE(XX)                                              \
-  NCM_SONG_GETTER_RECORD_LENGTH(XX)                                            \
-  NCM_SONG_GETTER_RECORD_DIRECTORY(XX)                                         \
-  NCM_SONG_GETTER_RECORD_NAME(XX)                                              \
-  NCM_SONG_GETTER_RECORD_URI(XX)                                               \
-  NCM_SONG_GETTER_RECORD_TRACK_NUMBER(XX)                                      \
+#define NCM_SONG_GETTER_NON_TAG_DEFS(XX)                                   \
+  NCM_SONG_GETTER_RECORD_NONE(XX)                                          \
+  NCM_SONG_GETTER_RECORD_LENGTH(XX)                                        \
+  NCM_SONG_GETTER_RECORD_DIRECTORY(XX)                                     \
+  NCM_SONG_GETTER_RECORD_NAME(XX)                                          \
+  NCM_SONG_GETTER_RECORD_URI(XX)                                           \
+  NCM_SONG_GETTER_RECORD_TRACK_NUMBER(XX)                                  \
   NCM_SONG_GETTER_RECORD_PRIORITY(XX)
 
 #define NCM_SONG_GETTER_TAG_HEAD_DEFS(XX)                                      \
