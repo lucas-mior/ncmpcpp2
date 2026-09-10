@@ -303,13 +303,12 @@ search_run_current(NcScreen *base_screen) {
             prompt_status = SEARCH_ENGINE_PROMPT_ERROR;
         } else {
             StrBuilder *constraint = &screen->constraints[pos];
-            char *constraint_name = search_constraint_names[pos];
-            int32 constraint_name_len = search_constraint_name_lens[pos];
+            char *name = search_constraint_names[pos];
+            int32 name_len = search_constraint_name_lens[pos];
 
             prompt_status =
                 screen->hooks.prompt_constraint(screen->hooks.user,
-                                                constraint_name,
-                                                constraint_name_len,
+                                                name, name_len,
                                                 constraint, &value);
         }
 
@@ -360,9 +359,9 @@ search_run_current(NcScreen *base_screen) {
     }
     if (pos == SEARCH_ENGINE_SEARCH_BUTTON_ROW) {
         ncm_error_clear(&ncm_error);
-        if ((status =
-             search_engine_screen_start_searching(screen, screen->hooks.client,
-                                                  &ncm_error)) < 0) {
+        if ((status = search_engine_screen_start_searching(screen,
+                                                           screen->hooks.client,
+                                                           &ncm_error)) < 0) {
             return status;
         }
         return 0;
@@ -378,8 +377,7 @@ static int32
 search_toggle_display_mode(NcScreen *base) {
     StrBuilder message = {0};
     enum DisplayMode mode;
-    mode = search_engine_screen_toggle_display_mode(
-        (SearchEngineScreen *)base);
+    mode = search_engine_screen_toggle_display_mode((SearchEngineScreen *)base);
     sb_printf(&message, "Search engine display mode: %s",
               ncm_display_mode_str(mode));
     search_engine_screen_status_message((SearchEngineScreen *)base,
@@ -462,10 +460,10 @@ search_row_matches_filter(NcMenu *menu, void *item, void *user) {
 
 static void
 search_format_columns(NcmSong *song, NcBuffer *buffer, int32 list_width) {
-    ncm_display_song_columns(buffer, song,
-                             Config.song_columns_list_format.items,
-                             Config.song_columns_list_format.len, list_width,
-                             true);
+    ColumnArray *columns = &Config.song_columns_list_format;
+
+    ncm_display_song_columns(buffer, song, columns->items, columns->len,
+                             list_width, true);
     return;
 }
 
@@ -607,8 +605,7 @@ search_engine_screen_init(SearchEngineScreen *screen,
     NcMenu *menu;
 
     nc_search_row_menu_init(&screen->rows);
-    nc_window_init(&screen->window,
-                   start_x, main_start_y, width, main_height,
+    nc_window_init(&screen->window, start_x, main_start_y, width, main_height,
                    NULL, 0, color, border);
     for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
         screen->constraints[i] = (StrBuilder){0};
@@ -732,13 +729,15 @@ search_engine_screen_format_song_text(SearchEngineScreen *screen,
 void
 search_engine_screen_update_column_title(SearchEngineScreen *screen) {
     ColumnArray *columns = &Config.song_columns_list_format;
+    StrBuilder *title;
     int32 list_width;
 
     if (screen == NULL) {
         return;
     }
 
-    sb_clear(&screen->column_title);
+    title = &screen->column_title;
+    sb_clear(title);
     if ((Config.search_engine_display_mode != NCM_DISPLAY_MODE_COLUMNS)
         || !Config.titles_visibility || (columns->items == NULL)
         || (columns->len <= 0) || (screen->main_height <= 2)) {
@@ -752,10 +751,8 @@ search_engine_screen_update_column_title(SearchEngineScreen *screen) {
         return;
     }
 
-    ncm_display_column_title(&screen->column_title, columns->items,
-                             columns->len, list_width);
-    nc_window_set_title(&screen->window,
-                        screen->column_title.data, screen->column_title.len);
+    ncm_display_column_title(title, columns->items, columns->len, list_width);
+    nc_window_set_title(&screen->window, title->data, title->len);
     return;
 }
 
@@ -990,6 +987,13 @@ search_pattern_regex_flags(SearchEngineScreen *screen) {
     return NCM_REGEX_LITERAL_CASE_INSENSITIVE;
 }
 
+static int32
+search_compile_regex(NcmRegex *regex, StrBuilder *constraint,
+                     uint32 flags, NcmError *ncm_error) {
+    return ncm_regex_compile(regex, constraint->data, constraint->len,
+                             flags, ncm_error);
+}
+
 static bool
 search_song_has_field_view(NcmSong *song, int32 field, StringView *view) {
     enum NcmTagType tag;
@@ -1030,6 +1034,18 @@ search_song_has_field_view(NcmSong *song, int32 field, StringView *view) {
         return false;
     }
     return ncm_song_has_tag_view(song, tag, 0, view);
+}
+
+static bool
+search_view_exact(StringView view, StrBuilder *constraint) {
+    return ncm_compare_locale_strings(view.data, view.len,
+                                      constraint->data, constraint->len,
+                                      Config.ignore_leading_the) == 0;
+}
+
+static bool
+search_view_regex(NcmRegex *regex, StringView view) {
+    return ncm_regex_matches(regex, view.data, view.len);
 }
 
 int32
@@ -1196,13 +1212,14 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
             status = 0;
             if (!exact_match) {
                 for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
-                    if (screen->constraints[i].len <= 0) {
+                    StrBuilder *constraint = &screen->constraints[i];
+
+                    if (constraint->len <= 0) {
                         continue;
                     }
-                    if ((status = ncm_regex_compile(&regexes[i],
-                            screen->constraints[i].data,
-                            screen->constraints[i].len,
-                            regex_flags, ncm_error)) < 0) {
+                    if ((status = search_compile_regex(&regexes[i], constraint,
+                                                       regex_flags,
+                                                       ncm_error)) < 0) {
                         break;
                     }
                 }
@@ -1229,21 +1246,17 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
 
                                 if (!search_song_has_field_view(song, field,
                                                                  &value)) {
-                                    value = ncm_string_view(
-                                        search_empty_string, 0);
+                                    value = (StringView){search_empty_string,
+                                                         0};
                                 }
                                 if (screen->search_mode
                                     == SEARCH_ENGINE_SEARCH_MODE_EXACT) {
-                                    if (ncm_compare_locale_strings(value.data,
-                                        value.len, constraint->data,
-                                        constraint->len,
-                                        Config.ignore_leading_the) == 0) {
+                                    if (search_view_exact(value, constraint)) {
                                         matches = true;
                                         break;
                                     }
-                                } else if (ncm_regex_matches(&regexes[0],
-                                                               value.data,
-                                                               value.len)) {
+                                } else if (search_view_regex(&regexes[0],
+                                                              value)) {
                                     matches = true;
                                     break;
                                 }
@@ -1266,21 +1279,17 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                             continue;
                         }
                         if (!search_song_has_field_view(song, field, &value)) {
-                            value = ncm_string_view(search_empty_string,
-                                                         0);
+                            value = (StringView){search_empty_string, 0};
                         }
                         if (screen->search_mode
                             == SEARCH_ENGINE_SEARCH_MODE_EXACT) {
-                            if (ncm_compare_locale_strings(value.data,
-                                value.len, constraint->data, constraint->len,
-                                Config.ignore_leading_the) != 0) {
+                            if (!search_view_exact(value, constraint)) {
                                 matches = false;
                                 break;
                             }
                         } else if (regexes[field].compiled
-                                   && !ncm_regex_matches(&regexes[field],
-                                                         value.data,
-                                                         value.len)) {
+                                   && !search_view_regex(&regexes[field],
+                                                         value)) {
                             matches = false;
                             break;
                         }
@@ -1434,11 +1443,14 @@ search_engine_screen_current_song(SearchEngineScreen *screen, NcmSong *song) {
 int32
 search_engine_screen_selected_songs(SearchEngineScreen *screen,
                                     NcmSongArray *songs) {
+    NcMenu *menu;
+
     if ((screen == NULL) || (songs == NULL)) {
         return -EINVAL;
     }
-    return nc_screen_collect_selected_menu_songs(
-        search_engine_screen_menu(screen), songs, search_engine_tag_item_song);
+    menu = search_engine_screen_menu(screen);
+    return nc_screen_collect_selected_menu_songs(menu, songs,
+                                                 search_engine_tag_item_song);
 }
 
 int32

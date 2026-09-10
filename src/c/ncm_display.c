@@ -53,10 +53,10 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
     Column *last;
     int32 remained_width;
 
-    if ((buffer == NULL) || (song == NULL)) {
-        return;
-    }
-    if ((columns == NULL) || (column_count <= 0) || (list_width <= 0)) {
+    ASSERT(buffer != NULL);
+    ASSERT(song != NULL);
+    ASSERT((columns != NULL) || (column_count <= 0));
+    if ((column_count <= 0) || (list_width <= 0)) {
         return;
     }
 
@@ -150,12 +150,11 @@ ncm_display_column_title(StrBuilder *buffer, struct Column *columns,
     Column *last;
     int32 remained_width;
 
-    if (buffer == NULL) {
-        return;
-    }
+    ASSERT(buffer != NULL);
 
     sb_clear(buffer);
-    if ((columns == NULL) || (column_count <= 0) || (list_width <= 0)) {
+    ASSERT((columns != NULL) || (column_count <= 0));
+    if ((column_count <= 0) || (list_width <= 0)) {
         return;
     }
 

@@ -159,9 +159,6 @@ ncm_fs_mkdir_all(char *path, int32 path_len, NcmError *ncm_error) {
         if ((copy[i] != '/') && (copy[i] != '\0')) {
             continue;
         }
-        if (i <= 0) {
-            continue;
-        }
         if (copy[i - 1] == '/') {
             continue;
         }

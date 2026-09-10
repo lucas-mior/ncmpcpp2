@@ -254,9 +254,8 @@ nc_scrollpad_buffer_position_row(NcBuffer *buffer, int32 width,
     int32 x;
     int32 i;
 
-    if ((buffer == NULL) || (width <= 0)) {
-        return 0;
-    }
+    ASSERT(buffer != NULL);
+    ASSERT_MORE(width, 0);
 
     data = nc_buffer_data(buffer);
     len = buffer->len;
@@ -334,12 +333,11 @@ nc_scrollpad_center_on_buffer_position(NcScrollpad *scrollpad,
     int32 row;
     int32 beginning;
 
-    if ((scrollpad == NULL) || (window == NULL) || (buffer == NULL)) {
-        return;
-    }
-    if ((window->width <= 0) || (window->height <= 0)) {
-        return;
-    }
+    ASSERT(scrollpad != NULL);
+    ASSERT(window != NULL);
+    ASSERT(buffer != NULL);
+    ASSERT_MORE(window->width, 0);
+    ASSERT_MORE(window->height, 0);
 
     row = nc_scrollpad_buffer_position_row(buffer, window->width, position);
     height = nc_scrollpad_buffer_position_row(buffer, window->width,
@@ -365,9 +363,8 @@ int32
 nc_scrollpad_max_beginning(NcScrollpad *scrollpad, NcWindow *window) {
     int32 result;
 
-    if ((scrollpad == NULL) || (window == NULL)) {
-        return 0;
-    }
+    ASSERT(scrollpad != NULL);
+    ASSERT(window != NULL);
 
     result = scrollpad->real_height - window->height;
     if (result < 0) {

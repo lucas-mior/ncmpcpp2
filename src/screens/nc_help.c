@@ -20,15 +20,20 @@ nc_help_switch_to(NcScreen *screen) {
 static void
 nc_help_resize(NcScreen *screen) {
     NcHelpScreen *help = (NcHelpScreen *)screen;
+    int32 start_x;
+    int32 start_y;
+    int32 width;
+    int32 height;
 
     if (help->hooks.resize_layout) {
         help->hooks.resize_layout(help->hooks.user, help);
     }
-    nc_scrollpad_resize(&help->scrollpad, &help->window,
-                        nc_help_screen_width(help),
-                        nc_help_screen_height(help));
-    nc_window_move_to(&help->window, nc_help_screen_start_x(help),
-                      nc_help_screen_start_y(help));
+    start_x = nc_help_screen_start_x(help);
+    start_y = nc_help_screen_start_y(help);
+    width = nc_help_screen_width(help);
+    height = nc_help_screen_height(help);
+    nc_scrollpad_resize(&help->scrollpad, &help->window, width, height);
+    nc_window_move_to(&help->window, start_x, start_y);
     nc_scrollpad_flush(&help->scrollpad, &help->window, &help->buffer);
     if (help->hooks.resize_background) {
         help->hooks.resize_background(help->hooks.user);
@@ -92,6 +97,10 @@ nc_help_screen_init(NcHelpScreen *screen, NcHelpHooks hooks,
                     int32 main_start_y, int32 main_height,
                     NcColor color, NcBorder border, int32 lines_scrolled) {
     NcScreenOps ops;
+    int32 window_start_x;
+    int32 window_start_y;
+    int32 window_width;
+    int32 window_height;
 
     screen->hooks = hooks;
     screen->lines_scrolled = lines_scrolled;
@@ -102,9 +111,12 @@ nc_help_screen_init(NcHelpScreen *screen, NcHelpHooks hooks,
     screen->search_constraint = (StrBuilder){0};
     nc_help_screen_set_geometry(screen, start_x, width, main_start_y,
                                 main_height);
-    nc_window_init(&screen->window, nc_help_screen_start_x(screen),
-                   nc_help_screen_start_y(screen), nc_help_screen_width(screen),
-                   nc_help_screen_height(screen), STRLIT(""), color, border);
+    window_start_x = nc_help_screen_start_x(screen);
+    window_start_y = nc_help_screen_start_y(screen);
+    window_width = nc_help_screen_width(screen);
+    window_height = nc_help_screen_height(screen);
+    nc_window_init(&screen->window, window_start_x, window_start_y,
+                   window_width, window_height, STRLIT(""), color, border);
     nc_scrollpad_init(&screen->scrollpad, nc_window_height(&screen->window));
     return;
 }
@@ -123,9 +135,7 @@ nc_help_screen_reload(NcHelpScreen *screen) {
 
     int32 status;
 
-    if (screen == NULL) {
-        return -EINVAL;
-    }
+    ASSERT(screen != NULL);
     if (screen->hooks.render == NULL) {
         return -NCM_ERROR_UNAVAILABLE;
     }
@@ -168,11 +178,7 @@ nc_help_screen_find(NcHelpScreen *screen, char *pattern, int32 pattern_len,
     int32 match_count;
     int32 status;
 
-    if (screen == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing help screen"));
-    }
-
+    ASSERT(screen != NULL);
     nc_buffer_remove_properties(&screen->buffer, 0);
     if ((pattern == NULL) || (pattern_len <= 0)) {
         sb_clear(&screen->search_constraint);
@@ -189,12 +195,7 @@ nc_help_screen_find(NcHelpScreen *screen, char *pattern, int32 pattern_len,
         return status;
     }
 
-    if ((status = sb_set(&screen->search_constraint,
-                         pattern, pattern_len)) < 0) {
-        ncm_regex_destroy(&regex);
-        return ncm_error_set_status(ncm_error, status,
-                                    STRLIT("failed to save search"));
-    }
+    sb_set(&screen->search_constraint, pattern, pattern_len);
 
     data = nc_buffer_data(&screen->buffer);
     match_count = ncm_regex_for_each_match(&regex, data, screen->buffer.len,
@@ -210,9 +211,7 @@ nc_help_screen_find(NcHelpScreen *screen, char *pattern, int32 pattern_len,
 
 void
 nc_help_screen_clear_search(NcHelpScreen *screen) {
-    if (screen == NULL) {
-        return;
-    }
+    ASSERT(screen != NULL);
     sb_clear(&screen->search_constraint);
     nc_buffer_remove_properties(&screen->buffer, 0);
     nc_scrollpad_flush(&screen->scrollpad, &screen->window, &screen->buffer);

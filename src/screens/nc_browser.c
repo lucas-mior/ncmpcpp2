@@ -210,8 +210,8 @@ browser_supported_extensions_contains(StrBuilderArray *extensions,
 }
 
 static bool
-browser_local_path_has_supported_extension(
-    BrowserScreen *screen, char *path, int32 path_len) {
+browser_local_path_has_supported_extension(BrowserScreen *screen,
+                                           char *path, int32 path_len) {
     int32 extension;
 
     if ((extension = ncm_path_extension_start(path, path_len)) <= 0) {
@@ -1968,9 +1968,10 @@ browser_screen_rename_current_directory(BrowserScreen *screen,
 }
 
 int32
-browser_screen_rename_current_playlist(
-    BrowserScreen *screen, char *new_path, int32 new_path_len,
-    MpdClient *client, NcmError *ncm_error) {
+browser_screen_rename_current_playlist(BrowserScreen *screen,
+                                       char *new_path, int32 new_path_len,
+                                       MpdClient *client,
+                                       NcmError *ncm_error) {
     StringView old_path;
     int32 status;
 

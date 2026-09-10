@@ -49,8 +49,9 @@ nc_screen_switcher_finish_switch(NcScreen *screen) {
 }
 
 void
-nc_screen_switcher_get_resize_params(NcScreen *screen, int32 *x_offset,
-                                     int32 *width, bool adjust_locked_screen) {
+nc_screen_switcher_get_resize_params(NcScreen *screen,
+                                     int32 *x_offset, int32 *width,
+                                     bool adjust_locked_screen) {
     NcScreenResizeParams params;
 
     params = app_controller_screen_resize_params(screen, adjust_locked_screen);

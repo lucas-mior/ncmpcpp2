@@ -17,8 +17,9 @@ ncm_playlist_destroy(NcmPlaylist *playlist) {
 }
 
 int32
-ncm_playlist_set(NcmPlaylist *playlist, char *path,
-                 int32 path_len, time_t last_modified) {
+ncm_playlist_set(NcmPlaylist *playlist,
+                 char *path, int32 path_len,
+                 time_t last_modified) {
     NcmPlaylist replacement;
 
     if (playlist == NULL) {
