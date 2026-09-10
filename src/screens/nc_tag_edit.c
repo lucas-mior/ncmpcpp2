@@ -2450,7 +2450,7 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
         nc_editor_string_menu_add_separator(menu);
         if (Config.titles_visibility) {
             tag_edit_append_string_row(menu, STRLIT("Options"),
-                                         NC_MENU_ITEM_INACTIVE);
+                                       NC_MENU_ITEM_INACTIVE);
             nc_editor_string_menu_add_separator(menu);
         }
         tag_edit_append_string_row(menu, STRLIT("Capitalize First Letters"),
