@@ -517,7 +517,7 @@ ncm_tag_type_taglib_property_len(enum TagType tag, char *out, int32 cap) {
     int32 result;
 
     ASSERT(out != NULL);
-    ASSERT(cap > 0);
+    ASSERT_POSITIVE(cap);
 
     switch ((int32)tag) {
 #define TAGLIB_PROPERTY_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)   \
@@ -553,7 +553,7 @@ ncm_tag_type_taglib_property_len(enum TagType tag, char *out, int32 cap) {
 static inline int32
 ncm_tag_type_taglib_name_len(enum TagType tag, char *out, int32 cap) {
     ASSERT(out != NULL);
-    ASSERT(cap > 0);
+    ASSERT_POSITIVE(cap);
 
     switch ((int32)tag) {
 #define TAGLIB_NAME_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)      \
@@ -580,7 +580,7 @@ ncm_tag_type_taglib_name_len(enum TagType tag, char *out, int32 cap) {
 static inline int32
 ncm_tags_field_taglib_property_len(enum TagsField field, char *out, int32 cap) {
     ASSERT(out != NULL);
-    ASSERT(cap > 0);
+    ASSERT_POSITIVE(cap);
 
     switch (field) {
 #define TAGLIB_FIELD_PROPERTY_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)    \
