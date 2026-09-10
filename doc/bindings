@@ -286,10 +286,10 @@
 #  toggle_media_library_columns_mode
 #
 #def_key "5"
-#  show_playlist_editor
+#  show_playlist_edit
 #
 #def_key "6"
-#  show_tag_editor
+#  show_tag_edit
 #
 #def_key "7"
 #  show_outputs
@@ -499,13 +499,13 @@
 #  jump_to_browser
 #
 #def_key "G"
-#  jump_to_playlist_editor
+#  jump_to_playlist_edit
 #
 #def_key "~"
 #  jump_to_media_library
 #
 #def_key "E"
-#  jump_to_tag_editor
+#  jump_to_tag_edit
 #
 #def_key "U"
 #  toggle_playing_song_centering
@@ -526,7 +526,7 @@
 #  fetch_lyrics_in_background
 #
 #def_key "alt-l"
-#  toggle_fetching_lyrics_in_background
+#  toggle_fetch_lyrics_in_background
 #
 #def_key "ctrl-l"
 #  toggle_screen_lock
