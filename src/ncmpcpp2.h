@@ -201,8 +201,7 @@ ncm_tag_name_to_camel_compact(char *out, int32 out_cap,
   NCM_TAG_NON_DISP(XX, LOCATION, Location)                              \
   NCM_TAG_NON_DISP(XX, MOOD, Mood)                                      \
   NCM_TAG_NON_DISP(XX, TITLE_SORT, Title Sort)                          \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_RELEASEGROUPID,                      \
-                           Musicbrainz Release Group Id)                   \
+  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_RELEASEGROUPID, Musicbrainz Release Group Id) \
   NCM_TAG_NON_DISP(XX, SHOWMOVEMENT, Show Movement)                     \
   NCM_TAG_NON_DISP(XX, DISCSUBTITLE, Disc Subtitle)
 
