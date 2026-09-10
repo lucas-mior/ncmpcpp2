@@ -260,6 +260,29 @@ APP_SCREEN_REGISTER_SWITCH_TYPES(APP_SCREEN_DEFINE_REGISTER_SWITCH)
 
 #undef APP_SCREEN_DEFINE_REGISTER_SWITCH
 
+#define APP_SCREEN_DEFINE_SIMPLE_SHOW(suffix)                             \
+    int32                                                                     \
+    app_screen_##suffix##_show(void) {                                        \
+        app_screen_##suffix##_register();                                     \
+        app_screen_##suffix##_switch_to();                                    \
+        return 0;                                                             \
+    }
+
+APP_SCREEN_SIMPLE_SWITCH_TYPES(APP_SCREEN_DEFINE_SIMPLE_SHOW)
+
+#undef APP_SCREEN_DEFINE_SIMPLE_SHOW
+
+#define APP_SCREEN_DEFINE_REGISTER_SHOW(suffix)                           \
+    int32                                                                     \
+    app_screen_##suffix##_show(void) {                                        \
+        app_screen_##suffix##_switch_to();                                    \
+        return 0;                                                             \
+    }
+
+APP_SCREEN_REGISTER_SWITCH_TYPES(APP_SCREEN_DEFINE_REGISTER_SHOW)
+
+#undef APP_SCREEN_DEFINE_REGISTER_SHOW
+
 #define APP_SCREEN_DEFINE_IS_CURRENT(suffix)                               \
     bool                                                                       \
     app_screen_##suffix##_is_current(void) {                                   \
@@ -342,6 +365,12 @@ app_screen_lastfm_switch_to(void) {
     return;
 }
 
+int32
+app_screen_lastfm_show(void) {
+    app_screen_lastfm_switch_to();
+    return 0;
+}
+
 void
 app_screen_lyrics_init(void) {
     static bool lyrics_screen_initialized = false;
@@ -368,6 +397,12 @@ app_screen_lyrics_switch_to(void) {
     app_screen_lyrics_register();
     app_screen_toggle_or_switch_to(app_screen_lyrics_base());
     return;
+}
+
+int32
+app_screen_lyrics_show(void) {
+    app_screen_lyrics_switch_to();
+    return 0;
 }
 
 void
@@ -425,6 +460,16 @@ app_screen_visualizer_base(void) {
     return visualizer_screen_base(&visualizer_screen);
 #else
     return NULL;
+#endif
+}
+
+int32
+app_screen_visualizer_show(void) {
+#if defined(ENABLE_VISUALIZER)
+    app_screen_visualizer_register();
+    return app_screens_switch_to_type(SCREEN_TYPE_VISUALIZER);
+#else
+    return -NCM_ERROR_UNAVAILABLE;
 #endif
 }
 
@@ -521,6 +566,12 @@ app_screen_sort_playlist_dialog_switch_to(void) {
                             ncm_error.message, ncm_error.message_len);
     }
     return status;
+}
+
+int32
+app_screen_sort_playlist_dialog_show(void) {
+    app_screen_sort_playlist_dialog_register();
+    return app_screen_sort_playlist_dialog_switch_to();
 }
 
 static int32
@@ -1007,6 +1058,27 @@ app_screens_switch_to_type(enum ScreenType screen_type) {
         return -ENOENT;
     }
     return nc_screen_switcher_switch_to(screen, screen->has_to_be_resized);
+}
+
+int32
+app_screens_switch_or_open_type(enum ScreenType screen_type) {
+    switch (screen_type) {
+    #define APP_SCREEN_SWITCH_OR_OPEN_CASE(                         \
+        screen_type_value, nc_type, nc_value, alias, flags, suffix  \
+    )                                                               \
+        case screen_type_value:                                     \
+            return app_screen_##suffix##_show();
+
+    SCREEN_TYPES(APP_SCREEN_SWITCH_OR_OPEN_CASE)
+
+    #undef APP_SCREEN_SWITCH_OR_OPEN_CASE
+    case SCREEN_TYPE_COUNT:
+        break;
+    default:
+        break;
+    }
+
+    return -NCM_ERROR_UNAVAILABLE;
 }
 
 int32

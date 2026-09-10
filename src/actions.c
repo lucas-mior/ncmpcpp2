@@ -195,91 +195,12 @@ action_runtime_switch_to_screen(enum ScreenType type) {
         return status;
     }
 
-    switch (type) {
-    case SCREEN_TYPE_BROWSER:
-        app_screen_browser_register();
-        app_screen_browser_switch_to();
-        return 0;
-    case SCREEN_TYPE_HELP:
-        app_screen_help_register();
-        app_screen_help_switch_to();
-        return 0;
-    case SCREEN_TYPE_LASTFM:
-        app_screen_lastfm_register();
-        app_screen_lastfm_switch_to();
-        return 0;
-    case SCREEN_TYPE_LYRICS:
-        app_screen_lyrics_register();
-        app_screen_lyrics_switch_to();
-        return 0;
-    case SCREEN_TYPE_MEDIA_LIBRARY:
-        app_screen_media_library_register();
-        app_screen_media_library_switch_to();
-        return 0;
-#if defined(ENABLE_OUTPUTS)
-    case SCREEN_TYPE_OUTPUTS:
-        app_screen_outputs_register();
-        app_screen_outputs_switch_to();
-        return 0;
-#endif
-    case SCREEN_TYPE_PLAYLIST:
-        app_screen_playlist_register();
-        app_screen_playlist_switch_to();
-        return 0;
-    case SCREEN_TYPE_PLAYLIST_EDITOR:
-        app_screen_playlist_edit_register();
-        app_screen_playlist_edit_switch_to();
-        return 0;
-    case SCREEN_TYPE_SEARCH_ENGINE:
-        app_screen_search_engine_register();
-        app_screen_search_engine_switch_to();
-        return 0;
-    case SCREEN_TYPE_SELECTED_ITEMS_ADDER:
-        app_screen_selected_items_adder_register();
-        app_screen_selected_items_adder_switch_to();
-        return 0;
-    case SCREEN_TYPE_SERVER_INFO:
-        app_screen_server_info_register();
-        app_screen_server_info_switch_to();
-        return 0;
-    case SCREEN_TYPE_SONG_INFO:
-        app_screen_song_info_register();
-        app_screen_song_info_switch_to();
-        return 0;
-    case SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
-        app_screen_sort_playlist_dialog_register();
-        return app_screen_sort_playlist_dialog_switch_to();
-#if defined(HAVE_TAGLIB_H)
-    case SCREEN_TYPE_TAG_EDIT:
-        app_screen_tag_edit_register();
-        app_screen_tag_edit_switch_to();
-        return 0;
-    case SCREEN_TYPE_TINY_TAG_EDIT:
-        app_screen_tiny_tag_edit_register();
-        app_screen_tiny_tag_edit_switch_to();
-        return 0;
-#endif
-#if defined(ENABLE_VISUALIZER)
-    case SCREEN_TYPE_VISUALIZER:
-        return ncm_action_show_visualizer();
-#endif
-    case SCREEN_TYPE_COUNT:
-        break;
-    default:
-        break;
-    }
-
-    return -NCM_ERROR_UNAVAILABLE;
+    return app_screens_switch_or_open_type(type);
 }
 
 int32
 ncm_action_show_visualizer(void) {
-#if defined(ENABLE_VISUALIZER)
-    app_screen_visualizer_register();
-    return app_screens_switch_to_type(SCREEN_TYPE_VISUALIZER);
-#else
-    return -NCM_ERROR_UNAVAILABLE;
-#endif
+    return app_screens_switch_or_open_type(SCREEN_TYPE_VISUALIZER);
 }
 
 int32

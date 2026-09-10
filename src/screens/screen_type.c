@@ -48,7 +48,7 @@ bool
 screen_type_is_startup(enum ScreenType screen_type) {
     switch (screen_type) {
     #define SCREEN_STARTUP_CASE(                           \
-        screen_type_value, nc_type, nc_value, alias, flags \
+        screen_type_value, nc_type, nc_value, alias, flags, suffix \
     )                                                      \
         case screen_type_value:                            \
             return (flags & SCREEN_FLAG_STARTUP) != 0;
@@ -73,7 +73,7 @@ screen_type_parse_checked(char *string, int32 string_len, bool startup_only,
     }
 
     #define SCREEN_PARSE_CHECKED( \
-        screen_type_value, nc_type, nc_value, alias, flags \
+        screen_type_value, nc_type, nc_value, alias, flags, suffix \
     ) \
         if ((!startup_only || ((flags & SCREEN_FLAG_STARTUP) != 0)) \
             && STREQUAL(string, string_len, #alias)) { \
