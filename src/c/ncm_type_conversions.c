@@ -66,19 +66,19 @@ ncm_color_index_from_char(char c) {
 }
 
 int32
-ncm_tag_type_name_len(enum NcmTagType tag, char **out) {
+ncm_tag_type_name_len(enum TagType tag, char **out) {
     return ncm_tag_type_display_name_len(tag, out);
 }
 
 char *
-ncm_tag_type_name(enum NcmTagType tag) {
+ncm_tag_type_name(enum TagType tag) {
     char *result;
 
     ncm_tag_type_name_len(tag, &result);
     return result;
 }
 
-enum NcmTagType
+enum TagType
 ncm_char_to_tag_type(char c) {
     switch (c) {
 #define TAG_CHAR_CASE(suffix, display, tag_char, getter_char,        \
@@ -122,7 +122,7 @@ ncm_song_getter_from_char(char c) {
     }
 }
 
-enum NcmTagType
+enum TagType
 ncm_song_getter_to_tag_type(enum SongGetter getter) {
     switch (getter) {
 #define NCM_SONG_GETTER_TO_TAG_CASE(suffix, display, tag_char,          \
@@ -147,7 +147,7 @@ ncm_song_getter_to_tag_type(enum SongGetter getter) {
 }
 
 enum TagsField
-ncm_tags_field_from_tag_type(enum NcmTagType tag) {
+ncm_tags_field_from_tag_type(enum TagType tag) {
     switch (tag) {
 #define TAG_TO_FIELD_CASE(suffix, display, tag_char, getter_char,    \
                               flags)                                         \
@@ -194,7 +194,7 @@ ncm_tags_field_from_char(char c) {
     return ncm_tags_field_from_tag_type(ncm_char_to_tag_type(c));
 }
 
-enum NcmTagType
+enum TagType
 ncm_tags_field_to_tag_type(enum TagsField field) {
     switch (field) {
 #define NCM_FIELD_TO_TAG_CASE(suffix, display, tag_char, getter_char,    \

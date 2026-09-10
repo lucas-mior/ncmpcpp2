@@ -1147,7 +1147,7 @@ typedef struct MediaLibrarySongQuery {
     int32 album_len;
     int32 date_len;
 
-    enum NcmTagType primary_tag;
+    enum TagType primary_tag;
     bool match_primary_tag;
     bool match_album;
     bool match_date;
@@ -1163,7 +1163,7 @@ typedef struct MediaLibraryColumnState {
 } MediaLibraryColumnState;
 
 typedef struct MediaLibraryHooks {
-    int32 (*list_tags)(void *, enum NcmTagType, StringViewList *,
+    int32 (*list_tags)(void *, enum TagType, StringViewList *,
                        NcmError *);
     int32 (*list_all_songs)(void *, NcmMpdSongList *, NcmError *);
     int32 (*search_songs)(void *, MediaLibrarySongQuery *, NcmMpdSongList *,
@@ -1260,15 +1260,15 @@ void media_library_screen_format_song_row(MediaLibraryScreen *, NcmSong *,
 int32 media_library_tags_from_strings(MediaLibraryTagArray *,
                                       StringViewList *);
 int32 media_library_tags_from_songs(MediaLibraryTagArray *, NcmMpdSongList *,
-                                    enum NcmTagType);
+                                    enum TagType);
 int32 media_library_albums_from_songs(MediaLibraryAlbumArray *,
                                       NcmMpdSongList *, enum MediaLibraryMode,
-                                      enum NcmTagType, char *, int32);
+                                      enum TagType, char *, int32);
 int32 media_library_songs_from_list(NcmSongArray *, NcmMpdSongList *);
 
 int32 media_library_screen_toggle_sort_mode(MediaLibraryScreen *, bool *);
 int32 media_library_screen_set_primary_tag_type(MediaLibraryScreen *,
-                                                enum NcmTagType);
+                                                enum TagType);
 void media_library_screen_request_database_update(MediaLibraryScreen *);
 int32 media_library_screen_refresh_inactive_songs(MediaLibraryScreen *);
 
@@ -1296,7 +1296,7 @@ void media_library_screen_request_songs_update(MediaLibraryScreen *);
 void media_library_screen_finish_list_change(MediaLibraryScreen *);
 int32 media_library_screen_update(MediaLibraryScreen *, NcmError *);
 
-int32 media_library_screen_list_tags(MediaLibraryScreen *, enum NcmTagType,
+int32 media_library_screen_list_tags(MediaLibraryScreen *, enum TagType,
                                      StringViewList *, NcmError *);
 int32 media_library_screen_list_all_songs(MediaLibraryScreen *,
                                           NcmMpdSongList *, NcmError *);
@@ -1974,11 +1974,11 @@ typedef struct TinyTagEditHooks {
     enum TinyTagEditPromptResult (*prompt)(void *, char *, int32,
                                              StringView, StrBuilder *);
     void (*status_message)(void *, char *, int32);
-    int32 (*taglib_open)(void *, NcmTaglibFile *, char *, int32);
-    int32 (*taglib_audio_properties)(void *, NcmTaglibFile *,
-                                     NcmTaglibAudioProperties *);
-    bool (*taglib_file_can_set_extended_tags)(void *, NcmTaglibFile *);
-    void (*taglib_close)(void *, NcmTaglibFile *);
+    int32 (*taglib_open)(void *, TaglibFile *, char *, int32);
+    int32 (*taglib_audio_properties)(void *, TaglibFile *,
+                                     TaglibAudioProperties *);
+    bool (*taglib_file_can_set_extended_tags)(void *, TaglibFile *);
+    void (*taglib_close)(void *, TaglibFile *);
     int32 (*write_song)(void *, MutableSong *, char *);
     void (*update_directory)(void *, char *, int32);
     void (*update_playlist_song)(void *, MutableSong *);

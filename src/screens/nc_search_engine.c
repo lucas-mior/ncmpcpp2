@@ -27,7 +27,7 @@ search_engine_tag_item_song(void *item) {
 typedef struct SearchConstraintMetadata {
     char *name;
     int32 name_len;
-    enum NcmTagType tag;
+    enum TagType tag;
 } SearchConstraintMetadata;
 
 #define SEARCH_CONSTRAINT_TAG_ENTRY(suffix, display, tag_char, getter_char, \
@@ -1006,7 +1006,7 @@ search_compile_regex(NcmRegex *regex, StrBuilder *constraint,
 static bool
 search_song_has_field_view(NcmSong *song, int32 field, StringView *view) {
     SearchConstraintMetadata *metadata;
-    enum NcmTagType tag;
+    enum TagType tag;
 
     if ((field <= 0) || (field >= SEARCH_ENGINE_CONSTRAINT_COUNT)) {
         return false;
@@ -1104,7 +1104,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                      && (constraint_status == 0);
                  i += 1) {
                 SearchConstraintMetadata *metadata;
-                enum NcmTagType tag;
+                enum TagType tag;
 
                 constraint = &screen->constraints[i];
                 if (constraint->len <= 0) {

@@ -9,8 +9,8 @@
 int32
 ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
                char *directory, char *new_name,
-               NcmTagsGetFieldCallback *callback, void *user) {
-    NcmTaglibFile file = {0};
+               TagsGetFieldCallback *callback, void *user) {
+    TaglibFile file = {0};
     char *old_path;
     char *new_path;
     int32 old_path_len;

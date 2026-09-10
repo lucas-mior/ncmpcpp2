@@ -194,7 +194,7 @@ ncm_mpd_item_song_from_mpd_song_copy(NcmSong *dest, void *mpd_song) {
     struct mpd_song *source = mpd_song;
     struct {
         enum mpd_tag_type mpd;
-        enum NcmTagType ncm;
+        enum TagType ncm;
     } tags[] = {
         TAG_MPD_DEFS(NCM_MPD_ITEM_TAG_ENTRY)
     };
@@ -296,10 +296,10 @@ ncm_mpd_item_local_song(NcmSong *song, char *path, int32 path_len,
         }
 
         {
-            NcmTaglibFile file = {0};
-            NcmTaglibAudioProperties properties;
+            TaglibFile file = {0};
+            TaglibAudioProperties properties;
             NcmMpdItemTagsContext context;
-            NcmTaglibPairCallback *callback;
+            TaglibPairCallback *callback;
             char time_buffer[32];
             int32 written;
             int32 count;

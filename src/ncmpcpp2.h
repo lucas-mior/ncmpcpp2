@@ -19,7 +19,7 @@
   XX(TAG_FLAGS_FIELD_SEARCH,                   \
      TAG_FLAGS_FIELD|TAG_FLAG_SEARCH)
 
-#define ENUM_NAME NcmTagMetaFlags
+#define ENUM_NAME TagMetaFlags
 #define ENUM_PREFIX_ TAG_FLAGS_
 #define ENUM_BITFLAGS 1
 #define ENUM_FIELDS TAG_FLAG_ENUM_FIELDS
@@ -278,7 +278,7 @@ enum {
   NCM_SONG_GETTER_TAG_TAIL_DEFS(NCM_SONG_GETTER_TAG_ENUM_FIELD)                \
   NCM_SONG_GETTER_RECORD_PRIORITY(NCM_SONG_GETTER_NON_TAG_ENUM_FIELD)
 
-#define ENUM_NAME NcmTagType
+#define ENUM_NAME TagType
 #define ENUM_PREFIX_ TAG_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS TAG_TYPE_ENUM_FIELDS
@@ -297,7 +297,7 @@ enum {
 #include "cbase/xenums.c"
 
 static inline int32
-ncm_tag_type_canonical_name_len(enum NcmTagType tag, char **out) {
+ncm_tag_type_canonical_name_len(enum TagType tag, char **out) {
     switch (tag) {
 #define TAG_CANONICAL_NAME_CASE(suffix, DISP, CHAR, getter_char, flags)  \
     case CAT(TAG_, suffix):                                              \
@@ -315,7 +315,7 @@ ncm_tag_type_canonical_name_len(enum NcmTagType tag, char **out) {
 }
 
 static inline int32
-ncm_tag_type_display_name_len(enum NcmTagType tag, char **out) {
+ncm_tag_type_display_name_len(enum TagType tag, char **out) {
     switch (tag) {
 #define TAG_DISPLAY_NAME_CASE(suffix, DISP, CHAR, getter_char, flags) \
     case CAT(TAG_, suffix):                                           \
@@ -337,7 +337,7 @@ ncm_tag_type_display_name_len(enum NcmTagType tag, char **out) {
 }
 
 static inline int32
-ncm_tag_type_settings_name_len(enum NcmTagType tag, char *out, int32 cap) {
+ncm_tag_type_settings_name_len(enum TagType tag, char *out, int32 cap) {
     switch ((int32)tag) {
 #define TAG_SETTINGS_NAME_CASE(suffix, DISP, CHAR, getter_char, flags)   \
     case CAT(TAG_, suffix):                                              \
@@ -362,7 +362,7 @@ ncm_tag_type_settings_name_len(enum NcmTagType tag, char *out, int32 cap) {
 }
 
 static inline bool
-ncm_tag_type_is_primary(enum NcmTagType tag) {
+ncm_tag_type_is_primary(enum TagType tag) {
     switch ((int32)tag) {
 #define TAG_IS_PRIMARY_CASE(suffix, DISP, CHAR, getter_char, flags) \
     case CAT(TAG_, suffix):                                         \
@@ -379,9 +379,9 @@ ncm_tag_type_is_primary(enum NcmTagType tag) {
 
 static inline bool
 ncm_tag_type_parse_settings_name(char *value, int32 value_len,
-                                 enum NcmTagType *result) {
+                                 enum TagType *result) {
     char normalized[TAG_SETTINGS_NAME_CAP];
-    enum NcmTagType parsed;
+    enum TagType parsed;
     int32 normalized_len;
 
     ASSERT(result != NULL);
@@ -406,9 +406,9 @@ ncm_tag_type_parse_settings_name(char *value, int32 value_len,
     return true;
 }
 
-static inline enum NcmTagType
-ncm_primary_tag_next(enum NcmTagType tag) {
-    static enum NcmTagType tags[NCM_PRIMARY_TAG_COUNT] = {
+static inline enum TagType
+ncm_primary_tag_next(enum TagType tag) {
+    static enum TagType tags[NCM_PRIMARY_TAG_COUNT] = {
 #define NCM_PRIMARY_TAG_ARRAY_ENTRY(suffix, DISP, CHAR, getter_char, flags) \
         CAT(TAG_, suffix),
 
@@ -513,7 +513,7 @@ ncm_song_getter_sort_label_len(enum SongGetter getter, char **out) {
 }
 
 static inline int32
-ncm_tag_type_taglib_property_len(enum NcmTagType tag, char *out, int32 cap) {
+ncm_tag_type_taglib_property_len(enum TagType tag, char *out, int32 cap) {
     int32 result;
 
     ASSERT(out != NULL);
@@ -551,7 +551,7 @@ ncm_tag_type_taglib_property_len(enum NcmTagType tag, char *out, int32 cap) {
 }
 
 static inline int32
-ncm_tag_type_taglib_name_len(enum NcmTagType tag, char *out, int32 cap) {
+ncm_tag_type_taglib_name_len(enum TagType tag, char *out, int32 cap) {
     ASSERT(out != NULL);
     ASSERT(cap > 0);
 

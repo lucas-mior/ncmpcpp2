@@ -856,7 +856,7 @@ playlist_build_mutable_song(NcmSong *replacement,
     }
 
     for (uint32 i = 0; i < TAGS_FIELD_COUNT; i += 1) {
-        enum NcmTagType type = ncm_tags_field_to_tag_type(i);
+        enum TagType type = ncm_tags_field_to_tag_type(i);
         for (int32 j = 0; ; j += 1) {
             if (!mutable_song_has_tag_view(edited, i, j, &value)) {
                 break;

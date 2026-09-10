@@ -14,13 +14,13 @@
 
 #if defined(HAVE_TAGLIB_H)
 
-typedef struct NcmTaglibPropertyMap {
-    enum NcmTagType tag;
-} NcmTaglibPropertyMap;
+typedef struct TaglibPropertyMap {
+    enum TagType tag;
+} TaglibPropertyMap;
 
 static bool ncm_taglib_is_initialized;
 
-static NcmTaglibPropertyMap ncm_taglib_properties[] = {
+static TaglibPropertyMap ncm_taglib_properties[] = {
 #define TAGLIB_PROPERTY_MAP(suffix, display, tag_char, getter_char,     \
                                 flags)                                      \
     {                                                                       \
@@ -33,7 +33,7 @@ static NcmTaglibPropertyMap ncm_taglib_properties[] = {
 };
 
 static TagLib_File *
-ncm_taglib_handle(NcmTaglibFile *file) {
+ncm_taglib_handle(TaglibFile *file) {
     return (TagLib_File *)file->handle;
 }
 
@@ -45,7 +45,7 @@ ncm_taglib_value_is_empty(char *value) {
 #endif
 
 int32
-ncm_taglib_file_open(NcmTaglibFile *file, char *path) {
+ncm_taglib_file_open(TaglibFile *file, char *path) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
 
@@ -73,7 +73,7 @@ ncm_taglib_file_open(NcmTaglibFile *file, char *path) {
 }
 
 void
-ncm_taglib_file_close(NcmTaglibFile *file) {
+ncm_taglib_file_close(TaglibFile *file) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
 #endif
@@ -90,7 +90,7 @@ ncm_taglib_file_close(NcmTaglibFile *file) {
 }
 
 int32
-ncm_taglib_file_save(NcmTaglibFile *file) {
+ncm_taglib_file_save(TaglibFile *file) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
 
@@ -109,8 +109,8 @@ ncm_taglib_file_save(NcmTaglibFile *file) {
 }
 
 int32
-ncm_taglib_file_audio_properties(NcmTaglibFile *file,
-                                 NcmTaglibAudioProperties *properties) {
+ncm_taglib_file_audio_properties(TaglibFile *file,
+                                 TaglibAudioProperties *properties) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
     TagLib_AudioProperties *audio;
@@ -144,8 +144,8 @@ ncm_taglib_file_audio_properties(NcmTaglibFile *file,
 }
 
 int32
-ncm_taglib_read_mapped_properties(NcmTaglibFile *file,
-                                  NcmTaglibPairCallback *callback, void *user) {
+ncm_taglib_read_mapped_properties(TaglibFile *file,
+                                  TaglibPairCallback *callback, void *user) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
     int32 count;
@@ -194,7 +194,7 @@ ncm_taglib_read_mapped_properties(NcmTaglibFile *file,
 }
 
 int32
-ncm_taglib_clear_property(NcmTaglibFile *file, char *property) {
+ncm_taglib_clear_property(TaglibFile *file, char *property) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
 
@@ -213,7 +213,7 @@ ncm_taglib_clear_property(NcmTaglibFile *file, char *property) {
 }
 
 int32
-ncm_taglib_append_property(NcmTaglibFile *file, char *property, char *value) {
+ncm_taglib_append_property(TaglibFile *file, char *property, char *value) {
 #if defined(HAVE_TAGLIB_H)
     TagLib_File *handle;
 
@@ -234,7 +234,7 @@ ncm_taglib_append_property(NcmTaglibFile *file, char *property, char *value) {
 }
 
 bool
-ncm_taglib_file_can_set_extended_tags(NcmTaglibFile *file) {
+ncm_taglib_file_can_set_extended_tags(TaglibFile *file) {
 #if defined(HAVE_TAGLIB_H)
     ASSERT(file != NULL);
     return ncm_taglib_handle(file) != NULL;
