@@ -3823,7 +3823,7 @@ tag_edit_screen_show_parser_dialog(TagEditScreen *screen) {
 
 void
 tag_edit_screen_show_parser_actions(TagEditScreen *screen,
-                                      enum TagEditParserMode mode) {
+                                    enum TagEditParserMode mode) {
     if (mode == TAG_EDIT_PARSER_NONE) {
         return;
     }
