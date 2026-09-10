@@ -3,26 +3,26 @@
 
 #include "cbase.h"
 
-#define TAG_META_FLAG_ENUM_FIELDS                                              \
-  XX(TAG_META_FLAG_DISPLAY)                                                    \
-  XX(TAG_META_FLAG_WRITABLE)                                                   \
-  XX(TAG_META_FLAG_SONG_INFO)                                                  \
-  XX(TAG_META_FLAG_SEARCH)                                                     \
-  XX(TAG_META_FLAG_GETTER)                                                     \
-  XX(TAG_META_FLAG_TAGLIB)                                                     \
-  XX(TAG_META_FLAG_MPD)                                                        \
-  XX(TAG_META_FLAG_TAGLIB_NUMBER)                                              \
-  XX(TAG_META_FLAGS_FIELD,                                                     \
-     TAG_META_FLAG_DISPLAY|TAG_META_FLAG_WRITABLE                              \
-     |TAG_META_FLAG_SONG_INFO|TAG_META_FLAG_GETTER                             \
-     |TAG_META_FLAG_TAGLIB)                                                    \
-  XX(TAG_META_FLAGS_FIELD_SEARCH,                                              \
-     TAG_META_FLAGS_FIELD|TAG_META_FLAG_SEARCH)
+#define TAG_FLAG_ENUM_FIELDS                                              \
+  XX(TAG_FLAG_DISPLAY)                                                    \
+  XX(TAG_FLAG_WRITABLE)                                                   \
+  XX(TAG_FLAG_SONG_INFO)                                                  \
+  XX(TAG_FLAG_SEARCH)                                                     \
+  XX(TAG_FLAG_GETTER)                                                     \
+  XX(TAG_FLAG_TAGLIB)                                                     \
+  XX(TAG_FLAG_MPD)                                                        \
+  XX(TAG_FLAG_TAGLIB_NUMBER)                                              \
+  XX(TAG_FLAGS_FIELD,                                                     \
+     TAG_FLAG_DISPLAY|TAG_FLAG_WRITABLE                              \
+     |TAG_FLAG_SONG_INFO|TAG_FLAG_GETTER                             \
+     |TAG_FLAG_TAGLIB)                                                    \
+  XX(TAG_FLAGS_FIELD_SEARCH,                                              \
+     TAG_FLAGS_FIELD|TAG_FLAG_SEARCH)
 
 #define ENUM_NAME NcmTagMetaFlags
-#define ENUM_PREFIX_ TAG_META_FLAGS_
+#define ENUM_PREFIX_ TAG_FLAGS_
 #define ENUM_BITFLAGS 1
-#define ENUM_FIELDS TAG_META_FLAG_ENUM_FIELDS
+#define ENUM_FIELDS TAG_FLAG_ENUM_FIELDS
 #include "cbase/xenums.c"
 
 #define TAG_DISPLAY_NAME(display) #display
@@ -158,19 +158,19 @@ ncm_tag_name_to_camel_compact(char *out, int32 out_cap,
 
 #define TAG_FIELD_MPD(XX, suffix, display, tag_char)                           \
   XX(suffix, display, tag_char, tag_char,                                      \
-     TAG_META_FLAGS_FIELD_SEARCH|TAG_META_FLAG_MPD)
+     TAG_FLAGS_FIELD_SEARCH|TAG_FLAG_MPD)
 
 #define TAG_FIELD_MPD_NUM(XX, suffix, display, tag_char, getter_char)          \
   XX(suffix, display, tag_char, getter_char,                                   \
-     TAG_META_FLAGS_FIELD|TAG_META_FLAG_MPD                                    \
-     |TAG_META_FLAG_TAGLIB_NUMBER)
+     TAG_FLAGS_FIELD|TAG_FLAG_MPD                                    \
+     |TAG_FLAG_TAGLIB_NUMBER)
 
 #define TAG_SEARCH_MPD(XX, suffix, display)                                    \
   XX(suffix, display, '\0', '\0',                                              \
-     TAG_META_FLAG_SEARCH|TAG_META_FLAG_MPD)
+     TAG_FLAG_SEARCH|TAG_FLAG_MPD)
 
 #define TAG_NON_DISP(XX, suffix, display)                                      \
-  XX(suffix, display, '\0', '\0', TAG_META_FLAGS_NONE)
+  XX(suffix, display, '\0', '\0', TAG_FLAGS_NONE)
 
 #define TAG_FIELD_MPD_NUM_DECLS(XX)                                            \
   TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                                \
@@ -453,7 +453,7 @@ ncm_tag_type_display_name_len(enum NcmTagType tag, char **out) {
 #define TAG_DISPLAY_NAME_CASE(suffix, display, tag_char,                       \
                                   getter_char, flags)                          \
     case CAT(TAG_, suffix):                                                    \
-        if (((flags) & TAG_META_FLAG_DISPLAY) == 0) {                          \
+        if (((flags) & TAG_FLAG_DISPLAY) == 0) {                          \
             *out = "";                                                         \
             return 0;                                                          \
         }                                                                      \
@@ -665,7 +665,7 @@ ncm_tag_type_taglib_property_len(enum NcmTagType tag, char *out,
         if (result < 0) {                                                      \
             return result;                                                     \
         }                                                                      \
-        if (((flags) & TAG_META_FLAG_TAGLIB_NUMBER) == 0) {                    \
+        if (((flags) & TAG_FLAG_TAGLIB_NUMBER) == 0) {                    \
             return result;                                                     \
         }                                                                      \
         if (result + STRLIT_LEN("NUMBER") >= out_cap) {                        \
