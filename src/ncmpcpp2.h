@@ -28,132 +28,6 @@
 #define TAG_DISPLAY_NAME(display) #display
 #define TAG_DISPLAY_NAME_LEN(display) STRLIT_LEN(#display)
 
-static inline char
-ncm_tag_name_ascii_lower(char c) {
-    if ((c >= 'A') && (c <= 'Z')) {
-        c = (char)(c - 'A' + 'a');
-    }
-
-    return c;
-}
-
-static inline char
-ncm_tag_name_ascii_upper(char c) {
-    if ((c >= 'a') && (c <= 'z')) {
-        c = (char)(c - 'a' + 'A');
-    }
-
-    return c;
-}
-
-static inline int32
-ncm_tag_name_to_lower_snake(char *out, int32 cap, char *name, int32 name_len) {
-    int32 written = 0;
-
-    ASSERT(out != NULL);
-    ASSERT(cap > 0);
-    ASSERT(name_len >= 0);
-    ASSERT((name != NULL) || (name_len == 0));
-
-    for (int32 i = 0; i < name_len; i += 1) {
-        if (written + 1 >= cap) {
-            out[0] = '\0';
-            return -1;
-        }
-        if (name[i] == ' ') {
-            out[written] = '_';
-        } else {
-            out[written] = ncm_tag_name_ascii_lower(name[i]);
-        }
-        written += 1;
-    }
-    out[written] = '\0';
-    return written;
-}
-
-
-static inline int32
-ncm_tag_name_to_upper_snake(char *out, int32 cap, char *name, int32 name_len) {
-    int32 written = 0;
-
-    ASSERT(out != NULL);
-    ASSERT(cap > 0);
-    ASSERT(name_len >= 0);
-    ASSERT((name != NULL) || (name_len == 0));
-
-    for (int32 i = 0; i < name_len; i += 1) {
-        if (written + 1 >= cap) {
-            out[0] = '\0';
-            return -1;
-        }
-        if (name[i] == ' ') {
-            out[written] = '_';
-        } else {
-            out[written] = ncm_tag_name_ascii_upper(name[i]);
-        }
-        written += 1;
-    }
-    out[written] = '\0';
-    return written;
-}
-
-static inline int32
-ncm_tag_name_to_upper_compact(char *out, int32 cap,
-                              char *name, int32 name_len) {
-    int32 written = 0;
-
-    ASSERT(out != NULL);
-    ASSERT(cap > 0);
-    ASSERT(name_len >= 0);
-    ASSERT((name != NULL) || (name_len == 0));
-
-    for (int32 i = 0; i < name_len; i += 1) {
-        if (name[i] == ' ') {
-            continue;
-        }
-        if (written + 1 >= cap) {
-            out[0] = '\0';
-            return -1;
-        }
-        out[written] = ncm_tag_name_ascii_upper(name[i]);
-        written += 1;
-    }
-    out[written] = '\0';
-    return written;
-}
-
-static inline int32
-ncm_tag_name_to_camel_compact(char *out, int32 cap,
-                              char *name, int32 name_len) {
-    bool capitalize = true;
-    int32 written = 0;
-
-    ASSERT(out != NULL);
-    ASSERT(cap > 0);
-    ASSERT(name_len >= 0);
-    ASSERT((name != NULL) || (name_len == 0));
-
-    for (int32 i = 0; i < name_len; i += 1) {
-        if (name[i] == ' ') {
-            capitalize = true;
-            continue;
-        }
-        if (written + 1 >= cap) {
-            out[0] = '\0';
-            return -1;
-        }
-        if (capitalize) {
-            out[written] = ncm_tag_name_ascii_upper(name[i]);
-            capitalize = false;
-        } else {
-            out[written] = ncm_tag_name_ascii_lower(name[i]);
-        }
-        written += 1;
-    }
-    out[written] = '\0';
-    return written;
-}
-
 #define TAG_FIELD_MPD(XX, suffix, display, tag_char)                           \
   XX(suffix, display, tag_char, tag_char,                                      \
      TAG_FLAGS_FIELD_SEARCH|TAG_FLAG_MPD)
@@ -472,7 +346,7 @@ ncm_tag_type_settings_name_len(enum NcmTagType tag, char *out,
 #define TAG_SETTINGS_NAME_CASE(suffix, display, tag_char,                      \
                                    getter_char, flags)                         \
     case CAT(TAG_, suffix):                                                    \
-        return ncm_tag_name_to_lower_snake(out, cap,                       \
+        return ascii_normalize_lower_snake(out, cap,                       \
                                            TAG_DISPLAY_NAME(display),          \
                                            TAG_DISPLAY_NAME_LEN(display));
 
@@ -514,7 +388,7 @@ ncm_tag_type_parse_settings_name(char *value, int32 value_len,
 
     ASSERT(result != NULL);
 
-    normalized_len = ncm_tag_name_to_upper_snake(normalized,
+    normalized_len = ascii_normalize_upper_snake(normalized,
                                                 LENGTH(normalized),
                                                 value, value_len);
     if (normalized_len <= 0) {
@@ -653,7 +527,7 @@ ncm_tag_type_taglib_property_len(enum NcmTagType tag, char *out, int32 cap) {
 #define TAGLIB_PROPERTY_CASE(suffix, display, tag_char,                        \
                                   getter_char, flags)                          \
     case CAT(TAG_, suffix):                                                    \
-        result = ncm_tag_name_to_upper_compact(                                \
+        result = ascii_normalize_upper_compact(                                \
             out, cap, TAG_DISPLAY_NAME(display),                           \
             TAG_DISPLAY_NAME_LEN(display));                                    \
         if (result < 0) {                                                      \
@@ -691,7 +565,7 @@ ncm_tag_type_taglib_name_len(enum NcmTagType tag, char *out,
 #define TAGLIB_NAME_CASE(suffix, display, tag_char,                            \
                               getter_char, flags)                              \
     case CAT(TAG_, suffix):                                                    \
-        return ncm_tag_name_to_camel_compact(                                  \
+        return ascii_normalize_camel_compact(                                  \
             out, cap, TAG_DISPLAY_NAME(display),                           \
             TAG_DISPLAY_NAME_LEN(display));
 
