@@ -923,6 +923,18 @@ lyrics_job_complete(int32 status, NcmError *ncm_error, void *user) {
     (void)status;
     (void)ncm_error;
 
+    if (job->background) {
+        if (job->result.success) {
+            NcmError save_error = {0};
+
+            lyrics_screen_save_file(screen, job->filename.data,
+                                    job->filename.len, job->result.text,
+                                    job->result.text_len, &save_error);
+            ncm_error_clear(&save_error);
+        }
+        return;
+    }
+
     if (!job->background) {
         if (screen->foreground_job == job) {
             screen->foreground_job = NULL;
@@ -968,15 +980,6 @@ lyrics_job_complete(int32 status, NcmError *ncm_error, void *user) {
                                   STRLIT("\nLyrics were not found.\n"));
         }
         nc_lyrics_screen_request_refresh(&screen->screen);
-    } else {
-        if (job->result.success) {
-            NcmError save_error = {0};
-
-            lyrics_screen_save_file(screen, job->filename.data,
-                                    job->filename.len, job->result.text,
-                                    job->result.text_len, &save_error);
-            ncm_error_clear(&save_error);
-        }
     }
     return;
 }
