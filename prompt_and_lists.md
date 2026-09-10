@@ -131,13 +131,14 @@ that it does not fit in a single line (80 column rule). Remember to try to keep
 associated pointer + len pairs together.
 
 ## Related argument pairs not grouped together
-Make sure that related argument pairs in function headers and calls are together
-(on the same line if they fit). For instance, width with height, x with y, array
-with its length, callback function with its `void *user`, etc.
-If both args do not fit in the same line, then break the
-line *before* the first one, so that they at least do not mix with other
-arguments in the call and are aligned.
-Example
+Make sure that related argument pairs in function headers, declarations and
+calls are together (on the same line if they fit). For instance, width with
+height, x with y, array with its length, callback function with its `void
+*user`, etc.  If both args do not fit in the same line, then break the line
+*before* the first one, so that they at least do not mix with other arguments in
+the call and are aligned.
+
+Examples:
 ```c
 // bad (note how width and height are unaligned)
 int x = function_with_long_name_must_be_broken(long_argument, window_width,
@@ -158,6 +159,15 @@ int x = function_with_long_name_must_be_broken(long_argument,
 int x = function_with_long_name_must_be_broken_twice(long_argument,
                                                      window_width,
                                                      window_height);
+
+// bad
+void nc_window_init(NcWindow *, int32 start_x, int32 start_y, int32 width,
+                    int32 height, char *, int32 title_len, NcColor, NcBorder);
+
+// good
+void nc_window_init(NcWindow *,
+                    int32 start_x, int32 start_y, int32 width, int32 height,
+                    char *, int32 title_len, NcColor, NcBorder);
 ```
 
 ## Utility function creep
