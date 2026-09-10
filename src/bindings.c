@@ -665,8 +665,9 @@ ncm_bindings_key_is_unbound(NcmBindingsConfiguration *bindings, NcKey key) {
 }
 
 static void
-ncm_bindings_bind_single(NcmBindingsConfiguration *bindings, char *key_name,
-                         int32 key_name_len, enum ActionType type) {
+ncm_bindings_bind_sequence(NcmBindingsConfiguration *bindings,
+                           char *key_name, int32 key_name_len,
+                           enum ActionType *actions, int32 actions_len) {
     NcmBinding binding = {0};
     NcKey key = nc_key_parse(key_name, key_name_len);
 
@@ -674,25 +675,9 @@ ncm_bindings_bind_single(NcmBindingsConfiguration *bindings, char *key_name,
         return;
     }
 
-    ncm_binding_append_normal(&binding, type);
-    ncm_bindings_bind(bindings, key, &binding);
-    ncm_binding_destroy(&binding);
-    return;
-}
-
-static void
-ncm_bindings_bind_chain2(NcmBindingsConfiguration *bindings, char *key_name,
-                         int32 key_name_len, enum ActionType first,
-                         enum ActionType second) {
-    NcmBinding binding = {0};
-    NcKey key = nc_key_parse(key_name, key_name_len);
-
-    if (!ncm_bindings_key_is_unbound(bindings, key)) {
-        return;
+    for (int32 i = 0; i < actions_len; i += 1) {
+        ncm_binding_append_normal(&binding, actions[i]);
     }
-
-    ncm_binding_append_normal(&binding, first);
-    ncm_binding_append_normal(&binding, second);
     ncm_bindings_bind(bindings, key, &binding);
     ncm_binding_destroy(&binding);
     return;
@@ -716,6 +701,121 @@ ncm_bindings_bind_group(NcmBindingsConfiguration *bindings,
     }
     return;
 }
+
+#define NCM_DEFAULT_BINDINGS(XX_SEQUENCE, XX_GROUP)                       \
+    XX_SEQUENCE("mouse", ACTION_MOUSE_EVENT)                             \
+    XX_SEQUENCE("up", ACTION_SCROLL_UP)                                  \
+    XX_SEQUENCE("shift-up", ACTION_SELECT_ITEM, ACTION_SCROLL_UP)         \
+    XX_SEQUENCE("down", ACTION_SCROLL_DOWN)                              \
+    XX_SEQUENCE("shift-down", ACTION_SELECT_ITEM, ACTION_SCROLL_DOWN)     \
+    XX_SEQUENCE("[", ACTION_SCROLL_UP_ALBUM)                             \
+    XX_SEQUENCE("]", ACTION_SCROLL_DOWN_ALBUM)                           \
+    XX_SEQUENCE("{", ACTION_SCROLL_UP_ARTIST)                            \
+    XX_SEQUENCE("}", ACTION_SCROLL_DOWN_ARTIST)                          \
+    XX_SEQUENCE("page_up", ACTION_PAGE_UP)                               \
+    XX_SEQUENCE("page_down", ACTION_PAGE_DOWN)                           \
+    XX_SEQUENCE("home", ACTION_MOVE_HOME)                                \
+    XX_SEQUENCE("end", ACTION_MOVE_END)                                  \
+    XX_SEQUENCE("insert", ACTION_SELECT_ITEM)                            \
+    XX_GROUP("enter", ACTION_ENTER_DIRECTORY, ACTION_TOGGLE_OUTPUT,       \
+             ACTION_RUN_ACTION, ACTION_PLAY_ITEM)                        \
+    XX_GROUP("space", ACTION_ADD_ITEM_TO_PLAYLIST,                       \
+             ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE,                 \
+             ACTION_TOGGLE_VISUALIZATION_TYPE)                           \
+    XX_GROUP("delete", ACTION_DELETE_PLAYLIST_ITEMS,                     \
+             ACTION_DELETE_BROWSER_ITEMS, ACTION_DELETE_STORED_PLAYLIST)  \
+    XX_GROUP("right", ACTION_NEXT_COLUMN, ACTION_SLAVE_SCREEN,           \
+             ACTION_VOLUME_UP)                                           \
+    XX_SEQUENCE("+", ACTION_VOLUME_UP)                                   \
+    XX_GROUP("left", ACTION_PREVIOUS_COLUMN, ACTION_MASTER_SCREEN,        \
+             ACTION_VOLUME_DOWN)                                         \
+    XX_SEQUENCE("-", ACTION_VOLUME_DOWN)                                 \
+    XX_SEQUENCE(":", ACTION_EXECUTE_COMMAND)                             \
+    XX_SEQUENCE("tab", ACTION_NEXT_SCREEN)                               \
+    XX_SEQUENCE("shift-tab", ACTION_PREVIOUS_SCREEN)                     \
+    XX_SEQUENCE("f1", ACTION_SHOW_HELP)                                  \
+    XX_SEQUENCE("1", ACTION_SHOW_PLAYLIST)                               \
+    XX_GROUP("2", ACTION_SHOW_BROWSER, ACTION_CHANGE_BROWSE_MODE)        \
+    XX_GROUP("3", ACTION_SHOW_SEARCH_ENGINE, ACTION_RESET_SEARCH_ENGINE) \
+    XX_GROUP("4", ACTION_SHOW_MEDIA_LIBRARY,                             \
+             ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE)                   \
+    XX_SEQUENCE("5", ACTION_SHOW_PLAYLIST_EDITOR)                        \
+    XX_SEQUENCE("6", ACTION_SHOW_TAG_EDIT)                               \
+    XX_SEQUENCE("7", ACTION_SHOW_OUTPUTS)                                \
+    XX_SEQUENCE("8", ACTION_SHOW_VISUALIZER)                             \
+    XX_SEQUENCE("@", ACTION_SHOW_SERVER_INFO)                            \
+    XX_SEQUENCE("s", ACTION_STOP)                                        \
+    XX_SEQUENCE("p", ACTION_PAUSE)                                       \
+    XX_SEQUENCE(">", ACTION_NEXT)                                        \
+    XX_SEQUENCE("<", ACTION_PREVIOUS)                                    \
+    XX_GROUP("ctrl-h", ACTION_JUMP_TO_PARENT_DIRECTORY,                  \
+             ACTION_REPLAY_SONG)                                         \
+    XX_GROUP("backspace", ACTION_JUMP_TO_PARENT_DIRECTORY,               \
+             ACTION_REPLAY_SONG, ACTION_PLAY)                            \
+    XX_SEQUENCE("f", ACTION_SEEK_FORWARD)                                \
+    XX_SEQUENCE("b", ACTION_SEEK_BACKWARD)                               \
+    XX_SEQUENCE("r", ACTION_TOGGLE_REPEAT)                               \
+    XX_SEQUENCE("z", ACTION_TOGGLE_RANDOM)                               \
+    XX_GROUP("y", ACTION_SAVE_TAG_CHANGES, ACTION_START_SEARCHING,       \
+             ACTION_TOGGLE_SINGLE)                                       \
+    XX_SEQUENCE("R", ACTION_TOGGLE_CONSUME)                              \
+    XX_SEQUENCE("Y", ACTION_TOGGLE_REPLAY_GAIN_MODE)                     \
+    XX_SEQUENCE("T", ACTION_TOGGLE_ADD_MODE)                             \
+    XX_SEQUENCE("|", ACTION_TOGGLE_MOUSE)                                \
+    XX_SEQUENCE("#", ACTION_TOGGLE_BITRATE_VISIBILITY)                   \
+    XX_SEQUENCE("Z", ACTION_SHUFFLE)                                     \
+    XX_SEQUENCE("x", ACTION_TOGGLE_CROSSFADE)                            \
+    XX_SEQUENCE("X", ACTION_SET_CROSSFADE)                               \
+    XX_SEQUENCE("u", ACTION_UPDATE_DATABASE)                             \
+    XX_GROUP("ctrl-s", ACTION_SORT_PLAYLIST,                             \
+             ACTION_TOGGLE_BROWSER_SORT_MODE,                            \
+             ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE)                      \
+    XX_SEQUENCE("ctrl-r", ACTION_REVERSE_PLAYLIST)                       \
+    XX_SEQUENCE("ctrl-f", ACTION_APPLY_FILTER)                           \
+    XX_SEQUENCE("ctrl-_", ACTION_SELECT_FOUND_ITEMS)                     \
+    XX_GROUP("/", ACTION_FIND, ACTION_FIND_ITEM_FORWARD)                 \
+    XX_GROUP("?", ACTION_FIND, ACTION_FIND_ITEM_BACKWARD)                \
+    XX_SEQUENCE(".", ACTION_NEXT_FOUND_ITEM)                             \
+    XX_SEQUENCE(",", ACTION_PREVIOUS_FOUND_ITEM)                         \
+    XX_SEQUENCE("w", ACTION_TOGGLE_FIND_MODE)                            \
+    XX_GROUP("e", ACTION_EDIT_SONG, ACTION_EDIT_LIBRARY_TAG,             \
+             ACTION_EDIT_LIBRARY_ALBUM, ACTION_EDIT_DIRECTORY_NAME,       \
+             ACTION_EDIT_PLAYLIST_NAME, ACTION_EDIT_LYRICS)              \
+    XX_SEQUENCE("i", ACTION_SHOW_SONG_INFO)                              \
+    XX_SEQUENCE("I", ACTION_SHOW_ARTIST_INFO)                            \
+    XX_SEQUENCE("g", ACTION_JUMP_TO_POSITION_IN_SONG)                    \
+    XX_SEQUENCE("l", ACTION_SHOW_LYRICS)                                 \
+    XX_SEQUENCE("ctrl-v", ACTION_SELECT_RANGE)                           \
+    XX_SEQUENCE("v", ACTION_REVERSE_SELECTION)                           \
+    XX_SEQUENCE("V", ACTION_REMOVE_SELECTION)                            \
+    XX_SEQUENCE("B", ACTION_SELECT_ALBUM)                                \
+    XX_SEQUENCE("a", ACTION_ADD_SELECTED_ITEMS)                          \
+    XX_GROUP("c", ACTION_CLEAR_PLAYLIST, ACTION_CLEAR_MAIN_PLAYLIST)     \
+    XX_GROUP("C", ACTION_CROP_PLAYLIST, ACTION_CROP_MAIN_PLAYLIST)       \
+    XX_GROUP("m", ACTION_MOVE_SORT_ORDER_UP,                             \
+             ACTION_MOVE_SELECTED_ITEMS_UP)                              \
+    XX_GROUP("n", ACTION_MOVE_SORT_ORDER_DOWN,                           \
+             ACTION_MOVE_SELECTED_ITEMS_DOWN)                            \
+    XX_SEQUENCE("M", ACTION_MOVE_SELECTED_ITEMS_TO)                      \
+    XX_SEQUENCE("A", ACTION_ADD)                                         \
+    XX_SEQUENCE("S", ACTION_SAVE_PLAYLIST)                               \
+    XX_SEQUENCE("o", ACTION_JUMP_TO_PLAYING_SONG)                        \
+    XX_GROUP("G", ACTION_JUMP_TO_BROWSER,                                \
+             ACTION_JUMP_TO_PLAYLIST_EDITOR)                             \
+    XX_SEQUENCE("~", ACTION_JUMP_TO_MEDIA_LIBRARY)                       \
+    XX_SEQUENCE("E", ACTION_JUMP_TO_TAG_EDIT)                            \
+    XX_SEQUENCE("U", ACTION_TOGGLE_PLAYING_SONG_CENTERING)               \
+    XX_SEQUENCE("P", ACTION_TOGGLE_DISPLAY_MODE)                         \
+    XX_SEQUENCE("\\", ACTION_TOGGLE_INTERFACE)                          \
+    XX_SEQUENCE("!", ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS)            \
+    XX_SEQUENCE("L", ACTION_TOGGLE_LYRICS_FETCHER)                       \
+    XX_SEQUENCE("F", ACTION_FETCH_LYRICS_IN_BACKGROUND)                  \
+    XX_SEQUENCE("alt-l", ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND)    \
+    XX_SEQUENCE("ctrl-l", ACTION_TOGGLE_SCREEN_LOCK)                     \
+    XX_GROUP("`", ACTION_TOGGLE_LIBRARY_TAG_TYPE, ACTION_REFETCH_LYRICS, \
+             ACTION_ADD_RANDOM_ITEMS)                                    \
+    XX_SEQUENCE("ctrl-p", ACTION_SET_SELECTED_ITEMS_PRIORITY)            \
+    XX_SEQUENCE("q", ACTION_QUIT)
 
 
 enum NcmBindingDirectiveKind {
@@ -1189,139 +1289,27 @@ ncm_bindings_config_read(NcmBindingsConfiguration *bindings,
 
 void
 ncm_bindings_config_generate_defaults(NcmBindingsConfiguration *bindings) {
-    NcmBinding binding;
+    NcmBinding binding = {0};
 
-    binding = (NcmBinding){0};
     ncm_binding_append_normal(&binding, ACTION_QUIT);
     ncm_bindings_bind(bindings, NC_KEY_EOF, &binding);
     ncm_binding_destroy(&binding);
 
-#define BIND(KEY, ACTION) \
-    ncm_bindings_bind_single(bindings, STRLIT(KEY), ACTION)
-#define CHAIN2(KEY, A, B) \
-    ncm_bindings_bind_chain2(bindings, STRLIT(KEY), A, B)
-#define GROUP(KEY, ...) do { \
-    enum ActionType actions[] = { __VA_ARGS__ }; \
-    ncm_bindings_bind_group(bindings, STRLIT(KEY), \
-                            actions, LENGTH(actions)); \
-} while (0)
+#define BIND_DEFAULT_SEQUENCE(KEY, ...) do {                                \
+    enum ActionType actions[] = { __VA_ARGS__ };                            \
+    ncm_bindings_bind_sequence(bindings, STRLIT(KEY),                       \
+                               actions, LENGTH(actions));                   \
+} while (0);
+#define BIND_DEFAULT_GROUP(KEY, ...) do {                                   \
+    enum ActionType actions[] = { __VA_ARGS__ };                            \
+    ncm_bindings_bind_group(bindings, STRLIT(KEY),                          \
+                            actions, LENGTH(actions));                      \
+} while (0);
 
-    BIND("mouse", ACTION_MOUSE_EVENT);
-    BIND("up", ACTION_SCROLL_UP);
-    CHAIN2("shift-up", ACTION_SELECT_ITEM, ACTION_SCROLL_UP);
-    BIND("down", ACTION_SCROLL_DOWN);
-    CHAIN2("shift-down", ACTION_SELECT_ITEM, ACTION_SCROLL_DOWN);
-    BIND("[", ACTION_SCROLL_UP_ALBUM);
-    BIND("]", ACTION_SCROLL_DOWN_ALBUM);
-    BIND("{", ACTION_SCROLL_UP_ARTIST);
-    BIND("}", ACTION_SCROLL_DOWN_ARTIST);
-    BIND("page_up", ACTION_PAGE_UP);
-    BIND("page_down", ACTION_PAGE_DOWN);
-    BIND("home", ACTION_MOVE_HOME);
-    BIND("end", ACTION_MOVE_END);
-    BIND("insert", ACTION_SELECT_ITEM);
-    GROUP("enter", ACTION_ENTER_DIRECTORY, ACTION_TOGGLE_OUTPUT,
-          ACTION_RUN_ACTION, ACTION_PLAY_ITEM);
-    GROUP("space", ACTION_ADD_ITEM_TO_PLAYLIST,
-          ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE,
-          ACTION_TOGGLE_VISUALIZATION_TYPE);
-    GROUP("delete", ACTION_DELETE_PLAYLIST_ITEMS,
-          ACTION_DELETE_BROWSER_ITEMS, ACTION_DELETE_STORED_PLAYLIST);
-    GROUP("right", ACTION_NEXT_COLUMN, ACTION_SLAVE_SCREEN,
-          ACTION_VOLUME_UP);
-    BIND("+", ACTION_VOLUME_UP);
-    GROUP("left", ACTION_PREVIOUS_COLUMN, ACTION_MASTER_SCREEN,
-          ACTION_VOLUME_DOWN);
-    BIND("-", ACTION_VOLUME_DOWN);
-    BIND(":", ACTION_EXECUTE_COMMAND);
-    BIND("tab", ACTION_NEXT_SCREEN);
-    BIND("shift-tab", ACTION_PREVIOUS_SCREEN);
-    BIND("f1", ACTION_SHOW_HELP);
-    BIND("1", ACTION_SHOW_PLAYLIST);
-    GROUP("2", ACTION_SHOW_BROWSER, ACTION_CHANGE_BROWSE_MODE);
-    GROUP("3", ACTION_SHOW_SEARCH_ENGINE, ACTION_RESET_SEARCH_ENGINE);
-    GROUP("4", ACTION_SHOW_MEDIA_LIBRARY,
-          ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE);
-    BIND("5", ACTION_SHOW_PLAYLIST_EDITOR);
-    BIND("6", ACTION_SHOW_TAG_EDIT);
-    BIND("7", ACTION_SHOW_OUTPUTS);
-    BIND("8", ACTION_SHOW_VISUALIZER);
-    BIND("@", ACTION_SHOW_SERVER_INFO);
-    BIND("s", ACTION_STOP);
-    BIND("p", ACTION_PAUSE);
-    BIND(">", ACTION_NEXT);
-    BIND("<", ACTION_PREVIOUS);
-    GROUP("ctrl-h", ACTION_JUMP_TO_PARENT_DIRECTORY,
-          ACTION_REPLAY_SONG);
-    GROUP("backspace", ACTION_JUMP_TO_PARENT_DIRECTORY,
-          ACTION_REPLAY_SONG, ACTION_PLAY);
-    BIND("f", ACTION_SEEK_FORWARD);
-    BIND("b", ACTION_SEEK_BACKWARD);
-    BIND("r", ACTION_TOGGLE_REPEAT);
-    BIND("z", ACTION_TOGGLE_RANDOM);
-    GROUP("y", ACTION_SAVE_TAG_CHANGES, ACTION_START_SEARCHING,
-          ACTION_TOGGLE_SINGLE);
-    BIND("R", ACTION_TOGGLE_CONSUME);
-    BIND("Y", ACTION_TOGGLE_REPLAY_GAIN_MODE);
-    BIND("T", ACTION_TOGGLE_ADD_MODE);
-    BIND("|", ACTION_TOGGLE_MOUSE);
-    BIND("#", ACTION_TOGGLE_BITRATE_VISIBILITY);
-    BIND("Z", ACTION_SHUFFLE);
-    BIND("x", ACTION_TOGGLE_CROSSFADE);
-    BIND("X", ACTION_SET_CROSSFADE);
-    BIND("u", ACTION_UPDATE_DATABASE);
-    GROUP("ctrl-s", ACTION_SORT_PLAYLIST,
-          ACTION_TOGGLE_BROWSER_SORT_MODE,
-          ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE);
-    BIND("ctrl-r", ACTION_REVERSE_PLAYLIST);
-    BIND("ctrl-f", ACTION_APPLY_FILTER);
-    BIND("ctrl-_", ACTION_SELECT_FOUND_ITEMS);
-    GROUP("/", ACTION_FIND, ACTION_FIND_ITEM_FORWARD);
-    GROUP("?", ACTION_FIND, ACTION_FIND_ITEM_BACKWARD);
-    BIND(".", ACTION_NEXT_FOUND_ITEM);
-    BIND(",", ACTION_PREVIOUS_FOUND_ITEM);
-    BIND("w", ACTION_TOGGLE_FIND_MODE);
-    GROUP("e", ACTION_EDIT_SONG, ACTION_EDIT_LIBRARY_TAG,
-          ACTION_EDIT_LIBRARY_ALBUM, ACTION_EDIT_DIRECTORY_NAME,
-          ACTION_EDIT_PLAYLIST_NAME, ACTION_EDIT_LYRICS);
-    BIND("i", ACTION_SHOW_SONG_INFO);
-    BIND("I", ACTION_SHOW_ARTIST_INFO);
-    BIND("g", ACTION_JUMP_TO_POSITION_IN_SONG);
-    BIND("l", ACTION_SHOW_LYRICS);
-    BIND("ctrl-v", ACTION_SELECT_RANGE);
-    BIND("v", ACTION_REVERSE_SELECTION);
-    BIND("V", ACTION_REMOVE_SELECTION);
-    BIND("B", ACTION_SELECT_ALBUM);
-    BIND("a", ACTION_ADD_SELECTED_ITEMS);
-    GROUP("c", ACTION_CLEAR_PLAYLIST, ACTION_CLEAR_MAIN_PLAYLIST);
-    GROUP("C", ACTION_CROP_PLAYLIST, ACTION_CROP_MAIN_PLAYLIST);
-    GROUP("m", ACTION_MOVE_SORT_ORDER_UP,
-          ACTION_MOVE_SELECTED_ITEMS_UP);
-    GROUP("n", ACTION_MOVE_SORT_ORDER_DOWN,
-          ACTION_MOVE_SELECTED_ITEMS_DOWN);
-    BIND("M", ACTION_MOVE_SELECTED_ITEMS_TO);
-    BIND("A", ACTION_ADD);
-    BIND("S", ACTION_SAVE_PLAYLIST);
-    BIND("o", ACTION_JUMP_TO_PLAYING_SONG);
-    GROUP("G", ACTION_JUMP_TO_BROWSER, ACTION_JUMP_TO_PLAYLIST_EDITOR);
-    BIND("~", ACTION_JUMP_TO_MEDIA_LIBRARY);
-    BIND("E", ACTION_JUMP_TO_TAG_EDIT);
-    BIND("U", ACTION_TOGGLE_PLAYING_SONG_CENTERING);
-    BIND("P", ACTION_TOGGLE_DISPLAY_MODE);
-    BIND("\\", ACTION_TOGGLE_INTERFACE);
-    BIND("!", ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS);
-    BIND("L", ACTION_TOGGLE_LYRICS_FETCHER);
-    BIND("F", ACTION_FETCH_LYRICS_IN_BACKGROUND);
-    BIND("alt-l", ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND);
-    BIND("ctrl-l", ACTION_TOGGLE_SCREEN_LOCK);
-    GROUP("`", ACTION_TOGGLE_LIBRARY_TAG_TYPE, ACTION_REFETCH_LYRICS,
-          ACTION_ADD_RANDOM_ITEMS);
-    BIND("ctrl-p", ACTION_SET_SELECTED_ITEMS_PRIORITY);
-    BIND("q", ACTION_QUIT);
+    NCM_DEFAULT_BINDINGS(BIND_DEFAULT_SEQUENCE, BIND_DEFAULT_GROUP)
 
-#undef BIND
-#undef CHAIN2
-#undef GROUP
+#undef BIND_DEFAULT_SEQUENCE
+#undef BIND_DEFAULT_GROUP
     return;
 }
 
