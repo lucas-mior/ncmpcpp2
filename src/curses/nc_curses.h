@@ -234,8 +234,9 @@ void nc_unpause_screen(void);
 void nc_destroy_screen(void);
 
 void nc_window_init_empty(NcWindow *);
-void nc_window_init(NcWindow *, int32 start_x, int32 start_y, int32 width,
-                    int32 height, char *, int32 title_len, NcColor, NcBorder);
+void nc_window_init(NcWindow *,
+                    int32 start_x, int32 start_y, int32 width, int32 height,
+                    char *, int32 title_len, NcColor, NcBorder);
 void nc_window_destroy(NcWindow *);
 
 WINDOW *nc_window_raw(NcWindow *);
