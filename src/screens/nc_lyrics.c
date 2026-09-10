@@ -903,9 +903,8 @@ lyrics_job_run(void *user, NcmError *ncm_error) {
 
 static bool
 lyrics_job_is_current(LyricsJob *job) {
-    LyricsScreen *screen;
+    LyricsScreen *screen = job->screen;
 
-    screen = job->screen;
     if (!screen->has_song) {
         return false;
     }
