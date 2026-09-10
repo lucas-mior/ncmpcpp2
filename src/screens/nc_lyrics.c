@@ -935,52 +935,50 @@ lyrics_job_complete(int32 status, NcmError *ncm_error, void *user) {
         return;
     }
 
-    if (!job->background) {
-        if (screen->foreground_job == job) {
-            screen->foreground_job = NULL;
-        }
-        if (!lyrics_job_is_current(job)) {
-            return;
-        }
-
-        ncm_lyrics_result_clear(&screen->result);
-        ncm_lyrics_result_set(&screen->result, job->result.success,
-                              job->result.text, job->result.text_len);
-        if (job->result.success) {
-            NcmError save_error = {0};
-
-            lyrics_screen_clear_lyrics_state(screen, LYRICS_MODE_PLAIN);
-            nc_buffer_append_data(&screen->display, job->result.text,
-                                  job->result.text_len);
-            sb_copy(&screen->filename, &job->filename);
-            if (lyrics_screen_save_file(screen, job->filename.data,
-                                        job->filename.len, job->result.text,
-                                        job->result.text_len,
-                                        &save_error) < 0) {
-                StrBuilder output = {0};
-                char *message = "unknown error";
-
-                if (save_error.code != 0) {
-                    message = strerror(save_error.code);
-                }
-                SB_APPEND(&output, "Couldn't save lyrics as \"");
-                SB_APPEND(&output, job->filename.data, job->filename.len);
-                SB_APPEND(&output, "\": ");
-                SB_APPEND(&output, message, optional_strlen32(message));
-                ncm_statusbar_print(Config.message_delay_time,
-                                    output.data, output.len);
-                sb_free(&output);
-            }
-            ncm_error_clear(&save_error);
-        } else {
-            lyrics_screen_clear_lyrics_state(screen, LYRICS_MODE_FETCH_LOG);
-            nc_buffer_destroy(&screen->display);
-            nc_buffer_copy(&screen->display, &job->log);
-            nc_buffer_append_data(&screen->display,
-                                  STRLIT("\nLyrics were not found.\n"));
-        }
-        nc_lyrics_screen_request_refresh(&screen->screen);
+    if (screen->foreground_job == job) {
+        screen->foreground_job = NULL;
     }
+    if (!lyrics_job_is_current(job)) {
+        return;
+    }
+
+    ncm_lyrics_result_clear(&screen->result);
+    ncm_lyrics_result_set(&screen->result, job->result.success,
+                          job->result.text, job->result.text_len);
+    if (job->result.success) {
+        NcmError save_error = {0};
+
+        lyrics_screen_clear_lyrics_state(screen, LYRICS_MODE_PLAIN);
+        nc_buffer_append_data(&screen->display, job->result.text,
+                              job->result.text_len);
+        sb_copy(&screen->filename, &job->filename);
+        if (lyrics_screen_save_file(screen, job->filename.data,
+                                    job->filename.len, job->result.text,
+                                    job->result.text_len,
+                                    &save_error) < 0) {
+            StrBuilder output = {0};
+            char *message = "unknown error";
+
+            if (save_error.code != 0) {
+                message = strerror(save_error.code);
+            }
+            SB_APPEND(&output, "Couldn't save lyrics as \"");
+            SB_APPEND(&output, job->filename.data, job->filename.len);
+            SB_APPEND(&output, "\": ");
+            SB_APPEND(&output, message, optional_strlen32(message));
+            ncm_statusbar_print(Config.message_delay_time,
+                                output.data, output.len);
+            sb_free(&output);
+        }
+        ncm_error_clear(&save_error);
+    } else {
+        lyrics_screen_clear_lyrics_state(screen, LYRICS_MODE_FETCH_LOG);
+        nc_buffer_destroy(&screen->display);
+        nc_buffer_copy(&screen->display, &job->log);
+        nc_buffer_append_data(&screen->display,
+                              STRLIT("\nLyrics were not found.\n"));
+    }
+    nc_lyrics_screen_request_refresh(&screen->screen);
     return;
 }
 
