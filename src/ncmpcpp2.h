@@ -534,8 +534,7 @@ ncm_tag_type_parse_settings_name(char *value, int32 value_len,
     if (normalized_len <= 0) {
         return false;
     }
-    if (BEGINS_WITH_4(normalized, normalized_len,
-                      "NCM_TAG_", STRLIT_LEN("NCM_TAG_")) != NULL) {
+    if (BEGINS_WITH(normalized, normalized_len, "NCM_TAG_")) {
         return false;
     }
 
