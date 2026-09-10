@@ -1,5 +1,5 @@
-#if !defined(NCM_MUTABLE_SONG_C)
-#define NCM_MUTABLE_SONG_C
+#if !defined(MUTABLE_SONG_C)
+#define MUTABLE_SONG_C
 
 #include "cbase.h"
 
@@ -582,4 +582,4 @@ mutable_song_write(MutableSong *song, char *music_dir) {
                           mutable_song_write_callback, song);
 }
 
-#endif /* NCM_MUTABLE_SONG_C */
+#endif /* MUTABLE_SONG_C */
