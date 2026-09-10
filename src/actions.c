@@ -2025,9 +2025,8 @@ action_runtime_add_item_to_playlist(bool play) {
     }
 
     if (action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
-        ncm_error_clear(&ncm_error);
         MediaLibraryScreen *library = app_screen_media_library();
-
+        ncm_error_clear(&ncm_error);
         status = media_library_screen_add_item_to_playlist(library, play,
                                                            &ncm_error);
         if (status < 0) {
@@ -2353,7 +2352,6 @@ static int32
 action_runtime_clear_playlist(bool main_playlist) {
     PlaylistEditScreen *screen = app_screen_playlist_edit();
     NcmPlaylist playlist;
-    StrBuilder question = {0};
     StrBuilder message = {0};
     NcmError ncm_error;
     bool success = false;
@@ -2397,7 +2395,7 @@ action_runtime_clear_playlist(bool main_playlist) {
     }
 
     if (Config.ask_before_clearing_playlists) {
-
+        StrBuilder question = {0};
         SB_APPEND(&question, "Do you really want to clear playlist \"");
         SB_APPEND(&question, playlist.path, playlist.path_len);
         SB_APPEND(&question, "\"?");
@@ -2433,7 +2431,6 @@ action_runtime_crop_playlist(bool main_playlist) {
     PlaylistEditScreen *editor = app_screen_playlist_edit();
     NcmPlaylist playlist;
     NcmSongArray songs;
-    StrBuilder question = {0};
     StrBuilder message = {0};
     NcmError ncm_error;
     bool success = false;
@@ -2504,6 +2501,7 @@ action_runtime_crop_playlist(bool main_playlist) {
     playlist = (NcmPlaylist){0};
     success = playlist_edit_screen_current_playlist(editor, &playlist) > 0;
     if (success && Config.ask_before_clearing_playlists) {
+        StrBuilder question = {0};
         SB_APPEND(&question, "Do you really want to crop playlist \"");
         SB_APPEND(&question, playlist.path, playlist.path_len);
         SB_APPEND(&question, "\"?");
