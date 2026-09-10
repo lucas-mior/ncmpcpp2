@@ -209,8 +209,7 @@ APP_SCREEN_WRAPPED_ACCESSOR_TYPES(APP_SCREEN_DEFINE_WRAPPED_ACCESSOR)
         return expr;                                                        \
     }
 
-APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(
-    APP_SCREEN_TYPED_WRAPPED_ACCESSOR)
+APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(APP_SCREEN_TYPED_WRAPPED_ACCESSOR)
 
 #undef APP_SCREEN_TYPED_WRAPPED_ACCESSOR
 
@@ -228,8 +227,7 @@ APP_SCREEN_STANDARD_REGISTER_TYPES(APP_SCREEN_DEFINE_STANDARD_REGISTER)
 #define APP_SCREEN_DEFINE_REPLACE_REGISTER(suffix, type)                   \
     void                                                                       \
     app_screen_##suffix##_register(void) {                                     \
-        app_screen_register_replacing(                                         \
-            app_screen_##suffix##_base(), type);                               \
+        app_screen_register_replacing(app_screen_##suffix##_base(), type);     \
         return;                                                                \
     }
 
@@ -575,8 +573,8 @@ app_screen_sort_playlist_dialog_show(void) {
 }
 
 static int32
-search_list_database_songs(void *user, NcmSongArray *songs, NcmError *ncm_error
-) {
+search_list_database_songs(void *user, NcmSongArray *songs,
+                           NcmError *ncm_error) {
     NcmMpdSongList source = {0};
     int32 status;
 
@@ -623,9 +621,8 @@ search_prompt_should_continue(char *text, void *user) {
 }
 
 static enum SearchEnginePromptResult
-search_prompt_constraint(
-    void *user, char *label, int32 label_len, StrBuilder *initial,
-    StrBuilder *result) {
+search_prompt_constraint(void *user, char *label, int32 label_len,
+                         StrBuilder *initial, StrBuilder *result) {
     NcmStatusbarScopedLock scoped_lock;
     enum NcPromptStatus status;
     NcPrompt prompt = {0};
@@ -709,10 +706,9 @@ app_screen_search_engine_init(void) {
 
     mode = config_search_engine_default_mode(&Config);
     search_engine_screen_set_search_mode(&search_engine_screen, mode);
-    search_engine_screen_set_search_source(
-        &search_engine_screen,
-        Config.default_place_to_search_in
-        == NCM_DEFAULT_SEARCH_SOURCE_DATABASE);
+    search_engine_screen_set_search_source(&search_engine_screen,
+                                        Config.default_place_to_search_in
+                                        == NCM_DEFAULT_SEARCH_SOURCE_DATABASE);
 
     hooks.client = &global_mpd;
     hooks.list_database_songs = search_list_database_songs;
@@ -859,8 +855,8 @@ tag_edit_hook_status_message(void *user, char *message, int32 message_len) {
 }
 
 static void
-tag_edit_hook_update_directory(void *user, char *directory, int32 directory_len
-) {
+tag_edit_hook_update_directory(void *user, char *directory,
+                               int32 directory_len) {
     NcmError ncm_error = {0};
 
     (void)user;
@@ -955,8 +951,8 @@ app_screen_tiny_tag_edit_init(void) {
         return;
     }
 
-    tiny_tag_edit_screen_init(&tiny_tag_edit_screen,
-                              0, ui_state_screen_width(),
+    tiny_tag_edit_screen_init(&tiny_tag_edit_screen, 0,
+                              ui_state_screen_width(),
                               ui_state_main_start_y(), ui_state_main_height(),
                               Config.main_window_color, no_border());
     hooks.prompt = tiny_tag_edit_prompt;
@@ -1063,9 +1059,8 @@ app_screens_switch_to_type(enum ScreenType screen_type) {
 int32
 app_screens_switch_or_open_type(enum ScreenType screen_type) {
     switch (screen_type) {
-    #define APP_SCREEN_SWITCH_OR_OPEN_CASE(                         \
-        screen_type_value, nc_type, nc_value, alias, flags, suffix  \
-    )                                                               \
+    #define APP_SCREEN_SWITCH_OR_OPEN_CASE(screen_type_value, nc_type, \
+                                           nc_value, alias, flags, suffix) \
         case screen_type_value:                                     \
             return app_screen_##suffix##_show();
 

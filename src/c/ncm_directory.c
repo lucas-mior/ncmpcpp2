@@ -17,8 +17,8 @@ ncm_directory_destroy(NcmDirectory *directory) {
 }
 
 int32
-ncm_directory_set(NcmDirectory *directory, char *path,
-                  int32 path_len, time_t last_modified) {
+ncm_directory_set(NcmDirectory *directory, char *path, int32 path_len,
+                  time_t last_modified) {
     NcmDirectory replacement = {0};
 
     if (directory == NULL) {

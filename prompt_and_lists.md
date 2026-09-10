@@ -11,20 +11,6 @@ updated zip with the project because I made external changes, then you can start
 accumlating from there, not from the beginning of the chat.
 
 # List for the first 2 problems:
-- src/c/ncm_job.c
-- src/screens/nc_help.c
-- src/screens/nc_screen_switcher.c
-- src/c/ncm_sample_buffer.c
-- src/c/ncm_app_arrays.c
-- src/config_options_dummy.h
-- src/c/ncm_directory.c
-- src/curses/nc_app_menus.c
-- src/curses/nc_curses.c
-- src/screens/app_screens.c
-- src/c/ncm_playlist.c
-- src/global.h
-- src/screens/nc_browser.c
-- src/screens/nc_search_engine.c
 - src/settings.h
 - src/app_state.h
 - src/curses/nc_formatted_color.c
@@ -40,7 +26,6 @@ accumlating from there, not from the beginning of the chat.
 - src/c/ncm_search_prompt.c
 - src/c/ncm_fs.c
 - src/mpd/ncmpcpp2_mpd.h
-- src/statusbar.c
 - src/title.c
 - src/c/ncm_conversion.c
 - src/mpd/ncm_mpd_item.c
@@ -67,7 +52,6 @@ accumlating from there, not from the beginning of the chat.
 - src/status.c
 - src/app_controller.h
 - src/config_options.h
-- src/c/ncm_display.c
 - src/main.c
 - src/c/ncm_option_parser.c
 - src/screens/nc_screen_impl_template.h
@@ -90,7 +74,6 @@ accumlating from there, not from the beginning of the chat.
 - src/screens/nc_song_info.c
 - src/c/ncm_lrc.c
 - src/settings.c
-- src/c/ncm_taglib.c
 - src/screens/nc_screens.c
 - src/c/ncm_format.c
 - src/screens/nc_scrollpad_screen.c
@@ -109,7 +92,6 @@ accumlating from there, not from the beginning of the chat.
 - src/c/ncm_string.c
 - src/title.h
 - src/curses/nc_curses.h
-- src/app_legacy_bridge.c
 - src/screens/nc_playlist.c
 - src/c/ncm_c.h
 - src/status.h
@@ -237,19 +219,9 @@ list and try the next and so on. When you end up changing a .c file, send me the
 result as a tar ball (but include all the changes of the previous prompts as
 well).
 
-- src/curses/nc_scrollpad.c
-- src/statusbar.c
-- src/app_legacy_bridge.c
-- src/c/ncm_display.c
-- src/c/ncm_tags.c
-- src/c/ncm_fs.c
-- src/c/ncm_playlist_sort.c
-- src/screens/nc_help.c
-- src/c/ncm_taglib.c
 - src/screens/nc_server_info.c
 - src/c/ncm_mpd_item.c
 - src/screens/nc_song_info.c
-- src/c/ncm_app_arrays.c
 - src/c/ncm_html.c
 - src/c/ncm_conversion.c
 - src/c/ncm_regex.c
@@ -260,9 +232,7 @@ well).
 - src/helpers.c
 - src/c/ncm_option_parser.c
 - src/curl_handle.c
-- src/c/ncm_sample_buffer.c
 - src/c/ncm_path.c
-- src/c/ncm_directory.c
 - src/c/ncm_playlist.c
 - src/screens/screen_type.c
 - src/c/ncm_macro_utilities.c
@@ -271,6 +241,5 @@ well).
 - src/curses/nc_formatted_color.c
 - src/global.c
 - src/screens/nc_screens.c
-- src/curses/nc_curses.c
 
 ## Functions that are never called (dead code)

@@ -25,14 +25,14 @@
 static int64 app_bridge_header_refresh_time;
 
 static void
-app_bridge_request_media_library_database_update(void *user) {
+app_bridge_request_db_update(void *user) {
     (void)user;
     media_library_screen_request_database_update(app_screen_media_library());
     return;
 }
 
 static void
-app_bridge_refresh_playlist_related_inactive_columns(void *user) {
+app_bridge_refresh_columns(void *user) {
     (void)user;
     if (app_controller_is_screen_visible(app_screen_media_library_base())) {
         media_library_screen_refresh_inactive_songs(app_screen_media_library());
@@ -46,10 +46,36 @@ app_bridge_refresh_playlist_related_inactive_columns(void *user) {
 
 static void
 app_bridge_set_status_observers(void) {
-    ncm_status_set_database_update_observer(
-        app_bridge_request_media_library_database_update, NULL);
-    ncm_status_set_playlist_update_observer(
-        app_bridge_refresh_playlist_related_inactive_columns, NULL);
+    ncm_status_set_database_update_observer(app_bridge_request_db_update, NULL);
+    ncm_status_set_playlist_update_observer(app_bridge_refresh_columns, NULL);
+    return;
+}
+
+static void
+app_bridge_report_mpd_error(NcmError *ncm_error) {
+    StrBuilder output = {0};
+    char *message;
+
+    ASSERT(ncm_error != NULL);
+
+    if (ncm_error->message[0] != '\0') {
+        message = ncm_error->message;
+    } else {
+        message = ncm_mpd_client_error_message(&global_mpd);
+        if (message[0] == '\0') {
+            message = "MPD command failed";
+        }
+    }
+
+    if ((ncm_mpd_client_error_code(&global_mpd) == NCM_MPD_ERROR_SERVER)
+        || (ncm_error->code == NCM_MPD_ERROR_SERVER)) {
+        SB_APPEND(&output, "MPD: ");
+    } else {
+        SB_APPEND(&output, "ncmpcpp: ");
+    }
+    SB_APPEND(&output, message, optional_strlen32(message));
+    ncm_statusbar_print(Config.message_delay_time, output.data, output.len);
+    sb_free(&output);
     return;
 }
 
@@ -59,33 +85,9 @@ app_bridge_noidle_status_update(int32 flags, void *user) {
 
     (void)user;
     ncm_error_clear(&ncm_error);
-    (void)ncm_status_update(&global_mpd, flags, &ncm_error);
-    return;
-}
-
-static void
-app_bridge_report_mpd_error(NcmError *ncm_error) {
-    StrBuilder output = {0};
-    char *message;
-
-    if (ncm_error && (ncm_error->message[0] != '\0')) {
-        message = ncm_error->message;
-    } else {
-        message = ncm_mpd_client_error_message(&global_mpd);
-        if ((message == NULL) || (message[0] == '\0')) {
-            message = "MPD command failed";
-        }
+    if (ncm_status_update(&global_mpd, flags, &ncm_error) < 0) {
+        app_bridge_report_mpd_error(&ncm_error);
     }
-
-    if ((ncm_mpd_client_error_code(&global_mpd) == NCM_MPD_ERROR_SERVER)
-        || (ncm_error && (ncm_error->code == NCM_MPD_ERROR_SERVER))) {
-        SB_APPEND(&output, "MPD: ");
-    } else {
-        SB_APPEND(&output, "ncmpcpp: ");
-    }
-    SB_APPEND(&output, message, optional_strlen32(message));
-    ncm_statusbar_print(Config.message_delay_time, output.data, output.len);
-    sb_free(&output);
     return;
 }
 
@@ -189,9 +191,7 @@ ncmpcpp_window_create(int32 start_x, int32 start_y,
 
 void
 ncmpcpp_window_display(NcWindow *window) {
-    if (window == NULL) {
-        return;
-    }
+    ASSERT(window != NULL);
 
     nc_window_display(window);
     nc_window_refresh(window);
@@ -200,9 +200,7 @@ ncmpcpp_window_display(NcWindow *window) {
 
 void
 ncmpcpp_window_destroy(NcWindow *window) {
-    if (window == NULL) {
-        return;
-    }
+    ASSERT(window != NULL);
 
     nc_window_destroy(window);
     free2(window, SIZEOF(*window));
@@ -260,7 +258,7 @@ ncmpcpp_resize_screen(bool reload_main_window) {
 
 void
 ncmpcpp_playlist_switch_to(void) {
-    (void)app_screens_switch_to_type(SCREEN_TYPE_PLAYLIST);
+    ASSERT_ZERO(app_screens_switch_to_type(SCREEN_TYPE_PLAYLIST));
     return;
 }
 
@@ -369,9 +367,8 @@ ncmpcpp_update_environment(bool update_timer, bool refresh_window,
 
 int32
 ncmpcpp_execute_binding(Binding *binding) {
-    if (binding == NULL) {
-        return -EINVAL;
-    }
+    ASSERT(binding != NULL);
+
     if (!binding_can_execute_default(binding)) {
         return -NCM_ERROR_UNAVAILABLE;
     }

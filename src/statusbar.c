@@ -36,9 +36,7 @@ statusbar_apply_formatted_color(NcWindow *window, NcFormattedColor *color) {
     enum NcFormat *formats;
     int32 count;
 
-    if (color == NULL) {
-        return;
-    }
+    ASSERT(color != NULL);
 
     nc_window_push_color(window, color->color);
     formats = color->formats;
@@ -54,9 +52,7 @@ statusbar_apply_formatted_color_end(NcWindow *window, NcFormattedColor *color) {
     enum NcFormat *formats;
     int32 count;
 
-    if (color == NULL) {
-        return;
-    }
+    ASSERT(color != NULL);
 
     if (!nc_color_is_default(color->color)) {
         nc_window_push_color(window, nc_color_end());
@@ -71,10 +67,10 @@ statusbar_apply_formatted_color_end(NcWindow *window, NcFormattedColor *color) {
 
 void
 ncm_progressbar_scoped_lock_init(NcmStatusbarScopedLock *scoped_lock) {
-    if (scoped_lock) {
-        scoped_lock->locked_progressbar = true;
-        scoped_lock->locked_statusbar = false;
-    }
+    ASSERT(scoped_lock != NULL);
+
+    scoped_lock->locked_progressbar = true;
+    scoped_lock->locked_statusbar = false;
     progressbar_block_update = true;
     return;
 }
@@ -171,10 +167,10 @@ ncm_progressbar_draw(int32 elapsed, int32 time) {
 
 void
 ncm_statusbar_scoped_lock_init(NcmStatusbarScopedLock *scoped_lock) {
-    if (scoped_lock) {
-        scoped_lock->locked_statusbar = Config.statusbar_visibility;
-        scoped_lock->locked_progressbar = !Config.statusbar_visibility;
-    }
+    ASSERT(scoped_lock != NULL);
+
+    scoped_lock->locked_statusbar = Config.statusbar_visibility;
+    scoped_lock->locked_progressbar = !Config.statusbar_visibility;
 
     if (Config.statusbar_visibility) {
         statusbar_block_update = true;
@@ -205,7 +201,7 @@ ncm_statusbar_scoped_lock_destroy(NcmStatusbarScopedLock *scoped_lock) {
 
         switch (Config.user_interface) {
         case NCM_DESIGN_CLASSIC:
-            (void)ncm_statusbar_put();
+            ncm_statusbar_put();
             break;
         case NCM_DESIGN_ALTERNATIVE:
             ncm_progressbar_draw(ncm_status_state_elapsed_time(),
@@ -249,7 +245,7 @@ ncm_statusbar_try_redraw(void) {
                 switch (ncm_status_state_player()) {
                 case NCM_STATUS_PLAYER_UNKNOWN:
                 case NCM_STATUS_PLAYER_STOP:
-                    (void)ncm_statusbar_put();
+                    ncm_statusbar_put();
                     break;
                 case NCM_STATUS_PLAYER_PLAY:
                 case NCM_STATUS_PLAYER_PAUSE:
@@ -334,7 +330,7 @@ ncm_statusbar_mpd_idle_callback(void) {
     NcmError ncm_error;
 
     ncm_error_clear(&ncm_error);
-    (void)ncm_status_update_from_noidle(&global_mpd, NULL, &ncm_error);
+    ncm_status_update_from_noidle(&global_mpd, NULL, &ncm_error);
     return;
 }
 
