@@ -562,10 +562,10 @@ ncm_tag_type_taglib_name_len(enum NcmTagType tag, char *out, int32 cap) {
 
     switch ((int32)tag) {
 #define TAGLIB_NAME_CASE(suffix, DISP, CHAR,                               \
-                              getter_char, flags)                              \
-    case CAT(TAG_, suffix):                                                    \
-        return ascii_normalize_camel_compact(                                  \
-            out, cap, TAG_DISPLAY_NAME(DISP),                                  \
+                              getter_char, flags)                          \
+    case CAT(TAG_, suffix):                                                \
+        return ascii_normalize_camel_compact(                              \
+            out, cap, TAG_DISPLAY_NAME(DISP),                              \
             TAG_DISPLAY_NAME_LEN(DISP));
 
     TAGLIB_TAG_DEFS(TAGLIB_NAME_CASE)
