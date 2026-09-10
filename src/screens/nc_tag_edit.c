@@ -3759,6 +3759,7 @@ tag_edit_screen_prepare_parser_rows(TagEditScreen *screen,
     nc_menu_clear_items(nc_editor_string_menu_base(&screen->parser_dialog));
     nc_menu_clear_items(nc_editor_string_menu_base(&screen->parser_rows));
     nc_menu_clear_items(nc_editor_string_menu_base(&screen->parser_actions));
+
     tag_edit_append_parser_row(&screen->parser_dialog,
                                STRLIT("Get tags from filename"),
                                NC_MENU_ITEM_SELECTABLE);
@@ -3768,6 +3769,7 @@ tag_edit_screen_prepare_parser_rows(TagEditScreen *screen,
     tag_edit_append_parser_row(&screen->parser_dialog,
                                STRLIT("Cancel"),
                                NC_MENU_ITEM_SELECTABLE);
+
     if (mode == TAG_EDIT_PARSER_NONE) {
         tag_edit_reset_parser_navigation(screen);
         return;
