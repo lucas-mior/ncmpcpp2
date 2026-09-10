@@ -3281,8 +3281,8 @@ tag_edit_screen_apply_tag_to_selection(TagEditScreen *screen,
     setter.value_len = value_len;
     setter.separator = separator;
     setter.separator_len = separator_len;
-    return tag_edit_for_each_target(screen, tag_edit_set_song_tag_callback,
-                                    &setter);
+    return tag_edit_for_each_target(screen,
+                                    tag_edit_set_song_tag_callback, &setter);
 }
 
 static int32
