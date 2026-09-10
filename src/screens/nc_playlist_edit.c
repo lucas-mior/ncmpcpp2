@@ -190,29 +190,11 @@ playlist_edit_selected_songs_capability(NcScreen *base, NcmSongArray *songs) {
                                                songs);
 }
 
-static bool
-playlist_edit_previous_column_available_capability(NcScreen *base) {
-    return playlist_edit_screen_can_move_to_previous_column(
-        (PlaylistEditScreen *)base);
-}
-
-static bool
-playlist_edit_next_column_available_capability(NcScreen *base) {
-    return playlist_edit_screen_can_move_to_next_column(
-        (PlaylistEditScreen *)base);
-}
-
-static int32
-playlist_edit_previous_column_capability(NcScreen *base) {
-    playlist_edit_screen_previous_column((PlaylistEditScreen *)base);
-    return 0;
-}
-
-static int32
-playlist_edit_next_column_capability(NcScreen *base) {
-    playlist_edit_screen_next_column((PlaylistEditScreen *)base);
-    return 0;
-}
+NC_SCREEN_COLUMN_CAPABILITY_CALLBACKS(
+    playlist_edit, PlaylistEditScreen,
+    playlist_edit_screen_can_move_to_previous_column,
+    playlist_edit_screen_can_move_to_next_column,
+    playlist_edit_screen_previous_column, playlist_edit_screen_next_column)
 
 static NcMenu *
 playlist_edit_tag_menu_capability(NcScreen *base) {
@@ -833,12 +815,7 @@ playlist_edit_screen_init(PlaylistEditScreen *screen,
     callbacks.search = playlist_edit_search_capability;
     callbacks.current_song = playlist_edit_current_song_capability;
     callbacks.selected_songs = playlist_edit_selected_songs_capability;
-    callbacks.previous_column_available =
-        playlist_edit_previous_column_available_capability;
-    callbacks.next_column_available =
-        playlist_edit_next_column_available_capability;
-    callbacks.previous_column = playlist_edit_previous_column_capability;
-    callbacks.next_column = playlist_edit_next_column_capability;
+    NC_SCREEN_COLUMN_CAPABILITY_SET_OPS(callbacks, playlist_edit);
     callbacks.tag_menu = playlist_edit_tag_menu_capability;
     callbacks.song_tag_at = playlist_edit_tag_at_capability;
 

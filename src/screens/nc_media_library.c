@@ -85,29 +85,11 @@ media_library_selected_songs_capability(NcScreen *base, NcmSongArray *songs) {
                                                songs);
 }
 
-static bool
-media_library_previous_column_available_capability(NcScreen *base) {
-    return media_library_screen_can_move_to_previous_column(
-        (MediaLibraryScreen *)base);
-}
-
-static bool
-media_library_next_column_available_capability(NcScreen *base) {
-    return media_library_screen_can_move_to_next_column(
-        (MediaLibraryScreen *)base);
-}
-
-static int32
-media_library_previous_column_capability(NcScreen *base) {
-    media_library_screen_previous_column((MediaLibraryScreen *)base);
-    return 0;
-}
-
-static int32
-media_library_next_column_capability(NcScreen *base) {
-    media_library_screen_next_column((MediaLibraryScreen *)base);
-    return 0;
-}
+NC_SCREEN_COLUMN_CAPABILITY_CALLBACKS(
+    media_library, MediaLibraryScreen,
+    media_library_screen_can_move_to_previous_column,
+    media_library_screen_can_move_to_next_column,
+    media_library_screen_previous_column, media_library_screen_next_column)
 
 static NcMenu *
 media_library_tag_menu_capability(NcScreen *base) {
@@ -1097,11 +1079,7 @@ media_library_screen_init(MediaLibraryScreen *screen, MediaLibraryHooks hooks,
     ops.search = media_library_search_capability;
     ops.current_song = media_library_current_song_capability;
     ops.selected_songs = media_library_selected_songs_capability;
-    ops.previous_column_available =
-        media_library_previous_column_available_capability;
-    ops.next_column_available = media_library_next_column_available_capability;
-    ops.previous_column = media_library_previous_column_capability;
-    ops.next_column = media_library_next_column_capability;
+    NC_SCREEN_COLUMN_CAPABILITY_SET_OPS(ops, media_library);
     ops.tag_menu = media_library_tag_menu_capability;
     ops.song_tag_at = media_library_tag_at_capability;
     nc_screen_init_ops(&screen->screen, ops, screen,
