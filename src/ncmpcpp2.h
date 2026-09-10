@@ -588,11 +588,9 @@ ncm_tags_field_taglib_property_len(enum TagsField field, char *out,
     ASSERT(cap > 0);
 
     switch (field) {
-#define TAGLIB_FIELD_PROPERTY_CASE(suffix, DISP, CHAR,                     \
-                                        getter_char, flags)                    \
-    case CAT(TAGS_FIELD_, suffix):                                             \
-        return ncm_tag_type_taglib_property_len(CAT(TAG_, suffix),             \
-                                                out, cap);
+#define TAGLIB_FIELD_PROPERTY_CASE(suffix, DISP, CHAR, getter_char, flags)    \
+    case CAT(TAGS_FIELD_, suffix):                                            \
+        return ncm_tag_type_taglib_property_len(CAT(TAG_, suffix), out, cap);
 
     TAGLIB_TAG_DEFS(TAGLIB_FIELD_PROPERTY_CASE)
 
