@@ -156,28 +156,28 @@ ncm_tag_name_to_camel_compact(char *out, int32 out_cap,
     return written;
 }
 
-#define NCM_TAG_FIELD_MPD(XX, suffix, display, tag_char)                       \
-    XX(suffix, display, tag_char, tag_char,                                    \
-       NCM_TAG_META_FLAGS_FIELD_SEARCH|NCM_TAG_META_FLAG_MPD)
+#define NCM_TAG_FIELD_MPD(XX, suffix, display, tag_char)                     \
+  XX(suffix, display, tag_char, tag_char,                                    \
+     NCM_TAG_META_FLAGS_FIELD_SEARCH|NCM_TAG_META_FLAG_MPD)
 
-#define NCM_TAG_FIELD_MPD_NUM(XX, suffix, display, tag_char, getter_char)      \
-    XX(suffix, display, tag_char, getter_char,                                 \
-       NCM_TAG_META_FLAGS_FIELD|NCM_TAG_META_FLAG_MPD                          \
-       |NCM_TAG_META_FLAG_TAGLIB_NUMBER)
+#define NCM_TAG_FIELD_MPD_NUM(XX, suffix, display, tag_char, getter_char)    \
+  XX(suffix, display, tag_char, getter_char,                                 \
+     NCM_TAG_META_FLAGS_FIELD|NCM_TAG_META_FLAG_MPD                          \
+     |NCM_TAG_META_FLAG_TAGLIB_NUMBER)
 
-#define NCM_TAG_SEARCH_MPD(XX, suffix, display)                                \
-    XX(suffix, display, '\0', '\0',                                            \
-       NCM_TAG_META_FLAG_SEARCH|NCM_TAG_META_FLAG_MPD)
+#define NCM_TAG_SEARCH_MPD(XX, suffix, display)                              \
+  XX(suffix, display, '\0', '\0',                                            \
+     NCM_TAG_META_FLAG_SEARCH|NCM_TAG_META_FLAG_MPD)
 
-#define NCM_TAG_NON_DISPLAY(XX, suffix, display)                               \
-    XX(suffix, display, '\0', '\0', NCM_TAG_META_FLAGS_NONE)
+#define NCM_TAG_NON_DISPLAY(XX, suffix, display)                             \
+  XX(suffix, display, '\0', '\0', NCM_TAG_META_FLAGS_NONE)
 
-#define NCM_TAG_FIELD_MPD_NUM_DECLS(XX)                                        \
-    NCM_TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                          \
-    NCM_TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')
+#define NCM_TAG_FIELD_MPD_NUM_DECLS(XX)                                      \
+  NCM_TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                          \
+  NCM_TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')
 
-#define NCM_TAG_SEARCH_MPD_DECLS(XX)                                           \
-    NCM_TAG_SEARCH_MPD(XX, NAME, Filename)
+#define NCM_TAG_SEARCH_MPD_DECLS(XX)                                         \
+  NCM_TAG_SEARCH_MPD(XX, NAME, Filename)
 
 #define NCM_TAG_EXTENDED_DECLS(XX)                                             \
     NCM_TAG_NON_DISPLAY(XX, MUSICBRAINZ_ARTISTID,                              \
