@@ -158,7 +158,8 @@
     TAG_FIELD_MPD(XX, DATE, Date, 'y')                                         \
     TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                                 \
     TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                               \
-    TAG_FIELD_MPD(XX, TITLE, Title, 't')
+    TAG_FIELD_MPD(XX, TITLE, Title, 't')                                       \
+    TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')
 
 #define TAG_EDIT_PARSER_DEFS(XX)                                               \
     TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                                     \
