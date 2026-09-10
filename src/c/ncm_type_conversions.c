@@ -81,16 +81,16 @@ ncm_tag_type_name(enum NcmTagType tag) {
 enum NcmTagType
 ncm_char_to_tag_type(char c) {
     switch (c) {
-#define NCM_TAG_CHAR_CASE(suffix, display, tag_char, getter_char,        \
+#define TAG_CHAR_CASE(suffix, display, tag_char, getter_char,        \
                           flags)                                             \
     case tag_char:                                                            \
-        return CAT(NCM_TAG_, suffix);
+        return CAT(TAG_, suffix);
 
-    NCM_TAG_FIELD_DEFS(NCM_TAG_CHAR_CASE)
+    TAG_FIELD_DEFS(TAG_CHAR_CASE)
 
-#undef NCM_TAG_CHAR_CASE
+#undef TAG_CHAR_CASE
     default:
-        return NCM_TAG_UNKNOWN;
+        return TAG_UNKNOWN;
     }
 }
 
@@ -128,7 +128,7 @@ ncm_song_getter_to_tag_type(enum SongGetter getter) {
 #define NCM_SONG_GETTER_TO_TAG_CASE(suffix, display, tag_char,          \
                                     getter_char, flags)                     \
     case CAT(SONG_GETTER_, suffix):                                           \
-        return CAT(NCM_TAG_, suffix);
+        return CAT(TAG_, suffix);
 
     NCM_SONG_GETTER_TAG_DEFS(NCM_SONG_GETTER_TO_TAG_CASE)
 
@@ -142,50 +142,50 @@ ncm_song_getter_to_tag_type(enum SongGetter getter) {
     case SONG_GETTER_PRIORITY:
     case SONG_GETTER_COUNT:
     default:
-        return NCM_TAG_UNKNOWN;
+        return TAG_UNKNOWN;
     }
 }
 
 enum TagsField
 ncm_tags_field_from_tag_type(enum NcmTagType tag) {
     switch (tag) {
-#define NCM_TAG_TO_FIELD_CASE(suffix, display, tag_char, getter_char,    \
+#define TAG_TO_FIELD_CASE(suffix, display, tag_char, getter_char,    \
                               flags)                                         \
-    case CAT(NCM_TAG_, suffix):                                               \
-        return CAT(NCM_TAGS_FIELD_, suffix);
+    case CAT(TAG_, suffix):                                               \
+        return CAT(TAGS_FIELD_, suffix);
 
-    NCM_TAG_FIELD_DEFS(NCM_TAG_TO_FIELD_CASE)
+    TAG_FIELD_DEFS(TAG_TO_FIELD_CASE)
 
-#undef NCM_TAG_TO_FIELD_CASE
-    case NCM_TAG_UNKNOWN:
-    case NCM_TAG_NAME:
-    case NCM_TAG_MUSICBRAINZ_ARTISTID:
-    case NCM_TAG_MUSICBRAINZ_ALBUMID:
-    case NCM_TAG_MUSICBRAINZ_ALBUMARTISTID:
-    case NCM_TAG_MUSICBRAINZ_TRACKID:
-    case NCM_TAG_MUSICBRAINZ_RELEASETRACKID:
-    case NCM_TAG_ORIGINAL_DATE:
-    case NCM_TAG_ARTIST_SORT:
-    case NCM_TAG_ALBUM_ARTIST_SORT:
-    case NCM_TAG_ALBUM_SORT:
-    case NCM_TAG_LABEL:
-    case NCM_TAG_MUSICBRAINZ_WORKID:
-    case NCM_TAG_GROUPING:
-    case NCM_TAG_WORK:
-    case NCM_TAG_CONDUCTOR:
-    case NCM_TAG_COMPOSER_SORT:
-    case NCM_TAG_ENSEMBLE:
-    case NCM_TAG_MOVEMENT:
-    case NCM_TAG_MOVEMENTNUMBER:
-    case NCM_TAG_LOCATION:
-    case NCM_TAG_MOOD:
-    case NCM_TAG_TITLE_SORT:
-    case NCM_TAG_MUSICBRAINZ_RELEASEGROUPID:
-    case NCM_TAG_SHOWMOVEMENT:
-    case NCM_TAG_DISCSUBTITLE:
-    case NCM_TAG_COUNT:
+#undef TAG_TO_FIELD_CASE
+    case TAG_UNKNOWN:
+    case TAG_NAME:
+    case TAG_MUSICBRAINZ_ARTISTID:
+    case TAG_MUSICBRAINZ_ALBUMID:
+    case TAG_MUSICBRAINZ_ALBUMARTISTID:
+    case TAG_MUSICBRAINZ_TRACKID:
+    case TAG_MUSICBRAINZ_RELEASETRACKID:
+    case TAG_ORIGINAL_DATE:
+    case TAG_ARTIST_SORT:
+    case TAG_ALBUM_ARTIST_SORT:
+    case TAG_ALBUM_SORT:
+    case TAG_LABEL:
+    case TAG_MUSICBRAINZ_WORKID:
+    case TAG_GROUPING:
+    case TAG_WORK:
+    case TAG_CONDUCTOR:
+    case TAG_COMPOSER_SORT:
+    case TAG_ENSEMBLE:
+    case TAG_MOVEMENT:
+    case TAG_MOVEMENTNUMBER:
+    case TAG_LOCATION:
+    case TAG_MOOD:
+    case TAG_TITLE_SORT:
+    case TAG_MUSICBRAINZ_RELEASEGROUPID:
+    case TAG_SHOWMOVEMENT:
+    case TAG_DISCSUBTITLE:
+    case TAG_COUNT:
     default:
-        return NCM_TAGS_FIELD_COUNT;
+        return TAGS_FIELD_COUNT;
     }
 }
 
@@ -199,15 +199,15 @@ ncm_tags_field_to_tag_type(enum TagsField field) {
     switch (field) {
 #define NCM_FIELD_TO_TAG_CASE(suffix, display, tag_char, getter_char,    \
                               flags)                                         \
-    case CAT(NCM_TAGS_FIELD_, suffix):                                        \
-        return CAT(NCM_TAG_, suffix);
+    case CAT(TAGS_FIELD_, suffix):                                        \
+        return CAT(TAG_, suffix);
 
-    NCM_TAG_FIELD_DEFS(NCM_FIELD_TO_TAG_CASE)
+    TAG_FIELD_DEFS(NCM_FIELD_TO_TAG_CASE)
 
 #undef NCM_FIELD_TO_TAG_CASE
-    case NCM_TAGS_FIELD_COUNT:
+    case TAGS_FIELD_COUNT:
     default:
-        return NCM_TAG_UNKNOWN;
+        return TAG_UNKNOWN;
     }
 }
 
@@ -216,13 +216,13 @@ ncm_tags_field_to_song_getter(enum TagsField field) {
     switch (field) {
 #define NCM_FIELD_TO_GETTER_CASE(suffix, display, tag_char, getter_char, \
                                  flags)                                      \
-    case CAT(NCM_TAGS_FIELD_, suffix):                                        \
+    case CAT(TAGS_FIELD_, suffix):                                        \
         return CAT(SONG_GETTER_, suffix);
 
-    NCM_TAG_FIELD_DEFS(NCM_FIELD_TO_GETTER_CASE)
+    TAG_FIELD_DEFS(NCM_FIELD_TO_GETTER_CASE)
 
 #undef NCM_FIELD_TO_GETTER_CASE
-    case NCM_TAGS_FIELD_COUNT:
+    case TAGS_FIELD_COUNT:
     default:
         return SONG_GETTER_NONE;
     }
@@ -234,13 +234,13 @@ ncm_song_getter_to_tags_field(enum SongGetter getter) {
 #define NCM_GETTER_TO_FIELD_CASE(suffix, display, tag_char, getter_char, \
                                  flags)                                      \
     case CAT(SONG_GETTER_, suffix):                                           \
-        return CAT(NCM_TAGS_FIELD_, suffix);
+        return CAT(TAGS_FIELD_, suffix);
 
-    NCM_TAG_FIELD_DEFS(NCM_GETTER_TO_FIELD_CASE)
+    TAG_FIELD_DEFS(NCM_GETTER_TO_FIELD_CASE)
 
 #undef NCM_GETTER_TO_FIELD_CASE
     case SONG_GETTER_TRACK_NUMBER:
-        return NCM_TAGS_FIELD_TRACK;
+        return TAGS_FIELD_TRACK;
     case SONG_GETTER_NONE:
     case SONG_GETTER_LENGTH:
     case SONG_GETTER_DIRECTORY:
@@ -249,7 +249,7 @@ ncm_song_getter_to_tags_field(enum SongGetter getter) {
     case SONG_GETTER_PRIORITY:
     case SONG_GETTER_COUNT:
     default:
-        return NCM_TAGS_FIELD_COUNT;
+        return TAGS_FIELD_COUNT;
     }
 }
 

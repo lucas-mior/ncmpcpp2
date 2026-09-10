@@ -33,18 +33,18 @@ typedef struct SearchConstraintMetadata {
 #define SEARCH_CONSTRAINT_TAG_ENTRY(suffix, display, tag_char, getter_char, \
                                     flags)                                   \
     {                                                                         \
-        .name = NCM_TAG_DISPLAY_NAME(display),                                \
-        .name_len = NCM_TAG_DISPLAY_NAME_LEN(display),                        \
-        .tag = CAT(NCM_TAG_, suffix),                                         \
+        .name = TAG_DISPLAY_NAME(display),                                \
+        .name_len = TAG_DISPLAY_NAME_LEN(display),                        \
+        .tag = CAT(TAG_, suffix),                                         \
     },
 
 static SearchConstraintMetadata search_constraints[] = {
     {
         .name = "Any",
         .name_len = STRLIT_LEN("Any"),
-        .tag = NCM_TAG_UNKNOWN,
+        .tag = TAG_UNKNOWN,
     },
-    NCM_TAG_SEARCH_DEFS(SEARCH_CONSTRAINT_TAG_ENTRY)
+    TAG_SEARCH_DEFS(SEARCH_CONSTRAINT_TAG_ENTRY)
 };
 
 #undef SEARCH_CONSTRAINT_TAG_ENTRY
@@ -1014,10 +1014,10 @@ search_song_has_field_view(NcmSong *song, int32 field, StringView *view) {
 
     metadata = search_constraint_metadata(field);
     tag = metadata->tag;
-    if (tag == NCM_TAG_NAME) {
+    if (tag == TAG_NAME) {
         return ncm_song_has_name_view(song, 0, view);
     }
-    if (tag == NCM_TAG_UNKNOWN) {
+    if (tag == TAG_UNKNOWN) {
         return false;
     }
     return ncm_song_has_tag_view(song, tag, 0, view);
@@ -1112,13 +1112,13 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                 }
                 metadata = search_constraint_metadata(i);
                 tag = metadata->tag;
-                if (tag == NCM_TAG_NAME) {
+                if (tag == TAG_NAME) {
                     constraint_status =
                         ncm_mpd_client_add_search_uri(client, constraint->data,
                                                       ncm_error);
                     continue;
                 }
-                ASSERT(tag != NCM_TAG_UNKNOWN);
+                ASSERT(tag != TAG_UNKNOWN);
                 constraint_status =
                     ncm_mpd_client_add_search_tag(client, tag, constraint->data,
                                                   ncm_error);

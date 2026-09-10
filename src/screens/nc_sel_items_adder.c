@@ -477,7 +477,7 @@ adder_action_position_current_song(void *user) {
 
 static void
 adder_song_album_view(NcmSong *song, StringView *album) {
-    if (!ncm_song_has_tag_view(song, NCM_TAG_ALBUM, 0, album)) {
+    if (!ncm_song_has_tag_view(song, TAG_ALBUM, 0, album)) {
         ncm_string_view_set(album, "", 0);
     }
     return;

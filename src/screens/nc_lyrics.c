@@ -110,8 +110,8 @@ lyrics_title_callback(NcScreen *screen) {
     }
 
     sb_clear(&song_title);
-    if (ncm_song_has_tag_view(&lyrics->song, NCM_TAG_ARTIST, 0, &artist_view)
-        && ncm_song_has_tag_view(&lyrics->song, NCM_TAG_TITLE, 0,
+    if (ncm_song_has_tag_view(&lyrics->song, TAG_ARTIST, 0, &artist_view)
+        && ncm_song_has_tag_view(&lyrics->song, TAG_TITLE, 0,
                                  &title_view)) {
         SB_APPEND(&song_title, artist_view.data, artist_view.len);
         SB_APPEND(&song_title, " - ");
@@ -481,8 +481,8 @@ lyrics_song_artist_title(NcmSong *song, StrBuilder *artist, StrBuilder *title) {
     sb_clear(artist);
     sb_clear(title);
 
-    if (ncm_song_has_tag_view(song, NCM_TAG_ARTIST, 0, &artist_view)
-        && ncm_song_has_tag_view(song, NCM_TAG_TITLE, 0, &title_view)) {
+    if (ncm_song_has_tag_view(song, TAG_ARTIST, 0, &artist_view)
+        && ncm_song_has_tag_view(song, TAG_TITLE, 0, &title_view)) {
         SB_APPEND(artist, artist_view.data, artist_view.len);
         SB_APPEND(title, title_view.data, title_view.len);
         return true;

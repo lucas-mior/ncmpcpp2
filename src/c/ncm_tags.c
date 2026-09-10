@@ -1,5 +1,5 @@
-#if !defined(NCM_TAGS_C)
-#define NCM_TAGS_C
+#if !defined(TAGS_C)
+#define TAGS_C
 
 #include "cbase.h"
 #include "ncmpcpp2.h"
@@ -16,7 +16,7 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
     int32 old_path_len;
     int32 new_path_len;
     int32 status;
-    char property[NCM_TAGLIB_PROPERTY_CAP];
+    char property[TAGLIB_PROPERTY_CAP];
 
     if (callback == NULL) {
         return -EINVAL;
@@ -66,7 +66,7 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
         return status;
     }
 
-    for (uint32 i = 0; i < NCM_TAGS_FIELD_COUNT; i += 1) {
+    for (uint32 i = 0; i < TAGS_FIELD_COUNT; i += 1) {
         enum TagsField field = (enum TagsField)i;
         int32 property_len;
 
@@ -144,4 +144,4 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
     return 0;
 }
 
-#endif /* NCM_TAGS_C */
+#endif /* TAGS_C */

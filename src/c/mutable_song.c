@@ -45,7 +45,7 @@ mutable_song_add_tag(MutableSong *song, enum TagsField field, int32 idx) {
             new_tag->original_len = 0;
             new_tag->value_len = 0;
             new_tag->idx = 0;
-            new_tag->field = NCM_TAGS_FIELD_COUNT;
+            new_tag->field = TAGS_FIELD_COUNT;
             new_tag->modified = false;
         }
         song->tags_cap = new_cap;
@@ -102,7 +102,7 @@ mutable_song_tag_destroy(MutableSongTag *tag) {
     stupid_string_free(&tag->original, &tag->original_len);
     stupid_string_free(&tag->value, &tag->value_len);
     tag->idx = 0;
-    tag->field = NCM_TAGS_FIELD_COUNT;
+    tag->field = TAGS_FIELD_COUNT;
     tag->modified = false;
     return;
 }
@@ -231,7 +231,7 @@ mutable_song_set_tag(MutableSong *song, enum TagsField field,
     if (idx < 0) {
         return -EINVAL;
     }
-    if (field >= NCM_TAGS_FIELD_COUNT) {
+    if (field >= TAGS_FIELD_COUNT) {
         return -EINVAL;
     }
     if (value_len < 0) {
@@ -261,7 +261,7 @@ mutable_song_set_tags(MutableSong *song, enum TagsField field,
     if (value_len < 0) {
         return -EINVAL;
     }
-    if (field >= NCM_TAGS_FIELD_COUNT) {
+    if (field >= TAGS_FIELD_COUNT) {
         return -EINVAL;
     }
 
@@ -310,7 +310,7 @@ mutable_song_has_tag_view(MutableSong *song, enum TagsField field, int32 idx,
     if (idx < 0) {
         return false;
     }
-    if (field >= NCM_TAGS_FIELD_COUNT) {
+    if (field >= TAGS_FIELD_COUNT) {
         return false;
     }
 
@@ -324,7 +324,7 @@ mutable_song_get_tag_buffer_unchecked(MutableSong *song,
     StringView view;
 
     sb_clear(buffer);
-    if (field == NCM_TAGS_FIELD_TRACK) {
+    if (field == TAGS_FIELD_TRACK) {
         int32 len;
 
         if (!mutable_song_has_tag_view_unchecked(song, field, idx, &view)) {
@@ -360,7 +360,7 @@ mutable_song_get_tag_buffer(MutableSong *song,
         sb_clear(buffer);
         return;
     }
-    if (field >= NCM_TAGS_FIELD_COUNT) {
+    if (field >= TAGS_FIELD_COUNT) {
         sb_clear(buffer);
         return;
     }
@@ -378,7 +378,7 @@ mutable_song_tags_buffer(MutableSong *song, enum TagsField field,
     if (song == NULL) {
         return result;
     }
-    if (field >= NCM_TAGS_FIELD_COUNT) {
+    if (field >= TAGS_FIELD_COUNT) {
         return result;
     }
     if ((separator == NULL) || (separator_len < 0)) {
@@ -452,7 +452,7 @@ mutable_song_load_originals_from_song(MutableSong *dest, NcmSong *source) {
     }
     dest->is_from_database = ncm_song_is_from_database(source);
 
-    for (uint32 field = 0; field < NCM_TAGS_FIELD_COUNT; field += 1) {
+    for (uint32 field = 0; field < TAGS_FIELD_COUNT; field += 1) {
         enum SongGetter getter = ncm_tags_field_to_song_getter(field);
 
         if (getter == SONG_GETTER_NONE) {

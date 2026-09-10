@@ -113,7 +113,7 @@ config_init_unchecked(Configuration *config) {
 #define XX_ENUM(NAME, DEFAULT, ENUM_PREFIX_)                              \
     config->NAME = (ENUM_PREFIX_)0;
 #define XX_MPD_TAG(NAME, DEFAULT)                                         \
-    config->NAME = NCM_TAG_UNKNOWN;
+    config->NAME = TAG_UNKNOWN;
 #define XX_STARTUP_SCREEN(NAME, DEFAULT)                                  \
     config->NAME = SCREEN_TYPE_COUNT;
 #define XX_OPT_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE)  \

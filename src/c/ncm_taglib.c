@@ -1,5 +1,5 @@
-#if !defined(NCM_TAGLIB_C)
-#define NCM_TAGLIB_C
+#if !defined(TAGLIB_C)
+#define TAGLIB_C
 
 #include "cbase.h"
 #include "ncmpcpp2.h"
@@ -21,15 +21,15 @@ typedef struct NcmTaglibPropertyMap {
 static bool ncm_taglib_is_initialized;
 
 static NcmTaglibPropertyMap ncm_taglib_properties[] = {
-#define NCM_TAGLIB_PROPERTY_MAP(suffix, display, tag_char, getter_char,     \
+#define TAGLIB_PROPERTY_MAP(suffix, display, tag_char, getter_char,     \
                                 flags)                                      \
     {                                                                       \
-        .tag = CAT(NCM_TAG_, suffix),                                       \
+        .tag = CAT(TAG_, suffix),                                       \
     },
 
-    NCM_TAGLIB_TAG_DEFS(NCM_TAGLIB_PROPERTY_MAP)
+    TAGLIB_TAG_DEFS(TAGLIB_PROPERTY_MAP)
 
-#undef NCM_TAGLIB_PROPERTY_MAP
+#undef TAGLIB_PROPERTY_MAP
 };
 
 static TagLib_File *
@@ -157,8 +157,8 @@ ncm_taglib_read_mapped_properties(NcmTaglibFile *file,
 
     count = 0;
     for (int32 i = 0; i < LENGTH(ncm_taglib_properties); i += 1) {
-        char property[NCM_TAGLIB_PROPERTY_CAP];
-        char name[NCM_TAGLIB_NAME_CAP];
+        char property[TAGLIB_PROPERTY_CAP];
+        char name[TAGLIB_NAME_CAP];
         char **values;
         int32 property_len;
         int32 name_len;
@@ -252,4 +252,4 @@ ncm_taglib_clear_strings(void) {
     return;
 }
 
-#endif /* NCM_TAGLIB_C */
+#endif /* TAGLIB_C */
