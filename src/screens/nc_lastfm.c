@@ -97,41 +97,14 @@ lastfm_display(LastfmScreen *screen) {
 #define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK lastfm_switch_to_callback
 #define NC_SCREEN_IMPL_RESIZE_CALLBACK lastfm_resize_callback
 #define NC_SCREEN_IMPL_TITLE_CALLBACK lastfm_title_callback
+#define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD search_constraint
+#define NC_SCREEN_IMPL_FIND_CALLBACK lastfm_screen_find
 #define NC_SCREEN_IMPL_UPDATE_CALLBACK lastfm_update_callback
 #define NC_SCREEN_IMPL_MOUSE_CALLBACK lastfm_mouse_button_pressed_callback
 #define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK lastfm_screen_destroy
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
-
-static StringView
-lastfm_search_constraint_capability(NcScreen *base) {
-    LastfmScreen *screen = (LastfmScreen *)base;
-
-    return ncm_string_view(screen->search_constraint.data,
-                           screen->search_constraint.len);
-}
-
-static void
-lastfm_search_clear_capability(NcScreen *base) {
-    LastfmScreen *screen = (LastfmScreen *)base;
-
-    sb_clear(&screen->search_constraint);
-    return;
-}
-
-static int32
-lastfm_search_capability(NcScreen *base, enum SearchDirection direction,
-                         char *pattern, int32 pattern_len,
-                         uint32 regex_flags, bool wrap, bool skip_current,
-                         NcmError *ncm_error) {
-    (void)direction;
-    (void)regex_flags;
-    (void)wrap;
-    (void)skip_current;
-    return lastfm_screen_find((LastfmScreen *)base, pattern, pattern_len,
-                              ncm_error);
-}
 
 void
 nc_lastfm_screen_init(NcLastfmScreen *screen, NcScreenOps callbacks, void *user,
@@ -199,10 +172,6 @@ lastfm_screen_init(LastfmScreen *screen, int32 start_x, int32 width,
     NcScreenOps ops;
 
     ops = lastfm_ops;
-    ops.capabilities = NC_SCREEN_CAPABILITY_SEARCH|NC_SCREEN_CAPABILITY_FIND;
-    ops.current_search_constraint = lastfm_search_constraint_capability;
-    ops.clear_search_constraint = lastfm_search_clear_capability;
-    ops.search = lastfm_search_capability;
     nc_lastfm_screen_init(&screen->screen, ops, screen, start_x, width,
                           main_start_y, main_height);
 

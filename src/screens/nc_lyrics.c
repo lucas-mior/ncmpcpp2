@@ -189,41 +189,14 @@ lyrics_display(LyricsScreen *screen) {
 #define NC_SCREEN_IMPL_RESIZE_CALLBACK lyrics_resize_callback
 #define NC_SCREEN_IMPL_TITLE_CALLBACK lyrics_title_callback
 #define NC_SCREEN_IMPL_WINDOW_TIMEOUT_CALLBACK lyrics_window_timeout_callback
+#define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD search_constraint
+#define NC_SCREEN_IMPL_FIND_CALLBACK lyrics_screen_find
 #define NC_SCREEN_IMPL_UPDATE_CALLBACK lyrics_update_callback
 #define NC_SCREEN_IMPL_MOUSE_CALLBACK lyrics_mouse_button_pressed_callback
 #define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK lyrics_screen_destroy
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
-
-static StringView
-lyrics_search_constraint_capability(NcScreen *base) {
-    LyricsScreen *screen = (LyricsScreen *)base;
-
-    return ncm_string_view(screen->search_constraint.data,
-                           screen->search_constraint.len);
-}
-
-static void
-lyrics_search_clear_capability(NcScreen *base) {
-    LyricsScreen *screen = (LyricsScreen *)base;
-
-    sb_clear(&screen->search_constraint);
-    return;
-}
-
-static int32
-lyrics_search_capability(NcScreen *base, enum SearchDirection direction,
-                         char *pattern, int32 pattern_len,
-                         uint32 regex_flags, bool wrap, bool skip_current,
-                         NcmError *ncm_error) {
-    (void)direction;
-    (void)regex_flags;
-    (void)wrap;
-    (void)skip_current;
-    return lyrics_screen_find((LyricsScreen *)base, pattern, pattern_len,
-                              ncm_error);
-}
 
 static int32
 lyrics_current_song_capability(NcScreen *base, NcmSong *song) {
@@ -344,12 +317,7 @@ lyrics_screen_init(LyricsScreen *screen, int32 start_x, int32 width,
     NcScreenOps ops;
 
     ops = lyrics_ops;
-    ops.capabilities = NC_SCREEN_CAPABILITY_SEARCH
-                       |NC_SCREEN_CAPABILITY_FIND
-                       |NC_SCREEN_CAPABILITY_SONGS;
-    ops.current_search_constraint = lyrics_search_constraint_capability;
-    ops.clear_search_constraint = lyrics_search_clear_capability;
-    ops.search = lyrics_search_capability;
+    ops.capabilities |= NC_SCREEN_CAPABILITY_SONGS;
     ops.current_song = lyrics_current_song_capability;
     nc_lyrics_screen_init(&screen->screen, ops, screen, start_x,
                           width, main_start_y, main_height);

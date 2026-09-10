@@ -76,39 +76,15 @@ nc_help_destroy_callback(NcScreen *screen) {
     nc_scrollpad_refresh(&(help)->scrollpad, &(help)->window)
 #define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK nc_help_switch_to
 #define NC_SCREEN_IMPL_RESIZE_CALLBACK nc_help_resize
+#define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD search_constraint
+#define NC_SCREEN_IMPL_SEARCH_CLEAR_CALLBACK nc_help_screen_clear_search
+#define NC_SCREEN_IMPL_FIND_CALLBACK nc_help_screen_find
 #define NC_SCREEN_IMPL_TITLE_LITERAL "Help"
 #define NC_SCREEN_IMPL_MOUSE_CALLBACK nc_help_mouse_button_pressed
 #define NC_SCREEN_IMPL_DESTROY_CALLBACK nc_help_destroy_callback
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
-
-static StringView
-nc_help_search_constraint_capability(NcScreen *base) {
-    NcHelpScreen *screen = (NcHelpScreen *)base;
-
-    return ncm_string_view(screen->search_constraint.data,
-                           screen->search_constraint.len);
-}
-
-static void
-nc_help_search_clear_capability(NcScreen *base) {
-    nc_help_screen_clear_search((NcHelpScreen *)base);
-    return;
-}
-
-static int32
-nc_help_search_capability(NcScreen *base, enum SearchDirection direction,
-                          char *pattern, int32 pattern_len,
-                          uint32 regex_flags, bool wrap, bool skip_current,
-                          NcmError *ncm_error) {
-    (void)direction;
-    (void)regex_flags;
-    (void)wrap;
-    (void)skip_current;
-    return nc_help_screen_find((NcHelpScreen *)base, pattern, pattern_len,
-                               ncm_error);
-}
 
 void
 nc_help_screen_init(NcHelpScreen *screen, NcHelpHooks hooks,
@@ -120,10 +96,6 @@ nc_help_screen_init(NcHelpScreen *screen, NcHelpHooks hooks,
     screen->hooks = hooks;
     screen->lines_scrolled = lines_scrolled;
     ops = nc_help_ops;
-    ops.capabilities = NC_SCREEN_CAPABILITY_SEARCH|NC_SCREEN_CAPABILITY_FIND;
-    ops.current_search_constraint = nc_help_search_constraint_capability;
-    ops.clear_search_constraint = nc_help_search_clear_capability;
-    ops.search = nc_help_search_capability;
     nc_scrollpad_screen_init(&screen->scrollpad_screen, ops, hooks.user,
                              NC_SCREEN_TYPE_HELP, 0, 0, 0, 0);
     screen->buffer = (NcBuffer){0};

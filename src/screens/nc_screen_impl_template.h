@@ -57,6 +57,9 @@ NcScreen *nc_screen_impl_dummy_base(NcScreenImplDummy *);
 #if !defined(NC_SCREEN_IMPL_MERGABLE)
 #define NC_SCREEN_IMPL_MERGABLE false
 #endif
+#if !defined(NC_SCREEN_IMPL_CAPABILITIES)
+#define NC_SCREEN_IMPL_CAPABILITIES 0
+#endif
 #if !defined(NC_SCREEN_IMPL_WINDOW)
 #define NC_SCREEN_IMPL_WINDOW(screen)                                          \
     (&(screen)->NC_SCREEN_IMPL_WINDOW_FIELD)
@@ -100,6 +103,17 @@ NcScreen *nc_screen_impl_dummy_base(NcScreenImplDummy *);
     CAT(NC_SCREEN_IMPL_PREFIX, _current_menu)
 #define NC_SCREEN_IMPL_CURRENT_MENU_HEIGHT                                     \
     CAT(NC_SCREEN_IMPL_PREFIX, _current_menu_height)
+#define NC_SCREEN_IMPL_CURRENT_FILTER                                          \
+    CAT(NC_SCREEN_IMPL_PREFIX, _current_filter)
+#define NC_SCREEN_IMPL_APPLY_FILTER                                            \
+    CAT(NC_SCREEN_IMPL_PREFIX, _apply_filter)
+#define NC_SCREEN_IMPL_CAN_SEARCH                                              \
+    CAT(NC_SCREEN_IMPL_PREFIX, _can_search)
+#define NC_SCREEN_IMPL_CURRENT_SEARCH_CONSTRAINT                               \
+    CAT(NC_SCREEN_IMPL_PREFIX, _current_search_constraint)
+#define NC_SCREEN_IMPL_CLEAR_SEARCH_CONSTRAINT                                 \
+    CAT(NC_SCREEN_IMPL_PREFIX, _clear_search_constraint)
+#define NC_SCREEN_IMPL_SEARCH CAT(NC_SCREEN_IMPL_PREFIX, _search)
 #define NC_SCREEN_IMPL_REFRESH CAT(NC_SCREEN_IMPL_PREFIX, _refresh)
 #define NC_SCREEN_IMPL_REFRESH_WINDOW                                          \
     CAT(NC_SCREEN_IMPL_PREFIX, _refresh_window)
@@ -180,6 +194,103 @@ NC_SCREEN_IMPL_CURRENT_MENU_HEIGHT(NcScreen *screen) {
     return NC_SCREEN_IMPL_MENU_CAPABILITY_HEIGHT(impl);
 }
 #endif
+#if defined(NC_SCREEN_IMPL_FILTER_CONSTRAINT_FIELD)
+static StringView
+NC_SCREEN_IMPL_CURRENT_FILTER(NcScreen *screen) {
+    NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
+    StrBuilder *constraint = &impl->NC_SCREEN_IMPL_FILTER_CONSTRAINT_FIELD;
+
+    return ncm_string_view(constraint->data, constraint->len);
+}
+#endif
+
+#if defined(NC_SCREEN_IMPL_FILTER_APPLY_CALLBACK)
+static int32
+NC_SCREEN_IMPL_APPLY_FILTER(NcScreen *screen, char *pattern,
+                            int32 pattern_len, uint32 regex_flags,
+                            NcmError *ncm_error) {
+    NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
+
+    (void)regex_flags;
+    return NC_SCREEN_IMPL_FILTER_APPLY_CALLBACK(impl, pattern, pattern_len,
+                                                ncm_error);
+}
+#endif
+
+#if defined(NC_SCREEN_IMPL_SEARCH_CAN_CALLBACK)
+static bool
+NC_SCREEN_IMPL_CAN_SEARCH(NcScreen *screen) {
+    NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
+
+    return NC_SCREEN_IMPL_SEARCH_CAN_CALLBACK(impl);
+}
+#endif
+
+#if defined(NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD)
+static StringView
+NC_SCREEN_IMPL_CURRENT_SEARCH_CONSTRAINT(NcScreen *screen) {
+    NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
+    StrBuilder *constraint = &impl->NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD;
+
+    return ncm_string_view(constraint->data, constraint->len);
+}
+#endif
+
+#if defined(NC_SCREEN_IMPL_SEARCH_CLEAR_CALLBACK)
+static void
+NC_SCREEN_IMPL_CLEAR_SEARCH_CONSTRAINT(NcScreen *screen) {
+    NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
+
+    NC_SCREEN_IMPL_SEARCH_CLEAR_CALLBACK(impl);
+    return;
+}
+#elif defined(NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD)
+static void
+NC_SCREEN_IMPL_CLEAR_SEARCH_CONSTRAINT(NcScreen *screen) {
+    NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
+
+    sb_clear(&impl->NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD);
+    return;
+}
+#endif
+
+#if defined(NC_SCREEN_IMPL_SEARCH_CALLBACK)
+static int32
+NC_SCREEN_IMPL_SEARCH(NcScreen *screen, enum SearchDirection direction,
+                      char *pattern, int32 pattern_len, uint32 regex_flags,
+                      bool wrap, bool skip_current, NcmError *ncm_error) {
+    NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
+    int32 status;
+    bool forward;
+
+    (void)regex_flags;
+    forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
+    status = NC_SCREEN_IMPL_SEARCH_CALLBACK(impl, pattern, pattern_len,
+                                            forward, wrap, skip_current,
+                                            ncm_error);
+#if defined(NC_SCREEN_IMPL_SEARCH_SAVE_ON_SUCCESS)
+    if (status >= 0) {
+        sb_set(&impl->NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD, pattern,
+               pattern_len);
+    }
+#endif
+    return status;
+}
+#elif defined(NC_SCREEN_IMPL_FIND_CALLBACK)
+static int32
+NC_SCREEN_IMPL_SEARCH(NcScreen *screen, enum SearchDirection direction,
+                      char *pattern, int32 pattern_len, uint32 regex_flags,
+                      bool wrap, bool skip_current, NcmError *ncm_error) {
+    NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
+
+    (void)direction;
+    (void)regex_flags;
+    (void)wrap;
+    (void)skip_current;
+    return NC_SCREEN_IMPL_FIND_CALLBACK(impl, pattern, pattern_len, ncm_error);
+}
+#endif
+
 
 static void
 NC_SCREEN_IMPL_REFRESH(NcScreen *screen) {
@@ -232,9 +343,21 @@ NC_SCREEN_IMPL_DESTROY(NcScreen *screen) {
 #endif
 
 static const NcScreenOps NC_SCREEN_IMPL_OPS = {
+    .capabilities = NC_SCREEN_IMPL_CAPABILITIES
 #if defined(NC_SCREEN_IMPL_MENU_CAPABILITY)
-    .capabilities = NC_SCREEN_CAPABILITY_MENU,
+                    |NC_SCREEN_CAPABILITY_MENU
 #endif
+#if defined(NC_SCREEN_IMPL_FILTER_APPLY_CALLBACK)
+                    |NC_SCREEN_CAPABILITY_FILTER
+#endif
+#if defined(NC_SCREEN_IMPL_SEARCH_CALLBACK)
+                    |NC_SCREEN_CAPABILITY_SEARCH
+#endif
+#if defined(NC_SCREEN_IMPL_FIND_CALLBACK)
+                    |NC_SCREEN_CAPABILITY_SEARCH
+                    |NC_SCREEN_CAPABILITY_FIND
+#endif
+                    ,
     .active_window = NC_SCREEN_IMPL_ACTIVE_WINDOW,
     .refresh = NC_SCREEN_IMPL_REFRESH,
     .refresh_window = NC_SCREEN_IMPL_REFRESH_WINDOW,
@@ -280,6 +403,26 @@ static const NcScreenOps NC_SCREEN_IMPL_OPS = {
 #if defined(NC_SCREEN_IMPL_MENU_CAPABILITY_HEIGHT)
     .current_menu_height = NC_SCREEN_IMPL_CURRENT_MENU_HEIGHT,
 #endif
+#if defined(NC_SCREEN_IMPL_FILTER_CONSTRAINT_FIELD)
+    .current_filter = NC_SCREEN_IMPL_CURRENT_FILTER,
+#endif
+#if defined(NC_SCREEN_IMPL_FILTER_APPLY_CALLBACK)
+    .apply_filter = NC_SCREEN_IMPL_APPLY_FILTER,
+#endif
+#if defined(NC_SCREEN_IMPL_SEARCH_CAN_CALLBACK)
+    .can_search = NC_SCREEN_IMPL_CAN_SEARCH,
+#endif
+#if defined(NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD)
+    .current_search_constraint = NC_SCREEN_IMPL_CURRENT_SEARCH_CONSTRAINT,
+#endif
+#if defined(NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD) \
+    || defined(NC_SCREEN_IMPL_SEARCH_CLEAR_CALLBACK)
+    .clear_search_constraint = NC_SCREEN_IMPL_CLEAR_SEARCH_CONSTRAINT,
+#endif
+#if defined(NC_SCREEN_IMPL_SEARCH_CALLBACK) \
+    || defined(NC_SCREEN_IMPL_FIND_CALLBACK)
+    .search = NC_SCREEN_IMPL_SEARCH,
+#endif
     .lockable = NC_SCREEN_IMPL_LOCKABLE,
     .mergable = NC_SCREEN_IMPL_MERGABLE,
 #if defined(NC_SCREEN_IMPL_DESTROY_CALLBACK)
@@ -299,6 +442,12 @@ static const NcScreenOps NC_SCREEN_IMPL_OPS = {
 #undef NC_SCREEN_IMPL_SCROLL
 #undef NC_SCREEN_IMPL_REFRESH_WINDOW
 #undef NC_SCREEN_IMPL_REFRESH
+#undef NC_SCREEN_IMPL_SEARCH
+#undef NC_SCREEN_IMPL_CLEAR_SEARCH_CONSTRAINT
+#undef NC_SCREEN_IMPL_CURRENT_SEARCH_CONSTRAINT
+#undef NC_SCREEN_IMPL_CAN_SEARCH
+#undef NC_SCREEN_IMPL_APPLY_FILTER
+#undef NC_SCREEN_IMPL_CURRENT_FILTER
 #undef NC_SCREEN_IMPL_CURRENT_MENU_HEIGHT
 #undef NC_SCREEN_IMPL_CURRENT_MENU
 #undef NC_SCREEN_IMPL_ACTIVE_WINDOW
@@ -308,7 +457,16 @@ static const NcScreenOps NC_SCREEN_IMPL_OPS = {
 #undef NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR
 #undef NC_SCREEN_IMPL_NO_GEOMETRY_ACCESSORS
 #undef NC_SCREEN_IMPL_MENU_CAPABILITY_HEIGHT
+#undef NC_SCREEN_IMPL_FIND_CALLBACK
+#undef NC_SCREEN_IMPL_SEARCH_SAVE_ON_SUCCESS
+#undef NC_SCREEN_IMPL_SEARCH_CLEAR_CALLBACK
+#undef NC_SCREEN_IMPL_SEARCH_CALLBACK
+#undef NC_SCREEN_IMPL_SEARCH_CAN_CALLBACK
+#undef NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD
+#undef NC_SCREEN_IMPL_FILTER_APPLY_CALLBACK
+#undef NC_SCREEN_IMPL_FILTER_CONSTRAINT_FIELD
 #undef NC_SCREEN_IMPL_MENU_CAPABILITY
+#undef NC_SCREEN_IMPL_CAPABILITIES
 #undef NC_SCREEN_IMPL_SCROLL_HEIGHT
 #undef NC_SCREEN_IMPL_SCROLL_MENU
 #undef NC_SCREEN_IMPL_WINDOW

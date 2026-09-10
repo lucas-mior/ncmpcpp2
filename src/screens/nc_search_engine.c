@@ -13,64 +13,6 @@ typedef struct SearchFindContext {
     NcmRegex *regex;
 } SearchFindContext;
 
-static StringView
-search_engine_filter_constraint_capability(NcScreen *base) {
-    SearchEngineScreen *screen = (SearchEngineScreen *)base;
-
-    return ncm_string_view(screen->filter_constraint.data,
-                           screen->filter_constraint.len);
-}
-
-static int32
-search_engine_filter_apply_capability(NcScreen *base, char *pattern,
-                                      int32 pattern_len, uint32 regex_flags,
-                                      NcmError *ncm_error) {
-    (void)regex_flags;
-    return search_engine_screen_apply_filter((SearchEngineScreen *)base,
-                                             pattern, pattern_len, ncm_error);
-}
-
-static bool
-search_engine_search_available_capability(NcScreen *base) {
-    return search_engine_screen_can_search((SearchEngineScreen *)base);
-}
-
-static StringView
-search_engine_search_constraint_capability(NcScreen *base) {
-    SearchEngineScreen *screen = (SearchEngineScreen *)base;
-
-    return ncm_string_view(screen->search_constraint.data,
-                           screen->search_constraint.len);
-}
-
-static void
-search_engine_search_clear_capability(NcScreen *base) {
-    SearchEngineScreen *screen = (SearchEngineScreen *)base;
-
-    sb_clear(&screen->search_constraint);
-    return;
-}
-
-static int32
-search_engine_search_capability(NcScreen *base, enum SearchDirection direction,
-                                char *pattern, int32 pattern_len,
-                                uint32 regex_flags, bool wrap,
-                                bool skip_current, NcmError *ncm_error) {
-    SearchEngineScreen *screen = (SearchEngineScreen *)base;
-    int32 status;
-    bool forward;
-
-    (void)regex_flags;
-    forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
-    status = search_engine_screen_search(screen, pattern, pattern_len,
-                                         forward, wrap, skip_current,
-                                         ncm_error);
-    if (status >= 0) {
-        sb_set(&screen->search_constraint, pattern, pattern_len);
-    }
-    return status;
-}
-
 static int32
 search_engine_current_song_capability(NcScreen *base, NcmSong *song) {
     int32 status;
@@ -473,6 +415,12 @@ search_run_current(NcScreen *base_screen) {
 #define NC_SCREEN_IMPL_MENU_CAPABILITY
 #define NC_SCREEN_IMPL_MENU_CAPABILITY_HEIGHT(screen) \
     nc_window_height(&(screen)->window)
+#define NC_SCREEN_IMPL_FILTER_CONSTRAINT_FIELD filter_constraint
+#define NC_SCREEN_IMPL_FILTER_APPLY_CALLBACK search_engine_screen_apply_filter
+#define NC_SCREEN_IMPL_SEARCH_CAN_CALLBACK search_engine_screen_can_search
+#define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD search_constraint
+#define NC_SCREEN_IMPL_SEARCH_CALLBACK search_engine_screen_search
+#define NC_SCREEN_IMPL_SEARCH_SAVE_ON_SUCCESS
 #define NC_SCREEN_IMPL_REFRESH_CALLBACK search_display
 #define NC_SCREEN_IMPL_CAN_RUN_CURRENT_CALLBACK search_can_run_current
 #define NC_SCREEN_IMPL_RUN_CURRENT_CALLBACK search_run_current
@@ -703,16 +651,8 @@ search_engine_screen_init(SearchEngineScreen *screen,
     screen->registered = false;
 
     ops = search_ops;
-    ops.capabilities |= NC_SCREEN_CAPABILITY_FILTER
-                        |NC_SCREEN_CAPABILITY_SEARCH
-                        |NC_SCREEN_CAPABILITY_SONGS
+    ops.capabilities |= NC_SCREEN_CAPABILITY_SONGS
                         |NC_SCREEN_CAPABILITY_TAGS;
-    ops.current_filter = search_engine_filter_constraint_capability;
-    ops.apply_filter = search_engine_filter_apply_capability;
-    ops.can_search = search_engine_search_available_capability;
-    ops.current_search_constraint = search_engine_search_constraint_capability;
-    ops.clear_search_constraint = search_engine_search_clear_capability;
-    ops.search = search_engine_search_capability;
     ops.current_song = search_engine_current_song_capability;
     ops.selected_songs = search_engine_selected_songs_capability;
     ops.tag_menu = search_engine_tag_menu_capability;
