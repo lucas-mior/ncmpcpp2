@@ -3,27 +3,30 @@
 
 #include "cbase.h"
 
-#define NCM_TAG_META_FLAGS_NONE        ((uint32)0)
-#define NCM_TAG_META_FLAG_DISPLAY      ((uint32)1 << 0)
-#define NCM_TAG_META_FLAG_WRITABLE     ((uint32)1 << 1)
-#define NCM_TAG_META_FLAG_SONG_INFO    ((uint32)1 << 2)
-#define NCM_TAG_META_FLAG_SEARCH       ((uint32)1 << 3)
-#define NCM_TAG_META_FLAG_PRIMARY      ((uint32)1 << 4)
-#define NCM_TAG_META_FLAG_GETTER       ((uint32)1 << 5)
-#define NCM_TAG_META_FLAG_TAGLIB       ((uint32)1 << 6)
-#define NCM_TAG_META_FLAG_MPD          ((uint32)1 << 7)
-#define NCM_TAG_META_FLAG_TAGLIB_NUMBER ((uint32)1 << 8)
+#define NCM_TAG_META_FLAG_ENUM_FIELDS                                         \
+    XX(NCM_TAG_META_FLAG_DISPLAY)                                             \
+    XX(NCM_TAG_META_FLAG_WRITABLE)                                            \
+    XX(NCM_TAG_META_FLAG_SONG_INFO)                                           \
+    XX(NCM_TAG_META_FLAG_SEARCH)                                              \
+    XX(NCM_TAG_META_FLAG_PRIMARY)                                             \
+    XX(NCM_TAG_META_FLAG_GETTER)                                              \
+    XX(NCM_TAG_META_FLAG_TAGLIB)                                              \
+    XX(NCM_TAG_META_FLAG_MPD)                                                 \
+    XX(NCM_TAG_META_FLAG_TAGLIB_NUMBER)                                       \
+    XX(NCM_TAG_META_FLAGS_FIELD,                                              \
+       NCM_TAG_META_FLAG_DISPLAY|NCM_TAG_META_FLAG_WRITABLE                   \
+       |NCM_TAG_META_FLAG_SONG_INFO|NCM_TAG_META_FLAG_GETTER                  \
+       |NCM_TAG_META_FLAG_TAGLIB)                                             \
+    XX(NCM_TAG_META_FLAGS_FIELD_SEARCH,                                       \
+       NCM_TAG_META_FLAGS_FIELD|NCM_TAG_META_FLAG_SEARCH)                     \
+    XX(NCM_TAG_META_FLAGS_FIELD_PRIMARY,                                      \
+       NCM_TAG_META_FLAGS_FIELD_SEARCH|NCM_TAG_META_FLAG_PRIMARY)
 
-#define NCM_TAG_META_FLAGS_FIELD                                               \
-    (NCM_TAG_META_FLAG_DISPLAY|NCM_TAG_META_FLAG_WRITABLE                      \
-     |NCM_TAG_META_FLAG_SONG_INFO|NCM_TAG_META_FLAG_GETTER                     \
-     |NCM_TAG_META_FLAG_TAGLIB)
-
-#define NCM_TAG_META_FLAGS_FIELD_SEARCH                                        \
-    (NCM_TAG_META_FLAGS_FIELD|NCM_TAG_META_FLAG_SEARCH)
-
-#define NCM_TAG_META_FLAGS_FIELD_PRIMARY                                       \
-    (NCM_TAG_META_FLAGS_FIELD_SEARCH|NCM_TAG_META_FLAG_PRIMARY)
+#define ENUM_NAME NcmTagMetaFlags
+#define ENUM_PREFIX_ NCM_TAG_META_FLAGS_
+#define ENUM_BITFLAGS 1
+#define ENUM_FIELDS NCM_TAG_META_FLAG_ENUM_FIELDS
+#include "cbase/xenums.c"
 
 #define NCM_TAG_DISPLAY_NAME(display) #display
 #define NCM_TAG_DISPLAY_NAME_LEN(display) STRLIT_LEN(#display)
