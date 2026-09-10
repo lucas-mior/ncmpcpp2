@@ -503,6 +503,17 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     return;
 }
 
+static NcmSong *
+browser_tag_item_song(void *item) {
+    NcmMpdItem *mpd_item = item;
+
+    if ((mpd_item == NULL)
+        || (ncm_mpd_item_kind(mpd_item) != NCM_MPD_ITEM_SONG)) {
+        return NULL;
+    }
+    return ncm_mpd_item_song(mpd_item);
+}
+
 #define NC_SCREEN_IMPL_TYPE BrowserScreen
 #define NC_SCREEN_IMPL_PREFIX browser
 #define NC_SCREEN_IMPL_PUBLIC_PREFIX browser_screen
@@ -516,6 +527,9 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 #define NC_SCREEN_IMPL_FILTER_APPLY_CALLBACK browser_screen_apply_filter
 #define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD search_constraint
 #define NC_SCREEN_IMPL_SEARCH_CALLBACK browser_screen_search
+#define NC_SCREEN_IMPL_CURRENT_SONG_CALLBACK browser_screen_current_song
+#define NC_SCREEN_IMPL_SELECTED_SONGS_CALLBACK browser_screen_selected_songs
+#define NC_SCREEN_IMPL_TAG_ITEM_SONG_CALLBACK browser_tag_item_song
 #define NC_SCREEN_IMPL_REFRESH_CALLBACK browser_display
 #define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK browser_switch_to
 #define NC_SCREEN_IMPL_RESIZE_CALLBACK browser_resize
@@ -531,39 +545,6 @@ typedef struct BrowserSearchContext {
     BrowserScreen *screen;
     NcmRegex *regex;
 } BrowserSearchContext;
-
-static int32
-browser_current_song_capability(NcScreen *base, NcmSong *song) {
-    return browser_screen_current_song((BrowserScreen *)base, song);
-}
-
-static int32
-browser_selected_songs_capability(NcScreen *base, NcmSongArray *songs) {
-    return browser_screen_selected_songs((BrowserScreen *)base, songs);
-}
-
-static NcMenu *
-browser_tag_menu_capability(NcScreen *base) {
-    return browser_screen_menu((BrowserScreen *)base);
-}
-
-static int32
-browser_tag_at_capability(NcScreen *base, int32 pos,
-                          enum SongGetter getter, StrBuilder *tag) {
-    NcmMpdItem *item;
-
-    item = nc_menu_active_item_at(
-        browser_screen_menu((BrowserScreen *)base), pos);
-    if ((item == NULL) || (tag == NULL)
-        || (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_SONG)) {
-        return -NCM_ERROR_UNAVAILABLE;
-    }
-    *tag = ncm_song_tags_buffer(ncm_mpd_item_song(item), getter,
-                                Config.tags_separator,
-                                Config.tags_separator_len,
-                                Config.show_duplicate_tags);
-    return 0;
-}
 
 static void
 browser_sync_display_mode(BrowserScreen *screen) {
@@ -819,12 +800,6 @@ browser_screen_init(BrowserScreen *screen, int32 start_x, int32 width,
     browser_screen_update_column_title(screen);
     browser_install_menu_callbacks(screen);
     ops = browser_ops;
-    ops.capabilities |= NC_SCREEN_CAPABILITY_SONGS
-                        |NC_SCREEN_CAPABILITY_TAGS;
-    ops.current_song = browser_current_song_capability;
-    ops.selected_songs = browser_selected_songs_capability;
-    ops.tag_menu = browser_tag_menu_capability;
-    ops.song_tag_at = browser_tag_at_capability;
     nc_screen_init_ops(&screen->screen, ops, screen, NC_SCREEN_TYPE_BROWSER);
     return;
 }

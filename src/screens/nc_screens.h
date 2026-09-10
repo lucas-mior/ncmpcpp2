@@ -465,6 +465,17 @@ StringView nc_screen_current_search_constraint(NcScreen *);
 void nc_screen_clear_search_constraint(NcScreen *);
 int32 nc_screen_search(NcScreen *, enum SearchDirection, char *, int32,
                        uint32, bool, bool, NcmError *);
+typedef NcmSong *NcScreenMenuSongCallback(void *);
+
+int32 nc_screen_optional_song_status(int32);
+NcmSong *nc_screen_menu_item_as_song(void *);
+int32 nc_screen_menu_song_tag_at(NcMenu *, int32, enum SongGetter,
+                                 StrBuilder *,
+                                 NcScreenMenuSongCallback *);
+int32 nc_screen_collect_selected_menu_songs(NcMenu *, NcmSongArray *,
+                                           NcScreenMenuSongCallback *);
+int32 nc_screen_menu_mutable_song_tag_at(NcMenu *, int32, enum SongGetter,
+                                         StrBuilder *);
 int32 nc_screen_current_song(NcScreen *, NcmSong *);
 int32 nc_screen_selected_songs(NcScreen *, NcmSongArray *);
 bool nc_screen_previous_column_available(NcScreen *);

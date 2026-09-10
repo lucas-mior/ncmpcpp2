@@ -180,17 +180,8 @@ playlist_edit_search_capability(NcScreen *base, enum SearchDirection direction,
 
 static int32
 playlist_edit_current_song_capability(NcScreen *base, NcmSong *song) {
-    int32 status;
-
-    status = playlist_edit_screen_current_song((PlaylistEditScreen *)base,
-                                               song);
-    if (status > 0) {
-        return 0;
-    }
-    if (status == 0) {
-        return -NCM_ERROR_NOT_FOUND;
-    }
-    return status;
+    return nc_screen_optional_song_status(
+        playlist_edit_screen_current_song((PlaylistEditScreen *)base, song));
 }
 
 static int32
@@ -237,20 +228,13 @@ static int32
 playlist_edit_tag_at_capability(NcScreen *base, int32 pos,
                                 enum SongGetter getter, StrBuilder *tag) {
     PlaylistEditScreen *screen = (PlaylistEditScreen *)base;
-    NcmSong *song;
 
-    if ((tag == NULL)
-        || (screen->active_column != PLAYLIST_EDITOR_COLUMN_CONTENT)) {
+    if (screen->active_column != PLAYLIST_EDITOR_COLUMN_CONTENT) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    song = nc_menu_active_item_at(nc_song_menu_base(&screen->content), pos);
-    if (song == NULL) {
-        return -NCM_ERROR_UNAVAILABLE;
-    }
-    *tag = ncm_song_tags_buffer(song, getter, Config.tags_separator,
-                                Config.tags_separator_len,
-                                Config.show_duplicate_tags);
-    return 0;
+    return nc_screen_menu_song_tag_at(nc_song_menu_base(&screen->content),
+                                      pos, getter, tag,
+                                      nc_screen_menu_item_as_song);
 }
 
 static NcWindow *

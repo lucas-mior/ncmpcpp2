@@ -73,6 +73,9 @@ NcScreen *nc_screen_impl_dummy_base(NcScreenImplDummy *);
 #define NC_SCREEN_IMPL_SCROLL_HEIGHT(screen)                                   \
     nc_window_height(NC_SCREEN_IMPL_WINDOW(screen))
 #endif
+#if !defined(NC_SCREEN_IMPL_TAG_MENU) && defined(NC_SCREEN_IMPL_MENU)
+#define NC_SCREEN_IMPL_TAG_MENU(screen) NC_SCREEN_IMPL_MENU(screen)
+#endif
 #if (defined(NC_SCREEN_IMPL_SCROLLPAD_FIELD)                                   \
      || defined(NC_SCREEN_IMPL_SCROLLPAD_BASE))                                \
     && !defined(NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR)
@@ -114,6 +117,14 @@ NcScreen *nc_screen_impl_dummy_base(NcScreenImplDummy *);
 #define NC_SCREEN_IMPL_CLEAR_SEARCH_CONSTRAINT                                 \
     CAT(NC_SCREEN_IMPL_PREFIX, _clear_search_constraint)
 #define NC_SCREEN_IMPL_SEARCH CAT(NC_SCREEN_IMPL_PREFIX, _search)
+#define NC_SCREEN_IMPL_CURRENT_SONG                                            \
+    CAT(NC_SCREEN_IMPL_PREFIX, _current_song)
+#define NC_SCREEN_IMPL_SELECTED_SONGS                                          \
+    CAT(NC_SCREEN_IMPL_PREFIX, _selected_songs)
+#define NC_SCREEN_IMPL_TAG_MENU_CALLBACK                                       \
+    CAT(NC_SCREEN_IMPL_PREFIX, _tag_menu)
+#define NC_SCREEN_IMPL_SONG_TAG_AT                                             \
+    CAT(NC_SCREEN_IMPL_PREFIX, _song_tag_at)
 #define NC_SCREEN_IMPL_REFRESH CAT(NC_SCREEN_IMPL_PREFIX, _refresh)
 #define NC_SCREEN_IMPL_REFRESH_WINDOW                                          \
     CAT(NC_SCREEN_IMPL_PREFIX, _refresh_window)
@@ -291,6 +302,43 @@ NC_SCREEN_IMPL_SEARCH(NcScreen *screen, enum SearchDirection direction,
 }
 #endif
 
+#if defined(NC_SCREEN_IMPL_CURRENT_SONG_CALLBACK)
+static int32
+NC_SCREEN_IMPL_CURRENT_SONG(NcScreen *screen, NcmSong *song) {
+    NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
+
+#if defined(NC_SCREEN_IMPL_CURRENT_SONG_OPTIONAL_STATUS)
+    return nc_screen_optional_song_status(
+        NC_SCREEN_IMPL_CURRENT_SONG_CALLBACK(impl, song));
+#else
+    return NC_SCREEN_IMPL_CURRENT_SONG_CALLBACK(impl, song);
+#endif
+}
+#endif
+
+#if defined(NC_SCREEN_IMPL_SELECTED_SONGS_CALLBACK)
+static int32
+NC_SCREEN_IMPL_SELECTED_SONGS(NcScreen *screen, NcmSongArray *songs) {
+    return NC_SCREEN_IMPL_SELECTED_SONGS_CALLBACK(
+        NC_SCREEN_IMPL_FROM_SCREEN(screen), songs);
+}
+#endif
+
+#if defined(NC_SCREEN_IMPL_TAG_ITEM_SONG_CALLBACK)
+static NcMenu *
+NC_SCREEN_IMPL_TAG_MENU_CALLBACK(NcScreen *screen) {
+    return NC_SCREEN_IMPL_TAG_MENU(NC_SCREEN_IMPL_FROM_SCREEN(screen));
+}
+
+static int32
+NC_SCREEN_IMPL_SONG_TAG_AT(NcScreen *screen, int32 pos,
+                           enum SongGetter getter, StrBuilder *tag) {
+    return nc_screen_menu_song_tag_at(
+        NC_SCREEN_IMPL_TAG_MENU(NC_SCREEN_IMPL_FROM_SCREEN(screen)),
+        pos, getter, tag, NC_SCREEN_IMPL_TAG_ITEM_SONG_CALLBACK);
+}
+#endif
+
 
 static void
 NC_SCREEN_IMPL_REFRESH(NcScreen *screen) {
@@ -356,6 +404,13 @@ static const NcScreenOps NC_SCREEN_IMPL_OPS = {
 #if defined(NC_SCREEN_IMPL_FIND_CALLBACK)
                     |NC_SCREEN_CAPABILITY_SEARCH
                     |NC_SCREEN_CAPABILITY_FIND
+#endif
+#if defined(NC_SCREEN_IMPL_CURRENT_SONG_CALLBACK) \
+    || defined(NC_SCREEN_IMPL_SELECTED_SONGS_CALLBACK)
+                    |NC_SCREEN_CAPABILITY_SONGS
+#endif
+#if defined(NC_SCREEN_IMPL_TAG_ITEM_SONG_CALLBACK)
+                    |NC_SCREEN_CAPABILITY_TAGS
 #endif
                     ,
     .active_window = NC_SCREEN_IMPL_ACTIVE_WINDOW,
@@ -423,6 +478,16 @@ static const NcScreenOps NC_SCREEN_IMPL_OPS = {
     || defined(NC_SCREEN_IMPL_FIND_CALLBACK)
     .search = NC_SCREEN_IMPL_SEARCH,
 #endif
+#if defined(NC_SCREEN_IMPL_CURRENT_SONG_CALLBACK)
+    .current_song = NC_SCREEN_IMPL_CURRENT_SONG,
+#endif
+#if defined(NC_SCREEN_IMPL_SELECTED_SONGS_CALLBACK)
+    .selected_songs = NC_SCREEN_IMPL_SELECTED_SONGS,
+#endif
+#if defined(NC_SCREEN_IMPL_TAG_ITEM_SONG_CALLBACK)
+    .tag_menu = NC_SCREEN_IMPL_TAG_MENU_CALLBACK,
+    .song_tag_at = NC_SCREEN_IMPL_SONG_TAG_AT,
+#endif
     .lockable = NC_SCREEN_IMPL_LOCKABLE,
     .mergable = NC_SCREEN_IMPL_MERGABLE,
 #if defined(NC_SCREEN_IMPL_DESTROY_CALLBACK)
@@ -442,6 +507,10 @@ static const NcScreenOps NC_SCREEN_IMPL_OPS = {
 #undef NC_SCREEN_IMPL_SCROLL
 #undef NC_SCREEN_IMPL_REFRESH_WINDOW
 #undef NC_SCREEN_IMPL_REFRESH
+#undef NC_SCREEN_IMPL_SONG_TAG_AT
+#undef NC_SCREEN_IMPL_TAG_MENU_CALLBACK
+#undef NC_SCREEN_IMPL_SELECTED_SONGS
+#undef NC_SCREEN_IMPL_CURRENT_SONG
 #undef NC_SCREEN_IMPL_SEARCH
 #undef NC_SCREEN_IMPL_CLEAR_SEARCH_CONSTRAINT
 #undef NC_SCREEN_IMPL_CURRENT_SEARCH_CONSTRAINT
@@ -458,6 +527,10 @@ static const NcScreenOps NC_SCREEN_IMPL_OPS = {
 #undef NC_SCREEN_IMPL_NO_GEOMETRY_ACCESSORS
 #undef NC_SCREEN_IMPL_MENU_CAPABILITY_HEIGHT
 #undef NC_SCREEN_IMPL_FIND_CALLBACK
+#undef NC_SCREEN_IMPL_TAG_ITEM_SONG_CALLBACK
+#undef NC_SCREEN_IMPL_CURRENT_SONG_OPTIONAL_STATUS
+#undef NC_SCREEN_IMPL_SELECTED_SONGS_CALLBACK
+#undef NC_SCREEN_IMPL_CURRENT_SONG_CALLBACK
 #undef NC_SCREEN_IMPL_SEARCH_SAVE_ON_SUCCESS
 #undef NC_SCREEN_IMPL_SEARCH_CLEAR_CALLBACK
 #undef NC_SCREEN_IMPL_SEARCH_CALLBACK
@@ -465,6 +538,7 @@ static const NcScreenOps NC_SCREEN_IMPL_OPS = {
 #undef NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD
 #undef NC_SCREEN_IMPL_FILTER_APPLY_CALLBACK
 #undef NC_SCREEN_IMPL_FILTER_CONSTRAINT_FIELD
+#undef NC_SCREEN_IMPL_TAG_MENU
 #undef NC_SCREEN_IMPL_MENU_CAPABILITY
 #undef NC_SCREEN_IMPL_CAPABILITIES
 #undef NC_SCREEN_IMPL_SCROLL_HEIGHT

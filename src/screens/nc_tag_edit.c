@@ -286,24 +286,12 @@ static int32
 tag_edit_tag_at_capability(NcScreen *base, int32 pos,
                            enum SongGetter getter, StrBuilder *tag) {
     TagEditScreen *screen = tag_edit_from_screen(base);
-    MutableSong *song;
-    enum TagsField field;
 
-    if ((tag == NULL) || (screen->active_focus != TAG_EDIT_FOCUS_TAGS)) {
+    if (screen->active_focus != TAG_EDIT_FOCUS_TAGS) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    field = ncm_song_getter_to_tags_field(getter);
-    if (field == NCM_TAGS_FIELD_COUNT) {
-        return -NCM_ERROR_UNAVAILABLE;
-    }
-    song = nc_menu_active_item_at(tag_edit_screen_active_menu(screen), pos);
-    if (song == NULL) {
-        return -NCM_ERROR_UNAVAILABLE;
-    }
-    *tag = mutable_song_tags_buffer(song, field, Config.tags_separator,
-                                    Config.tags_separator_len,
-                                    Config.show_duplicate_tags);
-    return 0;
+    return nc_screen_menu_mutable_song_tag_at(
+        tag_edit_screen_active_menu(screen), pos, getter, tag);
 }
 
 static bool

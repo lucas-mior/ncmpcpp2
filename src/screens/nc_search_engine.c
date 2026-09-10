@@ -13,46 +13,14 @@ typedef struct SearchFindContext {
     NcmRegex *regex;
 } SearchFindContext;
 
-static int32
-search_engine_current_song_capability(NcScreen *base, NcmSong *song) {
-    int32 status;
+static NcmSong *
+search_engine_tag_item_song(void *item) {
+    NcSearchRow *row = item;
 
-    status = search_engine_screen_current_song((SearchEngineScreen *)base,
-                                               song);
-    if (status > 0) {
-        return 0;
+    if ((row == NULL) || !row->is_song) {
+        return NULL;
     }
-    if (status == 0) {
-        return -NCM_ERROR_NOT_FOUND;
-    }
-    return status;
-}
-
-static int32
-search_engine_selected_songs_capability(NcScreen *base, NcmSongArray *songs) {
-    return search_engine_screen_selected_songs((SearchEngineScreen *)base,
-                                               songs);
-}
-
-static NcMenu *
-search_engine_tag_menu_capability(NcScreen *base) {
-    return search_engine_screen_menu((SearchEngineScreen *)base);
-}
-
-static int32
-search_engine_tag_at_capability(NcScreen *base, int32 pos,
-                                enum SongGetter getter, StrBuilder *tag) {
-    NcSearchRow *row;
-
-    row = nc_menu_active_item_at(
-        search_engine_screen_menu((SearchEngineScreen *)base), pos);
-    if ((row == NULL) || !row->is_song || (tag == NULL)) {
-        return -NCM_ERROR_UNAVAILABLE;
-    }
-    *tag = ncm_song_tags_buffer(&row->song, getter, Config.tags_separator,
-                                Config.tags_separator_len,
-                                Config.show_duplicate_tags);
-    return 0;
+    return &row->song;
 }
 
 static char *search_constraint_names[] = {
@@ -421,6 +389,12 @@ search_run_current(NcScreen *base_screen) {
 #define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD search_constraint
 #define NC_SCREEN_IMPL_SEARCH_CALLBACK search_engine_screen_search
 #define NC_SCREEN_IMPL_SEARCH_SAVE_ON_SUCCESS
+#define NC_SCREEN_IMPL_CURRENT_SONG_CALLBACK \
+    search_engine_screen_current_song
+#define NC_SCREEN_IMPL_CURRENT_SONG_OPTIONAL_STATUS
+#define NC_SCREEN_IMPL_SELECTED_SONGS_CALLBACK \
+    search_engine_screen_selected_songs
+#define NC_SCREEN_IMPL_TAG_ITEM_SONG_CALLBACK search_engine_tag_item_song
 #define NC_SCREEN_IMPL_REFRESH_CALLBACK search_display
 #define NC_SCREEN_IMPL_CAN_RUN_CURRENT_CALLBACK search_can_run_current
 #define NC_SCREEN_IMPL_RUN_CURRENT_CALLBACK search_run_current
@@ -651,12 +625,6 @@ search_engine_screen_init(SearchEngineScreen *screen,
     screen->registered = false;
 
     ops = search_ops;
-    ops.capabilities |= NC_SCREEN_CAPABILITY_SONGS
-                        |NC_SCREEN_CAPABILITY_TAGS;
-    ops.current_song = search_engine_current_song_capability;
-    ops.selected_songs = search_engine_selected_songs_capability;
-    ops.tag_menu = search_engine_tag_menu_capability;
-    ops.song_tag_at = search_engine_tag_at_capability;
     nc_screen_init_ops(&screen->screen, ops, screen,
                        NC_SCREEN_TYPE_SEARCH_ENGINE);
     menu = search_engine_screen_menu(screen);
@@ -1444,39 +1412,14 @@ search_engine_screen_current_song(SearchEngineScreen *screen, NcmSong *song) {
     return 1;
 }
 
-static void
-search_copy_song_at(SearchEngineScreen *screen,
-                    NcmSongArray *songs, int32 pos) {
-    NcSearchRow *row;
-
-    row = nc_menu_active_item_at(search_engine_screen_menu(screen), pos);
-    if (!row->is_song) {
-        return;
-    }
-    ncm_song_array_append_copy(songs, &row->song);
-    return;
-}
-
 int32
 search_engine_screen_selected_songs(SearchEngineScreen *screen,
                                     NcmSongArray *songs) {
-    NcMenu *menu;
-
     if ((screen == NULL) || (songs == NULL)) {
         return -EINVAL;
     }
-    menu = search_engine_screen_menu(screen);
-    if (!nc_menu_has_selected(menu)) {
-        search_copy_song_at(screen, songs, nc_menu_highlight(menu));
-        return 0;
-    }
-    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-        if (!nc_menu_position_is_selected(menu, i)) {
-            continue;
-        }
-        search_copy_song_at(screen, songs, i);
-    }
-    return 0;
+    return nc_screen_collect_selected_menu_songs(
+        search_engine_screen_menu(screen), songs, search_engine_tag_item_song);
 }
 
 int32
