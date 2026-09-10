@@ -27,6 +27,107 @@
 #define NCM_TAG_DISPLAY_NAME(display) #display
 #define NCM_TAG_DISPLAY_NAME_LEN(display) STRLIT_LEN(#display)
 
+static inline char
+ncm_tag_name_ascii_lower(char c) {
+    if ((c >= 'A') && (c <= 'Z')) {
+        c = (char)(c - 'A' + 'a');
+    }
+
+    return c;
+}
+
+static inline char
+ncm_tag_name_ascii_upper(char c) {
+    if ((c >= 'a') && (c <= 'z')) {
+        c = (char)(c - 'a' + 'A');
+    }
+
+    return c;
+}
+
+static inline int32
+ncm_tag_name_to_lower_snake(char *out, int32 out_cap,
+                            char *name, int32 name_len) {
+    int32 written = 0;
+
+    ASSERT(out != NULL);
+    ASSERT(out_cap > 0);
+    ASSERT(name_len >= 0);
+    ASSERT((name != NULL) || (name_len == 0));
+
+    for (int32 i = 0; i < name_len; i += 1) {
+        if (written + 1 >= out_cap) {
+            out[0] = '\0';
+            return -1;
+        }
+        if (name[i] == ' ') {
+            out[written] = '_';
+        } else {
+            out[written] = ncm_tag_name_ascii_lower(name[i]);
+        }
+        written += 1;
+    }
+    out[written] = '\0';
+    return written;
+}
+
+static inline int32
+ncm_tag_name_to_upper_compact(char *out, int32 out_cap,
+                              char *name, int32 name_len) {
+    int32 written = 0;
+
+    ASSERT(out != NULL);
+    ASSERT(out_cap > 0);
+    ASSERT(name_len >= 0);
+    ASSERT((name != NULL) || (name_len == 0));
+
+    for (int32 i = 0; i < name_len; i += 1) {
+        if (name[i] == ' ') {
+            continue;
+        }
+        if (written + 1 >= out_cap) {
+            out[0] = '\0';
+            return -1;
+        }
+        out[written] = ncm_tag_name_ascii_upper(name[i]);
+        written += 1;
+    }
+    out[written] = '\0';
+    return written;
+}
+
+static inline int32
+ncm_tag_name_to_camel_compact(char *out, int32 out_cap,
+                              char *name, int32 name_len) {
+    bool capitalize = true;
+    int32 written = 0;
+
+    ASSERT(out != NULL);
+    ASSERT(out_cap > 0);
+    ASSERT(name_len >= 0);
+    ASSERT((name != NULL) || (name_len == 0));
+
+    for (int32 i = 0; i < name_len; i += 1) {
+        if (name[i] == ' ') {
+            capitalize = true;
+            continue;
+        }
+        if (written + 1 >= out_cap) {
+            out[0] = '\0';
+            return -1;
+        }
+        if (capitalize) {
+            out[written] = ncm_tag_name_ascii_upper(name[i]);
+            capitalize = false;
+        } else {
+            out[written] = ncm_tag_name_ascii_lower(name[i]);
+        }
+        written += 1;
+    }
+    out[written] = '\0';
+    return written;
+}
+
 #define NCM_TAG_RECORD_FULL(XX, tag, display, tag_char, field, getter,       \
                             getter_char, taglib_property, taglib_name,      \
                             settings_name, mpd, flags)                     \

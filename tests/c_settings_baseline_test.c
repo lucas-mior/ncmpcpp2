@@ -929,6 +929,51 @@ test_duplicate_state_is_per_read(void) {
     return;
 }
 
+
+static void
+settings_test_tag_name_normalization(char *name, int32 name_len,
+                                     char *lower_snake,
+                                     char *upper_compact,
+                                     char *camel_compact) {
+    char buffer[64] = {0};
+    int32 len;
+
+    len = ncm_tag_name_to_lower_snake(buffer, SIZEOF(buffer), name, name_len);
+    ASSERT_EQUAL(buffer, len, lower_snake);
+
+    len = ncm_tag_name_to_upper_compact(buffer, SIZEOF(buffer), name,
+                                        name_len);
+    ASSERT_EQUAL(buffer, len, upper_compact);
+
+    len = ncm_tag_name_to_camel_compact(buffer, SIZEOF(buffer), name,
+                                        name_len);
+    ASSERT_EQUAL(buffer, len, camel_compact);
+    return;
+}
+
+static void
+test_tag_name_normalization(void) {
+    char buffer[4] = {0};
+
+    settings_test_tag_name_normalization(STRLIT("Artist"),
+                                         "artist", "ARTIST", "Artist");
+    settings_test_tag_name_normalization(STRLIT("Album Artist"),
+                                         "album_artist", "ALBUMARTIST",
+                                         "AlbumArtist");
+    settings_test_tag_name_normalization(STRLIT("Disc Subtitle"),
+                                         "disc_subtitle", "DISCSUBTITLE",
+                                         "DiscSubtitle");
+    settings_test_tag_name_normalization(
+        STRLIT("Musicbrainz Release Group Id"),
+        "musicbrainz_release_group_id", "MUSICBRAINZRELEASEGROUPID",
+        "MusicbrainzReleaseGroupId");
+
+    ASSERT(ncm_tag_name_to_lower_snake(buffer, SIZEOF(buffer),
+                                       STRLIT("Album")) < 0);
+    ASSERT_EQUAL(buffer, STRLIT_LEN(""), "");
+    return;
+}
+
 static void
 test_tag_type_names(void) {
     char *name;
@@ -1146,6 +1191,7 @@ main(void) {
     global_state_init();
     config_init(&Config);
 
+    test_tag_name_normalization();
     test_tag_type_names();
     test_tag_char_and_field_conversions();
     test_song_getter_conversions();
