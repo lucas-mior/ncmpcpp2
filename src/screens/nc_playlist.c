@@ -258,6 +258,10 @@ playlist_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 #define NC_SCREEN_IMPL_SCROLL_HEIGHT(playlist) ((playlist)->screen.main_height)
 #define NC_SCREEN_IMPL_MENU_CAPABILITY_HEIGHT(playlist) \
     ((playlist)->screen.main_height)
+#define NC_SCREEN_IMPL_FILTER_CONSTRAINT_FIELD filter_constraint
+#define NC_SCREEN_IMPL_FILTER_APPLY_CALLBACK playlist_screen_apply_filter
+#define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD search_constraint
+#define NC_SCREEN_IMPL_SEARCH_CALLBACK playlist_screen_search
 #define NC_SCREEN_IMPL_REFRESH_CALLBACK playlist_display
 #define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK playlist_switch_to
 #define NC_SCREEN_IMPL_RESIZE_CALLBACK playlist_resize
@@ -268,52 +272,6 @@ playlist_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
-
-static StringView
-playlist_filter_constraint_capability(NcScreen *base) {
-    PlaylistScreen *screen = (PlaylistScreen *)base;
-
-    return ncm_string_view(screen->filter_constraint.data,
-                           screen->filter_constraint.len);
-}
-
-static int32
-playlist_filter_apply_capability(NcScreen *base, char *pattern,
-                                 int32 pattern_len, uint32 regex_flags,
-                                 NcmError *ncm_error) {
-    (void)regex_flags;
-    return playlist_screen_apply_filter((PlaylistScreen *)base, pattern,
-                                        pattern_len, ncm_error);
-}
-
-static StringView
-playlist_search_constraint_capability(NcScreen *base) {
-    PlaylistScreen *screen = (PlaylistScreen *)base;
-
-    return ncm_string_view(screen->search_constraint.data,
-                           screen->search_constraint.len);
-}
-
-static void
-playlist_search_clear_capability(NcScreen *base) {
-    PlaylistScreen *screen = (PlaylistScreen *)base;
-
-    sb_clear(&screen->search_constraint);
-    return;
-}
-
-static int32
-playlist_search_capability(NcScreen *base, enum SearchDirection direction,
-                           char *pattern, int32 pattern_len,
-                           uint32 regex_flags, bool wrap, bool skip_current,
-                           NcmError *ncm_error) {
-    bool forward;
-
-    (void)regex_flags;
-    forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
-    return playlist_screen_search((PlaylistScreen *)base, pattern, pattern_len,
-                                  forward, wrap, skip_current, ncm_error);
-}
 
 static int32
 playlist_current_song_capability(NcScreen *base, NcmSong *song) {
@@ -495,15 +453,8 @@ playlist_screen_init(PlaylistScreen *screen, int32 start_x,
     screen->highlighting_requested = false;
 
     ops = playlist_ops;
-    ops.capabilities |= NC_SCREEN_CAPABILITY_FILTER
-                        |NC_SCREEN_CAPABILITY_SEARCH
-                        |NC_SCREEN_CAPABILITY_SONGS
+    ops.capabilities |= NC_SCREEN_CAPABILITY_SONGS
                         |NC_SCREEN_CAPABILITY_TAGS;
-    ops.current_filter = playlist_filter_constraint_capability;
-    ops.apply_filter = playlist_filter_apply_capability;
-    ops.current_search_constraint = playlist_search_constraint_capability;
-    ops.clear_search_constraint = playlist_search_clear_capability;
-    ops.search = playlist_search_capability;
     ops.current_song = playlist_current_song_capability;
     ops.selected_songs = playlist_selected_songs_capability;
     ops.tag_menu = playlist_tag_menu_capability;
