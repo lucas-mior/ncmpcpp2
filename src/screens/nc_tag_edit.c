@@ -3350,8 +3350,7 @@ tag_edit_capitalize_song_callback(MutableSong *song, void *user) {
             if (converted.data) {
                 converted.data[converted.len] = '\0';
             }
-            mutable_song_set_tag(song, field, i,
-                                     converted.data, converted.len);
+            mutable_song_set_tag(song, field, i, converted.data, converted.len);
             sb_free(&converted);
         }
     }
