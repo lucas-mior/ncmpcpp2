@@ -647,10 +647,10 @@ int32
 lyrics_screen_load_file(LyricsScreen *screen,
                         char *filename, int32 filename_len,
                         NcmError *ncm_error) {
-    FILE *file;
-    StrBuilder raw = {0};
-    char line[1024];
-    int close_err;
+    char *content;
+    char *content_end;
+    char *line;
+    int32 content_len;
     int32 line_len;
     int32 status;
     bool first;
@@ -663,48 +663,23 @@ lyrics_screen_load_file(LyricsScreen *screen,
 
     lrc_file = (filename_len > STRLIT_LEN(".lrc"))
                && ENDS_WITH(filename, filename_len, ".lrc");
-    if ((file = fopen(filename, "rb")) == NULL) {
+    if ((content_len = read_entire_file(filename, &content)) < 0) {
         lyrics_screen_clear_lyrics_state(screen, LYRICS_MODE_FETCH_LOG);
-        return ncm_error_set_status(ncm_error, -errno,
-                                    STRLIT("failed to open lyrics"));
+        return ncm_error_set_status(ncm_error, content_len,
+                                    STRLIT("failed to read lyrics"));
     }
 
     nc_buffer_clear(&screen->display);
     nc_scrollpad_reset(&screen->scrollpad);
     screen->active_lrc_line = LYRICS_NO_ACTIVE_LINE;
-    first = true;
-    while (fgets(line, SIZEOF(line), file)) {
-        line_len = strlen32(line);
-        if (lrc_file) {
-            SB_APPEND(&raw, line, line_len);
-            continue;
-        }
-
-        ncm_string_remove_chars(line, &line_len, STRLIT("\r\n"));
-        if (!first) {
-            nc_buffer_append_char(&screen->display, '\n');
-        }
-        nc_buffer_append_data(&screen->display, line, line_len);
-        first = false;
-    }
-
-    if ((close_err = XFCLOSE(file, filename)) < 0) {
-        sb_free(&raw);
-        lyrics_screen_clear_lyrics_state(screen, LYRICS_MODE_FETCH_LOG);
-        return ncm_error_set_status(ncm_error, close_err,
-                                    STRLIT("failed to close lyrics"));
-    }
     if (lrc_file) {
-        status = ncm_lrc_parse(&screen->lrc, raw.data, raw.len, ncm_error);
+        NcmLrcRenderTarget target = {0};
+        status = ncm_lrc_parse(&screen->lrc, content, content_len, ncm_error);
         if (status < 0) {
-            sb_free(&raw);
+            free2(content, content_len + 1);
             lyrics_screen_clear_lyrics_state(screen, LYRICS_MODE_FETCH_LOG);
             return status;
         }
-    }
-
-    if (lrc_file) {
-        NcmLrcRenderTarget target = {0};
 
         nc_buffer_clear(&screen->display);
         target.user = screen;
@@ -715,9 +690,31 @@ lyrics_screen_load_file(LyricsScreen *screen,
         screen->mode = LYRICS_MODE_SYNCHRONIZED;
     } else {
         ncm_lrc_document_clear(&screen->lrc);
+        first = true;
+        content_end = content + content_len;
+        line = content;
+        while (line < content_end) {
+            char *line_end;
+            char *next;
+
+            if ((line_end = memchr64(line, '\n', content_end - line))) {
+                line_len = (int32)(line_end - line);
+                next = line_end + 1;
+            } else {
+                line_len = (int32)(content_end - line);
+                next = content_end;
+            }
+            ncm_string_remove_chars(line, &line_len, STRLIT("\r\n"));
+            if (!first) {
+                nc_buffer_append_char(&screen->display, '\n');
+            }
+            nc_buffer_append_data(&screen->display, line, line_len);
+            first = false;
+            line = next;
+        }
         screen->mode = LYRICS_MODE_PLAIN;
     }
-    sb_free(&raw);
+    free2(content, content_len + 1);
     nc_lyrics_screen_request_refresh(&screen->screen);
     ncm_error_clear(ncm_error);
 
