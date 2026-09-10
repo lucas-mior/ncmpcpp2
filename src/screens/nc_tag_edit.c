@@ -2446,7 +2446,7 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
         }
         nc_editor_string_menu_add_separator(menu);
         tag_edit_append_string_row(menu, STRLIT("Filename"),
-                                     NC_MENU_ITEM_SELECTABLE);
+                                   NC_MENU_ITEM_SELECTABLE);
         nc_editor_string_menu_add_separator(menu);
         if (Config.titles_visibility) {
             tag_edit_append_string_row(menu, STRLIT("Options"),
@@ -2454,14 +2454,14 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
             nc_editor_string_menu_add_separator(menu);
         }
         tag_edit_append_string_row(menu, STRLIT("Capitalize First Letters"),
-                                     NC_MENU_ITEM_SELECTABLE);
+                                   NC_MENU_ITEM_SELECTABLE);
         tag_edit_append_string_row(menu, STRLIT("lower all letters"),
-                                     NC_MENU_ITEM_SELECTABLE);
+                                   NC_MENU_ITEM_SELECTABLE);
         nc_editor_string_menu_add_separator(menu);
         tag_edit_append_string_row(menu, STRLIT("Reset"),
-                                     NC_MENU_ITEM_SELECTABLE);
+                                   NC_MENU_ITEM_SELECTABLE);
         tag_edit_append_string_row(menu, STRLIT("Save"),
-                                     NC_MENU_ITEM_SELECTABLE);
+                                   NC_MENU_ITEM_SELECTABLE);
     }
     tag_edit_layout(screen);
     tag_edit_configure_menus(screen);
