@@ -103,7 +103,7 @@ ncm_extract_enclosed(char *line, int32 line_len, char open, char close,
 
 void
 binding_action_init(BindingAction *action) {
-    action->kind = NCM_BINDING_ACTION_NORMAL;
+    action->kind = BINDING_ACTION_NORMAL;
     action->value.type = ACTION_DUMMY;
     return;
 }
@@ -111,17 +111,17 @@ binding_action_init(BindingAction *action) {
 void
 binding_action_destroy(BindingAction *action) {
     switch (action->kind) {
-    case NCM_BINDING_ACTION_PUSH_CHARACTERS:
+    case BINDING_ACTION_PUSH_CHARACTERS:
         free2(action->value.keys.data,
               action->value.keys.len*SIZEOF(*action->value.keys.data));
         break;
-    case NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND:
-    case NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
+    case BINDING_ACTION_RUN_EXTERNAL_COMMAND:
+    case BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
         free2(action->value.argument.data, action->value.argument.cap);
         break;
-    case NCM_BINDING_ACTION_NORMAL:
-    case NCM_BINDING_ACTION_REQUIRE_SCREEN:
-    case NCM_BINDING_ACTION_REQUIRE_RUNNABLE:
+    case BINDING_ACTION_NORMAL:
+    case BINDING_ACTION_REQUIRE_SCREEN:
+    case BINDING_ACTION_REQUIRE_RUNNABLE:
     default:
         break;
     }
@@ -136,14 +136,14 @@ binding_action_copy(BindingAction *dest,
     dest->kind = source->kind;
 
     switch (source->kind) {
-    case NCM_BINDING_ACTION_NORMAL:
-    case NCM_BINDING_ACTION_REQUIRE_RUNNABLE:
+    case BINDING_ACTION_NORMAL:
+    case BINDING_ACTION_REQUIRE_RUNNABLE:
         dest->value.type = source->value.type;
         break;
-    case NCM_BINDING_ACTION_REQUIRE_SCREEN:
+    case BINDING_ACTION_REQUIRE_SCREEN:
         dest->value.screen_type = source->value.screen_type;
         break;
-    case NCM_BINDING_ACTION_PUSH_CHARACTERS:
+    case BINDING_ACTION_PUSH_CHARACTERS:
         dest->value.keys.len = source->value.keys.len;
         if (source->value.keys.len > 0) {
             int32 bytes;
@@ -155,8 +155,8 @@ binding_action_copy(BindingAction *dest,
             dest->value.keys.data = NULL;
         }
         break;
-    case NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND:
-    case NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
+    case BINDING_ACTION_RUN_EXTERNAL_COMMAND:
+    case BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
         dest->value.argument.len = source->value.argument.len;
         if (source->value.argument.len > 0) {
             dest->value.argument.data =
@@ -231,22 +231,22 @@ binding_action_can_run(BindingAction *action,
     }
 
     switch (action->kind) {
-    case NCM_BINDING_ACTION_NORMAL:
-    case NCM_BINDING_ACTION_REQUIRE_RUNNABLE:
+    case BINDING_ACTION_NORMAL:
+    case BINDING_ACTION_REQUIRE_RUNNABLE:
         if (runtime && runtime->can_run_action) {
             return runtime->can_run_action(action->value.type, runtime->user);
         }
         return ncm_action_can_run(action->value.type, NULL);
-    case NCM_BINDING_ACTION_PUSH_CHARACTERS:
+    case BINDING_ACTION_PUSH_CHARACTERS:
         return true;
-    case NCM_BINDING_ACTION_REQUIRE_SCREEN:
+    case BINDING_ACTION_REQUIRE_SCREEN:
         if ((runtime == NULL) || (runtime->current_screen_is == NULL)) {
             return false;
         }
         return runtime->current_screen_is(action->value.screen_type,
                                           runtime->user);
-    case NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND:
-    case NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
+    case BINDING_ACTION_RUN_EXTERNAL_COMMAND:
+    case BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
         return true;
     default:
         break;
@@ -368,25 +368,25 @@ binding_execute_default(Binding *binding) {
         }
 
         switch (action->kind) {
-        case NCM_BINDING_ACTION_NORMAL:
+        case BINDING_ACTION_NORMAL:
             status = runtime->run_action(action->value.type, runtime->user);
             break;
-        case NCM_BINDING_ACTION_PUSH_CHARACTERS:
+        case BINDING_ACTION_PUSH_CHARACTERS:
             for (int32 j = 0; j < action->value.keys.len; j += 1) {
                 runtime->push_key(action->value.keys.data[j], runtime->user);
             }
             status = 0;
             break;
-        case NCM_BINDING_ACTION_REQUIRE_SCREEN:
-        case NCM_BINDING_ACTION_REQUIRE_RUNNABLE:
+        case BINDING_ACTION_REQUIRE_SCREEN:
+        case BINDING_ACTION_REQUIRE_RUNNABLE:
             status = 0;
             break;
-        case NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND:
+        case BINDING_ACTION_RUN_EXTERNAL_COMMAND:
             status = runtime->run_external_command(action->value.argument.data,
                                                    action->value.argument.len,
                                                    runtime->user);
             break;
-        case NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
+        case BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
             status = runtime->run_external_console_command(
                 action->value.argument.data, action->value.argument.len,
                 runtime->user);
@@ -409,7 +409,7 @@ binding_is_single_action_type(Binding *binding,
     if ((binding == NULL) || (binding->actions_len != 1)) {
         return false;
     }
-    if (binding->actions[0].kind != NCM_BINDING_ACTION_NORMAL) {
+    if (binding->actions[0].kind != BINDING_ACTION_NORMAL) {
         return false;
     }
     return binding->actions[0].value.type == type;
@@ -510,7 +510,7 @@ binding_append_normal(Binding *binding, enum ActionType type) {
     BindingAction action;
 
     binding_action_init(&action);
-    action.kind = NCM_BINDING_ACTION_NORMAL;
+    action.kind = BINDING_ACTION_NORMAL;
     action.value.type = type;
     binding_append_action(binding, &action);
     binding_action_destroy(&action);
@@ -819,13 +819,13 @@ bindings_bind_group(BindingsConfiguration *bindings,
 
 
 enum BindingDirectiveKind {
-    NCM_BINDING_DIRECTIVE_DUMMY,
-    NCM_BINDING_DIRECTIVE_PUSH_CHARACTER,
-    NCM_BINDING_DIRECTIVE_PUSH_CHARACTERS,
-    NCM_BINDING_DIRECTIVE_REQUIRE_SCREEN,
-    NCM_BINDING_DIRECTIVE_REQUIRE_RUNNABLE,
-    NCM_BINDING_DIRECTIVE_EXTERNAL_COMMAND,
-    NCM_BINDING_DIRECTIVE_EXTERNAL_CONSOLE_COMMAND,
+    BINDING_DIRECTIVE_DUMMY,
+    BINDING_DIRECTIVE_PUSH_CHARACTER,
+    BINDING_DIRECTIVE_PUSH_CHARACTERS,
+    BINDING_DIRECTIVE_REQUIRE_SCREEN,
+    BINDING_DIRECTIVE_REQUIRE_RUNNABLE,
+    BINDING_DIRECTIVE_EXTERNAL_COMMAND,
+    BINDING_DIRECTIVE_EXTERNAL_CONSOLE_COMMAND,
 };
 
 typedef struct BindingDirective {
@@ -835,7 +835,7 @@ typedef struct BindingDirective {
     enum BindingDirectiveKind kind;
 } BindingDirective;
 
-#define NCM_BINDING_DIRECTIVES(XX)                                      \
+#define BINDING_DIRECTIVES(XX)                                      \
     XX(set_visualizer_sample_multiplier, false, DUMMY)                  \
     XX(push_character, true, PUSH_CHARACTER)                            \
     XX(push_characters, true, PUSH_CHARACTERS)                          \
@@ -844,14 +844,14 @@ typedef struct BindingDirective {
     XX(run_external_command, true, EXTERNAL_COMMAND)                    \
     XX(run_external_console_command, true, EXTERNAL_CONSOLE_COMMAND)
 
-#define NCM_BINDING_DIRECTIVE_ENTRY(name, required, type) \
-    {#name, STRLIT_LEN(#name), required, NCM_BINDING_DIRECTIVE_##type},
+#define BINDING_DIRECTIVE_ENTRY(name, required, type) \
+    {#name, STRLIT_LEN(#name), required, BINDING_DIRECTIVE_##type},
 
 static BindingDirective binding_directives[] = {
-    NCM_BINDING_DIRECTIVES(NCM_BINDING_DIRECTIVE_ENTRY)
+    BINDING_DIRECTIVES(BINDING_DIRECTIVE_ENTRY)
 };
 
-#undef NCM_BINDING_DIRECTIVE_ENTRY
+#undef BINDING_DIRECTIVE_ENTRY
 
 static BindingDirective *
 binding_directive_find(char *name, int32 name_len) {
@@ -870,11 +870,11 @@ binding_parse_directive(BindingAction *action,
                             BindingDirective *directive,
                             StringView argument, NcmError *ncm_error) {
     switch (directive->kind) {
-    case NCM_BINDING_DIRECTIVE_DUMMY:
-        action->kind = NCM_BINDING_ACTION_NORMAL;
+    case BINDING_DIRECTIVE_DUMMY:
+        action->kind = BINDING_ACTION_NORMAL;
         action->value.type = ACTION_DUMMY;
         return 0;
-    case NCM_BINDING_DIRECTIVE_PUSH_CHARACTER: {
+    case BINDING_DIRECTIVE_PUSH_CHARACTER: {
         NcKey action_key;
 
         action_key = nc_key_parse(argument.data, argument.len);
@@ -884,19 +884,19 @@ binding_parse_directive(BindingAction *action,
                                argument.len, argument.data);
             return -NCM_ERROR_PARSE;
         }
-        action->kind = NCM_BINDING_ACTION_PUSH_CHARACTERS;
+        action->kind = BINDING_ACTION_PUSH_CHARACTERS;
         action->value.keys.len = 1;
         action->value.keys.data = malloc2(SIZEOF(*action->value.keys.data));
         action->value.keys.data[0] = action_key;
         return 0;
     }
-    case NCM_BINDING_DIRECTIVE_PUSH_CHARACTERS:
+    case BINDING_DIRECTIVE_PUSH_CHARACTERS:
         if (argument.len <= 0) {
             bindings_error(ncm_error, "empty argument passed to "
                                "push_characters");
             return -NCM_ERROR_PARSE;
         }
-        action->kind = NCM_BINDING_ACTION_PUSH_CHARACTERS;
+        action->kind = BINDING_ACTION_PUSH_CHARACTERS;
         action->value.keys.len = argument.len;
         action->value.keys.data = malloc2(action->value.keys.len
                                           *SIZEOF(*action->value.keys.data));
@@ -904,7 +904,7 @@ binding_parse_directive(BindingAction *action,
             action->value.keys.data[i] = (NcKey)(uint8)argument.data[i];
         }
         return 0;
-    case NCM_BINDING_DIRECTIVE_REQUIRE_SCREEN:
+    case BINDING_DIRECTIVE_REQUIRE_SCREEN:
         if (screen_type_parse(argument.data, argument.len,
                               &action->value.screen_type) < 0) {
             bindings_error(ncm_error, "unknown screen passed to "
@@ -912,9 +912,9 @@ binding_parse_directive(BindingAction *action,
                                argument.len, argument.data);
             return -NCM_ERROR_PARSE;
         }
-        action->kind = NCM_BINDING_ACTION_REQUIRE_SCREEN;
+        action->kind = BINDING_ACTION_REQUIRE_SCREEN;
         return 0;
-    case NCM_BINDING_DIRECTIVE_REQUIRE_RUNNABLE:
+    case BINDING_DIRECTIVE_REQUIRE_RUNNABLE:
         if (ncm_action_type_parse(argument.data, argument.len,
                                   &action->value.type) < 0) {
             bindings_error(ncm_error, "unknown action passed to "
@@ -922,19 +922,19 @@ binding_parse_directive(BindingAction *action,
                                argument.len, argument.data);
             return -NCM_ERROR_PARSE;
         }
-        action->kind = NCM_BINDING_ACTION_REQUIRE_RUNNABLE;
+        action->kind = BINDING_ACTION_REQUIRE_RUNNABLE;
         return 0;
-    case NCM_BINDING_DIRECTIVE_EXTERNAL_COMMAND:
-    case NCM_BINDING_DIRECTIVE_EXTERNAL_CONSOLE_COMMAND:
+    case BINDING_DIRECTIVE_EXTERNAL_COMMAND:
+    case BINDING_DIRECTIVE_EXTERNAL_CONSOLE_COMMAND:
         if (argument.len <= 0) {
             bindings_error(ncm_error, "empty command passed to %.*s",
                                directive->name_len, directive->name);
             return -NCM_ERROR_PARSE;
         }
-        if (directive->kind == NCM_BINDING_DIRECTIVE_EXTERNAL_COMMAND) {
-            action->kind = NCM_BINDING_ACTION_RUN_EXTERNAL_COMMAND;
+        if (directive->kind == BINDING_DIRECTIVE_EXTERNAL_COMMAND) {
+            action->kind = BINDING_ACTION_RUN_EXTERNAL_COMMAND;
         } else {
-            action->kind = NCM_BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND;
+            action->kind = BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND;
         }
         action->value.argument.data = ncm_string_copy(
             argument.data, argument.len, &action->value.argument.cap);
@@ -979,7 +979,7 @@ binding_parse_action_line(BindingAction *action, char *line,
                                name_len, line);
             return -NCM_ERROR_PARSE;
         }
-        action->kind = NCM_BINDING_ACTION_NORMAL;
+        action->kind = BINDING_ACTION_NORMAL;
         return 0;
     }
 
@@ -994,7 +994,7 @@ binding_parse_action_line(BindingAction *action, char *line,
     return -NCM_ERROR_PARSE;
 }
 
-#undef NCM_BINDING_DIRECTIVES
+#undef BINDING_DIRECTIVES
 
 static int32
 bindings_finalize_definition(BindingsConfiguration *bindings,
