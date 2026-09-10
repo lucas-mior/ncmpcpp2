@@ -933,6 +933,7 @@ test_duplicate_state_is_per_read(void) {
 static void
 settings_test_tag_name_normalization(char *name, int32 name_len,
                                      char *lower_snake,
+                                     char *upper_snake,
                                      char *upper_compact,
                                      char *camel_compact) {
     char buffer[64] = {0};
@@ -940,6 +941,9 @@ settings_test_tag_name_normalization(char *name, int32 name_len,
 
     len = ncm_tag_name_to_lower_snake(buffer, SIZEOF(buffer), name, name_len);
     ASSERT_EQUAL(buffer, len, lower_snake);
+
+    len = ncm_tag_name_to_upper_snake(buffer, SIZEOF(buffer), name, name_len);
+    ASSERT_EQUAL(buffer, len, upper_snake);
 
     len = ncm_tag_name_to_upper_compact(buffer, SIZEOF(buffer), name,
                                         name_len);
@@ -956,17 +960,18 @@ test_tag_name_normalization(void) {
     char buffer[4] = {0};
 
     settings_test_tag_name_normalization(STRLIT("Artist"),
-                                         "artist", "ARTIST", "Artist");
+                                         "artist", "ARTIST",
+                                         "ARTIST", "Artist");
     settings_test_tag_name_normalization(STRLIT("Album Artist"),
-                                         "album_artist", "ALBUMARTIST",
-                                         "AlbumArtist");
+                                         "album_artist", "ALBUM_ARTIST",
+                                         "ALBUMARTIST", "AlbumArtist");
     settings_test_tag_name_normalization(STRLIT("Disc Subtitle"),
-                                         "disc_subtitle", "DISCSUBTITLE",
-                                         "DiscSubtitle");
+                                         "disc_subtitle", "DISC_SUBTITLE",
+                                         "DISCSUBTITLE", "DiscSubtitle");
     settings_test_tag_name_normalization(
         STRLIT("Musicbrainz Release Group Id"),
-        "musicbrainz_release_group_id", "MUSICBRAINZRELEASEGROUPID",
-        "MusicbrainzReleaseGroupId");
+        "musicbrainz_release_group_id", "MUSICBRAINZ_RELEASE_GROUP_ID",
+        "MUSICBRAINZRELEASEGROUPID", "MusicbrainzReleaseGroupId");
 
     ASSERT(ncm_tag_name_to_lower_snake(buffer, SIZEOF(buffer),
                                        STRLIT("Album")) < 0);
@@ -1093,6 +1098,13 @@ test_primary_tag_settings_parse(void) {
     ASSERT(ncm_tag_type_parse_settings_name(STRLIT("Album Artist"),
                                             &parsed));
     ASSERT(parsed == NCM_TAG_ALBUM_ARTIST);
+    ASSERT(ncm_tag_type_parse_settings_name(STRLIT("ALBUM_ARTIST"),
+                                            &parsed));
+    ASSERT(parsed == NCM_TAG_ALBUM_ARTIST);
+    ASSERT(NCM_TAG_parse(STRLIT("ALBUM_ARTIST"))
+           == NCM_TAG_ALBUM_ARTIST);
+    ASSERT(!ncm_tag_type_parse_settings_name(STRLIT("NCM_TAG_ARTIST"),
+                                              &parsed));
     ASSERT(!ncm_tag_type_parse_settings_name(STRLIT("album"), &parsed));
     ASSERT(settings_parse_mpd_tag(STRLIT("album"), &parsed) < 0);
     return;
