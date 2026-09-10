@@ -121,16 +121,18 @@ nc_server_info_destroy_callback(NcScreen *screen) {
 
 void
 nc_server_info_screen_init(NcServerInfoScreen *screen, NcServerInfoHooks hooks,
-                           int32 cols, int32 lines, int32 main_start_y,
-                           int32 main_height, NcColor color, NcBorder border) {
+                           int32 cols, int32 lines,
+                           int32 main_start_y, int32 main_height,
+                           NcColor color, NcBorder border) {
     screen->hooks = hooks;
-    nc_scrollpad_screen_init(&screen->scrollpad_screen, nc_server_info_ops,
-                             hooks.user, NC_SCREEN_TYPE_SERVER_INFO, 0, 0,
-                             0, 0);
+    nc_scrollpad_screen_init(&screen->scrollpad_screen,
+                             nc_server_info_ops, hooks.user,
+                             NC_SCREEN_TYPE_SERVER_INFO, 0, 0, 0, 0);
     screen->buffer = (NcBuffer){0};
-    nc_server_info_screen_set_dimensions(screen, cols, lines, main_start_y,
-                                         main_height);
-    nc_window_init(&screen->window, nc_server_info_screen_start_x(screen),
+    nc_server_info_screen_set_dimensions(screen, cols, lines,
+                                         main_start_y, main_height);
+    nc_window_init(&screen->window,
+                   nc_server_info_screen_start_x(screen),
                    nc_server_info_screen_start_y(screen),
                    nc_server_info_screen_width(screen),
                    nc_server_info_screen_height(screen),
@@ -143,9 +145,9 @@ void
 nc_server_info_screen_set_dimensions(NcServerInfoScreen *screen,
                                      int32 cols, int32 lines,
                                      int32 main_start_y, int32 main_height) {
-    nc_scrollpad_screen_set_centered_box(&screen->scrollpad_screen, cols,
-                                         lines, main_start_y, main_height, 6,
-                                         10, 7, 10);
+    nc_scrollpad_screen_set_centered_box(&screen->scrollpad_screen, cols, lines,
+                                         main_start_y, main_height,
+                                         6, 10, 7, 10);
     return;
 }
 

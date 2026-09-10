@@ -476,18 +476,18 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
     }
     ncm_string_view_array_destroy(&config_views);
 
-    if (!ncm_fs_path_is_existing(
-            Config.ncmpcpp_directory, Config.ncmpcpp_directory_len)
-        && ((status = ncm_fs_mkdir_all(
-                 Config.ncmpcpp_directory, Config.ncmpcpp_directory_len,
-                 ncm_error)) < 0)) {
+    if (!ncm_fs_path_is_existing(Config.ncmpcpp_directory,
+                                 Config.ncmpcpp_directory_len)
+        && ((status = ncm_fs_mkdir_all(Config.ncmpcpp_directory,
+                                       Config.ncmpcpp_directory_len,
+                                       ncm_error)) < 0)) {
         return status;
     }
-    if (!ncm_fs_path_is_existing(
-            Config.lyrics_directory, Config.lyrics_directory_len)
-        && ((status = ncm_fs_mkdir_all(
-                 Config.lyrics_directory, Config.lyrics_directory_len,
-                 ncm_error)) < 0)) {
+    if (!ncm_fs_path_is_existing(Config.lyrics_directory,
+                                 Config.lyrics_directory_len)
+        && ((status = ncm_fs_mkdir_all(Config.lyrics_directory,
+                                       Config.lyrics_directory_len,
+                                       ncm_error)) < 0)) {
         return status;
     }
 
@@ -525,18 +525,18 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
         ncm_mpd_client_set_port(&global_mpd, (uint16)options->port);
     }
     if (options->screen) {
-        status = screen_type_parse_startup(
-            options->screen_name.data, options->screen_name.len,
-            &Config.startup_screen);
+        status = screen_type_parse_startup(options->screen_name.data,
+                                           options->screen_name.len,
+                                           &Config.startup_screen);
         if (status < 0) {
             return ncm_error_set_status(ncm_error, -EINVAL,
                                         STRLIT("unknown screen"));
         }
     }
     if (options->slave_screen) {
-        status = screen_type_parse_startup(
-            options->slave_screen_name.data, options->slave_screen_name.len,
-            &Config.startup_slave_screen);
+        status = screen_type_parse_startup(options->slave_screen_name.data,
+                                           options->slave_screen_name.len,
+                                           &Config.startup_slave_screen);
         if (status < 0) {
             return ncm_error_set_status(ncm_error, -EINVAL,
                                         STRLIT("unknown slave screen"));
