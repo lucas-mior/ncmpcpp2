@@ -47,17 +47,16 @@ ncm_tag_name_ascii_upper(char c) {
 }
 
 static inline int32
-ncm_tag_name_to_lower_snake(char *out, int32 out_cap,
-                            char *name, int32 name_len) {
+ncm_tag_name_to_lower_snake(char *out, int32 cap, char *name, int32 name_len) {
     int32 written = 0;
 
     ASSERT(out != NULL);
-    ASSERT(out_cap > 0);
+    ASSERT(cap > 0);
     ASSERT(name_len >= 0);
     ASSERT((name != NULL) || (name_len == 0));
 
     for (int32 i = 0; i < name_len; i += 1) {
-        if (written + 1 >= out_cap) {
+        if (written + 1 >= cap) {
             out[0] = '\0';
             return -1;
         }
@@ -74,17 +73,16 @@ ncm_tag_name_to_lower_snake(char *out, int32 out_cap,
 
 
 static inline int32
-ncm_tag_name_to_upper_snake(char *out, int32 out_cap,
-                            char *name, int32 name_len) {
+ncm_tag_name_to_upper_snake(char *out, int32 cap, char *name, int32 name_len) {
     int32 written = 0;
 
     ASSERT(out != NULL);
-    ASSERT(out_cap > 0);
+    ASSERT(cap > 0);
     ASSERT(name_len >= 0);
     ASSERT((name != NULL) || (name_len == 0));
 
     for (int32 i = 0; i < name_len; i += 1) {
-        if (written + 1 >= out_cap) {
+        if (written + 1 >= cap) {
             out[0] = '\0';
             return -1;
         }
@@ -100,12 +98,12 @@ ncm_tag_name_to_upper_snake(char *out, int32 out_cap,
 }
 
 static inline int32
-ncm_tag_name_to_upper_compact(char *out, int32 out_cap,
+ncm_tag_name_to_upper_compact(char *out, int32 cap,
                               char *name, int32 name_len) {
     int32 written = 0;
 
     ASSERT(out != NULL);
-    ASSERT(out_cap > 0);
+    ASSERT(cap > 0);
     ASSERT(name_len >= 0);
     ASSERT((name != NULL) || (name_len == 0));
 
@@ -113,7 +111,7 @@ ncm_tag_name_to_upper_compact(char *out, int32 out_cap,
         if (name[i] == ' ') {
             continue;
         }
-        if (written + 1 >= out_cap) {
+        if (written + 1 >= cap) {
             out[0] = '\0';
             return -1;
         }
@@ -125,13 +123,13 @@ ncm_tag_name_to_upper_compact(char *out, int32 out_cap,
 }
 
 static inline int32
-ncm_tag_name_to_camel_compact(char *out, int32 out_cap,
+ncm_tag_name_to_camel_compact(char *out, int32 cap,
                               char *name, int32 name_len) {
     bool capitalize = true;
     int32 written = 0;
 
     ASSERT(out != NULL);
-    ASSERT(out_cap > 0);
+    ASSERT(cap > 0);
     ASSERT(name_len >= 0);
     ASSERT((name != NULL) || (name_len == 0));
 
@@ -140,7 +138,7 @@ ncm_tag_name_to_camel_compact(char *out, int32 out_cap,
             capitalize = true;
             continue;
         }
-        if (written + 1 >= out_cap) {
+        if (written + 1 >= cap) {
             out[0] = '\0';
             return -1;
         }
@@ -469,12 +467,12 @@ ncm_tag_type_display_name_len(enum NcmTagType tag, char **out) {
 
 static inline int32
 ncm_tag_type_settings_name_len(enum NcmTagType tag, char *out,
-                               int32 out_cap) {
+                               int32 cap) {
     switch ((int32)tag) {
 #define TAG_SETTINGS_NAME_CASE(suffix, display, tag_char,                      \
                                    getter_char, flags)                         \
     case CAT(TAG_, suffix):                                                    \
-        return ncm_tag_name_to_lower_snake(out, out_cap,                       \
+        return ncm_tag_name_to_lower_snake(out, cap,                       \
                                            TAG_DISPLAY_NAME(display),          \
                                            TAG_DISPLAY_NAME_LEN(display));
 
@@ -483,7 +481,7 @@ ncm_tag_type_settings_name_len(enum NcmTagType tag, char *out,
 #undef TAG_SETTINGS_NAME_CASE
     case TAG_COUNT:
     default:
-        if (out_cap > 0) {
+        if (cap > 0) {
             out[0] = '\0';
         }
         return -1;
@@ -645,19 +643,18 @@ ncm_song_getter_sort_label_len(enum SongGetter getter, char **out) {
 }
 
 static inline int32
-ncm_tag_type_taglib_property_len(enum NcmTagType tag, char *out,
-                                 int32 out_cap) {
+ncm_tag_type_taglib_property_len(enum NcmTagType tag, char *out, int32 cap) {
     int32 result;
 
     ASSERT(out != NULL);
-    ASSERT(out_cap > 0);
+    ASSERT(cap > 0);
 
     switch ((int32)tag) {
 #define TAGLIB_PROPERTY_CASE(suffix, display, tag_char,                        \
                                   getter_char, flags)                          \
     case CAT(TAG_, suffix):                                                    \
         result = ncm_tag_name_to_upper_compact(                                \
-            out, out_cap, TAG_DISPLAY_NAME(display),                           \
+            out, cap, TAG_DISPLAY_NAME(display),                           \
             TAG_DISPLAY_NAME_LEN(display));                                    \
         if (result < 0) {                                                      \
             return result;                                                     \
@@ -665,7 +662,7 @@ ncm_tag_type_taglib_property_len(enum NcmTagType tag, char *out,
         if (((flags) & TAG_FLAG_TAGLIB_NUMBER) == 0) {                    \
             return result;                                                     \
         }                                                                      \
-        if (result + STRLIT_LEN("NUMBER") >= out_cap) {                        \
+        if (result + STRLIT_LEN("NUMBER") >= cap) {                        \
             out[0] = '\0';                                                     \
             return -1;                                                         \
         }                                                                      \
@@ -677,7 +674,7 @@ ncm_tag_type_taglib_property_len(enum NcmTagType tag, char *out,
 #undef TAGLIB_PROPERTY_CASE
     case TAG_COUNT:
     default:
-        if (out_cap > 0) {
+        if (cap > 0) {
             out[0] = '\0';
         }
         return -1;
@@ -686,16 +683,16 @@ ncm_tag_type_taglib_property_len(enum NcmTagType tag, char *out,
 
 static inline int32
 ncm_tag_type_taglib_name_len(enum NcmTagType tag, char *out,
-                             int32 out_cap) {
+                             int32 cap) {
     ASSERT(out != NULL);
-    ASSERT(out_cap > 0);
+    ASSERT(cap > 0);
 
     switch ((int32)tag) {
 #define TAGLIB_NAME_CASE(suffix, display, tag_char,                            \
                               getter_char, flags)                              \
     case CAT(TAG_, suffix):                                                    \
         return ncm_tag_name_to_camel_compact(                                  \
-            out, out_cap, TAG_DISPLAY_NAME(display),                           \
+            out, cap, TAG_DISPLAY_NAME(display),                           \
             TAG_DISPLAY_NAME_LEN(display));
 
     TAGLIB_TAG_DEFS(TAGLIB_NAME_CASE)
@@ -703,7 +700,7 @@ ncm_tag_type_taglib_name_len(enum NcmTagType tag, char *out,
 #undef TAGLIB_NAME_CASE
     case TAG_COUNT:
     default:
-        if (out_cap > 0) {
+        if (cap > 0) {
             out[0] = '\0';
         }
         return -1;
@@ -712,23 +709,23 @@ ncm_tag_type_taglib_name_len(enum NcmTagType tag, char *out,
 
 static inline int32
 ncm_tags_field_taglib_property_len(enum TagsField field, char *out,
-                                   int32 out_cap) {
+                                   int32 cap) {
     ASSERT(out != NULL);
-    ASSERT(out_cap > 0);
+    ASSERT(cap > 0);
 
     switch (field) {
 #define TAGLIB_FIELD_PROPERTY_CASE(suffix, display, tag_char,                  \
                                         getter_char, flags)                    \
     case CAT(TAGS_FIELD_, suffix):                                             \
         return ncm_tag_type_taglib_property_len(CAT(TAG_, suffix),             \
-                                                out, out_cap);
+                                                out, cap);
 
     TAGLIB_TAG_DEFS(TAGLIB_FIELD_PROPERTY_CASE)
 
 #undef TAGLIB_FIELD_PROPERTY_CASE
     case TAGS_FIELD_COUNT:
     default:
-        if (out_cap > 0) {
+        if (cap > 0) {
             out[0] = '\0';
         }
         return -1;
