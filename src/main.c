@@ -111,7 +111,7 @@ main(int32 argc, char **argv) {
 
     global_state_init();
     config_init(&Config);
-    Bindings = (NcmBindingsConfiguration){0};
+    Bindings = (BindingsConfiguration){0};
     setlocale(LC_ALL, "");
 
     if (configure(argc, argv) <= 0) {
@@ -201,7 +201,7 @@ main(int32 argc, char **argv) {
     while (!ncmpcpp_has_exit_request()
            && !ncm_action_runtime_exit_requested(NULL)) {
         NcKey input;
-        NcmBindingSlice bindings;
+        BindingSlice bindings;
 
         if (!ncmpcpp_mpd_is_connected()
             && (global_timer_elapsed_ms(connect_attempt) > 1000)) {

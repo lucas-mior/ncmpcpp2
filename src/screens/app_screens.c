@@ -1191,7 +1191,7 @@ append_help(NcBuffer *buffer, enum ActionType type, char *description) {
         int32 key_len;
 
         for (int32 j = 0; j < key_bindings->bindings_len; j += 1) {
-            NcmBinding *binding = &key_bindings->bindings[j];
+            Binding *binding = &key_bindings->bindings[j];
 
             if (!binding_is_single_action_type(binding, type)) {
                 continue;
