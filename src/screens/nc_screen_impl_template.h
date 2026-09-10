@@ -1,4 +1,5 @@
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "nc_screens.h"
 

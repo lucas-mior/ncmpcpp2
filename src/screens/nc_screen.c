@@ -2,6 +2,7 @@
 #define NC_SCREEN_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "screens/nc_screens.h"
 #include "settings.h"

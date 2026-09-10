@@ -2,6 +2,7 @@
 #define NCM_MPD_CLIENT_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "c/ncm_c.h"
 #include "ncmpcpp2_mpd.h"

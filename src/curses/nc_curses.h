@@ -4,6 +4,7 @@
 #define NCURSES_NOMACROS 1
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include <curses.h>
 

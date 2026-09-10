@@ -1,3 +1,6 @@
+#include "cbase.h"
+#include "ncmpcpp2.h"
+
 #define main ncmpcpp2_application_main
 #include "main.c"
 #undef main

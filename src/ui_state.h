@@ -2,6 +2,7 @@
 #define UI_STATE_H
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "curses/nc_curses.h"
 

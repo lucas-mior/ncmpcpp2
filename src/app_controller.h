@@ -2,6 +2,7 @@
 #define APP_CONTROLLER_H
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "screens/nc_screens.h"
 

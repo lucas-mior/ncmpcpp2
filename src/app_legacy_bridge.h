@@ -2,6 +2,7 @@
 #define APP_BRIDGE_H
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "actions.h"
 #include "bindings.h"

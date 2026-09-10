@@ -8,6 +8,9 @@
  * All pass macros are undefined after the expansion.
  */
 
+#include "cbase.h"
+#include "ncmpcpp2.h"
+
 #if !defined(XX_BOOL)
 #if defined(XX_OPTION)
 #define XX_BOOL XX_OPTION

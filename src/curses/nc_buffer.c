@@ -2,6 +2,7 @@
 #define NC_BUFFER_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "curses/nc_curses.h"
 

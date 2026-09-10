@@ -2,6 +2,7 @@
 #define BINDINGS_H
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "actions.h"
 #include "c/ncm_c.h"

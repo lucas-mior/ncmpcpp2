@@ -2,6 +2,7 @@
 #define NC_TINY_TAG_EDIT_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "app_controller.h"
 #include "c/ncm_c.h"

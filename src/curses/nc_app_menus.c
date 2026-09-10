@@ -2,6 +2,7 @@
 #define NC_APP_MENUS_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "c/ncm_c.h"
 #include "curses/nc_curses.h"

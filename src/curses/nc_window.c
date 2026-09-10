@@ -2,6 +2,7 @@
 #define NC_WINDOW_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include <termios.h>
 

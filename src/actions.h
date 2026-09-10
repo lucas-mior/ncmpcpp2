@@ -2,6 +2,7 @@
 #define ACTIONS_H
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "c/ncm_c.h"
 

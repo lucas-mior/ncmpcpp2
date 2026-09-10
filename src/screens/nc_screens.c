@@ -1,3 +1,6 @@
+#include "cbase.h"
+#include "ncmpcpp2.h"
+
 #include "screens/nc_screens.h"
 
 #include "screens/app_screens.c"

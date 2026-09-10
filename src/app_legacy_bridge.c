@@ -2,6 +2,7 @@
 #define APP_BRIDGE_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "app_controller.h"
 #include "app_legacy_bridge.h"

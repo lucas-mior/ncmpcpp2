@@ -2,6 +2,7 @@
 #define TITLE_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "app_controller.h"
 #include "global.h"
