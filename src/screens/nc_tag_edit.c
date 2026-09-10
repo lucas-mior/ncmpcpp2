@@ -3641,8 +3641,8 @@ tag_edit_search_position(NcMenu *menu, int32 pos, void *user) {
 
 int32
 tag_edit_screen_search(TagEditScreen *screen, char *pattern, int32 pattern_len,
-                         bool forward, bool wrap,
-                         bool skip_current, NcmError *ncm_error) {
+                       bool forward, bool wrap, bool skip_current,
+                       NcmError *ncm_error) {
     TagEditSearchContext context;
     NcmRegex *regex;
     StrBuilder *constraint;
