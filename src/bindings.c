@@ -463,104 +463,6 @@ ncm_bindings_config_clear(NcmBindingsConfiguration *bindings) {
 }
 
 NcKey
-ncm_bindings_string_to_key(char *string, int32 string_len) {
-    NcKey result = NC_KEY_NONE;
-
-    if ((string_len == 6) && STREQUAL(string, 4, "ctrl")
-        && (string[4] == '-')) {
-        char c;
-
-        c = string[5];
-        if ((c >= 'a') && (c <= 'z')) {
-            result = NC_KEY_CTRL_A + (NcKey)(c - 'a');
-        } else if (c == '[') {
-            result = NC_KEY_CTRL_LEFT_BRACKET;
-        } else if (c == '\\') {
-            result = NC_KEY_CTRL_BACKSLASH;
-        } else if (c == ']') {
-            result = NC_KEY_CTRL_RIGHT_BRACKET;
-        } else if (c == '^') {
-            result = NC_KEY_CTRL_CARET;
-        } else if (c == '_') {
-            result = NC_KEY_CTRL_UNDERSCORE;
-        }
-    } else if ((string_len > 4) && STREQUAL(string, 3, "alt")
-               && (string[3] == '-')) {
-        result = ncm_bindings_string_to_key(string + 4, string_len - 4);
-        if (result != NC_KEY_NONE) {
-            result |= NC_KEY_ALT;
-        }
-    } else if ((string_len > 5) && STREQUAL(string, 4, "ctrl")
-               && (string[4] == '-')) {
-        result = ncm_bindings_string_to_key(string + 5, string_len - 5);
-        if (result != NC_KEY_NONE) {
-            result |= NC_KEY_CTRL;
-        }
-    } else if ((string_len > 6) && STREQUAL(string, 5, "shift")
-               && (string[5] == '-')) {
-        result = ncm_bindings_string_to_key(string + 6, string_len - 6);
-        if (result != NC_KEY_NONE) {
-            result |= NC_KEY_SHIFT;
-        }
-    } else if (STREQUAL(string, string_len, "escape")) {
-        result = NC_KEY_ESCAPE;
-    } else if (STREQUAL(string, string_len, "mouse")) {
-        result = NC_KEY_MOUSE;
-    } else if (STREQUAL(string, string_len, "up")) {
-        result = NC_KEY_UP;
-    } else if (STREQUAL(string, string_len, "down")) {
-        result = NC_KEY_DOWN;
-    } else if (STREQUAL(string, string_len, "page_up")) {
-        result = NC_KEY_PAGE_UP;
-    } else if (STREQUAL(string, string_len, "page_down")) {
-        result = NC_KEY_PAGE_DOWN;
-    } else if (STREQUAL(string, string_len, "home")) {
-        result = NC_KEY_HOME;
-    } else if (STREQUAL(string, string_len, "end")) {
-        result = NC_KEY_END;
-    } else if (STREQUAL(string, string_len, "space")) {
-        result = NC_KEY_SPACE;
-    } else if (STREQUAL(string, string_len, "enter")) {
-        result = NC_KEY_ENTER;
-    } else if (STREQUAL(string, string_len, "insert")) {
-        result = NC_KEY_INSERT;
-    } else if (STREQUAL(string, string_len, "delete")) {
-        result = NC_KEY_DELETE;
-    } else if (STREQUAL(string, string_len, "left")) {
-        result = NC_KEY_LEFT;
-    } else if (STREQUAL(string, string_len, "right")) {
-        result = NC_KEY_RIGHT;
-    } else if (STREQUAL(string, string_len, "tab")) {
-        result = NC_KEY_TAB;
-    } else if (STREQUAL(string, string_len, "backspace")) {
-        result = NC_KEY_BACKSPACE;
-    } else if ((string_len >= 2) && (string_len <= 3) && (string[0] == 'f')) {
-        int32 n;
-        char buffer[4];
-
-        memcpy64(buffer, string + 1, string_len - 1);
-        buffer[string_len - 1] = '\0';
-        n = (int32)atoi2(buffer, string_len);
-        if ((n >= 1) && (n <= 12)) {
-            result = NC_KEY_F1 + (NcKey)n - 1;
-        }
-    }
-
-    if ((result == NC_KEY_NONE) && (string_len > 0)) {
-        wchar_t wc;
-        mbstate_t state = {0};
-        int32 converted;
-
-        converted = (int32)mbrtowc(&wc, string, (size_t)string_len, &state);
-        if ((converted == string_len) && (wc != 0)) {
-            result = (NcKey)wc;
-        }
-    }
-
-    return result;
-}
-
-NcKey
 ncm_read_key(NcWindow *window) {
     NcKey result = NC_KEY_NONE;
     StrBuilder tmp = {0};
@@ -582,7 +484,7 @@ ncm_read_key(NcWindow *window) {
         }
 
         sb_append_byte(&tmp, (char)input);
-        result = ncm_bindings_string_to_key(tmp.data, tmp.len);
+        result = nc_key_parse(tmp.data, tmp.len);
         if (result != NC_KEY_NONE) {
             break;
         }
@@ -600,31 +502,7 @@ ncm_read_key(NcWindow *window) {
 
 int32
 ncm_bindings_key_name(NcKey key, char *buffer, int32 buffer_len) {
-    StrBuilder key_name = {0};
-    char name[64];
-    int32 name_len;
-    int32 result;
-
-    if ((buffer == NULL) || (buffer_len <= 0)) {
-        return -1;
-    }
-
-    name_len = nc_key_name(key, name, SIZEOF(name));
-    if (name_len >= 0) {
-        SB_APPEND(&key_name, name, name_len);
-    }
-
-    if (key_name.len >= buffer_len) {
-        result = -1;
-    } else {
-        result = key_name.len;
-        if (key_name.len > 0) {
-            memcpy64(buffer, key_name.data, key_name.len);
-        }
-        buffer[key_name.len] = '\0';
-    }
-    sb_free(&key_name);
-    return result;
+    return nc_key_name(key, buffer, buffer_len);
 }
 
 static void
@@ -790,7 +668,7 @@ static void
 ncm_bindings_bind_single(NcmBindingsConfiguration *bindings, char *key_name,
                          int32 key_name_len, enum ActionType type) {
     NcmBinding binding = {0};
-    NcKey key = ncm_bindings_string_to_key(key_name, key_name_len);
+    NcKey key = nc_key_parse(key_name, key_name_len);
 
     if (!ncm_bindings_key_is_unbound(bindings, key)) {
         return;
@@ -807,7 +685,7 @@ ncm_bindings_bind_chain2(NcmBindingsConfiguration *bindings, char *key_name,
                          int32 key_name_len, enum ActionType first,
                          enum ActionType second) {
     NcmBinding binding = {0};
-    NcKey key = ncm_bindings_string_to_key(key_name, key_name_len);
+    NcKey key = nc_key_parse(key_name, key_name_len);
 
     if (!ncm_bindings_key_is_unbound(bindings, key)) {
         return;
@@ -824,7 +702,7 @@ static void
 ncm_bindings_bind_group(NcmBindingsConfiguration *bindings,
                         char *key_name, int32 key_name_len,
                         enum ActionType *actions, int32 actions_len) {
-    NcKey key = ncm_bindings_string_to_key(key_name, key_name_len);
+    NcKey key = nc_key_parse(key_name, key_name_len);
 
     if (!ncm_bindings_key_is_unbound(bindings, key)) {
         return;
@@ -899,7 +777,7 @@ ncm_binding_parse_directive(NcmBindingAction *action,
     case NCM_BINDING_DIRECTIVE_PUSH_CHARACTER: {
         NcKey action_key;
 
-        action_key = ncm_bindings_string_to_key(argument.data, argument.len);
+        action_key = nc_key_parse(argument.data, argument.len);
         if (action_key == NC_KEY_NONE) {
             ncm_bindings_error(ncm_error, "invalid character passed to "
                                "push_character: '%.*s'",
@@ -1255,7 +1133,7 @@ ncm_bindings_config_read(NcmBindingsConfiguration *bindings,
                 status = -NCM_ERROR_PARSE;
                 break;
             }
-            key = ncm_bindings_string_to_key(enclosed.data, enclosed.len);
+            key = nc_key_parse(enclosed.data, enclosed.len);
             if (key == NC_KEY_NONE) {
                 ncm_bindings_error(ncm_error, "%.*s:%d: invalid key '%.*s'",
                                    path_len, path, line_no, enclosed.len,

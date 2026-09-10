@@ -47,6 +47,46 @@ typedef struct NcReadlineState {
 
 static NcReadlineState nc_readline_state;
 
+typedef struct NcNamedKey {
+    char *config_name;
+    char *display_name;
+    int32 config_name_len;
+    int32 display_name_len;
+    NcKey key;
+} NcNamedKey;
+
+#define NC_NAMED_KEY_ENTRY(name, display, value) \
+    {#name, display, STRLIT_LEN(#name), STRLIT_LEN(display), value},
+
+static NcNamedKey nc_named_keys[] = {
+    NC_NAMED_KEYS(NC_NAMED_KEY_ENTRY)
+};
+
+#undef NC_NAMED_KEY_ENTRY
+
+static NcKey
+nc_named_key_parse(char *string, int32 string_len) {
+    for (int32 i = 0; i < LENGTH(nc_named_keys); i += 1) {
+        if (STREQUAL(string, string_len, nc_named_keys[i].config_name,
+                     nc_named_keys[i].config_name_len)) {
+            return nc_named_keys[i].key;
+        }
+    }
+    return NC_KEY_NONE;
+}
+
+static int32
+nc_named_key_name(NcKey key, char *buffer, int32 buffer_len) {
+    for (int32 i = 0; i < LENGTH(nc_named_keys); i += 1) {
+        if (key == nc_named_keys[i].key) {
+            return snprintf2(buffer, buffer_len, "%.*s",
+                             nc_named_keys[i].display_name_len,
+                             nc_named_keys[i].display_name);
+        }
+    }
+    return -1;
+}
+
 NcColor
 nc_color_make(int16 foreground, int16 background,
               bool is_default, bool is_end) {
@@ -167,6 +207,76 @@ nc_format_reverse(enum NcFormat format) {
     return result;
 }
 
+NcKey
+nc_key_parse(char *string, int32 string_len) {
+    NcKey result = NC_KEY_NONE;
+
+    if ((string_len == 6) && STREQUAL(string, 4, "ctrl")
+        && (string[4] == '-')) {
+        char c;
+
+        c = string[5];
+        if ((c >= 'a') && (c <= 'z')) {
+            result = NC_KEY_CTRL_A + (NcKey)(c - 'a');
+        } else if (c == '[') {
+            result = NC_KEY_CTRL_LEFT_BRACKET;
+        } else if (c == '\\') {
+            result = NC_KEY_CTRL_BACKSLASH;
+        } else if (c == ']') {
+            result = NC_KEY_CTRL_RIGHT_BRACKET;
+        } else if (c == '^') {
+            result = NC_KEY_CTRL_CARET;
+        } else if (c == '_') {
+            result = NC_KEY_CTRL_UNDERSCORE;
+        }
+    } else if ((string_len > 4) && STREQUAL(string, 3, "alt")
+               && (string[3] == '-')) {
+        result = nc_key_parse(string + 4, string_len - 4);
+        if (result != NC_KEY_NONE) {
+            result |= NC_KEY_ALT;
+        }
+    } else if ((string_len > 5) && STREQUAL(string, 4, "ctrl")
+               && (string[4] == '-')) {
+        result = nc_key_parse(string + 5, string_len - 5);
+        if (result != NC_KEY_NONE) {
+            result |= NC_KEY_CTRL;
+        }
+    } else if ((string_len > 6) && STREQUAL(string, 5, "shift")
+               && (string[5] == '-')) {
+        result = nc_key_parse(string + 6, string_len - 6);
+        if (result != NC_KEY_NONE) {
+            result |= NC_KEY_SHIFT;
+        }
+    } else if ((result = nc_named_key_parse(string, string_len))
+               != NC_KEY_NONE) {
+        return result;
+    } else if ((string_len >= 2) && (string_len <= 3)
+               && (string[0] == 'f')) {
+        int32 n;
+        char buffer[4];
+
+        memcpy64(buffer, string + 1, string_len - 1);
+        buffer[string_len - 1] = '\0';
+        n = (int32)atoi2(buffer, string_len);
+        if ((n >= 1) && (n <= 12)) {
+            result = NC_KEY_F1 + (NcKey)n - 1;
+        }
+    }
+
+    if ((result == NC_KEY_NONE) && (string_len > 0)) {
+        wchar_t wc;
+        mbstate_t state = {0};
+        int32 converted;
+
+        converted = (int32)mbrtowc(&wc, string, (size_t)string_len, &state);
+        if ((converted == string_len) && (wc != 0)) {
+            result = (NcKey)wc;
+        }
+    }
+
+    return result;
+}
+
 int32
 nc_key_name(NcKey key, char *buffer, int32 buffer_len) {
     int32 result;
@@ -178,13 +288,10 @@ nc_key_name(NcKey key, char *buffer, int32 buffer_len) {
         return result;
     }
 
-    if (key == NC_KEY_TAB) {
-        result = snprintf2(buffer, buffer_len, "Tab");
-    } else if (key == NC_KEY_ENTER) {
-        result = snprintf2(buffer, buffer_len, "Enter");
-    } else if (key == NC_KEY_ESCAPE) {
-        result = snprintf2(buffer, buffer_len, "Escape");
-    } else if ((key >= NC_KEY_CTRL_A) && (key <= NC_KEY_CTRL_Z)) {
+    if ((result = nc_named_key_name(key, buffer, buffer_len)) >= 0) {
+        return result;
+    }
+    if ((key >= NC_KEY_CTRL_A) && (key <= NC_KEY_CTRL_Z)) {
         result = snprintf2(buffer, buffer_len, "Ctrl-%c",
                            (char)('A' + key - NC_KEY_CTRL_A));
     } else if (key == NC_KEY_CTRL_LEFT_BRACKET) {
@@ -206,32 +313,6 @@ nc_key_name(NcKey key, char *buffer, int32 buffer_len) {
     } else if ((key & NC_KEY_SHIFT) != 0) {
         nc_key_name(key & ~NC_KEY_SHIFT, rest, LENGTH(rest));
         result = snprintf2(buffer, buffer_len, "Shift-%s", rest);
-    } else if (key == NC_KEY_SPACE) {
-        result = snprintf2(buffer, buffer_len, "Space");
-    } else if (key == NC_KEY_BACKSPACE) {
-        result = snprintf2(buffer, buffer_len, "Backspace");
-    } else if (key == NC_KEY_INSERT) {
-        result = snprintf2(buffer, buffer_len, "Insert");
-    } else if (key == NC_KEY_DELETE) {
-        result = snprintf2(buffer, buffer_len, "Delete");
-    } else if (key == NC_KEY_HOME) {
-        result = snprintf2(buffer, buffer_len, "Home");
-    } else if (key == NC_KEY_END) {
-        result = snprintf2(buffer, buffer_len, "End");
-    } else if (key == NC_KEY_PAGE_UP) {
-        result = snprintf2(buffer, buffer_len, "PageUp");
-    } else if (key == NC_KEY_PAGE_DOWN) {
-        result = snprintf2(buffer, buffer_len, "PageDown");
-    } else if (key == NC_KEY_UP) {
-        result = snprintf2(buffer, buffer_len, "Up");
-    } else if (key == NC_KEY_DOWN) {
-        result = snprintf2(buffer, buffer_len, "Down");
-    } else if (key == NC_KEY_LEFT) {
-        result = snprintf2(buffer, buffer_len, "Left");
-    } else if (key == NC_KEY_RIGHT) {
-        result = snprintf2(buffer, buffer_len, "Right");
-    } else if (key == NC_KEY_EOF) {
-        result = snprintf2(buffer, buffer_len, "EoF");
     } else if ((key >= NC_KEY_F1) && (key <= NC_KEY_F9)) {
         result = snprintf2(buffer, buffer_len, "F%c",
                            (char)('1' + key - NC_KEY_F1));
