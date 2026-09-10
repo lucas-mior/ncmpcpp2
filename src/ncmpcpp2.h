@@ -300,10 +300,9 @@ enum {
 static inline int32
 ncm_tag_type_canonical_name_len(enum NcmTagType tag, char **out) {
     switch (tag) {
-#define TAG_CANONICAL_NAME_CASE(suffix, DISP, CHAR,                        \
-                                    getter_char, flags)                        \
-    case CAT(TAG_, suffix):                                                    \
-        *out = TAG_DISPLAY_NAME(DISP);                                         \
+#define TAG_CANONICAL_NAME_CASE(suffix, DISP, CHAR, getter_char, flags)  \
+    case CAT(TAG_, suffix):                                              \
+        *out = TAG_DISPLAY_NAME(DISP);                                   \
         return TAG_DISPLAY_NAME_LEN(DISP);
 
     TAG_DEFS(TAG_CANONICAL_NAME_CASE)
