@@ -1743,12 +1743,12 @@ int32 sort_playlist_dialog_move_current_down(SortPlaylistDialog *);
 #include "cbase/xenums.c"
 
 #define ENUM_NAME TagEditParserMode
-#define ENUM_PREFIX_ TAG_EDIT_PARSER_
+#define ENUM_PREFIX_ TAG_EDIT_PARSER_MODE
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                  \
-    XX(TAG_EDIT_PARSER_NONE, Pattern)                              \
-    XX(TAG_EDIT_PARSER_TAGS_FROM_FILENAME, Get tags from filename) \
-    XX(TAG_EDIT_PARSER_RENAME_FILES, Rename files)
+    XX(TAG_EDIT_PARSER_MODE_NONE, Pattern)                              \
+    XX(TAG_EDIT_PARSER_MODE_TAGS_FROM_FILENAME, Get tags from filename) \
+    XX(TAG_EDIT_PARSER_MODE_RENAME_FILES, Rename files)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME TagEditFocus
