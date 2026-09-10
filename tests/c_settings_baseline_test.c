@@ -986,7 +986,7 @@ test_tag_type_names(void) {
 
 #define TEST_TAG_TYPE_NAME(suffix, display, tag_char, getter_char, flags)    \
     name_len = ncm_tag_type_name_len(CAT(TAG_, suffix), &name);          \
-    if (((flags) & TAG_META_FLAG_DISPLAY) == 0) {                        \
+    if (((flags) & TAG_FLAG_DISPLAY) == 0) {                             \
         ASSERT_EQUAL(name, name_len, "");                                     \
         ASSERT_ZERO(name_len);                                                \
     } else {                                                                  \
