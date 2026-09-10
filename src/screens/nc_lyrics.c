@@ -653,7 +653,6 @@ lyrics_screen_load_file(LyricsScreen *screen,
     int32 content_len;
     int32 line_len;
     int32 status;
-    bool first;
     bool lrc_file;
 
     if ((screen == NULL) || (filename == NULL) || (filename_len <= 0)) {
@@ -689,8 +688,9 @@ lyrics_screen_load_file(LyricsScreen *screen,
         ncm_error_clear(ncm_error);
         screen->mode = LYRICS_MODE_SYNCHRONIZED;
     } else {
+        bool first = true;
         ncm_lrc_document_clear(&screen->lrc);
-        first = true;
+
         content_end = content + content_len;
         line = content;
         while (line < content_end) {
