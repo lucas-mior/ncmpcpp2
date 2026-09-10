@@ -73,30 +73,6 @@ int32 ncm_tags_write(char *music_dir, char *uri, bool, char *directory,
     XX(NCM_ITEM_PLAYLIST)
 #include "cbase/xenums.c"
 
-#define ENUM_NAME SongGetter
-#define ENUM_PREFIX_ SONG_GETTER_
-#define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                  \
-    XX(SONG_GETTER_NONE, none)                       \
-    XX(SONG_GETTER_LENGTH, Length)                   \
-    XX(SONG_GETTER_DIRECTORY, Directory)             \
-    XX(SONG_GETTER_NAME, Filename)                   \
-    XX(SONG_GETTER_URI, URI)                         \
-    XX(SONG_GETTER_ARTIST, Artist)                   \
-    XX(SONG_GETTER_ALBUM_ARTIST, Album Artist)       \
-    XX(SONG_GETTER_TITLE, Title)                     \
-    XX(SONG_GETTER_ALBUM, Album)                     \
-    XX(SONG_GETTER_DATE, Date)                       \
-    XX(SONG_GETTER_TRACK_NUMBER, Track Number)       \
-    XX(SONG_GETTER_TRACK, Track)                     \
-    XX(SONG_GETTER_GENRE, Genre)                     \
-    XX(SONG_GETTER_COMPOSER, Composer)               \
-    XX(SONG_GETTER_PERFORMER, Performer)             \
-    XX(SONG_GETTER_DISC, Disc)                       \
-    XX(SONG_GETTER_COMMENT, Comment)                 \
-    XX(SONG_GETTER_PRIORITY, Priority)
-#include "cbase/xenums.c"
-
 int32 ncm_channels_to_string(int32 channels, char *, int32 buffer_cap);
 int32 ncm_color_index_from_char(char);
 char *ncm_tag_type_name(enum NcmTagType);
