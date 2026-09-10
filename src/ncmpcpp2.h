@@ -755,8 +755,7 @@ ncm_tags_field_format_char(enum TagsField field) {
 static inline int32
 ncm_tags_field_parser_name_len(enum TagsField field, char **out) {
     if (field == TAGS_FIELD_TRACK) {
-        return ncm_song_getter_display_name_len(SONG_GETTER_TRACK_NUMBER,
-                                                out);
+        return ncm_song_getter_display_name_len(SONG_GETTER_TRACK_NUMBER, out);
     }
     if (field == TAGS_FIELD_COUNT) {
         *out = "";
