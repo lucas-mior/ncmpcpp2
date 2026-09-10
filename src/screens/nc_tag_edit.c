@@ -3471,6 +3471,7 @@ tag_edit_save_song_callback(MutableSong *song, void *user) {
             error_code = EIO;
         }
         system_error = strerror(error_code);
+
         SB_APPEND(&message, "Error while writing tags to \"");
         if (song->name) {
             SB_APPEND(&message, song->name, song->name_len);
@@ -3478,6 +3479,7 @@ tag_edit_save_song_callback(MutableSong *song, void *user) {
         SB_APPEND(&message, "\": ");
         SB_APPEND(&message, system_error, strlen32(system_error));
         tag_edit_status_message(context->screen, message.data, message.len);
+
         sb_free(&message);
         return status;
     }
