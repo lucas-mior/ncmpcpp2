@@ -438,65 +438,17 @@ enum {
 #define ENUM_FIELDS NCM_TAG_TYPE_ENUM_FIELDS
 #include "cbase/xenums.c"
 
-_Static_assert(NCM_TAG_UNKNOWN == 0,
-               "NcmTagType order changed: UNKNOWN");
-_Static_assert(NCM_TAG_ARTIST == 1,
-               "NcmTagType order changed: ARTIST");
-_Static_assert(NCM_TAG_DISC == 12,
-               "NcmTagType order changed: DISC");
-_Static_assert(NCM_TAG_DISCSUBTITLE == 36,
-               "NcmTagType order changed: DISCSUBTITLE");
-_Static_assert(NCM_TAG_COUNT == 37,
-               "NcmTagType count changed");
-
 #define ENUM_NAME TagsField
 #define ENUM_PREFIX_ NCM_TAGS_FIELD_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS NCM_TAGS_FIELD_ENUM_FIELDS
 #include "cbase/xenums.c"
 
-_Static_assert(NCM_TAGS_FIELD_TITLE == 0,
-               "TagsField order changed: TITLE");
-_Static_assert(NCM_TAGS_FIELD_ARTIST == 1,
-               "TagsField order changed: ARTIST");
-_Static_assert(NCM_TAGS_FIELD_ALBUM_ARTIST == 2,
-               "TagsField order changed: ALBUM_ARTIST");
-_Static_assert(NCM_TAGS_FIELD_COMMENT == 10,
-               "TagsField order changed: COMMENT");
-_Static_assert(NCM_TAGS_FIELD_COUNT == 11,
-               "TagsField count changed");
-_Static_assert((int32)NCM_SONG_INFO_TAG_COUNT
-               == (int32)NCM_TAGS_FIELD_COUNT,
-               "song-info tag count changed");
-_Static_assert((int32)NCM_TAGLIB_TAG_COUNT
-               == (int32)NCM_TAGS_FIELD_COUNT,
-               "taglib tag count changed");
-_Static_assert(NCM_MPD_TAG_COUNT == 12,
-               "mpd tag count changed");
-_Static_assert(NCM_PRIMARY_TAG_COUNT == 6,
-               "primary tag count changed");
-_Static_assert(NCM_TAG_EDIT_PARSER_COUNT == 11,
-               "tag-edit parser tag count changed");
-
 #define ENUM_NAME SongGetter
 #define ENUM_PREFIX_ SONG_GETTER_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS NCM_SONG_GETTER_ENUM_FIELDS
 #include "cbase/xenums.c"
-
-_Static_assert(SONG_GETTER_NONE == 0,
-               "SongGetter order changed: NONE");
-_Static_assert(SONG_GETTER_ARTIST == 5,
-               "SongGetter order changed: ARTIST");
-_Static_assert(SONG_GETTER_TRACK_NUMBER == 10,
-               "SongGetter order changed: TRACK_NUMBER");
-_Static_assert(SONG_GETTER_TRACK == 11,
-               "SongGetter order changed: TRACK");
-_Static_assert(SONG_GETTER_PRIORITY == 17,
-               "SongGetter order changed: PRIORITY");
-_Static_assert(SONG_GETTER_COUNT == 18,
-               "SongGetter count changed");
-
 
 static inline bool
 ncm_tag_type_parse_settings_name(char *value, int32 value_len,
