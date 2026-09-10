@@ -984,8 +984,7 @@ action_runtime_add_random_items(void) {
         source_name_len = STRLIT_LEN("song");
     } else {
         tag_type = ncm_char_to_tag_type(random_type);
-        source_name = ncm_tag_type_name(tag_type);
-        source_name_len = optional_strlen32(source_name);
+        source_name_len = ncm_tag_type_name_len(tag_type, &source_name);
         if (source_name_len >= SIZEOF(tag_name)) {
             return -NCM_ERROR_UNAVAILABLE;
         }
@@ -4275,8 +4274,8 @@ action_runtime_edit_library_tag(void) {
     if (status < 0) {
         goto cleanup;
     }
-    SB_APPEND(&prompt, ncm_tag_type_name(Config.media_library_primary_tag),
-        optional_strlen32(ncm_tag_type_name(Config.media_library_primary_tag)));
+    tag_len = ncm_tag_type_name_len(Config.media_library_primary_tag, &tag);
+    SB_APPEND(&prompt, tag, tag_len);
     SB_APPEND(&prompt, ": ");
     prompted = action_runtime_prompt_string(prompt.data, prompt.len,
                                             current_tag.data, false,
