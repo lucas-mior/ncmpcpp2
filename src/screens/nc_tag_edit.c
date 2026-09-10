@@ -3261,9 +3261,9 @@ tag_edit_set_song_tag_callback(MutableSong *song, void *user) {
 
 int32
 tag_edit_screen_apply_tag_to_selection(TagEditScreen *screen,
-                                         enum TagsField field,
-                                         char *value, int32 value_len,
-                                         char *separator, int32 separator_len) {
+                                       enum TagsField field,
+                                       char *value, int32 value_len,
+                                       char *separator, int32 separator_len) {
     TagSetter setter;
 
     if ((screen == NULL) || (value == NULL)) {
