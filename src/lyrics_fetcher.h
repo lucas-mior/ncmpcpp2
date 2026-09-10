@@ -2,6 +2,7 @@
 #define LYRICS_FETCHER_H
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include <curl/curl.h>
 

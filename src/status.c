@@ -2,6 +2,7 @@
 #define STATUS_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "configura.h"
 

@@ -1,5 +1,8 @@
 // this is here just to silence clangd warnings on config_options.h
 
+#include "cbase.h"
+#include "ncmpcpp2.h"
+
 #define XX(A, B, ...) char *A = B;
 #define XX_DIR                   XX
 #define XX_COLUMNS               XX

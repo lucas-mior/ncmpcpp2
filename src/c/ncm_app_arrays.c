@@ -2,6 +2,7 @@
 #define NCM_APP_ARRAYS_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "c/ncm_c.h"
 

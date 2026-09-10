@@ -2,6 +2,7 @@
 #define NCM_COMPARATORS_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "c/ncm_c.h"
 

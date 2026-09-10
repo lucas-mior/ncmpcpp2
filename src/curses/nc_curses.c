@@ -1,3 +1,6 @@
+#include "cbase.h"
+#include "ncmpcpp2.h"
+
 #include "curses/nc_curses.h"
 
 #include "curses/nc_app_menus.c"

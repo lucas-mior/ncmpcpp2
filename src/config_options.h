@@ -6,6 +6,9 @@
  * configuration_options_pass.h by the generation passes.
  */
 
+#include "cbase.h"
+#include "ncmpcpp2.h"
+
 #if defined(__INCLUDE_LEVEL__) && (__INCLUDE_LEVEL__ == 0)
 #include "config_options_dummy.h"
 #endif

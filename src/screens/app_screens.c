@@ -2,6 +2,7 @@
 #define APP_SCREENS_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "actions.h"
 #include "app_controller.h"

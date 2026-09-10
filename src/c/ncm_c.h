@@ -2,6 +2,7 @@
 #define NCM_C_H
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "configura.h"
 

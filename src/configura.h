@@ -2,6 +2,7 @@
 #define CONFIG_H
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #define ENABLE_OUTPUTS 1
 #define ENABLE_VISUALIZER 1

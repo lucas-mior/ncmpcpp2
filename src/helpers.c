@@ -2,6 +2,7 @@
 #define HELPERS_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "helpers.h"
 

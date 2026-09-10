@@ -2,6 +2,7 @@
 #define APP_STATE_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "app_state.h"
 

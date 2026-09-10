@@ -1,3 +1,6 @@
+#include "cbase.h"
+#include "ncmpcpp2.h"
+
 #include "mpd/ncmpcpp2_mpd.h"
 
 #include "mpd/ncm_mpd_connection.c"

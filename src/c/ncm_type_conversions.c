@@ -2,6 +2,7 @@
 #define NCM_TYPE_CONVERSIONS_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "c/ncm_c.h"
 

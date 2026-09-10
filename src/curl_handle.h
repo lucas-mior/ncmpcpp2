@@ -2,6 +2,7 @@
 #define CURL_HANDLE_H
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include <curl/curl.h>
 

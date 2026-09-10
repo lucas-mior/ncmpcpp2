@@ -2,6 +2,7 @@
 #define LASTFM_SERVICE_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "c/ncm_c.h"
 #include "curl_handle.h"

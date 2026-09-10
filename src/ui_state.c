@@ -2,6 +2,7 @@
 #define UI_STATE_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "ui_state.h"
 

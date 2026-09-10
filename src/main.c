@@ -1,5 +1,6 @@
 #define CBASE_IMPLEMENT
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "c/ncm_c.h"
 #if !defined(PROJECT_INCREMENTAL_BUILD)

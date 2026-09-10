@@ -2,6 +2,7 @@
 #define SETTINGS_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "c/ncm_c.h"
 #include "configura.h"

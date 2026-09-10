@@ -2,6 +2,7 @@
 #define SETTINGS_TYPES_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "c/ncm_c.h"
 #include "settings.h"

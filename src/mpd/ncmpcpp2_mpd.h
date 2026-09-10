@@ -1,6 +1,9 @@
 #if !defined(NCMPCPP2_MPD_H)
 #define NCMPCPP2_MPD_H
 
+#include "cbase.h"
+#include "ncmpcpp2.h"
+
 #include <mpd/client.h>
 #include <mpd/status.h>
 #include <mpd/tag.h>

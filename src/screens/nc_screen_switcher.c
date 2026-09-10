@@ -2,6 +2,7 @@
 #define NC_SCREEN_SWITCHER_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "app_controller.h"
 #include "screens/nc_screens.h"

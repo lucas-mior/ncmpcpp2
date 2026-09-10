@@ -2,6 +2,7 @@
 #define GLOBAL_C
 
 #include "cbase.h"
+#include "ncmpcpp2.h"
 
 #include "global.h"
 
