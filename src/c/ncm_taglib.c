@@ -22,50 +22,17 @@ typedef struct NcmTaglibPropertyMap {
 static bool ncm_taglib_is_initialized;
 
 static NcmTaglibPropertyMap ncm_taglib_properties[] = {
-    {
-        .property = "TITLE",
-        .name = "Title",
+#define NCM_TAGLIB_PROPERTY_MAP(tag, display_name, alias, tag_char, field,  \
+                                getter, getter_char, taglib_property,      \
+                                taglib_name, settings_name, mpd, flags)    \
+    {                                                                        \
+        .property = taglib_property,                                         \
+        .name = taglib_name,                                                 \
     },
-    {
-        .property = "ARTIST",
-        .name = "Artist",
-    },
-    {
-        .property = "ALBUMARTIST",
-        .name = "AlbumArtist",
-    },
-    {
-        .property = "ALBUM",
-        .name = "Album",
-    },
-    {
-        .property = "DATE",
-        .name = "Date",
-    },
-    {
-        .property = "TRACKNUMBER",
-        .name = "Track",
-    },
-    {
-        .property = "GENRE",
-        .name = "Genre",
-    },
-    {
-        .property = "COMPOSER",
-        .name = "Composer",
-    },
-    {
-        .property = "PERFORMER",
-        .name = "Performer",
-    },
-    {
-        .property = "DISCNUMBER",
-        .name = "Disc",
-    },
-    {
-        .property = "COMMENT",
-        .name = "Comment",
-    },
+
+    NCM_TAGLIB_TAG_DEFS(NCM_TAGLIB_PROPERTY_MAP)
+
+#undef NCM_TAGLIB_PROPERTY_MAP
 };
 
 static TagLib_File *
