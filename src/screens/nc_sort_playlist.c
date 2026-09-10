@@ -297,7 +297,7 @@ sort_dialog_add_sort_getter_row(SortPlaylistDialog *dialog,
 }
 
 #define SORT_DIALOG_ADD_TAG_ROW(tag, display, tag_char, field, getter,      \
-                                getter_char, mpd, flags)                    \
+                                getter_char, flags)                    \
     sort_dialog_add_sort_getter_row(dialog, CAT(SONG_GETTER_, getter));
 
 static void
