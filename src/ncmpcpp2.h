@@ -523,22 +523,22 @@ ncm_tag_type_taglib_property_len(enum NcmTagType tag, char *out, int32 cap) {
     ASSERT(cap > 0);
 
     switch ((int32)tag) {
-#define TAGLIB_PROPERTY_CASE(suffix, DISP, CHAR, getter_char, flags) \
-    case CAT(TAG_, suffix):                                          \
-        if (TAG_DISPLAY_NAME_LEN(DISP) >= cap) {                     \
-            out[0] = '\0';                                           \
-            return -1;                                               \
-        }                                                            \
-        result = ascii_normalize_upper_compact(                      \
-            out, TAG_DISPLAY_NAME(DISP), TAG_DISPLAY_NAME_LEN(DISP));\
-        if (((flags) & TAG_FLAG_TAGLIB_NUMBER) == 0) {               \
-            return result;                                           \
-        }                                                            \
-        if (result + STRLIT_LEN("NUMBER") >= cap) {                  \
-            out[0] = '\0';                                           \
-            return -1;                                               \
-        }                                                            \
-        memcpy64(out + result, STRLIT("NUMBER") + 1);                \
+#define TAGLIB_PROPERTY_CASE(suffix, DISP, CHAR, getter_char, flags)   \
+    case CAT(TAG_, suffix):                                            \
+        if (TAG_DISPLAY_NAME_LEN(DISP) >= cap) {                       \
+            out[0] = '\0';                                             \
+            return -1;                                                 \
+        }                                                              \
+        result = ascii_normalize_upper_compact(                        \
+            out, TAG_DISPLAY_NAME(DISP), TAG_DISPLAY_NAME_LEN(DISP));  \
+        if (((flags) & TAG_FLAG_TAGLIB_NUMBER) == 0) {                 \
+            return result;                                             \
+        }                                                              \
+        if (result + STRLIT_LEN("NUMBER") >= cap) {                    \
+            out[0] = '\0';                                             \
+            return -1;                                                 \
+        }                                                              \
+        memcpy64(out + result, STRLIT("NUMBER") + 1);                  \
         return result + STRLIT_LEN("NUMBER");
 
     TAGLIB_TAG_DEFS(TAGLIB_PROPERTY_CASE)
