@@ -181,7 +181,7 @@ nc_screen_init_ops(NcScreen *screen, NcScreenOps ops,
     return;
 }
 
-static bool
+bool
 nc_screen_has_capability(NcScreen *screen,
                          enum NcScreenCapabilityFlag capability) {
     if (screen == NULL) {
@@ -595,6 +595,23 @@ nc_screen_song_tag_at(NcScreen *screen, int32 pos, enum SongGetter getter,
         return -NCM_ERROR_UNAVAILABLE;
     }
     return screen->ops->song_tag_at(screen, pos, getter, tag);
+}
+
+int32
+nc_screen_toggle_display_mode(NcScreen *screen) {
+    if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_DISPLAY_MODE)
+        || (screen->ops->toggle_display_mode == NULL)) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    return screen->ops->toggle_display_mode(screen);
+}
+
+enum DisplayMode
+nc_screen_next_display_mode(enum DisplayMode mode) {
+    if (mode == NCM_DISPLAY_MODE_CLASSIC) {
+        return NCM_DISPLAY_MODE_COLUMNS;
+    }
+    return NCM_DISPLAY_MODE_CLASSIC;
 }
 
 void

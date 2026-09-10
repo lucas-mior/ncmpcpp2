@@ -252,6 +252,21 @@ playlist_action_change_finished(NcScreen *screen) {
     return;
 }
 
+static int32
+playlist_toggle_display_mode(NcScreen *base) {
+    StrBuilder message = {0};
+    Config.playlist_display_mode =
+        nc_screen_next_display_mode(Config.playlist_display_mode);
+    playlist_screen_update_column_title((PlaylistScreen *)base);
+    nc_screen_request_resize(base);
+    nc_screen_refresh(base);
+    sb_printf(&message, "Playlist display mode: %s",
+              ncm_display_mode_str(Config.playlist_display_mode));
+    ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
+    sb_free(&message);
+    return 0;
+}
+
 #define NC_SCREEN_IMPL_TYPE PlaylistScreen
 #define NC_SCREEN_IMPL_PREFIX playlist
 #define NC_SCREEN_IMPL_PUBLIC_PREFIX playlist_screen
@@ -434,6 +449,8 @@ playlist_screen_init(PlaylistScreen *screen, int32 start_x,
     screen->highlighting_requested = false;
 
     ops = playlist_ops;
+    ops.capabilities |= NC_SCREEN_CAPABILITY_DISPLAY_MODE;
+    ops.toggle_display_mode = playlist_toggle_display_mode;
     nc_playlist_screen_init(&screen->screen, ops, screen,
                             nc_song_menu_base(&screen->songs), start_x,
                             width, main_start_y, main_height);

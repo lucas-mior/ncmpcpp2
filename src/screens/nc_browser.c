@@ -514,6 +514,16 @@ browser_tag_item_song(void *item) {
     return ncm_mpd_item_song(mpd_item);
 }
 
+static int32
+browser_toggle_display_mode(NcScreen *base) {
+    Config.browser_display_mode =
+        nc_screen_next_display_mode(Config.browser_display_mode);
+    browser_screen_set_display_mode((BrowserScreen *)base,
+                                    Config.browser_display_mode);
+    nc_screen_request_resize(base);
+    return 0;
+}
+
 #define NC_SCREEN_IMPL_TYPE BrowserScreen
 #define NC_SCREEN_IMPL_PREFIX browser
 #define NC_SCREEN_IMPL_PUBLIC_PREFIX browser_screen
@@ -800,6 +810,8 @@ browser_screen_init(BrowserScreen *screen, int32 start_x, int32 width,
     browser_screen_update_column_title(screen);
     browser_install_menu_callbacks(screen);
     ops = browser_ops;
+    ops.capabilities |= NC_SCREEN_CAPABILITY_DISPLAY_MODE;
+    ops.toggle_display_mode = browser_toggle_display_mode;
     nc_screen_init_ops(&screen->screen, ops, screen, NC_SCREEN_TYPE_BROWSER);
     return;
 }

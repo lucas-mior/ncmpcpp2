@@ -348,7 +348,8 @@ typedef struct NcScreenResizeParams {
     XX(NC_SCREEN_CAPABILITY_FIND)                                            \
     XX(NC_SCREEN_CAPABILITY_SONGS)                                           \
     XX(NC_SCREEN_CAPABILITY_COLUMNS)                                         \
-    XX(NC_SCREEN_CAPABILITY_TAGS)
+    XX(NC_SCREEN_CAPABILITY_TAGS)                                            \
+    XX(NC_SCREEN_CAPABILITY_DISPLAY_MODE)
 
 #define ENUM_NAME NcScreenCapabilityFlag
 #define ENUM_PREFIX_ NC_SCREEN_CAPABILITY_
@@ -395,6 +396,7 @@ typedef struct NcScreenOps {
     int32 (*next_column)(NcScreen *);
     NcMenu *(*tag_menu)(NcScreen *);
     int32 (*song_tag_at)(NcScreen *, int32, enum SongGetter, StrBuilder *);
+    int32 (*toggle_display_mode)(NcScreen *);
 
     int32 window_timeout;
 
@@ -488,6 +490,7 @@ enum NcScreenType nc_screen_type(NcScreen *);
 void nc_screen_mouse_button_pressed(NcScreen *, MEVENT);
 bool nc_screen_is_lockable(NcScreen *);
 bool nc_screen_is_mergable(NcScreen *);
+bool nc_screen_has_capability(NcScreen *, enum NcScreenCapabilityFlag);
 void nc_screen_set_has_to_be_resized(NcScreen *, bool);
 void nc_screen_set_has_to_be_updated(NcScreen *, bool);
 void nc_screen_request_resize(NcScreen *);
@@ -522,6 +525,8 @@ int32 nc_screen_previous_column(NcScreen *);
 int32 nc_screen_next_column(NcScreen *);
 NcMenu *nc_screen_tag_menu(NcScreen *);
 int32 nc_screen_song_tag_at(NcScreen *, int32, enum SongGetter, StrBuilder *);
+int32 nc_screen_toggle_display_mode(NcScreen *);
+enum DisplayMode nc_screen_next_display_mode(enum DisplayMode);
 void nc_screen_clear_resize_request(NcScreen *);
 void nc_screen_clear_update_request(NcScreen *);
 NcScreenResizeParams nc_screen_resize_params(NcScreen *);

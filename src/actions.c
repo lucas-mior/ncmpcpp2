@@ -3701,81 +3701,6 @@ action_runtime_edit_playlist_name(void) {
 }
 
 static int32
-action_runtime_toggle_display_mode(void) {
-    enum ScreenType screen_type = app_screens_current_type();
-
-    if (screen_type == SCREEN_TYPE_SEARCH_ENGINE) {
-        SearchEngineScreen *screen = app_screen_search_engine();
-        enum DisplayMode search_mode;
-
-        search_mode = search_engine_screen_toggle_display_mode(screen);
-        action_runtime_print_toggle(STRLIT("Search engine display mode: "),
-                                    ncm_display_mode_str(search_mode));
-        app_controller_request_current_screen_resize();
-        app_controller_refresh_current_screen();
-        return 0;
-    }
-
-    switch (screen_type) {
-    case SCREEN_TYPE_BROWSER:
-        if (Config.browser_display_mode == NCM_DISPLAY_MODE_CLASSIC) {
-            Config.browser_display_mode = NCM_DISPLAY_MODE_COLUMNS;
-        } else {
-            Config.browser_display_mode = NCM_DISPLAY_MODE_CLASSIC;
-        }
-        browser_screen_set_display_mode(app_screen_browser(),
-                                        Config.browser_display_mode);
-        app_controller_request_current_screen_resize();
-        return 0;
-    case SCREEN_TYPE_PLAYLIST: {
-        if (Config.playlist_display_mode == NCM_DISPLAY_MODE_CLASSIC) {
-            Config.playlist_display_mode = NCM_DISPLAY_MODE_COLUMNS;
-        } else {
-            Config.playlist_display_mode = NCM_DISPLAY_MODE_CLASSIC;
-        }
-        playlist_screen_update_column_title(app_screen_playlist());
-        app_controller_request_current_screen_resize();
-        app_controller_refresh_current_screen();
-        action_runtime_print_toggle(STRLIT("Playlist display mode: "),
-                                    ncm_display_mode_str(
-                                        Config.playlist_display_mode));
-        return 0;
-    }
-    case SCREEN_TYPE_PLAYLIST_EDITOR:
-        if (Config.playlist_edit_display_mode == NCM_DISPLAY_MODE_CLASSIC) {
-            Config.playlist_edit_display_mode = NCM_DISPLAY_MODE_COLUMNS;
-        } else {
-            Config.playlist_edit_display_mode = NCM_DISPLAY_MODE_CLASSIC;
-        }
-        app_controller_request_current_screen_resize();
-        return 0;
-    case SCREEN_TYPE_HELP:
-    case SCREEN_TYPE_LASTFM:
-    case SCREEN_TYPE_LYRICS:
-    case SCREEN_TYPE_MEDIA_LIBRARY:
-#if defined(ENABLE_OUTPUTS)
-    case SCREEN_TYPE_OUTPUTS:
-#endif
-    case SCREEN_TYPE_SEARCH_ENGINE:
-    case SCREEN_TYPE_SELECTED_ITEMS_ADDER:
-    case SCREEN_TYPE_SERVER_INFO:
-    case SCREEN_TYPE_SONG_INFO:
-    case SCREEN_TYPE_SORT_PLAYLIST_DIALOG:
-#if defined(HAVE_TAGLIB_H)
-    case SCREEN_TYPE_TAG_EDIT:
-    case SCREEN_TYPE_TINY_TAG_EDIT:
-#endif
-#if defined(ENABLE_VISUALIZER)
-    case SCREEN_TYPE_VISUALIZER:
-#endif
-    case SCREEN_TYPE_COUNT:
-    default:
-        break;
-    }
-    return -NCM_ERROR_UNAVAILABLE;
-}
-
-static int32
 action_runtime_change_browse_mode(void) {
     BrowserScreen *browser = app_screen_browser();
     NcmError ncm_error;
@@ -5101,12 +5026,8 @@ action_runtime_builtin_can_run(ActionRuntime *runtime,
                && (ncm_status_state_player() != NCM_STATUS_PLAYER_STOP)
                && (ncm_status_state_total_time() > 0);
     case ACTION_TOGGLE_DISPLAY_MODE:
-        return action_runtime_current_screen_is(SCREEN_TYPE_BROWSER)
-               || action_runtime_current_screen_is(SCREEN_TYPE_PLAYLIST)
-               || action_runtime_current_screen_is(
-                   SCREEN_TYPE_PLAYLIST_EDITOR)
-               || action_runtime_current_screen_is(
-                   SCREEN_TYPE_SEARCH_ENGINE);
+        return nc_screen_has_capability(
+            current_screen(), NC_SCREEN_CAPABILITY_DISPLAY_MODE);
     case ACTION_TOGGLE_REPEAT:
     case ACTION_TOGGLE_RANDOM:
     case ACTION_TOGGLE_SINGLE:
@@ -5528,7 +5449,7 @@ action_runtime_builtin_run(ActionRuntime *runtime, enum ActionType type) {
     case ACTION_SEEK_BACKWARD:
         return action_runtime_seek_relative(false);
     case ACTION_TOGGLE_DISPLAY_MODE:
-        return action_runtime_toggle_display_mode();
+        return nc_screen_toggle_display_mode(current_screen());
     case ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS:
         return action_runtime_toggle_separators_between_albums();
     case ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE:
