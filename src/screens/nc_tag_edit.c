@@ -2436,13 +2436,9 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
 
         nc_menu_clear_items(nc_editor_string_menu_base(menu));
         for (int32 i = 0; ncm_song_info_tags[i].name; i += 1) {
-            int32 name_len = 0;
-
-            while (ncm_song_info_tags[i].name[name_len] != '\0') {
-                name_len += 1;
-            }
             tag_edit_append_string_row(menu, ncm_song_info_tags[i].name,
-                                       name_len, NC_MENU_ITEM_SELECTABLE);
+                                       ncm_song_info_tags[i].name_len,
+                                       NC_MENU_ITEM_SELECTABLE);
         }
         nc_editor_string_menu_add_separator(menu);
         tag_edit_append_string_row(menu, STRLIT("Filename"),
