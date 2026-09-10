@@ -3344,9 +3344,9 @@ tag_edit_capitalize_song_callback(MutableSong *song, void *user) {
             converted_len = utf8_capitalize_first_letters(view.data, view.len,
                                                           NULL, 0);
             sb_reserve(&converted, converted_len);
-            converted.len =
-                utf8_capitalize_first_letters(view.data, view.len,
-                                               converted.data, converted_len);
+            converted.len = utf8_capitalize_first_letters(view.data, view.len,
+                                                          converted.data,
+                                                          converted_len);
             if (converted.data) {
                 converted.data[converted.len] = '\0';
             }
