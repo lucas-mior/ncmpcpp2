@@ -4108,11 +4108,9 @@ tag_edit_generate_filename(MutableSong *song,
     SB_APPEND(filename, rendered.data, rendered.len);
     sb_free(&rendered);
     {
-        bool win32_compatible;
-
-        win32_compatible = Config.generate_win32_compatible_filenames;
+        bool win32_compatible = Config.generate_win32_compatible_filenames;
         ncm_string_remove_invalid_filename_chars(filename->data, &filename->len,
-                                                win32_compatible);
+                                                 win32_compatible);
     }
     if (filename->data) {
         filename->data[filename->len] = '\0';
