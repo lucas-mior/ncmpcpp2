@@ -116,47 +116,6 @@ int32 ncm_tags_write(char *music_dir, char *uri, bool, char *directory,
 
 int32 ncm_channels_to_string(int32 channels, char *, int32 buffer_cap);
 int32 ncm_color_index_from_char(char);
-enum NcmTagType {
-    NCM_TAG_UNKNOWN = 0,
-    NCM_TAG_ARTIST,
-    NCM_TAG_ALBUM,
-    NCM_TAG_ALBUM_ARTIST,
-    NCM_TAG_TITLE,
-    NCM_TAG_TRACK,
-    NCM_TAG_NAME,
-    NCM_TAG_GENRE,
-    NCM_TAG_DATE,
-    NCM_TAG_COMPOSER,
-    NCM_TAG_PERFORMER,
-    NCM_TAG_COMMENT,
-    NCM_TAG_DISC,
-    NCM_TAG_MUSICBRAINZ_ARTISTID,
-    NCM_TAG_MUSICBRAINZ_ALBUMID,
-    NCM_TAG_MUSICBRAINZ_ALBUMARTISTID,
-    NCM_TAG_MUSICBRAINZ_TRACKID,
-    NCM_TAG_MUSICBRAINZ_RELEASETRACKID,
-    NCM_TAG_ORIGINAL_DATE,
-    NCM_TAG_ARTIST_SORT,
-    NCM_TAG_ALBUM_ARTIST_SORT,
-    NCM_TAG_ALBUM_SORT,
-    NCM_TAG_LABEL,
-    NCM_TAG_MUSICBRAINZ_WORKID,
-    NCM_TAG_GROUPING,
-    NCM_TAG_WORK,
-    NCM_TAG_CONDUCTOR,
-    NCM_TAG_COMPOSER_SORT,
-    NCM_TAG_ENSEMBLE,
-    NCM_TAG_MOVEMENT,
-    NCM_TAG_MOVEMENTNUMBER,
-    NCM_TAG_LOCATION,
-    NCM_TAG_MOOD,
-    NCM_TAG_TITLE_SORT,
-    NCM_TAG_MUSICBRAINZ_RELEASEGROUPID,
-    NCM_TAG_SHOWMOVEMENT,
-    NCM_TAG_DISCSUBTITLE,
-    NCM_TAG_COUNT,
-};
-
 char *ncm_tag_type_name(enum NcmTagType);
 enum NcmTagType ncm_char_to_tag_type(char);
 enum SongGetter ncm_song_getter_from_char(char);

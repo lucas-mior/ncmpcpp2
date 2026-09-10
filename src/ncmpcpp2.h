@@ -342,4 +342,21 @@
     NCM_TAG_RECORD_COMMENT(NCM_SONG_GETTER_TAG_ENUM_FIELD)                   \
     XX(SONG_GETTER_PRIORITY, Priority)
 
+#define ENUM_NAME NcmTagType
+#define ENUM_PREFIX_ NCM_TAG_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS NCM_TAG_TYPE_ENUM_FIELDS
+#include "cbase/xenums.c"
+
+_Static_assert(NCM_TAG_UNKNOWN == 0,
+               "NcmTagType order changed: UNKNOWN");
+_Static_assert(NCM_TAG_ARTIST == 1,
+               "NcmTagType order changed: ARTIST");
+_Static_assert(NCM_TAG_DISC == 12,
+               "NcmTagType order changed: DISC");
+_Static_assert(NCM_TAG_DISCSUBTITLE == 36,
+               "NcmTagType order changed: DISCSUBTITLE");
+_Static_assert(NCM_TAG_COUNT == 37,
+               "NcmTagType count changed");
+
 #endif /* NCMPCPP2_H */
