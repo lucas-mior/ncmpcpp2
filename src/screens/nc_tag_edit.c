@@ -3320,8 +3320,8 @@ tag_edit_screen_number_tracks(TagEditScreen *screen, bool extended) {
         numberer.total = nc_menu_item_count(menu);
     }
     numberer.extended = extended;
-    return tag_edit_for_each_target(screen, tag_edit_number_song_callback,
-                                    &numberer);
+    return tag_edit_for_each_target(screen,
+                                    tag_edit_number_song_callback, &numberer);
 }
 
 static int32
