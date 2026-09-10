@@ -3420,8 +3420,8 @@ tag_edit_save_song_callback(MutableSong *song, void *user) {
 
         if ((directory == NULL) && song->uri) {
             directory = song->uri;
-            directory_len =
-                ncm_string_parent_directory_len(song->uri, song->uri_len);
+            directory_len = ncm_string_parent_directory_len(song->uri,
+                                                            song->uri_len);
         }
         if (directory == NULL) {
             directory = "";
