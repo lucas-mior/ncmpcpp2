@@ -173,7 +173,7 @@
     TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                                \
     TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')
 
-#define TAG_COUNT_RECORD(SUFFIX, DISP, CHAR, GETTER_CHAR, flags) + 1
+#define TAG_COUNT_RECORD(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS) + 1
 
 
 enum {
@@ -200,13 +200,13 @@ enum {
 
 #undef TAG_COUNT_RECORD
 
-#define TAG_TYPE_ENUM_FIELD(SUFFIX, DISP, CHAR, GETTER_CHAR, flags)        \
+#define TAG_TYPE_ENUM_FIELD(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)        \
   XX(CAT(TAG_, SUFFIX))
 
 #define TAG_TYPE_ENUM_FIELDS                                               \
   TAG_DEFS(TAG_TYPE_ENUM_FIELD)
 
-#define TAGS_FIELD_ENUM_FIELD(SUFFIX, DISP, CHAR, GETTER_CHAR, flags)      \
+#define TAGS_FIELD_ENUM_FIELD(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)      \
   XX(CAT(TAGS_FIELD_, SUFFIX), DISP)
 
 #define TAGS_FIELD_ENUM_FIELDS                                             \
@@ -264,7 +264,7 @@ enum {
 #define NCM_SONG_GETTER_NON_TAG_ENUM_FIELD(getter, DISP, GETTER_CHAR)          \
   XX(getter, DISP)
 
-#define NCM_SONG_GETTER_TAG_ENUM_FIELD(SUFFIX, DISP, CHAR, GETTER_CHAR, flags) \
+#define NCM_SONG_GETTER_TAG_ENUM_FIELD(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS) \
   XX(CAT(SONG_GETTER_, SUFFIX), DISP)
 
 #define NCM_SONG_GETTER_ENUM_FIELDS                                            \
@@ -299,7 +299,7 @@ enum {
 static inline int32
 ncm_tag_type_canonical_name_len(enum TagType tag, char **out) {
     switch (tag) {
-#define TAG_CANONICAL_NAME_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, flags)  \
+#define TAG_CANONICAL_NAME_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)  \
     case CAT(TAG_, SUFFIX):                                              \
         *out = TAG_DISPLAY_NAME(DISP);                                   \
         return TAG_DISPLAY_NAME_LEN(DISP);
@@ -317,9 +317,9 @@ ncm_tag_type_canonical_name_len(enum TagType tag, char **out) {
 static inline int32
 ncm_tag_type_display_name_len(enum TagType tag, char **out) {
     switch (tag) {
-#define TAG_DISPLAY_NAME_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, flags) \
+#define TAG_DISPLAY_NAME_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS) \
     case CAT(TAG_, SUFFIX):                                           \
-        if (((flags) & TAG_FLAG_DISPLAY) == 0) {                      \
+        if (((FLAGS) & TAG_FLAG_DISPLAY) == 0) {                      \
             *out = "";                                                \
             return 0;                                                 \
         }                                                             \
@@ -339,7 +339,7 @@ ncm_tag_type_display_name_len(enum TagType tag, char **out) {
 static inline int32
 ncm_tag_type_settings_name_len(enum TagType tag, char *out, int32 cap) {
     switch ((int32)tag) {
-#define TAG_SETTINGS_NAME_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, flags)   \
+#define TAG_SETTINGS_NAME_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)   \
     case CAT(TAG_, SUFFIX):                                              \
         if (TAG_DISPLAY_NAME_LEN(DISP) >= cap) {                         \
             out[0] = '\0';                                               \
@@ -364,7 +364,7 @@ ncm_tag_type_settings_name_len(enum TagType tag, char *out, int32 cap) {
 static inline bool
 ncm_tag_type_is_primary(enum TagType tag) {
     switch ((int32)tag) {
-#define TAG_IS_PRIMARY_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, flags) \
+#define TAG_IS_PRIMARY_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS) \
     case CAT(TAG_, SUFFIX):                                         \
         return true;
 
@@ -409,7 +409,7 @@ ncm_tag_type_parse_settings_name(char *value, int32 value_len,
 static inline enum TagType
 ncm_primary_tag_next(enum TagType tag) {
     static enum TagType tags[NCM_PRIMARY_TAG_COUNT] = {
-#define NCM_PRIMARY_TAG_ARRAY_ENTRY(SUFFIX, DISP, CHAR, GETTER_CHAR, flags) \
+#define NCM_PRIMARY_TAG_ARRAY_ENTRY(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS) \
         CAT(TAG_, SUFFIX),
 
         TAG_PRIMARY_DEFS(NCM_PRIMARY_TAG_ARRAY_ENTRY)
@@ -441,7 +441,7 @@ ncm_song_getter_display_name(enum SongGetter getter) {
 static inline int32
 ncm_song_getter_tag_name_len(enum SongGetter getter, char **out) {
     switch (getter) {
-#define NCM_SONG_GETTER_TAG_NAME_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, flags) \
+#define NCM_SONG_GETTER_TAG_NAME_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS) \
     case CAT(SONG_GETTER_, SUFFIX):                                           \
         *out = TAG_DISPLAY_NAME(DISP);                                        \
         return TAG_DISPLAY_NAME_LEN(DISP);
@@ -479,7 +479,7 @@ ncm_song_getter_column_title_len(enum SongGetter getter, char **out) {
     case SONG_GETTER_TRACK_NUMBER:
         *out = "Track";
         return STRLIT_LEN("Track");
-#define NCM_SONG_GETTER_TAG_TITLE_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, flags) \
+#define NCM_SONG_GETTER_TAG_TITLE_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS) \
     case CAT(SONG_GETTER_, SUFFIX):                                            \
         *out = TAG_DISPLAY_NAME(DISP);                                         \
         return TAG_DISPLAY_NAME_LEN(DISP);
@@ -520,7 +520,7 @@ ncm_tag_type_taglib_property_len(enum TagType tag, char *out, int32 cap) {
     ASSERT(cap > 0);
 
     switch ((int32)tag) {
-#define TAGLIB_PROPERTY_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, flags)   \
+#define TAGLIB_PROPERTY_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)   \
     case CAT(TAG_, SUFFIX):                                            \
         if (TAG_DISPLAY_NAME_LEN(DISP) >= cap) {                       \
             out[0] = '\0';                                             \
@@ -528,7 +528,7 @@ ncm_tag_type_taglib_property_len(enum TagType tag, char *out, int32 cap) {
         }                                                              \
         result = ascii_normalize_upper_compact(                        \
             out, TAG_DISPLAY_NAME(DISP), TAG_DISPLAY_NAME_LEN(DISP));  \
-        if (((flags) & TAG_FLAG_TAGLIB_NUMBER) == 0) {                 \
+        if (((FLAGS) & TAG_FLAG_TAGLIB_NUMBER) == 0) {                 \
             return result;                                             \
         }                                                              \
         if (result + STRLIT_LEN("NUMBER") >= cap) {                    \
@@ -556,7 +556,7 @@ ncm_tag_type_taglib_name_len(enum TagType tag, char *out, int32 cap) {
     ASSERT(cap > 0);
 
     switch ((int32)tag) {
-#define TAGLIB_NAME_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, flags)      \
+#define TAGLIB_NAME_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)      \
     case CAT(TAG_, SUFFIX):                                           \
         if (TAG_DISPLAY_NAME_LEN(DISP) >= cap) {                      \
             out[0] = '\0';                                            \
@@ -583,7 +583,7 @@ ncm_tags_field_taglib_property_len(enum TagsField field, char *out, int32 cap) {
     ASSERT(cap > 0);
 
     switch (field) {
-#define TAGLIB_FIELD_PROPERTY_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, flags)    \
+#define TAGLIB_FIELD_PROPERTY_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)    \
     case CAT(TAGS_FIELD_, SUFFIX):                                            \
         return ncm_tag_type_taglib_property_len(CAT(TAG_, SUFFIX), out, cap);
 
@@ -602,7 +602,7 @@ ncm_tags_field_taglib_property_len(enum TagsField field, char *out, int32 cap) {
 static inline char
 ncm_tags_field_format_char(enum TagsField field) {
     switch (field) {
-#define TAGS_FIELD_FORMAT_CHAR_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, flags) \
+#define TAGS_FIELD_FORMAT_CHAR_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS) \
     case CAT(TAGS_FIELD_, SUFFIX):                                          \
         return CHAR;
 
@@ -634,7 +634,7 @@ ncm_song_getter_format_char(enum SongGetter getter) {
 #define NCM_SONG_GETTER_NON_TAG_CHAR_CASE(getter, DISP, GETTER_CHAR)           \
     case getter:                                                               \
         return GETTER_CHAR;
-#define NCM_SONG_GETTER_TAG_CHAR_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, flags)  \
+#define NCM_SONG_GETTER_TAG_CHAR_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)  \
     case CAT(SONG_GETTER_, SUFFIX):                                            \
         return GETTER_CHAR;
 
