@@ -24,33 +24,42 @@ search_engine_tag_item_song(void *item) {
     return &row->song;
 }
 
-static char *search_constraint_names[] = {
-    "Any",
-    "Artist",
-    "Album Artist",
-    "Title",
-    "Album",
-    "Filename",
-    "Composer",
-    "Performer",
-    "Genre",
-    "Date",
-    "Comment",
+typedef struct SearchConstraintMetadata {
+    char *name;
+    int32 name_len;
+    enum NcmTagType tag;
+} SearchConstraintMetadata;
+
+#define SEARCH_CONSTRAINT_TAG_ENTRY(tag_value, tag_name, alias, tag_char, \
+                                    field_suffix, getter_suffix,             \
+                                    getter_char, taglib_property,            \
+                                    taglib_name, settings_name, mpd, flags)  \
+    {                                                                         \
+        .name = #alias,                                                       \
+        .name_len = STRLIT_LEN(#alias),                                       \
+        .tag = tag_value,                                                     \
+    },
+
+static SearchConstraintMetadata search_constraints[] = {
+    {
+        .name = "Any",
+        .name_len = STRLIT_LEN("Any"),
+        .tag = NCM_TAG_UNKNOWN,
+    },
+    NCM_TAG_SEARCH_DEFS(SEARCH_CONSTRAINT_TAG_ENTRY)
 };
 
-static int32 search_constraint_name_lens[] = {
-    STRLIT_LEN("Any"),
-    STRLIT_LEN("Artist"),
-    STRLIT_LEN("Album Artist"),
-    STRLIT_LEN("Title"),
-    STRLIT_LEN("Album"),
-    STRLIT_LEN("Filename"),
-    STRLIT_LEN("Composer"),
-    STRLIT_LEN("Performer"),
-    STRLIT_LEN("Genre"),
-    STRLIT_LEN("Date"),
-    STRLIT_LEN("Comment"),
-};
+#undef SEARCH_CONSTRAINT_TAG_ENTRY
+
+_Static_assert(LENGTH(search_constraints) == SEARCH_ENGINE_CONSTRAINT_COUNT,
+               "search constraint count changed");
+
+static SearchConstraintMetadata *
+search_constraint_metadata(int32 idx) {
+    ASSERT(idx >= 0);
+    ASSERT(idx < SEARCH_ENGINE_CONSTRAINT_COUNT);
+    return &search_constraints[idx];
+}
 
 static char *search_mode_names[] = {
     "Match if tag contains searched phrase (no regexes)",
@@ -251,13 +260,13 @@ search_append_format(NcBuffer *buffer, enum NcFormat format) {
 static void
 search_build_constraint_row(SearchEngineScreen *screen, int32 idx,
                             NcBuffer *buffer) {
+    SearchConstraintMetadata *metadata;
     StrBuilder *value = &screen->constraints[idx];
 
+    metadata = search_constraint_metadata(idx);
     nc_buffer_clear(buffer);
     search_append_format(buffer, NC_FORMAT_BOLD);
-    nc_buffer_append_data(buffer,
-                          search_constraint_names[idx],
-                          search_constraint_name_lens[idx]);
+    nc_buffer_append_data(buffer, metadata->name, metadata->name_len);
     while (buffer->len < 13) {
         nc_buffer_append_char(buffer, ' ');
     }
@@ -304,12 +313,13 @@ search_run_current(NcScreen *base_screen) {
             prompt_status = SEARCH_ENGINE_PROMPT_ERROR;
         } else {
             StrBuilder *constraint = &screen->constraints[pos];
-            char *name = search_constraint_names[pos];
-            int32 name_len = search_constraint_name_lens[pos];
+            SearchConstraintMetadata *metadata;
 
+            metadata = search_constraint_metadata(pos);
             prompt_status =
                 screen->hooks.prompt_constraint(screen->hooks.user,
-                                                name, name_len,
+                                                metadata->name,
+                                                metadata->name_len,
                                                 constraint, &value);
         }
 
@@ -997,41 +1007,19 @@ search_compile_regex(NcmRegex *regex, StrBuilder *constraint,
 
 static bool
 search_song_has_field_view(NcmSong *song, int32 field, StringView *view) {
+    SearchConstraintMetadata *metadata;
     enum NcmTagType tag;
 
-    if (field == 5) {
-        return ncm_song_has_name_view(song, 0, view);
+    if ((field <= 0) || (field >= SEARCH_ENGINE_CONSTRAINT_COUNT)) {
+        return false;
     }
 
-    switch (field) {
-    case 1:
-        tag = NCM_TAG_ARTIST;
-        break;
-    case 2:
-        tag = NCM_TAG_ALBUM_ARTIST;
-        break;
-    case 3:
-        tag = NCM_TAG_TITLE;
-        break;
-    case 4:
-        tag = NCM_TAG_ALBUM;
-        break;
-    case 6:
-        tag = NCM_TAG_COMPOSER;
-        break;
-    case 7:
-        tag = NCM_TAG_PERFORMER;
-        break;
-    case 8:
-        tag = NCM_TAG_GENRE;
-        break;
-    case 9:
-        tag = NCM_TAG_DATE;
-        break;
-    case 10:
-        tag = NCM_TAG_COMMENT;
-        break;
-    default:
+    metadata = search_constraint_metadata(field);
+    tag = metadata->tag;
+    if (tag == NCM_TAG_NAME) {
+        return ncm_song_has_name_view(song, 0, view);
+    }
+    if (tag == NCM_TAG_UNKNOWN) {
         return false;
     }
     return ncm_song_has_tag_view(song, tag, 0, view);
@@ -1117,52 +1105,22 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                  (i < SEARCH_ENGINE_CONSTRAINT_COUNT)
                      && (constraint_status == 0);
                  i += 1) {
+                SearchConstraintMetadata *metadata;
                 enum NcmTagType tag;
 
                 constraint = &screen->constraints[i];
                 if (constraint->len <= 0) {
                     continue;
                 }
-                if (i == 5) {
+                metadata = search_constraint_metadata(i);
+                tag = metadata->tag;
+                if (tag == NCM_TAG_NAME) {
                     constraint_status =
                         ncm_mpd_client_add_search_uri(client, constraint->data,
                                                       ncm_error);
                     continue;
                 }
-
-                switch (i) {
-                case 1:
-                    tag = NCM_TAG_ARTIST;
-                    break;
-                case 2:
-                    tag = NCM_TAG_ALBUM_ARTIST;
-                    break;
-                case 3:
-                    tag = NCM_TAG_TITLE;
-                    break;
-                case 4:
-                    tag = NCM_TAG_ALBUM;
-                    break;
-                case 6:
-                    tag = NCM_TAG_COMPOSER;
-                    break;
-                case 7:
-                    tag = NCM_TAG_PERFORMER;
-                    break;
-                case 8:
-                    tag = NCM_TAG_GENRE;
-                    break;
-                case 9:
-                    tag = NCM_TAG_DATE;
-                    break;
-                case 10:
-                    tag = NCM_TAG_COMMENT;
-                    break;
-                default:
-                    ASSERT(false);
-                    continue;
-                }
-
+                ASSERT(tag != NCM_TAG_UNKNOWN);
                 constraint_status =
                     ncm_mpd_client_add_search_tag(client, tag, constraint->data,
                                                   ncm_error);

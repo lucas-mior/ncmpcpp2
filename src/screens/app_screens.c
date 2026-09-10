@@ -40,30 +40,19 @@ struct SongInfoScreen {
     bool initialized;
 };
 
-#define NCM_SONG_INFO_TAGS(XX)                                          \
-    XX("Title", SONG_GETTER_TITLE, NCM_TAGS_FIELD_TITLE)                \
-    XX("Artist", SONG_GETTER_ARTIST, NCM_TAGS_FIELD_ARTIST)             \
-    XX("Album Artist", SONG_GETTER_ALBUM_ARTIST,                         \
-       NCM_TAGS_FIELD_ALBUM_ARTIST)                                      \
-    XX("Album", SONG_GETTER_ALBUM, NCM_TAGS_FIELD_ALBUM)                \
-    XX("Date", SONG_GETTER_DATE, NCM_TAGS_FIELD_DATE)                   \
-    XX("Track", SONG_GETTER_TRACK, NCM_TAGS_FIELD_TRACK)                \
-    XX("Genre", SONG_GETTER_GENRE, NCM_TAGS_FIELD_GENRE)                \
-    XX("Composer", SONG_GETTER_COMPOSER, NCM_TAGS_FIELD_COMPOSER)       \
-    XX("Performer", SONG_GETTER_PERFORMER, NCM_TAGS_FIELD_PERFORMER)    \
-    XX("Disc", SONG_GETTER_DISC, NCM_TAGS_FIELD_DISC)                   \
-    XX("Comment", SONG_GETTER_COMMENT, NCM_TAGS_FIELD_COMMENT)
-
-#define NCM_SONG_INFO_TAG_ENTRY(tag_name, tag_get, tag_field) \
-    {                                                         \
-        .name = tag_name,                                     \
-        .name_len = STRLIT_LEN(tag_name),                     \
-        .get = tag_get,                                       \
-        .field = tag_field,                                   \
+#define NCM_SONG_INFO_TAG_ENTRY(tag_value, tag_name, alias, tag_char,    \
+                                field_suffix, getter_suffix, getter_char,  \
+                                taglib_property, taglib_name,              \
+                                settings_name, mpd, flags)                 \
+    {                                                                       \
+        .name = tag_name,                                                   \
+        .name_len = STRLIT_LEN(tag_name),                                   \
+        .get = CAT(SONG_GETTER_, getter_suffix),                            \
+        .field = CAT(NCM_TAGS_FIELD_, field_suffix),                        \
     },
 
 NcmSongInfoMetadata ncm_song_info_tags[] = {
-    NCM_SONG_INFO_TAGS(NCM_SONG_INFO_TAG_ENTRY)
+    NCM_TAG_SONG_INFO_DEFS(NCM_SONG_INFO_TAG_ENTRY)
     {
         .name = NULL,
         .name_len = 0,
@@ -73,7 +62,6 @@ NcmSongInfoMetadata ncm_song_info_tags[] = {
 };
 
 #undef NCM_SONG_INFO_TAG_ENTRY
-#undef NCM_SONG_INFO_TAGS
 static void
 app_request_registered_resize(enum NcScreenType type) {
     NcScreen *screen;
@@ -1125,11 +1113,11 @@ append_song_tag(NcBuffer *buffer, StrBuilder *tag) {
 }
 
 static void
-append_song_key_value(NcBuffer *buffer, char *key, StrBuilder *value,
-                      bool empty_as_missing) {
+append_song_key_value(NcBuffer *buffer, char *key, int32 key_len,
+                      StrBuilder *value, bool empty_as_missing) {
     append_format(buffer, NC_FORMAT_BOLD);
     append_formatted_color(buffer, &Config.color1);
-    nc_buffer_append_data(buffer, key, strlen32(key));
+    nc_buffer_append_data(buffer, key, key_len);
     nc_buffer_append_data(buffer, STRLIT(":"));
     append_formatted_color_end(buffer, &Config.color1);
     append_format(buffer, NC_FORMAT_NO_BOLD);
@@ -1641,20 +1629,29 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
         return 0;
     }
 
-    value = ncm_song_getter_buffer(&owner->song, SONG_GETTER_NAME, 0);
-    append_song_key_value(buffer, "Filename", &value, false);
-    sb_free(&value);
+    {
+        char *name;
+        int32 name_len;
 
-    value = ncm_song_getter_buffer(&owner->song, SONG_GETTER_DIRECTORY, 0);
-    append_song_key_value(buffer, "Directory", &value, true);
-    sb_free(&value);
-    nc_buffer_append_data(buffer, STRLIT("\n"));
+        value = ncm_song_getter_buffer(&owner->song, SONG_GETTER_NAME, 0);
+        name_len = ncm_song_getter_display_name_len(SONG_GETTER_NAME, &name);
+        append_song_key_value(buffer, name, name_len, &value, false);
+        sb_free(&value);
 
-    value = ncm_song_getter_buffer(&owner->song, SONG_GETTER_LENGTH, 0);
-    append_song_key_value(buffer, "Length", &value, false);
-    sb_free(&value);
+        value = ncm_song_getter_buffer(&owner->song, SONG_GETTER_DIRECTORY, 0);
+        name_len = ncm_song_getter_display_name_len(SONG_GETTER_DIRECTORY,
+                                                    &name);
+        append_song_key_value(buffer, name, name_len, &value, true);
+        sb_free(&value);
+        nc_buffer_append_data(buffer, STRLIT("\n"));
 
-    for (int32 i = 0; ncm_song_info_tags[i].name; i += 1) {
+        value = ncm_song_getter_buffer(&owner->song, SONG_GETTER_LENGTH, 0);
+        name_len = ncm_song_getter_display_name_len(SONG_GETTER_LENGTH, &name);
+        append_song_key_value(buffer, name, name_len, &value, false);
+        sb_free(&value);
+    }
+
+    for (int32 i = 0; i < NCM_SONG_INFO_TAG_COUNT; i += 1) {
         append_format(buffer, NC_FORMAT_BOLD);
         nc_buffer_append_data(buffer, STRLIT("\n"));
         nc_buffer_append_data(buffer, ncm_song_info_tags[i].name,
