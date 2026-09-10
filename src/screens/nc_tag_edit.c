@@ -342,6 +342,8 @@ tag_edit_update_menu_highlights(TagEditScreen *screen) {
                                  &Config.current_item_inactive_column_prefix);
     nc_menu_set_highlight_suffix(parser_actions,
                                  &Config.current_item_inactive_column_suffix);
+    nc_menu_set_highlighting(
+        parser_actions, !tag_edit_focus_is_parser_helper(screen->active_focus));
 
     if ((active = tag_edit_screen_active_menu(screen))) {
         nc_menu_set_highlight_prefix(active, &Config.current_item_prefix);
