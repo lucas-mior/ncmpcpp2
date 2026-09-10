@@ -518,8 +518,8 @@ ncm_binding_append_normal(NcmBinding *binding, enum ActionType type) {
 }
 
 static int32
-ncm_bindings_command_lower_bound(NcmBindingsConfiguration *bindings, char *name,
-                                 int32 name_len) {
+ncm_bindings_command_lower_bound(NcmBindingsConfiguration *bindings,
+                                 char *name, int32 name_len) {
     int32 first = 0;
     int32 count = bindings->commands_len;
 
