@@ -8,110 +8,110 @@ instances and remove the file from the list. If the first file in the list does
 not have the problems, try the next one without asking first.
 
 # List for the first 2 problems:
-src/global.c
-src/actions.c
-src/c/ncm_job.c
-src/screens/nc_help.c
-src/screens/nc_screen_switcher.c
-src/c/ncm_sample_buffer.c
-src/c/ncm_app_arrays.c
-src/config_options_dummy.h
-src/c/ncm_directory.c
-src/curses/nc_app_menus.c
-src/curses/nc_curses.c
-src/screens/app_screens.c
-src/c/ncm_playlist.c
-src/global.h
-src/screens/nc_browser.c
-src/screens/nc_search_engine.c
-src/settings.h
-src/app_state.h
-src/curses/nc_formatted_color.c
-src/lastfm_service.c
-src/curses/nc_scrollpad.c
-src/mpd/ncm_mpd_connection.c
-src/screens/nc_screens.h
-src/config_options_pass.h
-src/screens/nc_lastfm.c
-src/c/ncm_c.c
-src/app_state.c
-src/actions.h
-src/c/ncm_search_prompt.c
-src/c/ncm_fs.c
-src/mpd/ncmpcpp2_mpd.h
-src/statusbar.c
-src/title.c
-src/c/ncm_conversion.c
-src/mpd/ncm_mpd_item.c
-src/bindings.c
-src/screens/screen_type.c
-src/lyrics_fetcher.c
-src/c/ncm_path.c
-src/screens/nc_screen.c
-src/app_legacy_bridge.h
-src/screens/nc_tiny_tag_edit.c
-src/screens/nc_sel_items_adder.c
-src/bindings.h
-src/mpd/ncm_mpd_client.c
-src/mpd/ncm_mpd.c
-src/helpers.c
-src/screens/nc_sort_playlist.c
-src/helpers.h
-src/c/ncm_enums.c
-src/screens/nc_outputs.c
-src/screens/nc_tag_edit.c
-src/c/ncm_error.c
-src/screens/nc_server_info.c
-src/config.c
-src/status.c
-src/app_controller.h
-src/config_options.h
-src/c/ncm_display.c
-src/main.c
-src/c/ncm_option_parser.c
-src/screens/nc_screen_impl_template.h
-src/c/ncm_regex.c
-src/ui_state.h
-src/curl_handle.c
-src/curl_handle.h
-src/configura.h
-src/c/ncm_song.c
-src/settings_types.c
-src/c/ncm_type_conversions.c
-src/app_controller.c
-src/screens/nc_playlist_edit.c
-src/statusbar.h
-src/screens/nc_media_library.c
-src/lastfm_service.h
-src/c/mutable_song.c
-src/lyrics_fetcher.h
-src/curses/nc_window.c
-src/screens/nc_song_info.c
-src/c/ncm_lrc.c
-src/settings.c
-src/c/ncm_taglib.c
-src/screens/nc_screens.c
-src/c/ncm_format.c
-src/screens/nc_scrollpad_screen.c
-src/curses/nc_menu.c
-src/c/ncm_playlist_sort.c
-src/screens/nc_visualizer.c
-src/curses/nc_cyclic_buffer.c
-src/c/ncm_comparators.c
-src/ui_state.c
-src/c/ncm_utilities.c
-src/c/ncm_html.c
-src/screens/nc_lyrics.c
-src/curses/nc_buffer.c
-src/config.h
-src/c/ncm_tags.c
-src/c/ncm_string.c
-src/title.h
-src/curses/nc_curses.h
-src/app_legacy_bridge.c
-src/screens/nc_playlist.c
-src/c/ncm_c.h
-src/status.h
+- src/global.c
+- src/actions.c
+- src/c/ncm_job.c
+- src/screens/nc_help.c
+- src/screens/nc_screen_switcher.c
+- src/c/ncm_sample_buffer.c
+- src/c/ncm_app_arrays.c
+- src/config_options_dummy.h
+- src/c/ncm_directory.c
+- src/curses/nc_app_menus.c
+- src/curses/nc_curses.c
+- src/screens/app_screens.c
+- src/c/ncm_playlist.c
+- src/global.h
+- src/screens/nc_browser.c
+- src/screens/nc_search_engine.c
+- src/settings.h
+- src/app_state.h
+- src/curses/nc_formatted_color.c
+- src/lastfm_service.c
+- src/curses/nc_scrollpad.c
+- src/mpd/ncm_mpd_connection.c
+- src/screens/nc_screens.h
+- src/config_options_pass.h
+- src/screens/nc_lastfm.c
+- src/c/ncm_c.c
+- src/app_state.c
+- src/actions.h
+- src/c/ncm_search_prompt.c
+- src/c/ncm_fs.c
+- src/mpd/ncmpcpp2_mpd.h
+- src/statusbar.c
+- src/title.c
+- src/c/ncm_conversion.c
+- src/mpd/ncm_mpd_item.c
+- src/bindings.c
+- src/screens/screen_type.c
+- src/lyrics_fetcher.c
+- src/c/ncm_path.c
+- src/screens/nc_screen.c
+- src/app_legacy_bridge.h
+- src/screens/nc_tiny_tag_edit.c
+- src/screens/nc_sel_items_adder.c
+- src/bindings.h
+- src/mpd/ncm_mpd_client.c
+- src/mpd/ncm_mpd.c
+- src/helpers.c
+- src/screens/nc_sort_playlist.c
+- src/helpers.h
+- src/c/ncm_enums.c
+- src/screens/nc_outputs.c
+- src/screens/nc_tag_edit.c
+- src/c/ncm_error.c
+- src/screens/nc_server_info.c
+- src/config.c
+- src/status.c
+- src/app_controller.h
+- src/config_options.h
+- src/c/ncm_display.c
+- src/main.c
+- src/c/ncm_option_parser.c
+- src/screens/nc_screen_impl_template.h
+- src/c/ncm_regex.c
+- src/ui_state.h
+- src/curl_handle.c
+- src/curl_handle.h
+- src/configura.h
+- src/c/ncm_song.c
+- src/settings_types.c
+- src/c/ncm_type_conversions.c
+- src/app_controller.c
+- src/screens/nc_playlist_edit.c
+- src/statusbar.h
+- src/screens/nc_media_library.c
+- src/lastfm_service.h
+- src/c/mutable_song.c
+- src/lyrics_fetcher.h
+- src/curses/nc_window.c
+- src/screens/nc_song_info.c
+- src/c/ncm_lrc.c
+- src/settings.c
+- src/c/ncm_taglib.c
+- src/screens/nc_screens.c
+- src/c/ncm_format.c
+- src/screens/nc_scrollpad_screen.c
+- src/curses/nc_menu.c
+- src/c/ncm_playlist_sort.c
+- src/screens/nc_visualizer.c
+- src/curses/nc_cyclic_buffer.c
+- src/c/ncm_comparators.c
+- src/ui_state.c
+- src/c/ncm_utilities.c
+- src/c/ncm_html.c
+- src/screens/nc_lyrics.c
+- src/curses/nc_buffer.c
+- src/config.h
+- src/c/ncm_tags.c
+- src/c/ncm_string.c
+- src/title.h
+- src/curses/nc_curses.h
+- src/app_legacy_bridge.c
+- src/screens/nc_playlist.c
+- src/c/ncm_c.h
+- src/status.h
 
 ## breaking function calls before the first argument and not aligning
 For instance, this is bad:
