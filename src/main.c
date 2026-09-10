@@ -68,7 +68,7 @@ app_signal_handler(int32 signal_number) {
 
 static void
 app_destroy_state(void) {
-    ncm_bindings_config_destroy(&Bindings);
+    bindings_config_destroy(&Bindings);
     config_destroy(&Config);
     global_state_destroy();
     return;
@@ -226,7 +226,7 @@ main(int32 argc, char **argv) {
 
         global_timer_update();
 
-        if (ncm_bindings_config_get(&Bindings, input, &bindings) > 0) {
+        if (bindings_config_get(&Bindings, input, &bindings) > 0) {
             for (int32 i = 0; i < bindings.len; i += 1) {
                 if (ncmpcpp_execute_binding(bindings.data + i) == 0) {
                     break;

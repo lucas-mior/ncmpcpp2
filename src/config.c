@@ -746,7 +746,7 @@ configure(int32 argc, char **argv) {
 
     status = ncm_config_options_apply(&options, &ncm_error);
     if ((status >= 0) && !options.current_song) {
-        ncm_bindings_config_clear(&Bindings);
+        bindings_config_clear(&Bindings);
         for (int32 i = 0; i < options.bindings_paths.len; i += 1) {
             StrBuilder *path;
 
@@ -754,14 +754,14 @@ configure(int32 argc, char **argv) {
             if ((status = ncm_path_expand_home(path, &ncm_error)) < 0) {
                 break;
             }
-            if ((status = ncm_bindings_config_read(&Bindings,
+            if ((status = bindings_config_read(&Bindings,
                                                    path->data, path->len,
                                                    &ncm_error)) < 0) {
                 break;
             }
         }
         if (status >= 0) {
-            ncm_bindings_config_generate_defaults(&Bindings);
+            bindings_config_generate_defaults(&Bindings);
         }
     }
     if ((status >= 0) && options.current_song) {

@@ -1193,10 +1193,10 @@ append_help(NcBuffer *buffer, enum ActionType type, char *description) {
         for (int32 j = 0; j < key_bindings->bindings_len; j += 1) {
             NcmBinding *binding = &key_bindings->bindings[j];
 
-            if (!ncm_binding_is_single_action_type(binding, type)) {
+            if (!binding_is_single_action_type(binding, type)) {
                 continue;
             }
-            key_len = ncm_bindings_key_name(key_bindings->key, key_name,
+            key_len = bindings_key_name(key_bindings->key, key_name,
                                             SIZEOF(key_name));
             if (key_len <= 0) {
                 continue;

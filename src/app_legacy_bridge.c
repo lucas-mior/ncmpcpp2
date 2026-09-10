@@ -372,10 +372,10 @@ ncmpcpp_execute_binding(NcmBinding *binding) {
     if (binding == NULL) {
         return -EINVAL;
     }
-    if (!ncm_binding_can_execute_default(binding)) {
+    if (!binding_can_execute_default(binding)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    return ncm_binding_execute_default(binding);
+    return binding_execute_default(binding);
 }
 
 int32

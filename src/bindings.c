@@ -12,7 +12,7 @@
 NcmBindingsConfiguration Bindings;
 
 static void
-ncm_bindings_error(NcmError *ncm_error, char *format, ...) {
+bindings_error(NcmError *ncm_error, char *format, ...) {
     va_list args;
     char buffer[256];
     int32 len;
@@ -102,14 +102,14 @@ ncm_extract_enclosed(char *line, int32 line_len, char open, char close,
 }
 
 void
-ncm_binding_action_init(NcmBindingAction *action) {
+binding_action_init(NcmBindingAction *action) {
     action->kind = NCM_BINDING_ACTION_NORMAL;
     action->value.type = ACTION_DUMMY;
     return;
 }
 
 void
-ncm_binding_action_destroy(NcmBindingAction *action) {
+binding_action_destroy(NcmBindingAction *action) {
     switch (action->kind) {
     case NCM_BINDING_ACTION_PUSH_CHARACTERS:
         free2(action->value.keys.data,
@@ -125,14 +125,14 @@ ncm_binding_action_destroy(NcmBindingAction *action) {
     default:
         break;
     }
-    ncm_binding_action_init(action);
+    binding_action_init(action);
     return;
 }
 
 static void
-ncm_binding_action_copy(NcmBindingAction *dest,
+binding_action_copy(NcmBindingAction *dest,
                         NcmBindingAction *source) {
-    ncm_binding_action_init(dest);
+    binding_action_init(dest);
     dest->kind = source->kind;
 
     switch (source->kind) {
@@ -175,24 +175,24 @@ ncm_binding_action_copy(NcmBindingAction *dest,
 }
 
 void
-ncm_binding_destroy(NcmBinding *binding) {
-    ncm_binding_clear(binding);
+binding_destroy(NcmBinding *binding) {
+    binding_clear(binding);
     free2(binding->actions, binding->actions_cap*SIZEOF(*binding->actions));
     *binding = (NcmBinding){0};
     return;
 }
 
 void
-ncm_binding_clear(NcmBinding *binding) {
+binding_clear(NcmBinding *binding) {
     for (int32 i = 0; i < binding->actions_len; i += 1) {
-        ncm_binding_action_destroy(binding->actions + i);
+        binding_action_destroy(binding->actions + i);
     }
     binding->actions_len = 0;
     return;
 }
 
 void
-ncm_binding_append_action(NcmBinding *binding, NcmBindingAction *action) {
+binding_append_action(NcmBinding *binding, NcmBindingAction *action) {
     NcmBindingAction copy;
 
     if (binding->actions_len >= binding->actions_cap) {
@@ -208,23 +208,23 @@ ncm_binding_append_action(NcmBinding *binding, NcmBindingAction *action) {
         binding->actions_cap = new_cap;
     }
 
-    ncm_binding_action_copy(&copy, action);
+    binding_action_copy(&copy, action);
     binding->actions[binding->actions_len] = copy;
     binding->actions_len += 1;
     return;
 }
 
 void
-ncm_binding_copy(NcmBinding *dest, NcmBinding *source) {
+binding_copy(NcmBinding *dest, NcmBinding *source) {
     *dest = (NcmBinding){0};
     for (int32 i = 0; i < source->actions_len; i += 1) {
-        ncm_binding_append_action(dest, source->actions + i);
+        binding_append_action(dest, source->actions + i);
     }
     return;
 }
 
 bool
-ncm_binding_action_can_run(NcmBindingAction *action,
+binding_action_can_run(NcmBindingAction *action,
                            NcmBindingRuntime *runtime) {
     if (action == NULL) {
         return false;
@@ -256,17 +256,17 @@ ncm_binding_action_can_run(NcmBindingAction *action,
 }
 
 bool
-ncm_binding_runtime_can_run_action(enum ActionType type, void *user) {
+binding_runtime_can_run_action(enum ActionType type, void *user) {
     return ncm_action_runtime_can_run(user, type);
 }
 
 int32
-ncm_binding_runtime_run_action(enum ActionType type, void *user) {
+binding_runtime_run_action(enum ActionType type, void *user) {
     return ncm_action_runtime_run(user, type);
 }
 
 bool
-ncm_binding_runtime_current_screen_is(enum ScreenType screen_type, void *user) {
+binding_runtime_current_screen_is(enum ScreenType screen_type, void *user) {
     NcScreen *screen;
     enum NcScreenType nc_type;
 
@@ -280,7 +280,7 @@ ncm_binding_runtime_current_screen_is(enum ScreenType screen_type, void *user) {
 }
 
 void
-ncm_binding_runtime_push_key(NcKey key, void *user) {
+binding_runtime_push_key(NcKey key, void *user) {
     NcWindow *window;
 
     (void)user;
@@ -291,14 +291,14 @@ ncm_binding_runtime_push_key(NcKey key, void *user) {
 }
 
 int32
-ncm_binding_runtime_run_external_command(char *command, int32 command_len,
+binding_runtime_run_external_command(char *command, int32 command_len,
                                          void *user) {
     (void)user;
     return ncm_run_external_command(command, command_len, true, NULL);
 }
 
 int32
-ncm_binding_runtime_run_external_console_command(char *command,
+binding_runtime_run_external_console_command(char *command,
                                                  int32 command_len,
                                                  void *user) {
     int32 status;
@@ -311,18 +311,18 @@ ncm_binding_runtime_run_external_console_command(char *command,
 }
 
 NcmBindingRuntime *
-ncm_binding_default_runtime(void) {
+binding_default_runtime(void) {
     static NcmBindingRuntime runtime;
     static bool initialized;
 
     if (!initialized) {
-        runtime.can_run_action = ncm_binding_runtime_can_run_action;
-        runtime.run_action = ncm_binding_runtime_run_action;
-        runtime.current_screen_is = ncm_binding_runtime_current_screen_is;
-        runtime.push_key = ncm_binding_runtime_push_key;
-        runtime.run_external_command = ncm_binding_runtime_run_external_command;
+        runtime.can_run_action = binding_runtime_can_run_action;
+        runtime.run_action = binding_runtime_run_action;
+        runtime.current_screen_is = binding_runtime_current_screen_is;
+        runtime.push_key = binding_runtime_push_key;
+        runtime.run_external_command = binding_runtime_run_external_command;
         runtime.run_external_console_command =
-            ncm_binding_runtime_run_external_console_command;
+            binding_runtime_run_external_console_command;
         runtime.user = ncm_action_runtime_global();
         initialized = true;
     }
@@ -330,16 +330,16 @@ ncm_binding_default_runtime(void) {
 }
 
 bool
-ncm_binding_can_execute_default(NcmBinding *binding) {
+binding_can_execute_default(NcmBinding *binding) {
     NcmBindingRuntime *runtime;
 
     if ((binding == NULL) || (binding->actions_len <= 0)) {
         return false;
     }
 
-    runtime = ncm_binding_default_runtime();
+    runtime = binding_default_runtime();
     for (int32 i = 0; i < binding->actions_len; i += 1) {
-        if (!ncm_binding_action_can_run(binding->actions + i, runtime)) {
+        if (!binding_action_can_run(binding->actions + i, runtime)) {
             return false;
         }
     }
@@ -348,7 +348,7 @@ ncm_binding_can_execute_default(NcmBinding *binding) {
 }
 
 int32
-ncm_binding_execute_default(NcmBinding *binding) {
+binding_execute_default(NcmBinding *binding) {
     NcmBindingRuntime *runtime;
     int32 status;
 
@@ -359,11 +359,11 @@ ncm_binding_execute_default(NcmBinding *binding) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    runtime = ncm_binding_default_runtime();
+    runtime = binding_default_runtime();
     for (int32 i = 0; i < binding->actions_len; i += 1) {
         NcmBindingAction *action = &binding->actions[i];
 
-        if (!ncm_binding_action_can_run(action, runtime)) {
+        if (!binding_action_can_run(action, runtime)) {
             return -NCM_ERROR_UNAVAILABLE;
         }
 
@@ -404,7 +404,7 @@ ncm_binding_execute_default(NcmBinding *binding) {
 }
 
 bool
-ncm_binding_is_single_action_type(NcmBinding *binding,
+binding_is_single_action_type(NcmBinding *binding,
                                   enum ActionType type) {
     if ((binding == NULL) || (binding->actions_len != 1)) {
         return false;
@@ -418,7 +418,7 @@ ncm_binding_is_single_action_type(NcmBinding *binding,
 void
 ncm_command_destroy(NcmCommand *command) {
     free2(command->name, command->name_cap);
-    ncm_binding_destroy(&command->binding);
+    binding_destroy(&command->binding);
     *command = (NcmCommand){0};
     return;
 }
@@ -433,8 +433,8 @@ ncm_key_bindings_init(NcmKeyBindings *key_bindings) {
 }
 
 void
-ncm_bindings_config_destroy(NcmBindingsConfiguration *bindings) {
-    ncm_bindings_config_clear(bindings);
+bindings_config_destroy(NcmBindingsConfiguration *bindings) {
+    bindings_config_clear(bindings);
     free2(bindings->commands,
           bindings->commands_cap*SIZEOF(*bindings->commands));
     free2(bindings->keys, bindings->keys_cap*SIZEOF(*bindings->keys));
@@ -443,7 +443,7 @@ ncm_bindings_config_destroy(NcmBindingsConfiguration *bindings) {
 }
 
 void
-ncm_bindings_config_clear(NcmBindingsConfiguration *bindings) {
+bindings_config_clear(NcmBindingsConfiguration *bindings) {
     for (int32 i = 0; i < bindings->commands_len; i += 1) {
         ncm_command_destroy(bindings->commands + i);
     }
@@ -451,7 +451,7 @@ ncm_bindings_config_clear(NcmBindingsConfiguration *bindings) {
         NcmKeyBindings *key_bindings = bindings->keys + i;
 
         for (int32 j = 0; j < key_bindings->bindings_len; j += 1) {
-            ncm_binding_destroy(key_bindings->bindings + j);
+            binding_destroy(key_bindings->bindings + j);
         }
         free2(key_bindings->bindings,
               key_bindings->bindings_cap*SIZEOF(*key_bindings->bindings));
@@ -501,24 +501,24 @@ ncm_read_key(NcWindow *window) {
 }
 
 int32
-ncm_bindings_key_name(NcKey key, char *buffer, int32 buffer_len) {
+bindings_key_name(NcKey key, char *buffer, int32 buffer_len) {
     return nc_key_name(key, buffer, buffer_len);
 }
 
 static void
-ncm_binding_append_normal(NcmBinding *binding, enum ActionType type) {
+binding_append_normal(NcmBinding *binding, enum ActionType type) {
     NcmBindingAction action;
 
-    ncm_binding_action_init(&action);
+    binding_action_init(&action);
     action.kind = NCM_BINDING_ACTION_NORMAL;
     action.value.type = type;
-    ncm_binding_append_action(binding, &action);
-    ncm_binding_action_destroy(&action);
+    binding_append_action(binding, &action);
+    binding_action_destroy(&action);
     return;
 }
 
 static int32
-ncm_bindings_command_lower_bound(NcmBindingsConfiguration *bindings,
+bindings_command_lower_bound(NcmBindingsConfiguration *bindings,
                                  char *name, int32 name_len) {
     int32 first = 0;
     int32 count = bindings->commands_len;
@@ -554,7 +554,7 @@ ncm_bindings_command_lower_bound(NcmBindingsConfiguration *bindings,
 }
 
 static int32
-ncm_bindings_key_lower_bound(NcmBindingsConfiguration *bindings, NcKey key) {
+bindings_key_lower_bound(NcmBindingsConfiguration *bindings, NcKey key) {
     int32 first = 0;
     int32 count = bindings->keys_len;
 
@@ -573,11 +573,11 @@ ncm_bindings_key_lower_bound(NcmBindingsConfiguration *bindings, NcKey key) {
 }
 
 static int32
-ncm_bindings_command_index(NcmBindingsConfiguration *bindings, char *name,
+bindings_command_index(NcmBindingsConfiguration *bindings, char *name,
                            int32 name_len) {
     int32 at;
 
-    at = ncm_bindings_command_lower_bound(bindings, name, name_len);
+    at = bindings_command_lower_bound(bindings, name, name_len);
     if ((at >= bindings->commands_len)
         || !STREQUAL(bindings->commands[at].name,
                      bindings->commands[at].name_len, name, name_len)) {
@@ -587,10 +587,10 @@ ncm_bindings_command_index(NcmBindingsConfiguration *bindings, char *name,
 }
 
 static int32
-ncm_bindings_key_index(NcmBindingsConfiguration *bindings, NcKey key) {
+bindings_key_index(NcmBindingsConfiguration *bindings, NcKey key) {
     int32 at;
 
-    at = ncm_bindings_key_lower_bound(bindings, key);
+    at = bindings_key_lower_bound(bindings, key);
     if ((at >= bindings->keys_len) || (bindings->keys[at].key != key)) {
         return -1;
     }
@@ -598,17 +598,17 @@ ncm_bindings_key_index(NcmBindingsConfiguration *bindings, NcKey key) {
 }
 
 static void
-ncm_bindings_bind(NcmBindingsConfiguration *bindings, NcKey key,
+bindings_bind(NcmBindingsConfiguration *bindings, NcKey key,
                   NcmBinding *binding) {
     int32 at;
     NcmKeyBindings *key_bindings;
     NcmBinding copy;
 
-    at = ncm_bindings_key_index(bindings, key);
+    at = bindings_key_index(bindings, key);
     if (at < 0) {
         NcmKeyBindings item;
 
-        at = ncm_bindings_key_lower_bound(bindings, key);
+        at = bindings_key_lower_bound(bindings, key);
         if (bindings->keys_len >= bindings->keys_cap) {
             int32 new_cap;
 
@@ -647,57 +647,57 @@ ncm_bindings_bind(NcmBindingsConfiguration *bindings, NcKey key,
         key_bindings->bindings_cap = new_cap;
     }
 
-    ncm_binding_copy(&copy, binding);
+    binding_copy(&copy, binding);
     key_bindings->bindings[key_bindings->bindings_len] = copy;
     key_bindings->bindings_len += 1;
     return;
 }
 
 static bool
-ncm_bindings_key_is_unbound(NcmBindingsConfiguration *bindings, NcKey key) {
+bindings_key_is_unbound(NcmBindingsConfiguration *bindings, NcKey key) {
     int32 at;
 
     if (key == NC_KEY_NONE) {
         return false;
     }
-    at = ncm_bindings_key_index(bindings, key);
+    at = bindings_key_index(bindings, key);
     return at < 0;
 }
 
 static void
-ncm_bindings_bind_sequence(NcmBindingsConfiguration *bindings,
+bindings_bind_sequence(NcmBindingsConfiguration *bindings,
                            char *key_name, int32 key_name_len,
                            enum ActionType *actions, int32 actions_len) {
     NcmBinding binding = {0};
     NcKey key = nc_key_parse(key_name, key_name_len);
 
-    if (!ncm_bindings_key_is_unbound(bindings, key)) {
+    if (!bindings_key_is_unbound(bindings, key)) {
         return;
     }
 
     for (int32 i = 0; i < actions_len; i += 1) {
-        ncm_binding_append_normal(&binding, actions[i]);
+        binding_append_normal(&binding, actions[i]);
     }
-    ncm_bindings_bind(bindings, key, &binding);
-    ncm_binding_destroy(&binding);
+    bindings_bind(bindings, key, &binding);
+    binding_destroy(&binding);
     return;
 }
 
 static void
-ncm_bindings_bind_group(NcmBindingsConfiguration *bindings,
+bindings_bind_group(NcmBindingsConfiguration *bindings,
                         char *key_name, int32 key_name_len,
                         enum ActionType *actions, int32 actions_len) {
     NcKey key = nc_key_parse(key_name, key_name_len);
 
-    if (!ncm_bindings_key_is_unbound(bindings, key)) {
+    if (!bindings_key_is_unbound(bindings, key)) {
         return;
     }
 
     for (int32 i = 0; i < actions_len; i += 1) {
         NcmBinding binding = {0};
-        ncm_binding_append_normal(&binding, actions[i]);
-        ncm_bindings_bind(bindings, key, &binding);
-        ncm_binding_destroy(&binding);
+        binding_append_normal(&binding, actions[i]);
+        bindings_bind(bindings, key, &binding);
+        binding_destroy(&binding);
     }
     return;
 }
@@ -847,26 +847,26 @@ typedef struct NcmBindingDirective {
 #define NCM_BINDING_DIRECTIVE_ENTRY(name, required, type) \
     {#name, STRLIT_LEN(#name), required, NCM_BINDING_DIRECTIVE_##type},
 
-static NcmBindingDirective ncm_binding_directives[] = {
+static NcmBindingDirective binding_directives[] = {
     NCM_BINDING_DIRECTIVES(NCM_BINDING_DIRECTIVE_ENTRY)
 };
 
 #undef NCM_BINDING_DIRECTIVE_ENTRY
 
 static NcmBindingDirective *
-ncm_binding_directive_find(char *name, int32 name_len) {
-    for (int32 i = 0; i < SIZEOF(ncm_binding_directives)
-                            / SIZEOF(ncm_binding_directives[0]); i += 1) {
-        if (STREQUAL(name, name_len, ncm_binding_directives[i].name,
-                     ncm_binding_directives[i].name_len)) {
-            return ncm_binding_directives + i;
+binding_directive_find(char *name, int32 name_len) {
+    for (int32 i = 0; i < SIZEOF(binding_directives)
+                            / SIZEOF(binding_directives[0]); i += 1) {
+        if (STREQUAL(name, name_len, binding_directives[i].name,
+                     binding_directives[i].name_len)) {
+            return binding_directives + i;
         }
     }
     return NULL;
 }
 
 static int32
-ncm_binding_parse_directive(NcmBindingAction *action,
+binding_parse_directive(NcmBindingAction *action,
                             NcmBindingDirective *directive,
                             StringView argument, NcmError *ncm_error) {
     switch (directive->kind) {
@@ -879,7 +879,7 @@ ncm_binding_parse_directive(NcmBindingAction *action,
 
         action_key = nc_key_parse(argument.data, argument.len);
         if (action_key == NC_KEY_NONE) {
-            ncm_bindings_error(ncm_error, "invalid character passed to "
+            bindings_error(ncm_error, "invalid character passed to "
                                "push_character: '%.*s'",
                                argument.len, argument.data);
             return -NCM_ERROR_PARSE;
@@ -892,7 +892,7 @@ ncm_binding_parse_directive(NcmBindingAction *action,
     }
     case NCM_BINDING_DIRECTIVE_PUSH_CHARACTERS:
         if (argument.len <= 0) {
-            ncm_bindings_error(ncm_error, "empty argument passed to "
+            bindings_error(ncm_error, "empty argument passed to "
                                "push_characters");
             return -NCM_ERROR_PARSE;
         }
@@ -907,7 +907,7 @@ ncm_binding_parse_directive(NcmBindingAction *action,
     case NCM_BINDING_DIRECTIVE_REQUIRE_SCREEN:
         if (screen_type_parse(argument.data, argument.len,
                               &action->value.screen_type) < 0) {
-            ncm_bindings_error(ncm_error, "unknown screen passed to "
+            bindings_error(ncm_error, "unknown screen passed to "
                                "require_screen: '%.*s'",
                                argument.len, argument.data);
             return -NCM_ERROR_PARSE;
@@ -917,7 +917,7 @@ ncm_binding_parse_directive(NcmBindingAction *action,
     case NCM_BINDING_DIRECTIVE_REQUIRE_RUNNABLE:
         if (ncm_action_type_parse(argument.data, argument.len,
                                   &action->value.type) < 0) {
-            ncm_bindings_error(ncm_error, "unknown action passed to "
+            bindings_error(ncm_error, "unknown action passed to "
                                "require_runnable: '%.*s'",
                                argument.len, argument.data);
             return -NCM_ERROR_PARSE;
@@ -927,7 +927,7 @@ ncm_binding_parse_directive(NcmBindingAction *action,
     case NCM_BINDING_DIRECTIVE_EXTERNAL_COMMAND:
     case NCM_BINDING_DIRECTIVE_EXTERNAL_CONSOLE_COMMAND:
         if (argument.len <= 0) {
-            ncm_bindings_error(ncm_error, "empty command passed to %.*s",
+            bindings_error(ncm_error, "empty command passed to %.*s",
                                directive->name_len, directive->name);
             return -NCM_ERROR_PARSE;
         }
@@ -946,7 +946,7 @@ ncm_binding_parse_directive(NcmBindingAction *action,
 }
 
 static int32
-ncm_binding_parse_action_line(NcmBindingAction *action, char *line,
+binding_parse_action_line(NcmBindingAction *action, char *line,
                               int32 line_len, NcmError *ncm_error) {
     NcmBindingDirective *directive;
     StringView argument = {0};
@@ -957,25 +957,25 @@ ncm_binding_parse_action_line(NcmBindingAction *action, char *line,
         name_len += 1;
     }
 
-    directive = ncm_binding_directive_find(line, name_len);
+    directive = binding_directive_find(line, name_len);
     if (directive != NULL) {
         if (directive->argument_required) {
             if ((name_len == line_len)
                 || (ncm_extract_enclosed(line + name_len,
                                          line_len - name_len,
                                          '"', '"', &argument) < 0)) {
-                ncm_bindings_error(ncm_error, "missing quoted argument: '%.*s'",
+                bindings_error(ncm_error, "missing quoted argument: '%.*s'",
                                    line_len, line);
                 return -NCM_ERROR_PARSE;
             }
         }
-        return ncm_binding_parse_directive(action, directive, argument,
+        return binding_parse_directive(action, directive, argument,
                                            ncm_error);
     }
 
     if (name_len == line_len) {
         if (ncm_action_type_parse(line, name_len, &action->value.type) < 0) {
-            ncm_bindings_error(ncm_error, "unknown action: '%.*s'",
+            bindings_error(ncm_error, "unknown action: '%.*s'",
                                name_len, line);
             return -NCM_ERROR_PARSE;
         }
@@ -985,19 +985,19 @@ ncm_binding_parse_action_line(NcmBindingAction *action, char *line,
 
     if (ncm_extract_enclosed(line + name_len, line_len - name_len,
                              '"', '"', &argument) < 0) {
-        ncm_bindings_error(ncm_error, "missing quoted argument: '%.*s'",
+        bindings_error(ncm_error, "missing quoted argument: '%.*s'",
                            line_len, line);
         return -NCM_ERROR_PARSE;
     }
 
-    ncm_bindings_error(ncm_error, "unknown action: '%.*s'", line_len, line);
+    bindings_error(ncm_error, "unknown action: '%.*s'", line_len, line);
     return -NCM_ERROR_PARSE;
 }
 
 #undef NCM_BINDING_DIRECTIVES
 
 static int32
-ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
+bindings_finalize_definition(NcmBindingsConfiguration *bindings,
                                  int32 in_progress, NcmBinding *actions,
                                  NcKey key, char *key_name, int32 key_name_len,
                                  char *command_name, int32 command_name_len,
@@ -1007,11 +1007,11 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
     }
     if (actions->actions_len == 0) {
         if (in_progress == 1) {
-            ncm_bindings_error(ncm_error,
+            bindings_error(ncm_error,
                                "definition of command '%.*s' cannot be empty",
                                command_name_len, command_name);
         } else {
-            ncm_bindings_error(ncm_error,
+            bindings_error(ncm_error,
                                "definition of key '%.*s' cannot be empty",
                                key_name_len, key_name);
         }
@@ -1027,11 +1027,11 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
         command.name_cap = command_name_len + 1;
         command.immediate = command_immediate;
 
-        ncm_binding_copy(&command.binding, actions);
+        binding_copy(&command.binding, actions);
 
-        if (ncm_bindings_command_index(bindings, command.name,
+        if (bindings_command_index(bindings, command.name,
                                        command.name_len) >= 0) {
-            ncm_bindings_error(ncm_error, "redefinition of command '%.*s'",
+            bindings_error(ncm_error, "redefinition of command '%.*s'",
                                command.name_len, command.name);
             status = -NCM_ERROR_PARSE;
         } else {
@@ -1056,8 +1056,8 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
                                         &copy.name_cap);
             copy.name_len = command.name_len;
             copy.immediate = command.immediate;
-            ncm_binding_copy(&copy.binding, &command.binding);
-            at = ncm_bindings_command_lower_bound(bindings, command.name,
+            binding_copy(&copy.binding, &command.binding);
+            at = bindings_command_lower_bound(bindings, command.name,
                                                   command.name_len);
             if (at < bindings->commands_len) {
                 memmove64(bindings->commands + at + 1, bindings->commands + at,
@@ -1069,16 +1069,16 @@ ncm_bindings_finalize_definition(NcmBindingsConfiguration *bindings,
             status = 0;
         }
 
-        ncm_binding_destroy(&command.binding);
+        binding_destroy(&command.binding);
         return status;
     }
 
-    ncm_bindings_bind(bindings, key, actions);
+    bindings_bind(bindings, key, actions);
     return 0;
 }
 
 int32
-ncm_bindings_config_read(NcmBindingsConfiguration *bindings,
+bindings_config_read(NcmBindingsConfiguration *bindings,
                          char *path, int32 path_len, NcmError *ncm_error) {
     enum {
         IN_PROGRESS_NONE = 0,
@@ -1113,7 +1113,7 @@ ncm_bindings_config_read(NcmBindingsConfiguration *bindings,
         int32 code;
 
         code = -content_len;
-        ncm_bindings_error(ncm_error, "%.*s: read error: %s", path_len,
+        bindings_error(ncm_error, "%.*s: read error: %s", path_len,
                            path, strerror(code));
         free2(path_copy, path_cap);
         return content_len;
@@ -1161,28 +1161,28 @@ ncm_bindings_config_read(NcmBindingsConfiguration *bindings,
 
         if ((len - start >= 11)
             && STREQUAL(current_line + start, 11, "def_command")) {
-            status = ncm_bindings_finalize_definition(bindings, in_progress,
+            status = bindings_finalize_definition(bindings, in_progress,
                                                       &actions, key,
                                                       key_name, key_name_len,
                                                       command_name,
                                                       command_name_len,
                                                       command_immediate,
                                                       ncm_error);
-            ncm_binding_clear(&actions);
+            binding_clear(&actions);
             in_progress = IN_PROGRESS_NONE;
             if (status < 0) {
                 break;
             }
             if (ncm_extract_enclosed(current_line + start, len - start,
                                      '"', '"', &enclosed) < 0) {
-                ncm_bindings_error(ncm_error,
+                bindings_error(ncm_error,
                                    "%.*s:%d: command must have non-empty name",
                                    path_len, path, line_no);
                 status = -NCM_ERROR_PARSE;
                 break;
             }
             if (enclosed.len <= 0) {
-                ncm_bindings_error(ncm_error,
+                bindings_error(ncm_error,
                                    "%.*s:%d: command must have non-empty name",
                                    path_len, path, line_no);
                 status = -NCM_ERROR_PARSE;
@@ -1194,7 +1194,7 @@ ncm_bindings_config_read(NcmBindingsConfiguration *bindings,
             command_name_len = enclosed.len;
             if (ncm_extract_enclosed(current_line + start, len - start,
                                      '[', ']', &enclosed) < 0) {
-                ncm_bindings_error(ncm_error, "%.*s:%d: missing command type",
+                bindings_error(ncm_error, "%.*s:%d: missing command type",
                                    path_len, path, line_no);
                 status = -NCM_ERROR_PARSE;
                 break;
@@ -1204,7 +1204,7 @@ ncm_bindings_config_read(NcmBindingsConfiguration *bindings,
             } else if (STREQUAL(enclosed.data, enclosed.len, "deferred")) {
                 command_immediate = false;
             } else {
-                ncm_bindings_error(ncm_error,
+                bindings_error(ncm_error,
                                    "%.*s:%d: invalid command type '%.*s'",
                                    path_len, path, line_no,
                                    enclosed.len, enclosed.data);
@@ -1214,28 +1214,28 @@ ncm_bindings_config_read(NcmBindingsConfiguration *bindings,
             in_progress = IN_PROGRESS_COMMAND;
         } else if ((len - start >= 7)
                    && STREQUAL(current_line + start, 7, "def_key")) {
-            status = ncm_bindings_finalize_definition(bindings, in_progress,
+            status = bindings_finalize_definition(bindings, in_progress,
                                                       &actions, key,
                                                       key_name, key_name_len,
                                                       command_name,
                                                       command_name_len,
                                                       command_immediate,
                                                       ncm_error);
-            ncm_binding_clear(&actions);
+            binding_clear(&actions);
             in_progress = IN_PROGRESS_NONE;
             if (status < 0) {
                 break;
             }
             if (ncm_extract_enclosed(current_line + start, len - start,
                                      '"', '"', &enclosed) < 0) {
-                ncm_bindings_error(ncm_error, "%.*s:%d: invalid key", path_len,
+                bindings_error(ncm_error, "%.*s:%d: invalid key", path_len,
                                    path, line_no);
                 status = -NCM_ERROR_PARSE;
                 break;
             }
             key = nc_key_parse(enclosed.data, enclosed.len);
             if (key == NC_KEY_NONE) {
-                ncm_bindings_error(ncm_error, "%.*s:%d: invalid key '%.*s'",
+                bindings_error(ncm_error, "%.*s:%d: invalid key '%.*s'",
                                    path_len, path, line_no, enclosed.len,
                                    enclosed.data);
                 status = -NCM_ERROR_PARSE;
@@ -1254,23 +1254,23 @@ ncm_bindings_config_read(NcmBindingsConfiguration *bindings,
             action_start = ncm_trim_start(current_line, len);
             action_len = ncm_trim_end(current_line + action_start,
                                       len - action_start);
-            ncm_binding_action_init(&action);
-            status = ncm_binding_parse_action_line(
+            binding_action_init(&action);
+            status = binding_parse_action_line(
                 &action, current_line + action_start, action_len, ncm_error);
             if (status < 0) {
                 break;
             }
-            ncm_binding_append_action(&actions, &action);
-            ncm_binding_action_destroy(&action);
+            binding_append_action(&actions, &action);
+            binding_action_destroy(&action);
         } else {
-            ncm_bindings_error(ncm_error, "%.*s:%d: invalid line '%.*s'",
+            bindings_error(ncm_error, "%.*s:%d: invalid line '%.*s'",
                                path_len, path, line_no, len, current_line);
             status = -NCM_ERROR_PARSE;
         }
     }
 
     if (status >= 0) {
-        status = ncm_bindings_finalize_definition(bindings, in_progress,
+        status = bindings_finalize_definition(bindings, in_progress,
                                                   &actions, key,
                                                   key_name, key_name_len,
                                                   command_name,
@@ -1279,7 +1279,7 @@ ncm_bindings_config_read(NcmBindingsConfiguration *bindings,
                                                   ncm_error);
     }
 
-    ncm_binding_destroy(&actions);
+    binding_destroy(&actions);
     free2(command_name, command_name_cap);
     free2(key_name, key_name_cap);
     free2(content, content_len + 1);
@@ -1288,21 +1288,21 @@ ncm_bindings_config_read(NcmBindingsConfiguration *bindings,
 }
 
 void
-ncm_bindings_config_generate_defaults(NcmBindingsConfiguration *bindings) {
+bindings_config_generate_defaults(NcmBindingsConfiguration *bindings) {
     NcmBinding binding = {0};
 
-    ncm_binding_append_normal(&binding, ACTION_QUIT);
-    ncm_bindings_bind(bindings, NC_KEY_EOF, &binding);
-    ncm_binding_destroy(&binding);
+    binding_append_normal(&binding, ACTION_QUIT);
+    bindings_bind(bindings, NC_KEY_EOF, &binding);
+    binding_destroy(&binding);
 
 #define BIND_DEFAULT_SEQUENCE(KEY, ...) do {                                \
     enum ActionType actions[] = { __VA_ARGS__ };                            \
-    ncm_bindings_bind_sequence(bindings, STRLIT(KEY),                       \
+    bindings_bind_sequence(bindings, STRLIT(KEY),                       \
                                actions, LENGTH(actions));                   \
 } while (0);
 #define BIND_DEFAULT_GROUP(KEY, ...) do {                                   \
     enum ActionType actions[] = { __VA_ARGS__ };                            \
-    ncm_bindings_bind_group(bindings, STRLIT(KEY),                          \
+    bindings_bind_group(bindings, STRLIT(KEY),                          \
                             actions, LENGTH(actions));                      \
 } while (0);
 
@@ -1314,11 +1314,11 @@ ncm_bindings_config_generate_defaults(NcmBindingsConfiguration *bindings) {
 }
 
 NcmCommand *
-ncm_bindings_config_find_command(NcmBindingsConfiguration *bindings,
+bindings_config_find_command(NcmBindingsConfiguration *bindings,
                                  char *name, int32 name_len) {
     int32 at;
 
-    at = ncm_bindings_command_index(bindings, name, name_len);
+    at = bindings_command_index(bindings, name, name_len);
     if (at < 0) {
         return NULL;
     }
@@ -1326,7 +1326,7 @@ ncm_bindings_config_find_command(NcmBindingsConfiguration *bindings,
 }
 
 int32
-ncm_bindings_config_get(NcmBindingsConfiguration *bindings, NcKey key,
+bindings_config_get(NcmBindingsConfiguration *bindings, NcKey key,
                         NcmBindingSlice *result) {
     int32 at;
 
@@ -1336,7 +1336,7 @@ ncm_bindings_config_get(NcmBindingsConfiguration *bindings, NcKey key,
 
     result->data = NULL;
     result->len = 0;
-    at = ncm_bindings_key_index(bindings, key);
+    at = bindings_key_index(bindings, key);
     if (at < 0) {
         return 0;
     }
