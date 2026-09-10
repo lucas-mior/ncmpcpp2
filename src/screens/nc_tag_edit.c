@@ -2654,7 +2654,7 @@ tag_edit_screen_finish_directory_change(TagEditScreen *screen) {
 
 void
 tag_edit_screen_set_current_dir(TagEditScreen *screen,
-                                  char *dir, int32 dir_len) {
+                                char *dir, int32 dir_len) {
     bool changed;
 
     changed = screen->current_dir.data
