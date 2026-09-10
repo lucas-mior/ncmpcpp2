@@ -4817,11 +4817,19 @@ typedef struct ActionAvailability {
 #define AR_MUSIC_DIR ACTION_REQ_MPD_MUSIC_DIR
 #define AR_NOT_TINY ACTION_REQ_NOT_TINY_TAG_EDIT
 
-#define A(reqs) {reqs}
-#define AS(reqs, screen_req, target) {reqs, screen_req, target}
-#define C(reqs) {reqs, 0, 0, 0, true}
-#define CA(reqs, value) {reqs, 0, 0, value, true}
-#define SC(reqs, screen_req, target) {reqs, screen_req, target, 0, true}
+#define A(reqs) {.requirements = (reqs)}
+#define AS(reqs, screen_req, target) \
+    {.requirements = (reqs), \
+     .screen_requirement = (screen_req), \
+     .screen_type = (target)}
+#define C(reqs) {.requirements = (reqs), .custom = true}
+#define CA(reqs, value) \
+    {.requirements = (reqs), .argument = (value), .custom = true}
+#define SC(reqs, screen_req, target) \
+    {.requirements = (reqs), \
+     .screen_requirement = (screen_req), \
+     .screen_type = (target), \
+     .custom = true}
 
 #define ACTION_MPD_AVAILABILITY(XX)                                         \
     XX(ACTION_PREVIOUS)                                                     \
