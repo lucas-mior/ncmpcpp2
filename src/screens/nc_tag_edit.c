@@ -690,6 +690,19 @@ tag_edit_confirm(TagEditScreen *screen, char *message, int32 message_len) {
 }
 
 static void
+tag_edit_refresh_if_visible(TagEditScreen *screen) {
+    NcScreen *base;
+
+    ASSERT(screen != NULL);
+
+    base = tag_edit_screen_base(screen);
+    if (app_controller_is_screen_visible(base)) {
+        nc_screen_refresh(base);
+    }
+    return;
+}
+
+static void
 tag_edit_set_pattern(TagEditScreen *screen, char *pattern, int32 pattern_len) {
     ASSERT(screen != NULL);
     sb_set(&screen->pattern, pattern, pattern_len);
@@ -3178,6 +3191,7 @@ tag_edit_screen_previous_column(TagEditScreen *screen) {
         tag_edit_set_focus(screen, TAG_EDIT_FOCUS_PARSER_ACTIONS);
     }
     tag_edit_finish_tag_type_change(screen, false);
+    tag_edit_refresh_if_visible(screen);
     return;
 }
 
@@ -3194,6 +3208,7 @@ tag_edit_screen_next_column(TagEditScreen *screen) {
         tag_edit_set_focus(screen, tag_edit_current_helper_focus(screen));
     }
     tag_edit_finish_tag_type_change(screen, false);
+    tag_edit_refresh_if_visible(screen);
     return;
 }
 
