@@ -50,23 +50,6 @@ int32 ncm_error_ok(NcmError *);
 void stupid_string_free(char **, int32 *len);
 void stupid_string_set(char **, int32 *dest_len, char *, int32);
 
-#define ENUM_NAME TagsField
-#define ENUM_PREFIX_ NCM_TAGS_FIELD_
-#define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                  \
-    XX(NCM_TAGS_FIELD_TITLE,        Title)           \
-    XX(NCM_TAGS_FIELD_ARTIST,       Artist)          \
-    XX(NCM_TAGS_FIELD_ALBUM_ARTIST, Album Artist)    \
-    XX(NCM_TAGS_FIELD_ALBUM,        Album)           \
-    XX(NCM_TAGS_FIELD_DATE,         Date)            \
-    XX(NCM_TAGS_FIELD_TRACK,        Track)           \
-    XX(NCM_TAGS_FIELD_GENRE,        Genre)           \
-    XX(NCM_TAGS_FIELD_COMPOSER,     Composer)        \
-    XX(NCM_TAGS_FIELD_PERFORMER,    Performer)       \
-    XX(NCM_TAGS_FIELD_DISC,         Disc)            \
-    XX(NCM_TAGS_FIELD_COMMENT,      Comment)
-#include "cbase/xenums.c"
-
 typedef struct NcmTagsReplayGainInfo {
     StringView reference_loudness;
     StringView track_gain;

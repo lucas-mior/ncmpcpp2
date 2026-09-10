@@ -359,4 +359,21 @@ _Static_assert(NCM_TAG_DISCSUBTITLE == 36,
 _Static_assert(NCM_TAG_COUNT == 37,
                "NcmTagType count changed");
 
+#define ENUM_NAME TagsField
+#define ENUM_PREFIX_ NCM_TAGS_FIELD_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS NCM_TAGS_FIELD_ENUM_FIELDS
+#include "cbase/xenums.c"
+
+_Static_assert(NCM_TAGS_FIELD_TITLE == 0,
+               "TagsField order changed: TITLE");
+_Static_assert(NCM_TAGS_FIELD_ARTIST == 1,
+               "TagsField order changed: ARTIST");
+_Static_assert(NCM_TAGS_FIELD_ALBUM_ARTIST == 2,
+               "TagsField order changed: ALBUM_ARTIST");
+_Static_assert(NCM_TAGS_FIELD_COMMENT == 10,
+               "TagsField order changed: COMMENT");
+_Static_assert(NCM_TAGS_FIELD_COUNT == 11,
+               "TagsField count changed");
+
 #endif /* NCMPCPP2_H */
