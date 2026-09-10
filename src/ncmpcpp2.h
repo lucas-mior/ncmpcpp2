@@ -337,8 +337,7 @@ enum {
 
 #undef NCM_TAG_COUNT_RECORD
 
-#define NCM_TAG_TYPE_ENUM_FIELD(suffix, display, tag_char, getter_char,        \
-                                flags)                                         \
+#define NCM_TAG_TYPE_ENUM_FIELD(suffix, display, tag_char, getter_char, flags) \
     XX(CAT(NCM_TAG_, suffix))
 
 #define NCM_TAG_TYPE_ENUM_FIELDS                                               \
