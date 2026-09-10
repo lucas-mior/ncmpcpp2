@@ -3,20 +3,20 @@
 
 #include "cbase.h"
 
-#define NCM_TAG_META_FLAG_ENUM_FIELDS                                         \
-    XX(NCM_TAG_META_FLAG_DISPLAY)                                             \
-    XX(NCM_TAG_META_FLAG_WRITABLE)                                            \
-    XX(NCM_TAG_META_FLAG_SONG_INFO)                                           \
-    XX(NCM_TAG_META_FLAG_SEARCH)                                              \
-    XX(NCM_TAG_META_FLAG_GETTER)                                              \
-    XX(NCM_TAG_META_FLAG_TAGLIB)                                              \
-    XX(NCM_TAG_META_FLAG_MPD)                                                 \
-    XX(NCM_TAG_META_FLAG_TAGLIB_NUMBER)                                       \
-    XX(NCM_TAG_META_FLAGS_FIELD,                                              \
-       NCM_TAG_META_FLAG_DISPLAY|NCM_TAG_META_FLAG_WRITABLE                   \
-       |NCM_TAG_META_FLAG_SONG_INFO|NCM_TAG_META_FLAG_GETTER                  \
-       |NCM_TAG_META_FLAG_TAGLIB)                                             \
-    XX(NCM_TAG_META_FLAGS_FIELD_SEARCH,                                       \
+#define NCM_TAG_META_FLAG_ENUM_FIELDS                                          \
+    XX(NCM_TAG_META_FLAG_DISPLAY)                                              \
+    XX(NCM_TAG_META_FLAG_WRITABLE)                                             \
+    XX(NCM_TAG_META_FLAG_SONG_INFO)                                            \
+    XX(NCM_TAG_META_FLAG_SEARCH)                                               \
+    XX(NCM_TAG_META_FLAG_GETTER)                                               \
+    XX(NCM_TAG_META_FLAG_TAGLIB)                                               \
+    XX(NCM_TAG_META_FLAG_MPD)                                                  \
+    XX(NCM_TAG_META_FLAG_TAGLIB_NUMBER)                                        \
+    XX(NCM_TAG_META_FLAGS_FIELD,                                               \
+       NCM_TAG_META_FLAG_DISPLAY|NCM_TAG_META_FLAG_WRITABLE                    \
+       |NCM_TAG_META_FLAG_SONG_INFO|NCM_TAG_META_FLAG_GETTER                   \
+       |NCM_TAG_META_FLAG_TAGLIB)                                              \
+    XX(NCM_TAG_META_FLAGS_FIELD_SEARCH,                                        \
        NCM_TAG_META_FLAGS_FIELD|NCM_TAG_META_FLAG_SEARCH)
 
 #define ENUM_NAME NcmTagMetaFlags
