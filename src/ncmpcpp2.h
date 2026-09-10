@@ -264,8 +264,7 @@ enum {
 #define NCM_SONG_GETTER_NON_TAG_ENUM_FIELD(getter, DISP, getter_char)          \
   XX(getter, DISP)
 
-#define NCM_SONG_GETTER_TAG_ENUM_FIELD(suffix, DISP, CHAR,                 \
-                                        getter_char, flags)                    \
+#define NCM_SONG_GETTER_TAG_ENUM_FIELD(suffix, DISP, CHAR, getter_char, flags) \
   XX(CAT(SONG_GETTER_, suffix), DISP)
 
 #define NCM_SONG_GETTER_ENUM_FIELDS                                            \
