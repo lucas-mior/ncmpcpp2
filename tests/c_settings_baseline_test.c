@@ -91,7 +91,7 @@ settings_assert_generated_empty(Configuration *config) {
 #define XX_ENUM(NAME, DEFAULT, ENUM_PREFIX_)                             \
     ASSERT(config->NAME == (ENUM_PREFIX_)0);
 #define XX_MPD_TAG(NAME, DEFAULT)                                        \
-    ASSERT(config->NAME == NCM_TAG_UNKNOWN);
+    ASSERT(config->NAME == TAG_UNKNOWN);
 #define XX_STARTUP_SCREEN(NAME, DEFAULT)                                 \
     ASSERT(config->NAME == SCREEN_TYPE_COUNT);
 #define XX_OPT_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE) \
@@ -237,7 +237,7 @@ test_declared_defaults_and_cleanup(void) {
     ASSERT(config.search_engine_display_mode == NCM_DISPLAY_MODE_CLASSIC);
     ASSERT(config.playlist_edit_display_mode == NCM_DISPLAY_MODE_CLASSIC);
     ASSERT(config.user_interface == NCM_DESIGN_CLASSIC);
-    ASSERT(config.media_library_primary_tag == NCM_TAG_ARTIST);
+    ASSERT(config.media_library_primary_tag == TAG_ARTIST);
     ASSERT(config.space_add_mode == NCM_SPACE_ADD_MODE_ADD_REMOVE);
     ASSERT(config.startup_screen == SCREEN_TYPE_PLAYLIST);
 
@@ -524,10 +524,10 @@ test_enum_options(void) {
 
     ASSERT_ZERO(settings_test_apply(
         apply_media_library_primary_tag, &config, "performer"));
-    ASSERT(config.media_library_primary_tag == NCM_TAG_PERFORMER);
+    ASSERT(config.media_library_primary_tag == TAG_PERFORMER);
     ASSERT(settings_test_apply(
         apply_media_library_primary_tag, &config, "invalid") < 0);
-    ASSERT(config.media_library_primary_tag == NCM_TAG_PERFORMER);
+    ASSERT(config.media_library_primary_tag == TAG_PERFORMER);
 
     ASSERT_ZERO(settings_test_apply(
         apply_startup_screen, &config, "playlist"));
@@ -985,19 +985,19 @@ test_tag_type_names(void) {
     int32 name_len;
 
 #define TEST_TAG_TYPE_NAME(suffix, display, tag_char, getter_char, flags)    \
-    name_len = ncm_tag_type_name_len(CAT(NCM_TAG_, suffix), &name);          \
-    if (((flags) & NCM_TAG_META_FLAG_DISPLAY) == 0) {                        \
+    name_len = ncm_tag_type_name_len(CAT(TAG_, suffix), &name);          \
+    if (((flags) & TAG_META_FLAG_DISPLAY) == 0) {                        \
         ASSERT_EQUAL(name, name_len, "");                                     \
         ASSERT_ZERO(name_len);                                                \
     } else {                                                                  \
-        ASSERT_EQUAL(name, name_len, NCM_TAG_DISPLAY_NAME(display));          \
-        ASSERT(name_len == NCM_TAG_DISPLAY_NAME_LEN(display));                \
+        ASSERT_EQUAL(name, name_len, TAG_DISPLAY_NAME(display));          \
+        ASSERT(name_len == TAG_DISPLAY_NAME_LEN(display));                \
     }                                                                         \
-    name_len = ncm_tag_type_canonical_name_len(CAT(NCM_TAG_, suffix), &name);\
-    ASSERT_EQUAL(name, name_len, NCM_TAG_DISPLAY_NAME(display));              \
-    ASSERT(name_len == NCM_TAG_DISPLAY_NAME_LEN(display));
+    name_len = ncm_tag_type_canonical_name_len(CAT(TAG_, suffix), &name);\
+    ASSERT_EQUAL(name, name_len, TAG_DISPLAY_NAME(display));              \
+    ASSERT(name_len == TAG_DISPLAY_NAME_LEN(display));
 
-    NCM_TAG_DEFS(TEST_TAG_TYPE_NAME)
+    TAG_DEFS(TEST_TAG_TYPE_NAME)
 
 #undef TEST_TAG_TYPE_NAME
     return;
@@ -1007,32 +1007,32 @@ static void
 test_tag_char_and_field_conversions(void) {
 #define TEST_FIELD_CONVERSION(suffix, display, tag_char, getter_char,      \
                               flags)                                         \
-    ASSERT(ncm_char_to_tag_type(tag_char) == CAT(NCM_TAG_, suffix));         \
+    ASSERT(ncm_char_to_tag_type(tag_char) == CAT(TAG_, suffix));         \
     ASSERT(ncm_tags_field_from_char(tag_char)                                \
-           == CAT(NCM_TAGS_FIELD_, suffix));                                 \
-    ASSERT(ncm_tags_field_from_tag_type(CAT(NCM_TAG_, suffix))               \
-           == CAT(NCM_TAGS_FIELD_, suffix));                                 \
-    ASSERT(ncm_tags_field_to_tag_type(CAT(NCM_TAGS_FIELD_, suffix))          \
-           == CAT(NCM_TAG_, suffix));                                        \
-    ASSERT(ncm_tags_field_to_song_getter(CAT(NCM_TAGS_FIELD_, suffix))       \
+           == CAT(TAGS_FIELD_, suffix));                                 \
+    ASSERT(ncm_tags_field_from_tag_type(CAT(TAG_, suffix))               \
+           == CAT(TAGS_FIELD_, suffix));                                 \
+    ASSERT(ncm_tags_field_to_tag_type(CAT(TAGS_FIELD_, suffix))          \
+           == CAT(TAG_, suffix));                                        \
+    ASSERT(ncm_tags_field_to_song_getter(CAT(TAGS_FIELD_, suffix))       \
            == CAT(SONG_GETTER_, suffix));                                    \
     ASSERT(ncm_song_getter_to_tags_field(CAT(SONG_GETTER_, suffix))          \
-           == CAT(NCM_TAGS_FIELD_, suffix));                                 \
-    ASSERT(ncm_tags_field_format_char(CAT(NCM_TAGS_FIELD_, suffix))          \
+           == CAT(TAGS_FIELD_, suffix));                                 \
+    ASSERT(ncm_tags_field_format_char(CAT(TAGS_FIELD_, suffix))          \
            == tag_char);
 
-    NCM_TAG_FIELD_DEFS(TEST_FIELD_CONVERSION)
+    TAG_FIELD_DEFS(TEST_FIELD_CONVERSION)
 
 #undef TEST_FIELD_CONVERSION
-    ASSERT(ncm_char_to_tag_type('x') == NCM_TAG_UNKNOWN);
-    ASSERT(ncm_tags_field_from_char('x') == NCM_TAGS_FIELD_COUNT);
-    ASSERT(ncm_tags_field_from_tag_type(NCM_TAG_NAME) == NCM_TAGS_FIELD_COUNT);
-    ASSERT(ncm_tags_field_to_tag_type(NCM_TAGS_FIELD_COUNT)
-           == NCM_TAG_UNKNOWN);
-    ASSERT(ncm_tags_field_to_song_getter(NCM_TAGS_FIELD_COUNT)
+    ASSERT(ncm_char_to_tag_type('x') == TAG_UNKNOWN);
+    ASSERT(ncm_tags_field_from_char('x') == TAGS_FIELD_COUNT);
+    ASSERT(ncm_tags_field_from_tag_type(TAG_NAME) == TAGS_FIELD_COUNT);
+    ASSERT(ncm_tags_field_to_tag_type(TAGS_FIELD_COUNT)
+           == TAG_UNKNOWN);
+    ASSERT(ncm_tags_field_to_song_getter(TAGS_FIELD_COUNT)
            == SONG_GETTER_NONE);
     ASSERT(ncm_song_getter_to_tags_field(SONG_GETTER_NONE)
-           == NCM_TAGS_FIELD_COUNT);
+           == TAGS_FIELD_COUNT);
     return;
 }
 
@@ -1050,7 +1050,7 @@ test_song_getter_conversions(void) {
     ASSERT(ncm_song_getter_format_char(CAT(SONG_GETTER_, suffix))            \
            == getter_char);                                                  \
     ASSERT(ncm_song_getter_to_tag_type(CAT(SONG_GETTER_, suffix))            \
-           == CAT(NCM_TAG_, suffix));
+           == CAT(TAG_, suffix));
 
     NCM_SONG_GETTER_RECORD_LENGTH(TEST_GETTER_CHAR)
     NCM_SONG_GETTER_RECORD_DIRECTORY(TEST_GETTER_CHAR)
@@ -1064,46 +1064,46 @@ test_song_getter_conversions(void) {
 #undef TEST_TAG_GETTER_CHAR
 #undef TEST_GETTER_CHAR
     ASSERT(ncm_song_getter_from_char('x') == SONG_GETTER_NONE);
-    ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_NONE) == NCM_TAG_UNKNOWN);
+    ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_NONE) == TAG_UNKNOWN);
     ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_TRACK_NUMBER)
-           == NCM_TAG_UNKNOWN);
+           == TAG_UNKNOWN);
     ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_PRIORITY)
-           == NCM_TAG_UNKNOWN);
+           == TAG_UNKNOWN);
     return;
 }
 
 static void
 test_primary_tag_settings_parse(void) {
-    char settings_name[NCM_TAG_SETTINGS_NAME_CAP];
+    char settings_name[TAG_SETTINGS_NAME_CAP];
     enum NcmTagType parsed;
     int32 settings_name_len;
 
 #define TEST_PRIMARY_SETTING(suffix, display, tag_char, getter_char,      \
                              flags)                                         \
     settings_name_len = ncm_tag_type_settings_name_len(                     \
-        CAT(NCM_TAG_, suffix), settings_name, LENGTH(settings_name));        \
+        CAT(TAG_, suffix), settings_name, LENGTH(settings_name));        \
     ASSERT(settings_name_len > 0);                                           \
-    parsed = NCM_TAG_UNKNOWN;                                                \
+    parsed = TAG_UNKNOWN;                                                \
     ASSERT(ncm_tag_type_parse_settings_name(settings_name,                   \
                                             settings_name_len, &parsed));    \
-    ASSERT(parsed == CAT(NCM_TAG_, suffix));                                 \
-    parsed = NCM_TAG_UNKNOWN;                                                \
+    ASSERT(parsed == CAT(TAG_, suffix));                                 \
+    parsed = TAG_UNKNOWN;                                                \
     ASSERT_ZERO(settings_parse_mpd_tag(settings_name, settings_name_len,     \
                                        &parsed));                            \
-    ASSERT(parsed == CAT(NCM_TAG_, suffix));
+    ASSERT(parsed == CAT(TAG_, suffix));
 
-    NCM_TAG_PRIMARY_DEFS(TEST_PRIMARY_SETTING)
+    TAG_PRIMARY_DEFS(TEST_PRIMARY_SETTING)
 
 #undef TEST_PRIMARY_SETTING
     ASSERT(ncm_tag_type_parse_settings_name(STRLIT("Album Artist"),
                                             &parsed));
-    ASSERT(parsed == NCM_TAG_ALBUM_ARTIST);
+    ASSERT(parsed == TAG_ALBUM_ARTIST);
     ASSERT(ncm_tag_type_parse_settings_name(STRLIT("ALBUM_ARTIST"),
                                             &parsed));
-    ASSERT(parsed == NCM_TAG_ALBUM_ARTIST);
-    ASSERT(NCM_TAG_parse(STRLIT("ALBUM_ARTIST"))
-           == NCM_TAG_ALBUM_ARTIST);
-    ASSERT(!ncm_tag_type_parse_settings_name(STRLIT("NCM_TAG_ARTIST"),
+    ASSERT(parsed == TAG_ALBUM_ARTIST);
+    ASSERT(TAG_parse(STRLIT("ALBUM_ARTIST"))
+           == TAG_ALBUM_ARTIST);
+    ASSERT(!ncm_tag_type_parse_settings_name(STRLIT("TAG_ARTIST"),
                                               &parsed));
     ASSERT(!ncm_tag_type_parse_settings_name(STRLIT("album"), &parsed));
     ASSERT(settings_parse_mpd_tag(STRLIT("album"), &parsed) < 0);
@@ -1113,30 +1113,30 @@ test_primary_tag_settings_parse(void) {
 
 static void
 test_taglib_metadata(void) {
-    char buffer[NCM_TAGLIB_PROPERTY_CAP];
+    char buffer[TAGLIB_PROPERTY_CAP];
     int32 len;
 
-    len = ncm_tag_type_taglib_property_len(NCM_TAG_ALBUM_ARTIST,
+    len = ncm_tag_type_taglib_property_len(TAG_ALBUM_ARTIST,
                                            buffer, LENGTH(buffer));
     ASSERT_EQUAL(buffer, len, "ALBUMARTIST");
-    len = ncm_tag_type_taglib_name_len(NCM_TAG_ALBUM_ARTIST,
+    len = ncm_tag_type_taglib_name_len(TAG_ALBUM_ARTIST,
                                        buffer, LENGTH(buffer));
     ASSERT_EQUAL(buffer, len, "AlbumArtist");
 
-    len = ncm_tag_type_taglib_property_len(NCM_TAG_TRACK,
+    len = ncm_tag_type_taglib_property_len(TAG_TRACK,
                                            buffer, LENGTH(buffer));
     ASSERT_EQUAL(buffer, len, "TRACKNUMBER");
-    len = ncm_tag_type_taglib_name_len(NCM_TAG_TRACK,
+    len = ncm_tag_type_taglib_name_len(TAG_TRACK,
                                        buffer, LENGTH(buffer));
     ASSERT_EQUAL(buffer, len, "Track");
 
-    len = ncm_tags_field_taglib_property_len(NCM_TAGS_FIELD_DISC,
+    len = ncm_tags_field_taglib_property_len(TAGS_FIELD_DISC,
                                              buffer, LENGTH(buffer));
     ASSERT_EQUAL(buffer, len, "DISCNUMBER");
 
-    ASSERT(ncm_tag_type_taglib_property_len(NCM_TAG_NAME,
+    ASSERT(ncm_tag_type_taglib_property_len(TAG_NAME,
                                             buffer, LENGTH(buffer)) < 0);
-    ASSERT(ncm_tags_field_taglib_property_len(NCM_TAGS_FIELD_COUNT,
+    ASSERT(ncm_tags_field_taglib_property_len(TAGS_FIELD_COUNT,
                                               buffer, LENGTH(buffer)) < 0);
     return;
 }
@@ -1147,20 +1147,20 @@ test_search_constraint_metadata(void) {
     int32 idx = 1;
 
     metadata = search_constraint_metadata(0);
-    ASSERT(metadata->tag == NCM_TAG_UNKNOWN);
+    ASSERT(metadata->tag == TAG_UNKNOWN);
     ASSERT_EQUAL(metadata->name, metadata->name_len, "Any");
     ASSERT(metadata->name_len == strlen32(metadata->name));
 
 #define TEST_SEARCH_CONSTRAINT(suffix, display, tag_char, getter_char,     \
                                flags)                                       \
     metadata = search_constraint_metadata(idx);                              \
-    ASSERT(metadata->tag == CAT(NCM_TAG_, suffix));                          \
+    ASSERT(metadata->tag == CAT(TAG_, suffix));                          \
     ASSERT_EQUAL(metadata->name, metadata->name_len,                         \
-                 NCM_TAG_DISPLAY_NAME(display));                             \
+                 TAG_DISPLAY_NAME(display));                             \
     ASSERT(metadata->name_len == strlen32(metadata->name));                  \
     idx += 1;
 
-    NCM_TAG_SEARCH_DEFS(TEST_SEARCH_CONSTRAINT)
+    TAG_SEARCH_DEFS(TEST_SEARCH_CONSTRAINT)
 
 #undef TEST_SEARCH_CONSTRAINT
     ASSERT(idx == SEARCH_ENGINE_CONSTRAINT_COUNT);
@@ -1174,20 +1174,20 @@ test_song_info_tag_metadata(void) {
 #define TEST_SONG_INFO_TAG(suffix, display, tag_char, getter_char, flags) \
     ASSERT_EQUAL(ncm_song_info_tags[idx].name,                               \
                  ncm_song_info_tags[idx].name_len,                           \
-                 NCM_TAG_DISPLAY_NAME(display));                             \
+                 TAG_DISPLAY_NAME(display));                             \
     ASSERT(ncm_song_info_tags[idx].name_len                                  \
-           == NCM_TAG_DISPLAY_NAME_LEN(display));                            \
-    ASSERT(ncm_song_info_tags[idx].field == CAT(NCM_TAGS_FIELD_, suffix));   \
+           == TAG_DISPLAY_NAME_LEN(display));                            \
+    ASSERT(ncm_song_info_tags[idx].field == CAT(TAGS_FIELD_, suffix));   \
     ASSERT(ncm_song_info_tags[idx].get == CAT(SONG_GETTER_, suffix));        \
     idx += 1;
 
-    NCM_TAG_SONG_INFO_DEFS(TEST_SONG_INFO_TAG)
+    TAG_SONG_INFO_DEFS(TEST_SONG_INFO_TAG)
 
 #undef TEST_SONG_INFO_TAG
     ASSERT(idx == NCM_SONG_INFO_TAG_COUNT);
     ASSERT(ncm_song_info_tags[idx].name == NULL);
     ASSERT(ncm_song_info_tags[idx].name_len == 0);
-    ASSERT(ncm_song_info_tags[idx].field == NCM_TAGS_FIELD_COUNT);
+    ASSERT(ncm_song_info_tags[idx].field == TAGS_FIELD_COUNT);
     ASSERT(ncm_song_info_tags[idx].get == SONG_GETTER_NONE);
     return;
 }
@@ -1200,19 +1200,19 @@ test_tag_edit_parser_metadata(void) {
     int32 idx = 0;
 
 #define TEST_PARSER_FIELD(suffix, display, tag_char, getter_char, flags)  \
-    ASSERT(ncm_tags_field_format_char(CAT(NCM_TAGS_FIELD_, suffix))          \
+    ASSERT(ncm_tags_field_format_char(CAT(TAGS_FIELD_, suffix))          \
            == tag_char);                                                     \
-    name_len = ncm_tags_field_parser_name_len(CAT(NCM_TAGS_FIELD_, suffix),  \
+    name_len = ncm_tags_field_parser_name_len(CAT(TAGS_FIELD_, suffix),  \
                                               &name);                        \
     ASSERT(name_len > 0);                                                     \
     tag_edit_append_parser_legend_field(&legend,                             \
-                                        CAT(NCM_TAGS_FIELD_, suffix));       \
+                                        CAT(TAGS_FIELD_, suffix));       \
     idx += 1;
 
-    NCM_TAG_EDIT_PARSER_DEFS(TEST_PARSER_FIELD)
+    TAG_EDIT_PARSER_DEFS(TEST_PARSER_FIELD)
 
 #undef TEST_PARSER_FIELD
-    ASSERT(idx == NCM_TAG_EDIT_PARSER_COUNT);
+    ASSERT(idx == TAG_EDIT_PARSER_COUNT);
     ASSERT_EQUAL(legend.data, legend.len,
                  "%a - artist\n"
                  "%A - album artist\n"

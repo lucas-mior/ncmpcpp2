@@ -69,7 +69,7 @@ tiny_editor_buffer_mutable_tag(NcBuffer *buffer, MutableSong *song,
     char *name;
     int32 name_len;
 
-    name_len = NCM_TAGS_FIELD_alias_len(field, &name);
+    name_len = TAGS_FIELD_alias_len(field, &name);
     tiny_editor_buffer_key_value(buffer, name, name_len, NULL, 0);
     value = mutable_song_tags_buffer(song, field,
                                      tag_separator, tag_separator_len,
@@ -136,7 +136,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
                                              screen->show_duplicate_tags);
         initial.data = tag_value.data;
         initial.len = tag_value.len;
-        field_name_len = NCM_TAGS_FIELD_alias_len(field, &field_name);
+        field_name_len = TAGS_FIELD_alias_len(field, &field_name);
         if (screen->hooks.prompt == NULL) {
             prompt_result = TINY_TAG_EDIT_PROMPT_ERROR;
         } else {
@@ -690,7 +690,7 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     nc_buffer_destroy(&row);
     nc_editor_buffer_menu_add_separator(&screen->rows);
 
-    for (uint32 field = 0; field < NCM_TAGS_FIELD_COUNT; field += 1) {
+    for (uint32 field = 0; field < TAGS_FIELD_COUNT; field += 1) {
         bool inactive;
 
         row = (NcBuffer){0};
@@ -699,10 +699,10 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
                                        tag_separator, tag_separator_len,
                                        show_duplicate_tags);
         inactive = !extended_tags_supported
-                   && ((field == NCM_TAGS_FIELD_ALBUM_ARTIST)
-                       || (field == NCM_TAGS_FIELD_COMPOSER)
-                       || (field == NCM_TAGS_FIELD_PERFORMER)
-                       || (field == NCM_TAGS_FIELD_DISC));
+                   && ((field == TAGS_FIELD_ALBUM_ARTIST)
+                       || (field == TAGS_FIELD_COMPOSER)
+                       || (field == TAGS_FIELD_PERFORMER)
+                       || (field == TAGS_FIELD_DISC));
         if (inactive) {
             tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
         } else {

@@ -186,7 +186,7 @@ ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
 
 #define NCM_MPD_ITEM_TAG_ENTRY(suffix, display, tag_char, getter_char,       \
                                flags)                                       \
-    {CAT(MPD_TAG_, suffix), CAT(NCM_TAG_, suffix)},
+    {CAT(MPD_TAG_, suffix), CAT(TAG_, suffix)},
 
 int32
 ncm_mpd_item_song_from_mpd_song_copy(NcmSong *dest, void *mpd_song) {
@@ -196,7 +196,7 @@ ncm_mpd_item_song_from_mpd_song_copy(NcmSong *dest, void *mpd_song) {
         enum mpd_tag_type mpd;
         enum NcmTagType ncm;
     } tags[] = {
-        NCM_TAG_MPD_DEFS(NCM_MPD_ITEM_TAG_ENTRY)
+        TAG_MPD_DEFS(NCM_MPD_ITEM_TAG_ENTRY)
     };
     char *uri;
     int32 tags_len = NCM_MPD_TAG_COUNT;

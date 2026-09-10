@@ -3,30 +3,30 @@
 
 #include "cbase.h"
 
-#define NCM_TAG_META_FLAG_ENUM_FIELDS                      \
-  XX(NCM_TAG_META_FLAG_DISPLAY)                            \
-  XX(NCM_TAG_META_FLAG_WRITABLE)                           \
-  XX(NCM_TAG_META_FLAG_SONG_INFO)                          \
-  XX(NCM_TAG_META_FLAG_SEARCH)                             \
-  XX(NCM_TAG_META_FLAG_GETTER)                             \
-  XX(NCM_TAG_META_FLAG_TAGLIB)                             \
-  XX(NCM_TAG_META_FLAG_MPD)                                \
-  XX(NCM_TAG_META_FLAG_TAGLIB_NUMBER)                      \
-  XX(NCM_TAG_META_FLAGS_FIELD,                             \
-     NCM_TAG_META_FLAG_DISPLAY|NCM_TAG_META_FLAG_WRITABLE  \
-     |NCM_TAG_META_FLAG_SONG_INFO|NCM_TAG_META_FLAG_GETTER \
-     |NCM_TAG_META_FLAG_TAGLIB)                            \
-  XX(NCM_TAG_META_FLAGS_FIELD_SEARCH,                      \
-     NCM_TAG_META_FLAGS_FIELD|NCM_TAG_META_FLAG_SEARCH)
+#define TAG_META_FLAG_ENUM_FIELDS                      \
+  XX(TAG_META_FLAG_DISPLAY)                            \
+  XX(TAG_META_FLAG_WRITABLE)                           \
+  XX(TAG_META_FLAG_SONG_INFO)                          \
+  XX(TAG_META_FLAG_SEARCH)                             \
+  XX(TAG_META_FLAG_GETTER)                             \
+  XX(TAG_META_FLAG_TAGLIB)                             \
+  XX(TAG_META_FLAG_MPD)                                \
+  XX(TAG_META_FLAG_TAGLIB_NUMBER)                      \
+  XX(TAG_META_FLAGS_FIELD,                             \
+     TAG_META_FLAG_DISPLAY|TAG_META_FLAG_WRITABLE  \
+     |TAG_META_FLAG_SONG_INFO|TAG_META_FLAG_GETTER \
+     |TAG_META_FLAG_TAGLIB)                            \
+  XX(TAG_META_FLAGS_FIELD_SEARCH,                      \
+     TAG_META_FLAGS_FIELD|TAG_META_FLAG_SEARCH)
 
 #define ENUM_NAME NcmTagMetaFlags
-#define ENUM_PREFIX_ NCM_TAG_META_FLAGS_
+#define ENUM_PREFIX_ TAG_META_FLAGS_
 #define ENUM_BITFLAGS 1
-#define ENUM_FIELDS NCM_TAG_META_FLAG_ENUM_FIELDS
+#define ENUM_FIELDS TAG_META_FLAG_ENUM_FIELDS
 #include "cbase/xenums.c"
 
-#define NCM_TAG_DISPLAY_NAME(display) #display
-#define NCM_TAG_DISPLAY_NAME_LEN(display) STRLIT_LEN(#display)
+#define TAG_DISPLAY_NAME(display) #display
+#define TAG_DISPLAY_NAME_LEN(display) STRLIT_LEN(#display)
 
 static inline char
 ncm_tag_name_ascii_lower(char c) {
@@ -156,192 +156,192 @@ ncm_tag_name_to_camel_compact(char *out, int32 out_cap,
     return written;
 }
 
-#define NCM_TAG_FIELD_MPD(XX, suffix, display, tag_char)                     \
+#define TAG_FIELD_MPD(XX, suffix, display, tag_char)                     \
   XX(suffix, display, tag_char, tag_char,                                    \
-     NCM_TAG_META_FLAGS_FIELD_SEARCH|NCM_TAG_META_FLAG_MPD)
+     TAG_META_FLAGS_FIELD_SEARCH|TAG_META_FLAG_MPD)
 
-#define NCM_TAG_FIELD_MPD_NUM(XX, suffix, display, tag_char, getter_char)    \
+#define TAG_FIELD_MPD_NUM(XX, suffix, display, tag_char, getter_char)    \
   XX(suffix, display, tag_char, getter_char,                                 \
-     NCM_TAG_META_FLAGS_FIELD|NCM_TAG_META_FLAG_MPD                          \
-     |NCM_TAG_META_FLAG_TAGLIB_NUMBER)
+     TAG_META_FLAGS_FIELD|TAG_META_FLAG_MPD                          \
+     |TAG_META_FLAG_TAGLIB_NUMBER)
 
-#define NCM_TAG_SEARCH_MPD(XX, suffix, display)                              \
+#define TAG_SEARCH_MPD(XX, suffix, display)                              \
   XX(suffix, display, '\0', '\0',                                            \
-     NCM_TAG_META_FLAG_SEARCH|NCM_TAG_META_FLAG_MPD)
+     TAG_META_FLAG_SEARCH|TAG_META_FLAG_MPD)
 
-#define NCM_TAG_NON_DISP(XX, suffix, display)                             \
-  XX(suffix, display, '\0', '\0', NCM_TAG_META_FLAGS_NONE)
+#define TAG_NON_DISP(XX, suffix, display)                             \
+  XX(suffix, display, '\0', '\0', TAG_META_FLAGS_NONE)
 
-#define NCM_TAG_FIELD_MPD_NUM_DECLS(XX)                                      \
-  NCM_TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                          \
-  NCM_TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')
+#define TAG_FIELD_MPD_NUM_DECLS(XX)                                      \
+  TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                          \
+  TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')
 
-#define NCM_TAG_SEARCH_MPD_DECLS(XX)                                         \
-  NCM_TAG_SEARCH_MPD(XX, NAME, Filename)
+#define TAG_SEARCH_MPD_DECLS(XX)                                         \
+  TAG_SEARCH_MPD(XX, NAME, Filename)
 
-#define NCM_TAG_EXTENDED_DECLS(XX)                                               \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_ARTISTID, Musicbrainz Artist Id)              \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_ALBUMID, Musicbrainz Album Id)                \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_ALBUMARTISTID, Musicbrainz Album Artist Id)   \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_TRACKID,  Musicbrainz Track Id)               \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_RELEASETRACKID, Musicbrainz Release Track Id) \
-  NCM_TAG_NON_DISP(XX, ORIGINAL_DATE, Original Date)                             \
-  NCM_TAG_NON_DISP(XX, ARTIST_SORT, Artist Sort)                                 \
-  NCM_TAG_NON_DISP(XX, ALBUM_ARTIST_SORT, Album Artist Sort)                     \
-  NCM_TAG_NON_DISP(XX, ALBUM_SORT, Album Sort)                                   \
-  NCM_TAG_NON_DISP(XX, LABEL, Label)                                             \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_WORKID, Musicbrainz Work Id)                  \
-  NCM_TAG_NON_DISP(XX, GROUPING, Grouping)                                       \
-  NCM_TAG_NON_DISP(XX, WORK, Work)                                               \
-  NCM_TAG_NON_DISP(XX, CONDUCTOR, Conductor)                                     \
-  NCM_TAG_NON_DISP(XX, COMPOSER_SORT, Composer Sort)                             \
-  NCM_TAG_NON_DISP(XX, ENSEMBLE, Ensemble)                                       \
-  NCM_TAG_NON_DISP(XX, MOVEMENT, Movement)                                       \
-  NCM_TAG_NON_DISP(XX, MOVEMENTNUMBER, Movement Number)                          \
-  NCM_TAG_NON_DISP(XX, LOCATION, Location)                                       \
-  NCM_TAG_NON_DISP(XX, MOOD, Mood)                                               \
-  NCM_TAG_NON_DISP(XX, TITLE_SORT, Title Sort)                                   \
-  NCM_TAG_NON_DISP(XX, MUSICBRAINZ_RELEASEGROUPID, Musicbrainz Release Group Id) \
-  NCM_TAG_NON_DISP(XX, SHOWMOVEMENT, Show Movement)                              \
-  NCM_TAG_NON_DISP(XX, DISCSUBTITLE, Disc Subtitle)
+#define TAG_EXTENDED_DECLS(XX)                                               \
+  TAG_NON_DISP(XX, MUSICBRAINZ_ARTISTID, Musicbrainz Artist Id)              \
+  TAG_NON_DISP(XX, MUSICBRAINZ_ALBUMID, Musicbrainz Album Id)                \
+  TAG_NON_DISP(XX, MUSICBRAINZ_ALBUMARTISTID, Musicbrainz Album Artist Id)   \
+  TAG_NON_DISP(XX, MUSICBRAINZ_TRACKID,  Musicbrainz Track Id)               \
+  TAG_NON_DISP(XX, MUSICBRAINZ_RELEASETRACKID, Musicbrainz Release Track Id) \
+  TAG_NON_DISP(XX, ORIGINAL_DATE, Original Date)                             \
+  TAG_NON_DISP(XX, ARTIST_SORT, Artist Sort)                                 \
+  TAG_NON_DISP(XX, ALBUM_ARTIST_SORT, Album Artist Sort)                     \
+  TAG_NON_DISP(XX, ALBUM_SORT, Album Sort)                                   \
+  TAG_NON_DISP(XX, LABEL, Label)                                             \
+  TAG_NON_DISP(XX, MUSICBRAINZ_WORKID, Musicbrainz Work Id)                  \
+  TAG_NON_DISP(XX, GROUPING, Grouping)                                       \
+  TAG_NON_DISP(XX, WORK, Work)                                               \
+  TAG_NON_DISP(XX, CONDUCTOR, Conductor)                                     \
+  TAG_NON_DISP(XX, COMPOSER_SORT, Composer Sort)                             \
+  TAG_NON_DISP(XX, ENSEMBLE, Ensemble)                                       \
+  TAG_NON_DISP(XX, MOVEMENT, Movement)                                       \
+  TAG_NON_DISP(XX, MOVEMENTNUMBER, Movement Number)                          \
+  TAG_NON_DISP(XX, LOCATION, Location)                                       \
+  TAG_NON_DISP(XX, MOOD, Mood)                                               \
+  TAG_NON_DISP(XX, TITLE_SORT, Title Sort)                                   \
+  TAG_NON_DISP(XX, MUSICBRAINZ_RELEASEGROUPID, Musicbrainz Release Group Id) \
+  TAG_NON_DISP(XX, SHOWMOVEMENT, Show Movement)                              \
+  TAG_NON_DISP(XX, DISCSUBTITLE, Disc Subtitle)
 
-#define NCM_TAG_NON_DISP_DECLS(XX)                                        \
-  NCM_TAG_NON_DISP(XX, UNKNOWN, Unknown)                                \
-  NCM_TAG_EXTENDED_DECLS(XX)
+#define TAG_NON_DISP_DECLS(XX)                                        \
+  TAG_NON_DISP(XX, UNKNOWN, Unknown)                                \
+  TAG_EXTENDED_DECLS(XX)
 
-#define NCM_TAG_DEFS(XX)                                                     \
-  NCM_TAG_NON_DISP(XX, UNKNOWN, Unknown)                                \
-  NCM_TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                               \
-  NCM_TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                 \
-  NCM_TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                   \
-  NCM_TAG_FIELD_MPD(XX, TITLE, Title, 't')                                 \
-  NCM_TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                        \
-  NCM_TAG_SEARCH_MPD(XX, NAME, Filename)                                   \
-  NCM_TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                 \
-  NCM_TAG_FIELD_MPD(XX, DATE, Date, 'y')                                   \
-  NCM_TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                           \
-  NCM_TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                         \
-  NCM_TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')                             \
-  NCM_TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                          \
-  NCM_TAG_EXTENDED_DECLS(XX)
+#define TAG_DEFS(XX)                                                     \
+  TAG_NON_DISP(XX, UNKNOWN, Unknown)                                \
+  TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                               \
+  TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                 \
+  TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                   \
+  TAG_FIELD_MPD(XX, TITLE, Title, 't')                                 \
+  TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                        \
+  TAG_SEARCH_MPD(XX, NAME, Filename)                                   \
+  TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                 \
+  TAG_FIELD_MPD(XX, DATE, Date, 'y')                                   \
+  TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                           \
+  TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                         \
+  TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')                             \
+  TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                          \
+  TAG_EXTENDED_DECLS(XX)
 
-#define NCM_TAG_FIELD_DEFS(XX)                                               \
-  NCM_TAG_FIELD_MPD(XX, TITLE, Title, 't')                                 \
-  NCM_TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                               \
-  NCM_TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                   \
-  NCM_TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                 \
-  NCM_TAG_FIELD_MPD(XX, DATE, Date, 'y')                                   \
-  NCM_TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                        \
-  NCM_TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                 \
-  NCM_TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                           \
-  NCM_TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                         \
-  NCM_TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                          \
-  NCM_TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')
+#define TAG_FIELD_DEFS(XX)                                               \
+  TAG_FIELD_MPD(XX, TITLE, Title, 't')                                 \
+  TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                               \
+  TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                   \
+  TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                 \
+  TAG_FIELD_MPD(XX, DATE, Date, 'y')                                   \
+  TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                        \
+  TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                 \
+  TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                           \
+  TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                         \
+  TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                          \
+  TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')
 
-#define NCM_TAG_SONG_INFO_DEFS(XX) NCM_TAG_FIELD_DEFS(XX)
+#define TAG_SONG_INFO_DEFS(XX) TAG_FIELD_DEFS(XX)
 
-#define NCM_TAG_SEARCH_DEFS(XX)                                              \
-  NCM_TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                               \
-  NCM_TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                   \
-  NCM_TAG_FIELD_MPD(XX, TITLE, Title, 't')                                 \
-  NCM_TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                 \
-  NCM_TAG_SEARCH_MPD(XX, NAME, Filename)                                   \
-  NCM_TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                           \
-  NCM_TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                         \
-  NCM_TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                 \
-  NCM_TAG_FIELD_MPD(XX, DATE, Date, 'y')                                   \
-  NCM_TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')
+#define TAG_SEARCH_DEFS(XX)                                              \
+  TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                               \
+  TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                   \
+  TAG_FIELD_MPD(XX, TITLE, Title, 't')                                 \
+  TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                 \
+  TAG_SEARCH_MPD(XX, NAME, Filename)                                   \
+  TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                           \
+  TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                         \
+  TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                 \
+  TAG_FIELD_MPD(XX, DATE, Date, 'y')                                   \
+  TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')
 
-#define NCM_TAG_PRIMARY_DEFS(XX)                                             \
-  NCM_TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                               \
-  NCM_TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                   \
-  NCM_TAG_FIELD_MPD(XX, DATE, Date, 'y')                                   \
-  NCM_TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                 \
-  NCM_TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                           \
-  NCM_TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')
+#define TAG_PRIMARY_DEFS(XX)                                             \
+  TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                               \
+  TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                   \
+  TAG_FIELD_MPD(XX, DATE, Date, 'y')                                   \
+  TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                 \
+  TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                           \
+  TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')
 
 #define NCM_PRIMARY_TAG_DEFAULT_SETTINGS_NAME "artist"
 
-#define NCM_TAGLIB_TAG_DEFS(XX) NCM_TAG_FIELD_DEFS(XX)
+#define TAGLIB_TAG_DEFS(XX) TAG_FIELD_DEFS(XX)
 
-#define NCM_TAG_MPD_DEFS(XX)                                                 \
-    NCM_TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                               \
-    NCM_TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                   \
-    NCM_TAG_FIELD_MPD(XX, DATE, Date, 'y')                                   \
-    NCM_TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                 \
-    NCM_TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                           \
-    NCM_TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                         \
-    NCM_TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                 \
-    NCM_TAG_FIELD_MPD(XX, TITLE, Title, 't')                                 \
-    NCM_TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')                             \
-    NCM_TAG_FIELD_MPD_NUM_DECLS(XX)                                          \
-    NCM_TAG_SEARCH_MPD_DECLS(XX)
+#define TAG_MPD_DEFS(XX)                                                 \
+    TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                               \
+    TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                   \
+    TAG_FIELD_MPD(XX, DATE, Date, 'y')                                   \
+    TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                 \
+    TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                           \
+    TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                         \
+    TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                 \
+    TAG_FIELD_MPD(XX, TITLE, Title, 't')                                 \
+    TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')                             \
+    TAG_FIELD_MPD_NUM_DECLS(XX)                                          \
+    TAG_SEARCH_MPD_DECLS(XX)
 
-#define NCM_TAG_SORT_DEFS(XX)                                                \
-    NCM_TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                               \
-    NCM_TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                   \
-    NCM_TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                 \
-    NCM_TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                          \
-    NCM_TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                        \
-    NCM_TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                 \
-    NCM_TAG_FIELD_MPD(XX, DATE, Date, 'y')                                   \
-    NCM_TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                           \
-    NCM_TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                         \
-    NCM_TAG_FIELD_MPD(XX, TITLE, Title, 't')
+#define TAG_SORT_DEFS(XX)                                                \
+    TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                               \
+    TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                   \
+    TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                 \
+    TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                          \
+    TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                        \
+    TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                 \
+    TAG_FIELD_MPD(XX, DATE, Date, 'y')                                   \
+    TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                           \
+    TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                         \
+    TAG_FIELD_MPD(XX, TITLE, Title, 't')
 
-#define NCM_TAG_EDIT_PARSER_DEFS(XX)                                         \
-    NCM_TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                               \
-    NCM_TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                   \
-    NCM_TAG_FIELD_MPD(XX, TITLE, Title, 't')                                 \
-    NCM_TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                 \
-    NCM_TAG_FIELD_MPD(XX, DATE, Date, 'y')                                   \
-    NCM_TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                        \
-    NCM_TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                 \
-    NCM_TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                           \
-    NCM_TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                         \
-    NCM_TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                          \
-    NCM_TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')
+#define TAG_EDIT_PARSER_DEFS(XX)                                         \
+    TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                               \
+    TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                   \
+    TAG_FIELD_MPD(XX, TITLE, Title, 't')                                 \
+    TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                 \
+    TAG_FIELD_MPD(XX, DATE, Date, 'y')                                   \
+    TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                        \
+    TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                 \
+    TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                           \
+    TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                         \
+    TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                          \
+    TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')
 
-#define NCM_TAG_COUNT_RECORD(suffix, display, tag_char, getter_char,         \
+#define TAG_COUNT_RECORD(suffix, display, tag_char, getter_char,         \
                              flags)                                          \
     + 1
 
 
 enum {
-    NCM_TAG_DERIVED_NAME_CAP = 64,
-    NCM_TAG_SETTINGS_NAME_CAP = NCM_TAG_DERIVED_NAME_CAP,
-    NCM_TAGLIB_PROPERTY_CAP = NCM_TAG_DERIVED_NAME_CAP,
-    NCM_TAGLIB_NAME_CAP = NCM_TAG_DERIVED_NAME_CAP,
+    TAG_DERIVED_NAME_CAP = 64,
+    TAG_SETTINGS_NAME_CAP = TAG_DERIVED_NAME_CAP,
+    TAGLIB_PROPERTY_CAP = TAG_DERIVED_NAME_CAP,
+    TAGLIB_NAME_CAP = TAG_DERIVED_NAME_CAP,
     NCM_SONG_INFO_TAG_COUNT = 0
-        NCM_TAG_SONG_INFO_DEFS(NCM_TAG_COUNT_RECORD),
+        TAG_SONG_INFO_DEFS(TAG_COUNT_RECORD),
     NCM_SEARCH_TAG_COUNT = 0
-        NCM_TAG_SEARCH_DEFS(NCM_TAG_COUNT_RECORD),
+        TAG_SEARCH_DEFS(TAG_COUNT_RECORD),
     NCM_SEARCH_CONSTRAINT_COUNT = NCM_SEARCH_TAG_COUNT + 1,
-    NCM_TAGLIB_TAG_COUNT = 0
-        NCM_TAGLIB_TAG_DEFS(NCM_TAG_COUNT_RECORD),
+    TAGLIB_TAG_COUNT = 0
+        TAGLIB_TAG_DEFS(TAG_COUNT_RECORD),
     NCM_MPD_TAG_COUNT = 0
-        NCM_TAG_MPD_DEFS(NCM_TAG_COUNT_RECORD),
+        TAG_MPD_DEFS(TAG_COUNT_RECORD),
     NCM_PRIMARY_TAG_COUNT = 0
-        NCM_TAG_PRIMARY_DEFS(NCM_TAG_COUNT_RECORD),
-    NCM_TAG_SORT_COUNT = 0
-        NCM_TAG_SORT_DEFS(NCM_TAG_COUNT_RECORD),
-    NCM_TAG_EDIT_PARSER_COUNT = 0
-        NCM_TAG_EDIT_PARSER_DEFS(NCM_TAG_COUNT_RECORD),
+        TAG_PRIMARY_DEFS(TAG_COUNT_RECORD),
+    TAG_SORT_COUNT = 0
+        TAG_SORT_DEFS(TAG_COUNT_RECORD),
+    TAG_EDIT_PARSER_COUNT = 0
+        TAG_EDIT_PARSER_DEFS(TAG_COUNT_RECORD),
 };
 
-#undef NCM_TAG_COUNT_RECORD
+#undef TAG_COUNT_RECORD
 
-#define NCM_TAG_TYPE_ENUM_FIELD(suffix, display, tag_char, getter_char, flags) \
-  XX(CAT(NCM_TAG_, suffix))
+#define TAG_TYPE_ENUM_FIELD(suffix, display, tag_char, getter_char, flags) \
+  XX(CAT(TAG_, suffix))
 
-#define NCM_TAG_TYPE_ENUM_FIELDS                                               \
-  NCM_TAG_DEFS(NCM_TAG_TYPE_ENUM_FIELD)
+#define TAG_TYPE_ENUM_FIELDS                                               \
+  TAG_DEFS(TAG_TYPE_ENUM_FIELD)
 
-#define NCM_TAGS_FIELD_ENUM_FIELD(suffix, display, tag_char, getter_char, flags) \
-  XX(CAT(NCM_TAGS_FIELD_, suffix), display)
+#define TAGS_FIELD_ENUM_FIELD(suffix, display, tag_char, getter_char, flags) \
+  XX(CAT(TAGS_FIELD_, suffix), display)
 
-#define NCM_TAGS_FIELD_ENUM_FIELDS                                             \
-  NCM_TAG_FIELD_DEFS(NCM_TAGS_FIELD_ENUM_FIELD)
+#define TAGS_FIELD_ENUM_FIELDS                                             \
+  TAG_FIELD_DEFS(TAGS_FIELD_ENUM_FIELD)
 
 #define NCM_SONG_GETTER_RECORD_NONE(XX)                                        \
   XX(SONG_GETTER_NONE, none, '\0')
@@ -374,19 +374,19 @@ enum {
   NCM_SONG_GETTER_RECORD_PRIORITY(XX)
 
 #define NCM_SONG_GETTER_TAG_HEAD_DEFS(XX)                                      \
-  NCM_TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                                 \
-  NCM_TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                     \
-  NCM_TAG_FIELD_MPD(XX, TITLE, Title, 't')                                   \
-  NCM_TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                   \
-  NCM_TAG_FIELD_MPD(XX, DATE, Date, 'y')
+  TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                                 \
+  TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                     \
+  TAG_FIELD_MPD(XX, TITLE, Title, 't')                                   \
+  TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                   \
+  TAG_FIELD_MPD(XX, DATE, Date, 'y')
 
 #define NCM_SONG_GETTER_TAG_TAIL_DEFS(XX)                                      \
-  NCM_TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                          \
-  NCM_TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                   \
-  NCM_TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                             \
-  NCM_TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                           \
-  NCM_TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                            \
-  NCM_TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')
+  TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                          \
+  TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                   \
+  TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                             \
+  TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                           \
+  TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                            \
+  TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')
 
 #define NCM_SONG_GETTER_TAG_DEFS(XX)                                           \
   NCM_SONG_GETTER_TAG_HEAD_DEFS(XX)                                          \
@@ -411,15 +411,15 @@ enum {
   NCM_SONG_GETTER_RECORD_PRIORITY(NCM_SONG_GETTER_NON_TAG_ENUM_FIELD)
 
 #define ENUM_NAME NcmTagType
-#define ENUM_PREFIX_ NCM_TAG_
+#define ENUM_PREFIX_ TAG_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS NCM_TAG_TYPE_ENUM_FIELDS
+#define ENUM_FIELDS TAG_TYPE_ENUM_FIELDS
 #include "cbase/xenums.c"
 
 #define ENUM_NAME TagsField
-#define ENUM_PREFIX_ NCM_TAGS_FIELD_
+#define ENUM_PREFIX_ TAGS_FIELD_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS NCM_TAGS_FIELD_ENUM_FIELDS
+#define ENUM_FIELDS TAGS_FIELD_ENUM_FIELDS
 #include "cbase/xenums.c"
 
 #define ENUM_NAME SongGetter
@@ -431,16 +431,16 @@ enum {
 static inline int32
 ncm_tag_type_canonical_name_len(enum NcmTagType tag, char **out) {
     switch (tag) {
-#define NCM_TAG_CANONICAL_NAME_CASE(suffix, display, tag_char,                 \
+#define TAG_CANONICAL_NAME_CASE(suffix, display, tag_char,                 \
                                     getter_char, flags)                        \
-    case CAT(NCM_TAG_, suffix):                                                \
-        *out = NCM_TAG_DISPLAY_NAME(display);                                  \
-        return NCM_TAG_DISPLAY_NAME_LEN(display);
+    case CAT(TAG_, suffix):                                                \
+        *out = TAG_DISPLAY_NAME(display);                                  \
+        return TAG_DISPLAY_NAME_LEN(display);
 
-    NCM_TAG_DEFS(NCM_TAG_CANONICAL_NAME_CASE)
+    TAG_DEFS(TAG_CANONICAL_NAME_CASE)
 
-#undef NCM_TAG_CANONICAL_NAME_CASE
-    case NCM_TAG_COUNT:
+#undef TAG_CANONICAL_NAME_CASE
+    case TAG_COUNT:
     default:
         *out = "";
         return 0;
@@ -450,20 +450,20 @@ ncm_tag_type_canonical_name_len(enum NcmTagType tag, char **out) {
 static inline int32
 ncm_tag_type_display_name_len(enum NcmTagType tag, char **out) {
     switch (tag) {
-#define NCM_TAG_DISPLAY_NAME_CASE(suffix, display, tag_char,                   \
+#define TAG_DISPLAY_NAME_CASE(suffix, display, tag_char,                   \
                                   getter_char, flags)                          \
-    case CAT(NCM_TAG_, suffix):                                                \
-        if (((flags) & NCM_TAG_META_FLAG_DISPLAY) == 0) {                      \
+    case CAT(TAG_, suffix):                                                \
+        if (((flags) & TAG_META_FLAG_DISPLAY) == 0) {                      \
             *out = "";                                                         \
             return 0;                                                          \
         }                                                                      \
-        *out = NCM_TAG_DISPLAY_NAME(display);                                  \
-        return NCM_TAG_DISPLAY_NAME_LEN(display);
+        *out = TAG_DISPLAY_NAME(display);                                  \
+        return TAG_DISPLAY_NAME_LEN(display);
 
-    NCM_TAG_DEFS(NCM_TAG_DISPLAY_NAME_CASE)
+    TAG_DEFS(TAG_DISPLAY_NAME_CASE)
 
-#undef NCM_TAG_DISPLAY_NAME_CASE
-    case NCM_TAG_COUNT:
+#undef TAG_DISPLAY_NAME_CASE
+    case TAG_COUNT:
     default:
         *out = "";
         return 0;
@@ -474,17 +474,17 @@ static inline int32
 ncm_tag_type_settings_name_len(enum NcmTagType tag, char *out,
                                int32 out_cap) {
     switch ((int32)tag) {
-#define NCM_TAG_SETTINGS_NAME_CASE(suffix, display, tag_char,                  \
+#define TAG_SETTINGS_NAME_CASE(suffix, display, tag_char,                  \
                                    getter_char, flags)                         \
-    case CAT(NCM_TAG_, suffix):                                                \
+    case CAT(TAG_, suffix):                                                \
         return ncm_tag_name_to_lower_snake(out, out_cap,                       \
-                                           NCM_TAG_DISPLAY_NAME(display),      \
-                                           NCM_TAG_DISPLAY_NAME_LEN(display));
+                                           TAG_DISPLAY_NAME(display),      \
+                                           TAG_DISPLAY_NAME_LEN(display));
 
-    NCM_TAG_PRIMARY_DEFS(NCM_TAG_SETTINGS_NAME_CASE)
+    TAG_PRIMARY_DEFS(TAG_SETTINGS_NAME_CASE)
 
-#undef NCM_TAG_SETTINGS_NAME_CASE
-    case NCM_TAG_COUNT:
+#undef TAG_SETTINGS_NAME_CASE
+    case TAG_COUNT:
     default:
         if (out_cap > 0) {
             out[0] = '\0';
@@ -496,15 +496,15 @@ ncm_tag_type_settings_name_len(enum NcmTagType tag, char *out,
 static inline bool
 ncm_tag_type_is_primary(enum NcmTagType tag) {
     switch ((int32)tag) {
-#define NCM_TAG_IS_PRIMARY_CASE(suffix, display, tag_char, getter_char,        \
+#define TAG_IS_PRIMARY_CASE(suffix, display, tag_char, getter_char,        \
                                 flags)                                         \
-    case CAT(NCM_TAG_, suffix):                                                \
+    case CAT(TAG_, suffix):                                                \
         return true;
 
-    NCM_TAG_PRIMARY_DEFS(NCM_TAG_IS_PRIMARY_CASE)
+    TAG_PRIMARY_DEFS(TAG_IS_PRIMARY_CASE)
 
-#undef NCM_TAG_IS_PRIMARY_CASE
-    case NCM_TAG_COUNT:
+#undef TAG_IS_PRIMARY_CASE
+    case TAG_COUNT:
     default:
         return false;
     }
@@ -513,7 +513,7 @@ ncm_tag_type_is_primary(enum NcmTagType tag) {
 static inline bool
 ncm_tag_type_parse_settings_name(char *value, int32 value_len,
                                  enum NcmTagType *result) {
-    char normalized[NCM_TAG_SETTINGS_NAME_CAP];
+    char normalized[TAG_SETTINGS_NAME_CAP];
     enum NcmTagType parsed;
     int32 normalized_len;
 
@@ -525,11 +525,11 @@ ncm_tag_type_parse_settings_name(char *value, int32 value_len,
     if (normalized_len <= 0) {
         return false;
     }
-    if (BEGINS_WITH(normalized, normalized_len, "NCM_TAG_")) {
+    if (BEGINS_WITH(normalized, normalized_len, "TAG_")) {
         return false;
     }
 
-    parsed = NCM_TAG_parse(normalized, normalized_len);
+    parsed = TAG_parse(normalized, normalized_len);
     if (!ncm_tag_type_is_primary(parsed)) {
         return false;
     }
@@ -543,9 +543,9 @@ ncm_primary_tag_next(enum NcmTagType tag) {
     static enum NcmTagType tags[NCM_PRIMARY_TAG_COUNT] = {
 #define NCM_PRIMARY_TAG_ARRAY_ENTRY(suffix, display, tag_char,                 \
                                     getter_char, flags)                        \
-        CAT(NCM_TAG_, suffix),
+        CAT(TAG_, suffix),
 
-        NCM_TAG_PRIMARY_DEFS(NCM_PRIMARY_TAG_ARRAY_ENTRY)
+        TAG_PRIMARY_DEFS(NCM_PRIMARY_TAG_ARRAY_ENTRY)
 
 #undef NCM_PRIMARY_TAG_ARRAY_ENTRY
     };
@@ -577,8 +577,8 @@ ncm_song_getter_tag_name_len(enum SongGetter getter, char **out) {
 #define NCM_SONG_GETTER_TAG_NAME_CASE(suffix, display, tag_char,               \
                                        getter_char, flags)                     \
     case CAT(SONG_GETTER_, suffix):                                            \
-        *out = NCM_TAG_DISPLAY_NAME(display);                                  \
-        return NCM_TAG_DISPLAY_NAME_LEN(display);
+        *out = TAG_DISPLAY_NAME(display);                                  \
+        return TAG_DISPLAY_NAME_LEN(display);
 
     NCM_SONG_GETTER_TAG_DEFS(NCM_SONG_GETTER_TAG_NAME_CASE)
 
@@ -616,8 +616,8 @@ ncm_song_getter_column_title_len(enum SongGetter getter, char **out) {
 #define NCM_SONG_GETTER_TAG_TITLE_CASE(suffix, display, tag_char,              \
                                         getter_char, flags)                    \
     case CAT(SONG_GETTER_, suffix):                                            \
-        *out = NCM_TAG_DISPLAY_NAME(display);                                  \
-        return NCM_TAG_DISPLAY_NAME_LEN(display);
+        *out = TAG_DISPLAY_NAME(display);                                  \
+        return TAG_DISPLAY_NAME_LEN(display);
 
     NCM_SONG_GETTER_TAG_DEFS(NCM_SONG_GETTER_TAG_TITLE_CASE)
 
@@ -656,16 +656,16 @@ ncm_tag_type_taglib_property_len(enum NcmTagType tag, char *out,
     ASSERT(out_cap > 0);
 
     switch ((int32)tag) {
-#define NCM_TAGLIB_PROPERTY_CASE(suffix, display, tag_char,                    \
+#define TAGLIB_PROPERTY_CASE(suffix, display, tag_char,                    \
                                   getter_char, flags)                          \
-    case CAT(NCM_TAG_, suffix):                                                \
+    case CAT(TAG_, suffix):                                                \
         result = ncm_tag_name_to_upper_compact(                                \
-            out, out_cap, NCM_TAG_DISPLAY_NAME(display),                       \
-            NCM_TAG_DISPLAY_NAME_LEN(display));                                \
+            out, out_cap, TAG_DISPLAY_NAME(display),                       \
+            TAG_DISPLAY_NAME_LEN(display));                                \
         if (result < 0) {                                                      \
             return result;                                                     \
         }                                                                      \
-        if (((flags) & NCM_TAG_META_FLAG_TAGLIB_NUMBER) == 0) {                \
+        if (((flags) & TAG_META_FLAG_TAGLIB_NUMBER) == 0) {                \
             return result;                                                     \
         }                                                                      \
         if (result + STRLIT_LEN("NUMBER") >= out_cap) {                        \
@@ -675,10 +675,10 @@ ncm_tag_type_taglib_property_len(enum NcmTagType tag, char *out,
         memcpy64(out + result, STRLIT("NUMBER") + 1);                          \
         return result + STRLIT_LEN("NUMBER");
 
-    NCM_TAGLIB_TAG_DEFS(NCM_TAGLIB_PROPERTY_CASE)
+    TAGLIB_TAG_DEFS(TAGLIB_PROPERTY_CASE)
 
-#undef NCM_TAGLIB_PROPERTY_CASE
-    case NCM_TAG_COUNT:
+#undef TAGLIB_PROPERTY_CASE
+    case TAG_COUNT:
     default:
         if (out_cap > 0) {
             out[0] = '\0';
@@ -694,17 +694,17 @@ ncm_tag_type_taglib_name_len(enum NcmTagType tag, char *out,
     ASSERT(out_cap > 0);
 
     switch ((int32)tag) {
-#define NCM_TAGLIB_NAME_CASE(suffix, display, tag_char,                        \
+#define TAGLIB_NAME_CASE(suffix, display, tag_char,                        \
                               getter_char, flags)                              \
-    case CAT(NCM_TAG_, suffix):                                                \
+    case CAT(TAG_, suffix):                                                \
         return ncm_tag_name_to_camel_compact(                                  \
-            out, out_cap, NCM_TAG_DISPLAY_NAME(display),                       \
-            NCM_TAG_DISPLAY_NAME_LEN(display));
+            out, out_cap, TAG_DISPLAY_NAME(display),                       \
+            TAG_DISPLAY_NAME_LEN(display));
 
-    NCM_TAGLIB_TAG_DEFS(NCM_TAGLIB_NAME_CASE)
+    TAGLIB_TAG_DEFS(TAGLIB_NAME_CASE)
 
-#undef NCM_TAGLIB_NAME_CASE
-    case NCM_TAG_COUNT:
+#undef TAGLIB_NAME_CASE
+    case TAG_COUNT:
     default:
         if (out_cap > 0) {
             out[0] = '\0';
@@ -720,16 +720,16 @@ ncm_tags_field_taglib_property_len(enum TagsField field, char *out,
     ASSERT(out_cap > 0);
 
     switch (field) {
-#define NCM_TAGLIB_FIELD_PROPERTY_CASE(suffix, display, tag_char,              \
+#define TAGLIB_FIELD_PROPERTY_CASE(suffix, display, tag_char,              \
                                         getter_char, flags)                    \
-    case CAT(NCM_TAGS_FIELD_, suffix):                                         \
-        return ncm_tag_type_taglib_property_len(CAT(NCM_TAG_, suffix),         \
+    case CAT(TAGS_FIELD_, suffix):                                         \
+        return ncm_tag_type_taglib_property_len(CAT(TAG_, suffix),         \
                                                 out, out_cap);
 
-    NCM_TAGLIB_TAG_DEFS(NCM_TAGLIB_FIELD_PROPERTY_CASE)
+    TAGLIB_TAG_DEFS(TAGLIB_FIELD_PROPERTY_CASE)
 
-#undef NCM_TAGLIB_FIELD_PROPERTY_CASE
-    case NCM_TAGS_FIELD_COUNT:
+#undef TAGLIB_FIELD_PROPERTY_CASE
+    case TAGS_FIELD_COUNT:
     default:
         if (out_cap > 0) {
             out[0] = '\0';
@@ -741,15 +741,15 @@ ncm_tags_field_taglib_property_len(enum TagsField field, char *out,
 static inline char
 ncm_tags_field_format_char(enum TagsField field) {
     switch (field) {
-#define NCM_TAGS_FIELD_FORMAT_CHAR_CASE(suffix, display, tag_char,             \
+#define TAGS_FIELD_FORMAT_CHAR_CASE(suffix, display, tag_char,             \
                                          getter_char, flags)                   \
-    case CAT(NCM_TAGS_FIELD_, suffix):                                         \
+    case CAT(TAGS_FIELD_, suffix):                                         \
         return tag_char;
 
-    NCM_TAG_FIELD_DEFS(NCM_TAGS_FIELD_FORMAT_CHAR_CASE)
+    TAG_FIELD_DEFS(TAGS_FIELD_FORMAT_CHAR_CASE)
 
-#undef NCM_TAGS_FIELD_FORMAT_CHAR_CASE
-    case NCM_TAGS_FIELD_COUNT:
+#undef TAGS_FIELD_FORMAT_CHAR_CASE
+    case TAGS_FIELD_COUNT:
     default:
         return '\0';
     }
@@ -757,16 +757,16 @@ ncm_tags_field_format_char(enum TagsField field) {
 
 static inline int32
 ncm_tags_field_parser_name_len(enum TagsField field, char **out) {
-    if (field == NCM_TAGS_FIELD_TRACK) {
+    if (field == TAGS_FIELD_TRACK) {
         return ncm_song_getter_display_name_len(SONG_GETTER_TRACK_NUMBER,
                                                 out);
     }
-    if (field == NCM_TAGS_FIELD_COUNT) {
+    if (field == TAGS_FIELD_COUNT) {
         *out = "";
         return 0;
     }
 
-    return NCM_TAGS_FIELD_alias_len(field, out);
+    return TAGS_FIELD_alias_len(field, out);
 }
 
 static inline char

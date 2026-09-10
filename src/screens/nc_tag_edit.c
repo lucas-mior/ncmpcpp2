@@ -571,7 +571,7 @@ tag_edit_current_tag_type_action(TagEditScreen *screen,
     ASSERT(screen != NULL);
     ASSERT(field != NULL);
 
-    *field = NCM_TAGS_FIELD_COUNT;
+    *field = TAGS_FIELD_COUNT;
     menu = nc_editor_string_menu_base(&screen->tag_types);
     choice = nc_menu_highlight(menu);
     if (((row = nc_menu_current_item(menu)) == NULL)
@@ -581,7 +581,7 @@ tag_edit_current_tag_type_action(TagEditScreen *screen,
 
     if (tag_edit_choice_is_field(choice)) {
         *field = ncm_song_info_tags[choice].field;
-        if ((ncm_song_info_tags[choice].field == NCM_TAGS_FIELD_TRACK)
+        if ((ncm_song_info_tags[choice].field == TAGS_FIELD_TRACK)
             && (screen->active_focus == TAG_EDIT_FOCUS_TAG_TYPES)) {
             return TAG_EDIT_TAG_TYPE_ACTION_NUMBER_TRACKS;
         }
@@ -769,7 +769,7 @@ tag_edit_append_parser_legend_field(StrBuilder *legend,
 #define TAG_EDIT_APPEND_PARSER_FIELD(suffix, display, tag_char, getter_char, \
                                      flags)                                  \
     tag_edit_append_parser_legend_field(&screen->parser_legend,              \
-                                        CAT(NCM_TAGS_FIELD_, suffix));
+                                        CAT(TAGS_FIELD_, suffix));
 
 static void
 tag_edit_build_parser_legend(TagEditScreen *screen) {
@@ -778,7 +778,7 @@ tag_edit_build_parser_legend(TagEditScreen *screen) {
 
     sb_clear(&screen->parser_legend);
 
-    NCM_TAG_EDIT_PARSER_DEFS(TAG_EDIT_APPEND_PARSER_FIELD)
+    TAG_EDIT_PARSER_DEFS(TAG_EDIT_APPEND_PARSER_FIELD)
     SB_APPEND(&screen->parser_legend, "\nFiles:\n");
 
     tags = nc_tag_row_menu_base(&screen->tags);
@@ -882,13 +882,13 @@ tag_edit_prompt_tag_value(TagEditScreen *screen,
     bool result;
 
     ASSERT(screen != NULL);
-    if (field == NCM_TAGS_FIELD_COUNT) {
+    if (field == TAGS_FIELD_COUNT) {
         return false;
     }
     song = nc_tag_row_menu_current(&screen->tags);
     ASSERT(song != NULL);
 
-    label_len = NCM_TAGS_FIELD_alias_len(field, &label);
+    label_len = TAGS_FIELD_alias_len(field, &label);
     initial = mutable_song_tags_buffer(song, field,
                                        Config.tags_separator,
                                        Config.tags_separator_len,
@@ -2190,7 +2190,7 @@ tag_edit_tag_matches_regex(TagEditScreen *screen,
     if (tag_edit_choice_is_field(choice)) {
         field = ncm_song_info_tags[choice].field;
     } else if (tag_edit_choice_is_filename(choice)) {
-        field = NCM_TAGS_FIELD_COUNT;
+        field = TAGS_FIELD_COUNT;
     } else {
         return false;
     }
@@ -3130,7 +3130,7 @@ tag_edit_copy_selected_song_at(TagEditScreen *screen,
         char *value = tag->original;
         int32 value_len = tag->original_len;
 
-        if ((type == NCM_TAG_UNKNOWN) || (value == NULL) || (value_len <= 0)) {
+        if ((type == TAG_UNKNOWN) || (value == NULL) || (value_len <= 0)) {
             continue;
         }
         ncm_song_add_tag(&song, type, value, value_len);
@@ -3322,7 +3322,7 @@ tag_edit_screen_apply_tag_to_selection(TagEditScreen *screen,
     if ((screen == NULL) || (value == NULL)) {
         return -EINVAL;
     }
-    if (field >= NCM_TAGS_FIELD_COUNT) {
+    if (field >= TAGS_FIELD_COUNT) {
         return -EINVAL;
     }
     if ((value_len < 0) || (separator_len < 0)) {
@@ -3352,11 +3352,11 @@ tag_edit_number_song_callback(MutableSong *song, void *user) {
     }
 
     numberer->current += 1;
-    mutable_song_set_tag(song, NCM_TAGS_FIELD_TRACK, 0, buffer, len);
+    mutable_song_set_tag(song, TAGS_FIELD_TRACK, 0, buffer, len);
     for (int32 i = 1;
-         mutable_song_has_tag_view(song, NCM_TAGS_FIELD_TRACK, i, &view);
+         mutable_song_has_tag_view(song, TAGS_FIELD_TRACK, i, &view);
          i += 1) {
-        mutable_song_set_tag(song, NCM_TAGS_FIELD_TRACK, i, STRLIT(""));
+        mutable_song_set_tag(song, TAGS_FIELD_TRACK, i, STRLIT(""));
     }
     return 0;
 }
@@ -4077,7 +4077,7 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
         }
 
         field = ncm_tags_field_from_char(tag_char);
-        if (field != NCM_TAGS_FIELD_COUNT) {
+        if (field != TAGS_FIELD_COUNT) {
             for (int32 i = file_pos; i < value_end; i += 1) {
                 if (file.data[i] == '_') {
                     file.data[i] = ' ';
@@ -4153,7 +4153,7 @@ tag_edit_generate_filename(MutableSong *song,
             char *value;
             int32 value_len;
 
-            if (type == NCM_TAG_UNKNOWN) {
+            if (type == TAG_UNKNOWN) {
                 continue;
             }
 
@@ -4191,7 +4191,7 @@ tag_edit_song_display_value(MutableSong *song, enum TagsField field,
                               StrBuilder *buffer) {
     StrBuilder tag = {0};
 
-    if (field == NCM_TAGS_FIELD_COUNT) {
+    if (field == TAGS_FIELD_COUNT) {
         SB_APPEND(buffer, song->name, song->name_len);
         if (song->new_name && (song->new_name_len > 0)) {
             SB_APPEND(buffer, " -> ");
@@ -4199,7 +4199,7 @@ tag_edit_song_display_value(MutableSong *song, enum TagsField field,
         }
         return 0;
     }
-    if (field >= NCM_TAGS_FIELD_COUNT) {
+    if (field >= TAGS_FIELD_COUNT) {
         return -EINVAL;
     }
 

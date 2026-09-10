@@ -953,7 +953,7 @@ action_runtime_add_random_items(void) {
     int32 count;
     int32 source_name_len;
     int32 number;
-    enum NcmTagType tag_type = NCM_TAG_ARTIST;
+    enum NcmTagType tag_type = TAG_ARTIST;
     char random_type = 0;
     int32 status = 0;
     bool prompted;
@@ -3970,7 +3970,7 @@ action_runtime_media_library_current_artist_tag(char **tag, int32 *tag_len) {
     if (!action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
         return false;
     }
-    if (Config.media_library_primary_tag != NCM_TAG_ARTIST) {
+    if (Config.media_library_primary_tag != TAG_ARTIST) {
         return false;
     }
 
@@ -4283,7 +4283,7 @@ action_runtime_edit_library_tag(void) {
     sep = Config.tags_separator;
     sep_len = Config.tags_separator_len;
     field = ncm_tags_field_from_tag_type(Config.media_library_primary_tag);
-    if (field == NCM_TAGS_FIELD_COUNT) {
+    if (field == TAGS_FIELD_COUNT) {
         status = -NCM_ERROR_UNAVAILABLE;
         goto cleanup;
     }
@@ -4737,7 +4737,7 @@ action_runtime_show_artist_info(void) {
             ncm_song_destroy(&song);
             return -NCM_ERROR_UNAVAILABLE;
         }
-        has_artist = ncm_song_has_tag_view(&song, NCM_TAG_ARTIST, 0, &artist);
+        has_artist = ncm_song_has_tag_view(&song, TAG_ARTIST, 0, &artist);
     }
 
     if (has_artist && (artist.len > 0)) {

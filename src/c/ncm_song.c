@@ -58,7 +58,7 @@ static void
 ncm_song_tag_init(NcmSongTag *tag) {
     tag->value = NULL;
     tag->value_len = 0;
-    tag->type = NCM_TAG_UNKNOWN;
+    tag->type = TAG_UNKNOWN;
     return;
 }
 
@@ -227,7 +227,7 @@ ncm_song_add_tag(NcmSong *song, enum NcmTagType type,
     if (value_len < 0) {
         return -EINVAL;
     }
-    if (type == NCM_TAG_UNKNOWN) {
+    if (type == TAG_UNKNOWN) {
         return -EINVAL;
     }
 
@@ -378,7 +378,7 @@ ncm_song_has_name_view_unchecked(NcmSong *song, int32 idx,
     StringView uri;
     int32 basename;
 
-    if (ncm_song_has_tag_view_unchecked(song, NCM_TAG_NAME, idx, view)) {
+    if (ncm_song_has_tag_view_unchecked(song, TAG_NAME, idx, view)) {
         return true;
     }
     if (idx != 0) {
@@ -615,7 +615,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
         }
         return buffer;
     case SONG_GETTER_TRACK:
-        if (ncm_song_has_tag_view_unchecked(song, NCM_TAG_TRACK, idx, &view)) {
+        if (ncm_song_has_tag_view_unchecked(song, TAG_TRACK, idx, &view)) {
             len = ncm_song_numeric_tag_len_unchecked(view.data, view.len);
             sb_reserve(&buffer, len);
             buffer.len =
@@ -624,7 +624,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
         }
         return buffer;
     case SONG_GETTER_TRACK_NUMBER:
-        if (ncm_song_has_tag_view_unchecked(song, NCM_TAG_TRACK, idx, &view)) {
+        if (ncm_song_has_tag_view_unchecked(song, TAG_TRACK, idx, &view)) {
             slash = ncm_string_find_char(view.data, view.len, '/');
             if (ncm_song_needs_numeric_zero(view.data, view.len)) {
                 len = 1;
@@ -645,7 +645,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
         }
         return buffer;
     case SONG_GETTER_DISC:
-        if (ncm_song_has_tag_view_unchecked(song, NCM_TAG_DISC, idx, &view)) {
+        if (ncm_song_has_tag_view_unchecked(song, TAG_DISC, idx, &view)) {
             len = ncm_song_numeric_tag_len_unchecked(view.data, view.len);
             sb_reserve(&buffer, len);
             buffer.len =

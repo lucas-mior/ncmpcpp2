@@ -111,13 +111,13 @@ ncm_mpd_connection_set_error(MpdConnection *connection,
 
 #define NCM_MPD_CONNECTION_TAG_TYPE_CASE(suffix, display, tag_char,       \
                                              getter_char, flags)             \
-    case CAT(NCM_TAG_, suffix):                                             \
+    case CAT(TAG_, suffix):                                             \
         return CAT(MPD_TAG_, suffix);
 
 static enum mpd_tag_type
 ncm_mpd_connection_tag_type(enum NcmTagType tag) {
     switch ((int32)tag) {
-    NCM_TAG_MPD_DEFS(NCM_MPD_CONNECTION_TAG_TYPE_CASE)
+    TAG_MPD_DEFS(NCM_MPD_CONNECTION_TAG_TYPE_CASE)
     default:
         return MPD_TAG_UNKNOWN;
     }
