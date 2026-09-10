@@ -50,6 +50,17 @@ tiny_editor_buffer_key_value(NcBuffer *buffer, char *key, int32 key_len,
 }
 
 static void
+tiny_editor_buffer_getter_value(NcBuffer *buffer, enum SongGetter getter,
+                                char *value, int32 value_len) {
+    char *key;
+    int32 key_len;
+
+    key_len = ncm_song_getter_display_name_len(getter, &key);
+    tiny_editor_buffer_key_value(buffer, key, key_len, value, value_len);
+    return;
+}
+
+static void
 tiny_editor_buffer_mutable_tag(NcBuffer *buffer, MutableSong *song,
                                enum TagsField field,
                                char *tag_separator, int32 tag_separator_len,
@@ -162,6 +173,8 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         StringView name;
         NcBuffer row_buffer = {0};
         StrBuilder new_name = {0};
+        char *label;
+        int32 label_len;
 
         if (!mutable_song_has_new_name_view(&screen->edited, &current_name)) {
             current_name.data = screen->edited.name;
@@ -181,8 +194,10 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         if (screen->hooks.prompt == NULL) {
             prompt_result = TINY_TAG_EDIT_PROMPT_ERROR;
         } else {
+            label_len = ncm_song_getter_display_name_len(SONG_GETTER_NAME,
+                                                         &label);
             prompt_result = screen->hooks.prompt(screen->hooks.user,
-                                                 STRLIT("Filename"), initial,
+                                                 label, label_len, initial,
                                                  &input);
         }
         if (prompt_result == TINY_TAG_EDIT_PROMPT_ABORTED) {
@@ -223,8 +238,8 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
             name.data = screen->edited.name;
             name.len = screen->edited.name_len;
         }
-        tiny_editor_buffer_key_value(&row_buffer, STRLIT("Filename"),
-                                     name.data, name.len);
+        tiny_editor_buffer_getter_value(&row_buffer, SONG_GETTER_NAME,
+                                        name.data, name.len);
         nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL,
                              TINY_TAG_EDIT_FILE_NAME_EDIT_ROW, &row_buffer);
         nc_buffer_destroy(&row_buffer);
@@ -623,14 +638,15 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     nc_menu_clear_items(nc_editor_buffer_menu_base(&screen->rows));
 
     row = (NcBuffer){0};
-    tiny_editor_buffer_key_value(&row, STRLIT("Filename"),
-                                 screen->edited.name, screen->edited.name_len);
+    tiny_editor_buffer_getter_value(&row, SONG_GETTER_NAME,
+                                    screen->edited.name,
+                                    screen->edited.name_len);
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
     nc_buffer_clear(&row);
 
-    tiny_editor_buffer_key_value(&row, STRLIT("Directory"),
-                                 screen->edited.directory,
-                                 screen->edited.directory_len);
+    tiny_editor_buffer_getter_value(&row, SONG_GETTER_DIRECTORY,
+                                    screen->edited.directory,
+                                    screen->edited.directory_len);
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
     nc_buffer_clear(&row);
 
@@ -648,8 +664,8 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
         duration_buffer[3] = '-';
         duration_len = 4;
     }
-    tiny_editor_buffer_key_value(&row, STRLIT("Length"),
-                                 duration_buffer, duration_len);
+    tiny_editor_buffer_getter_value(&row, SONG_GETTER_LENGTH,
+                                    duration_buffer, duration_len);
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
     nc_buffer_clear(&row);
 
@@ -697,8 +713,9 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
 
     nc_editor_buffer_menu_add_separator(&screen->rows);
     row = (NcBuffer){0};
-    tiny_editor_buffer_key_value(&row, STRLIT("Filename"),
-                                 screen->edited.name, screen->edited.name_len);
+    tiny_editor_buffer_getter_value(&row, SONG_GETTER_NAME,
+                                    screen->edited.name,
+                                    screen->edited.name_len);
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_SELECTABLE);
     nc_buffer_destroy(&row);
 

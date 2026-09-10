@@ -729,6 +729,49 @@ tag_edit_set_pattern(TagEditScreen *screen, char *pattern, int32 pattern_len) {
     return;
 }
 
+static char
+tag_edit_ascii_lower(char c) {
+    if ((c >= 'A') && (c <= 'Z')) {
+        c = (char)(c - 'A' + 'a');
+    }
+    return c;
+}
+
+static void
+tag_edit_append_lowercase(StrBuilder *buffer, char *data, int32 len) {
+    for (int32 i = 0; i < len; i += 1) {
+        sb_append_byte(buffer, tag_edit_ascii_lower(data[i]));
+    }
+    return;
+}
+
+static void
+tag_edit_append_parser_legend_field(StrBuilder *legend,
+                                    enum TagsField field) {
+    char *name;
+    int32 name_len;
+    char tag_char;
+
+    tag_char = ncm_tags_field_format_char(field);
+    name_len = ncm_tags_field_parser_name_len(field, &name);
+    if ((tag_char == '\0') || (name_len <= 0)) {
+        return;
+    }
+
+    sb_append_byte(legend, '%');
+    sb_append_byte(legend, tag_char);
+    SB_APPEND(legend, " - ");
+    tag_edit_append_lowercase(legend, name, name_len);
+    sb_append_byte(legend, '\n');
+    return;
+}
+
+#define TAG_EDIT_APPEND_PARSER_FIELD(tag, name, alias, tag_char, field,       \
+                                     getter, getter_char, taglib_property,    \
+                                     taglib_name, settings_name, mpd, flags)  \
+    tag_edit_append_parser_legend_field(&screen->parser_legend,               \
+                                        CAT(NCM_TAGS_FIELD_, field));
+
 static void
 tag_edit_build_parser_legend(TagEditScreen *screen) {
     NcMenu *tags;
@@ -736,17 +779,8 @@ tag_edit_build_parser_legend(TagEditScreen *screen) {
 
     sb_clear(&screen->parser_legend);
 
-    SB_APPEND(&screen->parser_legend, "%a - artist\n");
-    SB_APPEND(&screen->parser_legend, "%A - album artist\n");
-    SB_APPEND(&screen->parser_legend, "%t - title\n");
-    SB_APPEND(&screen->parser_legend, "%b - album\n");
-    SB_APPEND(&screen->parser_legend, "%y - date\n");
-    SB_APPEND(&screen->parser_legend, "%n - track number\n");
-    SB_APPEND(&screen->parser_legend, "%g - genre\n");
-    SB_APPEND(&screen->parser_legend, "%c - composer\n");
-    SB_APPEND(&screen->parser_legend, "%p - performer\n");
-    SB_APPEND(&screen->parser_legend, "%d - disc\n");
-    SB_APPEND(&screen->parser_legend, "%C - comment\n\nFiles:\n");
+    NCM_TAG_EDIT_PARSER_DEFS(TAG_EDIT_APPEND_PARSER_FIELD)
+    SB_APPEND(&screen->parser_legend, "\nFiles:\n");
 
     tags = nc_tag_row_menu_base(&screen->tags);
     count = nc_menu_item_count(tags);
@@ -763,6 +797,8 @@ tag_edit_build_parser_legend(TagEditScreen *screen) {
     }
     return;
 }
+
+#undef TAG_EDIT_APPEND_PARSER_FIELD
 
 static int32
 tag_edit_find_recent_pattern(TagEditScreen *screen,

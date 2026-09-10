@@ -308,6 +308,19 @@
     NCM_TAG_RECORD_PERFORMER(XX)                                             \
     NCM_TAG_RECORD_TITLE(XX)
 
+#define NCM_TAG_EDIT_PARSER_DEFS(XX)                                         \
+    NCM_TAG_RECORD_ARTIST(XX)                                                \
+    NCM_TAG_RECORD_ALBUM_ARTIST(XX)                                          \
+    NCM_TAG_RECORD_TITLE(XX)                                                 \
+    NCM_TAG_RECORD_ALBUM(XX)                                                 \
+    NCM_TAG_RECORD_DATE(XX)                                                  \
+    NCM_TAG_RECORD_TRACK(XX)                                                 \
+    NCM_TAG_RECORD_GENRE(XX)                                                 \
+    NCM_TAG_RECORD_COMPOSER(XX)                                              \
+    NCM_TAG_RECORD_PERFORMER(XX)                                             \
+    NCM_TAG_RECORD_DISC(XX)                                                  \
+    NCM_TAG_RECORD_COMMENT(XX)
+
 #define NCM_TAG_COUNT_RECORD(tag, name, alias, tag_char, field, getter, \
                              getter_char, taglib_property, taglib_name, \
                              settings_name, mpd, flags) \
@@ -327,6 +340,8 @@ enum {
         NCM_TAG_PRIMARY_DEFS(NCM_TAG_COUNT_RECORD),
     NCM_TAG_SORT_COUNT = 0
         NCM_TAG_SORT_DEFS(NCM_TAG_COUNT_RECORD),
+    NCM_TAG_EDIT_PARSER_COUNT = 0
+        NCM_TAG_EDIT_PARSER_DEFS(NCM_TAG_COUNT_RECORD),
 };
 
 #undef NCM_TAG_COUNT_RECORD
@@ -460,6 +475,8 @@ _Static_assert(NCM_MPD_TAG_COUNT == 12,
                "mpd tag count changed");
 _Static_assert(NCM_PRIMARY_TAG_COUNT == 6,
                "primary tag count changed");
+_Static_assert(NCM_TAG_EDIT_PARSER_COUNT == 11,
+               "tag-edit parser tag count changed");
 
 #define ENUM_NAME SongGetter
 #define ENUM_PREFIX_ SONG_GETTER_
@@ -566,20 +583,15 @@ ncm_song_getter_column_title_len(enum SongGetter getter, char **out) {
         *out = "Time";
         return STRLIT_LEN("Time");
     case SONG_GETTER_DIRECTORY:
-        *out = "Directory";
-        return STRLIT_LEN("Directory");
     case SONG_GETTER_NAME:
-        *out = "Filename";
-        return STRLIT_LEN("Filename");
+    case SONG_GETTER_PRIORITY:
+        return ncm_song_getter_display_name_len(getter, out);
     case SONG_GETTER_URI:
         *out = "Filepath";
         return STRLIT_LEN("Filepath");
     case SONG_GETTER_TRACK_NUMBER:
         *out = "Track";
         return STRLIT_LEN("Track");
-    case SONG_GETTER_PRIORITY:
-        *out = "Priority";
-        return STRLIT_LEN("Priority");
 #define NCM_SONG_GETTER_TAG_TITLE_CASE(tag, name, alias, tag_char, field,    \
                                        getter, getter_char, taglib_property, \
                                        taglib_name, settings_name, mpd,      \
@@ -604,8 +616,7 @@ ncm_song_getter_sort_label_len(enum SongGetter getter, char **out) {
     int32 len;
 
     if (getter == SONG_GETTER_URI) {
-        *out = "Filename";
-        return STRLIT_LEN("Filename");
+        return ncm_song_getter_display_name_len(SONG_GETTER_NAME, out);
     }
 
     len = ncm_song_getter_tag_name_len(getter, out);
@@ -634,6 +645,40 @@ ncm_tags_field_taglib_property(enum TagsField field) {
     default:
         return NULL;
     }
+}
+
+
+static inline char
+ncm_tags_field_format_char(enum TagsField field) {
+    switch (field) {
+#define NCM_TAGS_FIELD_FORMAT_CHAR_CASE(tag, name, alias, tag_char, field_id, \
+                                        getter, getter_char, taglib_property, \
+                                        taglib_name, settings_name, mpd,      \
+                                        flags)                                \
+    case CAT(NCM_TAGS_FIELD_, field_id):                                      \
+        return tag_char;
+
+    NCM_TAG_FIELD_DEFS(NCM_TAGS_FIELD_FORMAT_CHAR_CASE)
+
+#undef NCM_TAGS_FIELD_FORMAT_CHAR_CASE
+    case NCM_TAGS_FIELD_COUNT:
+    default:
+        return '\0';
+    }
+}
+
+static inline int32
+ncm_tags_field_parser_name_len(enum TagsField field, char **out) {
+    if (field == NCM_TAGS_FIELD_TRACK) {
+        return ncm_song_getter_display_name_len(SONG_GETTER_TRACK_NUMBER,
+                                                out);
+    }
+    if (field == NCM_TAGS_FIELD_COUNT) {
+        *out = "";
+        return 0;
+    }
+
+    return NCM_TAGS_FIELD_alias_len(field, out);
 }
 
 static inline char
