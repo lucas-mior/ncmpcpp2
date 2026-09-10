@@ -1796,6 +1796,7 @@ typedef struct TagEditScreen {
     NcWindow parser_dialog_window;
     NcWindow parser_window;
     NcWindow parser_helper_window;
+    NcScrollpad parser_helper_scrollpad;
     TagEditHooks hooks;
     StrBuilder current_dir;
     StrBuilder displayed_dir;

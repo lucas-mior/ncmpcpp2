@@ -439,18 +439,23 @@ tag_edit_refresh_menu(NcWindow *window, NcMenu *menu) {
 
 static void
 tag_edit_refresh_active_helper(TagEditScreen *screen) {
-    StrBuilder *buffer;
+    NcBuffer display = {0};
+    StrBuilder *source;
 
-    nc_window_display(&screen->parser_helper_window);
     if (screen->active_focus == TAG_EDIT_FOCUS_PARSER_PREVIEW) {
-        buffer = &screen->parser_preview;
+        source = &screen->parser_preview;
     } else {
-        buffer = &screen->parser_legend;
+        source = &screen->parser_legend;
     }
-    if (buffer->data && (buffer->len > 0)) {
-        nc_window_print_data(&screen->parser_helper_window,
-                             buffer->data, buffer->len);
+    if (source->data && (source->len > 0)) {
+        nc_buffer_append_data(&display, source->data, source->len);
     }
+    nc_scrollpad_flush(&screen->parser_helper_scrollpad,
+                       &screen->parser_helper_window, &display);
+    nc_window_refresh_border(&screen->parser_helper_window);
+    nc_scrollpad_refresh(&screen->parser_helper_scrollpad,
+                         &screen->parser_helper_window);
+    nc_buffer_destroy(&display);
     return;
 }
 
@@ -552,6 +557,9 @@ tag_edit_scroll(NcScreen *screen, enum NcScroll where) {
 
     if (menu) {
         nc_menu_scroll_selectable(menu, nc_window_height(window), where);
+    } else if (tag_edit_focus_is_parser_helper(editor->active_focus)) {
+        nc_scrollpad_scroll(&editor->parser_helper_scrollpad, window, where);
+        tag_edit_refresh_active_helper(editor);
     } else if (window) {
         nc_window_scroll(window, where);
     }
@@ -681,8 +689,11 @@ tag_edit_status_message(TagEditScreen *screen,
 
 static void
 tag_edit_set_focus(TagEditScreen *screen, enum TagEditFocus focus) {
+    enum TagEditFocus old_focus;
+
     ASSERT(screen != NULL);
 
+    old_focus = screen->active_focus;
     screen->active_focus = focus;
 
     if (focus == TAG_EDIT_FOCUS_DIRECTORIES) {
@@ -693,8 +704,14 @@ tag_edit_set_focus(TagEditScreen *screen, enum TagEditFocus focus) {
         screen->active_column = TAG_EDIT_COLUMN_TAGS;
     } else if (focus == TAG_EDIT_FOCUS_PARSER_LEGEND) {
         screen->parser_preview_enabled = false;
+        if (old_focus != focus) {
+            nc_scrollpad_reset(&screen->parser_helper_scrollpad);
+        }
     } else if (focus == TAG_EDIT_FOCUS_PARSER_PREVIEW) {
         screen->parser_preview_enabled = true;
+        if (old_focus != focus) {
+            nc_scrollpad_reset(&screen->parser_helper_scrollpad);
+        }
     }
 
     tag_edit_update_menu_highlights(screen);
@@ -1908,9 +1925,15 @@ tag_edit_mouse_callback(NcScreen *screen, MEVENT event) {
                 return;
             }
             if (event.bstate & BUTTON5_PRESSED) {
-                nc_window_scroll(&editor->parser_helper_window, NC_SCROLL_DOWN);
+                nc_scrollpad_scroll(&editor->parser_helper_scrollpad,
+                                    &editor->parser_helper_window,
+                                    NC_SCROLL_DOWN);
+                tag_edit_refresh_active_helper(editor);
             } else if (event.bstate & BUTTON4_PRESSED) {
-                nc_window_scroll(&editor->parser_helper_window, NC_SCROLL_UP);
+                nc_scrollpad_scroll(&editor->parser_helper_scrollpad,
+                                    &editor->parser_helper_window,
+                                    NC_SCROLL_UP);
+                tag_edit_refresh_active_helper(editor);
             }
             return;
         }
@@ -2383,8 +2406,9 @@ tag_edit_layout(TagEditScreen *screen) {
                      screen->parser_height);
     nc_window_move_to(&screen->parser_helper_window,
                       screen->parser_helper_start_x, screen->parser_start_y);
-    nc_window_resize(&screen->parser_helper_window,
-                     screen->parser_width_two, screen->parser_height);
+    nc_scrollpad_resize(&screen->parser_helper_scrollpad,
+                        &screen->parser_helper_window,
+                        screen->parser_width_two, screen->parser_height);
     return;
 }
 
@@ -2454,6 +2478,8 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
                    screen->parser_helper_title.data,
                    screen->parser_helper_title.len,
                    color, Config.window_border_color);
+    nc_scrollpad_init(&screen->parser_helper_scrollpad,
+                      nc_window_height(&screen->parser_helper_window));
 
     screen->start_x = start_x;
     screen->width = width;
