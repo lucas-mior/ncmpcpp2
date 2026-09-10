@@ -368,7 +368,7 @@ ncmpcpp_update_environment(bool update_timer, bool refresh_window,
 }
 
 int32
-ncmpcpp_execute_binding(NcmBinding *binding) {
+ncmpcpp_execute_binding(Binding *binding) {
     if (binding == NULL) {
         return -EINVAL;
     }
