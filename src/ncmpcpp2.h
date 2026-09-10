@@ -43,8 +43,8 @@
 #define TAG_NON_DISP(XX, suffix, DISP)                             \
   XX(suffix, DISP, '\0', '\0', TAG_FLAGS_NONE)
 
-#define TAG_FIELD_MPD_NUM_DECLS(XX)                                            \
-  TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                                \
+#define TAG_FIELD_MPD_NUM_DECLS(XX)                                \
+  TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                    \
   TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')
 
 #define TAG_SEARCH_MPD_DECLS(XX)                                               \
