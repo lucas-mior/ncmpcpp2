@@ -3235,6 +3235,7 @@ tag_edit_for_each_target(TagEditScreen *screen,
         if (has_selected && !nc_menu_position_is_selected(menu, i)) {
             continue;
         }
+
         song = nc_menu_active_item_at(menu, i);
         ASSERT(song != NULL);
         status = cb(song, user);
