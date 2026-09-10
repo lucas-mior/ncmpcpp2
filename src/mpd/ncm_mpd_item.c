@@ -303,6 +303,7 @@ ncm_mpd_item_local_song(NcmSong *song, char *path, int32 path_len,
             NcmTaglibFile file = {0};
             NcmTaglibAudioProperties properties;
             NcmMpdItemTagsContext context;
+            NcmTaglibPairCallback *callback;
             char time_buffer[32];
             int32 written;
             int32 count;
@@ -321,8 +322,9 @@ ncm_mpd_item_local_song(NcmSong *song, char *path, int32 path_len,
                 }
 
                 context.song = mpd_song;
-                status = ncm_taglib_read_mapped_properties(
-                    &file, ncm_mpd_item_mapped_property_callback, &context);
+                callback = ncm_mpd_item_mapped_property_callback;
+                status = ncm_taglib_read_mapped_properties(&file,
+                                                            callback, &context);
                 if (status >= 0) {
                     count += status;
                     if (count > 0) {
@@ -359,13 +361,14 @@ ncm_mpd_item_from_entity_copy(NcmMpdItem *item, void *mpd_entity) {
         NcmMpdItem replacement = {0};
         struct mpd_song *source =
             (struct mpd_song *)mpd_entity_get_song(entity);
+        NcmSong *song;
         int32 status;
 
         ncm_mpd_item_init(&replacement);
         replacement.kind = NCM_MPD_ITEM_SONG;
         replacement.value.song = (NcmSong){0};
-        if ((status = ncm_mpd_item_song_from_mpd_song_copy(
-                 &replacement.value.song, source)) < 0) {
+        song = &replacement.value.song;
+        if ((status = ncm_mpd_item_song_from_mpd_song_copy(song, source)) < 0) {
             ncm_mpd_item_destroy(&replacement);
             return status;
         }
@@ -388,9 +391,9 @@ ncm_mpd_item_from_entity_copy(NcmMpdItem *item, void *mpd_entity) {
             || ((path = (char *)mpd_directory_get_path(source)) == NULL)) {
             status = -NCM_ERROR_NOT_FOUND;
         } else {
-            status = ncm_directory_set(
-                &replacement.value.directory, path, optional_strlen32(path),
-                mpd_directory_get_last_modified(source));
+            status = ncm_directory_set(&replacement.value.directory,
+                                       path, optional_strlen32(path),
+                                       mpd_directory_get_last_modified(source));
         }
         if (status < 0) {
             ncm_mpd_item_destroy(&replacement);
@@ -405,13 +408,14 @@ ncm_mpd_item_from_entity_copy(NcmMpdItem *item, void *mpd_entity) {
         NcmMpdItem replacement = {0};
         struct mpd_playlist *source =
             (struct mpd_playlist *)mpd_entity_get_playlist(entity);
+        NcmPlaylist *playlist;
         int32 status;
 
         ncm_mpd_item_init(&replacement);
         replacement.kind = NCM_MPD_ITEM_PLAYLIST;
         replacement.value.playlist = (NcmPlaylist){0};
-        status = ncm_mpd_item_playlist_from_mpd_playlist(
-            &replacement.value.playlist, source);
+        playlist = &replacement.value.playlist;
+        status = ncm_mpd_item_playlist_from_mpd_playlist(playlist, source);
         if (status < 0) {
             ncm_mpd_item_destroy(&replacement);
             return status;

@@ -902,6 +902,7 @@ ncm_mpd_connection_get_status(MpdConnection *connection,
                               NcmMpdStatus *out_status) {
     struct mpd_status *mpd_status;
     char *error;
+    int32 error_cap;
     int32 status;
 
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
@@ -956,8 +957,8 @@ ncm_mpd_connection_get_status(MpdConnection *connection,
     out_status->update_id = (int32)mpd_status_get_update_id(mpd_status);
 
     error = (char *)mpd_status_get_error(mpd_status);
-    ncm_mpd_connection_cstring_copy(
-        out_status->error, LENGTH(out_status->error), error);
+    error_cap = LENGTH(out_status->error);
+    ncm_mpd_connection_cstring_copy(out_status->error, error_cap, error);
 
     mpd_status_free(mpd_status);
     return ncm_mpd_connection_check_error(connection);

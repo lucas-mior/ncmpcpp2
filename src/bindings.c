@@ -130,8 +130,7 @@ binding_action_destroy(BindingAction *action) {
 }
 
 static void
-binding_action_copy(BindingAction *dest,
-                        BindingAction *source) {
+binding_action_copy(BindingAction *dest, BindingAction *source) {
     binding_action_init(dest);
     dest->kind = source->kind;
 
@@ -224,8 +223,7 @@ binding_copy(Binding *dest, Binding *source) {
 }
 
 bool
-binding_action_can_run(BindingAction *action,
-                           BindingRuntime *runtime) {
+binding_action_can_run(BindingAction *action, BindingRuntime *runtime) {
     if (action == NULL) {
         return false;
     }
@@ -292,15 +290,14 @@ binding_runtime_push_key(NcKey key, void *user) {
 
 int32
 binding_runtime_run_external_command(char *command, int32 command_len,
-                                         void *user) {
+                                     void *user) {
     (void)user;
     return ncm_run_external_command(command, command_len, true, NULL);
 }
 
 int32
-binding_runtime_run_external_console_command(char *command,
-                                                 int32 command_len,
-                                                 void *user) {
+binding_runtime_run_external_console_command(char *command, int32 command_len,
+                                             void *user) {
     int32 status;
 
     (void)user;
@@ -381,16 +378,20 @@ binding_execute_default(Binding *binding) {
         case BINDING_ACTION_REQUIRE_RUNNABLE:
             status = 0;
             break;
-        case BINDING_ACTION_RUN_EXTERNAL_COMMAND:
-            status = runtime->run_external_command(action->value.argument.data,
-                                                   action->value.argument.len,
+        case BINDING_ACTION_RUN_EXTERNAL_COMMAND: {
+            BindingActionArgument *arg = &action->value.argument;
+
+            status = runtime->run_external_command(arg->data, arg->len,
                                                    runtime->user);
             break;
-        case BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
-            status = runtime->run_external_console_command(
-                action->value.argument.data, action->value.argument.len,
-                runtime->user);
+        }
+        case BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND: {
+            BindingActionArgument *arg = &action->value.argument;
+
+            status = runtime->run_external_console_command(arg->data, arg->len,
+                                                           runtime->user);
             break;
+        }
         default:
             return -NCM_ERROR_INVALID_STATE;
         }
@@ -404,8 +405,7 @@ binding_execute_default(Binding *binding) {
 }
 
 bool
-binding_is_single_action_type(Binding *binding,
-                                  enum ActionType type) {
+binding_is_single_action_type(Binding *binding, enum ActionType type) {
     if ((binding == NULL) || (binding->actions_len != 1)) {
         return false;
     }
@@ -519,7 +519,7 @@ binding_append_normal(Binding *binding, enum ActionType type) {
 
 static int32
 bindings_command_lower_bound(BindingsConfiguration *bindings,
-                                 char *name, int32 name_len) {
+                             char *name, int32 name_len) {
     int32 first = 0;
     int32 count = bindings->commands_len;
 
@@ -573,8 +573,8 @@ bindings_key_lower_bound(BindingsConfiguration *bindings, NcKey key) {
 }
 
 static int32
-bindings_command_index(BindingsConfiguration *bindings, char *name,
-                           int32 name_len) {
+bindings_command_index(BindingsConfiguration *bindings,
+                       char *name, int32 name_len) {
     int32 at;
 
     at = bindings_command_lower_bound(bindings, name, name_len);
@@ -598,8 +598,7 @@ bindings_key_index(BindingsConfiguration *bindings, NcKey key) {
 }
 
 static void
-bindings_bind(BindingsConfiguration *bindings, NcKey key,
-                  Binding *binding) {
+bindings_bind(BindingsConfiguration *bindings, NcKey key, Binding *binding) {
     int32 at;
     NcmKeyBindings *key_bindings;
     Binding copy;
@@ -666,8 +665,8 @@ bindings_key_is_unbound(BindingsConfiguration *bindings, NcKey key) {
 
 static void
 bindings_bind_sequence(BindingsConfiguration *bindings,
-                           char *key_name, int32 key_name_len,
-                           enum ActionType *actions, int32 actions_len) {
+                       char *key_name, int32 key_name_len,
+                       enum ActionType *actions, int32 actions_len) {
     Binding binding = {0};
     NcKey key = nc_key_parse(key_name, key_name_len);
 
@@ -685,8 +684,8 @@ bindings_bind_sequence(BindingsConfiguration *bindings,
 
 static void
 bindings_bind_group(BindingsConfiguration *bindings,
-                        char *key_name, int32 key_name_len,
-                        enum ActionType *actions, int32 actions_len) {
+                    char *key_name, int32 key_name_len,
+                    enum ActionType *actions, int32 actions_len) {
     NcKey key = nc_key_parse(key_name, key_name_len);
 
     if (!bindings_key_is_unbound(bindings, key)) {
@@ -867,8 +866,8 @@ binding_directive_find(char *name, int32 name_len) {
 
 static int32
 binding_parse_directive(BindingAction *action,
-                            BindingDirective *directive,
-                            StringView argument, NcmError *ncm_error) {
+                        BindingDirective *directive,
+                        StringView argument, NcmError *ncm_error) {
     switch (directive->kind) {
     case BINDING_DIRECTIVE_DUMMY:
         action->kind = BINDING_ACTION_NORMAL;
@@ -936,8 +935,9 @@ binding_parse_directive(BindingAction *action,
         } else {
             action->kind = BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND;
         }
-        action->value.argument.data = ncm_string_copy(
-            argument.data, argument.len, &action->value.argument.cap);
+        action->value.argument.data =
+            ncm_string_copy(argument.data, argument.len,
+                            &action->value.argument.cap);
         action->value.argument.len = argument.len;
         return 0;
     default:
@@ -946,8 +946,8 @@ binding_parse_directive(BindingAction *action,
 }
 
 static int32
-binding_parse_action_line(BindingAction *action, char *line,
-                              int32 line_len, NcmError *ncm_error) {
+binding_parse_action_line(BindingAction *action, char *line, int32 line_len,
+                          NcmError *ncm_error) {
     BindingDirective *directive;
     StringView argument = {0};
     int32 name_len;
@@ -998,10 +998,10 @@ binding_parse_action_line(BindingAction *action, char *line,
 
 static int32
 bindings_finalize_definition(BindingsConfiguration *bindings,
-                                 int32 in_progress, Binding *actions,
-                                 NcKey key, char *key_name, int32 key_name_len,
-                                 char *command_name, int32 command_name_len,
-                                 bool command_immediate, NcmError *ncm_error) {
+                             int32 in_progress, Binding *actions, NcKey key,
+                             char *key_name, int32 key_name_len,
+                             char *command_name, int32 command_name_len,
+                             bool command_immediate, NcmError *ncm_error) {
     if (in_progress == 0) {
         return 0;
     }
@@ -1079,7 +1079,7 @@ bindings_finalize_definition(BindingsConfiguration *bindings,
 
 int32
 bindings_config_read(BindingsConfiguration *bindings,
-                         char *path, int32 path_len, NcmError *ncm_error) {
+                     char *path, int32 path_len, NcmError *ncm_error) {
     enum {
         IN_PROGRESS_NONE = 0,
         IN_PROGRESS_COMMAND = 1,
@@ -1255,8 +1255,9 @@ bindings_config_read(BindingsConfiguration *bindings,
             action_len = ncm_trim_end(current_line + action_start,
                                       len - action_start);
             binding_action_init(&action);
-            status = binding_parse_action_line(
-                &action, current_line + action_start, action_len, ncm_error);
+            status = binding_parse_action_line(&action,
+                                               current_line + action_start,
+                                               action_len, ncm_error);
             if (status < 0) {
                 break;
             }
@@ -1297,13 +1298,13 @@ bindings_config_generate_defaults(BindingsConfiguration *bindings) {
 
 #define BIND_DEFAULT_SEQUENCE(KEY, ...) do {                                \
     enum ActionType actions[] = { __VA_ARGS__ };                            \
-    bindings_bind_sequence(bindings, STRLIT(KEY),                       \
-                               actions, LENGTH(actions));                   \
+    bindings_bind_sequence(bindings, STRLIT(KEY),                           \
+                           actions, LENGTH(actions));                       \
 } while (0);
 #define BIND_DEFAULT_GROUP(KEY, ...) do {                                   \
     enum ActionType actions[] = { __VA_ARGS__ };                            \
-    bindings_bind_group(bindings, STRLIT(KEY),                          \
-                            actions, LENGTH(actions));                      \
+    bindings_bind_group(bindings, STRLIT(KEY),                              \
+                        actions, LENGTH(actions));                          \
 } while (0);
 
     NCM_DEFAULT_BINDINGS(BIND_DEFAULT_SEQUENCE, BIND_DEFAULT_GROUP)
@@ -1315,7 +1316,7 @@ bindings_config_generate_defaults(BindingsConfiguration *bindings) {
 
 NcmCommand *
 bindings_config_find_command(BindingsConfiguration *bindings,
-                                 char *name, int32 name_len) {
+                             char *name, int32 name_len) {
     int32 at;
 
     at = bindings_command_index(bindings, name, name_len);
@@ -1327,7 +1328,7 @@ bindings_config_find_command(BindingsConfiguration *bindings,
 
 int32
 bindings_config_get(BindingsConfiguration *bindings, NcKey key,
-                        BindingSlice *result) {
+                    BindingSlice *result) {
     int32 at;
 
     if (result == NULL) {

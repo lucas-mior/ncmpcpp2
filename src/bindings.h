@@ -117,13 +117,11 @@ void ncm_key_bindings_init(NcmKeyBindings *);
 
 void bindings_config_destroy(BindingsConfiguration *);
 void bindings_config_clear(BindingsConfiguration *);
-int32 bindings_config_read(BindingsConfiguration *,
-                               char *, int32, NcmError *);
+int32 bindings_config_read(BindingsConfiguration *, char *, int32, NcmError *);
 void bindings_config_generate_defaults(BindingsConfiguration *);
 NcmCommand *bindings_config_find_command(BindingsConfiguration *,
-                                             char *, int32);
-int32 bindings_config_get(BindingsConfiguration *, NcKey,
-                              BindingSlice *);
+                                         char *, int32);
+int32 bindings_config_get(BindingsConfiguration *, NcKey, BindingSlice *);
 
 NcKey ncm_read_key(NcWindow *);
 int32 bindings_key_name(NcKey, char *, int32);

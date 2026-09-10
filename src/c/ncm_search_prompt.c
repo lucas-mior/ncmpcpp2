@@ -8,6 +8,8 @@
 void
 ncm_search_prompt_state_init(SearchPromptState *state,
                              enum SearchDirection direction) {
+    ASSERT(state != NULL);
+
     state->last_text = (StrBuilder){0};
 
     state->direction = direction;
@@ -21,6 +23,8 @@ ncm_search_prompt_state_init(SearchPromptState *state,
 
 void
 ncm_search_prompt_state_destroy(SearchPromptState *state) {
+    ASSERT(state != NULL);
+
     sb_free(&state->last_text);
     return;
 }
@@ -28,6 +32,8 @@ ncm_search_prompt_state_destroy(SearchPromptState *state) {
 void
 ncm_search_prompt_state_set_start_position(SearchPromptState *state,
                                            int32 position) {
+    ASSERT(state != NULL);
+
     state->start_position = position;
     state->has_start_position = true;
     return;
@@ -37,12 +43,12 @@ bool
 ncm_search_prompt_state_has_cached_result(SearchPromptState *state,
                                           char *text, int32 text_len,
                                           bool *found) {
+    ASSERT(state != NULL);
+    ASSERT(text != NULL);
+    ASSERT(text_len >= 0);
+
     if (!state->has_last_result) {
         return false;
-    }
-    if (text == NULL) {
-        text = "";
-        text_len = 0;
     }
     if (state->last_text.len != text_len) {
         return false;
@@ -58,27 +64,22 @@ ncm_search_prompt_state_has_cached_result(SearchPromptState *state,
     return true;
 }
 
-int32
+void
 ncm_search_prompt_state_finish_result(SearchPromptState *state,
                                       char *text, int32 text_len,
                                       bool search_ok, bool found) {
-    int32 status;
+    ASSERT(state != NULL);
+    ASSERT(text != NULL);
+    ASSERT(text_len >= 0);
 
     if (!search_ok) {
-        return 0;
+        return;
     }
-    if (text == NULL) {
-        text = "";
-        text_len = 0;
-    }
-    status = sb_set(&state->last_text, text, text_len);
-    if (status < 0) {
-        return status;
-    }
+    sb_set(&state->last_text, text, text_len);
 
     state->has_last_result = true;
     state->last_found = found;
-    return 0;
+    return;
 }
 
 #endif /* NCM_SEARCH_PROMPT_C */

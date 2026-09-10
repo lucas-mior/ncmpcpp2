@@ -16,9 +16,7 @@ title_apply_formatted_color(NcWindow *window, NcFormattedColor *color) {
     enum NcFormat *formats;
     int32 count;
 
-    if (color == NULL) {
-        return;
-    }
+    ASSERT(color != NULL);
 
     nc_window_push_color(window, color->color);
     formats = color->formats;
@@ -34,9 +32,7 @@ title_apply_formatted_color_end(NcWindow *window, NcFormattedColor *color) {
     enum NcFormat *formats;
     int32 count;
 
-    if (color == NULL) {
-        return;
-    }
+    ASSERT(color != NULL);
 
     if (!nc_color_is_default(color->color)) {
         nc_window_push_color(window, nc_color_end());

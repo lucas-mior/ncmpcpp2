@@ -63,9 +63,7 @@ ncm_menu_reverse_selection(NcMenu *menu, enum NcMenuItemSource source) {
     bool selected;
     int32 count;
 
-    if (menu == NULL) {
-        return;
-    }
+    ASSERT(menu != NULL);
 
     count = menu_item_count(menu, source);
     for (int32 i = 0; i < count; i += 1) {
@@ -102,12 +100,7 @@ ncm_menu_find_selected_range(NcMenu *menu, enum NcMenuItemSource source,
     if (first) {
         *first = 0;
     }
-    if (menu == NULL) {
-        if (last) {
-            *last = 0;
-        }
-        return -EINVAL;
-    }
+    ASSERT(menu != NULL);
 
     count = menu_item_count(menu, source);
     if (last) {
@@ -148,9 +141,6 @@ ncm_menu_find_full_selected_range(NcMenu *menu, enum NcMenuItemSource source,
 
     status = ncm_menu_find_selected_range(menu, source,
                                           &range_first, &range_last);
-    if (status < 0) {
-        return status;
-    }
     if (status == 0) {
         if (first) {
             *first = 0;

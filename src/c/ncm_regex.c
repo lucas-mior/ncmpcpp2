@@ -5,40 +5,25 @@
 
 #include "c/ncm_c.h"
 
-static int32
-ncm_regex_prepare_string(char *string, int32 string_len, StrBuilder *buffer,
-                         NcmError *ncm_error) {
-    if (buffer == NULL) {
-        ncm_error_set_status(ncm_error, -EINVAL,
-                             STRLIT("missing regex buffer"));
-        return -EINVAL;
-    }
+static void
+ncm_regex_prepare_string(char *string, int32 string_len, StrBuilder *buffer) {
+    ASSERT(buffer != NULL);
+    ASSERT(string != NULL);
+    ASSERT(string_len >= 0);
+
     sb_clear(buffer);
-
-    if (string == NULL) {
-        ncm_error_set_status(ncm_error, -EINVAL,
-                             STRLIT("missing regex string"));
-        return -EINVAL;
-    }
-    if (string_len < 0) {
-        ncm_error_set_status(ncm_error, -EINVAL,
-                             STRLIT("negative string length"));
-        return -EINVAL;
-    }
-
     SB_APPEND(buffer, string, string_len);
     if (buffer->data == NULL) {
         sb_reserve(buffer, 1);
         buffer->data[0] = '\0';
     }
-    return ncm_error_ok(ncm_error);
+    return;
 }
 
 void
 ncm_regex_destroy(NcmRegex *regex) {
-    if (regex == NULL) {
-        return;
-    }
+    ASSERT(regex != NULL);
+
     if (regex->compiled) {
         regfree(&regex->regex);
     }
@@ -146,15 +131,16 @@ ncm_regex_matches(NcmRegex *regex, char *string, int32 string_len) {
     StrBuilder buffer = {0};
     bool result;
 
-    if ((regex == NULL) || !regex->compiled) {
+    ASSERT(regex != NULL);
+
+    if (!regex->compiled) {
+        return false;
+    }
+    if ((string == NULL) || (string_len < 0)) {
         return false;
     }
 
-    if (ncm_regex_prepare_string(string, string_len, &buffer, NULL) < 0) {
-        sb_free(&buffer);
-        return false;
-    }
-
+    ncm_regex_prepare_string(string, string_len, &buffer);
     result = regexec(&regex->regex, buffer.data, 0, NULL, 0) == 0;
     sb_free(&buffer);
     return result;
@@ -171,18 +157,17 @@ ncm_regex_for_each_match(NcmRegex *regex, char *string, int32 string_len,
     int32 match_len;
     int32 matches;
 
-    if ((regex == NULL) || !regex->compiled) {
+    ASSERT(regex != NULL);
+    ASSERT(callback != NULL);
+
+    if (!regex->compiled) {
         return -EINVAL;
     }
-    if (callback == NULL) {
+    if ((string == NULL) || (string_len < 0)) {
         return -EINVAL;
     }
 
-    if (ncm_regex_prepare_string(string, string_len, &buffer, NULL) < 0) {
-        sb_free(&buffer);
-        return -EINVAL;
-    }
-
+    ncm_regex_prepare_string(string, string_len, &buffer);
     matches = 0;
     cursor = buffer.data;
     offset = 0;
