@@ -2589,7 +2589,8 @@ tag_edit_screen_active_window(TagEditScreen *screen) {
 }
 
 void
-tag_edit_screen_set_geometry(TagEditScreen *screen, int32 start_x, int32 width,
+tag_edit_screen_set_geometry(TagEditScreen *screen,
+                             int32 start_x, int32 width,
                              int32 main_start_y, int32 main_height) {
     screen->start_x = start_x;
     screen->width = width;
