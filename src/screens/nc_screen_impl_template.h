@@ -96,6 +96,10 @@ NcScreen *nc_screen_impl_dummy_base(NcScreenImplDummy *);
 #define NC_SCREEN_IMPL_OPS CAT(NC_SCREEN_IMPL_PREFIX, _ops)
 #define NC_SCREEN_IMPL_ACTIVE_WINDOW                                           \
     CAT(NC_SCREEN_IMPL_PREFIX, _active_window)
+#define NC_SCREEN_IMPL_CURRENT_MENU                                            \
+    CAT(NC_SCREEN_IMPL_PREFIX, _current_menu)
+#define NC_SCREEN_IMPL_CURRENT_MENU_HEIGHT                                     \
+    CAT(NC_SCREEN_IMPL_PREFIX, _current_menu_height)
 #define NC_SCREEN_IMPL_REFRESH CAT(NC_SCREEN_IMPL_PREFIX, _refresh)
 #define NC_SCREEN_IMPL_REFRESH_WINDOW                                          \
     CAT(NC_SCREEN_IMPL_PREFIX, _refresh_window)
@@ -159,6 +163,24 @@ NC_SCREEN_IMPL_ACTIVE_WINDOW(NcScreen *screen) {
     return NC_SCREEN_IMPL_WINDOW(impl);
 }
 
+#if defined(NC_SCREEN_IMPL_MENU_CAPABILITY)
+static NcMenu *
+NC_SCREEN_IMPL_CURRENT_MENU(NcScreen *screen) {
+    NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
+
+    return NC_SCREEN_IMPL_MENU(impl);
+}
+#endif
+
+#if defined(NC_SCREEN_IMPL_MENU_CAPABILITY_HEIGHT)
+static int32
+NC_SCREEN_IMPL_CURRENT_MENU_HEIGHT(NcScreen *screen) {
+    NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
+
+    return NC_SCREEN_IMPL_MENU_CAPABILITY_HEIGHT(impl);
+}
+#endif
+
 static void
 NC_SCREEN_IMPL_REFRESH(NcScreen *screen) {
     NC_SCREEN_IMPL_REFRESH_CALLBACK(NC_SCREEN_IMPL_FROM_SCREEN(screen));
@@ -210,6 +232,9 @@ NC_SCREEN_IMPL_DESTROY(NcScreen *screen) {
 #endif
 
 static const NcScreenOps NC_SCREEN_IMPL_OPS = {
+#if defined(NC_SCREEN_IMPL_MENU_CAPABILITY)
+    .capabilities = NC_SCREEN_CAPABILITY_MENU,
+#endif
     .active_window = NC_SCREEN_IMPL_ACTIVE_WINDOW,
     .refresh = NC_SCREEN_IMPL_REFRESH,
     .refresh_window = NC_SCREEN_IMPL_REFRESH_WINDOW,
@@ -249,6 +274,12 @@ static const NcScreenOps NC_SCREEN_IMPL_OPS = {
 #if defined(NC_SCREEN_IMPL_MOUSE_CALLBACK)
     .mouse_button_pressed = NC_SCREEN_IMPL_MOUSE_CALLBACK,
 #endif
+#if defined(NC_SCREEN_IMPL_MENU_CAPABILITY)
+    .current_menu = NC_SCREEN_IMPL_CURRENT_MENU,
+#endif
+#if defined(NC_SCREEN_IMPL_MENU_CAPABILITY_HEIGHT)
+    .current_menu_height = NC_SCREEN_IMPL_CURRENT_MENU_HEIGHT,
+#endif
     .lockable = NC_SCREEN_IMPL_LOCKABLE,
     .mergable = NC_SCREEN_IMPL_MERGABLE,
 #if defined(NC_SCREEN_IMPL_DESTROY_CALLBACK)
@@ -268,12 +299,16 @@ static const NcScreenOps NC_SCREEN_IMPL_OPS = {
 #undef NC_SCREEN_IMPL_SCROLL
 #undef NC_SCREEN_IMPL_REFRESH_WINDOW
 #undef NC_SCREEN_IMPL_REFRESH
+#undef NC_SCREEN_IMPL_CURRENT_MENU_HEIGHT
+#undef NC_SCREEN_IMPL_CURRENT_MENU
 #undef NC_SCREEN_IMPL_ACTIVE_WINDOW
 #undef NC_SCREEN_IMPL_OPS
 #undef NC_SCREEN_IMPL_FROM_SCREEN
 #undef NC_SCREEN_IMPL_BASE_EXPR
 #undef NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR
 #undef NC_SCREEN_IMPL_NO_GEOMETRY_ACCESSORS
+#undef NC_SCREEN_IMPL_MENU_CAPABILITY_HEIGHT
+#undef NC_SCREEN_IMPL_MENU_CAPABILITY
 #undef NC_SCREEN_IMPL_SCROLL_HEIGHT
 #undef NC_SCREEN_IMPL_SCROLL_MENU
 #undef NC_SCREEN_IMPL_WINDOW

@@ -13,18 +13,6 @@ typedef struct SearchFindContext {
     NcmRegex *regex;
 } SearchFindContext;
 
-static NcMenu *
-search_engine_menu_capability(NcScreen *base) {
-    return search_engine_screen_menu((SearchEngineScreen *)base);
-}
-
-static int32
-search_engine_menu_height_capability(NcScreen *base) {
-    SearchEngineScreen *screen = (SearchEngineScreen *)base;
-
-    return nc_window_height(&screen->window);
-}
-
 static StringView
 search_engine_filter_constraint_capability(NcScreen *base) {
     SearchEngineScreen *screen = (SearchEngineScreen *)base;
@@ -482,6 +470,9 @@ search_run_current(NcScreen *base_screen) {
 #define NC_SCREEN_IMPL_BASE_FIELD screen
 #define NC_SCREEN_IMPL_WINDOW_FIELD window
 #define NC_SCREEN_IMPL_MENU(screen) search_engine_screen_menu(screen)
+#define NC_SCREEN_IMPL_MENU_CAPABILITY
+#define NC_SCREEN_IMPL_MENU_CAPABILITY_HEIGHT(screen) \
+    nc_window_height(&(screen)->window)
 #define NC_SCREEN_IMPL_REFRESH_CALLBACK search_display
 #define NC_SCREEN_IMPL_CAN_RUN_CURRENT_CALLBACK search_can_run_current
 #define NC_SCREEN_IMPL_RUN_CURRENT_CALLBACK search_run_current
@@ -712,13 +703,10 @@ search_engine_screen_init(SearchEngineScreen *screen,
     screen->registered = false;
 
     ops = search_ops;
-    ops.capabilities = NC_SCREEN_CAPABILITY_MENU
-                       |NC_SCREEN_CAPABILITY_FILTER
-                       |NC_SCREEN_CAPABILITY_SEARCH
-                       |NC_SCREEN_CAPABILITY_SONGS
-                       |NC_SCREEN_CAPABILITY_TAGS;
-    ops.current_menu = search_engine_menu_capability;
-    ops.current_menu_height = search_engine_menu_height_capability;
+    ops.capabilities |= NC_SCREEN_CAPABILITY_FILTER
+                        |NC_SCREEN_CAPABILITY_SEARCH
+                        |NC_SCREEN_CAPABILITY_SONGS
+                        |NC_SCREEN_CAPABILITY_TAGS;
     ops.current_filter = search_engine_filter_constraint_capability;
     ops.apply_filter = search_engine_filter_apply_capability;
     ops.can_search = search_engine_search_available_capability;

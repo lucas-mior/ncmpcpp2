@@ -509,7 +509,9 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 #define NC_SCREEN_IMPL_BASE_FIELD screen
 #define NC_SCREEN_IMPL_WINDOW_FIELD window
 #define NC_SCREEN_IMPL_MENU(screen) browser_screen_menu(screen)
+#define NC_SCREEN_IMPL_MENU_CAPABILITY
 #define NC_SCREEN_IMPL_SCROLL_HEIGHT(screen) ((screen)->main_height)
+#define NC_SCREEN_IMPL_MENU_CAPABILITY_HEIGHT(screen) ((screen)->main_height)
 #define NC_SCREEN_IMPL_REFRESH_CALLBACK browser_display
 #define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK browser_switch_to
 #define NC_SCREEN_IMPL_RESIZE_CALLBACK browser_resize
@@ -525,18 +527,6 @@ typedef struct BrowserSearchContext {
     BrowserScreen *screen;
     NcmRegex *regex;
 } BrowserSearchContext;
-
-static NcMenu *
-browser_menu_capability(NcScreen *base) {
-    return browser_screen_menu((BrowserScreen *)base);
-}
-
-static int32
-browser_menu_height_capability(NcScreen *base) {
-    BrowserScreen *screen = (BrowserScreen *)base;
-
-    return screen->main_height;
-}
 
 static StringView
 browser_filter_constraint_capability(NcScreen *base) {
@@ -871,13 +861,10 @@ browser_screen_init(BrowserScreen *screen, int32 start_x, int32 width,
     browser_screen_update_column_title(screen);
     browser_install_menu_callbacks(screen);
     ops = browser_ops;
-    ops.capabilities = NC_SCREEN_CAPABILITY_MENU
-                       |NC_SCREEN_CAPABILITY_FILTER
-                       |NC_SCREEN_CAPABILITY_SEARCH
-                       |NC_SCREEN_CAPABILITY_SONGS
-                       |NC_SCREEN_CAPABILITY_TAGS;
-    ops.current_menu = browser_menu_capability;
-    ops.current_menu_height = browser_menu_height_capability;
+    ops.capabilities |= NC_SCREEN_CAPABILITY_FILTER
+                        |NC_SCREEN_CAPABILITY_SEARCH
+                        |NC_SCREEN_CAPABILITY_SONGS
+                        |NC_SCREEN_CAPABILITY_TAGS;
     ops.current_filter = browser_filter_constraint_capability;
     ops.apply_filter = browser_filter_apply_capability;
     ops.current_search_constraint = browser_search_constraint_capability;

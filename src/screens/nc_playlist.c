@@ -254,7 +254,10 @@ playlist_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 #define NC_SCREEN_IMPL_WINDOW(playlist) playlist_screen_window(playlist)
 #define NC_SCREEN_IMPL_MENU(playlist) \
     nc_playlist_screen_menu(&(playlist)->screen)
+#define NC_SCREEN_IMPL_MENU_CAPABILITY
 #define NC_SCREEN_IMPL_SCROLL_HEIGHT(playlist) ((playlist)->screen.main_height)
+#define NC_SCREEN_IMPL_MENU_CAPABILITY_HEIGHT(playlist) \
+    ((playlist)->screen.main_height)
 #define NC_SCREEN_IMPL_REFRESH_CALLBACK playlist_display
 #define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK playlist_switch_to
 #define NC_SCREEN_IMPL_RESIZE_CALLBACK playlist_resize
@@ -265,18 +268,6 @@ playlist_mouse_button_pressed(NcScreen *screen, MEVENT event) {
 #define NC_SCREEN_IMPL_LOCKABLE true
 #define NC_SCREEN_IMPL_MERGABLE true
 #include "screens/nc_screen_impl_template.h"
-
-static NcMenu *
-playlist_menu_capability(NcScreen *base) {
-    return playlist_screen_menu((PlaylistScreen *)base);
-}
-
-static int32
-playlist_menu_height_capability(NcScreen *base) {
-    PlaylistScreen *screen = (PlaylistScreen *)base;
-
-    return screen->screen.main_height;
-}
 
 static StringView
 playlist_filter_constraint_capability(NcScreen *base) {
@@ -504,13 +495,10 @@ playlist_screen_init(PlaylistScreen *screen, int32 start_x,
     screen->highlighting_requested = false;
 
     ops = playlist_ops;
-    ops.capabilities = NC_SCREEN_CAPABILITY_MENU
-                       |NC_SCREEN_CAPABILITY_FILTER
-                       |NC_SCREEN_CAPABILITY_SEARCH
-                       |NC_SCREEN_CAPABILITY_SONGS
-                       |NC_SCREEN_CAPABILITY_TAGS;
-    ops.current_menu = playlist_menu_capability;
-    ops.current_menu_height = playlist_menu_height_capability;
+    ops.capabilities |= NC_SCREEN_CAPABILITY_FILTER
+                        |NC_SCREEN_CAPABILITY_SEARCH
+                        |NC_SCREEN_CAPABILITY_SONGS
+                        |NC_SCREEN_CAPABILITY_TAGS;
     ops.current_filter = playlist_filter_constraint_capability;
     ops.apply_filter = playlist_filter_apply_capability;
     ops.current_search_constraint = playlist_search_constraint_capability;

@@ -33,12 +33,6 @@ static void adder_add_action_row(NcEditorActionMenu *menu, char *label,
                                   int32 label_len, void (*run)(void *),
                                   void *user);
 
-static NcMenu *
-selected_items_adder_menu_capability(NcScreen *base) {
-    return selected_items_adder_screen_active_menu(
-        (SelectedItemsAdderScreen *)base);
-}
-
 static StringView
 selected_items_adder_search_constraint_capability(NcScreen *base) {
     SelectedItemsAdderScreen *screen = (SelectedItemsAdderScreen *)base;
@@ -273,6 +267,7 @@ adder_mouse_callback(NcScreen *screen, MEVENT event) {
     selected_items_adder_screen_active_window(screen)
 #define NC_SCREEN_IMPL_MENU(screen) \
     selected_items_adder_screen_active_menu(screen)
+#define NC_SCREEN_IMPL_MENU_CAPABILITY
 #define NC_SCREEN_IMPL_REFRESH_CALLBACK adder_display
 #define NC_SCREEN_IMPL_CAN_RUN_CURRENT_CALLBACK \
     adder_can_run_current_callback
@@ -612,9 +607,7 @@ selected_items_adder_screen_init(
     screen->registered = false;
     screen->ready = false;
     ops = adder_ops;
-    ops.capabilities = NC_SCREEN_CAPABILITY_MENU
-                       |NC_SCREEN_CAPABILITY_SEARCH;
-    ops.current_menu = selected_items_adder_menu_capability;
+    ops.capabilities |= NC_SCREEN_CAPABILITY_SEARCH;
     ops.current_search_constraint =
         selected_items_adder_search_constraint_capability;
     ops.clear_search_constraint = selected_items_adder_search_clear_capability;
