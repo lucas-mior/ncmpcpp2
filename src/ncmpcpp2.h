@@ -559,14 +559,13 @@ ncm_tag_type_taglib_name_len(enum NcmTagType tag, char *out, int32 cap) {
     ASSERT(cap > 0);
 
     switch ((int32)tag) {
-#define TAGLIB_NAME_CASE(suffix, DISP, CHAR,                               \
-                              getter_char, flags)                          \
-    case CAT(TAG_, suffix):                                                \
-        if (TAG_DISPLAY_NAME_LEN(DISP) >= cap) {                           \
-            out[0] = '\0';                                                 \
-            return -1;                                                     \
-        }                                                                  \
-        return ascii_normalize_camel_compact(                              \
+#define TAGLIB_NAME_CASE(suffix, DISP, CHAR, getter_char, flags)      \
+    case CAT(TAG_, suffix):                                           \
+        if (TAG_DISPLAY_NAME_LEN(DISP) >= cap) {                      \
+            out[0] = '\0';                                            \
+            return -1;                                                \
+        }                                                             \
+        return ascii_normalize_camel_compact(                         \
             out, TAG_DISPLAY_NAME(DISP), TAG_DISPLAY_NAME_LEN(DISP));
 
     TAGLIB_TAG_DEFS(TAGLIB_NAME_CASE)
