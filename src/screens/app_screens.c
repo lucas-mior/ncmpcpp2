@@ -261,7 +261,7 @@ APP_SCREEN_REGISTER_SWITCH_TYPES(APP_SCREEN_DEFINE_REGISTER_SWITCH)
 #undef APP_SCREEN_DEFINE_REGISTER_SWITCH
 
 #define APP_SCREEN_DEFINE_SIMPLE_SHOW(suffix)                             \
-    int32                                                                     \
+    static int32                                                        \
     app_screen_##suffix##_show(void) {                                        \
         app_screen_##suffix##_register();                                     \
         app_screen_##suffix##_switch_to();                                    \
@@ -273,7 +273,7 @@ APP_SCREEN_SIMPLE_SWITCH_TYPES(APP_SCREEN_DEFINE_SIMPLE_SHOW)
 #undef APP_SCREEN_DEFINE_SIMPLE_SHOW
 
 #define APP_SCREEN_DEFINE_REGISTER_SHOW(suffix)                           \
-    int32                                                                     \
+    static int32                                                        \
     app_screen_##suffix##_show(void) {                                        \
         app_screen_##suffix##_switch_to();                                    \
         return 0;                                                             \
@@ -365,7 +365,7 @@ app_screen_lastfm_switch_to(void) {
     return;
 }
 
-int32
+static int32
 app_screen_lastfm_show(void) {
     app_screen_lastfm_switch_to();
     return 0;
@@ -399,7 +399,7 @@ app_screen_lyrics_switch_to(void) {
     return;
 }
 
-int32
+static int32
 app_screen_lyrics_show(void) {
     app_screen_lyrics_switch_to();
     return 0;
@@ -463,7 +463,7 @@ app_screen_visualizer_base(void) {
 #endif
 }
 
-int32
+static int32
 app_screen_visualizer_show(void) {
 #if defined(ENABLE_VISUALIZER)
     app_screen_visualizer_register();
@@ -568,7 +568,7 @@ app_screen_sort_playlist_dialog_switch_to(void) {
     return status;
 }
 
-int32
+static int32
 app_screen_sort_playlist_dialog_show(void) {
     app_screen_sort_playlist_dialog_register();
     return app_screen_sort_playlist_dialog_switch_to();
