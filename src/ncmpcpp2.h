@@ -642,8 +642,7 @@ ncm_song_getter_format_char(enum SongGetter getter) {
 #define NCM_SONG_GETTER_NON_TAG_CHAR_CASE(getter, DISP, getter_char)           \
     case getter:                                                               \
         return getter_char;
-#define NCM_SONG_GETTER_TAG_CHAR_CASE(suffix, DISP, CHAR,                  \
-                                       getter_char, flags)                     \
+#define NCM_SONG_GETTER_TAG_CHAR_CASE(suffix, DISP, CHAR, getter_char, flags)  \
     case CAT(SONG_GETTER_, suffix):                                            \
         return getter_char;
 
