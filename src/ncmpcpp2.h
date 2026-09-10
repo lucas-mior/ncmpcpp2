@@ -47,7 +47,7 @@
   TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                    \
   TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')
 
-#define TAG_SEARCH_MPD_DECLS(XX)                                               \
+#define TAG_SEARCH_MPD_DECLS(XX)                                   \
   TAG_SEARCH_MPD(XX, NAME, Filename)
 
 #define TAG_EXTENDED_DECLS(XX)                                                 \
