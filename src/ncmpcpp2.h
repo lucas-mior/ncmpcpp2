@@ -337,8 +337,7 @@ ncm_tag_type_display_name_len(enum NcmTagType tag, char **out) {
 }
 
 static inline int32
-ncm_tag_type_settings_name_len(enum NcmTagType tag, char *out,
-                               int32 cap) {
+ncm_tag_type_settings_name_len(enum NcmTagType tag, char *out, int32 cap) {
     switch ((int32)tag) {
 #define TAG_SETTINGS_NAME_CASE(suffix, DISP, CHAR, getter_char, flags)   \
     case CAT(TAG_, suffix):                                              \
