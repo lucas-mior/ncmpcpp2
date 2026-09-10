@@ -482,8 +482,7 @@ ncm_song_getter_column_title_len(enum SongGetter getter, char **out) {
     case SONG_GETTER_TRACK_NUMBER:
         *out = "Track";
         return STRLIT_LEN("Track");
-#define NCM_SONG_GETTER_TAG_TITLE_CASE(suffix, DISP, CHAR,                 \
-                                        getter_char, flags)                    \
+#define NCM_SONG_GETTER_TAG_TITLE_CASE(suffix, DISP, CHAR, getter_char, flags) \
     case CAT(SONG_GETTER_, suffix):                                            \
         *out = TAG_DISPLAY_NAME(DISP);                                         \
         return TAG_DISPLAY_NAME_LEN(DISP);
