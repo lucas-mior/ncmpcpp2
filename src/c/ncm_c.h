@@ -845,12 +845,10 @@ int32 ncm_mpd_connection_get_replay_gain_mode(MpdConnection *,
                                               enum NcmMpdReplayGainMode *);
 int32 ncm_mpd_connection_set_replay_gain_mode(MpdConnection *,
                                               enum NcmMpdReplayGainMode);
-int32 ncm_mpd_connection_get_playlists(MpdConnection *,
-                                       NcmMpdPlaylistList *);
+int32 ncm_mpd_connection_get_playlists(MpdConnection *, NcmMpdPlaylistList *);
 int32 ncm_mpd_connection_list_all_song_uris(MpdConnection *, char *,
                                             StringViewList *);
-int32 ncm_mpd_connection_get_url_handlers(MpdConnection *,
-                                          StringViewList *);
+int32 ncm_mpd_connection_get_url_handlers(MpdConnection *, StringViewList *);
 int32 ncm_mpd_connection_get_tag_types(MpdConnection *, StringViewList *);
 
 void ncm_mpd_song_list_destroy(NcmMpdSongList *);
