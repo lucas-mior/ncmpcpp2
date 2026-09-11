@@ -86,7 +86,7 @@ ncm_char_to_tag_type(char c) {
     case tag_char:                                                            \
         return CAT(TAG_, suffix);
 
-    TAG_FIELD_DEFS(TAG_CHAR_CASE)
+    TAG_DEFS(TAG_CHAR_CASE)
 
 #undef TAG_CHAR_CASE
     default:
@@ -153,7 +153,7 @@ ncm_tag_type_to_song_getter(enum TagType tag) {
         return CAT(SONG_GETTER_, suffix);                                     \
     }
 
-    TAG_FIELD_DEFS(NCM_TAG_TO_GETTER_IF)
+    TAG_DEFS(NCM_TAG_TO_GETTER_IF)
 
 #undef NCM_TAG_TO_GETTER_IF
     return SONG_GETTER_NONE;

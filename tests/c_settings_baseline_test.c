@@ -1015,12 +1015,12 @@ test_writable_tag_metadata(void) {
     ASSERT(ncm_tag_type_format_char(CAT(TAG_, suffix)) == tag_char);          \
     idx += 1;
 
-    TAG_FIELD_DEFS(TEST_WRITABLE_TAG)
+    TAG_DEFS(TEST_WRITABLE_TAG)
 
 #undef TEST_WRITABLE_TAG
-    ASSERT(idx == NCM_WRITABLE_TAG_COUNT);
+    ASSERT(idx == (int32)TAG_COUNT);
     ASSERT(ncm_writable_tag_at(-1) == TAG_COUNT);
-    ASSERT(ncm_writable_tag_at(NCM_WRITABLE_TAG_COUNT) == TAG_COUNT);
+    ASSERT(ncm_writable_tag_at((int32)TAG_COUNT) == TAG_COUNT);
     ASSERT(ncm_char_to_tag_type('x') == TAG_COUNT);
     ASSERT(!ncm_tag_type_is_writable(TAG_COUNT));
     ASSERT(ncm_tag_type_to_song_getter(TAG_COUNT) == SONG_GETTER_NONE);
@@ -1160,7 +1160,7 @@ test_search_constraint_metadata(void) {
     ASSERT(metadata->name_len == strlen32(metadata->name));                  \
     idx += 1;
 
-    TAG_SEARCH_DEFS(TEST_SEARCH_CONSTRAINT)
+    TAG_DEFS(TEST_SEARCH_CONSTRAINT)
 
 #undef TEST_SEARCH_CONSTRAINT
     metadata = search_constraint_metadata(idx);
@@ -1203,10 +1203,10 @@ test_song_info_tag_metadata(void) {
     ASSERT(ncm_song_info_tags[idx].get == CAT(SONG_GETTER_, suffix));        \
     idx += 1;
 
-    TAG_SONG_INFO_DEFS(TEST_SONG_INFO_TAG)
+    TAG_DEFS(TEST_SONG_INFO_TAG)
 
 #undef TEST_SONG_INFO_TAG
-    ASSERT(idx == NCM_SONG_INFO_TAG_COUNT);
+    ASSERT(idx == (int32)TAG_COUNT);
     ASSERT(ncm_song_info_tags[idx].name == NULL);
     ASSERT(ncm_song_info_tags[idx].name_len == 0);
     ASSERT(ncm_song_info_tags[idx].tag == TAG_COUNT);
@@ -1231,10 +1231,10 @@ test_tag_edit_parser_metadata(void) {
                                         CAT(TAG_, suffix));       \
     idx += 1;
 
-    TAG_FIELD_DEFS(TEST_PARSER_FIELD)
+    TAG_DEFS(TEST_PARSER_FIELD)
 
 #undef TEST_PARSER_FIELD
-    ASSERT(idx == NCM_WRITABLE_TAG_COUNT);
+    ASSERT(idx == (int32)TAG_COUNT);
     ASSERT_EQUAL(legend.data, legend.len,
                  "%a - artist\n"
                  "%A - album artist\n"

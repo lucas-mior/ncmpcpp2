@@ -27,7 +27,7 @@ static TaglibPropertyMap ncm_taglib_properties[] = {
         .tag = CAT(TAG_, suffix),                                       \
     },
 
-    TAGLIB_TAG_DEFS(TAGLIB_PROPERTY_MAP)
+    TAG_DEFS(TAGLIB_PROPERTY_MAP)
 
 #undef TAGLIB_PROPERTY_MAP
 };

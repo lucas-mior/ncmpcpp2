@@ -53,7 +53,7 @@ static SearchConstraintMetadata search_constraints[] = {
         .kind = SEARCH_CONSTRAINT_ANY,
         .tag = TAG_COUNT,
     },
-    TAG_SEARCH_DEFS(SEARCH_CONSTRAINT_TAG_ENTRY)
+    TAG_DEFS(SEARCH_CONSTRAINT_TAG_ENTRY)
     {
         .name = "Filename",
         .name_len = STRLIT_LEN("Filename"),

@@ -197,10 +197,10 @@ ncm_mpd_item_song_from_mpd_song_copy_internal(NcmSong *dest, void *mpd_song,
         enum mpd_tag_type mpd;
         enum TagType ncm;
     } tags[] = {
-        TAG_MPD_DEFS(NCM_MPD_ITEM_TAG_ENTRY)
+        TAG_DEFS(NCM_MPD_ITEM_TAG_ENTRY)
     };
     char *uri;
-    int32 tags_len = NCM_MPD_TAG_COUNT;
+    int32 tags_len = LENGTH(tags);
     int32 status;
 
     if (dest == NULL) {

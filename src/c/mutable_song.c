@@ -452,7 +452,7 @@ mutable_song_load_originals_from_song(MutableSong *dest, NcmSong *source) {
     }
     dest->is_from_database = ncm_song_is_from_database(source);
 
-    for (int32 type_i = 0; type_i < NCM_WRITABLE_TAG_COUNT; type_i += 1) {
+    for (int32 type_i = 0; type_i < (int32)TAG_COUNT; type_i += 1) {
         enum TagType type = ncm_writable_tag_at(type_i);
         enum SongGetter getter = ncm_tag_type_to_song_getter(type);
 
