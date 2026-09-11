@@ -988,15 +988,12 @@ test_tag_type_names(void) {
         ASSERT_EQUAL(name, name_len, TAG_DISPLAY_NAME(display));          \
         ASSERT(name_len == TAG_DISPLAY_NAME_LEN(display));                \
     }                                                                         \
-    name_len = ncm_tag_type_canonical_name_len(CAT(TAG_, suffix), &name);\
-    ASSERT_EQUAL(name, name_len, TAG_DISPLAY_NAME(display));              \
-    ASSERT(name_len == TAG_DISPLAY_NAME_LEN(display));                       \
     name_len = TAG_alias_len(CAT(TAG_, suffix), &name);                      \
-    normalized_len = ascii_normalize_lower_snake(                            \
-        normalized, TAG_DISPLAY_NAME(display),                               \
-        TAG_DISPLAY_NAME_LEN(display));                                      \
-    ASSERT_EQUAL(name, name_len, normalized, normalized_len);                \
-    ASSERT(TAG_parse(name, name_len) == CAT(TAG_, suffix));                  \
+    ASSERT_EQUAL(name, name_len, TAG_DISPLAY_NAME(display));                  \
+    ASSERT(name_len == TAG_DISPLAY_NAME_LEN(display));                        \
+    normalized_len = ascii_normalize_lower_snake(                             \
+        normalized, name, name_len);                                          \
+    ASSERT(TAG_parse(normalized, normalized_len) == CAT(TAG_, suffix));       \
     TAG_alias_free(name);
 
     TAG_DEFS(TEST_TAG_TYPE_NAME)
@@ -1076,16 +1073,23 @@ test_song_getter_conversions(void) {
 
 static void
 test_primary_tag_settings_parse(void) {
+    char normalized[TAG_SETTINGS_NAME_CAP];
     char settings_name[TAG_SETTINGS_NAME_CAP];
     enum TagType parsed;
+    int32 normalized_len;
     int32 settings_name_len;
 
 #define TEST_PRIMARY_SETTING(suffix, display, tag_char, getter_char,      \
                              flags)                                         \
     settings_name_len = ncm_tag_type_settings_name_len(                     \
-        CAT(TAG_, suffix), settings_name, LENGTH(settings_name));        \
+        CAT(TAG_, suffix), settings_name, LENGTH(settings_name));            \
     ASSERT(settings_name_len > 0);                                           \
-    parsed = TAG_UNKNOWN;                                                \
+    normalized_len = ascii_normalize_lower_snake(                            \
+        normalized, TAG_DISPLAY_NAME(display),                               \
+        TAG_DISPLAY_NAME_LEN(display));                                      \
+    ASSERT_EQUAL(settings_name, settings_name_len,                           \
+                 normalized, normalized_len);                                \
+    parsed = TAG_UNKNOWN;                                                    \
     ASSERT(ncm_tag_type_parse_settings_name(settings_name,                   \
                                             settings_name_len, &parsed));    \
     ASSERT(parsed == CAT(TAG_, suffix));                                 \
@@ -1101,6 +1105,9 @@ test_primary_tag_settings_parse(void) {
                                             &parsed));
     ASSERT(parsed == TAG_ALBUM_ARTIST);
     ASSERT(ncm_tag_type_parse_settings_name(STRLIT("ALBUM_ARTIST"),
+                                            &parsed));
+    ASSERT(parsed == TAG_ALBUM_ARTIST);
+    ASSERT(ncm_tag_type_parse_settings_name(STRLIT("album-artist"),
                                             &parsed));
     ASSERT(parsed == TAG_ALBUM_ARTIST);
     ASSERT(TAG_parse(STRLIT("album_artist"))

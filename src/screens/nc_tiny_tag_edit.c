@@ -55,7 +55,7 @@ tiny_editor_buffer_getter_value(NcBuffer *buffer, enum SongGetter getter,
     char *key;
     int32 key_len;
 
-    key_len = ncm_song_getter_display_name_len(getter, &key);
+    key_len = SONG_GETTER_alias_len(getter, &key);
     tiny_editor_buffer_key_value(buffer, key, key_len, value, value_len);
     return;
 }
@@ -194,8 +194,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         if (screen->hooks.prompt == NULL) {
             prompt_result = TINY_TAG_EDIT_PROMPT_ERROR;
         } else {
-            label_len = ncm_song_getter_display_name_len(SONG_GETTER_NAME,
-                                                         &label);
+            label_len = SONG_GETTER_alias_len(SONG_GETTER_NAME, &label);
             prompt_result = screen->hooks.prompt(screen->hooks.user,
                                                  label, label_len, initial,
                                                  &input);
