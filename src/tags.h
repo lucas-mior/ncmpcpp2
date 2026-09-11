@@ -111,16 +111,6 @@
   TAG_FIELD_DEFS(XX)                                                           \
   TAG_SEARCH_MPD_DECLS(XX)
 
-#define TAG_PRIMARY_DEFS(XX)                                                   \
-  TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                                       \
-  TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                           \
-  TAG_FIELD_MPD(XX, DATE, Date, 'y')                                           \
-  TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                         \
-  TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                                   \
-  TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')
-
-#define NCM_PRIMARY_TAG_DEFAULT_SETTINGS_NAME "artist"
-
 #define TAGLIB_TAG_DEFS(XX) TAG_FIELD_DEFS(XX)
 
 #define TAG_MPD_DEFS(XX)                                                       \
@@ -132,7 +122,6 @@
 
 enum {
     TAG_DERIVED_NAME_CAP = 64,
-    TAG_SETTINGS_NAME_CAP = TAG_DERIVED_NAME_CAP,
     TAGLIB_PROPERTY_CAP = TAG_DERIVED_NAME_CAP,
     TAGLIB_NAME_CAP = TAG_DERIVED_NAME_CAP,
     NCM_SONG_INFO_TAG_COUNT = 0
@@ -146,8 +135,6 @@ enum {
         TAGLIB_TAG_DEFS(TAG_COUNT_RECORD),
     NCM_MPD_TAG_COUNT = 0
         TAG_MPD_DEFS(TAG_COUNT_RECORD),
-    NCM_PRIMARY_TAG_COUNT = 0
-        TAG_PRIMARY_DEFS(TAG_COUNT_RECORD),
 };
 
 #undef TAG_COUNT_RECORD
@@ -288,97 +275,6 @@ ncm_writable_tag_at(int32 idx) {
         return TAG_UNKNOWN;
     }
     return tags[idx];
-}
-
-static inline bool
-ncm_tag_type_is_primary(enum TagType tag) {
-    switch ((int32)tag) {
-#define TAG_IS_PRIMARY_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)            \
-    case CAT(TAG_, SUFFIX):                                                    \
-        return true;
-
-    TAG_PRIMARY_DEFS(TAG_IS_PRIMARY_CASE)
-
-#undef TAG_IS_PRIMARY_CASE
-    case TAG_COUNT:
-    default:
-        return false;
-    }
-}
-
-static inline int32
-ncm_tag_type_settings_name_len(enum TagType tag, char *out, int32 cap) {
-    char *alias;
-    int32 alias_len;
-
-    if (!ncm_tag_type_is_primary(tag)) {
-        if (cap > 0) {
-            out[0] = '\0';
-        }
-        return -1;
-    }
-
-    alias_len = TAG_alias_len(tag, &alias);
-    if (alias_len >= cap) {
-        if (cap > 0) {
-            out[0] = '\0';
-        }
-        TAG_alias_free(alias);
-        return -1;
-    }
-
-    return ascii_normalize_lower_snake(out, alias, alias_len);
-}
-
-static inline bool
-ncm_tag_type_parse_settings_name(char *value, int32 value_len,
-                                 enum TagType *result) {
-    char normalized[TAG_SETTINGS_NAME_CAP];
-    enum TagType parsed;
-    int32 normalized_len;
-
-    ASSERT(result != NULL);
-
-    if ((value_len < 0) || (value_len >= LENGTH(normalized))) {
-        return false;
-    }
-    normalized_len = ascii_normalize_upper_snake(normalized, value, value_len);
-    if (normalized_len <= 0) {
-        return false;
-    }
-    if (BEGINS_WITH(normalized, normalized_len, "TAG_")) {
-        return false;
-    }
-
-    parsed = TAG_parse(value, value_len);
-    if (!ncm_tag_type_is_primary(parsed)) {
-        return false;
-    }
-
-    *result = parsed;
-    return true;
-}
-
-static inline enum TagType
-ncm_primary_tag_next(enum TagType tag) {
-    static enum TagType tags[NCM_PRIMARY_TAG_COUNT] = {
-#define NCM_PRIMARY_TAG_ARRAY_ENTRY(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)    \
-        CAT(TAG_, SUFFIX),
-
-        TAG_PRIMARY_DEFS(NCM_PRIMARY_TAG_ARRAY_ENTRY)
-
-#undef NCM_PRIMARY_TAG_ARRAY_ENTRY
-    };
-
-    for (int32 i = 0; i < NCM_PRIMARY_TAG_COUNT; i += 1) {
-        if (tags[i] == tag) {
-            if (i + 1 >= NCM_PRIMARY_TAG_COUNT) {
-                return tags[0];
-            }
-            return tags[i + 1];
-        }
-    }
-    return tags[0];
 }
 
 static inline int32

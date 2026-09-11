@@ -90,7 +90,7 @@ settings_assert_generated_empty(Configuration *config) {
     ASSERT(config->NAME == 0);
 #define XX_ENUM(NAME, DEFAULT, ENUM_PREFIX_)                             \
     ASSERT(config->NAME == (ENUM_PREFIX_)0);
-#define XX_MPD_TAG(NAME, DEFAULT)                                        \
+#define XX_MEDIA_LIBRARY_GROUPING_TAG(NAME, DEFAULT)                    \
     ASSERT(config->NAME == TAG_UNKNOWN);
 #define XX_STARTUP_SCREEN(NAME, DEFAULT)                                 \
     ASSERT(config->NAME == SCREEN_TYPE_COUNT);
@@ -1066,52 +1066,48 @@ test_song_getter_conversions(void) {
 }
 
 static void
-test_primary_tag_settings_parse(void) {
-    char normalized[TAG_SETTINGS_NAME_CAP];
-    char settings_name[TAG_SETTINGS_NAME_CAP];
+test_media_library_grouping_tag_settings_parse(void) {
     enum TagType parsed;
-    int32 normalized_len;
-    int32 settings_name_len;
 
-#define TEST_PRIMARY_SETTING(suffix, display, tag_char, getter_char,      \
-                             flags)                                         \
-    settings_name_len = ncm_tag_type_settings_name_len(                     \
-        CAT(TAG_, suffix), settings_name, LENGTH(settings_name));            \
-    ASSERT(settings_name_len > 0);                                           \
-    normalized_len = ascii_normalize_lower_snake(                            \
-        normalized, TAG_DISPLAY_NAME(display),                               \
-        TAG_DISPLAY_NAME_LEN(display));                                      \
-    ASSERT_EQUAL(settings_name, settings_name_len,                           \
-                 normalized, normalized_len);                                \
-    parsed = TAG_UNKNOWN;                                                    \
-    ASSERT(ncm_tag_type_parse_settings_name(settings_name,                   \
-                                            settings_name_len, &parsed));    \
-    ASSERT(parsed == CAT(TAG_, suffix));                                 \
-    parsed = TAG_UNKNOWN;                                                \
-    ASSERT_ZERO(settings_parse_mpd_tag(settings_name, settings_name_len,     \
-                                       &parsed));                            \
-    ASSERT(parsed == CAT(TAG_, suffix));
+    ASSERT(media_library_is_grouping_tag(TAG_ARTIST));
+    ASSERT(media_library_is_grouping_tag(TAG_ALBUM_ARTIST));
+    ASSERT(media_library_is_grouping_tag(TAG_DATE));
+    ASSERT(media_library_is_grouping_tag(TAG_GENRE));
+    ASSERT(media_library_is_grouping_tag(TAG_COMPOSER));
+    ASSERT(media_library_is_grouping_tag(TAG_PERFORMER));
+    ASSERT(!media_library_is_grouping_tag(TAG_ALBUM));
+    ASSERT(!media_library_is_grouping_tag(TAG_TITLE));
+    ASSERT(!media_library_is_grouping_tag(TAG_TRACK));
 
-    TAG_PRIMARY_DEFS(TEST_PRIMARY_SETTING)
+    ASSERT(media_library_next_grouping_tag(TAG_ARTIST) == TAG_ALBUM_ARTIST);
+    ASSERT(media_library_next_grouping_tag(TAG_ALBUM_ARTIST) == TAG_DATE);
+    ASSERT(media_library_next_grouping_tag(TAG_DATE) == TAG_GENRE);
+    ASSERT(media_library_next_grouping_tag(TAG_GENRE) == TAG_COMPOSER);
+    ASSERT(media_library_next_grouping_tag(TAG_COMPOSER) == TAG_PERFORMER);
+    ASSERT(media_library_next_grouping_tag(TAG_PERFORMER) == TAG_ARTIST);
+    ASSERT(media_library_next_grouping_tag(TAG_ALBUM) == TAG_ARTIST);
 
-#undef TEST_PRIMARY_SETTING
-    ASSERT(ncm_tag_type_parse_settings_name(STRLIT("Album Artist"),
-                                            &parsed));
+    parsed = TAG_UNKNOWN;
+    ASSERT_ZERO(settings_parse_media_library_grouping_tag(
+        STRLIT("artist"), &parsed));
+    ASSERT(parsed == TAG_ARTIST);
+
+    ASSERT_ZERO(settings_parse_media_library_grouping_tag(
+        STRLIT("Album Artist"), &parsed));
     ASSERT(parsed == TAG_ALBUM_ARTIST);
-    ASSERT(ncm_tag_type_parse_settings_name(STRLIT("ALBUM_ARTIST"),
-                                            &parsed));
+    ASSERT_ZERO(settings_parse_media_library_grouping_tag(
+        STRLIT("ALBUM_ARTIST"), &parsed));
     ASSERT(parsed == TAG_ALBUM_ARTIST);
-    ASSERT(ncm_tag_type_parse_settings_name(STRLIT("album-artist"),
-                                            &parsed));
+    ASSERT_ZERO(settings_parse_media_library_grouping_tag(
+        STRLIT("album-artist"), &parsed));
     ASSERT(parsed == TAG_ALBUM_ARTIST);
-    ASSERT(TAG_parse(STRLIT("album_artist"))
-           == TAG_ALBUM_ARTIST);
-    ASSERT(TAG_parse(STRLIT("ALBUM_ARTIST"))
-           == TAG_ALBUM_ARTIST);
-    ASSERT(!ncm_tag_type_parse_settings_name(STRLIT("TAG_ARTIST"),
-                                              &parsed));
-    ASSERT(!ncm_tag_type_parse_settings_name(STRLIT("album"), &parsed));
-    ASSERT(settings_parse_mpd_tag(STRLIT("album"), &parsed) < 0);
+
+    ASSERT(settings_parse_media_library_grouping_tag(
+               STRLIT("TAG_ARTIST"), &parsed) < 0);
+    ASSERT(settings_parse_media_library_grouping_tag(
+               STRLIT("album"), &parsed) < 0);
+    ASSERT(settings_parse_media_library_grouping_tag(
+               STRLIT("track"), &parsed) < 0);
     return;
 }
 
@@ -1241,7 +1237,7 @@ main(void) {
     test_tag_type_names();
     test_writable_tag_metadata();
     test_song_getter_conversions();
-    test_primary_tag_settings_parse();
+    test_media_library_grouping_tag_settings_parse();
     test_taglib_metadata();
     test_search_constraint_metadata();
     test_song_info_tag_metadata();

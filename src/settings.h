@@ -93,7 +93,7 @@ typedef struct Configuration {
     double NAME;
 #define XX_ENUM(NAME, DEFAULT, ENUM_PREFIX_)                              \
     ENUM_PREFIX_ NAME;
-#define XX_MPD_TAG(NAME, DEFAULT)                                         \
+#define XX_MEDIA_LIBRARY_GROUPING_TAG(NAME, DEFAULT)                    \
     enum TagType NAME;
 #define XX_STARTUP_SCREEN(NAME, DEFAULT)                                  \
     SCREEN_TYPE_ NAME;

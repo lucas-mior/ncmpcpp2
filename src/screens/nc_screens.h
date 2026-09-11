@@ -1110,6 +1110,9 @@ int16 visualizer_clamp_sample(int32);
     XX(MEDIA_LIBRARY_COLUMN_SONGS, Songs)
 #include "cbase/xenums.c"
 
+bool media_library_is_grouping_tag(enum TagType);
+enum TagType media_library_next_grouping_tag(enum TagType);
+
 typedef struct MediaLibraryAlbumItem {
     NcMediaLibraryAlbumRow row;
     uint32 menu_flags;
@@ -1139,16 +1142,16 @@ NCM_ARRAY_DECLARE_REMOVE_ORDERED(media_library_album_array,
                                  MediaLibraryAlbumArray)
 
 typedef struct MediaLibrarySongQuery {
-    char *primary_value;
+    char *grouping_value;
     char *album;
     char *date;
 
-    int32 primary_value_len;
+    int32 grouping_value_len;
     int32 album_len;
     int32 date_len;
 
-    enum TagType primary_tag;
-    bool match_primary_tag;
+    enum TagType grouping_tag;
+    bool match_grouping_tag;
     bool match_album;
     bool match_date;
 } MediaLibrarySongQuery;
@@ -1245,7 +1248,7 @@ NcMediaLibraryTagRow *media_library_screen_current_tag(MediaLibraryScreen *);
 NcMediaLibraryAlbumRow *
 media_library_screen_current_album(MediaLibraryScreen *);
 
-bool media_library_screen_has_current_primary_tag_value(MediaLibraryScreen *,
+bool media_library_screen_has_current_grouping_tag_value(MediaLibraryScreen *,
                                                         char **, int32 *);
 bool media_library_screen_has_current_album_value(MediaLibraryScreen *,
                                                   char **, int32 *);
@@ -1267,7 +1270,7 @@ int32 media_library_albums_from_songs(MediaLibraryAlbumArray *,
 int32 media_library_songs_from_list(NcmSongArray *, NcmMpdSongList *);
 
 int32 media_library_screen_toggle_sort_mode(MediaLibraryScreen *, bool *);
-int32 media_library_screen_set_primary_tag_type(MediaLibraryScreen *,
+int32 media_library_screen_set_grouping_tag_type(MediaLibraryScreen *,
                                                 enum TagType);
 void media_library_screen_request_database_update(MediaLibraryScreen *);
 int32 media_library_screen_refresh_inactive_songs(MediaLibraryScreen *);

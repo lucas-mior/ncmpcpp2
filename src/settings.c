@@ -48,8 +48,9 @@ typedef struct SettingsOption {
     SETTINGS_ASSERT_FIELD_TYPE(NAME, double);
 #define XX_ENUM(NAME, DEFAULT, ENUM_PREFIX_)                             \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, ENUM_PREFIX_);
-#define XX_MPD_TAG(NAME, DEFAULT)                                        \
+#define XX_MEDIA_LIBRARY_GROUPING_TAG(NAME, DEFAULT)                    \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, enum TagType);
+
 #define XX_STARTUP_SCREEN(NAME, DEFAULT)                                 \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, SCREEN_TYPE_);
 #define XX_OPT_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE) \
@@ -594,12 +595,30 @@ settings_parse_startup_screen(char *value, int32 value_len,
 }
 
 static int32
-settings_parse_mpd_tag(char *value, int32 value_len,
-                       enum TagType *result) {
-    if (ncm_tag_type_parse_settings_name(value, value_len, result)) {
-        return 0;
+settings_parse_media_library_grouping_tag(char *value, int32 value_len,
+                                          enum TagType *result) {
+    char normalized[TAG_DERIVED_NAME_CAP];
+    enum TagType parsed;
+    int32 normalized_len;
+
+    ASSERT(result != NULL);
+
+    if ((value_len < 0) || (value_len >= LENGTH(normalized))) {
+        return -NCM_ERROR_PARSE;
     }
-    return -NCM_ERROR_PARSE;
+    normalized_len = ascii_normalize_upper_snake(normalized, value, value_len);
+    if ((normalized_len <= 0)
+        || BEGINS_WITH(normalized, normalized_len, "TAG_")) {
+        return -NCM_ERROR_PARSE;
+    }
+
+    parsed = TAG_parse(value, value_len);
+    if (!media_library_is_grouping_tag(parsed)) {
+        return -NCM_ERROR_PARSE;
+    }
+
+    *result = parsed;
+    return 0;
 }
 
 static int32
@@ -1028,13 +1047,14 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
     return 0;                                                                  \
 }
 
-#define XX_MPD_TAG(NAME, DEFAULT)                                              \
+#define XX_MEDIA_LIBRARY_GROUPING_TAG(NAME, DEFAULT)                           \
 static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
-    enum TagType parsed;                                                    \
+    enum TagType parsed;                                                       \
     int32 status;                                                              \
-    status = settings_parse_mpd_tag(value, value_len, &parsed);                \
+    status = settings_parse_media_library_grouping_tag(value, value_len,       \
+                                                        &parsed);              \
     if (status < 0) {                                                          \
         return settings_invalid_value(ncm_error, value, value_len);            \
     }                                                                          \

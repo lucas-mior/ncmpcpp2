@@ -13,6 +13,38 @@
 #include "statusbar.h"
 #include "ui_state.h"
 
+static const enum TagType media_library_grouping_tags[] = {
+    TAG_ARTIST,
+    TAG_ALBUM_ARTIST,
+    TAG_DATE,
+    TAG_GENRE,
+    TAG_COMPOSER,
+    TAG_PERFORMER,
+};
+
+bool
+media_library_is_grouping_tag(enum TagType tag) {
+    for (int32 i = 0; i < LENGTH(media_library_grouping_tags); i += 1) {
+        if (media_library_grouping_tags[i] == tag) {
+            return true;
+        }
+    }
+    return false;
+}
+
+enum TagType
+media_library_next_grouping_tag(enum TagType tag) {
+    for (int32 i = 0; i < LENGTH(media_library_grouping_tags); i += 1) {
+        if (media_library_grouping_tags[i] == tag) {
+            if (i + 1 >= LENGTH(media_library_grouping_tags)) {
+                return media_library_grouping_tags[0];
+            }
+            return media_library_grouping_tags[i + 1];
+        }
+    }
+    return media_library_grouping_tags[0];
+}
+
 // callbacks
 
 static NcMenu *
@@ -128,9 +160,10 @@ library_mpd_search_songs(void *user, MediaLibrarySongQuery *query,
     ASSERT(songs != NULL);
 
     status = ncm_mpd_client_start_search(client, true, ncm_error);
-    if ((status == 0) && query->match_primary_tag) {
-        status = ncm_mpd_client_add_search_tag(client, query->primary_tag,
-                                               query->primary_value, ncm_error);
+    if ((status == 0) && query->match_grouping_tag) {
+        status = ncm_mpd_client_add_search_tag(client, query->grouping_tag,
+                                               query->grouping_value,
+                                               ncm_error);
     }
     if ((status == 0) && query->match_album) {
         status = ncm_mpd_client_add_search_tag(client, TAG_ALBUM,
@@ -1343,7 +1376,7 @@ media_library_screen_current_album(MediaLibraryScreen *screen) {
 }
 
 bool
-media_library_screen_has_current_primary_tag_value(MediaLibraryScreen *screen,
+media_library_screen_has_current_grouping_tag_value(MediaLibraryScreen *screen,
                                                    char **value,
                                                    int32 *value_len) {
     NcMediaLibraryTagRow *tag;
@@ -1700,24 +1733,24 @@ media_library_tags_from_strings(MediaLibraryTagArray *tags,
 
 int32
 media_library_tags_from_songs(MediaLibraryTagArray *tags, NcmMpdSongList *songs,
-                              enum TagType primary_tag) {
+                              enum TagType grouping_tag) {
     MediaLibraryTagArray replacement = {0};
 
-    if ((tags == NULL) || (songs == NULL) || (primary_tag == TAG_UNKNOWN)) {
+    if ((tags == NULL) || (songs == NULL) || (grouping_tag == TAG_UNKNOWN)) {
         return -EINVAL;
     }
 
     for (int32 i = 0; i < ncm_mpd_song_list_count(songs); i += 1) {
         NcmSong *song = ncm_mpd_song_list_at(songs, i);
-        StringView primary_value;
+        StringView grouping_value;
 
         for (int32 j = 0;
-             ncm_song_has_tag_view(song, primary_tag, j, &primary_value);
+             ncm_song_has_tag_view(song, grouping_tag, j, &grouping_value);
              j += 1) {
             int32 existing;
 
-            existing = library_find_tag(&replacement,
-                                        primary_value.data, primary_value.len);
+            existing = library_find_tag(&replacement, grouping_value.data,
+                                        grouping_value.len);
             if (existing >= 0) {
                 if (song->last_modified > replacement.items[existing].mtime) {
                     replacement.items[existing].mtime =
@@ -1725,8 +1758,8 @@ media_library_tags_from_songs(MediaLibraryTagArray *tags, NcmMpdSongList *songs,
                 }
                 continue;
             }
-            library_append_tag(&replacement, primary_value.data,
-                               primary_value.len, song->last_modified);
+            library_append_tag(&replacement, grouping_value.data,
+                               grouping_value.len, song->last_modified);
         }
     }
     library_sort_tags(&replacement);
@@ -1738,7 +1771,7 @@ int32
 media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
                                 NcmMpdSongList *songs,
                                 enum MediaLibraryMode mode,
-                                enum TagType primary_tag,
+                                enum TagType grouping_tag,
                                 char *selected_tag, int32 selected_tag_len) {
     MediaLibraryAlbumArray replacement = {0};
     MediaLibraryAlbumItem *separator;
@@ -1747,7 +1780,7 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
     if ((albums == NULL) || (songs == NULL)
         || (mode < MEDIA_LIBRARY_MODE_THREE_COLUMNS)
         || (mode >= MEDIA_LIBRARY_MODE_COUNT)
-        || (primary_tag == TAG_UNKNOWN) || (selected_tag_len < 0)
+        || (grouping_tag == TAG_UNKNOWN) || (selected_tag_len < 0)
         || ((selected_tag == NULL) && (selected_tag_len > 0))) {
         return -EINVAL;
     }
@@ -1787,7 +1820,7 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
         } else {
             StringView album = {0};
             StringView date = {0};
-            StringView primary_value = {0};
+            StringView grouping_value = {0};
 
             library_song_has_first_tag(song, TAG_ALBUM, &album);
             library_song_has_first_tag(song, TAG_DATE, &date);
@@ -1796,10 +1829,10 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
             }
 
             for (int32 j = 0;
-                 ncm_song_has_tag_view(song, primary_tag, j, &primary_value);
+                 ncm_song_has_tag_view(song, grouping_tag, j, &grouping_value);
                  j += 1) {
-                char *tag = primary_value.data;
-                int32 tag_len = primary_value.len;
+                char *tag = grouping_value.data;
+                int32 tag_len = grouping_value.len;
                 int32 existing;
 
                 if (mode == MEDIA_LIBRARY_MODE_ALBUM_ONLY) {
@@ -2003,9 +2036,9 @@ library_reset_observed_highlights(MediaLibraryScreen *screen) {
 }
 
 int32
-media_library_screen_set_primary_tag_type(MediaLibraryScreen *screen,
-                                          enum TagType tag_type) {
-    if ((screen == NULL) || (tag_type == TAG_UNKNOWN)) {
+media_library_screen_set_grouping_tag_type(MediaLibraryScreen *screen,
+                                           enum TagType tag_type) {
+    if ((screen == NULL) || !media_library_is_grouping_tag(tag_type)) {
         return -EINVAL;
     }
 
@@ -2197,11 +2230,11 @@ static void
 library_query_from_tag(MediaLibraryScreen *screen, NcMediaLibraryTagRow *tag,
                        MediaLibrarySongQuery *query) {
     (void)screen;
-    query->primary_tag = Config.media_library_primary_tag;
+    query->grouping_tag = Config.media_library_primary_tag;
     if (tag) {
-        query->primary_value = tag->tag;
-        query->primary_value_len = tag->tag_len;
-        query->match_primary_tag = true;
+        query->grouping_value = tag->tag;
+        query->grouping_value_len = tag->tag_len;
+        query->match_grouping_tag = true;
     }
     return;
 }
@@ -2237,11 +2270,11 @@ library_query_from_album(MediaLibraryScreen *screen,
     ASSERT(screen != NULL);
     ASSERT(album != NULL);
 
-    query->primary_tag = Config.media_library_primary_tag;
+    query->grouping_tag = Config.media_library_primary_tag;
     if (screen->mode != MEDIA_LIBRARY_MODE_ALBUM_ONLY) {
-        query->primary_value = album->tag;
-        query->primary_value_len = album->tag_len;
-        query->match_primary_tag = true;
+        query->grouping_value = album->tag;
+        query->grouping_value_len = album->tag_len;
+        query->match_grouping_tag = true;
     }
     if (!album->all_tracks_entry) {
         query->album = album->album;
@@ -2672,10 +2705,10 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
         MediaLibraryTagArray tags = {0};
         StringViewList strings = {0};
         NcmMpdSongList songs = {0};
-        enum TagType primary_tag;
+        enum TagType grouping_tag;
         int32 status;
 
-        primary_tag = Config.media_library_primary_tag;
+        grouping_tag = Config.media_library_primary_tag;
         if (screen->sort_by_mtime) {
             status = media_library_screen_list_all_songs(screen, &songs,
                                                          ncm_error);
@@ -2691,9 +2724,9 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
                 media_library_tag_array_destroy(&tags);
                 return status;
             }
-            media_library_tags_from_songs(&tags, &songs, primary_tag);
+            media_library_tags_from_songs(&tags, &songs, grouping_tag);
         } else {
-            status = media_library_screen_list_tags(screen, primary_tag,
+            status = media_library_screen_list_tags(screen, grouping_tag,
                                                     &strings, ncm_error);
             if (status < 0) {
                 screen->tags_update_request = true;
@@ -2790,10 +2823,10 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
             }
             selected_tag = tag->tag;
             selected_tag_len = tag->tag_len;
-            query.primary_value = tag->tag;
-            query.primary_value_len = tag->tag_len;
-            query.primary_tag = Config.media_library_primary_tag;
-            query.match_primary_tag = true;
+            query.grouping_value = tag->tag;
+            query.grouping_value_len = tag->tag_len;
+            query.grouping_tag = Config.media_library_primary_tag;
+            query.match_grouping_tag = true;
             status = media_library_screen_search_songs(screen, &query, &songs,
                                                        ncm_error);
         } else {
@@ -2898,11 +2931,11 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
             return 0;
         }
 
-        query.primary_tag = Config.media_library_primary_tag;
+        query.grouping_tag = Config.media_library_primary_tag;
         if (screen->mode != MEDIA_LIBRARY_MODE_ALBUM_ONLY) {
-            query.primary_value = album->tag;
-            query.primary_value_len = album->tag_len;
-            query.match_primary_tag = true;
+            query.grouping_value = album->tag;
+            query.grouping_value_len = album->tag_len;
+            query.match_grouping_tag = true;
         }
         if (!album->all_tracks_entry) {
             query.album = album->album;
@@ -3130,7 +3163,7 @@ media_library_screen_search_songs(
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing song search arguments"));
     }
-    if ((query->match_primary_tag && (query->primary_value == NULL))
+    if ((query->match_grouping_tag && (query->grouping_value == NULL))
         || (query->match_album && (query->album == NULL))
         || (query->match_date && (query->date == NULL))) {
         return ncm_error_set_status(ncm_error, -EINVAL,
@@ -3285,7 +3318,7 @@ media_library_screen_add_item_to_playlist(
 int32
 media_library_screen_locate_song(MediaLibraryScreen *screen,
                                  NcmSong *song, NcmError *ncm_error) {
-    StringView primary_value;
+    StringView grouping_value;
     StringView album;
     StringView date;
     char *album_date;
@@ -3303,9 +3336,10 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
     }
     ncm_error_clear(ncm_error);
     if (!ncm_song_has_tag_view(song, Config.media_library_primary_tag,
-                               0, &primary_value) || (primary_value.len <= 0)) {
+                               0, &grouping_value)
+        || (grouping_value.len <= 0)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("song has no primary tag"));
+                                    STRLIT("song has no grouping tag"));
     }
     if (!ncm_song_is_from_database(song)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
@@ -3333,13 +3367,13 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
                 return status;
             }
         }
-        if (!library_move_to_tag(screen, primary_value.data,
-                                 primary_value.len)) {
+        if (!library_move_to_tag(screen, grouping_value.data,
+                                 grouping_value.len)) {
             NcMediaLibraryTagRow row = {0};
             NcMenu *base;
 
             stupid_string_set(&row.tag, &row.tag_len,
-                              primary_value.data, primary_value.len);
+                              grouping_value.data, grouping_value.len);
             row.mtime = song->last_modified;
             nc_media_library_tag_menu_add(&screen->tags, &row);
             base = nc_media_library_tag_menu_base(&screen->tags);
@@ -3368,8 +3402,8 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
             nc_menu_show_all_items(base);
             nc_media_library_tag_row_destroy(&row);
 
-            if (!library_move_to_tag(screen, primary_value.data,
-                                     primary_value.len)) {
+            if (!library_move_to_tag(screen, grouping_value.data,
+                                     grouping_value.len)) {
                 return ncm_error_set_status(ncm_error, -ENOENT,
                                             STRLIT("song tag is not in "
                                                    "library"));
@@ -3395,14 +3429,14 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
                                     STRLIT("song album is not in library"));
     }
 
-    album_tag = primary_value.data;
-    album_tag_len = primary_value.len;
+    album_tag = grouping_value.data;
+    album_tag_len = grouping_value.len;
     if (screen->mode == MEDIA_LIBRARY_MODE_ALBUM_ONLY) {
         album_tag = NULL;
         album_tag_len = 0;
     }
 
-    if (!library_move_to_album(screen, primary_value.data, primary_value.len,
+    if (!library_move_to_album(screen, grouping_value.data, grouping_value.len,
                                album.data, album.len,
                                date.data, date.len, true)) {
         NcMediaLibraryAlbumRow row = {0};
@@ -3489,7 +3523,7 @@ media_library_screen_locate_song(MediaLibraryScreen *screen,
         nc_media_library_album_row_destroy(&row);
 
         if (!library_move_to_album(screen,
-                                   primary_value.data, primary_value.len,
+                                   grouping_value.data, grouping_value.len,
                                    album.data, album.len, date.data, date.len,
                                    true)) {
             return ncm_error_set_status(ncm_error, -ENOENT,
