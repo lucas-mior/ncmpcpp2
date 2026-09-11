@@ -37,9 +37,9 @@ typedef struct SearchConstraintMetadata {
     enum TagType tag;
 } SearchConstraintMetadata;
 
-#define SEARCH_CONSTRAINT_TAG_ENTRY(suffix, display, tag_char, getter_char, \
-                                    flags)                                   \
-    {                                                                         \
+#define SEARCH_CONSTRAINT_TAG_ENTRY(suffix, display, tag_char, getter_char,   \
+                                    taglib_num)                               \
+    {                                                                          \
         .name = TAG_DISPLAY_NAME(display),                                    \
         .name_len = TAG_DISPLAY_NAME_LEN(display),                            \
         .kind = SEARCH_CONSTRAINT_TAG,                                        \

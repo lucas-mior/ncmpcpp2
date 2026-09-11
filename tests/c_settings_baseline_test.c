@@ -979,7 +979,8 @@ test_tag_type_names(void) {
     int32 name_len;
     int32 normalized_len;
 
-#define TEST_TAG_TYPE_NAME(suffix, display, tag_char, getter_char, flags)    \
+#define TEST_TAG_TYPE_NAME(suffix, display, tag_char, getter_char,             \
+                           taglib_num)                                        \
     name_len = ncm_tag_type_name_len(CAT(TAG_, suffix), &name);               \
     ASSERT_EQUAL(name, name_len, TAG_DISPLAY_NAME(display));                  \
     ASSERT(name_len == TAG_DISPLAY_NAME_LEN(display));                        \
@@ -1006,7 +1007,8 @@ static void
 test_writable_tag_metadata(void) {
     int32 idx = 0;
 
-#define TEST_WRITABLE_TAG(suffix, display, tag_char, getter_char, flags)     \
+#define TEST_WRITABLE_TAG(suffix, display, tag_char, getter_char,              \
+                          taglib_num)                                         \
     ASSERT(ncm_char_to_tag_type(tag_char) == CAT(TAG_, suffix));             \
     ASSERT(ncm_tag_type_is_writable(CAT(TAG_, suffix)));                     \
     ASSERT(ncm_writable_tag_at(idx) == CAT(TAG_, suffix));                   \
@@ -1035,8 +1037,8 @@ test_song_getter_conversions(void) {
         ASSERT(ncm_song_getter_from_char(getter_char) == getter);            \
         ASSERT(ncm_song_getter_format_char(getter) == getter_char);          \
     }
-#define TEST_TAG_GETTER_CHAR(suffix, display, tag_char, getter_char,        \
-                             flags)                                         \
+#define TEST_TAG_GETTER_CHAR(suffix, display, tag_char, getter_char,           \
+                             taglib_num)                                      \
     ASSERT(ncm_song_getter_from_char(getter_char)                            \
            == CAT(SONG_GETTER_, suffix));                                    \
     ASSERT(ncm_song_getter_format_char(CAT(SONG_GETTER_, suffix))            \
@@ -1150,8 +1152,8 @@ test_search_constraint_metadata(void) {
     ASSERT_EQUAL(metadata->name, metadata->name_len, "Any");
     ASSERT(metadata->name_len == strlen32(metadata->name));
 
-#define TEST_SEARCH_CONSTRAINT(suffix, display, tag_char, getter_char,     \
-                               flags)                                       \
+#define TEST_SEARCH_CONSTRAINT(suffix, display, tag_char, getter_char,         \
+                               taglib_num)                                    \
     metadata = search_constraint_metadata(idx);                              \
     ASSERT(metadata->kind == SEARCH_CONSTRAINT_TAG);                         \
     ASSERT(metadata->tag == CAT(TAG_, suffix));                              \
@@ -1193,7 +1195,8 @@ static void
 test_song_info_tag_metadata(void) {
     int32 idx = 0;
 
-#define TEST_SONG_INFO_TAG(suffix, display, tag_char, getter_char, flags) \
+#define TEST_SONG_INFO_TAG(suffix, display, tag_char, getter_char,             \
+                           taglib_num)                                         \
     ASSERT_EQUAL(ncm_song_info_tags[idx].name,                               \
                  ncm_song_info_tags[idx].name_len,                           \
                  TAG_DISPLAY_NAME(display));                             \
@@ -1221,7 +1224,8 @@ test_tag_edit_parser_metadata(void) {
     int32 name_len;
     int32 idx = 0;
 
-#define TEST_PARSER_FIELD(suffix, display, tag_char, getter_char, flags)  \
+#define TEST_PARSER_FIELD(suffix, display, tag_char, getter_char,              \
+                          taglib_num)                                          \
     ASSERT(ncm_tag_type_format_char(CAT(TAG_, suffix))          \
            == tag_char);                                                     \
     name_len = ncm_tag_type_parser_name_len(CAT(TAG_, suffix),  \

@@ -21,10 +21,10 @@ typedef struct TaglibPropertyMap {
 static bool ncm_taglib_is_initialized;
 
 static TaglibPropertyMap ncm_taglib_properties[] = {
-#define TAGLIB_PROPERTY_MAP(suffix, display, tag_char, getter_char,     \
-                                flags)                                      \
-    {                                                                       \
-        .tag = CAT(TAG_, suffix),                                       \
+#define TAGLIB_PROPERTY_MAP(suffix, display, tag_char, getter_char,           \
+                            taglib_num)                                      \
+    {                                                                          \
+        .tag = CAT(TAG_, suffix),                                              \
     },
 
     TAG_DEFS(TAGLIB_PROPERTY_MAP)
