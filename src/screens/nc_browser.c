@@ -943,7 +943,7 @@ browser_song_name_sort_view(NcmMpdItem *item) {
     StringView view;
 
     ncm_string_view_clear(&view);
-    ncm_song_has_name_view(ncm_mpd_item_song(item), 0, &view);
+    ncm_song_has_filename_view(ncm_mpd_item_song(item), 0, &view);
     return view;
 }
 

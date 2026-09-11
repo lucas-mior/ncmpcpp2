@@ -445,7 +445,7 @@ mutable_song_load_originals_from_song(MutableSong *dest, NcmSong *source) {
     } else {
         stupid_string_set(&dest->directory, &dest->directory_len, "", 0);
     }
-    if (ncm_song_has_name_view(source, 0, &view)) {
+    if (ncm_song_has_filename_view(source, 0, &view)) {
         stupid_string_set(&dest->name, &dest->name_len, view.data, view.len);
     } else {
         stupid_string_set(&dest->name, &dest->name_len, "", 0);

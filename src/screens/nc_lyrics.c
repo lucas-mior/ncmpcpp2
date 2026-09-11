@@ -116,7 +116,7 @@ lyrics_title_callback(NcScreen *screen) {
         SB_APPEND(&song_title, artist_view.data, artist_view.len);
         SB_APPEND(&song_title, " - ");
         SB_APPEND(&song_title, title_view.data, title_view.len);
-    } else if (ncm_song_has_name_view(&lyrics->song, 0, &name_view)) {
+    } else if (ncm_song_has_filename_view(&lyrics->song, 0, &name_view)) {
         SB_APPEND(&song_title, name_view.data, name_view.len);
     }
     if (song_title.len <= 0) {
@@ -488,7 +488,7 @@ lyrics_song_artist_title(NcmSong *song, StrBuilder *artist, StrBuilder *title) {
         return true;
     }
 
-    if (ncm_song_has_name_view(song, 0, &name_view)) {
+    if (ncm_song_has_filename_view(song, 0, &name_view)) {
         SB_APPEND(&fallback, name_view.data, name_view.len);
     } else if (ncm_song_has_uri_view(song, 0, &name_view)) {
         SB_APPEND(&fallback, name_view.data, name_view.len);

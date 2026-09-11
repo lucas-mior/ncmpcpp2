@@ -999,6 +999,8 @@ test_tag_type_names(void) {
     TAG_DEFS(TEST_TAG_TYPE_NAME)
 
 #undef TEST_TAG_TYPE_NAME
+    ASSERT(TAG_parse(STRLIT("name")) == TAG_COUNT);
+    ASSERT(TAG_parse(STRLIT("filename")) == TAG_COUNT);
     return;
 }
 
@@ -1023,9 +1025,8 @@ test_writable_tag_metadata(void) {
     ASSERT(ncm_writable_tag_at(NCM_WRITABLE_TAG_COUNT) == TAG_UNKNOWN);
     ASSERT(ncm_char_to_tag_type('x') == TAG_UNKNOWN);
     ASSERT(!ncm_tag_type_is_writable(TAG_UNKNOWN));
-    ASSERT(!ncm_tag_type_is_writable(TAG_NAME));
-    ASSERT(ncm_tag_type_to_song_getter(TAG_NAME) == SONG_GETTER_NONE);
-    ASSERT(ncm_tag_type_format_char(TAG_NAME) == '\0');
+    ASSERT(ncm_tag_type_to_song_getter(TAG_UNKNOWN) == SONG_GETTER_NONE);
+    ASSERT(ncm_tag_type_format_char(TAG_UNKNOWN) == '\0');
     return;
 }
 
@@ -1135,7 +1136,7 @@ test_taglib_metadata(void) {
                                            buffer, LENGTH(buffer));
     ASSERT_EQUAL(buffer, len, "DISCNUMBER");
 
-    ASSERT(ncm_tag_type_taglib_property_len(TAG_NAME,
+    ASSERT(ncm_tag_type_taglib_property_len(TAG_UNKNOWN,
                                             buffer, LENGTH(buffer)) < 0);
     return;
 }
@@ -1146,6 +1147,7 @@ test_search_constraint_metadata(void) {
     int32 idx = 1;
 
     metadata = search_constraint_metadata(0);
+    ASSERT(metadata->kind == SEARCH_CONSTRAINT_ANY);
     ASSERT(metadata->tag == TAG_UNKNOWN);
     ASSERT_EQUAL(metadata->name, metadata->name_len, "Any");
     ASSERT(metadata->name_len == strlen32(metadata->name));
@@ -1153,16 +1155,39 @@ test_search_constraint_metadata(void) {
 #define TEST_SEARCH_CONSTRAINT(suffix, display, tag_char, getter_char,     \
                                flags)                                       \
     metadata = search_constraint_metadata(idx);                              \
-    ASSERT(metadata->tag == CAT(TAG_, suffix));                          \
+    ASSERT(metadata->kind == SEARCH_CONSTRAINT_TAG);                         \
+    ASSERT(metadata->tag == CAT(TAG_, suffix));                              \
     ASSERT_EQUAL(metadata->name, metadata->name_len,                         \
-                 TAG_DISPLAY_NAME(display));                             \
+                 TAG_DISPLAY_NAME(display));                                 \
     ASSERT(metadata->name_len == strlen32(metadata->name));                  \
     idx += 1;
 
     TAG_SEARCH_DEFS(TEST_SEARCH_CONSTRAINT)
 
 #undef TEST_SEARCH_CONSTRAINT
+    metadata = search_constraint_metadata(idx);
+    ASSERT(metadata->kind == SEARCH_CONSTRAINT_FILENAME);
+    ASSERT(metadata->tag == TAG_UNKNOWN);
+    ASSERT_EQUAL(metadata->name, metadata->name_len, "Filename");
+    idx += 1;
+
     ASSERT(idx == SEARCH_ENGINE_CONSTRAINT_COUNT);
+    return;
+}
+
+static void
+test_song_filename_is_uri_derived(void) {
+    NcmSong song = {0};
+    StringView filename;
+
+    ASSERT_ZERO(ncm_song_set_uri(&song, STRLIT("Album/file.flac")));
+    ASSERT_ZERO(ncm_song_add_property(&song, STRLIT("Name"),
+                                      STRLIT("MPD stream name")));
+    ASSERT(ncm_song_has_filename_view(&song, 0, &filename));
+    ASSERT_EQUAL(filename.data, filename.len, "file.flac");
+    ASSERT(!ncm_song_has_filename_view(&song, 1, &filename));
+
+    ncm_song_destroy(&song);
     return;
 }
 
@@ -1240,6 +1265,7 @@ main(void) {
     test_media_library_grouping_tag_settings_parse();
     test_taglib_metadata();
     test_search_constraint_metadata();
+    test_song_filename_is_uri_derived();
     test_song_info_tag_metadata();
     test_tag_edit_parser_metadata();
 

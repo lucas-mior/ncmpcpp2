@@ -24,27 +24,42 @@ search_engine_tag_item_song(void *item) {
     return &row->song;
 }
 
+enum SearchConstraintKind {
+    SEARCH_CONSTRAINT_ANY,
+    SEARCH_CONSTRAINT_TAG,
+    SEARCH_CONSTRAINT_FILENAME,
+};
+
 typedef struct SearchConstraintMetadata {
     char *name;
     int32 name_len;
+    enum SearchConstraintKind kind;
     enum TagType tag;
 } SearchConstraintMetadata;
 
 #define SEARCH_CONSTRAINT_TAG_ENTRY(suffix, display, tag_char, getter_char, \
                                     flags)                                   \
     {                                                                         \
-        .name = TAG_DISPLAY_NAME(display),                                \
-        .name_len = TAG_DISPLAY_NAME_LEN(display),                        \
-        .tag = CAT(TAG_, suffix),                                         \
+        .name = TAG_DISPLAY_NAME(display),                                    \
+        .name_len = TAG_DISPLAY_NAME_LEN(display),                            \
+        .kind = SEARCH_CONSTRAINT_TAG,                                        \
+        .tag = CAT(TAG_, suffix),                                             \
     },
 
 static SearchConstraintMetadata search_constraints[] = {
     {
         .name = "Any",
         .name_len = STRLIT_LEN("Any"),
+        .kind = SEARCH_CONSTRAINT_ANY,
         .tag = TAG_UNKNOWN,
     },
     TAG_SEARCH_DEFS(SEARCH_CONSTRAINT_TAG_ENTRY)
+    {
+        .name = "Filename",
+        .name_len = STRLIT_LEN("Filename"),
+        .kind = SEARCH_CONSTRAINT_FILENAME,
+        .tag = TAG_UNKNOWN,
+    },
 };
 
 #undef SEARCH_CONSTRAINT_TAG_ENTRY
@@ -1006,21 +1021,21 @@ search_compile_regex(NcmRegex *regex, StrBuilder *constraint,
 static bool
 search_song_has_field_view(NcmSong *song, int32 field, StringView *view) {
     SearchConstraintMetadata *metadata;
-    enum TagType tag;
 
     if ((field <= 0) || (field >= SEARCH_ENGINE_CONSTRAINT_COUNT)) {
         return false;
     }
 
     metadata = search_constraint_metadata(field);
-    tag = metadata->tag;
-    if (tag == TAG_NAME) {
-        return ncm_song_has_name_view(song, 0, view);
-    }
-    if (tag == TAG_UNKNOWN) {
+    switch (metadata->kind) {
+    case SEARCH_CONSTRAINT_TAG:
+        return ncm_song_has_tag_view(song, metadata->tag, 0, view);
+    case SEARCH_CONSTRAINT_FILENAME:
+        return ncm_song_has_filename_view(song, 0, view);
+    case SEARCH_CONSTRAINT_ANY:
+    default:
         return false;
     }
-    return ncm_song_has_tag_view(song, tag, 0, view);
 }
 
 static bool
@@ -1104,24 +1119,27 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                      && (constraint_status == 0);
                  i += 1) {
                 SearchConstraintMetadata *metadata;
-                enum TagType tag;
 
                 constraint = &screen->constraints[i];
                 if (constraint->len <= 0) {
                     continue;
                 }
                 metadata = search_constraint_metadata(i);
-                tag = metadata->tag;
-                if (tag == TAG_NAME) {
-                    constraint_status =
-                        ncm_mpd_client_add_search_uri(client, constraint->data,
-                                                      ncm_error);
-                    continue;
+                switch (metadata->kind) {
+                case SEARCH_CONSTRAINT_TAG:
+                    constraint_status = ncm_mpd_client_add_search_tag(
+                        client, metadata->tag, constraint->data, ncm_error);
+                    break;
+                case SEARCH_CONSTRAINT_FILENAME:
+                    constraint_status = ncm_mpd_client_add_search_uri(
+                        client, constraint->data, ncm_error);
+                    break;
+                case SEARCH_CONSTRAINT_ANY:
+                default:
+                    constraint_status = ncm_error_set_status(
+                        ncm_error, -EINVAL, STRLIT("invalid search field"));
+                    break;
                 }
-                ASSERT(tag != TAG_UNKNOWN);
-                constraint_status =
-                    ncm_mpd_client_add_search_tag(client, tag, constraint->data,
-                                                  ncm_error);
             }
             status = constraint_status;
         }
