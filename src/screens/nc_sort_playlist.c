@@ -303,7 +303,7 @@ sort_dialog_add_sort_getter_row(SortPlaylistDialog *dialog,
 static void
 sort_dialog_populate_defaults(SortPlaylistDialog *dialog) {
     nc_menu_clear_items(nc_editor_sort_menu_base(&dialog->rows));
-    TAG_DEFAULT_ORDER_DEFS(SORT_DIALOG_ADD_TAG_ROW)
+    TAG_FIELD_DEFS(SORT_DIALOG_ADD_TAG_ROW)
     sort_dialog_add_sort_getter_row(dialog, SONG_GETTER_URI);
     nc_editor_sort_menu_add_separator(&dialog->rows);
     sort_dialog_add_row(dialog, STRLIT("Sort"), SONG_GETTER_NONE,
