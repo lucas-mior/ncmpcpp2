@@ -1335,9 +1335,8 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
     screen->constraints_locked =
         Config.block_search_constraints_change_if_items_found;
     menu = search_engine_screen_menu(screen);
-    if (nc_menu_all_item_count(menu)
-        > (int32)SEARCH_ENGINE_SEARCH_BUTTON_ROW) {
-        for (uint32 i = 0; i <= SEARCH_ENGINE_SEARCH_BUTTON_ROW; i += 1) {
+    if (nc_menu_all_item_count(menu) > SEARCH_ENGINE_SEARCH_BUTTON_ROW) {
+        for (int32 i = 0; i <= SEARCH_ENGINE_SEARCH_BUTTON_ROW; i += 1) {
             uint32 flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
 
             if (screen->constraints_locked) {
