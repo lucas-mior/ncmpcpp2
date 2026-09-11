@@ -1363,6 +1363,7 @@ static void
 tag_edit_switch_to(NcScreen *screen) {
     nc_screen_switcher_finish_switch(screen);
     ncm_title_draw_header(STRLIT("Tag editor"));
+    tag_edit_refresh(screen);
     return;
 }
 
