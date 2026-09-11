@@ -146,111 +146,17 @@ ncm_song_getter_to_tag_type(enum SongGetter getter) {
     }
 }
 
-enum TagsField
-ncm_tags_field_from_tag_type(enum TagType tag) {
-    switch (tag) {
-#define TAG_TO_FIELD_CASE(suffix, display, tag_char, getter_char,    \
-                              flags)                                         \
-    case CAT(TAG_, suffix):                                               \
-        return CAT(TAGS_FIELD_, suffix);
-
-    TAG_FIELD_DEFS(TAG_TO_FIELD_CASE)
-
-#undef TAG_TO_FIELD_CASE
-    case TAG_UNKNOWN:
-    case TAG_NAME:
-    case TAG_MUSICBRAINZ_ARTISTID:
-    case TAG_MUSICBRAINZ_ALBUMID:
-    case TAG_MUSICBRAINZ_ALBUMARTISTID:
-    case TAG_MUSICBRAINZ_TRACKID:
-    case TAG_MUSICBRAINZ_RELEASETRACKID:
-    case TAG_ORIGINAL_DATE:
-    case TAG_ARTIST_SORT:
-    case TAG_ALBUM_ARTIST_SORT:
-    case TAG_ALBUM_SORT:
-    case TAG_LABEL:
-    case TAG_MUSICBRAINZ_WORKID:
-    case TAG_GROUPING:
-    case TAG_WORK:
-    case TAG_CONDUCTOR:
-    case TAG_COMPOSER_SORT:
-    case TAG_ENSEMBLE:
-    case TAG_MOVEMENT:
-    case TAG_MOVEMENTNUMBER:
-    case TAG_LOCATION:
-    case TAG_MOOD:
-    case TAG_TITLE_SORT:
-    case TAG_MUSICBRAINZ_RELEASEGROUPID:
-    case TAG_SHOWMOVEMENT:
-    case TAG_DISCSUBTITLE:
-    case TAG_COUNT:
-    default:
-        return TAGS_FIELD_COUNT;
-    }
-}
-
-enum TagsField
-ncm_tags_field_from_char(char c) {
-    return ncm_tags_field_from_tag_type(ncm_char_to_tag_type(c));
-}
-
-enum TagType
-ncm_tags_field_to_tag_type(enum TagsField field) {
-    switch (field) {
-#define NCM_FIELD_TO_TAG_CASE(suffix, display, tag_char, getter_char,    \
-                              flags)                                         \
-    case CAT(TAGS_FIELD_, suffix):                                        \
-        return CAT(TAG_, suffix);
-
-    TAG_FIELD_DEFS(NCM_FIELD_TO_TAG_CASE)
-
-#undef NCM_FIELD_TO_TAG_CASE
-    case TAGS_FIELD_COUNT:
-    default:
-        return TAG_UNKNOWN;
-    }
-}
-
 enum SongGetter
-ncm_tags_field_to_song_getter(enum TagsField field) {
-    switch (field) {
-#define NCM_FIELD_TO_GETTER_CASE(suffix, display, tag_char, getter_char, \
-                                 flags)                                      \
-    case CAT(TAGS_FIELD_, suffix):                                        \
-        return CAT(SONG_GETTER_, suffix);
-
-    TAG_FIELD_DEFS(NCM_FIELD_TO_GETTER_CASE)
-
-#undef NCM_FIELD_TO_GETTER_CASE
-    case TAGS_FIELD_COUNT:
-    default:
-        return SONG_GETTER_NONE;
+ncm_tag_type_to_song_getter(enum TagType tag) {
+#define NCM_TAG_TO_GETTER_IF(suffix, display, tag_char, getter_char, flags)   \
+    if (tag == CAT(TAG_, suffix)) {                                           \
+        return CAT(SONG_GETTER_, suffix);                                     \
     }
-}
 
-enum TagsField
-ncm_song_getter_to_tags_field(enum SongGetter getter) {
-    switch (getter) {
-#define NCM_GETTER_TO_FIELD_CASE(suffix, display, tag_char, getter_char, \
-                                 flags)                                      \
-    case CAT(SONG_GETTER_, suffix):                                           \
-        return CAT(TAGS_FIELD_, suffix);
+    TAG_FIELD_DEFS(NCM_TAG_TO_GETTER_IF)
 
-    TAG_FIELD_DEFS(NCM_GETTER_TO_FIELD_CASE)
-
-#undef NCM_GETTER_TO_FIELD_CASE
-    case SONG_GETTER_TRACK_NUMBER:
-        return TAGS_FIELD_TRACK;
-    case SONG_GETTER_NONE:
-    case SONG_GETTER_LENGTH:
-    case SONG_GETTER_DIRECTORY:
-    case SONG_GETTER_NAME:
-    case SONG_GETTER_URI:
-    case SONG_GETTER_PRIORITY:
-    case SONG_GETTER_COUNT:
-    default:
-        return TAGS_FIELD_COUNT;
-    }
+#undef NCM_TAG_TO_GETTER_IF
+    return SONG_GETTER_NONE;
 }
 
 #endif /* NCM_TYPE_CONVERSIONS_C */

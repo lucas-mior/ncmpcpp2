@@ -1003,35 +1003,29 @@ test_tag_type_names(void) {
 }
 
 static void
-test_tag_char_and_field_conversions(void) {
-#define TEST_FIELD_CONVERSION(suffix, display, tag_char, getter_char,      \
-                              flags)                                         \
-    ASSERT(ncm_char_to_tag_type(tag_char) == CAT(TAG_, suffix));         \
-    ASSERT(ncm_tags_field_from_char(tag_char)                                \
-           == CAT(TAGS_FIELD_, suffix));                                 \
-    ASSERT(ncm_tags_field_from_tag_type(CAT(TAG_, suffix))               \
-           == CAT(TAGS_FIELD_, suffix));                                 \
-    ASSERT(ncm_tags_field_to_tag_type(CAT(TAGS_FIELD_, suffix))          \
-           == CAT(TAG_, suffix));                                        \
-    ASSERT(ncm_tags_field_to_song_getter(CAT(TAGS_FIELD_, suffix))       \
+test_writable_tag_metadata(void) {
+    int32 idx = 0;
+
+#define TEST_WRITABLE_TAG(suffix, display, tag_char, getter_char, flags)     \
+    ASSERT(ncm_char_to_tag_type(tag_char) == CAT(TAG_, suffix));             \
+    ASSERT(ncm_tag_type_is_writable(CAT(TAG_, suffix)));                     \
+    ASSERT(ncm_writable_tag_at(idx) == CAT(TAG_, suffix));                   \
+    ASSERT(ncm_tag_type_to_song_getter(CAT(TAG_, suffix))                    \
            == CAT(SONG_GETTER_, suffix));                                    \
-    ASSERT(ncm_song_getter_to_tags_field(CAT(SONG_GETTER_, suffix))          \
-           == CAT(TAGS_FIELD_, suffix));                                 \
-    ASSERT(ncm_tags_field_format_char(CAT(TAGS_FIELD_, suffix))          \
-           == tag_char);
+    ASSERT(ncm_tag_type_format_char(CAT(TAG_, suffix)) == tag_char);          \
+    idx += 1;
 
-    TAG_FIELD_DEFS(TEST_FIELD_CONVERSION)
+    TAG_FIELD_DEFS(TEST_WRITABLE_TAG)
 
-#undef TEST_FIELD_CONVERSION
+#undef TEST_WRITABLE_TAG
+    ASSERT(idx == NCM_WRITABLE_TAG_COUNT);
+    ASSERT(ncm_writable_tag_at(-1) == TAG_UNKNOWN);
+    ASSERT(ncm_writable_tag_at(NCM_WRITABLE_TAG_COUNT) == TAG_UNKNOWN);
     ASSERT(ncm_char_to_tag_type('x') == TAG_UNKNOWN);
-    ASSERT(ncm_tags_field_from_char('x') == TAGS_FIELD_COUNT);
-    ASSERT(ncm_tags_field_from_tag_type(TAG_NAME) == TAGS_FIELD_COUNT);
-    ASSERT(ncm_tags_field_to_tag_type(TAGS_FIELD_COUNT)
-           == TAG_UNKNOWN);
-    ASSERT(ncm_tags_field_to_song_getter(TAGS_FIELD_COUNT)
-           == SONG_GETTER_NONE);
-    ASSERT(ncm_song_getter_to_tags_field(SONG_GETTER_NONE)
-           == TAGS_FIELD_COUNT);
+    ASSERT(!ncm_tag_type_is_writable(TAG_UNKNOWN));
+    ASSERT(!ncm_tag_type_is_writable(TAG_NAME));
+    ASSERT(ncm_tag_type_to_song_getter(TAG_NAME) == SONG_GETTER_NONE);
+    ASSERT(ncm_tag_type_format_char(TAG_NAME) == '\0');
     return;
 }
 
@@ -1141,14 +1135,12 @@ test_taglib_metadata(void) {
                                        buffer, LENGTH(buffer));
     ASSERT_EQUAL(buffer, len, "Track");
 
-    len = ncm_tags_field_taglib_property_len(TAGS_FIELD_DISC,
-                                             buffer, LENGTH(buffer));
+    len = ncm_tag_type_taglib_property_len(TAG_DISC,
+                                           buffer, LENGTH(buffer));
     ASSERT_EQUAL(buffer, len, "DISCNUMBER");
 
     ASSERT(ncm_tag_type_taglib_property_len(TAG_NAME,
                                             buffer, LENGTH(buffer)) < 0);
-    ASSERT(ncm_tags_field_taglib_property_len(TAGS_FIELD_COUNT,
-                                              buffer, LENGTH(buffer)) < 0);
     return;
 }
 
@@ -1188,7 +1180,7 @@ test_song_info_tag_metadata(void) {
                  TAG_DISPLAY_NAME(display));                             \
     ASSERT(ncm_song_info_tags[idx].name_len                                  \
            == TAG_DISPLAY_NAME_LEN(display));                            \
-    ASSERT(ncm_song_info_tags[idx].field == CAT(TAGS_FIELD_, suffix));   \
+    ASSERT(ncm_song_info_tags[idx].tag == CAT(TAG_, suffix));   \
     ASSERT(ncm_song_info_tags[idx].get == CAT(SONG_GETTER_, suffix));        \
     idx += 1;
 
@@ -1198,7 +1190,7 @@ test_song_info_tag_metadata(void) {
     ASSERT(idx == NCM_SONG_INFO_TAG_COUNT);
     ASSERT(ncm_song_info_tags[idx].name == NULL);
     ASSERT(ncm_song_info_tags[idx].name_len == 0);
-    ASSERT(ncm_song_info_tags[idx].field == TAGS_FIELD_COUNT);
+    ASSERT(ncm_song_info_tags[idx].tag == TAG_UNKNOWN);
     ASSERT(ncm_song_info_tags[idx].get == SONG_GETTER_NONE);
     return;
 }
@@ -1211,13 +1203,13 @@ test_tag_edit_parser_metadata(void) {
     int32 idx = 0;
 
 #define TEST_PARSER_FIELD(suffix, display, tag_char, getter_char, flags)  \
-    ASSERT(ncm_tags_field_format_char(CAT(TAGS_FIELD_, suffix))          \
+    ASSERT(ncm_tag_type_format_char(CAT(TAG_, suffix))          \
            == tag_char);                                                     \
-    name_len = ncm_tags_field_parser_name_len(CAT(TAGS_FIELD_, suffix),  \
+    name_len = ncm_tag_type_parser_name_len(CAT(TAG_, suffix),  \
                                               &name);                        \
     ASSERT(name_len > 0);                                                     \
     tag_edit_append_parser_legend_field(&legend,                             \
-                                        CAT(TAGS_FIELD_, suffix));       \
+                                        CAT(TAG_, suffix));       \
     idx += 1;
 
     TAG_DEFAULT_ORDER_DEFS(TEST_PARSER_FIELD)
@@ -1247,7 +1239,7 @@ main(void) {
 
     test_tag_name_normalization();
     test_tag_type_names();
-    test_tag_char_and_field_conversions();
+    test_writable_tag_metadata();
     test_song_getter_conversions();
     test_primary_tag_settings_parse();
     test_taglib_metadata();

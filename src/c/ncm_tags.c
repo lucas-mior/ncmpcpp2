@@ -9,7 +9,7 @@
 int32
 ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
                char *directory, char *new_name,
-               TagsGetFieldCallback *callback, void *user) {
+               TagsGetTagCallback *callback, void *user) {
     TaglibFile file = {0};
     char *old_path;
     char *new_path;
@@ -66,12 +66,12 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
         return status;
     }
 
-    for (uint32 i = 0; i < TAGS_FIELD_COUNT; i += 1) {
-        enum TagsField field = (enum TagsField)i;
+    for (int32 i = 0; i < NCM_WRITABLE_TAG_COUNT; i += 1) {
+        enum TagType tag = ncm_writable_tag_at(i);
         int32 property_len;
 
-        property_len = ncm_tags_field_taglib_property_len(
-            field, property, LENGTH(property));
+        property_len = ncm_tag_type_taglib_property_len(
+            tag, property, LENGTH(property));
         ASSERT(property_len > 0);
 
         if ((status = ncm_taglib_clear_property(&file, property)) < 0) {
@@ -82,7 +82,7 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
         for (int32 value_i = 0; ; value_i += 1) {
             StringView value = {0};
 
-            if (!callback(field, value_i, &value, user)) {
+            if (!callback(tag, value_i, &value, user)) {
                 break;
             }
             if (value.data == NULL) {
