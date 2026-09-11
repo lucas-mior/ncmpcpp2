@@ -73,6 +73,25 @@ ncm_song_tag_destroy(NcmSongTag *tag) {
 }
 
 static void
+ncm_song_property_init(NcmSongProperty *property) {
+    property->name = NULL;
+    property->value = NULL;
+    property->name_len = 0;
+    property->value_len = 0;
+    return;
+}
+
+static void
+ncm_song_property_destroy(NcmSongProperty *property) {
+    ASSERT(property != NULL);
+
+    free2(property->name, property->name_len + 1);
+    free2(property->value, property->value_len + 1);
+    ncm_song_property_init(property);
+    return;
+}
+
+static void
 ncm_song_grow_tags(NcmSong *song) {
     int32 old_cap;
     int32 new_cap;
@@ -97,12 +116,42 @@ ncm_song_grow_tags(NcmSong *song) {
 }
 
 static void
+ncm_song_grow_properties(NcmSong *song) {
+    int32 old_cap;
+    int32 new_cap;
+
+    if (song->properties_len < song->properties_cap) {
+        return;
+    }
+
+    old_cap = song->properties_cap;
+    if (old_cap <= 0) {
+        new_cap = 8;
+    } else {
+        new_cap = old_cap*2;
+    }
+
+    song->properties = realloc2(song->properties, old_cap, new_cap,
+                                SIZEOF(*song->properties));
+    for (int32 i = old_cap; i < new_cap; i += 1) {
+        ncm_song_property_init(&song->properties[i]);
+    }
+    song->properties_cap = new_cap;
+    return;
+}
+
+static void
 ncm_song_destroy_unchecked(NcmSong *song) {
     free2(song->uri, song->uri_len + 1);
     for (int32 i = 0; i < song->tags_len; i += 1) {
         ncm_song_tag_destroy(&song->tags[i]);
     }
+    for (int32 i = 0; i < song->properties_len; i += 1) {
+        ncm_song_property_destroy(&song->properties[i]);
+    }
     free2(song->tags, song->tags_cap*SIZEOF(*song->tags));
+    free2(song->properties,
+          song->properties_cap*SIZEOF(*song->properties));
 
     *song = (NcmSong){0};
     return;
@@ -137,6 +186,28 @@ ncm_song_add_tag_unchecked(NcmSong *song, enum TagType type,
     memcpy64(tag->value, value, value_len);
     tag->value[value_len] = '\0';
     song->tags_len += 1;
+    return;
+}
+
+static void
+ncm_song_add_property_unchecked(NcmSong *song,
+                                char *name, int32 name_len,
+                                char *value, int32 value_len) {
+    NcmSongProperty *property;
+
+    ncm_song_grow_properties(song);
+
+    property = &song->properties[song->properties_len];
+    ncm_song_property_destroy(property);
+    property->name = malloc2(name_len + 1);
+    property->value = malloc2(value_len + 1);
+    property->name_len = name_len;
+    property->value_len = value_len;
+    memcpy64(property->name, name, name_len);
+    memcpy64(property->value, value, value_len);
+    property->name[name_len] = '\0';
+    property->value[value_len] = '\0';
+    song->properties_len += 1;
     return;
 }
 
@@ -187,6 +258,13 @@ ncm_song_copy(NcmSong *dest, NcmSong *source) {
         ncm_song_add_tag_unchecked(&replacement, tag->type,
                                    tag->value, tag->value_len);
     }
+    for (int32 i = 0; i < source->properties_len; i += 1) {
+        NcmSongProperty *property = &source->properties[i];
+
+        ncm_song_add_property_unchecked(&replacement,
+                                        property->name, property->name_len,
+                                        property->value, property->value_len);
+    }
 
     replacement.duration = source->duration;
     replacement.position = source->position;
@@ -232,6 +310,23 @@ ncm_song_add_tag(NcmSong *song, enum TagType type,
     }
 
     ncm_song_add_tag_unchecked(song, type, value, value_len);
+    return 0;
+}
+
+int32
+ncm_song_add_property(NcmSong *song, char *name, int32 name_len,
+                      char *value, int32 value_len) {
+    if (song == NULL) {
+        return -EINVAL;
+    }
+    if ((name == NULL) || (name_len <= 0)) {
+        return -EINVAL;
+    }
+    if ((value == NULL) || (value_len < 0)) {
+        return -EINVAL;
+    }
+
+    ncm_song_add_property_unchecked(song, name, name_len, value, value_len);
     return 0;
 }
 

@@ -46,36 +46,6 @@
 #define TAG_SEARCH_MPD_DECLS(XX)                                               \
   TAG_SEARCH_MPD(XX, NAME, Filename)
 
-#define TAG_EXTENDED_DECLS(XX)                                                 \
-  TAG_NON_DISP(XX, MUSICBRAINZ_ARTISTID, Musicbrainz Artist Id)                \
-  TAG_NON_DISP(XX, MUSICBRAINZ_ALBUMID, Musicbrainz Album Id)                  \
-  TAG_NON_DISP(XX, MUSICBRAINZ_ALBUMARTISTID, Musicbrainz Album Artist Id)     \
-  TAG_NON_DISP(XX, MUSICBRAINZ_TRACKID,  Musicbrainz Track Id)                 \
-  TAG_NON_DISP(XX, MUSICBRAINZ_RELEASETRACKID, Musicbrainz Release Track Id)   \
-  TAG_NON_DISP(XX, ORIGINAL_DATE, Original Date)                               \
-  TAG_NON_DISP(XX, ARTIST_SORT, Artist Sort)                                   \
-  TAG_NON_DISP(XX, ALBUM_ARTIST_SORT, Album Artist Sort)                       \
-  TAG_NON_DISP(XX, ALBUM_SORT, Album Sort)                                     \
-  TAG_NON_DISP(XX, LABEL, Label)                                               \
-  TAG_NON_DISP(XX, MUSICBRAINZ_WORKID, Musicbrainz Work Id)                    \
-  TAG_NON_DISP(XX, GROUPING, Grouping)                                         \
-  TAG_NON_DISP(XX, WORK, Work)                                                 \
-  TAG_NON_DISP(XX, CONDUCTOR, Conductor)                                       \
-  TAG_NON_DISP(XX, COMPOSER_SORT, Composer Sort)                               \
-  TAG_NON_DISP(XX, ENSEMBLE, Ensemble)                                         \
-  TAG_NON_DISP(XX, MOVEMENT, Movement)                                         \
-  TAG_NON_DISP(XX, MOVEMENTNUMBER, Movement Number)                            \
-  TAG_NON_DISP(XX, LOCATION, Location)                                         \
-  TAG_NON_DISP(XX, MOOD, Mood)                                                 \
-  TAG_NON_DISP(XX, TITLE_SORT, Title Sort)                                     \
-  TAG_NON_DISP(XX, MUSICBRAINZ_RELEASEGROUPID, Musicbrainz Release Group Id)   \
-  TAG_NON_DISP(XX, SHOWMOVEMENT, Show Movement)                                \
-  TAG_NON_DISP(XX, DISCSUBTITLE, Disc Subtitle)
-
-#define TAG_NON_DISP_DECLS(XX)                                                 \
-  TAG_NON_DISP(XX, UNKNOWN, Unknown)                                           \
-  TAG_EXTENDED_DECLS(XX)
-
 #define TAG_DEFS(XX)                                                           \
   TAG_NON_DISP(XX, UNKNOWN, Unknown)                                           \
   TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                                       \
@@ -89,8 +59,7 @@
   TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                                   \
   TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                                 \
   TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')                                     \
-  TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                                  \
-  TAG_EXTENDED_DECLS(XX)
+  TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')
 
 #define TAG_FIELD_DEFS(XX)                                                     \
   TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                                       \

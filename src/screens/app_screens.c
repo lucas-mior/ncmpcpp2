@@ -1111,6 +1111,19 @@ append_song_tag(NcBuffer *buffer, StrBuilder *tag) {
 }
 
 static void
+append_song_info_tag(NcBuffer *buffer, char *name, int32 name_len,
+                     StrBuilder *value) {
+    append_format(buffer, NC_FORMAT_BOLD);
+    nc_buffer_append_data(buffer, STRLIT("\n"));
+    nc_buffer_append_data(buffer, name, name_len);
+    nc_buffer_append_data(buffer, STRLIT(":"));
+    append_format(buffer, NC_FORMAT_NO_BOLD);
+    nc_buffer_append_data(buffer, STRLIT(" "));
+    append_song_tag(buffer, value);
+    return;
+}
+
+static void
 append_song_key_value(NcBuffer *buffer, char *key, int32 key_len,
                       StrBuilder *value, bool empty_as_missing) {
     append_format(buffer, NC_FORMAT_BOLD);
@@ -1650,19 +1663,51 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
     }
 
     for (int32 i = 0; i < NCM_SONG_INFO_TAG_COUNT; i += 1) {
-        append_format(buffer, NC_FORMAT_BOLD);
-        nc_buffer_append_data(buffer, STRLIT("\n"));
-        nc_buffer_append_data(buffer, ncm_song_info_tags[i].name,
-                              ncm_song_info_tags[i].name_len);
-        nc_buffer_append_data(buffer, STRLIT(":"));
-        append_format(buffer, NC_FORMAT_NO_BOLD);
-        nc_buffer_append_data(buffer, STRLIT(" "));
         value = ncm_song_tags_buffer(&owner->song, ncm_song_info_tags[i].get,
                                      Config.tags_separator,
                                      Config.tags_separator_len,
                                      Config.show_duplicate_tags);
-        append_song_tag(buffer, &value);
+        append_song_info_tag(buffer, ncm_song_info_tags[i].name,
+                             ncm_song_info_tags[i].name_len, &value);
         sb_free(&value);
+    }
+
+    for (int32 i = 0; i < owner->song.properties_len; ) {
+        NcmSongProperty *property = &owner->song.properties[i];
+        StrBuilder properties = {0};
+        int32 next = i;
+
+        while ((next < owner->song.properties_len)
+               && STREQUAL(owner->song.properties[next].name,
+                           owner->song.properties[next].name_len,
+                           property->name, property->name_len)) {
+            NcmSongProperty *candidate = &owner->song.properties[next];
+            bool duplicate = false;
+
+            if (!Config.show_duplicate_tags) {
+                for (int32 j = i; j < next; j += 1) {
+                    if (STREQUAL(owner->song.properties[j].value,
+                                 owner->song.properties[j].value_len,
+                                 candidate->value, candidate->value_len)) {
+                        duplicate = true;
+                        break;
+                    }
+                }
+            }
+            if (!duplicate) {
+                if (properties.len > 0) {
+                    SB_APPEND(&properties, Config.tags_separator,
+                              Config.tags_separator_len);
+                }
+                SB_APPEND(&properties, candidate->value, candidate->value_len);
+            }
+            next += 1;
+        }
+
+        append_song_info_tag(buffer, property->name, property->name_len,
+                             &properties);
+        sb_free(&properties);
+        i = next;
     }
     return 1;
 }
