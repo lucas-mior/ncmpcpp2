@@ -97,26 +97,26 @@ ncm_char_to_tag_type(char c) {
 enum SongGetter
 ncm_song_getter_from_char(char c) {
     switch (c) {
-#define NCM_SONG_GETTER_NON_TAG_CHAR_CASE(getter, alias, getter_char)        \
+#define SONG_GETTER_NON_TAG_CHAR_CASE(getter, alias, getter_char)        \
     case getter_char:                                                         \
         return getter;
-#define NCM_SONG_GETTER_TAG_CHAR_CASE(suffix, display, tag_char,          \
+#define SONG_GETTER_TAG_CHAR_CASE(suffix, display, tag_char,          \
                                       getter_char, flags)                   \
     case getter_char:                                                         \
         return CAT(SONG_GETTER_, suffix);
 
-    NCM_SONG_GETTER_RECORD_LENGTH(NCM_SONG_GETTER_NON_TAG_CHAR_CASE)
-    NCM_SONG_GETTER_RECORD_DIRECTORY(NCM_SONG_GETTER_NON_TAG_CHAR_CASE)
-    NCM_SONG_GETTER_RECORD_NAME(NCM_SONG_GETTER_NON_TAG_CHAR_CASE)
-    NCM_SONG_GETTER_RECORD_URI(NCM_SONG_GETTER_NON_TAG_CHAR_CASE)
-    NCM_SONG_GETTER_TAG_HEAD_DEFS(NCM_SONG_GETTER_TAG_CHAR_CASE)
-    NCM_SONG_GETTER_RECORD_TRACK_NUMBER(
-        NCM_SONG_GETTER_NON_TAG_CHAR_CASE)
-    NCM_SONG_GETTER_TAG_TAIL_DEFS(NCM_SONG_GETTER_TAG_CHAR_CASE)
-    NCM_SONG_GETTER_RECORD_PRIORITY(NCM_SONG_GETTER_NON_TAG_CHAR_CASE)
+    SONG_GETTER_RECORD_LENGTH(SONG_GETTER_NON_TAG_CHAR_CASE)
+    SONG_GETTER_RECORD_DIRECTORY(SONG_GETTER_NON_TAG_CHAR_CASE)
+    SONG_GETTER_RECORD_NAME(SONG_GETTER_NON_TAG_CHAR_CASE)
+    SONG_GETTER_RECORD_URI(SONG_GETTER_NON_TAG_CHAR_CASE)
+    SONG_GETTER_TAG_HEAD_DEFS(SONG_GETTER_TAG_CHAR_CASE)
+    SONG_GETTER_RECORD_TRACK_NUMBER(
+        SONG_GETTER_NON_TAG_CHAR_CASE)
+    SONG_GETTER_TAG_TAIL_DEFS(SONG_GETTER_TAG_CHAR_CASE)
+    SONG_GETTER_RECORD_PRIORITY(SONG_GETTER_NON_TAG_CHAR_CASE)
 
-#undef NCM_SONG_GETTER_NON_TAG_CHAR_CASE
-#undef NCM_SONG_GETTER_TAG_CHAR_CASE
+#undef SONG_GETTER_NON_TAG_CHAR_CASE
+#undef SONG_GETTER_TAG_CHAR_CASE
     default:
         return SONG_GETTER_NONE;
     }
@@ -125,14 +125,14 @@ ncm_song_getter_from_char(char c) {
 enum TagType
 ncm_song_getter_to_tag_type(enum SongGetter getter) {
     switch (getter) {
-#define NCM_SONG_GETTER_TO_TAG_CASE(suffix, display, tag_char,          \
+#define SONG_GETTER_TO_TAG_CASE(suffix, display, tag_char,          \
                                     getter_char, flags)                     \
     case CAT(SONG_GETTER_, suffix):                                           \
         return CAT(TAG_, suffix);
 
-    NCM_SONG_GETTER_TAG_DEFS(NCM_SONG_GETTER_TO_TAG_CASE)
+    SONG_GETTER_TAG_DEFS(SONG_GETTER_TO_TAG_CASE)
 
-#undef NCM_SONG_GETTER_TO_TAG_CASE
+#undef SONG_GETTER_TO_TAG_CASE
     case SONG_GETTER_NONE:
     case SONG_GETTER_LENGTH:
     case SONG_GETTER_DIRECTORY:
