@@ -1212,10 +1212,10 @@ test_tag_edit_parser_metadata(void) {
                                         CAT(TAG_, suffix));       \
     idx += 1;
 
-    TAG_DEFAULT_ORDER_DEFS(TEST_PARSER_FIELD)
+    TAG_FIELD_DEFS(TEST_PARSER_FIELD)
 
 #undef TEST_PARSER_FIELD
-    ASSERT(idx == TAG_DEFAULT_ORDER_COUNT);
+    ASSERT(idx == NCM_WRITABLE_TAG_COUNT);
     ASSERT_EQUAL(legend.data, legend.len,
                  "%a - artist\n"
                  "%A - album artist\n"
