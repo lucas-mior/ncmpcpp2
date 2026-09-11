@@ -517,6 +517,8 @@ tag_edit_refresh_window(NcScreen *screen) {
     tag_edit_update_titles(editor, true);
     tag_edit_update_menu_highlights(editor);
     if (tag_edit_focus_is_parser_helper(editor->active_focus)) {
+        NcMenu *menu = nc_editor_string_menu_base(&editor->parser_actions);
+        tag_edit_refresh_menu(&editor->parser_window, menu);
         tag_edit_refresh_active_helper(editor);
         return;
     }
