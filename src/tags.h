@@ -28,44 +28,6 @@
 #define TAG_DISPLAY_NAME(DISP) #DISP
 #define TAG_DISPLAY_NAME_LEN(DISP) STRLIT_LEN(#DISP)
 
-#define TAG_ALIAS_UNKNOWN unknown
-#define TAG_ALIAS_ARTIST artist
-#define TAG_ALIAS_ALBUM album
-#define TAG_ALIAS_ALBUM_ARTIST album_artist
-#define TAG_ALIAS_TITLE title
-#define TAG_ALIAS_TRACK track
-#define TAG_ALIAS_NAME filename
-#define TAG_ALIAS_GENRE genre
-#define TAG_ALIAS_DATE date
-#define TAG_ALIAS_COMPOSER composer
-#define TAG_ALIAS_PERFORMER performer
-#define TAG_ALIAS_COMMENT comment
-#define TAG_ALIAS_DISC disc
-#define TAG_ALIAS_MUSICBRAINZ_ARTISTID musicbrainz_artist_id
-#define TAG_ALIAS_MUSICBRAINZ_ALBUMID musicbrainz_album_id
-#define TAG_ALIAS_MUSICBRAINZ_ALBUMARTISTID musicbrainz_album_artist_id
-#define TAG_ALIAS_MUSICBRAINZ_TRACKID musicbrainz_track_id
-#define TAG_ALIAS_MUSICBRAINZ_RELEASETRACKID musicbrainz_release_track_id
-#define TAG_ALIAS_ORIGINAL_DATE original_date
-#define TAG_ALIAS_ARTIST_SORT artist_sort
-#define TAG_ALIAS_ALBUM_ARTIST_SORT album_artist_sort
-#define TAG_ALIAS_ALBUM_SORT album_sort
-#define TAG_ALIAS_LABEL label
-#define TAG_ALIAS_MUSICBRAINZ_WORKID musicbrainz_work_id
-#define TAG_ALIAS_GROUPING grouping
-#define TAG_ALIAS_WORK work
-#define TAG_ALIAS_CONDUCTOR conductor
-#define TAG_ALIAS_COMPOSER_SORT composer_sort
-#define TAG_ALIAS_ENSEMBLE ensemble
-#define TAG_ALIAS_MOVEMENT movement
-#define TAG_ALIAS_MOVEMENTNUMBER movement_number
-#define TAG_ALIAS_LOCATION location
-#define TAG_ALIAS_MOOD mood
-#define TAG_ALIAS_TITLE_SORT title_sort
-#define TAG_ALIAS_MUSICBRAINZ_RELEASEGROUPID musicbrainz_release_group_id
-#define TAG_ALIAS_SHOWMOVEMENT show_movement
-#define TAG_ALIAS_DISCSUBTITLE disc_subtitle
-
 #define TAG_FIELD_MPD(XX, SUFFIX, DISP, CHAR)                  \
   XX(SUFFIX, DISP, CHAR, CHAR,                                 \
      TAG_FLAGS_FIELD_SEARCH|TAG_FLAG_MPD)
@@ -225,7 +187,7 @@ enum {
 #undef TAG_COUNT_RECORD
 
 #define TAG_TYPE_ENUM_FIELD(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)            \
-  XX(CAT(TAG_, SUFFIX), CAT(TAG_ALIAS_, SUFFIX))
+  XX(CAT(TAG_, SUFFIX), DISP)
 
 #define TAG_TYPE_ENUM_FIELDS                                                   \
   TAG_DEFS(TAG_TYPE_ENUM_FIELD)
@@ -321,24 +283,6 @@ enum {
 #include "cbase/xenums.c"
 
 static inline int32
-ncm_tag_type_canonical_name_len(enum TagType tag, char **out) {
-    switch (tag) {
-#define TAG_CANONICAL_NAME_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)        \
-    case CAT(TAG_, SUFFIX):                                                    \
-        *out = TAG_DISPLAY_NAME(DISP);                                         \
-        return TAG_DISPLAY_NAME_LEN(DISP);
-
-    TAG_DEFS(TAG_CANONICAL_NAME_CASE)
-
-#undef TAG_CANONICAL_NAME_CASE
-    case TAG_COUNT:
-    default:
-        *out = "";
-        return 0;
-    }
-}
-
-static inline int32
 ncm_tag_type_display_name_len(enum TagType tag, char **out) {
     switch (tag) {
 #define TAG_DISPLAY_NAME_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)          \
@@ -347,8 +291,7 @@ ncm_tag_type_display_name_len(enum TagType tag, char **out) {
             *out = "";                                                         \
             return 0;                                                          \
         }                                                                      \
-        *out = TAG_DISPLAY_NAME(DISP);                                         \
-        return TAG_DISPLAY_NAME_LEN(DISP);
+        return TAG_alias_len(tag, out);
 
     TAG_DEFS(TAG_DISPLAY_NAME_CASE)
 
@@ -397,9 +340,7 @@ ncm_tag_type_settings_name_len(enum TagType tag, char *out, int32 cap) {
         return -1;
     }
 
-    memcpy64(out, alias, alias_len + 1);
-    TAG_alias_free(alias);
-    return alias_len;
+    return ascii_normalize_lower_snake(out, alias, alias_len);
 }
 
 static inline bool
@@ -423,9 +364,6 @@ ncm_tag_type_parse_settings_name(char *value, int32 value_len,
     }
 
     parsed = TAG_parse(value, value_len);
-    if (!ncm_tag_type_is_primary(parsed)) {
-        parsed = TAG_parse(normalized, normalized_len);
-    }
     if (!ncm_tag_type_is_primary(parsed)) {
         return false;
     }
@@ -457,60 +395,24 @@ ncm_primary_tag_next(enum TagType tag) {
 }
 
 static inline int32
-ncm_song_getter_display_name_len(enum SongGetter getter, char **out) {
-    return SONG_GETTER_alias_len(getter, out);
-}
-
-static inline char *
-ncm_song_getter_display_name(enum SongGetter getter) {
-    return SONG_GETTER_alias(getter);
-}
-
-static inline int32
-ncm_song_getter_tag_name_len(enum SongGetter getter, char **out) {
-    switch (getter) {
-#define SONG_GETTER_TAG_NAME_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)      \
-    case CAT(SONG_GETTER_, SUFFIX):                                            \
-        *out = TAG_DISPLAY_NAME(DISP);                                         \
-        return TAG_DISPLAY_NAME_LEN(DISP);
-
-    SONG_GETTER_TAG_DEFS(SONG_GETTER_TAG_NAME_CASE)
-
-#undef SONG_GETTER_TAG_NAME_CASE
-    case SONG_GETTER_NONE:
-    case SONG_GETTER_LENGTH:
-    case SONG_GETTER_DIRECTORY:
-    case SONG_GETTER_NAME:
-    case SONG_GETTER_URI:
-    case SONG_GETTER_TRACK_NUMBER:
-    case SONG_GETTER_PRIORITY:
-    case SONG_GETTER_COUNT:
-    default:
-        *out = "";
-        return 0;
-    }
-}
-
-static inline int32
 ncm_song_getter_column_title_len(enum SongGetter getter, char **out) {
     switch (getter) {
     case SONG_GETTER_LENGTH:
         *out = "Time";
         return STRLIT_LEN("Time");
-    case SONG_GETTER_DIRECTORY:
-    case SONG_GETTER_NAME:
-    case SONG_GETTER_PRIORITY:
-        return ncm_song_getter_display_name_len(getter, out);
     case SONG_GETTER_URI:
         *out = "Filepath";
         return STRLIT_LEN("Filepath");
     case SONG_GETTER_TRACK_NUMBER:
         *out = "Track";
         return STRLIT_LEN("Track");
+    case SONG_GETTER_DIRECTORY:
+    case SONG_GETTER_NAME:
+    case SONG_GETTER_PRIORITY:
+        return SONG_GETTER_alias_len(getter, out);
 #define SONG_GETTER_TAG_TITLE_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)     \
     case CAT(SONG_GETTER_, SUFFIX):                                            \
-        *out = TAG_DISPLAY_NAME(DISP);                                         \
-        return TAG_DISPLAY_NAME_LEN(DISP);
+        return SONG_GETTER_alias_len(getter, out);
 
     SONG_GETTER_TAG_DEFS(SONG_GETTER_TAG_TITLE_CASE)
 
@@ -525,23 +427,34 @@ ncm_song_getter_column_title_len(enum SongGetter getter, char **out) {
 
 static inline int32
 ncm_song_getter_sort_label_len(enum SongGetter getter, char **out) {
-    int32 len;
+    switch (getter) {
+    case SONG_GETTER_URI:
+        return SONG_GETTER_alias_len(SONG_GETTER_NAME, out);
+#define SONG_GETTER_SORT_LABEL_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)    \
+    case CAT(SONG_GETTER_, SUFFIX):                                            \
+        return SONG_GETTER_alias_len(getter, out);
 
-    if (getter == SONG_GETTER_URI) {
-        return ncm_song_getter_display_name_len(SONG_GETTER_NAME, out);
+    SONG_GETTER_TAG_DEFS(SONG_GETTER_SORT_LABEL_CASE)
+
+#undef SONG_GETTER_SORT_LABEL_CASE
+    case SONG_GETTER_NONE:
+    case SONG_GETTER_LENGTH:
+    case SONG_GETTER_DIRECTORY:
+    case SONG_GETTER_NAME:
+    case SONG_GETTER_TRACK_NUMBER:
+    case SONG_GETTER_PRIORITY:
+    case SONG_GETTER_COUNT:
+    default:
+        *out = "";
+        return 0;
     }
-
-    len = ncm_song_getter_tag_name_len(getter, out);
-    if (len > 0) {
-        return len;
-    }
-
-    *out = "";
-    return 0;
 }
 
 static inline int32
 ncm_tag_type_taglib_property_len(enum TagType tag, char *out, int32 cap) {
+    char *alias;
+    bool append_number;
+    int32 alias_len;
     int32 result;
 
     ASSERT(out != NULL);
@@ -550,83 +463,97 @@ ncm_tag_type_taglib_property_len(enum TagType tag, char *out, int32 cap) {
     switch ((int32)tag) {
 #define TAGLIB_PROPERTY_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)           \
     case CAT(TAG_, SUFFIX):                                                    \
-        if (TAG_DISPLAY_NAME_LEN(DISP) >= cap) {                               \
-            out[0] = '\0';                                                     \
-            return -1;                                                         \
-        }                                                                      \
-        result = ascii_normalize_upper_compact(out,                            \
-                                               TAG_DISPLAY_NAME(DISP),         \
-                                               TAG_DISPLAY_NAME_LEN(DISP));    \
-        if (((FLAGS) & TAG_FLAG_TAGLIB_NUMBER) == 0) {                         \
-            return result;                                                     \
-        }                                                                      \
-        if (result + STRLIT_LEN("NUMBER") >= cap) {                            \
-            out[0] = '\0';                                                     \
-            return -1;                                                         \
-        }                                                                      \
-        memcpy64(out + result, STRLIT("NUMBER") + 1);                          \
-        return result + STRLIT_LEN("NUMBER");
+        append_number = ((FLAGS) & TAG_FLAG_TAGLIB_NUMBER) != 0;               \
+        break;
 
     TAGLIB_TAG_DEFS(TAGLIB_PROPERTY_CASE)
 
 #undef TAGLIB_PROPERTY_CASE
     case TAG_COUNT:
     default:
-        if (cap > 0) {
-            out[0] = '\0';
-        }
+        out[0] = '\0';
         return -1;
     }
+
+    alias_len = TAG_alias_len(tag, &alias);
+    if (alias_len >= cap) {
+        out[0] = '\0';
+        return -1;
+    }
+    result = ascii_normalize_upper_compact(out, alias, alias_len);
+    if (!append_number) {
+        return result;
+    }
+    if (result + STRLIT_LEN("NUMBER") >= cap) {
+        out[0] = '\0';
+        return -1;
+    }
+
+    memcpy64(out + result, STRLIT("NUMBER") + 1);
+    return result + STRLIT_LEN("NUMBER");
 }
 
 static inline int32
 ncm_tag_type_taglib_name_len(enum TagType tag, char *out, int32 cap) {
+    char *alias;
+    int32 alias_len;
+
     ASSERT(out != NULL);
     ASSERT_POSITIVE(cap);
 
     switch ((int32)tag) {
 #define TAGLIB_NAME_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)               \
     case CAT(TAG_, SUFFIX):                                                    \
-        if (TAG_DISPLAY_NAME_LEN(DISP) >= cap) {                               \
-            out[0] = '\0';                                                     \
-            return -1;                                                         \
-        }                                                                      \
-        return ascii_normalize_camel_compact(out,                              \
-                                             TAG_DISPLAY_NAME(DISP),           \
-                                             TAG_DISPLAY_NAME_LEN(DISP));
+        break;
 
     TAGLIB_TAG_DEFS(TAGLIB_NAME_CASE)
 
 #undef TAGLIB_NAME_CASE
     case TAG_COUNT:
     default:
-        if (cap > 0) {
-            out[0] = '\0';
-        }
+        out[0] = '\0';
         return -1;
     }
+
+    alias_len = TAG_alias_len(tag, &alias);
+    if (alias_len >= cap) {
+        out[0] = '\0';
+        return -1;
+    }
+
+    return ascii_normalize_camel_compact(out, alias, alias_len);
 }
 
 static inline int32
 ncm_tags_field_taglib_property_len(enum TagsField field, char *out, int32 cap) {
+    char *alias;
+    int32 alias_len;
+    int32 result;
+
     ASSERT(out != NULL);
     ASSERT_POSITIVE(cap);
 
-    switch (field) {
-#define TAGLIB_FIELD_PROPERTY_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)     \
-    case CAT(TAGS_FIELD_, SUFFIX):                                             \
-        return ncm_tag_type_taglib_property_len(CAT(TAG_, SUFFIX), out, cap);
-
-    TAGLIB_TAG_DEFS(TAGLIB_FIELD_PROPERTY_CASE)
-
-#undef TAGLIB_FIELD_PROPERTY_CASE
-    case TAGS_FIELD_COUNT:
-    default:
-        if (cap > 0) {
-            out[0] = '\0';
-        }
+    if ((uint32)field >= TAGS_FIELD_COUNT) {
+        out[0] = '\0';
         return -1;
     }
+
+    alias_len = TAGS_FIELD_alias_len(field, &alias);
+    if (alias_len >= cap) {
+        out[0] = '\0';
+        return -1;
+    }
+    result = ascii_normalize_upper_compact(out, alias, alias_len);
+    if ((field != TAGS_FIELD_TRACK) && (field != TAGS_FIELD_DISC)) {
+        return result;
+    }
+    if (result + STRLIT_LEN("NUMBER") >= cap) {
+        out[0] = '\0';
+        return -1;
+    }
+
+    memcpy64(out + result, STRLIT("NUMBER") + 1);
+    return result + STRLIT_LEN("NUMBER");
 }
 
 static inline char
@@ -648,7 +575,7 @@ ncm_tags_field_format_char(enum TagsField field) {
 static inline int32
 ncm_tags_field_parser_name_len(enum TagsField field, char **out) {
     if (field == TAGS_FIELD_TRACK) {
-        return ncm_song_getter_display_name_len(SONG_GETTER_TRACK_NUMBER, out);
+        return SONG_GETTER_alias_len(SONG_GETTER_TRACK_NUMBER, out);
     }
     if (field == TAGS_FIELD_COUNT) {
         *out = "";

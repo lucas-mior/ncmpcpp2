@@ -1632,19 +1632,19 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
         int32 name_len;
 
         value = ncm_song_getter_buffer(&owner->song, SONG_GETTER_NAME, 0);
-        name_len = ncm_song_getter_display_name_len(SONG_GETTER_NAME, &name);
+        name_len = SONG_GETTER_alias_len(SONG_GETTER_NAME, &name);
         append_song_key_value(buffer, name, name_len, &value, false);
         sb_free(&value);
 
         value = ncm_song_getter_buffer(&owner->song, SONG_GETTER_DIRECTORY, 0);
-        name_len = ncm_song_getter_display_name_len(SONG_GETTER_DIRECTORY,
-                                                    &name);
+        name_len = SONG_GETTER_alias_len(SONG_GETTER_DIRECTORY,
+                                         &name);
         append_song_key_value(buffer, name, name_len, &value, true);
         sb_free(&value);
         nc_buffer_append_data(buffer, STRLIT("\n"));
 
         value = ncm_song_getter_buffer(&owner->song, SONG_GETTER_LENGTH, 0);
-        name_len = ncm_song_getter_display_name_len(SONG_GETTER_LENGTH, &name);
+        name_len = SONG_GETTER_alias_len(SONG_GETTER_LENGTH, &name);
         append_song_key_value(buffer, name, name_len, &value, false);
         sb_free(&value);
     }

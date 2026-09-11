@@ -2525,8 +2525,7 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
             char *label;
             int32 label_len;
 
-            label_len = ncm_song_getter_display_name_len(SONG_GETTER_NAME,
-                                                         &label);
+            label_len = SONG_GETTER_alias_len(SONG_GETTER_NAME, &label);
             tag_edit_append_string_row(menu, label, label_len,
                                        NC_MENU_ITEM_SELECTABLE);
         }
