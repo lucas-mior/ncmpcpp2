@@ -4,7 +4,6 @@
 #include "cbase.h"
 
 #define TAG_FLAG_ENUM_FIELDS              \
-  XX(TAG_FLAG_DISPLAY)                    \
   XX(TAG_FLAG_WRITABLE)                   \
   XX(TAG_FLAG_SONG_INFO)                  \
   XX(TAG_FLAG_SEARCH)                     \
@@ -13,9 +12,8 @@
   XX(TAG_FLAG_MPD)                        \
   XX(TAG_FLAG_TAGLIB_NUMBER)              \
   XX(TAG_FLAGS_FIELD,                     \
-     TAG_FLAG_DISPLAY|TAG_FLAG_WRITABLE   \
-     |TAG_FLAG_SONG_INFO|TAG_FLAG_GETTER  \
-     |TAG_FLAG_TAGLIB)                    \
+     TAG_FLAG_WRITABLE|TAG_FLAG_SONG_INFO \
+     |TAG_FLAG_GETTER|TAG_FLAG_TAGLIB)    \
   XX(TAG_FLAGS_FIELD_SEARCH,              \
      TAG_FLAGS_FIELD|TAG_FLAG_SEARCH)
 
@@ -36,11 +34,7 @@
   XX(SUFFIX, DISP, CHAR, GETTER_CHAR,                          \
      TAG_FLAGS_FIELD_SEARCH|TAG_FLAG_MPD|TAG_FLAG_TAGLIB_NUMBER)
 
-#define TAG_NON_DISP(XX, SUFFIX, DISP)                         \
-  XX(SUFFIX, DISP, '\0', '\0', TAG_FLAGS_NONE)
-
 #define TAG_DEFS(XX)                                                           \
-  TAG_NON_DISP(XX, UNKNOWN, Unknown)                                           \
   TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                                       \
   TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                         \
   TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                           \
@@ -182,23 +176,12 @@ enum {
 
 static inline int32
 ncm_tag_type_display_name_len(enum TagType tag, char **out) {
-    switch (tag) {
-#define TAG_DISPLAY_NAME_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)          \
-    case CAT(TAG_, SUFFIX):                                                    \
-        if (((FLAGS) & TAG_FLAG_DISPLAY) == 0) {                               \
-            *out = "";                                                         \
-            return 0;                                                          \
-        }                                                                      \
-        return TAG_alias_len(tag, out);
-
-    TAG_DEFS(TAG_DISPLAY_NAME_CASE)
-
-#undef TAG_DISPLAY_NAME_CASE
-    case TAG_COUNT:
-    default:
+    if ((uint32)tag >= (uint32)TAG_COUNT) {
         *out = "";
         return 0;
     }
+
+    return TAG_alias_len(tag, out);
 }
 
 static inline bool
@@ -229,7 +212,7 @@ ncm_writable_tag_at(int32 idx) {
     };
 
     if ((idx < 0) || (idx >= NCM_WRITABLE_TAG_COUNT)) {
-        return TAG_UNKNOWN;
+        return TAG_COUNT;
     }
     return tags[idx];
 }

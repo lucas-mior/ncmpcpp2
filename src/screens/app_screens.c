@@ -55,7 +55,7 @@ NcmSongInfoMetadata ncm_song_info_tags[] = {
         .name = NULL,
         .name_len = 0,
         .get = SONG_GETTER_NONE,
-        .tag = TAG_UNKNOWN,
+        .tag = TAG_COUNT,
     },
 };
 

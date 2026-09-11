@@ -843,7 +843,7 @@ playlist_build_mutable_song(NcmSong *replacement,
     for (int32 i = 0; i < current->tags_len; i += 1) {
         enum TagType type = current->tags[i].type;
 
-        if ((type == TAG_UNKNOWN) || ncm_tag_type_is_writable(type)) {
+        if ((type == TAG_COUNT) || ncm_tag_type_is_writable(type)) {
             continue;
         }
         ncm_song_add_tag(replacement, type,

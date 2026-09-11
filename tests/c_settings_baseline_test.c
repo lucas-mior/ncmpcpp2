@@ -91,7 +91,7 @@ settings_assert_generated_empty(Configuration *config) {
 #define XX_ENUM(NAME, DEFAULT, ENUM_PREFIX_)                             \
     ASSERT(config->NAME == (ENUM_PREFIX_)0);
 #define XX_MEDIA_LIBRARY_GROUPING_TAG(NAME, DEFAULT)                    \
-    ASSERT(config->NAME == TAG_UNKNOWN);
+    ASSERT(config->NAME == TAG_COUNT);
 #define XX_STARTUP_SCREEN(NAME, DEFAULT)                                 \
     ASSERT(config->NAME == SCREEN_TYPE_COUNT);
 #define XX_OPT_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE) \
@@ -980,15 +980,10 @@ test_tag_type_names(void) {
     int32 normalized_len;
 
 #define TEST_TAG_TYPE_NAME(suffix, display, tag_char, getter_char, flags)    \
-    name_len = ncm_tag_type_name_len(CAT(TAG_, suffix), &name);          \
-    if (((flags) & TAG_FLAG_DISPLAY) == 0) {                             \
-        ASSERT_EQUAL(name, name_len, "");                                     \
-        ASSERT_ZERO(name_len);                                                \
-    } else {                                                                  \
-        ASSERT_EQUAL(name, name_len, TAG_DISPLAY_NAME(display));          \
-        ASSERT(name_len == TAG_DISPLAY_NAME_LEN(display));                \
-    }                                                                         \
-    name_len = TAG_alias_len(CAT(TAG_, suffix), &name);                      \
+    name_len = ncm_tag_type_name_len(CAT(TAG_, suffix), &name);               \
+    ASSERT_EQUAL(name, name_len, TAG_DISPLAY_NAME(display));                  \
+    ASSERT(name_len == TAG_DISPLAY_NAME_LEN(display));                        \
+    name_len = TAG_alias_len(CAT(TAG_, suffix), &name);                       \
     ASSERT_EQUAL(name, name_len, TAG_DISPLAY_NAME(display));                  \
     ASSERT(name_len == TAG_DISPLAY_NAME_LEN(display));                        \
     normalized_len = ascii_normalize_lower_snake(                             \
@@ -999,8 +994,11 @@ test_tag_type_names(void) {
     TAG_DEFS(TEST_TAG_TYPE_NAME)
 
 #undef TEST_TAG_TYPE_NAME
+    ASSERT(TAG_parse(STRLIT("unknown")) == TAG_COUNT);
     ASSERT(TAG_parse(STRLIT("name")) == TAG_COUNT);
     ASSERT(TAG_parse(STRLIT("filename")) == TAG_COUNT);
+    ASSERT_ZERO(ncm_tag_type_name_len(TAG_COUNT, &name));
+    ASSERT_EQUAL(name, 0, "");
     return;
 }
 
@@ -1021,12 +1019,12 @@ test_writable_tag_metadata(void) {
 
 #undef TEST_WRITABLE_TAG
     ASSERT(idx == NCM_WRITABLE_TAG_COUNT);
-    ASSERT(ncm_writable_tag_at(-1) == TAG_UNKNOWN);
-    ASSERT(ncm_writable_tag_at(NCM_WRITABLE_TAG_COUNT) == TAG_UNKNOWN);
-    ASSERT(ncm_char_to_tag_type('x') == TAG_UNKNOWN);
-    ASSERT(!ncm_tag_type_is_writable(TAG_UNKNOWN));
-    ASSERT(ncm_tag_type_to_song_getter(TAG_UNKNOWN) == SONG_GETTER_NONE);
-    ASSERT(ncm_tag_type_format_char(TAG_UNKNOWN) == '\0');
+    ASSERT(ncm_writable_tag_at(-1) == TAG_COUNT);
+    ASSERT(ncm_writable_tag_at(NCM_WRITABLE_TAG_COUNT) == TAG_COUNT);
+    ASSERT(ncm_char_to_tag_type('x') == TAG_COUNT);
+    ASSERT(!ncm_tag_type_is_writable(TAG_COUNT));
+    ASSERT(ncm_tag_type_to_song_getter(TAG_COUNT) == SONG_GETTER_NONE);
+    ASSERT(ncm_tag_type_format_char(TAG_COUNT) == '\0');
     return;
 }
 
@@ -1058,11 +1056,11 @@ test_song_getter_conversions(void) {
 #undef TEST_TAG_GETTER_CHAR
 #undef TEST_GETTER_CHAR
     ASSERT(ncm_song_getter_from_char('x') == SONG_GETTER_NONE);
-    ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_NONE) == TAG_UNKNOWN);
+    ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_NONE) == TAG_COUNT);
     ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_TRACK_NUMBER)
-           == TAG_UNKNOWN);
+           == TAG_COUNT);
     ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_PRIORITY)
-           == TAG_UNKNOWN);
+           == TAG_COUNT);
     return;
 }
 
@@ -1088,7 +1086,7 @@ test_media_library_grouping_tag_settings_parse(void) {
     ASSERT(media_library_next_grouping_tag(TAG_PERFORMER) == TAG_ARTIST);
     ASSERT(media_library_next_grouping_tag(TAG_ALBUM) == TAG_ARTIST);
 
-    parsed = TAG_UNKNOWN;
+    parsed = TAG_COUNT;
     ASSERT_ZERO(settings_parse_media_library_grouping_tag(
         STRLIT("artist"), &parsed));
     ASSERT(parsed == TAG_ARTIST);
@@ -1136,7 +1134,7 @@ test_taglib_metadata(void) {
                                            buffer, LENGTH(buffer));
     ASSERT_EQUAL(buffer, len, "DISCNUMBER");
 
-    ASSERT(ncm_tag_type_taglib_property_len(TAG_UNKNOWN,
+    ASSERT(ncm_tag_type_taglib_property_len(TAG_COUNT,
                                             buffer, LENGTH(buffer)) < 0);
     return;
 }
@@ -1148,7 +1146,7 @@ test_search_constraint_metadata(void) {
 
     metadata = search_constraint_metadata(0);
     ASSERT(metadata->kind == SEARCH_CONSTRAINT_ANY);
-    ASSERT(metadata->tag == TAG_UNKNOWN);
+    ASSERT(metadata->tag == TAG_COUNT);
     ASSERT_EQUAL(metadata->name, metadata->name_len, "Any");
     ASSERT(metadata->name_len == strlen32(metadata->name));
 
@@ -1167,7 +1165,7 @@ test_search_constraint_metadata(void) {
 #undef TEST_SEARCH_CONSTRAINT
     metadata = search_constraint_metadata(idx);
     ASSERT(metadata->kind == SEARCH_CONSTRAINT_FILENAME);
-    ASSERT(metadata->tag == TAG_UNKNOWN);
+    ASSERT(metadata->tag == TAG_COUNT);
     ASSERT_EQUAL(metadata->name, metadata->name_len, "Filename");
     idx += 1;
 
@@ -1211,7 +1209,7 @@ test_song_info_tag_metadata(void) {
     ASSERT(idx == NCM_SONG_INFO_TAG_COUNT);
     ASSERT(ncm_song_info_tags[idx].name == NULL);
     ASSERT(ncm_song_info_tags[idx].name_len == 0);
-    ASSERT(ncm_song_info_tags[idx].tag == TAG_UNKNOWN);
+    ASSERT(ncm_song_info_tags[idx].tag == TAG_COUNT);
     ASSERT(ncm_song_info_tags[idx].get == SONG_GETTER_NONE);
     return;
 }

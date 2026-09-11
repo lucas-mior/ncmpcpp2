@@ -90,7 +90,7 @@ ncm_char_to_tag_type(char c) {
 
 #undef TAG_CHAR_CASE
     default:
-        return TAG_UNKNOWN;
+        return TAG_COUNT;
     }
 }
 
@@ -142,7 +142,7 @@ ncm_song_getter_to_tag_type(enum SongGetter getter) {
     case SONG_GETTER_PRIORITY:
     case SONG_GETTER_COUNT:
     default:
-        return TAG_UNKNOWN;
+        return TAG_COUNT;
     }
 }
 
