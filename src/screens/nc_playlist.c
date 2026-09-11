@@ -850,7 +850,7 @@ playlist_build_mutable_song(NcmSong *replacement,
                          current->tags[i].value, current->tags[i].value_len);
     }
 
-    for (int32 i = 0; i < NCM_WRITABLE_TAG_COUNT; i += 1) {
+    for (int32 i = 0; i < (int32)TAG_COUNT; i += 1) {
         enum TagType type = ncm_writable_tag_at(i);
 
         for (int32 j = 0; ; j += 1) {

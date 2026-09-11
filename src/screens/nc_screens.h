@@ -1532,7 +1532,7 @@ int32 playlist_screen_set_selected_priority(PlaylistScreen *, MpdClient *,
 void playlist_screen_reload_total_length(PlaylistScreen *);
 void playlist_screen_reload_remaining(PlaylistScreen *);
 
-#define SEARCH_ENGINE_CONSTRAINT_COUNT NCM_SEARCH_CONSTRAINT_COUNT
+#define SEARCH_ENGINE_CONSTRAINT_COUNT (TAG_COUNT + 2)
 #define SEARCH_ENGINE_FIRST_SEPARATOR_ROW SEARCH_ENGINE_CONSTRAINT_COUNT
 #define SEARCH_ENGINE_SEARCH_SOURCE_ROW (SEARCH_ENGINE_FIRST_SEPARATOR_ROW + 1)
 #define SEARCH_ENGINE_SEARCH_MODE_ROW (SEARCH_ENGINE_SEARCH_SOURCE_ROW + 1)
@@ -1941,7 +1941,7 @@ enum TinyTagEditRow {
     TINY_TAG_EDIT_FIRST_SEPARATOR_ROW,
     TINY_TAG_EDIT_FIRST_TAG_ROW,
     TINY_TAG_EDIT_LAST_TAG_ROW = TINY_TAG_EDIT_FIRST_TAG_ROW
-                                   + NCM_WRITABLE_TAG_COUNT - 1,
+                                   + TAG_COUNT - 1,
     TINY_TAG_EDIT_SECOND_SEPARATOR_ROW,
     TINY_TAG_EDIT_FILE_NAME_EDIT_ROW,
     TINY_TAG_EDIT_THIRD_SEPARATOR_ROW,

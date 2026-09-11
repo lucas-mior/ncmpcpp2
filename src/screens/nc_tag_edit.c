@@ -24,11 +24,11 @@ enum TagEditParserActionRow {
 
 #define TAG_EDIT_PATTERN_HISTORY_MAX 30
 
-#define TAG_EDIT_FILENAME_ROW (NCM_SONG_INFO_TAG_COUNT + 1)
+#define TAG_EDIT_FILENAME_ROW (TAG_COUNT + 1)
 
 static bool
 tag_edit_choice_is_field(int32 choice) {
-    return (choice >= 0) && (choice < NCM_SONG_INFO_TAG_COUNT);
+    return (choice >= 0) && (choice < (int32)TAG_COUNT);
 }
 
 static bool
@@ -799,7 +799,7 @@ tag_edit_build_parser_legend(TagEditScreen *screen) {
 
     sb_clear(&screen->parser_legend);
 
-    TAG_FIELD_DEFS(TAG_EDIT_APPEND_PARSER_FIELD)
+    TAG_DEFS(TAG_EDIT_APPEND_PARSER_FIELD)
     SB_APPEND(&screen->parser_legend, "\nFiles:\n");
 
     tags = nc_tag_row_menu_base(&screen->tags);
@@ -2515,7 +2515,7 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
         NcEditorStringMenu *menu = &screen->tag_types;
 
         nc_menu_clear_items(nc_editor_string_menu_base(menu));
-        for (int32 i = 0; i < NCM_SONG_INFO_TAG_COUNT; i += 1) {
+        for (int32 i = 0; i < (int32)TAG_COUNT; i += 1) {
             tag_edit_append_string_row(menu, ncm_song_info_tags[i].name,
                                        ncm_song_info_tags[i].name_len,
                                        NC_MENU_ITEM_SELECTABLE);
@@ -3411,7 +3411,7 @@ static int32
 tag_edit_capitalize_song_callback(MutableSong *song, void *user) {
     (void)user;
 
-    for (int32 fi = 0; fi < NCM_SONG_INFO_TAG_COUNT; fi += 1) {
+    for (int32 fi = 0; fi < (int32)TAG_COUNT; fi += 1) {
         enum TagType tag_type = ncm_song_info_tags[fi].tag;
 
         for (int32 i = 0; ; i += 1) {
@@ -3450,7 +3450,7 @@ tag_edit_screen_capitalize_first_letters(TagEditScreen *screen) {
 static int32
 tag_edit_lower_song_callback(MutableSong *song, void *user) {
     (void)user;
-    for (int32 j = 0; j < NCM_SONG_INFO_TAG_COUNT; j += 1) {
+    for (int32 j = 0; j < (int32)TAG_COUNT; j += 1) {
         enum TagType tag_type = ncm_song_info_tags[j].tag;
 
         for (int32 i = 0; ; i += 1) {

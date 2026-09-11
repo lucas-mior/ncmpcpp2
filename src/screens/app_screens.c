@@ -50,7 +50,7 @@ struct SongInfoScreen {
     },
 
 NcmSongInfoMetadata ncm_song_info_tags[] = {
-    TAG_SONG_INFO_DEFS(NCM_SONG_INFO_TAG_ENTRY)
+    TAG_DEFS(NCM_SONG_INFO_TAG_ENTRY)
     {
         .name = NULL,
         .name_len = 0,
@@ -1662,7 +1662,7 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
         sb_free(&value);
     }
 
-    for (int32 i = 0; i < NCM_SONG_INFO_TAG_COUNT; i += 1) {
+    for (int32 i = 0; i < (int32)TAG_COUNT; i += 1) {
         value = ncm_song_tags_buffer(&owner->song, ncm_song_info_tags[i].get,
                                      Config.tags_separator,
                                      Config.tags_separator_len,

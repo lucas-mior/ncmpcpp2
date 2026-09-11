@@ -36,19 +36,6 @@
 
 #define TAG_DEFS(XX)                                                           \
   TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                                       \
-  TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                         \
-  TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                           \
-  TAG_FIELD_MPD(XX, TITLE, Title, 't')                                         \
-  TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                                \
-  TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                         \
-  TAG_FIELD_MPD(XX, DATE, Date, 'y')                                           \
-  TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                                   \
-  TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                                 \
-  TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')                                     \
-  TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')
-
-#define TAG_FIELD_DEFS(XX)                                                     \
-  TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                                       \
   TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                           \
   TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                         \
   TAG_FIELD_MPD_NUM(XX, DISC, Disc, 'd', 'd')                                  \
@@ -60,35 +47,11 @@
   TAG_FIELD_MPD(XX, TITLE, Title, 't')                                         \
   TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')
 
-#define TAG_SONG_INFO_DEFS(XX) TAG_FIELD_DEFS(XX)
-
-#define TAG_SEARCH_DEFS(XX) TAG_FIELD_DEFS(XX)
-
-#define TAGLIB_TAG_DEFS(XX) TAG_FIELD_DEFS(XX)
-
-#define TAG_MPD_DEFS(XX) TAG_FIELD_DEFS(XX)
-
-#define TAG_COUNT_RECORD(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS) + 1
-
-
 enum {
     TAG_DERIVED_NAME_CAP = 64,
     TAGLIB_PROPERTY_CAP = TAG_DERIVED_NAME_CAP,
     TAGLIB_NAME_CAP = TAG_DERIVED_NAME_CAP,
-    NCM_SONG_INFO_TAG_COUNT = 0
-        TAG_SONG_INFO_DEFS(TAG_COUNT_RECORD),
-    NCM_SEARCH_TAG_COUNT = 0
-        TAG_SEARCH_DEFS(TAG_COUNT_RECORD),
-    NCM_SEARCH_CONSTRAINT_COUNT = NCM_SEARCH_TAG_COUNT + 2,
-    NCM_WRITABLE_TAG_COUNT = 0
-        TAG_FIELD_DEFS(TAG_COUNT_RECORD),
-    TAGLIB_TAG_COUNT = 0
-        TAGLIB_TAG_DEFS(TAG_COUNT_RECORD),
-    NCM_MPD_TAG_COUNT = 0
-        TAG_MPD_DEFS(TAG_COUNT_RECORD),
 };
-
-#undef TAG_COUNT_RECORD
 
 #define TAG_TYPE_ENUM_FIELD(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)            \
   XX(CAT(TAG_, SUFFIX), DISP)
@@ -202,19 +165,10 @@ ncm_tag_type_is_writable(enum TagType tag) {
 
 static inline enum TagType
 ncm_writable_tag_at(int32 idx) {
-    static const enum TagType tags[NCM_WRITABLE_TAG_COUNT] = {
-#define NCM_WRITABLE_TAG_ENTRY(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)         \
-        CAT(TAG_, SUFFIX),
-
-        TAG_FIELD_DEFS(NCM_WRITABLE_TAG_ENTRY)
-
-#undef NCM_WRITABLE_TAG_ENTRY
-    };
-
-    if ((idx < 0) || (idx >= NCM_WRITABLE_TAG_COUNT)) {
+    if ((idx < 0) || (idx >= (int32)TAG_COUNT)) {
         return TAG_COUNT;
     }
-    return tags[idx];
+    return (enum TagType)idx;
 }
 
 static inline int32
@@ -289,7 +243,7 @@ ncm_tag_type_taglib_property_len(enum TagType tag, char *out, int32 cap) {
         append_number = ((FLAGS) & TAG_FLAG_TAGLIB_NUMBER) != 0;               \
         break;
 
-    TAGLIB_TAG_DEFS(TAGLIB_PROPERTY_CASE)
+    TAG_DEFS(TAGLIB_PROPERTY_CASE)
 
 #undef TAGLIB_PROPERTY_CASE
     case TAG_COUNT:
@@ -329,7 +283,7 @@ ncm_tag_type_taglib_name_len(enum TagType tag, char *out, int32 cap) {
     case CAT(TAG_, SUFFIX):                                                    \
         break;
 
-    TAGLIB_TAG_DEFS(TAGLIB_NAME_CASE)
+    TAG_DEFS(TAGLIB_NAME_CASE)
 
 #undef TAGLIB_NAME_CASE
     case TAG_COUNT:
