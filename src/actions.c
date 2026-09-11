@@ -3764,8 +3764,9 @@ action_runtime_toggle_library_tag_type(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    tag_type = ncm_primary_tag_next(Config.media_library_primary_tag);
-    return media_library_screen_set_primary_tag_type(screen, tag_type);
+    tag_type = media_library_next_grouping_tag(
+        Config.media_library_primary_tag);
+    return media_library_screen_set_grouping_tag_type(screen, tag_type);
 }
 
 static int32
@@ -3978,7 +3979,7 @@ action_runtime_media_library_current_artist_tag(char **tag, int32 *tag_len) {
         != MEDIA_LIBRARY_COLUMN_TAGS) {
         return false;
     }
-    if (!media_library_screen_has_current_primary_tag_value(library, &value,
+    if (!media_library_screen_has_current_grouping_tag_value(library, &value,
                                                             &value_len)) {
         return false;
     }
@@ -4090,7 +4091,7 @@ action_runtime_media_library_current_tag(char **tag, int32 *tag_len) {
         != MEDIA_LIBRARY_COLUMN_TAGS) {
         return false;
     }
-    return media_library_screen_has_current_primary_tag_value(library,
+    return media_library_screen_has_current_grouping_tag_value(library,
                                                              tag, tag_len);
 }
 

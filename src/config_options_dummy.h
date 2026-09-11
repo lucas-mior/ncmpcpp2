@@ -19,7 +19,7 @@
 #define XX_COLOR                 XX
 #define XX_OPT_STARTUP_SCREEN    XX
 #define XX_STARTUP_SCREEN        XX
-#define XX_MPD_TAG               XX
+#define XX_MEDIA_LIBRARY_GROUPING_TAG XX
 #define XX_ENUM                  XX
 #define XX_DOUBLE                XX
 #define XX_INTEGER               XX

@@ -68,12 +68,12 @@
 #endif
 #endif
 
-#if !defined(XX_MPD_TAG)
+#if !defined(XX_MEDIA_LIBRARY_GROUPING_TAG)
 #if defined(XX_OPTION)
-#define XX_MPD_TAG(NAME, DEFAULT) \
+#define XX_MEDIA_LIBRARY_GROUPING_TAG(NAME, DEFAULT) \
     XX_OPTION(NAME, DEFAULT)
 #else
-#define XX_MPD_TAG(NAME, DEFAULT)
+#define XX_MEDIA_LIBRARY_GROUPING_TAG(NAME, DEFAULT)
 #endif
 #endif
 
@@ -208,7 +208,7 @@
 #undef XX_COLOR
 #undef XX_OPT_STARTUP_SCREEN
 #undef XX_STARTUP_SCREEN
-#undef XX_MPD_TAG
+#undef XX_MEDIA_LIBRARY_GROUPING_TAG
 #undef XX_ENUM
 #undef XX_DOUBLE
 #undef XX_INTEGER
