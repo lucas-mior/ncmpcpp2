@@ -34,7 +34,7 @@
 
 #define TAG_FIELD_MPD_NUM(XX, SUFFIX, DISP, CHAR, GETTER_CHAR) \
   XX(SUFFIX, DISP, CHAR, GETTER_CHAR,                          \
-     TAG_FLAGS_FIELD|TAG_FLAG_MPD|TAG_FLAG_TAGLIB_NUMBER)
+     TAG_FLAGS_FIELD_SEARCH|TAG_FLAG_MPD|TAG_FLAG_TAGLIB_NUMBER)
 
 #define TAG_SEARCH_MPD(XX, SUFFIX, DISP)                       \
   XX(SUFFIX, DISP, '\0', '\0',                                 \
@@ -108,16 +108,8 @@
 #define TAG_SONG_INFO_DEFS(XX) TAG_FIELD_DEFS(XX)
 
 #define TAG_SEARCH_DEFS(XX)                                                    \
-  TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                                       \
-  TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                           \
-  TAG_FIELD_MPD(XX, TITLE, Title, 't')                                         \
-  TAG_FIELD_MPD(XX, ALBUM, Album, 'b')                                         \
-  TAG_SEARCH_MPD(XX, NAME, Filename)                                           \
-  TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                                   \
-  TAG_FIELD_MPD(XX, PERFORMER, Performer, 'p')                                 \
-  TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                         \
-  TAG_FIELD_MPD(XX, DATE, Date, 'y')                                           \
-  TAG_FIELD_MPD(XX, COMMENT, Comment, 'C')
+  TAG_FIELD_DEFS(XX)                                                           \
+  TAG_SEARCH_MPD_DECLS(XX)
 
 #define TAG_PRIMARY_DEFS(XX)                                                   \
   TAG_FIELD_MPD(XX, ARTIST, Artist, 'a')                                       \
