@@ -28,6 +28,44 @@
 #define TAG_DISPLAY_NAME(DISP) #DISP
 #define TAG_DISPLAY_NAME_LEN(DISP) STRLIT_LEN(#DISP)
 
+#define TAG_ALIAS_UNKNOWN unknown
+#define TAG_ALIAS_ARTIST artist
+#define TAG_ALIAS_ALBUM album
+#define TAG_ALIAS_ALBUM_ARTIST album_artist
+#define TAG_ALIAS_TITLE title
+#define TAG_ALIAS_TRACK track
+#define TAG_ALIAS_NAME filename
+#define TAG_ALIAS_GENRE genre
+#define TAG_ALIAS_DATE date
+#define TAG_ALIAS_COMPOSER composer
+#define TAG_ALIAS_PERFORMER performer
+#define TAG_ALIAS_COMMENT comment
+#define TAG_ALIAS_DISC disc
+#define TAG_ALIAS_MUSICBRAINZ_ARTISTID musicbrainz_artist_id
+#define TAG_ALIAS_MUSICBRAINZ_ALBUMID musicbrainz_album_id
+#define TAG_ALIAS_MUSICBRAINZ_ALBUMARTISTID musicbrainz_album_artist_id
+#define TAG_ALIAS_MUSICBRAINZ_TRACKID musicbrainz_track_id
+#define TAG_ALIAS_MUSICBRAINZ_RELEASETRACKID musicbrainz_release_track_id
+#define TAG_ALIAS_ORIGINAL_DATE original_date
+#define TAG_ALIAS_ARTIST_SORT artist_sort
+#define TAG_ALIAS_ALBUM_ARTIST_SORT album_artist_sort
+#define TAG_ALIAS_ALBUM_SORT album_sort
+#define TAG_ALIAS_LABEL label
+#define TAG_ALIAS_MUSICBRAINZ_WORKID musicbrainz_work_id
+#define TAG_ALIAS_GROUPING grouping
+#define TAG_ALIAS_WORK work
+#define TAG_ALIAS_CONDUCTOR conductor
+#define TAG_ALIAS_COMPOSER_SORT composer_sort
+#define TAG_ALIAS_ENSEMBLE ensemble
+#define TAG_ALIAS_MOVEMENT movement
+#define TAG_ALIAS_MOVEMENTNUMBER movement_number
+#define TAG_ALIAS_LOCATION location
+#define TAG_ALIAS_MOOD mood
+#define TAG_ALIAS_TITLE_SORT title_sort
+#define TAG_ALIAS_MUSICBRAINZ_RELEASEGROUPID musicbrainz_release_group_id
+#define TAG_ALIAS_SHOWMOVEMENT show_movement
+#define TAG_ALIAS_DISCSUBTITLE disc_subtitle
+
 #define TAG_FIELD_MPD(XX, SUFFIX, DISP, CHAR)                  \
   XX(SUFFIX, DISP, CHAR, CHAR,                                 \
      TAG_FLAGS_FIELD_SEARCH|TAG_FLAG_MPD)
@@ -187,7 +225,7 @@ enum {
 #undef TAG_COUNT_RECORD
 
 #define TAG_TYPE_ENUM_FIELD(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)            \
-  XX(CAT(TAG_, SUFFIX))
+  XX(CAT(TAG_, SUFFIX), CAT(TAG_ALIAS_, SUFFIX))
 
 #define TAG_TYPE_ENUM_FIELDS                                                   \
   TAG_DEFS(TAG_TYPE_ENUM_FIELD)
@@ -322,31 +360,6 @@ ncm_tag_type_display_name_len(enum TagType tag, char **out) {
     }
 }
 
-static inline int32
-ncm_tag_type_settings_name_len(enum TagType tag, char *out, int32 cap) {
-    switch ((int32)tag) {
-#define TAG_SETTINGS_NAME_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)         \
-    case CAT(TAG_, SUFFIX):                                                    \
-        if (TAG_DISPLAY_NAME_LEN(DISP) >= cap) {                               \
-            out[0] = '\0';                                                     \
-            return -1;                                                         \
-        }                                                                      \
-        return ascii_normalize_lower_snake(out,                                \
-                                           TAG_DISPLAY_NAME(DISP),             \
-                                           TAG_DISPLAY_NAME_LEN(DISP));
-
-    TAG_PRIMARY_DEFS(TAG_SETTINGS_NAME_CASE)
-
-#undef TAG_SETTINGS_NAME_CASE
-    case TAG_COUNT:
-    default:
-        if (cap > 0) {
-            out[0] = '\0';
-        }
-        return -1;
-    }
-}
-
 static inline bool
 ncm_tag_type_is_primary(enum TagType tag) {
     switch ((int32)tag) {
@@ -361,6 +374,32 @@ ncm_tag_type_is_primary(enum TagType tag) {
     default:
         return false;
     }
+}
+
+static inline int32
+ncm_tag_type_settings_name_len(enum TagType tag, char *out, int32 cap) {
+    char *alias;
+    int32 alias_len;
+
+    if (!ncm_tag_type_is_primary(tag)) {
+        if (cap > 0) {
+            out[0] = '\0';
+        }
+        return -1;
+    }
+
+    alias_len = TAG_alias_len(tag, &alias);
+    if (alias_len >= cap) {
+        if (cap > 0) {
+            out[0] = '\0';
+        }
+        TAG_alias_free(alias);
+        return -1;
+    }
+
+    memcpy64(out, alias, alias_len + 1);
+    TAG_alias_free(alias);
+    return alias_len;
 }
 
 static inline bool
@@ -383,7 +422,10 @@ ncm_tag_type_parse_settings_name(char *value, int32 value_len,
         return false;
     }
 
-    parsed = TAG_parse(normalized, normalized_len);
+    parsed = TAG_parse(value, value_len);
+    if (!ncm_tag_type_is_primary(parsed)) {
+        parsed = TAG_parse(normalized, normalized_len);
+    }
     if (!ncm_tag_type_is_primary(parsed)) {
         return false;
     }

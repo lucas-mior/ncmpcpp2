@@ -974,8 +974,10 @@ test_tag_name_normalization(void) {
 
 static void
 test_tag_type_names(void) {
+    char normalized[TAG_DERIVED_NAME_CAP];
     char *name;
     int32 name_len;
+    int32 normalized_len;
 
 #define TEST_TAG_TYPE_NAME(suffix, display, tag_char, getter_char, flags)    \
     name_len = ncm_tag_type_name_len(CAT(TAG_, suffix), &name);          \
@@ -988,7 +990,14 @@ test_tag_type_names(void) {
     }                                                                         \
     name_len = ncm_tag_type_canonical_name_len(CAT(TAG_, suffix), &name);\
     ASSERT_EQUAL(name, name_len, TAG_DISPLAY_NAME(display));              \
-    ASSERT(name_len == TAG_DISPLAY_NAME_LEN(display));
+    ASSERT(name_len == TAG_DISPLAY_NAME_LEN(display));                       \
+    name_len = TAG_alias_len(CAT(TAG_, suffix), &name);                      \
+    normalized_len = ascii_normalize_lower_snake(                            \
+        normalized, TAG_DISPLAY_NAME(display),                               \
+        TAG_DISPLAY_NAME_LEN(display));                                      \
+    ASSERT_EQUAL(name, name_len, normalized, normalized_len);                \
+    ASSERT(TAG_parse(name, name_len) == CAT(TAG_, suffix));                  \
+    TAG_alias_free(name);
 
     TAG_DEFS(TEST_TAG_TYPE_NAME)
 
@@ -1094,6 +1103,8 @@ test_primary_tag_settings_parse(void) {
     ASSERT(ncm_tag_type_parse_settings_name(STRLIT("ALBUM_ARTIST"),
                                             &parsed));
     ASSERT(parsed == TAG_ALBUM_ARTIST);
+    ASSERT(TAG_parse(STRLIT("album_artist"))
+           == TAG_ALBUM_ARTIST);
     ASSERT(TAG_parse(STRLIT("ALBUM_ARTIST"))
            == TAG_ALBUM_ARTIST);
     ASSERT(!ncm_tag_type_parse_settings_name(STRLIT("TAG_ARTIST"),
