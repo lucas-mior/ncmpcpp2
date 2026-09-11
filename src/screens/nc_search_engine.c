@@ -68,8 +68,7 @@ _Static_assert(LENGTH(search_constraints) == SEARCH_ENGINE_CONSTRAINT_COUNT,
                "search constraint count changed");
 
 static SearchConstraintMetadata *
-search_constraint_metadata(int32 idx) {
-    ASSERT(idx >= 0);
+search_constraint_metadata(uint32 idx) {
     ASSERT(idx < SEARCH_ENGINE_CONSTRAINT_COUNT);
     return &search_constraints[idx];
 }
@@ -271,7 +270,7 @@ search_append_format(NcBuffer *buffer, enum NcFormat format) {
 }
 
 static void
-search_build_constraint_row(SearchEngineScreen *screen, int32 idx,
+search_build_constraint_row(SearchEngineScreen *screen, uint32 idx,
                             NcBuffer *buffer) {
     SearchConstraintMetadata *metadata;
     StrBuilder *value = &screen->constraints[idx];
@@ -321,14 +320,14 @@ search_run_current(NcScreen *base_screen) {
 
     menu = search_engine_screen_menu(screen);
     pos = nc_menu_highlight(menu);
-    if (pos < SEARCH_ENGINE_CONSTRAINT_COUNT) {
-        if ((pos < 0) || (screen->hooks.prompt_constraint == NULL)) {
+    if ((pos >= 0) && ((uint32)pos < SEARCH_ENGINE_CONSTRAINT_COUNT)) {
+        if (screen->hooks.prompt_constraint == NULL) {
             prompt_status = SEARCH_ENGINE_PROMPT_ERROR;
         } else {
             StrBuilder *constraint = &screen->constraints[pos];
             SearchConstraintMetadata *metadata;
 
-            metadata = search_constraint_metadata(pos);
+            metadata = search_constraint_metadata((uint32)pos);
             prompt_status =
                 screen->hooks.prompt_constraint(screen->hooks.user,
                                                 metadata->name,
@@ -341,7 +340,7 @@ search_run_current(NcScreen *base_screen) {
             if (screen->prepared) {
                 NcBuffer buffer = {0};
 
-                search_build_constraint_row(screen, pos, &buffer);
+                search_build_constraint_row(screen, (uint32)pos, &buffer);
                 search_set_buffer_row(screen, pos, &buffer);
                 nc_buffer_destroy(&buffer);
             }
@@ -631,7 +630,7 @@ search_engine_screen_init(SearchEngineScreen *screen,
     nc_search_row_menu_init(&screen->rows);
     nc_window_init(&screen->window, start_x, main_start_y, width, main_height,
                    NULL, 0, color, border);
-    for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+    for (uint32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
         screen->constraints[i] = (StrBuilder){0};
     }
 
@@ -690,7 +689,7 @@ search_engine_screen_destroy(SearchEngineScreen *screen) {
     sb_free(&screen->title);
     sb_free(&screen->column_title);
     sb_free(&screen->search_constraint);
-    for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+    for (uint32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
         sb_free(&screen->constraints[i]);
     }
     nc_window_destroy(&screen->window);
@@ -828,7 +827,7 @@ search_engine_screen_prepare_static_rows(SearchEngineScreen *screen) {
     screen->result_count = 0;
     screen->constraints_locked = false;
 
-    for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+    for (uint32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
         NcBuffer constraint_buffer = {0};
 
         search_build_constraint_row(screen, i, &constraint_buffer);
@@ -889,7 +888,7 @@ search_engine_screen_reset(SearchEngineScreen *screen) {
     if (screen == NULL) {
         return;
     }
-    for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+    for (uint32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
         sb_clear(&screen->constraints[i]);
     }
     search_engine_screen_clear_filter(screen);
@@ -1019,10 +1018,10 @@ search_compile_regex(NcmRegex *regex, StrBuilder *constraint,
 }
 
 static bool
-search_song_has_field_view(NcmSong *song, int32 field, StringView *view) {
+search_song_has_field_view(NcmSong *song, uint32 field, StringView *view) {
     SearchConstraintMetadata *metadata;
 
-    if ((field <= 0) || (field >= SEARCH_ENGINE_CONSTRAINT_COUNT)) {
+    if ((field == 0) || (field >= SEARCH_ENGINE_CONSTRAINT_COUNT)) {
         return false;
     }
 
@@ -1082,7 +1081,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
     search_engine_screen_status_message(screen, STRLIT("Searching..."));
 
     has_constraints = false;
-    for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+    for (uint32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
         if (screen->constraints[i].len > 0) {
             has_constraints = true;
             break;
@@ -1114,7 +1113,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                                                   ncm_error);
             }
 
-            for (int32 i = 1;
+            for (uint32 i = 1;
                  (i < SEARCH_ENGINE_CONSTRAINT_COUNT)
                      && (constraint_status == 0);
                  i += 1) {
@@ -1179,14 +1178,14 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
 
             exact_match = screen->search_mode
                           == SEARCH_ENGINE_SEARCH_MODE_EXACT;
-            for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+            for (uint32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
                 regexes[i] = (NcmRegex){0};
             }
 
             regex_flags = search_pattern_regex_flags(screen);
             status = 0;
             if (!exact_match) {
-                for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+                for (uint32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
                     StrBuilder *constraint = &screen->constraints[i];
 
                     if (constraint->len <= 0) {
@@ -1214,7 +1213,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                             && !regexes[0].compiled) {
                             matches = true;
                         } else {
-                            for (int32 field = 1;
+                            for (uint32 field = 1;
                                  field < SEARCH_ENGINE_CONSTRAINT_COUNT;
                                  field += 1) {
                                 StringView value;
@@ -1243,7 +1242,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                         continue;
                     }
 
-                    for (int32 field = 1;
+                    for (uint32 field = 1;
                          field < SEARCH_ENGINE_CONSTRAINT_COUNT;
                          field += 1) {
                         StrBuilder *constraint;
@@ -1277,7 +1276,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                 }
             }
 
-            for (int32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
+            for (uint32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
                 ncm_regex_destroy(&regexes[i]);
             }
             if (status == 0) {
@@ -1336,8 +1335,9 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
     screen->constraints_locked =
         Config.block_search_constraints_change_if_items_found;
     menu = search_engine_screen_menu(screen);
-    if (nc_menu_all_item_count(menu) > SEARCH_ENGINE_SEARCH_BUTTON_ROW) {
-        for (int32 i = 0; i <= SEARCH_ENGINE_SEARCH_BUTTON_ROW; i += 1) {
+    if (nc_menu_all_item_count(menu)
+        > (int32)SEARCH_ENGINE_SEARCH_BUTTON_ROW) {
+        for (uint32 i = 0; i <= SEARCH_ENGINE_SEARCH_BUTTON_ROW; i += 1) {
             uint32 flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
 
             if (screen->constraints_locked) {

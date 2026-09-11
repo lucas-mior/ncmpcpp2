@@ -690,8 +690,8 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     nc_buffer_destroy(&row);
     nc_editor_buffer_menu_add_separator(&screen->rows);
 
-    for (int32 i = 0; i < (int32)TAG_COUNT; i += 1) {
-        enum TagType type = ncm_writable_tag_at(i);
+    for (uint32 i = 0; i < TAG_COUNT; i += 1) {
+        enum TagType type = (enum TagType)i;
         bool inactive;
 
         row = (NcBuffer){0};
