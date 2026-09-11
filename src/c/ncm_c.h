@@ -95,13 +95,23 @@ typedef struct NcmSongTag {
     enum TagType type;
 } NcmSongTag;
 
+typedef struct NcmSongProperty {
+    char *name;
+    char *value;
+    int32 name_len;
+    int32 value_len;
+} NcmSongProperty;
+
 typedef struct NcmSong {
     char *uri;
     int32 uri_len;
 
     NcmSongTag *tags;
+    NcmSongProperty *properties;
     int32 tags_len;
     int32 tags_cap;
+    int32 properties_len;
+    int32 properties_cap;
 
     int32 duration;
     int32 position;
@@ -115,6 +125,7 @@ void ncm_song_move(NcmSong *dest, NcmSong *source);
 int32 ncm_song_copy(NcmSong *dest, NcmSong *source);
 int32 ncm_song_set_uri(NcmSong *, char *, int32);
 int32 ncm_song_add_tag(NcmSong *, enum TagType, char *, int32);
+int32 ncm_song_add_property(NcmSong *, char *, int32, char *, int32);
 void ncm_song_set_duration(NcmSong *, int32);
 void ncm_song_set_position(NcmSong *, int32);
 void ncm_song_set_id(NcmSong *, int32);
@@ -254,6 +265,7 @@ int32 ncm_mpd_item_set_song(NcmMpdItem *, NcmSong *);
 int32 ncm_mpd_item_set_directory(NcmMpdItem *, NcmDirectory *);
 int32 ncm_mpd_item_from_entity_copy(NcmMpdItem *, void *);
 int32 ncm_mpd_item_song_from_mpd_song_copy(NcmSong *, void *);
+int32 ncm_mpd_item_song_from_mpd_song_copy_with_properties(NcmSong *, void *);
 int32 ncm_mpd_item_playlist_from_mpd_playlist(NcmPlaylist *, void *);
 void ncm_mpd_item_local_song(NcmSong *, char *path, int32 path_len,
                              time_t mtime);

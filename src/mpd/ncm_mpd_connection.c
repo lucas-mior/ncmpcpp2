@@ -210,7 +210,8 @@ ncm_mpd_connection_mpd_directory(char *directory) {
 }
 
 static int32
-ncm_mpd_connection_recv_song(MpdConnection *connection, NcmSong *song) {
+ncm_mpd_connection_recv_song(MpdConnection *connection, NcmSong *song,
+                             bool include_properties) {
     struct mpd_song *mpd_song;
     int32 status;
 
@@ -218,7 +219,12 @@ ncm_mpd_connection_recv_song(MpdConnection *connection, NcmSong *song) {
         return 0;
     }
 
-    status = ncm_mpd_item_song_from_mpd_song_copy(song, mpd_song);
+    if (include_properties) {
+        status = ncm_mpd_item_song_from_mpd_song_copy_with_properties(
+            song, mpd_song);
+    } else {
+        status = ncm_mpd_item_song_from_mpd_song_copy(song, mpd_song);
+    }
     mpd_song_free(mpd_song);
     if (status < 0) {
         ncm_mpd_connection_set_error(connection,
@@ -240,7 +246,7 @@ ncm_mpd_connection_recv_song_list(MpdConnection *connection,
     ncm_mpd_song_list_clear(songs);
     while (true) {
         song = (NcmSong){0};
-        if (ncm_mpd_connection_recv_song(connection, &song) < 0) {
+        if (ncm_mpd_connection_recv_song(connection, &song, false) < 0) {
             ncm_song_destroy(&song);
             mpd_response_finish(connection->mpd);
             return -NCM_ERROR_MPD;
@@ -1196,7 +1202,7 @@ ncm_mpd_connection_get_current_song(MpdConnection *connection,
         return ncm_mpd_connection_check_error(connection);
     }
 
-    status = ncm_mpd_connection_recv_song(connection, song);
+    status = ncm_mpd_connection_recv_song(connection, song, true);
     mpd_response_finish(connection->mpd);
     if (status < 0) {
         return status;

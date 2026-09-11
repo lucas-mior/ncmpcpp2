@@ -188,8 +188,9 @@ ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
                                flags)                                       \
     {CAT(MPD_TAG_, suffix), CAT(TAG_, suffix)},
 
-int32
-ncm_mpd_item_song_from_mpd_song_copy(NcmSong *dest, void *mpd_song) {
+static int32
+ncm_mpd_item_song_from_mpd_song_copy_internal(NcmSong *dest, void *mpd_song,
+                                               bool include_properties) {
     NcmSong replacement = {0};
     struct mpd_song *source = mpd_song;
     struct {
@@ -233,6 +234,44 @@ ncm_mpd_item_song_from_mpd_song_copy(NcmSong *dest, void *mpd_song) {
         }
     }
 
+    if (include_properties) {
+        for (uint32 i = 0; i < MPD_TAG_COUNT; i += 1) {
+            enum mpd_tag_type type = (enum mpd_tag_type)i;
+            bool first_class = false;
+            char *name;
+
+            for (int32 j = 0; j < tags_len; j += 1) {
+                if (tags[j].mpd == type) {
+                    first_class = true;
+                    break;
+                }
+            }
+            if (first_class) {
+                continue;
+            }
+
+            name = (char *)mpd_tag_name(type);
+            if (name == NULL) {
+                continue;
+            }
+
+            for (uint32 j = 0; ; j += 1) {
+                char *value = (char *)mpd_song_get_tag(source, type, j);
+
+                if (value == NULL) {
+                    break;
+                }
+                status = ncm_song_add_property(&replacement,
+                                               name, strlen32(name),
+                                               value, strlen32(value));
+                if (status < 0) {
+                    ncm_song_destroy(&replacement);
+                    return status;
+                }
+            }
+        }
+    }
+
     replacement.duration = (int32)mpd_song_get_duration(source);
     replacement.position = (int32)mpd_song_get_pos(source);
     replacement.id = (int32)mpd_song_get_id(source);
@@ -242,6 +281,18 @@ ncm_mpd_item_song_from_mpd_song_copy(NcmSong *dest, void *mpd_song) {
     ncm_song_destroy(dest);
     *dest = replacement;
     return 0;
+}
+
+int32
+ncm_mpd_item_song_from_mpd_song_copy(NcmSong *dest, void *mpd_song) {
+    return ncm_mpd_item_song_from_mpd_song_copy_internal(dest, mpd_song,
+                                                         false);
+}
+
+int32
+ncm_mpd_item_song_from_mpd_song_copy_with_properties(NcmSong *dest,
+                                                     void *mpd_song) {
+    return ncm_mpd_item_song_from_mpd_song_copy_internal(dest, mpd_song, true);
 }
 
 #undef NCM_MPD_ITEM_TAG_ENTRY
