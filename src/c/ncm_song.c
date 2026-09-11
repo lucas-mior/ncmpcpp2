@@ -468,26 +468,24 @@ ncm_song_is_stream_unchecked(NcmSong *song) {
 }
 
 static bool
-ncm_song_has_name_view_unchecked(NcmSong *song, int32 idx,
-                                 StringView *view) {
+ncm_song_has_filename_view_unchecked(NcmSong *song, int32 idx,
+                                     StringView *view) {
     StringView uri;
     int32 basename;
 
-    if (ncm_song_has_tag_view_unchecked(song, TAG_NAME, idx, view)) {
-        return true;
+    if (view != NULL) {
+        ncm_string_view_clear(view);
     }
     if (idx != 0) {
         return false;
     }
     if (!ncm_song_has_uri_view_unchecked(song, 0, &uri)) {
-        ncm_string_view_clear(view);
         return false;
     }
     if (view == NULL) {
         return true;
     }
 
-    ncm_string_view_clear(view);
     basename = ncm_path_basename_start(uri.data, uri.len);
     ncm_string_view_set(view, uri.data + basename, uri.len - basename);
     return true;
@@ -562,13 +560,13 @@ ncm_song_has_uri_view(NcmSong *song, int32 idx, StringView *view) {
 }
 
 bool
-ncm_song_has_name_view(NcmSong *song, int32 idx, StringView *view) {
+ncm_song_has_filename_view(NcmSong *song, int32 idx, StringView *view) {
     if ((song == NULL) || (idx < 0)) {
         ncm_string_view_clear(view);
         return false;
     }
 
-    return ncm_song_has_name_view_unchecked(song, idx, view);
+    return ncm_song_has_filename_view_unchecked(song, idx, view);
 }
 
 bool
@@ -700,7 +698,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
         }
         return buffer;
     case SONG_GETTER_NAME:
-        if (ncm_song_has_name_view_unchecked(song, idx, &view)) {
+        if (ncm_song_has_filename_view_unchecked(song, idx, &view)) {
             SB_APPEND(&buffer, view.data, view.len);
         }
         return buffer;

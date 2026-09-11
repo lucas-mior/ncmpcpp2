@@ -36,15 +36,8 @@
   XX(SUFFIX, DISP, CHAR, GETTER_CHAR,                          \
      TAG_FLAGS_FIELD_SEARCH|TAG_FLAG_MPD|TAG_FLAG_TAGLIB_NUMBER)
 
-#define TAG_SEARCH_MPD(XX, SUFFIX, DISP)                       \
-  XX(SUFFIX, DISP, '\0', '\0',                                 \
-     TAG_FLAG_SEARCH|TAG_FLAG_MPD)
-
 #define TAG_NON_DISP(XX, SUFFIX, DISP)                         \
   XX(SUFFIX, DISP, '\0', '\0', TAG_FLAGS_NONE)
-
-#define TAG_SEARCH_MPD_DECLS(XX)                                               \
-  TAG_SEARCH_MPD(XX, NAME, Filename)
 
 #define TAG_DEFS(XX)                                                           \
   TAG_NON_DISP(XX, UNKNOWN, Unknown)                                           \
@@ -53,7 +46,6 @@
   TAG_FIELD_MPD(XX, ALBUM_ARTIST, Album Artist, 'A')                           \
   TAG_FIELD_MPD(XX, TITLE, Title, 't')                                         \
   TAG_FIELD_MPD_NUM(XX, TRACK, Track, 'n', 'N')                                \
-  TAG_SEARCH_MPD(XX, NAME, Filename)                                           \
   TAG_FIELD_MPD(XX, GENRE, Genre, 'g')                                         \
   TAG_FIELD_MPD(XX, DATE, Date, 'y')                                           \
   TAG_FIELD_MPD(XX, COMPOSER, Composer, 'c')                                   \
@@ -76,15 +68,11 @@
 
 #define TAG_SONG_INFO_DEFS(XX) TAG_FIELD_DEFS(XX)
 
-#define TAG_SEARCH_DEFS(XX)                                                    \
-  TAG_FIELD_DEFS(XX)                                                           \
-  TAG_SEARCH_MPD_DECLS(XX)
+#define TAG_SEARCH_DEFS(XX) TAG_FIELD_DEFS(XX)
 
 #define TAGLIB_TAG_DEFS(XX) TAG_FIELD_DEFS(XX)
 
-#define TAG_MPD_DEFS(XX)                                                       \
-  TAG_FIELD_DEFS(XX)                                                           \
-  TAG_SEARCH_MPD_DECLS(XX)
+#define TAG_MPD_DEFS(XX) TAG_FIELD_DEFS(XX)
 
 #define TAG_COUNT_RECORD(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS) + 1
 
@@ -97,7 +85,7 @@ enum {
         TAG_SONG_INFO_DEFS(TAG_COUNT_RECORD),
     NCM_SEARCH_TAG_COUNT = 0
         TAG_SEARCH_DEFS(TAG_COUNT_RECORD),
-    NCM_SEARCH_CONSTRAINT_COUNT = NCM_SEARCH_TAG_COUNT + 1,
+    NCM_SEARCH_CONSTRAINT_COUNT = NCM_SEARCH_TAG_COUNT + 2,
     NCM_WRITABLE_TAG_COUNT = 0
         TAG_FIELD_DEFS(TAG_COUNT_RECORD),
     TAGLIB_TAG_COUNT = 0

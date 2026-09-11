@@ -2057,7 +2057,7 @@ action_runtime_browser_item_name(NcmMpdItem *item, StrBuilder *name) {
         }
         break;
     case NCM_MPD_ITEM_SONG:
-        if (!ncm_song_has_name_view(ncm_mpd_item_song(item), 0, &view)
+        if (!ncm_song_has_filename_view(ncm_mpd_item_song(item), 0, &view)
             && !ncm_song_has_uri_view(ncm_mpd_item_song(item), 0, &view)) {
             return -NCM_ERROR_UNAVAILABLE;
         }
@@ -4136,9 +4136,9 @@ action_runtime_song_uri_view(NcmSong *song, StringView *uri) {
 }
 
 static bool
-action_runtime_song_name_or_uri_view(NcmSong *song, StringView *view) {
+action_runtime_song_filename_or_uri_view(NcmSong *song, StringView *view) {
     *view = (StringView){0};
-    if (ncm_song_has_name_view(song, 0, view)) {
+    if (ncm_song_has_filename_view(song, 0, view)) {
         return true;
     }
     return action_runtime_song_uri_view(song, view);
@@ -4176,7 +4176,7 @@ action_runtime_print_updating_song(NcmSong *song) {
     StringView name;
     StrBuilder message = {0};
 
-    if (!action_runtime_song_name_or_uri_view(song, &name)) {
+    if (!action_runtime_song_filename_or_uri_view(song, &name)) {
         return;
     }
 
@@ -4325,7 +4325,7 @@ action_runtime_edit_library_tag(void) {
         if (status < 0) {
             StringView name;
 
-            if (action_runtime_song_name_or_uri_view(song, &name)) {
+            if (action_runtime_song_filename_or_uri_view(song, &name)) {
                 StrBuilder message = {0};
                 char *error_message = strerror(errno);
 
