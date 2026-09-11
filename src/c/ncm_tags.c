@@ -66,8 +66,8 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
         return status;
     }
 
-    for (int32 i = 0; i < (int32)TAG_COUNT; i += 1) {
-        enum TagType tag = ncm_writable_tag_at(i);
+    for (uint32 i = 0; i < TAG_COUNT; i += 1) {
+        enum TagType tag = (enum TagType)i;
         int32 property_len;
 
         property_len = ncm_tag_type_taglib_property_len(

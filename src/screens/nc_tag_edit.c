@@ -2515,7 +2515,7 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
         NcEditorStringMenu *menu = &screen->tag_types;
 
         nc_menu_clear_items(nc_editor_string_menu_base(menu));
-        for (int32 i = 0; i < (int32)TAG_COUNT; i += 1) {
+        for (uint32 i = 0; i < TAG_COUNT; i += 1) {
             tag_edit_append_string_row(menu, ncm_song_info_tags[i].name,
                                        ncm_song_info_tags[i].name_len,
                                        NC_MENU_ITEM_SELECTABLE);
@@ -3411,7 +3411,7 @@ static int32
 tag_edit_capitalize_song_callback(MutableSong *song, void *user) {
     (void)user;
 
-    for (int32 fi = 0; fi < (int32)TAG_COUNT; fi += 1) {
+    for (uint32 fi = 0; fi < TAG_COUNT; fi += 1) {
         enum TagType tag_type = ncm_song_info_tags[fi].tag;
 
         for (int32 i = 0; ; i += 1) {
@@ -3450,7 +3450,7 @@ tag_edit_screen_capitalize_first_letters(TagEditScreen *screen) {
 static int32
 tag_edit_lower_song_callback(MutableSong *song, void *user) {
     (void)user;
-    for (int32 j = 0; j < (int32)TAG_COUNT; j += 1) {
+    for (uint32 j = 0; j < TAG_COUNT; j += 1) {
         enum TagType tag_type = ncm_song_info_tags[j].tag;
 
         for (int32 i = 0; ; i += 1) {

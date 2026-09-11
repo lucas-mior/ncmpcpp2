@@ -1662,7 +1662,7 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
         sb_free(&value);
     }
 
-    for (int32 i = 0; i < (int32)TAG_COUNT; i += 1) {
+    for (uint32 i = 0; i < TAG_COUNT; i += 1) {
         value = ncm_song_tags_buffer(&owner->song, ncm_song_info_tags[i].get,
                                      Config.tags_separator,
                                      Config.tags_separator_len,
