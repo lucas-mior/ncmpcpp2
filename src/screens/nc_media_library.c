@@ -1736,7 +1736,7 @@ media_library_tags_from_songs(MediaLibraryTagArray *tags, NcmMpdSongList *songs,
                               enum TagType grouping_tag) {
     MediaLibraryTagArray replacement = {0};
 
-    if ((tags == NULL) || (songs == NULL) || (grouping_tag == TAG_UNKNOWN)) {
+    if ((tags == NULL) || (songs == NULL) || (grouping_tag == TAG_COUNT)) {
         return -EINVAL;
     }
 
@@ -1780,7 +1780,7 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
     if ((albums == NULL) || (songs == NULL)
         || (mode < MEDIA_LIBRARY_MODE_THREE_COLUMNS)
         || (mode >= MEDIA_LIBRARY_MODE_COUNT)
-        || (grouping_tag == TAG_UNKNOWN) || (selected_tag_len < 0)
+        || (grouping_tag == TAG_COUNT) || (selected_tag_len < 0)
         || ((selected_tag == NULL) && (selected_tag_len > 0))) {
         return -EINVAL;
     }
@@ -2317,7 +2317,7 @@ media_library_screen_selected_songs_checked(
         bool any_selected = nc_menu_has_selected(menu);
 
         for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-            MediaLibrarySongQuery query = {0};
+            MediaLibrarySongQuery query = {.grouping_tag = TAG_COUNT};
             NcMediaLibraryTagRow *row;
             int32 status;
 
@@ -2343,7 +2343,7 @@ media_library_screen_selected_songs_checked(
         bool any_selected = nc_menu_has_selected(menu);
 
         for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
-            MediaLibrarySongQuery query = {0};
+            MediaLibrarySongQuery query = {.grouping_tag = TAG_COUNT};
             NcMediaLibraryAlbumRow *row;
             int32 status;
 
@@ -2808,7 +2808,7 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
             || screen->albums_update_request
             || library_has_fetch_delay_elapsed(screen))) {
         MediaLibraryAlbumArray albums = {0};
-        MediaLibrarySongQuery query = {0};
+        MediaLibrarySongQuery query = {.grouping_tag = TAG_COUNT};
         NcMediaLibraryTagRow *tag;
         NcmMpdSongList songs = {0};
         char *selected_tag = NULL;
@@ -2921,7 +2921,7 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
 
     if (library_has_pending_songs(screen) && (screen->songs_update_request
             || library_has_fetch_delay_elapsed(screen))) {
-        MediaLibrarySongQuery query = {0};
+        MediaLibrarySongQuery query = {.grouping_tag = TAG_COUNT};
         NcMediaLibraryAlbumRow *album;
         NcmMpdSongList source = {0};
         NcmSongArray songs = {0};
@@ -3200,7 +3200,7 @@ media_library_screen_add_item_to_playlist(
     }
 
     if (screen->active_column == MEDIA_LIBRARY_COLUMN_TAGS) {
-        MediaLibrarySongQuery query = {0};
+        MediaLibrarySongQuery query = {.grouping_tag = TAG_COUNT};
         NcMediaLibraryTagRow *tag;
 
         if ((tag = media_library_screen_current_tag(screen))) {
@@ -3209,7 +3209,7 @@ media_library_screen_add_item_to_playlist(
                                                 ncm_error);
         }
     } else if (screen->active_column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
-        MediaLibrarySongQuery query = {0};
+        MediaLibrarySongQuery query = {.grouping_tag = TAG_COUNT};
         NcMediaLibraryAlbumRow *album;
 
         if ((album = media_library_screen_current_album(screen))) {

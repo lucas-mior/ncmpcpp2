@@ -583,7 +583,7 @@ tag_edit_current_tag_type_action(TagEditScreen *screen,
     ASSERT(screen != NULL);
     ASSERT(tag_type != NULL);
 
-    *tag_type = TAG_UNKNOWN;
+    *tag_type = TAG_COUNT;
     menu = nc_editor_string_menu_base(&screen->tag_types);
     choice = nc_menu_highlight(menu);
     if (((row = nc_menu_current_item(menu)) == NULL)
@@ -2218,7 +2218,7 @@ tag_edit_tag_matches_regex(TagEditScreen *screen,
     if (tag_edit_choice_is_field(choice)) {
         tag_type = ncm_song_info_tags[choice].tag;
     } else if (tag_edit_choice_is_filename(choice)) {
-        tag_type = TAG_UNKNOWN;
+        tag_type = TAG_COUNT;
     } else {
         return false;
     }
@@ -3160,7 +3160,7 @@ tag_edit_copy_selected_song_at(TagEditScreen *screen,
         char *value = tag->original;
         int32 value_len = tag->original_len;
 
-        if ((type == TAG_UNKNOWN) || (value == NULL) || (value_len <= 0)) {
+        if ((type == TAG_COUNT) || (value == NULL) || (value_len <= 0)) {
             continue;
         }
         ncm_song_add_tag(&song, type, value, value_len);
@@ -4108,7 +4108,7 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
         }
 
         tag_type = ncm_char_to_tag_type(tag_char);
-        if (tag_type != TAG_UNKNOWN) {
+        if (tag_type != TAG_COUNT) {
             for (int32 i = file_pos; i < value_end; i += 1) {
                 if (file.data[i] == '_') {
                     file.data[i] = ' ';
@@ -4184,7 +4184,7 @@ tag_edit_generate_filename(MutableSong *song,
             char *value;
             int32 value_len;
 
-            if (type == TAG_UNKNOWN) {
+            if (type == TAG_COUNT) {
                 continue;
             }
 
@@ -4222,7 +4222,7 @@ tag_edit_song_display_value(MutableSong *song, enum TagType tag_type,
                               StrBuilder *buffer) {
     StrBuilder tag = {0};
 
-    if (tag_type == TAG_UNKNOWN) {
+    if (tag_type == TAG_COUNT) {
         SB_APPEND(buffer, song->name, song->name_len);
         if (song->new_name && (song->new_name_len > 0)) {
             SB_APPEND(buffer, " -> ");

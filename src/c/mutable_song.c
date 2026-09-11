@@ -45,7 +45,7 @@ mutable_song_add_tag(MutableSong *song, enum TagType type, int32 idx) {
             new_tag->original_len = 0;
             new_tag->value_len = 0;
             new_tag->idx = 0;
-            new_tag->type = TAG_UNKNOWN;
+            new_tag->type = TAG_COUNT;
             new_tag->modified = false;
         }
         song->tags_cap = new_cap;
@@ -102,7 +102,7 @@ mutable_song_tag_destroy(MutableSongTag *tag) {
     stupid_string_free(&tag->original, &tag->original_len);
     stupid_string_free(&tag->value, &tag->value_len);
     tag->idx = 0;
-    tag->type = TAG_UNKNOWN;
+    tag->type = TAG_COUNT;
     tag->modified = false;
     return;
 }

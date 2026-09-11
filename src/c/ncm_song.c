@@ -58,7 +58,7 @@ static void
 ncm_song_tag_init(NcmSongTag *tag) {
     tag->value = NULL;
     tag->value_len = 0;
-    tag->type = TAG_UNKNOWN;
+    tag->type = TAG_COUNT;
     return;
 }
 
@@ -305,7 +305,7 @@ ncm_song_add_tag(NcmSong *song, enum TagType type,
     if (value_len < 0) {
         return -EINVAL;
     }
-    if (type == TAG_UNKNOWN) {
+    if (type == TAG_COUNT) {
         return -EINVAL;
     }
 
