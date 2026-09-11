@@ -174,6 +174,8 @@ enum {
     NCM_SEARCH_TAG_COUNT = 0
         TAG_SEARCH_DEFS(TAG_COUNT_RECORD),
     NCM_SEARCH_CONSTRAINT_COUNT = NCM_SEARCH_TAG_COUNT + 1,
+    NCM_WRITABLE_TAG_COUNT = 0
+        TAG_FIELD_DEFS(TAG_COUNT_RECORD),
     TAGLIB_TAG_COUNT = 0
         TAGLIB_TAG_DEFS(TAG_COUNT_RECORD),
     NCM_MPD_TAG_COUNT = 0
@@ -191,12 +193,6 @@ enum {
 
 #define TAG_TYPE_ENUM_FIELDS                                                   \
   TAG_DEFS(TAG_TYPE_ENUM_FIELD)
-
-#define TAGS_FIELD_ENUM_FIELD(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)          \
-  XX(CAT(TAGS_FIELD_, SUFFIX), DISP)
-
-#define TAGS_FIELD_ENUM_FIELDS                                                 \
-  TAG_FIELD_DEFS(TAGS_FIELD_ENUM_FIELD)
 
 #define SONG_GETTER_RECORD_NONE(XX)                                            \
   XX(SONG_GETTER_NONE, none, '\0')
@@ -270,12 +266,6 @@ enum {
 #define ENUM_FIELDS TAG_TYPE_ENUM_FIELDS
 #include "cbase/xenums.c"
 
-#define ENUM_NAME TagsField
-#define ENUM_PREFIX_ TAGS_FIELD_
-#define ENUM_BITFLAGS 0
-#define ENUM_FIELDS TAGS_FIELD_ENUM_FIELDS
-#include "cbase/xenums.c"
-
 #define ENUM_NAME SongGetter
 #define ENUM_PREFIX_ SONG_GETTER_
 #define ENUM_BITFLAGS 0
@@ -301,6 +291,39 @@ ncm_tag_type_display_name_len(enum TagType tag, char **out) {
         *out = "";
         return 0;
     }
+}
+
+static inline bool
+ncm_tag_type_is_writable(enum TagType tag) {
+    switch ((int32)tag) {
+#define TAG_IS_WRITABLE_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)           \
+    case CAT(TAG_, SUFFIX):                                                    \
+        return ((FLAGS) & TAG_FLAG_WRITABLE) != 0;
+
+    TAG_DEFS(TAG_IS_WRITABLE_CASE)
+
+#undef TAG_IS_WRITABLE_CASE
+    case TAG_COUNT:
+    default:
+        return false;
+    }
+}
+
+static inline enum TagType
+ncm_writable_tag_at(int32 idx) {
+    static const enum TagType tags[NCM_WRITABLE_TAG_COUNT] = {
+#define NCM_WRITABLE_TAG_ENTRY(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)         \
+        CAT(TAG_, SUFFIX),
+
+        TAG_FIELD_DEFS(NCM_WRITABLE_TAG_ENTRY)
+
+#undef NCM_WRITABLE_TAG_ENTRY
+    };
+
+    if ((idx < 0) || (idx >= NCM_WRITABLE_TAG_COUNT)) {
+        return TAG_UNKNOWN;
+    }
+    return tags[idx];
 }
 
 static inline bool
@@ -524,65 +547,33 @@ ncm_tag_type_taglib_name_len(enum TagType tag, char *out, int32 cap) {
     return ascii_normalize_camel_compact(out, alias, alias_len);
 }
 
-static inline int32
-ncm_tags_field_taglib_property_len(enum TagsField field, char *out, int32 cap) {
-    char *alias;
-    int32 alias_len;
-    int32 result;
-
-    ASSERT(out != NULL);
-    ASSERT_POSITIVE(cap);
-
-    if ((uint32)field >= TAGS_FIELD_COUNT) {
-        out[0] = '\0';
-        return -1;
-    }
-
-    alias_len = TAGS_FIELD_alias_len(field, &alias);
-    if (alias_len >= cap) {
-        out[0] = '\0';
-        return -1;
-    }
-    result = ascii_normalize_upper_compact(out, alias, alias_len);
-    if ((field != TAGS_FIELD_TRACK) && (field != TAGS_FIELD_DISC)) {
-        return result;
-    }
-    if (result + STRLIT_LEN("NUMBER") >= cap) {
-        out[0] = '\0';
-        return -1;
-    }
-
-    memcpy64(out + result, STRLIT("NUMBER") + 1);
-    return result + STRLIT_LEN("NUMBER");
-}
-
 static inline char
-ncm_tags_field_format_char(enum TagsField field) {
-    switch (field) {
-#define TAGS_FIELD_FORMAT_CHAR_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)    \
-    case CAT(TAGS_FIELD_, SUFFIX):                                             \
+ncm_tag_type_format_char(enum TagType tag) {
+    switch (tag) {
+#define TAG_TYPE_FORMAT_CHAR_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, FLAGS)      \
+    case CAT(TAG_, SUFFIX):                                                    \
         return CHAR;
 
-    TAG_FIELD_DEFS(TAGS_FIELD_FORMAT_CHAR_CASE)
+    TAG_DEFS(TAG_TYPE_FORMAT_CHAR_CASE)
 
-#undef TAGS_FIELD_FORMAT_CHAR_CASE
-    case TAGS_FIELD_COUNT:
+#undef TAG_TYPE_FORMAT_CHAR_CASE
+    case TAG_COUNT:
     default:
         return '\0';
     }
 }
 
 static inline int32
-ncm_tags_field_parser_name_len(enum TagsField field, char **out) {
-    if (field == TAGS_FIELD_TRACK) {
+ncm_tag_type_parser_name_len(enum TagType tag, char **out) {
+    if (tag == TAG_TRACK) {
         return SONG_GETTER_alias_len(SONG_GETTER_TRACK_NUMBER, out);
     }
-    if (field == TAGS_FIELD_COUNT) {
+    if (!ncm_tag_type_is_writable(tag)) {
         *out = "";
         return 0;
     }
 
-    return TAGS_FIELD_alias_len(field, out);
+    return TAG_alias_len(tag, out);
 }
 
 static inline char

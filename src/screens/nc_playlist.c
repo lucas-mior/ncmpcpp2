@@ -841,24 +841,20 @@ playlist_build_mutable_song(NcmSong *replacement,
     playlist_set_mutable_uri(replacement, edited);
 
     for (int32 i = 0; i < current->tags_len; i += 1) {
-        enum TagsField field;
+        enum TagType type = current->tags[i].type;
 
-        if (current->tags[i].type == TAG_UNKNOWN) {
+        if ((type == TAG_UNKNOWN) || ncm_tag_type_is_writable(type)) {
             continue;
         }
-
-        field = ncm_tags_field_from_tag_type(current->tags[i].type);
-        if (field != TAGS_FIELD_COUNT) {
-            continue;
-        }
-        ncm_song_add_tag(replacement, current->tags[i].type,
+        ncm_song_add_tag(replacement, type,
                          current->tags[i].value, current->tags[i].value_len);
     }
 
-    for (uint32 i = 0; i < TAGS_FIELD_COUNT; i += 1) {
-        enum TagType type = ncm_tags_field_to_tag_type(i);
+    for (int32 i = 0; i < NCM_WRITABLE_TAG_COUNT; i += 1) {
+        enum TagType type = ncm_writable_tag_at(i);
+
         for (int32 j = 0; ; j += 1) {
-            if (!mutable_song_has_tag_view(edited, i, j, &value)) {
+            if (!mutable_song_has_tag_view(edited, type, j, &value)) {
                 break;
             }
             if (value.len <= 0) {

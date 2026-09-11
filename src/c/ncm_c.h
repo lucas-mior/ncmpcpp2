@@ -58,11 +58,10 @@ typedef struct TagsReplayGainInfo {
     StringView album_peak;
 } TagsReplayGainInfo;
 
-typedef bool TagsGetFieldCallback(enum TagsField, int32, StringView *,
-                                     void *);
+typedef bool TagsGetTagCallback(enum TagType, int32, StringView *, void *);
 
 int32 ncm_tags_write(char *music_dir, char *uri, bool, char *directory,
-                     char *new_name, TagsGetFieldCallback *, void *);
+                     char *new_name, TagsGetTagCallback *, void *);
 
 #define ENUM_NAME NcmItemType
 #define ENUM_PREFIX_ NCM_ITEM_
@@ -80,11 +79,7 @@ char *ncm_tag_type_name(enum TagType);
 enum TagType ncm_char_to_tag_type(char);
 enum SongGetter ncm_song_getter_from_char(char);
 enum TagType ncm_song_getter_to_tag_type(enum SongGetter);
-enum TagsField ncm_tags_field_from_char(char);
-enum TagsField ncm_tags_field_from_tag_type(enum TagType);
-enum TagType ncm_tags_field_to_tag_type(enum TagsField);
-enum SongGetter ncm_tags_field_to_song_getter(enum TagsField);
-enum TagsField ncm_song_getter_to_tags_field(enum SongGetter);
+enum SongGetter ncm_tag_type_to_song_getter(enum TagType);
 
 #define ENUM_NAME NcmSongOwnership
 #define ENUM_PREFIX_ NCM_SONG_
@@ -156,7 +151,7 @@ typedef struct MutableSongTag {
     int32 value_len;
     int32 idx;
 
-    enum TagsField field;
+    enum TagType type;
     bool modified;
 } MutableSongTag;
 
@@ -184,17 +179,17 @@ void mutable_song_destroy(MutableSong *);
 int32 mutable_song_copy(MutableSong *dest, MutableSong *source);
 void mutable_song_move(MutableSong *dest, MutableSong *source);
 
-int32 mutable_song_set_tag(MutableSong *, enum TagsField, int32 idx,
-                               char *, int32 value_len);
-int32 mutable_song_set_tags(MutableSong *, enum TagsField,
-                                char *value, int32 value_len, char *separator,
-                                int32 separator_len);
-bool mutable_song_has_tag_view(MutableSong *, enum TagsField, int32,
-                                   StringView *);
-void mutable_song_get_tag_buffer(MutableSong *, enum TagsField,
-                                     int32, StrBuilder *);
-StrBuilder mutable_song_tags_buffer(MutableSong *, enum TagsField,
-                                        char *, int32, bool);
+int32 mutable_song_set_tag(MutableSong *, enum TagType, int32 idx,
+                           char *, int32 value_len);
+int32 mutable_song_set_tags(MutableSong *, enum TagType,
+                            char *value, int32 value_len, char *separator,
+                            int32 separator_len);
+bool mutable_song_has_tag_view(MutableSong *, enum TagType, int32,
+                               StringView *);
+void mutable_song_get_tag_buffer(MutableSong *, enum TagType,
+                                 int32, StrBuilder *);
+StrBuilder mutable_song_tags_buffer(MutableSong *, enum TagType,
+                                    char *, int32, bool);
 int32 mutable_song_load_originals_from_song(MutableSong *, NcmSong *);
 
 int32 mutable_song_set_new_name(MutableSong *, char *, int32);

@@ -505,20 +505,20 @@ int32
 nc_screen_menu_mutable_song_tag_at(NcMenu *menu, int32 pos,
                                   enum SongGetter getter, StrBuilder *tag) {
     MutableSong *song;
-    enum TagsField field;
+    enum TagType type;
 
     if ((menu == NULL) || (tag == NULL)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    field = ncm_song_getter_to_tags_field(getter);
-    if (field == TAGS_FIELD_COUNT) {
+    type = ncm_song_getter_to_tag_type(getter);
+    if (!ncm_tag_type_is_writable(type)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     song = nc_menu_active_item_at(menu, pos);
     if (song == NULL) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    *tag = mutable_song_tags_buffer(song, field, Config.tags_separator,
+    *tag = mutable_song_tags_buffer(song, type, Config.tags_separator,
                                     Config.tags_separator_len,
                                     Config.show_duplicate_tags);
     return 0;

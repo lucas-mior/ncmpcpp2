@@ -4236,7 +4236,7 @@ action_runtime_update_tag_directory(StrBuilder *shared_directory, bool valid) {
 
 static int32
 action_runtime_edit_library_tag(void) {
-    enum TagsField field;
+    enum TagType tag_type;
     NcmMpdSongList songs = {0};
     StrBuilder current_tag = {0};
     StrBuilder prompt = {0};
@@ -4282,8 +4282,8 @@ action_runtime_edit_library_tag(void) {
 
     sep = Config.tags_separator;
     sep_len = Config.tags_separator_len;
-    field = ncm_tags_field_from_tag_type(Config.media_library_primary_tag);
-    if (field == TAGS_FIELD_COUNT) {
+    tag_type = Config.media_library_primary_tag;
+    if (!ncm_tag_type_is_writable(tag_type)) {
         status = -NCM_ERROR_UNAVAILABLE;
         goto cleanup;
     }
@@ -4310,7 +4310,7 @@ action_runtime_edit_library_tag(void) {
 
         status = mutable_song_load_originals_from_song(&mutable_song, song);
         if (status == 0) {
-            status = mutable_song_set_tags(&mutable_song, field,
+            status = mutable_song_set_tags(&mutable_song, tag_type,
                                            new_tag.data, new_tag.len,
                                            sep, sep_len);
         }

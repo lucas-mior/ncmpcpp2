@@ -62,16 +62,16 @@ tiny_editor_buffer_getter_value(NcBuffer *buffer, enum SongGetter getter,
 
 static void
 tiny_editor_buffer_mutable_tag(NcBuffer *buffer, MutableSong *song,
-                               enum TagsField field,
+                               enum TagType type,
                                char *tag_separator, int32 tag_separator_len,
                                bool show_duplicate_tags) {
     StrBuilder value;
     char *name;
     int32 name_len;
 
-    name_len = TAGS_FIELD_alias_len(field, &name);
+    name_len = TAG_alias_len(type, &name);
     tiny_editor_buffer_key_value(buffer, name, name_len, NULL, 0);
-    value = mutable_song_tags_buffer(song, field,
+    value = mutable_song_tags_buffer(song, type,
                                      tag_separator, tag_separator_len,
                                      show_duplicate_tags);
     nc_buffer_append_data(buffer, value.data, value.len);
@@ -106,7 +106,7 @@ tiny_editor_finish(TinyTagEditScreen *screen) {
 static int32
 tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
     enum TinyTagEditPromptResult prompt_result;
-    enum TagsField field;
+    enum TagType type;
     StringView initial;
     StringView current_name;
     StrBuilder input = {0};
@@ -127,16 +127,18 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         int32 tag_separator_len;
         NcBuffer row_buffer = {0};
 
-        field = (enum TagsField)(row - (int32)TINY_TAG_EDIT_FIRST_TAG_ROW);
+        type = ncm_writable_tag_at(
+            row - (int32)TINY_TAG_EDIT_FIRST_TAG_ROW);
+        ASSERT(type != TAG_UNKNOWN);
         tag_separator = screen->tag_separator.data;
         tag_separator_len = screen->tag_separator.len;
 
-        tag_value = mutable_song_tags_buffer(&screen->edited, field,
+        tag_value = mutable_song_tags_buffer(&screen->edited, type,
                                              tag_separator, tag_separator_len,
                                              screen->show_duplicate_tags);
         initial.data = tag_value.data;
         initial.len = tag_value.len;
-        field_name_len = TAGS_FIELD_alias_len(field, &field_name);
+        field_name_len = TAG_alias_len(type, &field_name);
         if (screen->hooks.prompt == NULL) {
             prompt_result = TINY_TAG_EDIT_PROMPT_ERROR;
         } else {
@@ -155,16 +157,15 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
             return -NCM_ERROR_UNAVAILABLE;
         }
 
-        mutable_song_set_tags(&screen->edited, field,
+        mutable_song_set_tags(&screen->edited, type,
                               sb_opt_cstr(&input), input.len,
                               tag_separator, tag_separator_len);
         sb_free(&input);
 
-        tiny_editor_buffer_mutable_tag(&row_buffer, &screen->edited, field,
+        tiny_editor_buffer_mutable_tag(&row_buffer, &screen->edited, type,
                                        tag_separator, tag_separator_len,
                                        screen->show_duplicate_tags);
-        nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL,
-                             TINY_TAG_EDIT_TAG_ROW(field), &row_buffer);
+        nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL, row, &row_buffer);
         nc_buffer_destroy(&row_buffer);
         return 0;
     }
@@ -689,19 +690,19 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     nc_buffer_destroy(&row);
     nc_editor_buffer_menu_add_separator(&screen->rows);
 
-    for (uint32 field = 0; field < TAGS_FIELD_COUNT; field += 1) {
+    for (int32 i = 0; i < NCM_WRITABLE_TAG_COUNT; i += 1) {
+        enum TagType type = ncm_writable_tag_at(i);
         bool inactive;
 
         row = (NcBuffer){0};
-        tiny_editor_buffer_mutable_tag(&row, &screen->edited,
-                                       (enum TagsField)field,
+        tiny_editor_buffer_mutable_tag(&row, &screen->edited, type,
                                        tag_separator, tag_separator_len,
                                        show_duplicate_tags);
         inactive = !extended_tags_supported
-                   && ((field == TAGS_FIELD_ALBUM_ARTIST)
-                       || (field == TAGS_FIELD_COMPOSER)
-                       || (field == TAGS_FIELD_PERFORMER)
-                       || (field == TAGS_FIELD_DISC));
+                   && ((type == TAG_ALBUM_ARTIST)
+                       || (type == TAG_COMPOSER)
+                       || (type == TAG_PERFORMER)
+                       || (type == TAG_DISC));
         if (inactive) {
             tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
         } else {
