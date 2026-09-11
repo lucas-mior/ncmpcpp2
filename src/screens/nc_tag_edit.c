@@ -787,9 +787,9 @@ tag_edit_append_parser_legend_field(StrBuilder *legend,
     return;
 }
 
-#define TAG_EDIT_APPEND_PARSER_FIELD(suffix, display, tag_char, getter_char, \
-                                     flags)                                  \
-    tag_edit_append_parser_legend_field(&screen->parser_legend,              \
+#define TAG_EDIT_APPEND_PARSER_FIELD(suffix, display, tag_char, getter_char,   \
+                                     taglib_num)                              \
+    tag_edit_append_parser_legend_field(&screen->parser_legend,                \
                                         CAT(TAG_, suffix));
 
 static void

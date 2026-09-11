@@ -81,9 +81,8 @@ ncm_tag_type_name(enum TagType tag) {
 enum TagType
 ncm_char_to_tag_type(char c) {
     switch (c) {
-#define TAG_CHAR_CASE(suffix, display, tag_char, getter_char,        \
-                          flags)                                             \
-    case tag_char:                                                            \
+#define TAG_CHAR_CASE(suffix, display, tag_char, getter_char, taglib_num)     \
+    case tag_char:                                                             \
         return CAT(TAG_, suffix);
 
     TAG_DEFS(TAG_CHAR_CASE)
@@ -97,12 +96,12 @@ ncm_char_to_tag_type(char c) {
 enum SongGetter
 ncm_song_getter_from_char(char c) {
     switch (c) {
-#define SONG_GETTER_NON_TAG_CHAR_CASE(getter, alias, getter_char)        \
-    case getter_char:                                                         \
+#define SONG_GETTER_NON_TAG_CHAR_CASE(getter, alias, getter_char)             \
+    case getter_char:                                                          \
         return getter;
-#define SONG_GETTER_TAG_CHAR_CASE(suffix, display, tag_char,          \
-                                      getter_char, flags)                   \
-    case getter_char:                                                         \
+#define SONG_GETTER_TAG_CHAR_CASE(suffix, display, tag_char, getter_char,      \
+                                  taglib_num)                                 \
+    case getter_char:                                                          \
         return CAT(SONG_GETTER_, suffix);
 
     SONG_GETTER_RECORD_LENGTH(SONG_GETTER_NON_TAG_CHAR_CASE)
@@ -125,9 +124,9 @@ ncm_song_getter_from_char(char c) {
 enum TagType
 ncm_song_getter_to_tag_type(enum SongGetter getter) {
     switch (getter) {
-#define SONG_GETTER_TO_TAG_CASE(suffix, display, tag_char,          \
-                                    getter_char, flags)                     \
-    case CAT(SONG_GETTER_, suffix):                                           \
+#define SONG_GETTER_TO_TAG_CASE(suffix, display, tag_char, getter_char,       \
+                                taglib_num)                                    \
+    case CAT(SONG_GETTER_, suffix):                                            \
         return CAT(TAG_, suffix);
 
     SONG_GETTER_TAG_DEFS(SONG_GETTER_TO_TAG_CASE)
@@ -148,9 +147,10 @@ ncm_song_getter_to_tag_type(enum SongGetter getter) {
 
 enum SongGetter
 ncm_tag_type_to_song_getter(enum TagType tag) {
-#define NCM_TAG_TO_GETTER_IF(suffix, display, tag_char, getter_char, flags)   \
-    if (tag == CAT(TAG_, suffix)) {                                           \
-        return CAT(SONG_GETTER_, suffix);                                     \
+#define NCM_TAG_TO_GETTER_IF(suffix, display, tag_char, getter_char,          \
+                              taglib_num)                                     \
+    if (tag == CAT(TAG_, suffix)) {                                            \
+        return CAT(SONG_GETTER_, suffix);                                      \
     }
 
     TAG_DEFS(NCM_TAG_TO_GETTER_IF)
