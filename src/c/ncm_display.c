@@ -9,9 +9,7 @@
 
 static void
 ncm_display_append_basename(NcBuffer *buffer, char *path, int32 path_len) {
-    int32 basename;
-
-    basename = ncm_path_basename_start(path, path_len);
+    int32 basename = ncm_path_basename_start(path, path_len);
     nc_buffer_append_data(buffer, path + basename, path_len - basename);
     return;
 }
