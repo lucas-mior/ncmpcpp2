@@ -1114,6 +1114,7 @@ media_library_screen_init(MediaLibraryScreen *screen, MediaLibraryHooks hooks,
                        |NC_SCREEN_CAPABILITY_SONGS
                        |NC_SCREEN_CAPABILITY_COLUMNS
                        |NC_SCREEN_CAPABILITY_TAGS;
+
     ops.current_menu = media_library_menu_capability;
     ops.current_menu_height = media_library_menu_height_capability;
     ops.current_filter = media_library_filter_constraint_capability;
@@ -1123,11 +1124,13 @@ media_library_screen_init(MediaLibraryScreen *screen, MediaLibraryHooks hooks,
     ops.search = media_library_search_capability;
     ops.current_song = media_library_current_song_capability;
     ops.selected_songs = media_library_selected_songs_capability;
+
     NC_SCREEN_COLUMN_CAPABILITY_SET_OPS(ops, media_library);
     ops.tag_menu = media_library_tag_menu_capability;
     ops.song_tag_at = media_library_tag_at_capability;
     nc_screen_init_ops(&screen->screen, ops, screen,
                        NC_SCREEN_TYPE_MEDIA_LIBRARY);
+
     library_update_menu_highlights(screen);
     library_layout(screen);
     return;
