@@ -161,9 +161,8 @@ StrBuilder
 ncm_html_strip_tags(char *data, int32 data_len) {
     StrBuilder stripped = {0};
     StrBuilder result;
-    int32 i;
+    int32 i = 0;
 
-    i = 0;
     while (i < data_len) {
         int32 tag_end;
         int32 tag_len;
