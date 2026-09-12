@@ -111,31 +111,24 @@ ncm_song_getter_from_char(char c) {
 enum TagType
 ncm_song_getter_to_tag_type(enum SongGetter getter) {
     switch (getter) {
-    case SONG_GETTER_ARTIST:
-        return TAG_ARTIST;
-    case SONG_GETTER_ALBUM_ARTIST:
-        return TAG_ALBUM_ARTIST;
-    case SONG_GETTER_TITLE:
-        return TAG_TITLE;
-    case SONG_GETTER_ALBUM:
-        return TAG_ALBUM;
-    case SONG_GETTER_DATE:
-        return TAG_DATE;
-    case SONG_GETTER_GENRE:
-        return TAG_GENRE;
-    case SONG_GETTER_COMPOSER:
-        return TAG_COMPOSER;
-    case SONG_GETTER_PERFORMER:
-        return TAG_PERFORMER;
-    case SONG_GETTER_DISC:
-        return TAG_DISC;
-    case SONG_GETTER_COMMENT:
-        return TAG_COMMENT;
+#define SONG_TAG_GETTER_TO_TAG_CASE(CTX, SUFFIX, DISP, CHAR) \
+    case CAT(SONG_GETTER_, SUFFIX):                           \
+        return CAT(TAG_, SUFFIX);
+#define SONG_TAG_GETTER_TO_TAG_SPECIAL_CASE(                              \
+    CTX, TAG_SUFFIX, TAG_DISP, GETTER_SUFFIX, GETTER_DISP, CHAR,          \
+    GETTER_TAG)                                                            \
+    case CAT(SONG_GETTER_, GETTER_SUFFIX):                                \
+        return GETTER_TAG;
+
+    SONG_TAG_DEFS(SONG_TAG_GETTER_TO_TAG_CASE,
+                  SONG_TAG_GETTER_TO_TAG_SPECIAL_CASE, SONG_TAG_NO_CONTEXT)
+
+#undef SONG_TAG_GETTER_TO_TAG_SPECIAL_CASE
+#undef SONG_TAG_GETTER_TO_TAG_CASE
     case SONG_GETTER_LENGTH:
     case SONG_GETTER_DIRECTORY:
     case SONG_GETTER_NAME:
     case SONG_GETTER_URI:
-    case SONG_GETTER_TRACK_NUMBER:
     case SONG_GETTER_TRACK_TOTAL:
     case SONG_GETTER_PRIORITY:
     case SONG_GETTER_COUNT:
@@ -147,28 +140,20 @@ ncm_song_getter_to_tag_type(enum SongGetter getter) {
 enum SongGetter
 ncm_tag_type_to_song_getter(enum TagType tag) {
     switch (tag) {
-    case TAG_ARTIST:
-        return SONG_GETTER_ARTIST;
-    case TAG_ALBUM_ARTIST:
-        return SONG_GETTER_ALBUM_ARTIST;
-    case TAG_ALBUM:
-        return SONG_GETTER_ALBUM;
-    case TAG_DISC:
-        return SONG_GETTER_DISC;
-    case TAG_TRACK:
-        return SONG_GETTER_TRACK_NUMBER;
-    case TAG_GENRE:
-        return SONG_GETTER_GENRE;
-    case TAG_DATE:
-        return SONG_GETTER_DATE;
-    case TAG_COMPOSER:
-        return SONG_GETTER_COMPOSER;
-    case TAG_PERFORMER:
-        return SONG_GETTER_PERFORMER;
-    case TAG_TITLE:
-        return SONG_GETTER_TITLE;
-    case TAG_COMMENT:
-        return SONG_GETTER_COMMENT;
+#define SONG_TAG_TO_GETTER_CASE(CTX, SUFFIX, DISP, CHAR) \
+    case CAT(TAG_, SUFFIX):                              \
+        return CAT(SONG_GETTER_, SUFFIX);
+#define SONG_TAG_TO_GETTER_SPECIAL_CASE(                                  \
+    CTX, TAG_SUFFIX, TAG_DISP, GETTER_SUFFIX, GETTER_DISP, CHAR,          \
+    GETTER_TAG)                                                            \
+    case CAT(TAG_, TAG_SUFFIX):                                            \
+        return CAT(SONG_GETTER_, GETTER_SUFFIX);
+
+    SONG_TAG_DEFS(SONG_TAG_TO_GETTER_CASE,
+                  SONG_TAG_TO_GETTER_SPECIAL_CASE, SONG_TAG_NO_CONTEXT)
+
+#undef SONG_TAG_TO_GETTER_SPECIAL_CASE
+#undef SONG_TAG_TO_GETTER_CASE
     case TAG_COUNT:
     default:
         return SONG_GETTER_COUNT;
