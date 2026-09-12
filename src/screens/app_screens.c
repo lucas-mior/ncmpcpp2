@@ -41,10 +41,10 @@ struct SongInfoScreen {
 };
 
 #define NCM_SONG_INFO_TAG_ENTRY(suffix, display, tag_char) \
-    {                                                       \
-        .name = TAG_DISPLAY_NAME(display),                  \
-        .name_len = TAG_DISPLAY_NAME_LEN(display),          \
-        .tag = CAT(TAG_, suffix),                           \
+    {                                                      \
+        .name = #display,                                  \
+        .name_len = STRLIT_LEN(display),                   \
+        .tag = CAT(TAG_, suffix),                          \
     },
 
 NcmSongInfoMetadata ncm_song_info_tags[] = {
