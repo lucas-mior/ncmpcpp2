@@ -176,8 +176,7 @@ ncm_song_getter_sort_label_len(enum SongGetter getter, char **out) {
     switch (getter) {
     case SONG_GETTER_URI:
         return SONG_GETTER_alias_len(SONG_GETTER_NAME, out);
-#define SONG_GETTER_SORT_LABEL_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR,         \
-                                    TAGLIB_NUM)                                \
+#define SONG_GETTER_SORT_LABEL_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, TAGLIB_NUM) \
     case CAT(SONG_GETTER_, SUFFIX):                                            \
         return SONG_GETTER_alias_len(getter, out);
 
