@@ -86,7 +86,8 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
 
             if (getter != SONG_GETTER_COUNT) {
                 StrBuilder tag_value =
-                    ncm_song_tags_buffer(song, getter, Config.tags_separator,
+                    ncm_song_tags_buffer(song, getter,
+                                         Config.tags_separator,
                                          Config.tags_separator_len,
                                          Config.show_duplicate_tags);
 
