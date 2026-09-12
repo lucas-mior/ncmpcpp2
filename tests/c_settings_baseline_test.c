@@ -981,10 +981,10 @@ test_tag_type_names(void) {
 
 #define TEST_TAG_TYPE_NAME(suffix, display, tag_char)                         \
     name_len = ncm_tag_type_name_len(CAT(TAG_, suffix), &name);               \
-    ASSERT_EQUAL(name, name_len, TAG_DISPLAY_NAME(display));                  \
+    ASSERT_EQUAL(name, name_len, #display);                  \
     ASSERT(name_len == TAG_DISPLAY_NAME_LEN(display));                        \
     name_len = TAG_alias_len(CAT(TAG_, suffix), &name);                       \
-    ASSERT_EQUAL(name, name_len, TAG_DISPLAY_NAME(display));                  \
+    ASSERT_EQUAL(name, name_len, #display);                  \
     ASSERT(name_len == TAG_DISPLAY_NAME_LEN(display));                        \
     normalized_len = ascii_normalize_lower_snake(                             \
         normalized, name, name_len);                                          \
@@ -1242,7 +1242,7 @@ test_search_constraint_metadata(void) {
     ASSERT(metadata->kind == SEARCH_CONSTRAINT_TAG);                         \
     ASSERT(metadata->tag == CAT(TAG_, suffix));                              \
     ASSERT_EQUAL(metadata->name, metadata->name_len,                         \
-                 TAG_DISPLAY_NAME(display));                                 \
+                 #display);                                 \
     ASSERT(metadata->name_len == strlen32(metadata->name));                  \
     idx += 1;
 
@@ -1282,7 +1282,7 @@ test_song_info_tag_metadata(void) {
 #define TEST_SONG_INFO_TAG(suffix, display, tag_char)                         \
     ASSERT_EQUAL(ncm_song_info_tags[idx].name,                               \
                  ncm_song_info_tags[idx].name_len,                           \
-                 TAG_DISPLAY_NAME(display));                             \
+                 #display);                             \
     ASSERT(ncm_song_info_tags[idx].name_len                                  \
            == TAG_DISPLAY_NAME_LEN(display));                            \
     ASSERT(ncm_song_info_tags[idx].tag == CAT(TAG_, suffix));               \
