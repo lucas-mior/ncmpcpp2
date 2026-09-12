@@ -623,9 +623,8 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                         if (!ncm_song_is_empty(&song)) {
                             if (Config.execute_on_song_change_len > 0) {
                                 char *command = Config.execute_on_song_change;
-                                int32 len;
+                                int32 len = Config.execute_on_song_change_len;
 
-                                len = Config.execute_on_song_change_len;
                                 ncm_run_external_command(command, len, true,
                                                          NULL);
                             }
