@@ -16,25 +16,6 @@
     } while (0)
 
 static void
-ncm_mpd_connection_cstring_copy(char *dst, int32 dst_cap, char *src) {
-    int32 src_len;
-    int32 len;
-
-    dst[0] = '\0';
-    src_len = optional_strlen32(src);
-    len = src_len;
-    if (len >= dst_cap) {
-        len = dst_cap - 1;
-    }
-
-    for (int32 i = 0; i < len; i += 1) {
-        dst[i] = src[i];
-    }
-    dst[len] = '\0';
-    return;
-}
-
-static void
 ncm_mpd_connection_set_error(MpdConnection *connection,
                              enum mpd_error code,
                              enum mpd_server_error server_code,
@@ -191,7 +172,7 @@ ncm_mpd_string_list_push(StringViewList *list, char *value) {
     string = &list->items[index];
     string->data = malloc2(value_len + 1);
     string->len = value_len;
-    memcpy64(string->data, value_len + 1, value);
+    memcpy64(string->data, value, value_len + 1);
     list->count += 1;
     return;
 }
@@ -1586,7 +1567,7 @@ ncm_mpd_connection_get_outputs(MpdConnection *connection,
         item->name_len = name_len;
         item->enabled = mpd_output_get_enabled(output);
 
-        memcpy64(item->name, name_len + 1, name);
+        memcpy64(item->name, name, name_len + 1);
         outputs->count += 1;
 
         mpd_output_free(output);
