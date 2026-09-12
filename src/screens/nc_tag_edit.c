@@ -1024,7 +1024,8 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
             }
             SB_APPEND(&new_name, stem.data, stem.len);
             if ((extension_start >= 0) && song->name) {
-                SB_APPEND(&new_name, song->name + extension_start,
+                SB_APPEND(&new_name,
+                          song->name + extension_start,
                           song->name_len - extension_start);
             }
             if (apply && (stem.len <= 0)) {
