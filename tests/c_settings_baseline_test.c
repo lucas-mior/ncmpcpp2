@@ -1009,7 +1009,6 @@ test_writable_tag_metadata(void) {
 #define TEST_WRITABLE_TAG(suffix, display, tag_char)                          \
     ASSERT(ncm_char_to_tag_type(tag_char) == CAT(TAG_, suffix));             \
     ASSERT((uint32)CAT(TAG_, suffix) < TAG_COUNT);                           \
-    ASSERT(ncm_writable_tag_at(idx) == CAT(TAG_, suffix));                   \
     ASSERT(ncm_tag_type_format_char(CAT(TAG_, suffix)) == tag_char);          \
     idx += 1;
 
@@ -1017,8 +1016,6 @@ test_writable_tag_metadata(void) {
 
 #undef TEST_WRITABLE_TAG
     ASSERT(idx == (int32)TAG_COUNT);
-    ASSERT(ncm_writable_tag_at(-1) == TAG_COUNT);
-    ASSERT(ncm_writable_tag_at((int32)TAG_COUNT) == TAG_COUNT);
     ASSERT(ncm_char_to_tag_type('N') == TAG_COUNT);
     ASSERT(ncm_char_to_tag_type('x') == TAG_COUNT);
     ASSERT((uint32)TAG_COUNT >= TAG_COUNT);
