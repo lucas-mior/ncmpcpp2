@@ -67,7 +67,12 @@ ncm_color_index_from_char(char c) {
 
 int32
 ncm_tag_type_name_len(enum TagType tag, char **out) {
-    return ncm_tag_type_display_name_len(tag, out);
+    if ((uint32)tag >= (uint32)TAG_COUNT) {
+        *out = "";
+        return 0;
+    }
+
+    return TAG_alias_len(tag, out);
 }
 
 char *
