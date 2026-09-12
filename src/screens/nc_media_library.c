@@ -373,11 +373,14 @@ library_update_titles(MediaLibraryScreen *screen, bool update_windows) {
     }
 
     if (update_windows) {
-        nc_window_set_title(&screen->tags_window, screen->tags_title.data,
+        nc_window_set_title(&screen->tags_window,
+                            screen->tags_title.data,
                             screen->tags_title.len);
-        nc_window_set_title(&screen->albums_window, screen->albums_title.data,
+        nc_window_set_title(&screen->albums_window,
+                            screen->albums_title.data,
                             screen->albums_title.len);
-        nc_window_set_title(&screen->songs_window, screen->songs_title.data,
+        nc_window_set_title(&screen->songs_window,
+                            screen->songs_title.data,
                             screen->songs_title.len);
     }
     return;
