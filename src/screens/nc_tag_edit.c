@@ -898,7 +898,7 @@ tag_edit_save_recent_patterns(TagEditScreen *screen) {
 
 static bool
 tag_edit_prompt_tag_value(TagEditScreen *screen,
-                            enum TagType tag_type, bool all_targets) {
+                          enum TagType tag_type, bool all_targets) {
     MutableSong *song;
     StrBuilder initial;
     StrBuilder input = {0};
