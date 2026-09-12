@@ -205,14 +205,12 @@ ncm_status_handle_server_error_value(MpdClient *client, int32 code,
 
     if (ncm_mpd_client_send_password(client, NULL) < 0) {
         if (ncm_mpd_client_error_code(client) == NCM_MPD_ERROR_SERVER) {
-            status_print_server_error(ncm_mpd_client_error_message(client),
-                                      -1);
+            status_print_server_error(ncm_mpd_client_error_message(client), -1);
         } else {
             if (!ncm_mpd_client_error_is_clearable(client)) {
                 ncm_mpd_client_disconnect(client);
             }
-            status_print_client_error(ncm_mpd_client_error_message(client),
-                                      -1);
+            status_print_client_error(ncm_mpd_client_error_message(client), -1);
         }
         return;
     }
