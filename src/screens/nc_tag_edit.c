@@ -1528,8 +1528,8 @@ tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
         } else {
             int32 parent_len;
 
-            parent_len =
-                ncm_string_parent_directory_len(control_dir, control_dir_len);
+            parent_len = ncm_string_parent_directory_len(control_dir,
+                                                         control_dir_len);
             if (parent_len <= 0) {
                 tag_edit_screen_add_directory(screen,
                                               STRLIT(".."), STRLIT("/"));
