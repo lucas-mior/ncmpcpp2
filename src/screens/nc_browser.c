@@ -1297,7 +1297,8 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
         return status;
     }
 
-    for (int32 i = 0; i < strings.count; i += 1) {
+    for (int32 i = 0; i < ncm_mpd_string_list_count(&strings);
+         i += 1) {
         StringView *string = &strings.items[i];
         StrBuilder buffer = {0};
 

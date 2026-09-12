@@ -761,8 +761,7 @@ typedef struct NcmMpdItemList {
 
 typedef struct StringViewList {
     StringView *items;
-    int32 count;
-    int32 capacity;
+    Arena *arena;
 } StringViewList;
 
 typedef struct NcmMpdOutput {
