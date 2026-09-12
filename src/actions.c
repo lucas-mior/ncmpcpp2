@@ -4290,8 +4290,7 @@ action_runtime_edit_library_tag(void) {
         goto cleanup;
     }
 
-    ncm_statusbar_print(0,
-                        STRLIT("Updating tags..."));
+    ncm_statusbar_print(0, STRLIT("Updating tags..."));
     ncm_error_clear(&ncm_error);
     if (ncm_mpd_client_start_search(&global_mpd, true, &ncm_error) < 0
         || ncm_mpd_client_add_search_tag(&global_mpd,
