@@ -203,7 +203,7 @@ playlist_refresh_stats(PlaylistScreen *screen) {
     sb_clear(&screen->title_cache);
     SB_APPEND(&screen->title_cache, "Playlist (");
     count = playlist_screen_song_count(screen);
-    sb_printf(&screen->title_cache, "%d", count);
+    sb_itoa(&screen->title_cache, count);
     if (count == 1) {
         SB_APPEND(&screen->title_cache, " item)");
     } else {
