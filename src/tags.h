@@ -208,7 +208,7 @@ ncm_tag_type_taglib_property_len(enum TagType tag, char *out, int32 cap) {
     ASSERT_POSITIVE(cap);
 
     switch ((int32)tag) {
-#define TAGLIB_PROPERTY_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, TAGLIB_NUM)     \
+#define TAGLIB_PROPERTY_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, TAGLIB_NUM)      \
     case CAT(TAG_, SUFFIX):                                                    \
         append_number = TAGLIB_NUM;                                            \
         break;
