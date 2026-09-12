@@ -73,71 +73,71 @@ settings_test_double_range(SettingsApplyFn apply, Configuration *config,
 static void
 settings_assert_generated_empty(Configuration *config) {
 
-#define XX_BOOL(NAME, DEFAULT)                                           \
+#define XX_BOOL(NAME, DEFAULT)                                                 \
     ASSERT(!config->NAME);
-#define XX_STRING(NAME, DEFAULT)                                         \
+#define XX_STRING(NAME, DEFAULT)                                               \
     ASSERT(config->NAME == NULL);                                              \
     ASSERT(config->NAME##_len == 0);
-#define XX_PATH(NAME, DEFAULT)                                           \
+#define XX_PATH(NAME, DEFAULT)                                                 \
     ASSERT(config->NAME == NULL);                                              \
     ASSERT(config->NAME##_len == 0);
-#define XX_DIR(NAME, DEFAULT)                                            \
+#define XX_DIR(NAME, DEFAULT)                                                  \
     ASSERT(config->NAME == NULL);                                              \
     ASSERT(config->NAME##_len == 0);
-#define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM)                      \
+#define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM)                            \
     ASSERT(config->NAME == 0);
-#define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)                       \
+#define XX_DOUBLE(NAME, DEFAULT, MINIMUM, MAXIMUM)                             \
     ASSERT(config->NAME == 0);
-#define XX_ENUM(NAME, DEFAULT, ENUM_PREFIX_)                             \
+#define XX_ENUM(NAME, DEFAULT, ENUM_PREFIX_)                                   \
     ASSERT(config->NAME == (ENUM_PREFIX_)0);
-#define XX_MEDIA_LIBRARY_GROUPING_TAG(NAME, DEFAULT)                    \
+#define XX_MEDIA_LIBRARY_GROUPING_TAG(NAME, DEFAULT)                           \
     ASSERT(config->NAME == TAG_COUNT);
-#define XX_STARTUP_SCREEN(NAME, DEFAULT)                                 \
+#define XX_STARTUP_SCREEN(NAME, DEFAULT)                                       \
     ASSERT(config->NAME == SCREEN_TYPE_COUNT);
-#define XX_OPT_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE) \
+#define XX_OPT_STARTUP_SCREEN(NAME, DEFAULT, PRESENT_FIELD, UNSET_VALUE)       \
     ASSERT(config->NAME == (SCREEN_TYPE_)(UNSET_VALUE));                       \
     ASSERT(!config->PRESENT_FIELD);
-#define XX_COLOR(NAME, DEFAULT)                                          \
+#define XX_COLOR(NAME, DEFAULT)                                                \
     ASSERT(nc_color_is_default(config->NAME));
-#define XX_FORMATTED_COLOR(NAME, DEFAULT)                                \
+#define XX_FORMATTED_COLOR(NAME, DEFAULT)                                      \
     ASSERT(config->NAME.formats == NULL);                                      \
     ASSERT(nc_color_is_default(config->NAME.color));
-#define XX_BORDER(NAME, DEFAULT)                                         \
+#define XX_BORDER(NAME, DEFAULT)                                               \
     ASSERT(!config->NAME.enabled);                                             \
     ASSERT(nc_color_is_default(config->NAME.color));
-#define XX_FORMAT(NAME, DEFAULT, FLAGS)                                  \
+#define XX_FORMAT(NAME, DEFAULT, FLAGS)                                        \
     ASSERT(config->NAME.root.items == NULL);                                   \
     ASSERT(config->NAME.root.len == 0);                                        \
     ASSERT(config->NAME.root.cap == 0);
-#define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                          \
+#define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                                \
     ASSERT(config->NAME.data == NULL);                                         \
     ASSERT(config->NAME.properties == NULL);                                   \
     ASSERT(config->NAME.len == 0);                                             \
     ASSERT(config->NAME.cap == 0);
-#define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)         \
+#define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)               \
     ASSERT(config->NAME.data == NULL);                                         \
     ASSERT(config->NAME.len == 0);                                             \
     ASSERT(config->NAME.cap == 0);
-#define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                            \
+#define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                                  \
     ASSERT(config->NAME.items == NULL);                                        \
     ASSERT(config->NAME.len == 0);                                             \
     ASSERT(config->NAME.cap == 0);
-#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT)                           \
+#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT)                                 \
     ASSERT(config->NAME.items == NULL);                                        \
     ASSERT(config->NAME.len == 0);                                             \
     ASSERT(config->NAME.cap == 0);
-#define XX_LYRICS_FETCHERS(NAME, DEFAULT)                                \
+#define XX_LYRICS_FETCHERS(NAME, DEFAULT)                                      \
     ASSERT(config->NAME.fetchers.items == NULL);                               \
     ASSERT(config->NAME.fetchers.len == 0);                                    \
     ASSERT(config->NAME.fetchers.cap == 0);
-#define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                    \
+#define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                          \
     ASSERT(config->NAME.items == NULL);                                        \
     ASSERT(config->NAME.len == 0);                                             \
     ASSERT(config->NAME.cap == 0);                                             \
     ASSERT(!config->PREVIOUS_FIELD);
-#define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE)             \
+#define XX_UINT32_CHOICE(NAME, DEFAULT, PARSER, UNSET_VALUE)                   \
     ASSERT(config->NAME == (UNSET_VALUE));
-#define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD)                          \
+#define XX_COLUMNS(NAME, DEFAULT, FORMAT_FIELD)                                \
     ASSERT(config->FORMAT_FIELD.root.items == NULL);                           \
     ASSERT(config->FORMAT_FIELD.root.len == 0);                                \
     ASSERT(config->FORMAT_FIELD.root.cap == 0);                                \
@@ -152,14 +152,14 @@ settings_assert_generated_empty(Configuration *config) {
 
 static void
 test_generated_option_identity(void) {
-#define XX_OPTION(NAME, DEFAULT, ...) \
-    ASSERT_EQUAL( \
-        ncmpcpp_options[SETTINGS_OPTION_##NAME].name, \
-        ncmpcpp_options[SETTINGS_OPTION_##NAME].name_len, #NAME); \
-    ASSERT_EQUAL( \
-        ncmpcpp_options[SETTINGS_OPTION_##NAME].default_value, \
-        ncmpcpp_options[SETTINGS_OPTION_##NAME].default_value_len, \
-        DEFAULT); \
+#define XX_OPTION(NAME, DEFAULT, ...)                                          \
+    ASSERT_EQUAL(                                                              \
+        ncmpcpp_options[SETTINGS_OPTION_##NAME].name,                          \
+        ncmpcpp_options[SETTINGS_OPTION_##NAME].name_len, #NAME);              \
+    ASSERT_EQUAL(                                                              \
+        ncmpcpp_options[SETTINGS_OPTION_##NAME].default_value,                 \
+        ncmpcpp_options[SETTINGS_OPTION_##NAME].default_value_len,             \
+        DEFAULT);                                                              \
     ASSERT(ncmpcpp_options[SETTINGS_OPTION_##NAME].apply == apply_##NAME);
 #include "config_options_pass.h"
 
@@ -441,9 +441,9 @@ test_generated_numeric_boundaries(void) {
 
     config_init(&config);
 
-#define XX_INTEGER(NAME, DEFAULT, MINI, MAXI) \
+#define XX_INTEGER(NAME, DEFAULT, MINI, MAXI)                                  \
     settings_test_int_range(apply_##NAME, &config, &config.NAME, MINI, MAXI);
-#define XX_DOUBLE(NAME, DEFAULT, MINI, MAXI) \
+#define XX_DOUBLE(NAME, DEFAULT, MINI, MAXI)                                   \
     settings_test_double_range(apply_##NAME, &config, &config.NAME, MINI, MAXI);
 #include "config_options_pass.h"
 
@@ -979,16 +979,16 @@ test_tag_type_names(void) {
     int32 name_len;
     int32 normalized_len;
 
-#define TEST_TAG_TYPE_NAME(suffix, display, tag_char)                         \
-    name_len = ncm_tag_type_name_len(CAT(TAG_, suffix), &name);               \
-    ASSERT_EQUAL(name, name_len, #display);                  \
-    ASSERT(name_len == (sizeof(#display) - 1));                        \
-    name_len = TAG_alias_len(CAT(TAG_, suffix), &name);                       \
-    ASSERT_EQUAL(name, name_len, #display);                  \
-    ASSERT(name_len == (sizeof(#display) - 1));                        \
-    normalized_len = ascii_normalize_lower_snake(                             \
-        normalized, name, name_len);                                          \
-    ASSERT(TAG_parse(normalized, normalized_len) == CAT(TAG_, suffix));       \
+#define TEST_TAG_TYPE_NAME(suffix, display, tag_char)                          \
+    name_len = ncm_tag_type_name_len(CAT(TAG_, suffix), &name);                \
+    ASSERT_EQUAL(name, name_len, #display);                                    \
+    ASSERT(name_len == (sizeof(#display) - 1));                                \
+    name_len = TAG_alias_len(CAT(TAG_, suffix), &name);                        \
+    ASSERT_EQUAL(name, name_len, #display);                                    \
+    ASSERT(name_len == (sizeof(#display) - 1));                                \
+    normalized_len = ascii_normalize_lower_snake(                              \
+        normalized, name, name_len);                                           \
+    ASSERT(TAG_parse(normalized, normalized_len) == CAT(TAG_, suffix));        \
     TAG_alias_free(name);
 
     TAG_DEFS(TEST_TAG_TYPE_NAME)
@@ -1006,10 +1006,10 @@ static void
 test_writable_tag_metadata(void) {
     int32 idx = 0;
 
-#define TEST_WRITABLE_TAG(suffix, display, tag_char)                          \
-    ASSERT(ncm_char_to_tag_type(tag_char) == CAT(TAG_, suffix));             \
-    ASSERT((uint32)CAT(TAG_, suffix) < TAG_COUNT);                           \
-    ASSERT(ncm_tag_type_format_char(CAT(TAG_, suffix)) == tag_char);          \
+#define TEST_WRITABLE_TAG(suffix, display, tag_char)                           \
+    ASSERT(ncm_char_to_tag_type(tag_char) == CAT(TAG_, suffix));               \
+    ASSERT((uint32)CAT(TAG_, suffix) < TAG_COUNT);                             \
+    ASSERT(ncm_tag_type_format_char(CAT(TAG_, suffix)) == tag_char);           \
     idx += 1;
 
     TAG_DEFS(TEST_WRITABLE_TAG)
@@ -1026,20 +1026,20 @@ test_writable_tag_metadata(void) {
 
 static void
 test_song_getter_conversions(void) {
-#define TEST_GETTER_CHAR(getter, alias, getter_char)                         \
-    ASSERT(ncm_song_getter_from_char(getter_char) == getter);                \
+#define TEST_GETTER_CHAR(getter, alias, getter_char)                           \
+    ASSERT(ncm_song_getter_from_char(getter_char) == getter);                  \
     ASSERT(ncm_song_getter_format_char(getter) == getter_char);
-#define TEST_GETTER_TAG(CTX, suffix, alias, getter_char)                     \
-    ASSERT(ncm_song_getter_to_tag_type(CAT(SONG_GETTER_, suffix))            \
-           == CAT(TAG_, suffix));                                             \
-    ASSERT(ncm_tag_type_to_song_getter(CAT(TAG_, suffix))                    \
+#define TEST_GETTER_TAG(CTX, suffix, alias, getter_char)                       \
+    ASSERT(ncm_song_getter_to_tag_type(CAT(SONG_GETTER_, suffix))              \
+           == CAT(TAG_, suffix));                                              \
+    ASSERT(ncm_tag_type_to_song_getter(CAT(TAG_, suffix))                      \
            == CAT(SONG_GETTER_, suffix));
-#define TEST_GETTER_TAG_SPECIAL(                                         \
-    CTX, tag_suffix, tag_alias, getter_suffix, getter_alias, getter_char, \
-    getter_tag)                                                          \
-    ASSERT(ncm_tag_type_to_song_getter(CAT(TAG_, tag_suffix))            \
-           == CAT(SONG_GETTER_, getter_suffix));                          \
-    ASSERT(ncm_song_getter_to_tag_type(CAT(SONG_GETTER_, getter_suffix)) \
+#define TEST_GETTER_TAG_SPECIAL(                                               \
+    CTX, tag_suffix, tag_alias, getter_suffix, getter_alias, getter_char,      \
+    getter_tag)                                                                \
+    ASSERT(ncm_tag_type_to_song_getter(CAT(TAG_, tag_suffix))                  \
+           == CAT(SONG_GETTER_, getter_suffix));                               \
+    ASSERT(ncm_song_getter_to_tag_type(CAT(SONG_GETTER_, getter_suffix))       \
            == getter_tag);
 
     SONG_GETTER_DEFS(TEST_GETTER_CHAR)
@@ -1237,12 +1237,12 @@ test_search_constraint_metadata(void) {
     ASSERT_EQUAL(metadata->name, metadata->name_len, "Any");
     ASSERT(metadata->name_len == strlen32(metadata->name));
 
-#define TEST_SEARCH_CONSTRAINT(suffix, display, tag_char)       \
-    metadata = search_constraint_metadata(idx);                 \
-    ASSERT(metadata->kind == SEARCH_CONSTRAINT_TAG);            \
-    ASSERT(metadata->tag == CAT(TAG_, suffix));                 \
-    ASSERT_EQUAL(metadata->name, metadata->name_len, #display); \
-    ASSERT(metadata->name_len == strlen32(metadata->name));     \
+#define TEST_SEARCH_CONSTRAINT(suffix, display, tag_char)                      \
+    metadata = search_constraint_metadata(idx);                                \
+    ASSERT(metadata->kind == SEARCH_CONSTRAINT_TAG);                           \
+    ASSERT(metadata->tag == CAT(TAG_, suffix));                                \
+    ASSERT_EQUAL(metadata->name, metadata->name_len, #display);                \
+    ASSERT(metadata->name_len == strlen32(metadata->name));                    \
     idx += 1;
 
     TAG_DEFS(TEST_SEARCH_CONSTRAINT)
@@ -1278,13 +1278,13 @@ static void
 test_song_info_tag_metadata(void) {
     int32 idx = 0;
 
-#define TEST_SONG_INFO_TAG(suffix, display, tag_char)                         \
-    ASSERT_EQUAL(ncm_song_info_tags[idx].name,                               \
-                 ncm_song_info_tags[idx].name_len,                           \
-                 #display);                             \
-    ASSERT(ncm_song_info_tags[idx].name_len                                  \
-           == (sizeof(#display) - 1));                            \
-    ASSERT(ncm_song_info_tags[idx].tag == CAT(TAG_, suffix));               \
+#define TEST_SONG_INFO_TAG(suffix, display, tag_char)                          \
+    ASSERT_EQUAL(ncm_song_info_tags[idx].name,                                 \
+                 ncm_song_info_tags[idx].name_len,                             \
+                 #display);                                                    \
+    ASSERT(ncm_song_info_tags[idx].name_len                                    \
+           == (sizeof(#display) - 1));                                         \
+    ASSERT(ncm_song_info_tags[idx].tag == CAT(TAG_, suffix));                  \
     idx += 1;
 
     TAG_DEFS(TEST_SONG_INFO_TAG)
@@ -1304,14 +1304,14 @@ test_tag_edit_parser_metadata(void) {
     int32 name_len;
     int32 idx = 0;
 
-#define TEST_PARSER_FIELD(suffix, display, tag_char)                          \
-    ASSERT(ncm_tag_type_format_char(CAT(TAG_, suffix))          \
-           == tag_char);                                                     \
-    name_len = ncm_tag_type_parser_name_len(CAT(TAG_, suffix),  \
-                                              &name);                        \
-    ASSERT(name_len > 0);                                                     \
-    tag_edit_append_parser_legend_field(&legend,                             \
-                                        CAT(TAG_, suffix));       \
+#define TEST_PARSER_FIELD(suffix, display, tag_char)                           \
+    ASSERT(ncm_tag_type_format_char(CAT(TAG_, suffix))                         \
+           == tag_char);                                                       \
+    name_len = ncm_tag_type_parser_name_len(CAT(TAG_, suffix),                 \
+                                              &name);                          \
+    ASSERT(name_len > 0);                                                      \
+    tag_edit_append_parser_legend_field(&legend,                               \
+                                        CAT(TAG_, suffix));                    \
     idx += 1;
 
     TAG_DEFS(TEST_PARSER_FIELD)
