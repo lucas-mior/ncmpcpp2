@@ -554,9 +554,8 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                                            active_hooks->user);
         } else {
             NcmError playlist_error = {0};
-            PlaylistScreen *playlist;
+            PlaylistScreen *playlist = app_screen_playlist();
 
-            playlist = app_screen_playlist();
             if (playlist_screen_reload_from_mpd(playlist, &global_mpd,
                                                 previous_playlist_version,
                                                 status_playlist_length,
