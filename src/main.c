@@ -22,7 +22,7 @@
 #include "screens/nc_screens.c"
 #endif
 
-#include "app_legacy_bridge.h"
+#include "app_bridge.h"
 #include "bindings.h"
 #include "config.h"
 #include "global.h"
@@ -32,7 +32,7 @@
 
 #include "actions.c"
 #include "app_controller.c"
-#include "app_legacy_bridge.c"
+#include "app_bridge.c"
 #include "app_state.c"
 #include "bindings.c"
 
