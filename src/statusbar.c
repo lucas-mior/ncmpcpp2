@@ -252,6 +252,7 @@ ncm_statusbar_try_redraw(void) {
                 case NCM_STATUS_PLAYER_PAUSE:
                     ncm_status_changes_elapsed_time(false);
                     break;
+                case NCM_STATUS_PLAYER_COUNT:
                 default:
                     break;
                 }
