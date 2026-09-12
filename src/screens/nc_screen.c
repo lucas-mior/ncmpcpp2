@@ -511,7 +511,7 @@ nc_screen_menu_mutable_song_tag_at(NcMenu *menu, int32 pos,
         return -NCM_ERROR_UNAVAILABLE;
     }
     type = ncm_song_getter_to_tag_type(getter);
-    if (!ncm_tag_type_is_writable(type)) {
+    if ((uint32)type >= TAG_COUNT) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     song = nc_menu_active_item_at(menu, pos);

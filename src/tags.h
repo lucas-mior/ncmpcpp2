@@ -74,11 +74,6 @@ enum {
 #define ENUM_FIELDS SONG_GETTER_ENUM_FIELDS
 #include "cbase/xenums.c"
 
-static inline bool
-ncm_tag_type_is_writable(enum TagType tag) {
-    return (uint32)tag < TAG_COUNT;
-}
-
 static inline enum TagType
 ncm_writable_tag_at(int32 idx) {
     if ((idx < 0) || (idx >= (int32)TAG_COUNT)) {
@@ -226,7 +221,7 @@ ncm_tag_type_parser_name_len(enum TagType tag, char **out) {
     if (tag == TAG_TRACK) {
         return SONG_GETTER_alias_len(SONG_GETTER_TRACK_NUMBER, out);
     }
-    if (!ncm_tag_type_is_writable(tag)) {
+    if ((uint32)tag >= TAG_COUNT) {
         *out = "";
         return 0;
     }

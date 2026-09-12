@@ -914,7 +914,7 @@ tag_edit_prompt_tag_value(TagEditScreen *screen,
     bool result;
 
     ASSERT(screen != NULL);
-    if (!ncm_tag_type_is_writable(tag_type)) {
+    if ((uint32)tag_type >= TAG_COUNT) {
         return false;
     }
     song = nc_tag_row_menu_current(&screen->tags);
@@ -3363,7 +3363,7 @@ tag_edit_screen_apply_tag_to_selection(TagEditScreen *screen,
     if ((screen == NULL) || (value == NULL)) {
         return -EINVAL;
     }
-    if (!ncm_tag_type_is_writable(tag_type)) {
+    if ((uint32)tag_type >= TAG_COUNT) {
         return -EINVAL;
     }
     if ((value_len < 0) || (separator_len < 0)) {
@@ -4300,7 +4300,7 @@ tag_edit_song_display_value(MutableSong *song, enum TagType tag_type,
         }
         return 0;
     }
-    if (!ncm_tag_type_is_writable(tag_type)) {
+    if ((uint32)tag_type >= TAG_COUNT) {
         return -EINVAL;
     }
 
