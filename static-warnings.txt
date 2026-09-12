@@ -1,0 +1,119 @@
++ find . -type f -iname tags -delete
++ find . -iname *.[ch] -print0
++ xargs -0 ctags --kinds-C=+l+d
++ vtags.sed tags
++ sort
++ uniq
+
+build.sh [01;38;2;255;000;000mcheck[0m
++ find . -type f -iname tags -delete
++ find . -iname *.[ch] -print0
++ xargs -0 ctags --kinds-C=+l+d
++ vtags.sed tags
++ sort
++ uniq
+
+build.sh [01;38;2;255;000;000mdebug[0m
++ gcc -I. -Isrc -Icbase -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -I/usr/include/taglib -fanalyzer -fdiagnostics-color=never -std=c11 -Wfatal-errors -pthread -g3 -Og -DDEBUGGING=1 -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -o bin/ncmpcpp2 src/main.c -lmpdclient -lncursesw -lfftw3 -lcurl -ltag_c -ltag -lz -lm -lreadline
++ find . -type f -iname tags -delete
++ find . -iname *.[ch] -print0
++ xargs -0 ctags --kinds-C=+l+d
++ vtags.sed tags
++ sort
++ uniq
+
+build.sh [01;38;2;255;000;000mdebug[0m
++ clang -I. -Isrc -Icbase -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -I/usr/include/taglib --analyze -Xanalyzer -analyzer-output=text -Xanalyzer -analyzer-werror -Xanalyzer -analyzer-opt-analyze-headers -Wno-unused-command-line-argument -fno-color-diagnostics -std=c11 -Wfatal-errors -pthread -g3 -Og -DDEBUGGING=1 -D_DEFAULT_SOURCE -D_XOPEN_SOURCE=600 -o bin/ncmpcpp2 src/main.c -lmpdclient -lncursesw -lfftw3 -lcurl -ltag_c -ltag -lz -lm -lreadline
+In file included from src/main.c:2:
+In file included from cbase/cbase.h:836:
+cbase/memory.c:121:5: error: Null pointer passed to 1st parameter expecting 'nonnull' [core.NonNullParamChecker]
+  121 |     memset(buffer, value, (size_t)size);
+      |     ^
+src/screens/nc_visualizer.c:235:5: note: Calling 'visualizer_screen_set_geometry'
+  235 |     visualizer_screen_set_geometry(visualizer,
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  236 |                                    x, ui_state_main_start_y(),
+      |                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  237 |                                    width, ui_state_main_height());
+      |                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/screens/nc_visualizer.c:1049:5: note: Calling 'visualizer_screen_init_visualization'
+ 1049 |     visualizer_screen_init_visualization(screen);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/screens/nc_visualizer.c:1064:9: note: Assuming 'width' is > 0
+ 1064 |     if (width <= 0) {
+      |         ^~~~~~~~~~
+src/screens/nc_visualizer.c:1064:5: note: Taking false branch
+ 1064 |     if (width <= 0) {
+      |     ^
+src/screens/nc_visualizer.c:1068:5: note: Control jumps to 'case VISUALIZER_ELLIPSE:'  at line 1080
+ 1068 |     switch (screen->visualization_type) {
+      |     ^
+src/screens/nc_visualizer.c:1082:9: note:  Execution continues on line 1092
+ 1082 |         break;
+      |         ^
+src/screens/nc_visualizer.c:1093:9: note: Assuming field 'stereo' is false
+ 1093 |     if (screen->stereo) {
+      |         ^~~~~~~~~~~~~~
+src/screens/nc_visualizer.c:1093:5: note: Taking false branch
+ 1093 |     if (screen->stereo) {
+      |     ^
+src/screens/nc_visualizer.c:1100:17: note: Field 'stereo' is false
+ 1100 |     if (screen->stereo) {
+      |                 ^
+src/screens/nc_visualizer.c:1100:5: note: Taking false branch
+ 1100 |     if (screen->stereo) {
+      |     ^
+src/screens/nc_visualizer.c:1106:5: note: Calling 'ncm_sample_buffer_resize'
+ 1106 |     ncm_sample_buffer_resize(&screen->samples_rendered, rendered_cap);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/c/ncm_sample_buffer.c:104:9: note: Assuming 'cap' is < 0
+  104 |     if (cap < 0) {
+      |         ^~~~~~~
+src/c/ncm_sample_buffer.c:104:5: note: Taking true branch
+  104 |     if (cap < 0) {
+      |     ^
+src/c/ncm_sample_buffer.c:108:9: note: 'cap' is <= 0
+  108 |     if (cap <= 0) {
+      |         ^~~
+src/c/ncm_sample_buffer.c:108:5: note: Taking true branch
+  108 |     if (cap <= 0) {
+      |     ^
+src/c/ncm_sample_buffer.c:110:9: note: Null pointer value stored to field 'data'
+  110 |         buffer->data = NULL;
+      |         ^~~~~~~~~~~~~~~~~~~
+src/screens/nc_visualizer.c:1106:5: note: Returning from 'ncm_sample_buffer_resize'
+ 1106 |     ncm_sample_buffer_resize(&screen->samples_rendered, rendered_cap);
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/screens/nc_visualizer.c:1109:14: note: Passing null pointer value via 1st parameter 'buffer'
+ 1109 |     memset64(screen->samples_rendered.data, 0,
+      |              ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/screens/nc_visualizer.c:1109:5: note: Calling 'memset64'
+ 1109 |     memset64(screen->samples_rendered.data, 0,
+      |     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ 1110 |              rendered_cap*SIZEOF(*screen->samples_rendered.data));
+      |              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cbase/memory.c:108:9: note: Assuming 'size' is not equal to 0
+  108 |     if (size == 0) {
+      |         ^~~~~~~~~
+cbase/memory.c:108:5: note: Taking false branch
+  108 |     if (size == 0) {
+      |     ^
+cbase/memory.c:111:5: note: Taking true branch
+  111 |     if (DEBUGGING) {
+      |     ^
+cbase/memory.c:112:13: note: Assuming 'size' is >= 0
+  112 |         if (size < 0) {
+      |             ^~~~~~~~
+cbase/memory.c:112:9: note: Taking false branch
+  112 |         if (size < 0) {
+      |         ^
+cbase/memory.c:116:13: note: 'size' is < -1
+  116 |         if ((ullong)size >= (ullong)SIZE_MAX) {
+      |             ^~~~~~~~~~~~
+cbase/memory.c:116:9: note: Taking false branch
+  116 |         if ((ullong)size >= (ullong)SIZE_MAX) {
+      |         ^
+cbase/memory.c:121:5: note: Null pointer passed to 1st parameter expecting 'nonnull'
+  121 |     memset(buffer, value, (size_t)size);
+      |     ^      ~~~~~~
+1 error generated.
