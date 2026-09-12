@@ -88,7 +88,8 @@ static LyricsProviderProfile lyrics_provider_profiles[] = {
         .name_len = STRLIT_LEN("amalgama-lab.com"),
         .domain_len = STRLIT_LEN("amalgama-lab.com"),
         .slug_profile = LYRICS_SLUG_PROFILE_UNDERSCORE_FOLDED,
-        .flags = LYRICS_PROVIDER_DIRECT_URLS|LYRICS_PROVIDER_SEARCH_URLS
+        .flags = LYRICS_PROVIDER_DIRECT_URLS
+                 |LYRICS_PROVIDER_SEARCH_URLS
                  |LYRICS_PROVIDER_TRANSLATION_PAGES,
     },
     [LYRICS_FETCHER_AZLYRICS] = {
@@ -97,7 +98,8 @@ static LyricsProviderProfile lyrics_provider_profiles[] = {
         .name_len = STRLIT_LEN("azlyrics.com"),
         .domain_len = STRLIT_LEN("azlyrics.com"),
         .slug_profile = LYRICS_SLUG_PROFILE_COMPACT_FOLDED,
-        .flags = LYRICS_PROVIDER_DIRECT_URLS|LYRICS_PROVIDER_SEARCH_URLS,
+        .flags = LYRICS_PROVIDER_DIRECT_URLS
+                 |LYRICS_PROVIDER_SEARCH_URLS,
     },
     [LYRICS_FETCHER_GENIUS] = {
         .name = "genius.com",
@@ -105,7 +107,8 @@ static LyricsProviderProfile lyrics_provider_profiles[] = {
         .name_len = STRLIT_LEN("genius.com"),
         .domain_len = STRLIT_LEN("genius.com"),
         .slug_profile = LYRICS_SLUG_PROFILE_HYPHEN_FOLDED,
-        .flags = LYRICS_PROVIDER_DIRECT_URLS|LYRICS_PROVIDER_SEARCH_URLS,
+        .flags = LYRICS_PROVIDER_DIRECT_URLS
+                 |LYRICS_PROVIDER_SEARCH_URLS,
     },
     [LYRICS_FETCHER_LETRASMUS] = {
         .name = "letras.mus.br",
@@ -113,7 +116,8 @@ static LyricsProviderProfile lyrics_provider_profiles[] = {
         .name_len = STRLIT_LEN("letras.mus.br"),
         .domain_len = STRLIT_LEN("letras.mus.br"),
         .slug_profile = LYRICS_SLUG_PROFILE_HYPHEN_FOLDED,
-        .flags = LYRICS_PROVIDER_DIRECT_URLS|LYRICS_PROVIDER_SEARCH_URLS,
+        .flags = LYRICS_PROVIDER_DIRECT_URLS
+                 |LYRICS_PROVIDER_SEARCH_URLS,
     },
     [LYRICS_FETCHER_LACOCCINELLE] = {
         .name = "lacoccinelle.net",
@@ -140,7 +144,8 @@ static LyricsProviderProfile lyrics_provider_profiles[] = {
         .name_len = STRLIT_LEN("paroles.net"),
         .domain_len = STRLIT_LEN("paroles.net"),
         .slug_profile = LYRICS_SLUG_PROFILE_HYPHEN_FOLDED,
-        .flags = LYRICS_PROVIDER_DIRECT_URLS|LYRICS_PROVIDER_SEARCH_URLS
+        .flags = LYRICS_PROVIDER_DIRECT_URLS
+                 |LYRICS_PROVIDER_SEARCH_URLS
                  |LYRICS_PROVIDER_TRANSLATION_PAGES,
     },
     [LYRICS_FETCHER_MUSIXMATCH] = {
@@ -149,7 +154,8 @@ static LyricsProviderProfile lyrics_provider_profiles[] = {
         .name_len = STRLIT_LEN("musixmatch.com"),
         .domain_len = STRLIT_LEN("musixmatch.com"),
         .slug_profile = LYRICS_SLUG_PROFILE_HYPHEN_FOLDED,
-        .flags = LYRICS_PROVIDER_DIRECT_URLS|LYRICS_PROVIDER_SEARCH_URLS,
+        .flags = LYRICS_PROVIDER_DIRECT_URLS
+                 |LYRICS_PROVIDER_SEARCH_URLS,
     },
     [LYRICS_FETCHER_TEKSTOWO] = {
         .name = "tekstowo.pl",
@@ -157,7 +163,8 @@ static LyricsProviderProfile lyrics_provider_profiles[] = {
         .name_len = STRLIT_LEN("tekstowo.pl"),
         .domain_len = STRLIT_LEN("tekstowo.pl"),
         .slug_profile = LYRICS_SLUG_PROFILE_HYPHEN_FOLDED,
-        .flags = LYRICS_PROVIDER_DIRECT_URLS|LYRICS_PROVIDER_SEARCH_URLS,
+        .flags = LYRICS_PROVIDER_DIRECT_URLS
+                 |LYRICS_PROVIDER_SEARCH_URLS,
     },
     [LYRICS_FETCHER_VAGALUME] = {
         .name = "vagalume.com.br",
@@ -165,7 +172,8 @@ static LyricsProviderProfile lyrics_provider_profiles[] = {
         .name_len = STRLIT_LEN("vagalume.com.br"),
         .domain_len = STRLIT_LEN("vagalume.com.br"),
         .slug_profile = LYRICS_SLUG_PROFILE_HYPHEN_FOLDED,
-        .flags = LYRICS_PROVIDER_DIRECT_URLS|LYRICS_PROVIDER_SEARCH_URLS,
+        .flags = LYRICS_PROVIDER_DIRECT_URLS
+                 |LYRICS_PROVIDER_SEARCH_URLS,
     },
     [LYRICS_FETCHER_INTERNET] = {
         .name = "the Internet",
