@@ -982,10 +982,10 @@ test_tag_type_names(void) {
 #define TEST_TAG_TYPE_NAME(suffix, display, tag_char)                         \
     name_len = ncm_tag_type_name_len(CAT(TAG_, suffix), &name);               \
     ASSERT_EQUAL(name, name_len, #display);                  \
-    ASSERT(name_len == TAG_DISPLAY_NAME_LEN(display));                        \
+    ASSERT(name_len == (sizeof(#display) - 1));                        \
     name_len = TAG_alias_len(CAT(TAG_, suffix), &name);                       \
     ASSERT_EQUAL(name, name_len, #display);                  \
-    ASSERT(name_len == TAG_DISPLAY_NAME_LEN(display));                        \
+    ASSERT(name_len == (sizeof(#display) - 1));                        \
     normalized_len = ascii_normalize_lower_snake(                             \
         normalized, name, name_len);                                          \
     ASSERT(TAG_parse(normalized, normalized_len) == CAT(TAG_, suffix));       \
@@ -1283,7 +1283,7 @@ test_song_info_tag_metadata(void) {
                  ncm_song_info_tags[idx].name_len,                           \
                  #display);                             \
     ASSERT(ncm_song_info_tags[idx].name_len                                  \
-           == TAG_DISPLAY_NAME_LEN(display));                            \
+           == (sizeof(#display) - 1));                            \
     ASSERT(ncm_song_info_tags[idx].tag == CAT(TAG_, suffix));               \
     idx += 1;
 
