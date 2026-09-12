@@ -191,7 +191,7 @@ ncm_mpd_string_list_push(StringViewList *list, char *value) {
     string = &list->items[index];
     string->data = malloc2(value_len + 1);
     string->len = value_len;
-    ncm_mpd_connection_cstring_copy(string->data, value_len + 1, value);
+    memcpy64(string->data, value_len + 1, value);
     list->count += 1;
     return;
 }
