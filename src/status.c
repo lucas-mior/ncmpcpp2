@@ -502,9 +502,8 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
         if (active_hooks && active_hooks->database_changed) {
             active_hooks->database_changed(active_hooks->user);
         } else {
-            MediaLibraryScreen *library;
+            MediaLibraryScreen *library = app_screen_media_library();
 
-            library = app_screen_media_library();
             browser_screen_request_update(app_screen_browser());
 #if defined(HAVE_TAGLIB_H)
             tag_edit_screen_clear_directories(app_screen_tag_edit());
