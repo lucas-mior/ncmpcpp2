@@ -1793,7 +1793,6 @@ typedef struct TagEditScreen {
     NcEditorStringMenu tag_types;
     NcTagRowMenu tags;
     NcEditorStringMenu parser_dialog;
-    NcEditorStringMenu parser_rows;
     NcEditorStringMenu parser_actions;
     NcWindow directories_window;
     NcWindow tag_types_window;
@@ -1918,7 +1917,7 @@ int32 tag_edit_screen_apply_tag_filter(TagEditScreen *, char *, int32, uint32,
 int32 tag_edit_screen_search(TagEditScreen *, char *, int32,
                              bool forward, bool wrap, bool skip_current,
                              NcmError *);
-void tag_edit_screen_prepare_parser_rows(TagEditScreen *,
+void tag_edit_screen_prepare_parser_menus(TagEditScreen *,
                                          enum TagEditParserMode, char *, int32);
 void tag_edit_screen_show_parser_dialog(TagEditScreen *);
 void tag_edit_screen_show_parser_actions(TagEditScreen *,
