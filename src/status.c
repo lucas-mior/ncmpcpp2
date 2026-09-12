@@ -999,6 +999,7 @@ status_player_state_string(char *buffer, int32 buffer_cap) {
             string = "[stopped]";
         }
         break;
+    case NCM_STATUS_PLAYER_COUNT:
     default:
         break;
     }
@@ -1023,22 +1024,7 @@ ncm_status_changes_player_state(void) {
     NcWindow *state_window;
 
     if (Config.execute_on_player_state_change_len > 0) {
-        char *player_state_env = "unknown";
-
-        switch (status_player_state) {
-        case NCM_STATUS_PLAYER_PLAY:
-            player_state_env = "play";
-            break;
-        case NCM_STATUS_PLAYER_STOP:
-            player_state_env = "stop";
-            break;
-        case NCM_STATUS_PLAYER_PAUSE:
-            player_state_env = "pause";
-            break;
-        case NCM_STATUS_PLAYER_UNKNOWN:
-        default:
-            break;
-        }
+        char *player_state_env = NCM_STATUS_PLAYER_alias(status_player_state);
 
         setenv("MPD_PLAYER_STATE", player_state_env, 1);
         ncm_run_external_command(Config.execute_on_player_state_change,
@@ -1095,6 +1081,7 @@ ncm_status_changes_player_state(void) {
         break;
     case NCM_STATUS_PLAYER_PAUSE:
     case NCM_STATUS_PLAYER_UNKNOWN:
+    case NCM_STATUS_PLAYER_COUNT:
         break;
     default:
         break;

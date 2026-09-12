@@ -6,12 +6,15 @@
 
 #include "c/ncm_c.h"
 
-enum NcmStatusPlayerState {
-    NCM_STATUS_PLAYER_UNKNOWN,
-    NCM_STATUS_PLAYER_STOP,
-    NCM_STATUS_PLAYER_PLAY,
-    NCM_STATUS_PLAYER_PAUSE,
-};
+#define ENUM_NAME NcmStatusPlayerState
+#define ENUM_PREFIX_ NCM_STATUS_PLAYER_
+#define ENUM_BITFLAGS 0
+#define ENUM_FIELDS                           \
+    XX(NCM_STATUS_PLAYER_UNKNOWN, unknown)   \
+    XX(NCM_STATUS_PLAYER_STOP, stop)         \
+    XX(NCM_STATUS_PLAYER_PLAY, play)         \
+    XX(NCM_STATUS_PLAYER_PAUSE, pause)
+#include "cbase/xenums.c"
 
 typedef struct NcmStatusHooks {
     void *user;
