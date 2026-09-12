@@ -989,6 +989,7 @@ int32
 ncm_mpd_connection_get_replay_gain_mode(MpdConnection *connection,
                                         enum NcmMpdReplayGainMode *mode) {
     struct mpd_pair *pair;
+    enum NcmMpdReplayGainMode parsed_mode;
     char *name;
     int32 status;
 
@@ -1009,19 +1010,12 @@ ncm_mpd_connection_get_replay_gain_mode(MpdConnection *connection,
     }
 
     name = (char *)pair->value;
-    if (name == NULL) {
-        status = -EINVAL;
-    } else if (strequal(name, "off")) {
-        *mode = NCM_MPD_REPLAY_GAIN_OFF;
-        status = 0;
-    } else if (strequal(name, "track")) {
-        *mode = NCM_MPD_REPLAY_GAIN_TRACK;
-        status = 0;
-    } else if (strequal(name, "album")) {
-        *mode = NCM_MPD_REPLAY_GAIN_ALBUM;
-        status = 0;
-    } else {
+    parsed_mode = NCM_MPD_REPLAY_GAIN_parse(name, optional_strlen32(name));
+    if (parsed_mode == NCM_MPD_REPLAY_GAIN_COUNT) {
         status = -NCM_ERROR_PARSE;
+    } else {
+        *mode = parsed_mode;
+        status = 0;
     }
 
     mpd_return_pair(connection->mpd, pair);
