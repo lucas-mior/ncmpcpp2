@@ -38,11 +38,11 @@ typedef struct SearchConstraintMetadata {
 } SearchConstraintMetadata;
 
 #define SEARCH_CONSTRAINT_TAG_ENTRY(suffix, display, tag_char) \
-    {                                                                          \
-        .name = TAG_DISPLAY_NAME(display),                                    \
-        .name_len = TAG_DISPLAY_NAME_LEN(display),                            \
-        .kind = SEARCH_CONSTRAINT_TAG,                                        \
-        .tag = CAT(TAG_, suffix),                                             \
+    {                                                          \
+        .name = #display,                                      \
+        .name_len = STRLIT_LEN(#display),                      \
+        .kind = SEARCH_CONSTRAINT_TAG,                         \
+        .tag = CAT(TAG_, suffix),                              \
     },
 
 static SearchConstraintMetadata search_constraints[] = {
