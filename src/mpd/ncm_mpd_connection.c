@@ -906,10 +906,12 @@ ncm_mpd_connection_get_status(MpdConnection *connection,
     out_status->update_id = (int32)mpd_status_get_update_id(mpd_status);
 
     error = (char *)mpd_status_get_error(mpd_status);
-    error_len = strlen32(error);
+    error_len = optional_strlen32(error);
     memset64(out_status->error, 0, LENGTH(out_status->error));
-    memcpy64(out_status->error, error,
-             MIN(error_len, LENGTH(out_status->error) - 1));
+    if (error) {
+        memcpy64(out_status->error, error,
+                 MIN(error_len, LENGTH(out_status->error) - 1));
+    }
 
     mpd_status_free(mpd_status);
     return ncm_mpd_connection_check_error(connection);
