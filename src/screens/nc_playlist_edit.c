@@ -28,25 +28,24 @@ playlist_edit_update_titles(PlaylistEditScreen *screen, bool update_windows) {
         SB_APPEND(&screen->playlists_title, "Playlists");
         SB_APPEND(&screen->content_title, "Content");
         if (screen->last_known_content_count >= 0) {
+            char digits[32];
+            int32 len = 0;
+            int32 value = screen->last_known_content_count;
             SB_APPEND(&screen->content_title, " (");
-            {
-                char digits[32];
-                int32 len = 0;
-                int32 value = screen->last_known_content_count;
 
-                if (value == 0) {
-                    sb_append_byte(&screen->content_title, '0');
-                } else {
-                    while (value > 0) {
-                        digits[len] = (char)('0' + (value % 10));
-                        value /= 10;
-                        len += 1;
-                    }
-                    for (int32 i = len - 1; i >= 0; i -= 1) {
-                        sb_append_byte(&screen->content_title, digits[i]);
-                    }
+            if (value == 0) {
+                sb_append_byte(&screen->content_title, '0');
+            } else {
+                while (value > 0) {
+                    digits[len] = (char)('0' + (value % 10));
+                    value /= 10;
+                    len += 1;
+                }
+                for (int32 i = len - 1; i >= 0; i -= 1) {
+                    sb_append_byte(&screen->content_title, digits[i]);
                 }
             }
+
             if (screen->last_known_content_count == 1) {
                 SB_APPEND(&screen->content_title, " item)");
             } else {
