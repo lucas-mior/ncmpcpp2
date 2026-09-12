@@ -3953,8 +3953,8 @@ tag_edit_screen_show_parser_actions(TagEditScreen *screen,
         tag_edit_set_pattern(screen, pattern->data, pattern->len);
     }
     tag_edit_screen_prepare_parser_menus(screen, mode,
-                                        screen->pattern.data,
-                                        screen->pattern.len);
+                                         screen->pattern.data,
+                                         screen->pattern.len);
     tag_edit_build_parser_legend(screen);
     screen->parser_preview_enabled = false;
     tag_edit_set_focus(screen, TAG_EDIT_FOCUS_PARSER_ACTIONS);
