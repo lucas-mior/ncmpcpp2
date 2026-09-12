@@ -30,6 +30,7 @@
 #include "title.h"
 #include "ui_state.h"
 
+#if !defined(PROJECT_INCREMENTAL_BUILD)
 #include "actions.c"
 #include "app_controller.c"
 #include "app_bridge.c"
@@ -49,6 +50,7 @@
 #include "statusbar.c"
 #include "title.c"
 #include "ui_state.c"
+#endif
 
 static volatile sig_atomic_t app_resize_requested;
 static int32 app_saved_stderr_fd = -1;
