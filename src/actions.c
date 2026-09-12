@@ -4109,7 +4109,7 @@ action_runtime_media_library_current_album(char **album, int32 *album_len) {
         return false;
     }
     return media_library_screen_has_current_album_value(library,
-                                                       album, album_len);
+                                                        album, album_len);
 }
 
 static bool
