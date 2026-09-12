@@ -7,21 +7,21 @@
 #include "c/ncm_c.h"
 #include "ncmpcpp2_mpd.h"
 
-#define NCM_CLIENT_TRY(expression) \
-    do { \
-        int32 status_ = (expression); \
-        if (status_ < 0) { \
-            return status_; \
-        } \
+#define NCM_CLIENT_TRY(expression)                                      \
+    do {                                                                \
+        int32 status_ = (expression);                                   \
+        if (status_ < 0) {                                              \
+            return status_;                                             \
+        }                                                               \
     } while (0)
 
-#define NCM_CLIENT_TRY_MPD(client_, expression, error_) \
-    do { \
-        int32 status_ = (expression); \
-        if (status_ < 0) { \
-            ncm_mpd_client_copy_connection_error((client_), (error_)); \
-            return status_; \
-        } \
+#define NCM_CLIENT_TRY_MPD(client_, expression, error_)                 \
+    do {                                                                \
+        int32 status_ = (expression);                                   \
+        if (status_ < 0) {                                              \
+            ncm_mpd_client_copy_connection_error((client_), (error_));  \
+            return status_;                                             \
+        }                                                               \
     } while (0)
 
 static void
