@@ -324,19 +324,6 @@ mutable_song_get_tag_buffer_unchecked(MutableSong *song,
     StringView view;
 
     sb_clear(buffer);
-    if (type == TAG_TRACK) {
-        int32 len;
-
-        if (!mutable_song_has_tag_view_unchecked(song, type, idx, &view)) {
-            return;
-        }
-
-        len = ncm_song_numeric_tag_len(view.data, view.len);
-        sb_reserve(buffer, len);
-        buffer->len = ncm_song_format_numeric_tag(buffer->data, buffer->cap,
-                                                  view.data, view.len);
-        return;
-    }
     if (!mutable_song_has_tag_view_unchecked(song, type, idx, &view)) {
         return;
     }
