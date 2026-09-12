@@ -23,8 +23,6 @@
 #include "title.h"
 #include "ui_state.h"
 
-#define STATUS_MILLISECONDS_PER_SECOND 1000
-
 static bool status_initialized;
 static char status_consume;
 static char status_crossfade;
@@ -427,7 +425,7 @@ status_elapsed_time_ms_now(void) {
         }
     }
 
-    total = (int64)status_total_time*STATUS_MILLISECONDS_PER_SECOND;
+    total = (int64)status_total_time*1000;
     if ((total > 0) && (elapsed > total)) {
         elapsed = total;
     }
@@ -440,7 +438,7 @@ status_rebase_elapsed_time(int32 elapsed_time, int64 elapsed_time_ms) {
         elapsed_time = 0;
     }
     if ((elapsed_time_ms <= 0) && (elapsed_time > 0)) {
-        elapsed_time_ms = (int64)elapsed_time*STATUS_MILLISECONDS_PER_SECOND;
+        elapsed_time_ms = (int64)elapsed_time*1000;
     }
 
     status_elapsed_time = elapsed_time;
