@@ -1084,9 +1084,11 @@ media_library_screen_init(MediaLibraryScreen *screen, MediaLibraryHooks hooks,
     callbacks = library_display_callbacks(screen, MEDIA_LIBRARY_COLUMN_TAGS,
                                           false);
     nc_menu_set_display_callbacks(tag_menu, callbacks);
+
     callbacks = library_display_callbacks(screen, MEDIA_LIBRARY_COLUMN_ALBUMS,
                                           false);
     nc_menu_set_display_callbacks(album_menu, callbacks);
+
     callbacks = library_display_callbacks(screen, MEDIA_LIBRARY_COLUMN_SONGS,
                                           false);
     nc_menu_set_display_callbacks(song_menu, callbacks);
