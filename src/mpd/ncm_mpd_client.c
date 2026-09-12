@@ -1270,9 +1270,9 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
                                 char *exclude_pattern,
                                 int32 exclude_pattern_len,
                                 NcmError *ncm_error) {
-    StringViewList files;
-    NcmRegex regex;
-    bool have_regex;
+    StringViewList files = {0};
+    NcmRegex regex = {0};
+    bool have_regex = false;
     int32 added;
     int32 status;
 
@@ -1287,10 +1287,6 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
                                                        ncm_error)) < 0) {
         return status;
     }
-
-    files = (StringViewList){0};
-    regex = (NcmRegex){0};
-    have_regex = false;
 
     status = ncm_mpd_connection_list_all_song_uris(&client->connection,
                                                    "/", &files);
