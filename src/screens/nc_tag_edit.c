@@ -3918,8 +3918,7 @@ tag_edit_screen_show_parser_actions(TagEditScreen *screen,
                 int32 line_len;
 
                 current_line = line;
-                if ((line_end = memchr64(line, '\n',
-                                         content_end - line))) {
+                if ((line_end = memchr64(line, '\n', content_end - line))) {
                     line_len = (int32)(line_end - line);
                     next = line_end + 1;
                 } else {
