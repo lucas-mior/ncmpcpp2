@@ -302,7 +302,6 @@ tag_edit_update_menu_highlights(TagEditScreen *screen) {
     NcMenu *tag_types;
     NcMenu *tags;
     NcMenu *parser_dialog;
-    NcMenu *parser_rows;
     NcMenu *parser_actions;
     NcMenu *active;
 
@@ -310,7 +309,6 @@ tag_edit_update_menu_highlights(TagEditScreen *screen) {
     tag_types = nc_editor_string_menu_base(&screen->tag_types);
     tags = nc_tag_row_menu_base(&screen->tags);
     parser_dialog = nc_editor_string_menu_base(&screen->parser_dialog);
-    parser_rows = nc_editor_string_menu_base(&screen->parser_rows);
     parser_actions = nc_editor_string_menu_base(&screen->parser_actions);
 
     nc_menu_set_highlight_prefix(directories,
@@ -328,10 +326,6 @@ tag_edit_update_menu_highlights(TagEditScreen *screen) {
     nc_menu_set_highlight_prefix(parser_dialog,
                                  &Config.current_item_inactive_column_prefix);
     nc_menu_set_highlight_suffix(parser_dialog,
-                                 &Config.current_item_inactive_column_suffix);
-    nc_menu_set_highlight_prefix(parser_rows,
-                                 &Config.current_item_inactive_column_prefix);
-    nc_menu_set_highlight_suffix(parser_rows,
                                  &Config.current_item_inactive_column_suffix);
     nc_menu_set_highlight_prefix(parser_actions,
                                  &Config.current_item_inactive_column_prefix);
@@ -1256,7 +1250,7 @@ tag_edit_run_current(NcScreen *screen) {
                     tag_edit_status_message(editor, STRLIT("Action aborted"));
                 } else if (prompt_result != TAG_EDIT_PROMPT_ERROR) {
                     tag_edit_set_pattern(editor, input.data, input.len);
-                    tag_edit_screen_prepare_parser_rows(editor,
+                    tag_edit_screen_prepare_parser_menus(editor,
                                                         editor->parser_mode,
                                                         editor->pattern.data,
                                                         editor->pattern.len);
@@ -1317,7 +1311,7 @@ tag_edit_run_current(NcScreen *screen) {
                 str_builder_array_move(&editor->recent_patterns,
                                        &replacement);
                 str_builder_array_destroy(&replacement);
-                tag_edit_screen_prepare_parser_rows(editor,
+                tag_edit_screen_prepare_parser_menus(editor,
                                                     editor->parser_mode,
                                                     editor->pattern.data,
                                                     editor->pattern.len);
@@ -1338,7 +1332,7 @@ tag_edit_run_current(NcScreen *screen) {
 
             if ((row = nc_menu_active_item_at(menu, choice))) {
                 tag_edit_set_pattern(editor, row->data, row->len);
-                tag_edit_screen_prepare_parser_rows(editor, editor->parser_mode,
+                tag_edit_screen_prepare_parser_menus(editor, editor->parser_mode,
                                                     editor->pattern.data,
                                                     editor->pattern.len);
                 tag_edit_set_focus(editor, TAG_EDIT_FOCUS_PARSER_ACTIONS);
@@ -2260,7 +2254,6 @@ tag_edit_configure_menus(TagEditScreen *screen) {
     NcMenu *tag_types = nc_editor_string_menu_base(&screen->tag_types);
     NcMenu *tags = nc_tag_row_menu_base(&screen->tags);
     NcMenu *parser_dialog = nc_editor_string_menu_base(&screen->parser_dialog);
-    NcMenu *parser_rows = nc_editor_string_menu_base(&screen->parser_rows);
     NcMenu *parser_actions =
         nc_editor_string_menu_base(&screen->parser_actions);
 
@@ -2268,7 +2261,6 @@ tag_edit_configure_menus(TagEditScreen *screen) {
     tag_edit_configure_menu(tag_types);
     tag_edit_configure_menu(tags);
     tag_edit_configure_menu(parser_dialog);
-    tag_edit_configure_menu(parser_rows);
     tag_edit_configure_menu(parser_actions);
 
     nc_menu_set_display_callbacks(directories,
@@ -2277,8 +2269,6 @@ tag_edit_configure_menus(TagEditScreen *screen) {
                                   tag_edit_tag_type_display_callbacks(screen));
     nc_menu_set_display_callbacks(tags, tag_edit_tag_display_callbacks(screen));
     nc_menu_set_display_callbacks(parser_dialog,
-                                  tag_edit_tag_type_display_callbacks(screen));
-    nc_menu_set_display_callbacks(parser_rows,
                                   tag_edit_tag_type_display_callbacks(screen));
     nc_menu_set_display_callbacks(parser_actions,
                                   tag_edit_tag_type_display_callbacks(screen));
@@ -2424,7 +2414,6 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
     nc_tag_row_menu_init(&screen->tags);
 
     nc_editor_string_menu_init(&screen->parser_dialog);
-    nc_editor_string_menu_init(&screen->parser_rows);
     nc_editor_string_menu_init(&screen->parser_actions);
 
     screen->hooks = (TagEditHooks){0};
@@ -2548,7 +2537,7 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
     tag_edit_observe_current_directory(screen);
     nc_screen_init_ops(&screen->screen, tag_edit_callbacks, screen,
                        NC_SCREEN_TYPE_TAG_EDIT);
-    tag_edit_screen_prepare_parser_rows(screen, TAG_EDIT_PARSER_MODE_NONE,
+    tag_edit_screen_prepare_parser_menus(screen, TAG_EDIT_PARSER_MODE_NONE,
                                         NULL, 0);
     return;
 }
@@ -2590,7 +2579,6 @@ tag_edit_screen_destroy(TagEditScreen *screen) {
     nc_window_destroy(&screen->directories_window);
 
     nc_editor_string_menu_destroy(&screen->parser_actions);
-    nc_editor_string_menu_destroy(&screen->parser_rows);
     nc_editor_string_menu_destroy(&screen->parser_dialog);
     nc_tag_row_menu_destroy(&screen->tags);
     nc_editor_string_menu_destroy(&screen->tag_types);
@@ -3786,14 +3774,12 @@ static void
 tag_edit_reset_parser_navigation(TagEditScreen *screen) {
     ASSERT(screen != NULL);
     nc_menu_reset(nc_editor_string_menu_base(&screen->parser_dialog));
-    nc_menu_reset(nc_editor_string_menu_base(&screen->parser_rows));
     nc_menu_reset(nc_editor_string_menu_base(&screen->parser_actions));
     return;
 }
 
 static void
 tag_edit_append_parser_separator(TagEditScreen *screen) {
-    nc_editor_string_menu_add_separator(&screen->parser_rows);
     nc_editor_string_menu_add_separator(&screen->parser_actions);
     return;
 }
@@ -3812,7 +3798,6 @@ tag_edit_append_parser_row(NcEditorStringMenu *menu,
 static void
 tag_edit_append_parser_action_row(TagEditScreen *screen,
                                   char *data, int32 data_len, uint32 flags) {
-    tag_edit_append_parser_row(&screen->parser_rows, data, data_len, flags);
     tag_edit_append_parser_row(&screen->parser_actions, data, data_len, flags);
     return;
 }
@@ -3826,7 +3811,7 @@ tag_edit_append_parser_action_label(TagEditScreen *screen,
 }
 
 void
-tag_edit_screen_prepare_parser_rows(TagEditScreen *screen,
+tag_edit_screen_prepare_parser_menus(TagEditScreen *screen,
                                     enum TagEditParserMode mode,
                                     char *pattern, int32 pattern_len) {
     screen->parser_mode = mode;
@@ -3839,7 +3824,6 @@ tag_edit_screen_prepare_parser_rows(TagEditScreen *screen,
     }
 
     nc_menu_clear_items(nc_editor_string_menu_base(&screen->parser_dialog));
-    nc_menu_clear_items(nc_editor_string_menu_base(&screen->parser_rows));
     nc_menu_clear_items(nc_editor_string_menu_base(&screen->parser_actions));
 
     tag_edit_append_parser_row(&screen->parser_dialog,
@@ -3856,16 +3840,6 @@ tag_edit_screen_prepare_parser_rows(TagEditScreen *screen,
         tag_edit_reset_parser_navigation(screen);
         return;
     }
-
-    tag_edit_append_parser_row(&screen->parser_rows,
-                               STRLIT("Get tags from filename"),
-                               NC_MENU_ITEM_SELECTABLE);
-    tag_edit_append_parser_row(&screen->parser_rows,
-                               STRLIT("Rename files"),
-                               NC_MENU_ITEM_SELECTABLE);
-    tag_edit_append_parser_row(&screen->parser_rows,
-                               STRLIT("Cancel"),
-                               NC_MENU_ITEM_SELECTABLE);
 
     {
         StrBuilder row = {0};
@@ -3904,7 +3878,7 @@ tag_edit_screen_show_parser_dialog(TagEditScreen *screen) {
     NcMenu *menu = nc_editor_string_menu_base(&screen->parser_dialog);
 
     if (nc_menu_item_count(menu) <= 0) {
-        tag_edit_screen_prepare_parser_rows(screen, TAG_EDIT_PARSER_MODE_NONE,
+        tag_edit_screen_prepare_parser_menus(screen, TAG_EDIT_PARSER_MODE_NONE,
                                             NULL, 0);
     }
     screen->parser_mode = TAG_EDIT_PARSER_MODE_NONE;
@@ -3989,7 +3963,7 @@ tag_edit_screen_show_parser_actions(TagEditScreen *screen,
         StrBuilder *pattern = &screen->recent_patterns.items[0];
         tag_edit_set_pattern(screen, pattern->data, pattern->len);
     }
-    tag_edit_screen_prepare_parser_rows(screen, mode,
+    tag_edit_screen_prepare_parser_menus(screen, mode,
                                         screen->pattern.data,
                                         screen->pattern.len);
     tag_edit_build_parser_legend(screen);
