@@ -342,7 +342,6 @@ ncm_mpd_item_local_song(NcmSong *song, char *path, int32 path_len,
         NcmMpdItemTagsContext context;
         TaglibPairCallback *callback;
         char time_buffer[32];
-        int32 written;
         int32 count;
 
         pair.name = "file";
@@ -357,11 +356,9 @@ ncm_mpd_item_local_song(NcmSong *song, char *path, int32 path_len,
         if (status >= 0) {
             count = 0;
             if (ncm_taglib_file_audio_properties(&file, &properties) == 0) {
-                written = SNPRINTF(time_buffer, "%d", properties.length);
-                if (written > 0) {
-                    ncm_mpd_item_set_attribute(mpd_song, "Time", time_buffer);
-                    count += 1;
-                }
+                SNPRINTF(time_buffer, "%d", properties.length);
+                ncm_mpd_item_set_attribute(mpd_song, "Time", time_buffer);
+                count += 1;
             }
 
             context.song = mpd_song;
