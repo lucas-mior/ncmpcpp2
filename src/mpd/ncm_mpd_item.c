@@ -284,8 +284,7 @@ ncm_mpd_item_song_from_mpd_song_copy_internal(NcmSong *dest, void *mpd_song,
 
 int32
 ncm_mpd_item_song_from_mpd_song_copy(NcmSong *dest, void *mpd_song) {
-    return ncm_mpd_item_song_from_mpd_song_copy_internal(dest, mpd_song,
-                                                         false);
+    return ncm_mpd_item_song_from_mpd_song_copy_internal(dest, mpd_song, false);
 }
 
 int32
