@@ -3875,11 +3875,13 @@ tag_edit_screen_prepare_parser_rows(TagEditScreen *screen,
         tag_edit_append_parser_action_label(screen, row.data, row.len);
         sb_free(&row);
     }
+
     tag_edit_append_parser_action_label(screen, STRLIT("Preview"));
     tag_edit_append_parser_action_label(screen, STRLIT("Legend"));
     tag_edit_append_parser_separator(screen);
     tag_edit_append_parser_action_label(screen, STRLIT("Proceed"));
     tag_edit_append_parser_action_label(screen, STRLIT("Cancel"));
+
     if (screen->recent_patterns.len > 0) {
         tag_edit_append_parser_separator(screen);
         tag_edit_append_parser_action_row(screen, STRLIT("Recent patterns"),
