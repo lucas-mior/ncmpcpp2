@@ -189,7 +189,7 @@ ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
 
 static int32
 ncm_mpd_item_song_from_mpd_song_copy_internal(NcmSong *dest, void *mpd_song,
-                                               bool include_properties) {
+                                              bool include_properties) {
     NcmSong replacement = {0};
     struct mpd_song *source = mpd_song;
     struct {
