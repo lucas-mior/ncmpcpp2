@@ -71,25 +71,51 @@ config_append_buffer_path(StrBuilderArray *paths, StrBuilder *path) {
     return;
 }
 
+static bool
+config_default_file_exists(StrBuilder *path) {
+    NcmError ncm_error;
+    StrBuilder expanded = {0};
+    bool exists;
+
+    ncm_error_clear(&ncm_error);
+    SB_APPEND(&expanded, path->data, path->len);
+    if (ncm_path_expand_home(&expanded, &ncm_error) < 0) {
+        sb_free(&expanded);
+        return false;
+    }
+    exists = ncm_fs_path_is_existing(expanded.data, expanded.len);
+    sb_free(&expanded);
+    return exists;
+}
+
 static void
 config_append_default_file(StrBuilderArray *paths,
                            char *filename, int32 filename_len) {
     char *xdg_config_home;
+    StrBuilder base_directory = {0};
     StrBuilder directory = {0};
     StrBuilder path = {0};
 
     if ((xdg_config_home = getenv("XDG_CONFIG_HOME"))
         && (xdg_config_home[0] != '\0')) {
-        SB_APPEND(&directory, xdg_config_home, strlen32(xdg_config_home));
+        SB_APPEND(&base_directory, xdg_config_home, strlen32(xdg_config_home));
     } else {
-        SB_APPEND(&directory, "~/.config");
+        SB_APPEND(&base_directory, "~/.config");
     }
-    ncm_fs_join(&directory, directory.data, directory.len, STRLIT("ncmpcpp"));
+    ncm_fs_join(&directory, base_directory.data, base_directory.len,
+                STRLIT("ncmpcpp2"));
     ncm_fs_join(&path, directory.data, directory.len, filename, filename_len);
+    if (!config_default_file_exists(&path)) {
+        ncm_fs_join(&directory, base_directory.data, base_directory.len,
+                    STRLIT("ncmpcpp"));
+        ncm_fs_join(&path, directory.data, directory.len,
+                    filename, filename_len);
+    }
     config_append_buffer_path(paths, &path);
 
     sb_free(&path);
     sb_free(&directory);
+    sb_free(&base_directory);
     return;
 }
 
