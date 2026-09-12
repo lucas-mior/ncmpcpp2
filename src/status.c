@@ -159,59 +159,65 @@ status_print_server_error(char *message, int32 message_len) {
 void
 ncm_status_handle_server_error_value(MpdClient *client, int32 code,
                                      char *message, int32 message_len) {
+    enum NcPromptStatus prompt_status;
+    NcPrompt prompt = {0};
+    NcWindow *window;
+    char *password;
+    bool password_allocated;
+
     status_print_server_error(message, message_len);
-    if ((code == NCM_MPD_SERVER_ERROR_PERMISSION) && (client != NULL)) {
-        enum NcPromptStatus prompt_status;
-        NcPrompt prompt = {0};
-        NcWindow *window;
-        char *password;
-        bool password_allocated;
 
-        if ((window = ncm_statusbar_put()) == NULL) {
-            return;
-        }
-
-        nc_window_print_cstring(window, "Password: ");
-        prompt.initial_text = "";
-        prompt.width = -1;
-        prompt.encrypted = true;
-        prompt.remember = false;
-
-        password = NULL;
-        prompt_status = nc_window_prompt(window, &prompt, &password);
-        if (prompt_status != NC_PROMPT_ACCEPTED) {
-            nc_window_prompt_result_destroy(password);
-            ncm_action_runtime_request_exit(NULL);
-            return;
-        }
-
-        password_allocated = password;
-        if (password == NULL) {
-            password = "";
-        }
-
-        ncm_mpd_client_set_password(client, password, -1, NULL);
-        if (password_allocated) {
-            nc_window_prompt_result_destroy(password);
-        }
-
-        if (ncm_mpd_client_send_password(client, NULL) < 0) {
-            if (ncm_mpd_client_error_code(client) == NCM_MPD_ERROR_SERVER) {
-                status_print_server_error(ncm_mpd_client_error_message(client),
-                                          -1);
-            } else {
-                if (!ncm_mpd_client_error_is_clearable(client)) {
-                    ncm_mpd_client_disconnect(client);
-                }
-                status_print_client_error(ncm_mpd_client_error_message(client),
-                                          -1);
-            }
-            return;
-        }
-
-        ncm_statusbar_print(Config.message_delay_time,
-                                    STRLIT("Password accepted"));
+    if (client == NULL) {
+        return;
     }
+
+    if (code == NCM_MPD_SERVER_ERROR_PERMISSION) {
+        return;
+    }
+
+    if ((window = ncm_statusbar_put()) == NULL) {
+        return;
+    }
+
+    nc_window_print_cstring(window, "Password: ");
+    prompt.initial_text = "";
+    prompt.width = -1;
+    prompt.encrypted = true;
+    prompt.remember = false;
+
+    password = NULL;
+    prompt_status = nc_window_prompt(window, &prompt, &password);
+    if (prompt_status != NC_PROMPT_ACCEPTED) {
+        nc_window_prompt_result_destroy(password);
+        ncm_action_runtime_request_exit(NULL);
+        return;
+    }
+
+    password_allocated = password;
+    if (password == NULL) {
+        password = "";
+    }
+
+    ncm_mpd_client_set_password(client, password, -1, NULL);
+    if (password_allocated) {
+        nc_window_prompt_result_destroy(password);
+    }
+
+    if (ncm_mpd_client_send_password(client, NULL) < 0) {
+        if (ncm_mpd_client_error_code(client) == NCM_MPD_ERROR_SERVER) {
+            status_print_server_error(ncm_mpd_client_error_message(client),
+                                      -1);
+        } else {
+            if (!ncm_mpd_client_error_is_clearable(client)) {
+                ncm_mpd_client_disconnect(client);
+            }
+            status_print_client_error(ncm_mpd_client_error_message(client),
+                                      -1);
+        }
+        return;
+    }
+
+    ncm_statusbar_print(Config.message_delay_time, STRLIT("Password accepted"));
     return;
 }
 
