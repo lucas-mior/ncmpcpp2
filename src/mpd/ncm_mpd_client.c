@@ -470,12 +470,12 @@ ncm_mpd_client_error_message(MpdClient *client) {
     return ncm_mpd_connection_error(&client->connection);
 }
 
-#define NCM_CLIENT_CALL_NOARGS(NAME, CONN_CALL) \
-int32 \
-NAME(MpdClient *client, NcmError *ncm_error) { \
-    NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error)); \
-    NCM_CLIENT_TRY_MPD(client, CONN_CALL(&client->connection), ncm_error); \
-    return ncm_error_ok(ncm_error); \
+#define NCM_CLIENT_CALL_NOARGS(NAME, CONN_CALL)                                \
+int32                                                                          \
+NAME(MpdClient *client, NcmError *ncm_error) {                                 \
+    NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));   \
+    NCM_CLIENT_TRY_MPD(client, CONN_CALL(&client->connection), ncm_error);     \
+    return ncm_error_ok(ncm_error);                                            \
 }
 
 NCM_CLIENT_CALL_NOARGS(ncm_mpd_client_play, ncm_mpd_connection_play)
@@ -600,14 +600,14 @@ ncm_mpd_client_shuffle_range(MpdClient *client, int32 start, int32 end,
     return ncm_error_ok(ncm_error);
 }
 
-#define NCM_CLIENT_LIST_CALL(NAME, LIST_TYPE, CONN_CALL) \
-int32 \
-NAME(MpdClient *client, LIST_TYPE *list, NcmError *ncm_error) { \
-    NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error)); \
-    NCM_CLIENT_TRY_MPD(client, \
-                       CONN_CALL(&client->connection, list), \
-                       ncm_error); \
-    return ncm_error_ok(ncm_error); \
+#define NCM_CLIENT_LIST_CALL(NAME, LIST_TYPE, CONN_CALL)                       \
+int32                                                                          \
+NAME(MpdClient *client, LIST_TYPE *list, NcmError *ncm_error) {                \
+    NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));   \
+    NCM_CLIENT_TRY_MPD(client,                                                 \
+                       CONN_CALL(&client->connection, list),                   \
+                       ncm_error);                                             \
+    return ncm_error_ok(ncm_error);                                            \
 }
 
 NCM_CLIENT_LIST_CALL(ncm_mpd_client_get_supported_extensions,
@@ -686,14 +686,14 @@ ncm_mpd_client_get_playlist_content_no_info(MpdClient *client, char *path,
     return ncm_error_ok(ncm_error);
 }
 
-#define NCM_CLIENT_MODE_CALL(NAME, CONN_CALL) \
-int32 \
-NAME(MpdClient *client, bool mode, NcmError *ncm_error) { \
-    NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error)); \
-    NCM_CLIENT_TRY_MPD(client, \
-                       CONN_CALL(&client->connection, mode), \
-                       ncm_error); \
-    return ncm_error_ok(ncm_error); \
+#define NCM_CLIENT_MODE_CALL(NAME, CONN_CALL)                                  \
+int32                                                                          \
+NAME(MpdClient *client, bool mode, NcmError *ncm_error) {                      \
+    NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));   \
+    NCM_CLIENT_TRY_MPD(client,                                                 \
+                       CONN_CALL(&client->connection, mode),                   \
+                       ncm_error);                                             \
+    return ncm_error_ok(ncm_error);                                            \
 }
 
 NCM_CLIENT_MODE_CALL(ncm_mpd_client_set_repeat, ncm_mpd_connection_set_repeat)
