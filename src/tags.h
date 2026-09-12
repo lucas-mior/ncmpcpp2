@@ -89,8 +89,7 @@ enum {
 #define SONG_GETTER_NON_TAG_ENUM_FIELD(getter, DISP, GETTER_CHAR)              \
   XX(getter, DISP)
 
-#define SONG_GETTER_TAG_ENUM_FIELD(SUFFIX, DISP, CHAR, GETTER_CHAR,          \
-                                   TAGLIB_NUM)                                 \
+#define SONG_GETTER_TAG_ENUM_FIELD(SUFFIX, DISP, CHAR, GETTER_CHAR, TAGLIB_NUM) \
   XX(CAT(SONG_GETTER_, SUFFIX), DISP)
 
 #define SONG_GETTER_ENUM_FIELDS                                                \
