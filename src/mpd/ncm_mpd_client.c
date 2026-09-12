@@ -189,8 +189,10 @@ ncm_mpd_client_init(MpdClient *client) {
     client->connection = (MpdConnection){0};
     client->host = (StrBuilder){0};
     client->password = (StrBuilder){0};
+
     ncm_mpd_client_set_buffer(&client->host, STRLIT("localhost"));
     ncm_mpd_client_set_buffer(&client->password, NULL, 0);
+
     client->port = 6600;
     client->timeout_ms = 15000;
     client->command_list_active = false;
@@ -198,6 +200,7 @@ ncm_mpd_client_init(MpdClient *client) {
     client->fd = -1;
     client->noidle_callback = NULL;
     client->noidle_user = NULL;
+
     return;
 }
 
