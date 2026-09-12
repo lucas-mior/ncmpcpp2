@@ -877,6 +877,7 @@ ncm_mpd_connection_get_status(MpdConnection *connection,
     out_status->consume = mpd_status_get_consume(mpd_status);
     out_status->queue_length = (int32)mpd_status_get_queue_length(mpd_status);
     out_status->queue_version = (int32)mpd_status_get_queue_version(mpd_status);
+
     switch (mpd_status_get_state(mpd_status)) {
     case MPD_STATE_STOP:
         out_status->state = NCM_MPD_STATE_STOP;
@@ -892,6 +893,7 @@ ncm_mpd_connection_get_status(MpdConnection *connection,
         out_status->state = NCM_MPD_STATE_UNKNOWN;
         break;
     }
+
     out_status->crossfade = (int32)mpd_status_get_crossfade(mpd_status);
     out_status->song_pos = mpd_status_get_song_pos(mpd_status);
     out_status->song_id = mpd_status_get_song_id(mpd_status);
