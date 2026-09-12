@@ -46,14 +46,13 @@ enum {
                                    GETTER_DISP, CHAR, GETTER_TAG)            \
     XX(CAT(SONG_GETTER_, GETTER_SUFFIX), GETTER_DISP, CHAR)
 
-#define SONG_GETTER_DEFS(XX)                              \
-    XX(SONG_GETTER_LENGTH, Length, 'l')                    \
-    XX(SONG_GETTER_DIRECTORY, Directory, 'D')              \
-    XX(SONG_GETTER_NAME, Filename, 'f')                    \
-    XX(SONG_GETTER_URI, URI, 'F')                          \
-    SONG_TAG_DEFS(SONG_TAG_AS_GETTER,                      \
-                  SONG_TAG_SPECIAL_AS_GETTER, XX)          \
-    XX(SONG_GETTER_TRACK_TOTAL, Total Tracks, 'N')         \
+#define SONG_GETTER_DEFS(XX)                                          \
+    XX(SONG_GETTER_LENGTH, Length, 'l')                               \
+    XX(SONG_GETTER_DIRECTORY, Directory, 'D')                         \
+    XX(SONG_GETTER_NAME, Filename, 'f')                               \
+    XX(SONG_GETTER_URI, URI, 'F')                                     \
+    SONG_TAG_DEFS(SONG_TAG_AS_GETTER, SONG_TAG_SPECIAL_AS_GETTER, XX) \
+    XX(SONG_GETTER_TRACK_TOTAL, Total Tracks, 'N')                    \
     XX(SONG_GETTER_PRIORITY, Priority, 'P')
 
 #define SONG_GETTER_ENUM_FIELD(GETTER, DISP, CHAR) \
