@@ -127,8 +127,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         int32 tag_separator_len;
         NcBuffer row_buffer = {0};
 
-        type = ncm_writable_tag_at(
-            row - (int32)TINY_TAG_EDIT_FIRST_TAG_ROW);
+        type = ncm_writable_tag_at(row - (int32)TINY_TAG_EDIT_FIRST_TAG_ROW);
         ASSERT(type != TAG_COUNT);
         tag_separator = screen->tag_separator.data;
         tag_separator_len = screen->tag_separator.len;
