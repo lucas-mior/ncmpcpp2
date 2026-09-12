@@ -414,7 +414,8 @@ tag_edit_update_titles(TagEditScreen *screen, bool update_windows) {
     nc_window_set_title(&screen->parser_dialog_window,
                         screen->parser_dialog_title.data,
                         screen->parser_dialog_title.len);
-    nc_window_set_title(&screen->parser_window, screen->parser_title.data,
+    nc_window_set_title(&screen->parser_window,
+                        screen->parser_title.data,
                         screen->parser_title.len);
     nc_window_set_title(&screen->parser_helper_window,
                         screen->parser_helper_title.data,
