@@ -716,8 +716,7 @@ ncm_mpd_client_set_crossfade(MpdClient *client, int32 seconds,
 }
 
 int32
-ncm_mpd_client_set_volume(MpdClient *client, int32 vol,
-                          NcmError *ncm_error) {
+ncm_mpd_client_set_volume(MpdClient *client, int32 vol, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
     NCM_CLIENT_TRY_MPD(client,
                        ncm_mpd_connection_set_volume(&client->connection, vol),
