@@ -1308,8 +1308,7 @@ test_tag_edit_parser_metadata(void) {
     ASSERT(ncm_tag_type_format_char(CAT(TAG_, suffix)) == tag_char);           \
     name_len = ncm_tag_type_parser_name_len(CAT(TAG_, suffix), &name);         \
     ASSERT(name_len > 0);                                                      \
-    tag_edit_append_parser_legend_field(&legend,                               \
-                                        CAT(TAG_, suffix));                    \
+    tag_edit_append_parser_legend_field(&legend, CAT(TAG_, suffix));           \
     idx += 1;
 
     TAG_DEFS(TEST_PARSER_FIELD)
