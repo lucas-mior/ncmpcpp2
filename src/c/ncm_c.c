@@ -21,7 +21,7 @@
 #include "c/ncm_playlist.c"
 #include "c/ncm_playlist_sort.c"
 #include "c/ncm_regex.c"
-#include "c/ncm_search_prompt.c"
+#include "c/search_prompt.c"
 #include "c/ncm_sample_buffer.c"
 #include "c/ncm_song.c"
 #include "c/ncm_string.c"

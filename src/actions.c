@@ -664,7 +664,7 @@ action_runtime_search_prompt_init(ActionRuntimeSearchPrompt *state,
     int32 count;
     int32 highlight;
 
-    ncm_search_prompt_state_init(state, direction);
+    search_prompt_state_init(state, direction);
 
     if ((menu = action_runtime_current_menu()) == NULL) {
         return;
@@ -676,13 +676,13 @@ action_runtime_search_prompt_init(ActionRuntimeSearchPrompt *state,
         return;
     }
 
-    ncm_search_prompt_state_set_start_position(state, highlight);
+    search_prompt_state_set_start_position(state, highlight);
     return;
 }
 
 static void
 action_runtime_search_prompt_destroy(ActionRuntimeSearchPrompt *state) {
-    ncm_search_prompt_state_destroy(state);
+    search_prompt_state_destroy(state);
     return;
 }
 
@@ -741,7 +741,7 @@ action_runtime_search_prompt_apply(ActionRuntimeSearchPrompt *state,
         text = "";
         text_len = 0;
     }
-    if (ncm_search_prompt_state_has_cached_result(state, text, text_len,
+    if (search_prompt_state_has_cached_result(state, text, text_len,
                                                    &last_found)) {
         if (found) {
             *found = last_found;
@@ -753,7 +753,7 @@ action_runtime_search_prompt_apply(ActionRuntimeSearchPrompt *state,
     ncm_error_clear(ncm_error);
     status = action_runtime_search_from_prompt_start(state, text, text_len,
                                                      &last_found, ncm_error);
-    finish_status = ncm_search_prompt_state_finish_result(state, text, text_len,
+    finish_status = search_prompt_state_finish_result(state, text, text_len,
                                                           status == 0,
                                                           last_found);
     if (finish_status < 0) {
@@ -1565,7 +1565,7 @@ action_runtime_find_item(enum SearchDirection direction) {
         char *data = constraint.data;
         int32 len = constraint.len;
 
-        if (!ncm_search_prompt_state_has_cached_result(&state, data, len,
+        if (!search_prompt_state_has_cached_result(&state, data, len,
                                                        NULL)) {
             ncm_error_clear(&ncm_error);
             if (action_runtime_search_prompt_apply(&state, data, len, NULL,
