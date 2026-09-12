@@ -4284,7 +4284,7 @@ action_runtime_edit_library_tag(void) {
     sep = Config.tags_separator;
     sep_len = Config.tags_separator_len;
     tag_type = Config.media_library_primary_tag;
-    if (!ncm_tag_type_is_writable(tag_type)) {
+    if ((uint32)tag_type >= TAG_COUNT) {
         status = -NCM_ERROR_UNAVAILABLE;
         goto cleanup;
     }
