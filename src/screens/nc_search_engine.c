@@ -72,12 +72,6 @@ search_constraint_metadata(uint32 idx) {
     return &search_constraints[idx];
 }
 
-static char *search_mode_names[] = {
-    "Match if tag contains searched phrase (no regexes)",
-    "Match if tag contains searched phrase (regexes supported)",
-    "Match only if both values are the same",
-};
-
 static char search_empty_string[] = "";
 static void
 search_display(SearchEngineScreen *search) {
@@ -795,7 +789,9 @@ search_build_search_source_row(SearchEngineScreen *screen, NcBuffer *buffer) {
 
 static void
 search_build_search_mode_row(SearchEngineScreen *screen, NcBuffer *buffer) {
+    enum SearchEngineSearchMode search_mode = screen->search_mode;
     char *mode_name;
+    int32 mode_name_len;
 
     nc_buffer_clear(buffer);
     search_append_format(buffer, NC_FORMAT_BOLD);
@@ -803,12 +799,12 @@ search_build_search_mode_row(SearchEngineScreen *screen, NcBuffer *buffer) {
     search_append_format(buffer, NC_FORMAT_NO_BOLD);
     nc_buffer_append_char(buffer, ' ');
 
-    mode_name = search_mode_names[0];
-    if ((screen->search_mode >= SEARCH_ENGINE_SEARCH_MODE_LITERAL)
-        && (screen->search_mode < SEARCH_ENGINE_SEARCH_MODE_COUNT)) {
-        mode_name = search_mode_names[screen->search_mode];
+    if (search_mode >= SEARCH_ENGINE_SEARCH_MODE_COUNT) {
+        search_mode = SEARCH_ENGINE_SEARCH_MODE_LITERAL;
     }
-    nc_buffer_append_data(buffer, mode_name, strlen32(mode_name));
+    mode_name_len = SEARCH_ENGINE_SEARCH_MODE_alias_len(search_mode,
+                                                        &mode_name);
+    nc_buffer_append_data(buffer, mode_name, mode_name_len);
     return;
 }
 
