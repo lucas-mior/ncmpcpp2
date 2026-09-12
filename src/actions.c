@@ -4058,7 +4058,7 @@ action_runtime_toggle_screen_lock(void) {
     if (app_controller_lock_current_screen() == 0) {
         sb_printf(&message, "Screen locked (with %d%% width)", part);
         ncm_statusbar_print(Config.message_delay_time,
-                                    message.data, message.len);
+                            message.data, message.len);
         sb_free(&message);
     } else {
         ncm_statusbar_print(Config.message_delay_time,
