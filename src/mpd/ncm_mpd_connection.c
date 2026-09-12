@@ -1586,7 +1586,7 @@ ncm_mpd_connection_get_outputs(MpdConnection *connection,
         item->name_len = name_len;
         item->enabled = mpd_output_get_enabled(output);
 
-        ncm_mpd_connection_cstring_copy(item->name, name_len + 1, name);
+        memcpy64(item->name, name_len + 1, name);
         outputs->count += 1;
 
         mpd_output_free(output);
