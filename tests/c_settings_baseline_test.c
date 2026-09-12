@@ -1237,13 +1237,12 @@ test_search_constraint_metadata(void) {
     ASSERT_EQUAL(metadata->name, metadata->name_len, "Any");
     ASSERT(metadata->name_len == strlen32(metadata->name));
 
-#define TEST_SEARCH_CONSTRAINT(suffix, display, tag_char)                     \
-    metadata = search_constraint_metadata(idx);                              \
-    ASSERT(metadata->kind == SEARCH_CONSTRAINT_TAG);                         \
-    ASSERT(metadata->tag == CAT(TAG_, suffix));                              \
-    ASSERT_EQUAL(metadata->name, metadata->name_len,                         \
-                 #display);                                 \
-    ASSERT(metadata->name_len == strlen32(metadata->name));                  \
+#define TEST_SEARCH_CONSTRAINT(suffix, display, tag_char)       \
+    metadata = search_constraint_metadata(idx);                 \
+    ASSERT(metadata->kind == SEARCH_CONSTRAINT_TAG);            \
+    ASSERT(metadata->tag == CAT(TAG_, suffix));                 \
+    ASSERT_EQUAL(metadata->name, metadata->name_len, #display); \
+    ASSERT(metadata->name_len == strlen32(metadata->name));     \
     idx += 1;
 
     TAG_DEFS(TEST_SEARCH_CONSTRAINT)
