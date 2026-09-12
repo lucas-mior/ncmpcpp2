@@ -647,6 +647,7 @@ lyrics_append_slug_profile(StrBuilder *buffer, LyricsSlugProfile profile,
         int32 rune_len;
         char folded[2];
         int32 folded_len = 0;
+        bool has_folded_form = false;
 
         if (lyrics_ascii_alnum(string[i])) {
             if (pending_separator && wrote && !compact) {
@@ -688,306 +689,304 @@ lyrics_append_slug_profile(StrBuilder *buffer, LyricsSlugProfile profile,
         if (pending_separator && wrote && !compact) {
             sb_append_byte(buffer, separator);
         }
-        {
-            bool has_folded_form = false;
 
-            if (folded_profile) {
-                switch (rune) {
-                case 0x00aa:
-                case 0x00c0:
-                case 0x00c1:
-                case 0x00c2:
-                case 0x00c3:
-                case 0x00c4:
-                case 0x00c5:
-                case 0x00e0:
-                case 0x00e1:
-                case 0x00e2:
-                case 0x00e3:
-                case 0x00e4:
-                case 0x00e5:
-                case 0x0100:
-                case 0x0101:
-                case 0x0102:
-                case 0x0103:
-                case 0x0104:
-                case 0x0105:
-                    folded[0] = 'a';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x00c6:
-                case 0x00e6:
-                    folded[0] = 'a';
-                    folded[1] = 'e';
-                    folded_len = 2;
-                    has_folded_form = true;
-                    break;
-                case 0x00c7:
-                case 0x00e7:
-                case 0x0106:
-                case 0x0107:
-                case 0x0108:
-                case 0x0109:
-                case 0x010a:
-                case 0x010b:
-                case 0x010c:
-                case 0x010d:
-                    folded[0] = 'c';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x00d0:
-                case 0x00f0:
-                case 0x010e:
-                case 0x010f:
-                case 0x0110:
-                case 0x0111:
-                    folded[0] = 'd';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x00c8:
-                case 0x00c9:
-                case 0x00ca:
-                case 0x00cb:
-                case 0x00e8:
-                case 0x00e9:
-                case 0x00ea:
-                case 0x00eb:
-                case 0x0112:
-                case 0x0113:
-                case 0x0114:
-                case 0x0115:
-                case 0x0116:
-                case 0x0117:
-                case 0x0118:
-                case 0x0119:
-                case 0x011a:
-                case 0x011b:
-                    folded[0] = 'e';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x011c:
-                case 0x011d:
-                case 0x011e:
-                case 0x011f:
-                case 0x0120:
-                case 0x0121:
-                case 0x0122:
-                case 0x0123:
-                    folded[0] = 'g';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x0124:
-                case 0x0125:
-                case 0x0126:
-                case 0x0127:
-                    folded[0] = 'h';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x00cc:
-                case 0x00cd:
-                case 0x00ce:
-                case 0x00cf:
-                case 0x00ec:
-                case 0x00ed:
-                case 0x00ee:
-                case 0x00ef:
-                case 0x0128:
-                case 0x0129:
-                case 0x012a:
-                case 0x012b:
-                case 0x012c:
-                case 0x012d:
-                case 0x012e:
-                case 0x012f:
-                case 0x0130:
-                case 0x0131:
-                    folded[0] = 'i';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x0134:
-                case 0x0135:
-                    folded[0] = 'j';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x0136:
-                case 0x0137:
-                    folded[0] = 'k';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x0139:
-                case 0x013a:
-                case 0x013b:
-                case 0x013c:
-                case 0x013d:
-                case 0x013e:
-                case 0x013f:
-                case 0x0140:
-                case 0x0141:
-                case 0x0142:
-                    folded[0] = 'l';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x00d1:
-                case 0x00f1:
-                case 0x0143:
-                case 0x0144:
-                case 0x0145:
-                case 0x0146:
-                case 0x0147:
-                case 0x0148:
-                case 0x014a:
-                case 0x014b:
-                    folded[0] = 'n';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x00ba:
-                case 0x00d2:
-                case 0x00d3:
-                case 0x00d4:
-                case 0x00d5:
-                case 0x00d6:
-                case 0x00d8:
-                case 0x00f2:
-                case 0x00f3:
-                case 0x00f4:
-                case 0x00f5:
-                case 0x00f6:
-                case 0x00f8:
-                case 0x014c:
-                case 0x014d:
-                case 0x014e:
-                case 0x014f:
-                case 0x0150:
-                case 0x0151:
-                    folded[0] = 'o';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x0152:
-                case 0x0153:
-                    folded[0] = 'o';
-                    folded[1] = 'e';
-                    folded_len = 2;
-                    has_folded_form = true;
-                    break;
-                case 0x0154:
-                case 0x0155:
-                case 0x0156:
-                case 0x0157:
-                case 0x0158:
-                case 0x0159:
-                    folded[0] = 'r';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x015a:
-                case 0x015b:
-                case 0x015c:
-                case 0x015d:
-                case 0x015e:
-                case 0x015f:
-                case 0x0160:
-                case 0x0161:
-                    folded[0] = 's';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x00df:
-                    folded[0] = 's';
-                    folded[1] = 's';
-                    folded_len = 2;
-                    has_folded_form = true;
-                    break;
-                case 0x00de:
-                case 0x00fe:
-                    folded[0] = 't';
-                    folded[1] = 'h';
-                    folded_len = 2;
-                    has_folded_form = true;
-                    break;
-                case 0x0162:
-                case 0x0163:
-                case 0x0164:
-                case 0x0165:
-                case 0x0166:
-                case 0x0167:
-                    folded[0] = 't';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x00d9:
-                case 0x00da:
-                case 0x00db:
-                case 0x00dc:
-                case 0x00f9:
-                case 0x00fa:
-                case 0x00fb:
-                case 0x00fc:
-                case 0x0168:
-                case 0x0169:
-                case 0x016a:
-                case 0x016b:
-                case 0x016c:
-                case 0x016d:
-                case 0x016e:
-                case 0x016f:
-                case 0x0170:
-                case 0x0171:
-                case 0x0172:
-                case 0x0173:
-                    folded[0] = 'u';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x0174:
-                case 0x0175:
-                    folded[0] = 'w';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x00dd:
-                case 0x00fd:
-                case 0x00ff:
-                case 0x0176:
-                case 0x0177:
-                case 0x0178:
-                    folded[0] = 'y';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                case 0x0179:
-                case 0x017a:
-                case 0x017b:
-                case 0x017c:
-                case 0x017d:
-                case 0x017e:
-                    folded[0] = 'z';
-                    folded_len = 1;
-                    has_folded_form = true;
-                    break;
-                default:
-                    break;
-                }
-            }
-            if (has_folded_form) {
-                SB_APPEND(buffer, folded, folded_len);
-            } else {
-                for (int32 j = 0; j < rune_len; j += 1) {
-                    lyrics_append_percent_byte(buffer, (uint8)string[i + j]);
-                }
+        if (folded_profile) {
+            switch (rune) {
+            case 0x00aa:
+            case 0x00c0:
+            case 0x00c1:
+            case 0x00c2:
+            case 0x00c3:
+            case 0x00c4:
+            case 0x00c5:
+            case 0x00e0:
+            case 0x00e1:
+            case 0x00e2:
+            case 0x00e3:
+            case 0x00e4:
+            case 0x00e5:
+            case 0x0100:
+            case 0x0101:
+            case 0x0102:
+            case 0x0103:
+            case 0x0104:
+            case 0x0105:
+                folded[0] = 'a';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x00c6:
+            case 0x00e6:
+                folded[0] = 'a';
+                folded[1] = 'e';
+                folded_len = 2;
+                has_folded_form = true;
+                break;
+            case 0x00c7:
+            case 0x00e7:
+            case 0x0106:
+            case 0x0107:
+            case 0x0108:
+            case 0x0109:
+            case 0x010a:
+            case 0x010b:
+            case 0x010c:
+            case 0x010d:
+                folded[0] = 'c';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x00d0:
+            case 0x00f0:
+            case 0x010e:
+            case 0x010f:
+            case 0x0110:
+            case 0x0111:
+                folded[0] = 'd';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x00c8:
+            case 0x00c9:
+            case 0x00ca:
+            case 0x00cb:
+            case 0x00e8:
+            case 0x00e9:
+            case 0x00ea:
+            case 0x00eb:
+            case 0x0112:
+            case 0x0113:
+            case 0x0114:
+            case 0x0115:
+            case 0x0116:
+            case 0x0117:
+            case 0x0118:
+            case 0x0119:
+            case 0x011a:
+            case 0x011b:
+                folded[0] = 'e';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x011c:
+            case 0x011d:
+            case 0x011e:
+            case 0x011f:
+            case 0x0120:
+            case 0x0121:
+            case 0x0122:
+            case 0x0123:
+                folded[0] = 'g';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x0124:
+            case 0x0125:
+            case 0x0126:
+            case 0x0127:
+                folded[0] = 'h';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x00cc:
+            case 0x00cd:
+            case 0x00ce:
+            case 0x00cf:
+            case 0x00ec:
+            case 0x00ed:
+            case 0x00ee:
+            case 0x00ef:
+            case 0x0128:
+            case 0x0129:
+            case 0x012a:
+            case 0x012b:
+            case 0x012c:
+            case 0x012d:
+            case 0x012e:
+            case 0x012f:
+            case 0x0130:
+            case 0x0131:
+                folded[0] = 'i';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x0134:
+            case 0x0135:
+                folded[0] = 'j';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x0136:
+            case 0x0137:
+                folded[0] = 'k';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x0139:
+            case 0x013a:
+            case 0x013b:
+            case 0x013c:
+            case 0x013d:
+            case 0x013e:
+            case 0x013f:
+            case 0x0140:
+            case 0x0141:
+            case 0x0142:
+                folded[0] = 'l';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x00d1:
+            case 0x00f1:
+            case 0x0143:
+            case 0x0144:
+            case 0x0145:
+            case 0x0146:
+            case 0x0147:
+            case 0x0148:
+            case 0x014a:
+            case 0x014b:
+                folded[0] = 'n';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x00ba:
+            case 0x00d2:
+            case 0x00d3:
+            case 0x00d4:
+            case 0x00d5:
+            case 0x00d6:
+            case 0x00d8:
+            case 0x00f2:
+            case 0x00f3:
+            case 0x00f4:
+            case 0x00f5:
+            case 0x00f6:
+            case 0x00f8:
+            case 0x014c:
+            case 0x014d:
+            case 0x014e:
+            case 0x014f:
+            case 0x0150:
+            case 0x0151:
+                folded[0] = 'o';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x0152:
+            case 0x0153:
+                folded[0] = 'o';
+                folded[1] = 'e';
+                folded_len = 2;
+                has_folded_form = true;
+                break;
+            case 0x0154:
+            case 0x0155:
+            case 0x0156:
+            case 0x0157:
+            case 0x0158:
+            case 0x0159:
+                folded[0] = 'r';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x015a:
+            case 0x015b:
+            case 0x015c:
+            case 0x015d:
+            case 0x015e:
+            case 0x015f:
+            case 0x0160:
+            case 0x0161:
+                folded[0] = 's';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x00df:
+                folded[0] = 's';
+                folded[1] = 's';
+                folded_len = 2;
+                has_folded_form = true;
+                break;
+            case 0x00de:
+            case 0x00fe:
+                folded[0] = 't';
+                folded[1] = 'h';
+                folded_len = 2;
+                has_folded_form = true;
+                break;
+            case 0x0162:
+            case 0x0163:
+            case 0x0164:
+            case 0x0165:
+            case 0x0166:
+            case 0x0167:
+                folded[0] = 't';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x00d9:
+            case 0x00da:
+            case 0x00db:
+            case 0x00dc:
+            case 0x00f9:
+            case 0x00fa:
+            case 0x00fb:
+            case 0x00fc:
+            case 0x0168:
+            case 0x0169:
+            case 0x016a:
+            case 0x016b:
+            case 0x016c:
+            case 0x016d:
+            case 0x016e:
+            case 0x016f:
+            case 0x0170:
+            case 0x0171:
+            case 0x0172:
+            case 0x0173:
+                folded[0] = 'u';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x0174:
+            case 0x0175:
+                folded[0] = 'w';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x00dd:
+            case 0x00fd:
+            case 0x00ff:
+            case 0x0176:
+            case 0x0177:
+            case 0x0178:
+                folded[0] = 'y';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            case 0x0179:
+            case 0x017a:
+            case 0x017b:
+            case 0x017c:
+            case 0x017d:
+            case 0x017e:
+                folded[0] = 'z';
+                folded_len = 1;
+                has_folded_form = true;
+                break;
+            default:
+                break;
             }
         }
+        if (has_folded_form) {
+            SB_APPEND(buffer, folded, folded_len);
+        } else {
+            for (int32 j = 0; j < rune_len; j += 1) {
+                lyrics_append_percent_byte(buffer, (uint8)string[i + j]);
+            }
+        }
+
         pending_separator = false;
         wrote = true;
         i += rune_len - 1;
