@@ -596,9 +596,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                 status_second_line_scroll_begin = 0;
 #if defined(ENABLE_VISUALIZER)
                 {
-                    VisualizerScreen *visualizer;
-
-                    visualizer = app_screen_visualizer();
+                    VisualizerScreen *visualizer = app_screen_visualizer();
                     visualizer_screen_reset_auto_scale_multiplier(visualizer);
                 }
 #endif
