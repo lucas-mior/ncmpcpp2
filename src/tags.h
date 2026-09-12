@@ -219,7 +219,7 @@ static inline char
 ncm_tag_type_format_char(enum TagType tag) {
     switch (tag) {
 #define TAG_TYPE_FORMAT_CHAR_CASE(SUFFIX, DISP, CHAR) \
-    case CAT(TAG_, SUFFIX):                            \
+    case CAT(TAG_, SUFFIX):                           \
         return CHAR;
 
     TAG_DEFS(TAG_TYPE_FORMAT_CHAR_CASE)
