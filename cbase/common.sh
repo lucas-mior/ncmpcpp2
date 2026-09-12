@@ -1014,8 +1014,10 @@ common_build_tags () {
                 continue
             fi
 
+            trace_on
             ln -f tags      "$dir"
             ln -f .tags.vim "$dir"
+            trace_off
         done
     fi
 }
