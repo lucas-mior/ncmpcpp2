@@ -1045,9 +1045,6 @@ ncm_mpd_connection_set_replay_gain_mode(MpdConnection *connection,
 
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
-    if (mode >= NCM_MPD_REPLAY_GAIN_COUNT) {
-        mode = NCM_MPD_REPLAY_GAIN_OFF;
-    }
     name = NCM_MPD_REPLAY_GAIN_alias(mode);
 
     if (!mpd_send_command(connection->mpd, "replay_gain_mode", name, NULL)) {
