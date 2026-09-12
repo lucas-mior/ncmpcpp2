@@ -825,7 +825,7 @@ tag_edit_build_parser_legend(TagEditScreen *screen) {
 
 static int32
 tag_edit_find_recent_pattern(TagEditScreen *screen,
-                               char *pattern, int32 pattern_len) {
+                             char *pattern, int32 pattern_len) {
     if (pattern_len <= 0) {
         return -1;
     }
