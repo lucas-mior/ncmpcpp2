@@ -104,7 +104,7 @@ ncm_song_getter_from_char(char c) {
 
 #undef SONG_GETTER_CHAR_CASE
     default:
-        return SONG_GETTER_NONE;
+        return SONG_GETTER_COUNT;
     }
 }
 
@@ -131,7 +131,6 @@ ncm_song_getter_to_tag_type(enum SongGetter getter) {
         return TAG_DISC;
     case SONG_GETTER_COMMENT:
         return TAG_COMMENT;
-    case SONG_GETTER_NONE:
     case SONG_GETTER_LENGTH:
     case SONG_GETTER_DIRECTORY:
     case SONG_GETTER_NAME:
@@ -172,7 +171,7 @@ ncm_tag_type_to_song_getter(enum TagType tag) {
         return SONG_GETTER_COMMENT;
     case TAG_COUNT:
     default:
-        return SONG_GETTER_NONE;
+        return SONG_GETTER_COUNT;
     }
 }
 

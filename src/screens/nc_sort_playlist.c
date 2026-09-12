@@ -209,7 +209,7 @@ sort_dialog_get_order(SortPlaylistDialog *dialog, enum SongGetter *getters,
         NcEditorSortRow *row;
 
         row = nc_editor_sort_menu_item_at(&dialog->rows, NC_MENU_ITEMS_ALL, i);
-        if (row->getter == SONG_GETTER_NONE) {
+        if (row->getter == SONG_GETTER_COUNT) {
             continue;
         }
         if (len >= getters_cap) {
@@ -306,9 +306,9 @@ sort_dialog_populate_defaults(SortPlaylistDialog *dialog) {
     TAG_DEFS(SORT_DIALOG_ADD_TAG_ROW)
     sort_dialog_add_sort_getter_row(dialog, SONG_GETTER_URI);
     nc_editor_sort_menu_add_separator(&dialog->rows);
-    sort_dialog_add_row(dialog, STRLIT("Sort"), SONG_GETTER_NONE,
+    sort_dialog_add_row(dialog, STRLIT("Sort"), SONG_GETTER_COUNT,
                         sort_dialog_run_sort, dialog);
-    sort_dialog_add_row(dialog, STRLIT("Cancel"), SONG_GETTER_NONE,
+    sort_dialog_add_row(dialog, STRLIT("Cancel"), SONG_GETTER_COUNT,
                         sort_dialog_cancel, dialog);
     return;
 }
@@ -460,7 +460,7 @@ sort_dialog_position_is_sort_key(NcMenu *menu, int32 pos) {
     NcEditorSortRow *row;
 
     row = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, pos);
-    return row->getter != SONG_GETTER_NONE;
+    return row->getter != SONG_GETTER_COUNT;
 }
 
 int32

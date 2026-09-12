@@ -1022,7 +1022,7 @@ test_writable_tag_metadata(void) {
     ASSERT(ncm_char_to_tag_type('N') == TAG_COUNT);
     ASSERT(ncm_char_to_tag_type('x') == TAG_COUNT);
     ASSERT(!ncm_tag_type_is_writable(TAG_COUNT));
-    ASSERT(ncm_tag_type_to_song_getter(TAG_COUNT) == SONG_GETTER_NONE);
+    ASSERT(ncm_tag_type_to_song_getter(TAG_COUNT) == SONG_GETTER_COUNT);
     ASSERT(ncm_tag_type_format_char(TAG_COUNT) == '\0');
     return;
 }
@@ -1030,10 +1030,8 @@ test_writable_tag_metadata(void) {
 static void
 test_song_getter_conversions(void) {
 #define TEST_GETTER_CHAR(getter, alias, getter_char)                         \
-    if (getter != SONG_GETTER_NONE) {                                        \
-        ASSERT(ncm_song_getter_from_char(getter_char) == getter);            \
-        ASSERT(ncm_song_getter_format_char(getter) == getter_char);          \
-    }
+    ASSERT(ncm_song_getter_from_char(getter_char) == getter);                \
+    ASSERT(ncm_song_getter_format_char(getter) == getter_char);
 #define TEST_GETTER_TAG(getter, tag)                                          \
     ASSERT(ncm_song_getter_to_tag_type(getter) == tag);                       \
     ASSERT(ncm_tag_type_to_song_getter(tag) == getter);
@@ -1053,16 +1051,36 @@ test_song_getter_conversions(void) {
 
 #undef TEST_GETTER_TAG
 #undef TEST_GETTER_CHAR
-    ASSERT(ncm_song_getter_from_char('x') == SONG_GETTER_NONE);
+    ASSERT(ncm_song_getter_from_char('x') == SONG_GETTER_COUNT);
+    ASSERT(ncm_song_getter_from_char('\0') == SONG_GETTER_COUNT);
     ASSERT(ncm_tag_type_to_song_getter(TAG_TRACK)
            == SONG_GETTER_TRACK_NUMBER);
-    ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_NONE) == TAG_COUNT);
+    ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_COUNT) == TAG_COUNT);
     ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_TRACK_NUMBER)
            == TAG_COUNT);
     ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_TRACK_TOTAL)
            == TAG_COUNT);
     ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_PRIORITY)
            == TAG_COUNT);
+    return;
+}
+
+static void
+test_playlist_sort_count_is_invalid(void) {
+    enum SongGetter getters[] = {
+        SONG_GETTER_ARTIST,
+        SONG_GETTER_COUNT,
+        SONG_GETTER_ALBUM,
+    };
+    NcmSongArray songs = {0};
+    NcmError ncm_error = {0};
+    int32 status;
+
+    status = ncm_playlist_sort_range(&songs, 0, getters, LENGTH(getters),
+                                     false, NULL, &ncm_error);
+    ASSERT(status < 0);
+    ASSERT_EQUAL(ncm_error.message, ncm_error.message_len,
+                 "invalid playlist sort key");
     return;
 }
 
@@ -1334,6 +1352,7 @@ main(void) {
     test_tag_type_names();
     test_writable_tag_metadata();
     test_song_getter_conversions();
+    test_playlist_sort_count_is_invalid();
     test_track_getter_components();
     test_tag_edit_filename_track_components();
     test_media_library_grouping_tag_settings_parse();
