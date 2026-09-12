@@ -1251,9 +1251,9 @@ tag_edit_run_current(NcScreen *screen) {
                 } else if (prompt_result != TAG_EDIT_PROMPT_ERROR) {
                     tag_edit_set_pattern(editor, input.data, input.len);
                     tag_edit_screen_prepare_parser_menus(editor,
-                                                        editor->parser_mode,
-                                                        editor->pattern.data,
-                                                        editor->pattern.len);
+                                                         editor->parser_mode,
+                                                         editor->pattern.data,
+                                                         editor->pattern.len);
                     result = true;
                 }
                 sb_free(&input);
