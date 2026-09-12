@@ -1557,8 +1557,6 @@ void
 ncm_status_changes_mixer(void) {
     NcWindow *header;
     StrBuilder volume_state = {0};
-    char volume[32];
-    int32 volume_len;
     int32 volume_x;
 
     if (!Config.display_volume_level || (!Config.header_visibility
@@ -1586,8 +1584,7 @@ ncm_status_changes_mixer(void) {
     if (status_volume < 0) {
         SB_APPEND(&volume_state, "n/a");
     } else {
-        volume_len = SNPRINTF(volume, "%d", status_volume);
-        SB_APPEND(&volume_state, volume, volume_len);
+        sb_itoa(&volume_state, status_volume);
         SB_APPEND(&volume_state, "%");
     }
     global_volume_state_set(volume_state.data, volume_state.len);
