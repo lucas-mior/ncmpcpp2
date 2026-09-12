@@ -1180,7 +1180,7 @@ status_tracklength_buffer(StrBuilder *buffer) {
     if ((Config.display_bitrate) && (status_kbps != 0)
         && (Config.user_interface == NCM_DESIGN_CLASSIC)) {
         sb_append_byte(buffer, '(');
-        sb_printf(buffer, "%d", status_kbps);
+        sb_itoa(buffer, status_kbps);
         SB_APPEND(buffer, " kbps) ");
     }
 
