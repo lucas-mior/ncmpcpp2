@@ -295,9 +295,8 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
 
 static int32
 tiny_editor_run_current(NcScreen *screen) {
-    TinyTagEditScreen *editor;
+    TinyTagEditScreen *editor = (TinyTagEditScreen *)screen;
 
-    editor = (TinyTagEditScreen *)screen;
     if (!tiny_editor_action_runnable(editor)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
