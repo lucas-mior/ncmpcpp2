@@ -246,15 +246,13 @@ time_t ncm_playlist_last_modified(NcmPlaylist *);
     XX(NCM_MPD_ITEM_PLAYLIST)
 #include "cbase/xenums.c"
 
-union NcmMpdItemValue {
-    NcmSong song;
-    NcmDirectory directory;
-    NcmPlaylist playlist;
-};
-
 typedef struct NcmMpdItem {
     enum NcmMpdItemKind kind;
-    union NcmMpdItemValue value;
+    union {
+        NcmSong song;
+        NcmDirectory directory;
+        NcmPlaylist playlist;
+    } value;
 } NcmMpdItem;
 
 void ncm_mpd_item_init(NcmMpdItem *);
