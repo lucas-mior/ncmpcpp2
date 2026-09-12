@@ -3900,66 +3900,58 @@ tag_edit_screen_show_parser_actions(TagEditScreen *screen,
     }
     if (!screen->recent_patterns_loaded) {
         StrBuilder path = {0};
-        StrBuilder line = {0};
-        FILE *file;
+        char *content = NULL;
+        int32 content_len = 0;
         int32 status;
 
         screen->recent_patterns_loaded = true;
         tag_edit_history_path(&path);
         status = 0;
-        file = fopen(path.data, "r");
-        if (file == NULL) {
-            if (errno != ENOENT) {
-                status = errno ? -errno : -EIO;
-            }
-        } else {
-            while (true) {
-                bool read_line = false;
-                int32 ch;
+        if (ncm_fs_path_is_existing(path.data, path.len)) {
+            content_len = read_entire_file(path.data, &content);
+            if (content_len < 0) {
+                status = content_len;
+            } else {
+                char *content_end = content + content_len;
+                char *line = content;
 
-                sb_clear(&line);
-                while (true) {
-                    ch = fgetc(file);
-                    if (ch == EOF) {
-                        break;
-                    }
-                    read_line = true;
-                    if (ch == '\n') {
-                        break;
-                    }
-                    sb_append_byte(&line, (char)ch);
-                }
-                if (ferror(file)) {
-                    status = -EIO;
-                }
-                while ((status >= 0) && (line.len > 0)
-                       && ((line.data[line.len - 1] == '\n')
-                           || (line.data[line.len - 1] == '\r'))) {
-                    line.len -= 1;
-                    line.data[line.len] = '\0';
-                }
-                if ((status < 0) || !read_line) {
-                    break;
-                }
-                if ((line.len > 0)
-                    && (tag_edit_find_recent_pattern(screen,
-                                                     line.data, line.len)
-                                                      < 0)) {
-                    StrBuilder *item;
+                while (line < content_end) {
+                    char *current_line;
+                    char *line_end;
+                    char *next;
+                    int32 line_len;
 
-                    item = str_builder_array_append(&screen->recent_patterns);
-                    ASSERT(item != NULL);
-                    sb_set(item, line.data, line.len);
+                    current_line = line;
+                    if ((line_end = memchr64(line, '\n',
+                                             content_end - line))) {
+                        line_len = (int32)(line_end - line);
+                        next = line_end + 1;
+                    } else {
+                        line_len = (int32)(content_end - line);
+                        next = content_end;
+                    }
+                    line = next;
+                    if ((line_len > 0)
+                        && (current_line[line_len - 1] == '\r')) {
+                        line_len -= 1;
+                    }
+                    if ((line_len > 0)
+                        && (tag_edit_find_recent_pattern(screen,
+                                                         current_line, line_len)
+                            < 0)) {
+                        StrBuilder *item;
+
+                        item = str_builder_array_append(
+                            &screen->recent_patterns);
+                        ASSERT(item != NULL);
+                        sb_set(item, current_line, line_len);
+                    }
                 }
-                if (ch == EOF) {
-                    break;
-                }
-            }
-            if ((fclose(file) == EOF) && (status == 0)) {
-                status = errno ? -errno : -EIO;
             }
         }
-        sb_free(&line);
+        if (content != NULL) {
+            free2(content, content_len + 1);
+        }
         sb_free(&path);
         if (status < 0) {
             return;
