@@ -248,7 +248,7 @@ static inline char
 ncm_song_getter_format_char(enum SongGetter getter) {
     switch (getter) {
 #define SONG_GETTER_CHAR_CASE(GETTER, DISP, CHAR) \
-    case GETTER:                                   \
+    case GETTER:                                  \
         return CHAR;
 
     SONG_GETTER_DEFS(SONG_GETTER_CHAR_CASE)
