@@ -1748,7 +1748,7 @@ int32 sort_playlist_dialog_move_current_down(SortPlaylistDialog *);
 #include "cbase/xenums.c"
 
 #define ENUM_NAME TagEditParserMode
-#define ENUM_PREFIX_ TAG_EDIT_PARSER_MODE
+#define ENUM_PREFIX_ TAG_EDIT_PARSER_MODE_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                  \
     XX(TAG_EDIT_PARSER_MODE_NONE, Pattern)                              \

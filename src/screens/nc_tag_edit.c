@@ -395,10 +395,10 @@ tag_edit_update_titles(TagEditScreen *screen, bool update_windows) {
         SB_APPEND(&screen->tags_title, title, title_len);
 
         if ((parser_mode < TAG_EDIT_PARSER_MODE_NONE)
-            || (parser_mode >= TAG_EDIT_PARSER_MODECOUNT)) {
+            || (parser_mode >= TAG_EDIT_PARSER_MODE_COUNT)) {
             parser_mode = TAG_EDIT_PARSER_MODE_NONE;
         }
-        title_len = TAG_EDIT_PARSER_MODEalias_len(parser_mode, &title);
+        title_len = TAG_EDIT_PARSER_MODE_alias_len(parser_mode, &title);
         SB_APPEND(&screen->parser_title, title, title_len);
 
         if ((screen->active_focus == TAG_EDIT_FOCUS_PARSER_LEGEND)
