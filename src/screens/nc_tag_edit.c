@@ -473,14 +473,12 @@ tag_edit_refresh(NcScreen *screen) {
     tag_edit_update_menu_highlights(editor);
     if (editor->active_focus == TAG_EDIT_FOCUS_PARSER_CHOICE) {
         NcMenu *menu = nc_editor_string_menu_base(&editor->parser_dialog);
-
         tag_edit_refresh_menu(&editor->parser_dialog_window, menu);
         return;
     }
     if ((editor->active_focus == TAG_EDIT_FOCUS_PARSER_ACTIONS)
         || tag_edit_focus_is_parser_helper(editor->active_focus)) {
         NcMenu *menu = nc_editor_string_menu_base(&editor->parser_actions);
-
         tag_edit_refresh_menu(&editor->parser_window, menu);
         tag_edit_refresh_active_helper(editor);
         return;
@@ -488,7 +486,6 @@ tag_edit_refresh(NcScreen *screen) {
 
     {
         NcMenu *menu = nc_editor_pair_menu_base(&editor->directories);
-
         tag_edit_refresh_menu(&editor->directories_window, menu);
     }
     if (tag_edit_separator_width(editor) > 0) {
