@@ -570,6 +570,7 @@ tag_edit_current_tag_type_action(TagEditScreen *screen,
                                  enum TagType *tag_type) {
     NcMenu *menu;
     StrBuilder *row;
+    enum TagEditTagTypeAction action;
     int32 choice;
 
     ASSERT(screen != NULL);
@@ -594,17 +595,10 @@ tag_edit_current_tag_type_action(TagEditScreen *screen,
     if (tag_edit_choice_is_filename(choice)) {
         return TAG_EDIT_TAG_TYPE_ACTION_FILENAME;
     }
-    if (STREQUAL(row->data, row->len, "Capitalize First Letters")) {
-        return TAG_EDIT_TAG_TYPE_ACTION_CAPITALIZE;
-    }
-    if (STREQUAL(row->data, row->len, "lower all letters")) {
-        return TAG_EDIT_TAG_TYPE_ACTION_LOWER;
-    }
-    if (STREQUAL(row->data, row->len, "Reset")) {
-        return TAG_EDIT_TAG_TYPE_ACTION_RESET;
-    }
-    if (STREQUAL(row->data, row->len, "Save")) {
-        return TAG_EDIT_TAG_TYPE_ACTION_SAVE;
+
+    action = TAG_EDIT_TAG_TYPE_ACTION_parse(row->data, row->len);
+    if (action != TAG_EDIT_TAG_TYPE_ACTION_COUNT) {
+        return action;
     }
     return TAG_EDIT_TAG_TYPE_ACTION_NONE;
 }
