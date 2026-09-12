@@ -73,6 +73,14 @@ nc_song_info_display(NcSongInfoScreen *song_info) {
     return;
 }
 
+static int32
+nc_song_info_current_song_callback(NcSongInfoScreen *screen, NcmSong *song) {
+    if ((screen->hooks.current_song == NULL) || (song == NULL)) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    return screen->hooks.current_song(screen->hooks.user, song);
+}
+
 #define NC_SCREEN_IMPL_TYPE NcSongInfoScreen
 #define NC_SCREEN_IMPL_PREFIX nc_song_info
 #define NC_SCREEN_IMPL_PUBLIC_PREFIX nc_song_info_screen
@@ -80,6 +88,7 @@ nc_song_info_display(NcSongInfoScreen *song_info) {
 #define NC_SCREEN_IMPL_WINDOW_FIELD window
 #define NC_SCREEN_IMPL_SCROLLPAD_FIELD scrollpad
 #define NC_SCREEN_IMPL_REFRESH_CALLBACK nc_song_info_display
+#define NC_SCREEN_IMPL_CURRENT_SONG_CALLBACK nc_song_info_current_song_callback
 #define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK nc_song_info_switch_to
 #define NC_SCREEN_IMPL_RESIZE_CALLBACK nc_song_info_resize
 #define NC_SCREEN_IMPL_TITLE_LITERAL "Song info"

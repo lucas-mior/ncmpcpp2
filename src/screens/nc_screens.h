@@ -850,6 +850,7 @@ typedef struct NcSongInfoScreen NcSongInfoScreen;
 
 typedef struct NcSongInfoHooks {
     int32 (*render)(void *, NcSongInfoScreen *, NcBuffer *);
+    int32 (*current_song)(void *, NcmSong *);
     void (*switch_to)(void *, NcSongInfoScreen *);
     void (*resize_layout)(void *, NcSongInfoScreen *);
     void (*destroy)(void *);

@@ -1730,6 +1730,16 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
     return 1;
 }
 
+static int32
+song_info_current_song(void *user, NcmSong *song) {
+    SongInfoScreen *owner = user;
+
+    if (!owner->has_song || (song == NULL)) {
+        return -NCM_ERROR_NOT_FOUND;
+    }
+    return ncm_song_copy(song, &owner->song);
+}
+
 static void
 song_info_switch_to(void *user, NcSongInfoScreen *screen) {
     SongInfoScreen *owner = user;
@@ -1789,6 +1799,7 @@ app_screen_song_info_init(void) {
     }
 
     hooks.render = song_info_render;
+    hooks.current_song = song_info_current_song;
     hooks.switch_to = song_info_switch_to;
     hooks.resize_layout = song_info_resize;
     hooks.destroy = song_info_destroy;
