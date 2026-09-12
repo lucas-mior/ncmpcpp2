@@ -1007,6 +1007,17 @@ common_build_tags () {
         vtags.sed tags | sort | uniq > .tags.vim || true
         trace_off
     fi
+
+    if [ -d "src/" ]; then
+        for dir in src/*; do
+            if [ ! -d "$dir" ]; then
+                continue
+            fi
+
+            ln -f tags      "$dir"
+            ln -f .tags.vim "$dir"
+        done
+    fi
 }
 
 common_install_file() {
