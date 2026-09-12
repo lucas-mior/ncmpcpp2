@@ -3808,22 +3808,6 @@ action_runtime_toggle_media_library_columns(void) {
     return 0;
 }
 
-static char *
-action_runtime_replay_gain_mode_name(enum NcmMpdReplayGainMode mode) {
-    switch (mode) {
-    case NCM_MPD_REPLAY_GAIN_OFF:
-        return "off";
-    case NCM_MPD_REPLAY_GAIN_TRACK:
-        return "track";
-    case NCM_MPD_REPLAY_GAIN_ALBUM:
-        return "album";
-    case NCM_MPD_REPLAY_GAIN_COUNT:
-    default:
-        break;
-    }
-    return "unknown";
-}
-
 static int32
 action_runtime_toggle_replay_gain_mode(void) {
     NcmError ncm_error;
@@ -3869,7 +3853,7 @@ action_runtime_toggle_replay_gain_mode(void) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
     action_runtime_print_toggle(STRLIT("Replay gain mode: "),
-                                action_runtime_replay_gain_mode_name(mode));
+                                NCM_MPD_REPLAY_GAIN_alias(mode));
     return 0;
 }
 
