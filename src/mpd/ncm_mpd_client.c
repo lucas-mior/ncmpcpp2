@@ -1166,8 +1166,7 @@ ncm_mpd_client_get_directory_list(MpdClient *client, char *path,
 }
 
 int32
-ncm_mpd_client_enable_output(MpdClient *client, int32 id,
-                             NcmError *ncm_error) {
+ncm_mpd_client_enable_output(MpdClient *client, int32 id, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
     NCM_CLIENT_TRY_MPD(client,
                        ncm_mpd_connection_enable_output(&client->connection,
