@@ -588,7 +588,6 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                                               active_hooks->user);
             } else {
                 NcmSong song = {0};
-                bool has_song;
 
                 playlist_screen_reload_remaining(app_screen_playlist());
                 status_playing_song_scroll_begin = 0;
@@ -606,12 +605,10 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                 }
 
                 if (status_player_state != NCM_STATUS_PLAYER_STOP) {
-                    PlaylistScreen *playlist;
-                    int32 pos;
+                    PlaylistScreen *playlist = app_screen_playlist();
+                    int32 pos = status_current_song_pos;
+                    bool has_song = false;
 
-                    has_song = false;
-                    playlist = app_screen_playlist();
-                    pos = status_current_song_pos;
                     if (playlist_screen_now_playing_song(playlist, pos, &song)
                         == 0) {
                         has_song = true;
