@@ -1151,14 +1151,18 @@ media_library_screen_destroy(MediaLibraryScreen *screen) {
     sb_free(&screen->songs_title);
     sb_free(&screen->albums_title);
     sb_free(&screen->tags_title);
+
     nc_media_library_album_row_destroy(&screen->observed_album);
     nc_media_library_tag_row_destroy(&screen->observed_tag);
+
     nc_window_destroy(&screen->songs_window);
     nc_window_destroy(&screen->albums_window);
     nc_window_destroy(&screen->tags_window);
+
     nc_media_library_song_menu_destroy(&screen->songs);
     nc_media_library_album_menu_destroy(&screen->albums);
     nc_media_library_tag_menu_destroy(&screen->tags);
+
     if (screen->hooks.destroy) {
         screen->hooks.destroy(screen->hooks.user);
     }
