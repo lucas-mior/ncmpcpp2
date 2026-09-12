@@ -1032,32 +1032,28 @@ test_song_getter_conversions(void) {
 #define TEST_GETTER_CHAR(getter, alias, getter_char)                         \
     ASSERT(ncm_song_getter_from_char(getter_char) == getter);                \
     ASSERT(ncm_song_getter_format_char(getter) == getter_char);
-#define TEST_GETTER_TAG(getter, tag)                                          \
-    ASSERT(ncm_song_getter_to_tag_type(getter) == tag);                       \
-    ASSERT(ncm_tag_type_to_song_getter(tag) == getter);
+#define TEST_GETTER_TAG(CTX, suffix, alias, getter_char)                     \
+    ASSERT(ncm_song_getter_to_tag_type(CAT(SONG_GETTER_, suffix))            \
+           == CAT(TAG_, suffix));                                             \
+    ASSERT(ncm_tag_type_to_song_getter(CAT(TAG_, suffix))                    \
+           == CAT(SONG_GETTER_, suffix));
+#define TEST_GETTER_TAG_SPECIAL(                                         \
+    CTX, tag_suffix, tag_alias, getter_suffix, getter_alias, getter_char, \
+    getter_tag)                                                          \
+    ASSERT(ncm_tag_type_to_song_getter(CAT(TAG_, tag_suffix))            \
+           == CAT(SONG_GETTER_, getter_suffix));                          \
+    ASSERT(ncm_song_getter_to_tag_type(CAT(SONG_GETTER_, getter_suffix)) \
+           == getter_tag);
 
     SONG_GETTER_DEFS(TEST_GETTER_CHAR)
+    SONG_TAG_DEFS(TEST_GETTER_TAG, TEST_GETTER_TAG_SPECIAL, SONG_TAG_NO_CONTEXT)
 
-    TEST_GETTER_TAG(SONG_GETTER_ARTIST, TAG_ARTIST)
-    TEST_GETTER_TAG(SONG_GETTER_ALBUM_ARTIST, TAG_ALBUM_ARTIST)
-    TEST_GETTER_TAG(SONG_GETTER_ALBUM, TAG_ALBUM)
-    TEST_GETTER_TAG(SONG_GETTER_DISC, TAG_DISC)
-    TEST_GETTER_TAG(SONG_GETTER_GENRE, TAG_GENRE)
-    TEST_GETTER_TAG(SONG_GETTER_DATE, TAG_DATE)
-    TEST_GETTER_TAG(SONG_GETTER_COMPOSER, TAG_COMPOSER)
-    TEST_GETTER_TAG(SONG_GETTER_PERFORMER, TAG_PERFORMER)
-    TEST_GETTER_TAG(SONG_GETTER_TITLE, TAG_TITLE)
-    TEST_GETTER_TAG(SONG_GETTER_COMMENT, TAG_COMMENT)
-
+#undef TEST_GETTER_TAG_SPECIAL
 #undef TEST_GETTER_TAG
 #undef TEST_GETTER_CHAR
     ASSERT(ncm_song_getter_from_char('x') == SONG_GETTER_COUNT);
     ASSERT(ncm_song_getter_from_char('\0') == SONG_GETTER_COUNT);
-    ASSERT(ncm_tag_type_to_song_getter(TAG_TRACK)
-           == SONG_GETTER_TRACK_NUMBER);
     ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_COUNT) == TAG_COUNT);
-    ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_TRACK_NUMBER)
-           == TAG_COUNT);
     ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_TRACK_TOTAL)
            == TAG_COUNT);
     ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_PRIORITY)

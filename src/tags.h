@@ -6,18 +6,28 @@
 #define TAG_DISPLAY_NAME(DISP) #DISP
 #define TAG_DISPLAY_NAME_LEN(DISP) STRLIT_LEN(#DISP)
 
-#define TAG_DEFS(XX)                         \
-  XX(ARTIST, Artist, 'a')                    \
-  XX(ALBUM_ARTIST, Album Artist, 'A')        \
-  XX(ALBUM, Album, 'b')                      \
-  XX(DISC, Disc, 'd')                        \
-  XX(TRACK, Track, 'n')                      \
-  XX(GENRE, Genre, 'g')                      \
-  XX(DATE, Date, 'y')                        \
-  XX(COMPOSER, Composer, 'c')                \
-  XX(PERFORMER, Performer, 'p')              \
-  XX(TITLE, Title, 't')                      \
-  XX(COMMENT, Comment, 'C')
+#define SONG_TAG_DEFS(XX, XX_SPECIAL, CTX)                   \
+    XX(CTX, ARTIST, Artist, 'a')                              \
+    XX(CTX, ALBUM_ARTIST, Album Artist, 'A')                  \
+    XX(CTX, ALBUM, Album, 'b')                                \
+    XX(CTX, DISC, Disc, 'd')                                  \
+    XX_SPECIAL(CTX, TRACK, Track, TRACK_NUMBER, Track Number, \
+               'n', TAG_COUNT)                                \
+    XX(CTX, GENRE, Genre, 'g')                                \
+    XX(CTX, DATE, Date, 'y')                                  \
+    XX(CTX, COMPOSER, Composer, 'c')                          \
+    XX(CTX, PERFORMER, Performer, 'p')                        \
+    XX(CTX, TITLE, Title, 't')                                \
+    XX(CTX, COMMENT, Comment, 'C')
+
+#define SONG_TAG_AS_TAG(XX, SUFFIX, DISP, CHAR) \
+    XX(SUFFIX, DISP, CHAR)
+#define SONG_TAG_SPECIAL_AS_TAG(XX, TAG_SUFFIX, TAG_DISP, GETTER_SUFFIX,     \
+                                GETTER_DISP, CHAR, GETTER_TAG)                \
+    XX(TAG_SUFFIX, TAG_DISP, CHAR)
+
+#define TAG_DEFS(XX) \
+    SONG_TAG_DEFS(SONG_TAG_AS_TAG, SONG_TAG_SPECIAL_AS_TAG, XX)
 
 enum {
     TAG_DERIVED_NAME_CAP = 64,
@@ -31,24 +41,21 @@ enum {
 #define TAG_TYPE_ENUM_FIELDS                   \
   TAG_DEFS(TAG_TYPE_ENUM_FIELD)
 
-#define SONG_GETTER_DEFS(XX)                         \
-  XX(SONG_GETTER_LENGTH, Length, 'l')                \
-  XX(SONG_GETTER_DIRECTORY, Directory, 'D')          \
-  XX(SONG_GETTER_NAME, Filename, 'f')                \
-  XX(SONG_GETTER_URI, URI, 'F')                      \
-  XX(SONG_GETTER_ARTIST, Artist, 'a')                \
-  XX(SONG_GETTER_ALBUM_ARTIST, Album Artist, 'A')    \
-  XX(SONG_GETTER_TITLE, Title, 't')                  \
-  XX(SONG_GETTER_ALBUM, Album, 'b')                  \
-  XX(SONG_GETTER_DATE, Date, 'y')                    \
-  XX(SONG_GETTER_TRACK_NUMBER, Track Number, 'n')    \
-  XX(SONG_GETTER_TRACK_TOTAL, Total Tracks, 'N')     \
-  XX(SONG_GETTER_GENRE, Genre, 'g')                  \
-  XX(SONG_GETTER_COMPOSER, Composer, 'c')            \
-  XX(SONG_GETTER_PERFORMER, Performer, 'p')          \
-  XX(SONG_GETTER_DISC, Disc, 'd')                    \
-  XX(SONG_GETTER_COMMENT, Comment, 'C')              \
-  XX(SONG_GETTER_PRIORITY, Priority, 'P')
+#define SONG_TAG_AS_GETTER(XX, SUFFIX, DISP, CHAR) \
+    XX(CAT(SONG_GETTER_, SUFFIX), DISP, CHAR)
+#define SONG_TAG_SPECIAL_AS_GETTER(XX, TAG_SUFFIX, TAG_DISP, GETTER_SUFFIX, \
+                                   GETTER_DISP, CHAR, GETTER_TAG)            \
+    XX(CAT(SONG_GETTER_, GETTER_SUFFIX), GETTER_DISP, CHAR)
+
+#define SONG_GETTER_DEFS(XX)                              \
+    XX(SONG_GETTER_LENGTH, Length, 'l')                    \
+    XX(SONG_GETTER_DIRECTORY, Directory, 'D')              \
+    XX(SONG_GETTER_NAME, Filename, 'f')                    \
+    XX(SONG_GETTER_URI, URI, 'F')                          \
+    SONG_TAG_DEFS(SONG_TAG_AS_GETTER,                      \
+                  SONG_TAG_SPECIAL_AS_GETTER, XX)          \
+    XX(SONG_GETTER_TRACK_TOTAL, Total Tracks, 'N')         \
+    XX(SONG_GETTER_PRIORITY, Priority, 'P')
 
 #define SONG_GETTER_ENUM_FIELD(GETTER, DISP, CHAR) \
   XX(GETTER, DISP)
