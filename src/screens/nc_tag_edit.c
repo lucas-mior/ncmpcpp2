@@ -3949,9 +3949,7 @@ tag_edit_screen_show_parser_actions(TagEditScreen *screen,
                 }
             }
         }
-        if (content != NULL) {
-            free2(content, content_len + 1);
-        }
+        free2(content, content_len + 1);
         sb_free(&path);
         if (status < 0) {
             return;
