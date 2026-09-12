@@ -46,7 +46,7 @@ ncm_search_prompt_state_has_cached_result(SearchPromptState *state,
                                           bool *found) {
     ASSERT(state != NULL);
     ASSERT(text != NULL);
-    ASSERT(text_len >= 0);
+    ASSERT_NON_NEGATIVE(text_len);
 
     if (!state->has_last_result) {
         return false;
@@ -73,7 +73,7 @@ ncm_search_prompt_state_finish_result(SearchPromptState *state,
 
     ASSERT(state != NULL);
     ASSERT(text != NULL);
-    ASSERT(text_len >= 0);
+    ASSERT_NON_NEGATIVE(text_len);
 
     if (!search_ok) {
         return 0;
