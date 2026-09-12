@@ -1,0 +1,5 @@
+the visualizer screen works perfectly after the program just launched. However,
+after a few minutes, it starts becoming slugish. But CPU utilization does not
+increase. I suspect it might have something to do with the IPC communication.
+Please investigate this and formulate a diagnostic. Also, if there are linux
+commands that I can run to get useful info, tell me.
