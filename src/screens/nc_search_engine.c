@@ -401,7 +401,7 @@ search_toggle_display_mode(NcScreen *base) {
     enum DisplayMode mode;
     mode = search_engine_screen_toggle_display_mode((SearchEngineScreen *)base);
     sb_printf(&message, "Search engine display mode: %s",
-              ncm_display_mode_str(mode));
+              NCM_DISPLAY_MODE_alias(mode));
     search_engine_screen_status_message((SearchEngineScreen *)base,
                                         message.data, message.len);
     sb_free(&message);
