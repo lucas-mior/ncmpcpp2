@@ -1536,12 +1536,10 @@ ncm_status_changes_flags(void) {
         nc_window_print_data(header, switch_state.data, switch_state.len);
         status_apply_formatted_color_end(header, &Config.state_flags_color);
         if (!Config.header_visibility) {
-            NcFormattedColor *separator_color;
-
-            separator_color = &Config.alternative_ui_separator_color;
-            status_apply_formatted_color(header, separator_color);
+            NcFormattedColor *color= &Config.alternative_ui_separator_color;
+            status_apply_formatted_color(header, color);
             mvwhline(nc_window_raw(header), 2, 0, 0, COLS);
-            status_apply_formatted_color_end(header, separator_color);
+            status_apply_formatted_color_end(header, color);
         }
         break;
     case NCM_DESIGN_COUNT:
