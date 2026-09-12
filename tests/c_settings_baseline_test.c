@@ -1305,8 +1305,7 @@ test_tag_edit_parser_metadata(void) {
     int32 idx = 0;
 
 #define TEST_PARSER_FIELD(suffix, display, tag_char)                           \
-    ASSERT(ncm_tag_type_format_char(CAT(TAG_, suffix))                         \
-           == tag_char);                                                       \
+    ASSERT(ncm_tag_type_format_char(CAT(TAG_, suffix)) == tag_char);           \
     name_len = ncm_tag_type_parser_name_len(CAT(TAG_, suffix),                 \
                                               &name);                          \
     ASSERT(name_len > 0);                                                      \
