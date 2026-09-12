@@ -6,12 +6,12 @@
 #define TAG_DISPLAY_NAME(DISP) #DISP
 #define TAG_DISPLAY_NAME_LEN(DISP) STRLIT_LEN(#DISP)
 
-#define SONG_TAG_DEFS(XX, XX_SPECIAL, CTX)                   \
+#define SONG_TAG_DEFS(XX, XX2, CTX)                   \
     XX(CTX, ARTIST, Artist, 'a')                              \
     XX(CTX, ALBUM_ARTIST, Album Artist, 'A')                  \
     XX(CTX, ALBUM, Album, 'b')                                \
     XX(CTX, DISC, Disc, 'd')                                  \
-    XX_SPECIAL(CTX, TRACK, Track, TRACK_NUMBER, Track Number, \
+    XX2(CTX, TRACK, Track, TRACK_NUMBER, Track Number, \
                'n', TAG_COUNT)                                \
     XX(CTX, GENRE, Genre, 'g')                                \
     XX(CTX, DATE, Date, 'y')                                  \
