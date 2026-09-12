@@ -1020,13 +1020,15 @@ media_library_screen_init(MediaLibraryScreen *screen, MediaLibraryHooks hooks,
     NcMenu *album_menu;
     NcMenu *song_menu;
 
+    screen->hooks = hooks;
+
     nc_media_library_tag_menu_init(&screen->tags);
     nc_media_library_album_menu_init(&screen->albums);
     nc_media_library_song_menu_init(&screen->songs);
+
     tag_menu = nc_media_library_tag_menu_base(&screen->tags);
     album_menu = nc_media_library_album_menu_base(&screen->albums);
     song_menu = nc_media_library_song_menu_base(&screen->songs);
-    screen->hooks = hooks;
 
     for (uint32 i = 0; i < MEDIA_LIBRARY_COLUMN_COUNT; i += 1) {
         screen->column_state[i].filter_constraint = (StrBuilder){0};
