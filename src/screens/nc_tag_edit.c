@@ -3874,8 +3874,13 @@ tag_edit_screen_prepare_parser_menus(TagEditScreen *screen,
         sb_free(&row);
     }
 
-    tag_edit_append_parser_action_label(screen, STRLIT("Preview"));
-    tag_edit_append_parser_action_label(screen, STRLIT("Legend"));
+    label_len = TAG_EDIT_FOCUS_alias_len(TAG_EDIT_FOCUS_PARSER_PREVIEW,
+                                         &label);
+    tag_edit_append_parser_action_label(screen, label, label_len);
+    label_len = TAG_EDIT_FOCUS_alias_len(TAG_EDIT_FOCUS_PARSER_LEGEND,
+                                         &label);
+    tag_edit_append_parser_action_label(screen, label, label_len);
+
     tag_edit_append_parser_separator(screen);
     tag_edit_append_parser_action_label(screen, STRLIT("Proceed"));
     tag_edit_append_parser_action_label(screen, STRLIT("Cancel"));
