@@ -1522,12 +1522,6 @@ action_runtime_find_item(enum SearchDirection direction) {
 
     prompt_len = SNPRINTF(prompt, "Find %s: ",
                           NCM_SEARCH_DIRECTION_alias(direction));
-    if (prompt_len < 0) {
-        prompt_len = 0;
-    }
-    if (prompt_len >= SIZEOF(prompt)) {
-        prompt_len = SIZEOF(prompt) - 1;
-    }
 
     old_autocenter_mode = Config.autocenter_mode;
     Config.autocenter_mode = false;
