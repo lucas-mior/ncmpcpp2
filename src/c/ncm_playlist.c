@@ -26,7 +26,7 @@ ncm_playlist_set(NcmPlaylist *playlist,
 
     ASSERT(playlist != NULL);
     ASSERT(path != NULL);
-    ASSERT(path_len >= 0);
+    ASSERT_NON_NEGATIVE(path_len);
 
     replacement.path = malloc2(path_len + 1);
     replacement.path_len = path_len;
