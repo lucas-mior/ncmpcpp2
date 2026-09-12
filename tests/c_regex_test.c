@@ -9,8 +9,8 @@ static bool
 regex_test_count_callback(int32 start, int32 len, void *user) {
     int32 *count = user;
 
-    ASSERT(start >= 0);
-    ASSERT(len >= 0);
+    ASSERT_NON_NEGATIVE(start);
+    ASSERT_NON_NEGATIVE(len);
     *count += 1;
     return true;
 }
