@@ -954,16 +954,6 @@ tag_edit_prompt_tag_value(TagEditScreen *screen,
     return result;
 }
 
-static void
-tag_edit_append_parser_filename(StrBuilder *buffer, char *name,
-                                  int32 name_len) {
-    if ((name == NULL) || (name_len <= 0)) {
-        return;
-    }
-    SB_APPEND(buffer, name, name_len);
-    return;
-}
-
 static int32
 tag_edit_build_parser_preview(TagEditScreen *screen,
                                 bool apply, bool *success) {
@@ -1031,10 +1021,8 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
             if (apply && (stem.len <= 0)) {
                 sb_clear(&screen->parser_preview);
                 SB_APPEND(&screen->parser_preview, "File \"");
-                tag_edit_append_parser_filename(&screen->parser_preview,
-                                                song->name, song->name_len);
-                SB_APPEND(&screen->parser_preview,
-                          STRLIT("\" would have an empty name"));
+                SB_APPEND(&screen->parser_preview, song->name, song->name_len);
+                SB_APPEND(&screen->parser_preview, "\" would have an empty name");
                 tag_edit_status_message(screen, screen->parser_preview.data,
                                         screen->parser_preview.len);
                 screen->parser_preview_enabled = true;
@@ -1046,8 +1034,7 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
             if (apply) {
                 mutable_song_set_new_name(song, new_name.data, new_name.len);
             } else {
-                tag_edit_append_parser_filename(&screen->parser_preview,
-                                                song->name, song->name_len);
+                SB_APPEND(&screen->parser_preview, song->name, song->name_len);
                 SB_APPEND(&screen->parser_preview, " -> ");
                 if (new_name.len > 0) {
                     SB_APPEND(&screen->parser_preview,
