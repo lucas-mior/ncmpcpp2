@@ -480,6 +480,7 @@ nc_menu_filtered_item_count(NcMenu *menu) {
 
 int32
 nc_menu_highlight(NcMenu *menu) {
+    ASSERT_NON_NEGATIVE(menu->highlight);
     return menu->highlight;
 }
 
