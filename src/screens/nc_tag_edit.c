@@ -3936,8 +3936,7 @@ tag_edit_screen_show_parser_actions(TagEditScreen *screen,
                         < 0)) {
                     StrBuilder *item;
 
-                    item = str_builder_array_append(
-                        &screen->recent_patterns);
+                    item = str_builder_array_append(&screen->recent_patterns);
                     ASSERT(item != NULL);
                     sb_set(item, current_line, line_len);
                 }
