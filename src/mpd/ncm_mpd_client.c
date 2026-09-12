@@ -1090,8 +1090,7 @@ ncm_mpd_client_get_directory_recursive(MpdClient *client, char *path,
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
     NCM_CLIENT_TRY_MPD(client,
                        ncm_mpd_connection_list_all_songs(&client->connection,
-                                                         path,
-                                                         songs),
+                                                         path, songs),
                        ncm_error);
 
     return ncm_error_ok(ncm_error);
