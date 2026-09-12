@@ -885,18 +885,10 @@ settings_apply_option(Configuration *config, SettingsOption option,
 
         len = SNPRINTF(message, "error while %s option \"%.*s\": %.*s",
                        phase, option.name_len, option.name, detail_len, detail);
-        if (len < 0) {
-            ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
-                                 STRLIT("error while processing option"));
+        if (ncm_error_is_set(&cause)) {
+            ncm_error_set(ncm_error, cause.code, message, len);
         } else {
-            if (len >= SIZEOF(message)) {
-                len = SIZEOF(message) - 1;
-            }
-            if (ncm_error_is_set(&cause)) {
-                ncm_error_set(ncm_error, cause.code, message, len);
-            } else {
-                ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE, message, len);
-            }
+            ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE, message, len);
         }
         return settings_report_or_ignore(ncm_error, ignore_errors);
     }
@@ -1292,16 +1284,8 @@ config_read(Configuration *config, StringViewArray *config_paths,
 
                 len = SNPRINTF(message, "unknown option: %.*s",
                                parsed.option_len, parsed.option);
-                if (len < 0) {
-                    ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
-                                         STRLIT("unknown option"));
-                } else {
-                    if (len >= SIZEOF(message)) {
-                        len = SIZEOF(message) - 1;
-                    }
-                    ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
-                                         message, len);
-                }
+                ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+                                     message, len);
                 status = settings_report_or_ignore(ncm_error, ignore_errors);
                 if (status < 0) {
                     free2(content, content_len + 1);
