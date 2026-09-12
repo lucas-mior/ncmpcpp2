@@ -1157,8 +1157,7 @@ ncm_mpd_connection_get_tag_types(MpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_get_current_song(MpdConnection *connection,
-                                    NcmSong *song) {
+ncm_mpd_connection_get_current_song(MpdConnection *connection, NcmSong *song) {
     int32 status;
 
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
@@ -1180,8 +1179,7 @@ ncm_mpd_connection_get_current_song(MpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_get_queue(MpdConnection *connection,
-                             NcmMpdSongList *songs) {
+ncm_mpd_connection_get_queue(MpdConnection *connection, NcmMpdSongList *songs) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (songs == NULL) {
         return -EINVAL;
