@@ -193,8 +193,8 @@ void mutable_song_move(MutableSong *dest, MutableSong *source);
 int32 mutable_song_set_tag(MutableSong *, enum TagType, int32 idx,
                            char *, int32 value_len);
 int32 mutable_song_set_tags(MutableSong *, enum TagType,
-                            char *value, int32 value_len, char *separator,
-                            int32 separator_len);
+                            char *value, int32 value_len,
+                            char *separator, int32 separator_len);
 bool mutable_song_has_tag_view(MutableSong *, enum TagType, int32,
                                StringView *);
 void mutable_song_get_tag_buffer(MutableSong *, enum TagType,
