@@ -1282,8 +1282,7 @@ test_song_info_tag_metadata(void) {
     ASSERT_EQUAL(ncm_song_info_tags[idx].name,                                 \
                  ncm_song_info_tags[idx].name_len,                             \
                  #display);                                                    \
-    ASSERT(ncm_song_info_tags[idx].name_len                                    \
-           == (sizeof(#display) - 1));                                         \
+    ASSERT(ncm_song_info_tags[idx].name_len == (sizeof(#display) - 1));        \
     ASSERT(ncm_song_info_tags[idx].tag == CAT(TAG_, suffix));                  \
     idx += 1;
 
