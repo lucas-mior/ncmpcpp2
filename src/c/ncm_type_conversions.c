@@ -81,9 +81,9 @@ ncm_tag_type_name(enum TagType tag) {
 enum TagType
 ncm_char_to_tag_type(char c) {
     switch (c) {
-#define TAG_CHAR_CASE(suffix, display, tag_char, getter_char, taglib_num)     \
-    case tag_char:                                                             \
-        return CAT(TAG_, suffix);
+#define TAG_CHAR_CASE(SUFFIX, DISP, CHAR) \
+    case CHAR:                             \
+        return CAT(TAG_, SUFFIX);
 
     TAG_DEFS(TAG_CHAR_CASE)
 
@@ -96,26 +96,13 @@ ncm_char_to_tag_type(char c) {
 enum SongGetter
 ncm_song_getter_from_char(char c) {
     switch (c) {
-#define SONG_GETTER_NON_TAG_CHAR_CASE(getter, alias, getter_char)             \
-    case getter_char:                                                          \
-        return getter;
-#define SONG_GETTER_TAG_CHAR_CASE(suffix, display, tag_char, getter_char,      \
-                                  taglib_num)                                 \
-    case getter_char:                                                          \
-        return CAT(SONG_GETTER_, suffix);
+#define SONG_GETTER_CHAR_CASE(GETTER, DISP, CHAR) \
+    case CHAR:                                     \
+        return GETTER;
 
-    SONG_GETTER_RECORD_LENGTH(SONG_GETTER_NON_TAG_CHAR_CASE)
-    SONG_GETTER_RECORD_DIRECTORY(SONG_GETTER_NON_TAG_CHAR_CASE)
-    SONG_GETTER_RECORD_NAME(SONG_GETTER_NON_TAG_CHAR_CASE)
-    SONG_GETTER_RECORD_URI(SONG_GETTER_NON_TAG_CHAR_CASE)
-    SONG_GETTER_TAG_HEAD_DEFS(SONG_GETTER_TAG_CHAR_CASE)
-    SONG_GETTER_RECORD_TRACK_NUMBER(
-        SONG_GETTER_NON_TAG_CHAR_CASE)
-    SONG_GETTER_TAG_TAIL_DEFS(SONG_GETTER_TAG_CHAR_CASE)
-    SONG_GETTER_RECORD_PRIORITY(SONG_GETTER_NON_TAG_CHAR_CASE)
+    SONG_GETTER_DEFS(SONG_GETTER_CHAR_CASE)
 
-#undef SONG_GETTER_NON_TAG_CHAR_CASE
-#undef SONG_GETTER_TAG_CHAR_CASE
+#undef SONG_GETTER_CHAR_CASE
     default:
         return SONG_GETTER_NONE;
     }
@@ -124,20 +111,33 @@ ncm_song_getter_from_char(char c) {
 enum TagType
 ncm_song_getter_to_tag_type(enum SongGetter getter) {
     switch (getter) {
-#define SONG_GETTER_TO_TAG_CASE(suffix, display, tag_char, getter_char,       \
-                                taglib_num)                                    \
-    case CAT(SONG_GETTER_, suffix):                                            \
-        return CAT(TAG_, suffix);
-
-    SONG_GETTER_TAG_DEFS(SONG_GETTER_TO_TAG_CASE)
-
-#undef SONG_GETTER_TO_TAG_CASE
+    case SONG_GETTER_ARTIST:
+        return TAG_ARTIST;
+    case SONG_GETTER_ALBUM_ARTIST:
+        return TAG_ALBUM_ARTIST;
+    case SONG_GETTER_TITLE:
+        return TAG_TITLE;
+    case SONG_GETTER_ALBUM:
+        return TAG_ALBUM;
+    case SONG_GETTER_DATE:
+        return TAG_DATE;
+    case SONG_GETTER_GENRE:
+        return TAG_GENRE;
+    case SONG_GETTER_COMPOSER:
+        return TAG_COMPOSER;
+    case SONG_GETTER_PERFORMER:
+        return TAG_PERFORMER;
+    case SONG_GETTER_DISC:
+        return TAG_DISC;
+    case SONG_GETTER_COMMENT:
+        return TAG_COMMENT;
     case SONG_GETTER_NONE:
     case SONG_GETTER_LENGTH:
     case SONG_GETTER_DIRECTORY:
     case SONG_GETTER_NAME:
     case SONG_GETTER_URI:
     case SONG_GETTER_TRACK_NUMBER:
+    case SONG_GETTER_TRACK_TOTAL:
     case SONG_GETTER_PRIORITY:
     case SONG_GETTER_COUNT:
     default:
@@ -147,16 +147,33 @@ ncm_song_getter_to_tag_type(enum SongGetter getter) {
 
 enum SongGetter
 ncm_tag_type_to_song_getter(enum TagType tag) {
-#define NCM_TAG_TO_GETTER_IF(suffix, display, tag_char, getter_char,          \
-                              taglib_num)                                     \
-    if (tag == CAT(TAG_, suffix)) {                                            \
-        return CAT(SONG_GETTER_, suffix);                                      \
+    switch (tag) {
+    case TAG_ARTIST:
+        return SONG_GETTER_ARTIST;
+    case TAG_ALBUM_ARTIST:
+        return SONG_GETTER_ALBUM_ARTIST;
+    case TAG_ALBUM:
+        return SONG_GETTER_ALBUM;
+    case TAG_DISC:
+        return SONG_GETTER_DISC;
+    case TAG_TRACK:
+        return SONG_GETTER_TRACK_NUMBER;
+    case TAG_GENRE:
+        return SONG_GETTER_GENRE;
+    case TAG_DATE:
+        return SONG_GETTER_DATE;
+    case TAG_COMPOSER:
+        return SONG_GETTER_COMPOSER;
+    case TAG_PERFORMER:
+        return SONG_GETTER_PERFORMER;
+    case TAG_TITLE:
+        return SONG_GETTER_TITLE;
+    case TAG_COMMENT:
+        return SONG_GETTER_COMMENT;
+    case TAG_COUNT:
+    default:
+        return SONG_GETTER_NONE;
     }
-
-    TAG_DEFS(NCM_TAG_TO_GETTER_IF)
-
-#undef NCM_TAG_TO_GETTER_IF
-    return SONG_GETTER_NONE;
 }
 
 #endif /* NCM_TYPE_CONVERSIONS_C */

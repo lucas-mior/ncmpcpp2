@@ -979,8 +979,7 @@ test_tag_type_names(void) {
     int32 name_len;
     int32 normalized_len;
 
-#define TEST_TAG_TYPE_NAME(suffix, display, tag_char, getter_char,             \
-                           taglib_num)                                        \
+#define TEST_TAG_TYPE_NAME(suffix, display, tag_char)                         \
     name_len = ncm_tag_type_name_len(CAT(TAG_, suffix), &name);               \
     ASSERT_EQUAL(name, name_len, TAG_DISPLAY_NAME(display));                  \
     ASSERT(name_len == TAG_DISPLAY_NAME_LEN(display));                        \
@@ -1007,13 +1006,10 @@ static void
 test_writable_tag_metadata(void) {
     int32 idx = 0;
 
-#define TEST_WRITABLE_TAG(suffix, display, tag_char, getter_char,              \
-                          taglib_num)                                         \
+#define TEST_WRITABLE_TAG(suffix, display, tag_char)                          \
     ASSERT(ncm_char_to_tag_type(tag_char) == CAT(TAG_, suffix));             \
     ASSERT(ncm_tag_type_is_writable(CAT(TAG_, suffix)));                     \
     ASSERT(ncm_writable_tag_at(idx) == CAT(TAG_, suffix));                   \
-    ASSERT(ncm_tag_type_to_song_getter(CAT(TAG_, suffix))                    \
-           == CAT(SONG_GETTER_, suffix));                                    \
     ASSERT(ncm_tag_type_format_char(CAT(TAG_, suffix)) == tag_char);          \
     idx += 1;
 
@@ -1023,6 +1019,7 @@ test_writable_tag_metadata(void) {
     ASSERT(idx == (int32)TAG_COUNT);
     ASSERT(ncm_writable_tag_at(-1) == TAG_COUNT);
     ASSERT(ncm_writable_tag_at((int32)TAG_COUNT) == TAG_COUNT);
+    ASSERT(ncm_char_to_tag_type('N') == TAG_COUNT);
     ASSERT(ncm_char_to_tag_type('x') == TAG_COUNT);
     ASSERT(!ncm_tag_type_is_writable(TAG_COUNT));
     ASSERT(ncm_tag_type_to_song_getter(TAG_COUNT) == SONG_GETTER_NONE);
@@ -1037,32 +1034,109 @@ test_song_getter_conversions(void) {
         ASSERT(ncm_song_getter_from_char(getter_char) == getter);            \
         ASSERT(ncm_song_getter_format_char(getter) == getter_char);          \
     }
-#define TEST_TAG_GETTER_CHAR(suffix, display, tag_char, getter_char,           \
-                             taglib_num)                                      \
-    ASSERT(ncm_song_getter_from_char(getter_char)                            \
-           == CAT(SONG_GETTER_, suffix));                                    \
-    ASSERT(ncm_song_getter_format_char(CAT(SONG_GETTER_, suffix))            \
-           == getter_char);                                                  \
-    ASSERT(ncm_song_getter_to_tag_type(CAT(SONG_GETTER_, suffix))            \
-           == CAT(TAG_, suffix));
+#define TEST_GETTER_TAG(getter, tag)                                          \
+    ASSERT(ncm_song_getter_to_tag_type(getter) == tag);                       \
+    ASSERT(ncm_tag_type_to_song_getter(tag) == getter);
 
-    SONG_GETTER_RECORD_LENGTH(TEST_GETTER_CHAR)
-    SONG_GETTER_RECORD_DIRECTORY(TEST_GETTER_CHAR)
-    SONG_GETTER_RECORD_NAME(TEST_GETTER_CHAR)
-    SONG_GETTER_RECORD_URI(TEST_GETTER_CHAR)
-    SONG_GETTER_TAG_HEAD_DEFS(TEST_TAG_GETTER_CHAR)
-    SONG_GETTER_RECORD_TRACK_NUMBER(TEST_GETTER_CHAR)
-    SONG_GETTER_TAG_TAIL_DEFS(TEST_TAG_GETTER_CHAR)
-    SONG_GETTER_RECORD_PRIORITY(TEST_GETTER_CHAR)
+    SONG_GETTER_DEFS(TEST_GETTER_CHAR)
 
-#undef TEST_TAG_GETTER_CHAR
+    TEST_GETTER_TAG(SONG_GETTER_ARTIST, TAG_ARTIST)
+    TEST_GETTER_TAG(SONG_GETTER_ALBUM_ARTIST, TAG_ALBUM_ARTIST)
+    TEST_GETTER_TAG(SONG_GETTER_ALBUM, TAG_ALBUM)
+    TEST_GETTER_TAG(SONG_GETTER_DISC, TAG_DISC)
+    TEST_GETTER_TAG(SONG_GETTER_GENRE, TAG_GENRE)
+    TEST_GETTER_TAG(SONG_GETTER_DATE, TAG_DATE)
+    TEST_GETTER_TAG(SONG_GETTER_COMPOSER, TAG_COMPOSER)
+    TEST_GETTER_TAG(SONG_GETTER_PERFORMER, TAG_PERFORMER)
+    TEST_GETTER_TAG(SONG_GETTER_TITLE, TAG_TITLE)
+    TEST_GETTER_TAG(SONG_GETTER_COMMENT, TAG_COMMENT)
+
+#undef TEST_GETTER_TAG
 #undef TEST_GETTER_CHAR
     ASSERT(ncm_song_getter_from_char('x') == SONG_GETTER_NONE);
+    ASSERT(ncm_tag_type_to_song_getter(TAG_TRACK)
+           == SONG_GETTER_TRACK_NUMBER);
     ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_NONE) == TAG_COUNT);
     ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_TRACK_NUMBER)
            == TAG_COUNT);
+    ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_TRACK_TOTAL)
+           == TAG_COUNT);
     ASSERT(ncm_song_getter_to_tag_type(SONG_GETTER_PRIORITY)
            == TAG_COUNT);
+    return;
+}
+
+static void
+test_track_getter_components(void) {
+    NcmSong song = {0};
+    MutableSong editable = {0};
+    NcmFormatAst ast = {0};
+    NcmError ncm_error = {0};
+    StrBuilder number;
+    StrBuilder total;
+    StrBuilder rendered;
+    StrBuilder raw = {0};
+
+    ASSERT_ZERO(ncm_song_set_uri(&song, STRLIT("Album/song.flac")));
+    ASSERT_ZERO(ncm_song_add_tag(&song, TAG_TRACK, STRLIT("1/9")));
+
+    number = ncm_song_getter_buffer(&song, SONG_GETTER_TRACK_NUMBER, 0);
+    total = ncm_song_getter_buffer(&song, SONG_GETTER_TRACK_TOTAL, 0);
+    ASSERT_EQUAL(number.data, number.len, "01");
+    ASSERT_EQUAL(total.data, total.len, "09");
+    sb_free(&number);
+    sb_free(&total);
+
+    ASSERT_ZERO(ncm_format_parse(&ast, STRLIT("%n/%N"),
+                                 NCM_FORMAT_FLAG_TAG, &ncm_error));
+    rendered = ncm_format_render_string(&ast, &song);
+    ASSERT_EQUAL(rendered.data, rendered.len, "01/09");
+    sb_free(&rendered);
+    ncm_format_ast_destroy(&ast);
+    ncm_error_clear(&ncm_error);
+
+    ASSERT_ZERO(mutable_song_load_originals_from_song(&editable, &song));
+    mutable_song_get_tag_buffer(&editable, TAG_TRACK, 0, &raw);
+    ASSERT_EQUAL(raw.data, raw.len, "1/9");
+    sb_free(&raw);
+
+    mutable_song_destroy(&editable);
+    ncm_song_destroy(&song);
+    return;
+}
+
+static void
+test_tag_edit_filename_track_components(void) {
+    NcmSong source = {0};
+    MutableSong song = {0};
+    StrBuilder value = {0};
+
+    ASSERT_ZERO(ncm_song_set_uri(&source, STRLIT("03-11 - Test_Song.flac")));
+    ASSERT_ZERO(mutable_song_load_originals_from_song(&song, &source));
+    ASSERT_ZERO(tag_edit_parse_filename(&song, STRLIT("%n-%N - %t"),
+                                        false, NULL));
+
+    mutable_song_get_tag_buffer(&song, TAG_TRACK, 0, &value);
+    ASSERT_EQUAL(value.data, value.len, "03/11");
+    sb_clear(&value);
+    mutable_song_get_tag_buffer(&song, TAG_TITLE, 0, &value);
+    ASSERT_EQUAL(value.data, value.len, "Test Song");
+    sb_free(&value);
+    mutable_song_destroy(&song);
+    ncm_song_destroy(&source);
+
+    source = (NcmSong){0};
+    song = (MutableSong){0};
+    ASSERT_ZERO(ncm_song_set_uri(&source, STRLIT("12.flac")));
+    ASSERT_ZERO(ncm_song_add_tag(&source, TAG_TRACK, STRLIT("2/10")));
+    ASSERT_ZERO(mutable_song_load_originals_from_song(&song, &source));
+    ASSERT_ZERO(tag_edit_parse_filename(&song, STRLIT("%N"), false, NULL));
+
+    mutable_song_get_tag_buffer(&song, TAG_TRACK, 0, &value);
+    ASSERT_EQUAL(value.data, value.len, "2/12");
+    sb_free(&value);
+    mutable_song_destroy(&song);
+    ncm_song_destroy(&source);
     return;
 }
 
@@ -1152,8 +1226,7 @@ test_search_constraint_metadata(void) {
     ASSERT_EQUAL(metadata->name, metadata->name_len, "Any");
     ASSERT(metadata->name_len == strlen32(metadata->name));
 
-#define TEST_SEARCH_CONSTRAINT(suffix, display, tag_char, getter_char,         \
-                               taglib_num)                                    \
+#define TEST_SEARCH_CONSTRAINT(suffix, display, tag_char)                     \
     metadata = search_constraint_metadata(idx);                              \
     ASSERT(metadata->kind == SEARCH_CONSTRAINT_TAG);                         \
     ASSERT(metadata->tag == CAT(TAG_, suffix));                              \
@@ -1195,15 +1268,13 @@ static void
 test_song_info_tag_metadata(void) {
     int32 idx = 0;
 
-#define TEST_SONG_INFO_TAG(suffix, display, tag_char, getter_char,             \
-                           taglib_num)                                         \
+#define TEST_SONG_INFO_TAG(suffix, display, tag_char)                         \
     ASSERT_EQUAL(ncm_song_info_tags[idx].name,                               \
                  ncm_song_info_tags[idx].name_len,                           \
                  TAG_DISPLAY_NAME(display));                             \
     ASSERT(ncm_song_info_tags[idx].name_len                                  \
            == TAG_DISPLAY_NAME_LEN(display));                            \
-    ASSERT(ncm_song_info_tags[idx].tag == CAT(TAG_, suffix));   \
-    ASSERT(ncm_song_info_tags[idx].get == CAT(SONG_GETTER_, suffix));        \
+    ASSERT(ncm_song_info_tags[idx].tag == CAT(TAG_, suffix));               \
     idx += 1;
 
     TAG_DEFS(TEST_SONG_INFO_TAG)
@@ -1213,7 +1284,6 @@ test_song_info_tag_metadata(void) {
     ASSERT(ncm_song_info_tags[idx].name == NULL);
     ASSERT(ncm_song_info_tags[idx].name_len == 0);
     ASSERT(ncm_song_info_tags[idx].tag == TAG_COUNT);
-    ASSERT(ncm_song_info_tags[idx].get == SONG_GETTER_NONE);
     return;
 }
 
@@ -1224,8 +1294,7 @@ test_tag_edit_parser_metadata(void) {
     int32 name_len;
     int32 idx = 0;
 
-#define TEST_PARSER_FIELD(suffix, display, tag_char, getter_char,              \
-                          taglib_num)                                          \
+#define TEST_PARSER_FIELD(suffix, display, tag_char)                          \
     ASSERT(ncm_tag_type_format_char(CAT(TAG_, suffix))          \
            == tag_char);                                                     \
     name_len = ncm_tag_type_parser_name_len(CAT(TAG_, suffix),  \
@@ -1245,6 +1314,7 @@ test_tag_edit_parser_metadata(void) {
                  "%b - album\n"
                  "%d - disc\n"
                  "%n - track number\n"
+                 "%N - total tracks\n"
                  "%g - genre\n"
                  "%y - date\n"
                  "%c - composer\n"
@@ -1264,6 +1334,8 @@ main(void) {
     test_tag_type_names();
     test_writable_tag_metadata();
     test_song_getter_conversions();
+    test_track_getter_components();
+    test_tag_edit_filename_track_components();
     test_media_library_grouping_tag_settings_parse();
     test_taglib_metadata();
     test_search_constraint_metadata();

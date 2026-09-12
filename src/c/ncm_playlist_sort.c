@@ -159,7 +159,7 @@ ncm_playlist_sort_range(NcmSongArray *songs, int32 start_position,
             break;
         }
         if ((getters[i] < SONG_GETTER_NONE)
-            || (getters[i] > SONG_GETTER_PRIORITY)) {
+            || (getters[i] >= SONG_GETTER_COUNT)) {
             return ncm_error_set_code(ncm_error, EINVAL,
                                       STRLIT("invalid playlist sort key"));
         }

@@ -14,23 +14,7 @@
 
 #if defined(HAVE_TAGLIB_H)
 
-typedef struct TaglibPropertyMap {
-    enum TagType tag;
-} TaglibPropertyMap;
-
 static bool ncm_taglib_is_initialized;
-
-static TaglibPropertyMap ncm_taglib_properties[] = {
-#define TAGLIB_PROPERTY_MAP(suffix, display, tag_char, getter_char,           \
-                            taglib_num)                                      \
-    {                                                                          \
-        .tag = CAT(TAG_, suffix),                                              \
-    },
-
-    TAG_DEFS(TAGLIB_PROPERTY_MAP)
-
-#undef TAGLIB_PROPERTY_MAP
-};
 
 static TagLib_File *
 ncm_taglib_handle(TaglibFile *file) {
@@ -156,7 +140,7 @@ ncm_taglib_read_mapped_properties(TaglibFile *file,
     ASSERT(callback != NULL);
 
     count = 0;
-    for (int32 i = 0; i < LENGTH(ncm_taglib_properties); i += 1) {
+    for (uint32 i = 0; i < TAG_COUNT; i += 1) {
         char property[TAGLIB_PROPERTY_CAP];
         char name[TAGLIB_NAME_CAP];
         char **values;
@@ -164,8 +148,8 @@ ncm_taglib_read_mapped_properties(TaglibFile *file,
         int32 name_len;
 
         property_len = ncm_tag_type_taglib_property_len(
-            ncm_taglib_properties[i].tag, property, LENGTH(property));
-        name_len = ncm_tag_type_taglib_name_len(ncm_taglib_properties[i].tag,
+            (enum TagType)i, property, LENGTH(property));
+        name_len = ncm_tag_type_taglib_name_len((enum TagType)i,
                                                 name, LENGTH(name));
         ASSERT(property_len > 0);
         ASSERT(name_len > 0);
