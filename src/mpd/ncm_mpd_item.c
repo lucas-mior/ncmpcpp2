@@ -337,6 +337,13 @@ ncm_mpd_item_local_song(NcmSong *song, char *path, int32 path_len,
     {
         struct mpd_pair pair;
         struct mpd_song *mpd_song;
+        TaglibFile file = {0};
+        TaglibAudioProperties properties;
+        NcmMpdItemTagsContext context;
+        TaglibPairCallback *callback;
+        char time_buffer[32];
+        int32 written;
+        int32 count;
 
         pair.name = "file";
         pair.value = path;
@@ -345,42 +352,32 @@ ncm_mpd_item_local_song(NcmSong *song, char *path, int32 path_len,
             return;
         }
 
-        {
-            TaglibFile file = {0};
-            TaglibAudioProperties properties;
-            NcmMpdItemTagsContext context;
-            TaglibPairCallback *callback;
-            char time_buffer[32];
-            int32 written;
-            int32 count;
-
-            status = ncm_taglib_file_open(&file,
-                                          (char *)mpd_song_get_uri(mpd_song));
-            if (status >= 0) {
-                count = 0;
-                if (ncm_taglib_file_audio_properties(&file, &properties) == 0) {
-                    written = SNPRINTF(time_buffer, "%d", properties.length);
-                    if (written > 0) {
-                        ncm_mpd_item_set_attribute(mpd_song, "Time",
-                                                   time_buffer);
-                        count += 1;
-                    }
+        status = ncm_taglib_file_open(&file,
+                                      (char *)mpd_song_get_uri(mpd_song));
+        if (status >= 0) {
+            count = 0;
+            if (ncm_taglib_file_audio_properties(&file, &properties) == 0) {
+                written = SNPRINTF(time_buffer, "%d", properties.length);
+                if (written > 0) {
+                    ncm_mpd_item_set_attribute(mpd_song, "Time",
+                                               time_buffer);
+                    count += 1;
                 }
-
-                context.song = mpd_song;
-                callback = ncm_mpd_item_mapped_property_callback;
-                status = ncm_taglib_read_mapped_properties(&file,
-                                                            callback, &context);
-                if (status >= 0) {
-                    count += status;
-                    if (count > 0) {
-                        ncm_mpd_item_song_from_mpd_song_copy(song, mpd_song);
-                        ncm_song_set_mtime(song, mtime);
-                    }
-                }
-                ncm_taglib_file_close(&file);
-                ncm_taglib_clear_strings();
             }
+
+            context.song = mpd_song;
+            callback = ncm_mpd_item_mapped_property_callback;
+            status = ncm_taglib_read_mapped_properties(&file,
+                                                        callback, &context);
+            if (status >= 0) {
+                count += status;
+                if (count > 0) {
+                    ncm_mpd_item_song_from_mpd_song_copy(song, mpd_song);
+                    ncm_song_set_mtime(song, mtime);
+                }
+            }
+            ncm_taglib_file_close(&file);
+            ncm_taglib_clear_strings();
         }
         mpd_song_free(mpd_song);
     }
