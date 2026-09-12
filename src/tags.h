@@ -265,8 +265,7 @@ ncm_tag_type_taglib_name_len(enum TagType tag, char *out, int32 cap) {
 static inline char
 ncm_tag_type_format_char(enum TagType tag) {
     switch (tag) {
-#define TAG_TYPE_FORMAT_CHAR_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR,           \
-                                  TAGLIB_NUM)                                  \
+#define TAG_TYPE_FORMAT_CHAR_CASE(SUFFIX, DISP, CHAR, GETTER_CHAR, TAGLIB_NUM) \
     case CAT(TAG_, SUFFIX):                                                    \
         return CHAR;
 
