@@ -1079,7 +1079,7 @@ action_runtime_toggle_interface(void) {
     ncm_status_changes_mixer();
     ncm_status_changes_elapsed_time(false);
     action_runtime_print_toggle(STRLIT("User interface: "),
-                                ncm_design_str(Config.user_interface));
+                                NCM_DESIGN_alias(Config.user_interface));
     return 0;
 }
 
@@ -1521,7 +1521,7 @@ action_runtime_find_item(enum SearchDirection direction) {
     }
 
     prompt_len = SNPRINTF(prompt, "Find %s: ",
-                          ncm_search_direction_str(direction));
+                          NCM_SEARCH_DIRECTION_alias(direction));
     if (prompt_len < 0) {
         prompt_len = 0;
     }

@@ -8,7 +8,6 @@
 #include "c/ncm_conversion.c"
 #include "c/ncm_directory.c"
 #include "c/ncm_display.c"
-#include "c/ncm_enums.c"
 #include "c/ncm_error.c"
 #include "c/ncm_format.c"
 #include "c/ncm_fs.c"

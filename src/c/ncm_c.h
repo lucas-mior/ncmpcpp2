@@ -1146,10 +1146,6 @@ int32 ncm_mpd_client_get_tag_types(MpdClient *, StringViewList *, NcmError *);
 #endif
 #include "cbase/xenums.c"
 
-char *ncm_search_direction_str(enum SearchDirection);
-char *ncm_display_mode_str(enum DisplayMode);
-char *ncm_design_str(enum Design);
-
 int32 ncm_compare_locale_strings(char *left, int32 left_len, char *right,
                                  int32 right_len, bool);
 

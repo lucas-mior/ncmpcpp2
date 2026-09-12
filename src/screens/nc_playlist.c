@@ -262,7 +262,7 @@ playlist_toggle_display_mode(NcScreen *base) {
     nc_screen_request_resize(base);
     nc_screen_refresh(base);
     sb_printf(&message, "Playlist display mode: %s",
-              ncm_display_mode_str(Config.playlist_display_mode));
+              NCM_DISPLAY_MODE_alias(Config.playlist_display_mode));
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
     sb_free(&message);
     return 0;
