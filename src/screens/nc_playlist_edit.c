@@ -27,6 +27,7 @@ playlist_edit_update_titles(PlaylistEditScreen *screen, bool update_windows) {
     if (Config.titles_visibility) {
         SB_APPEND(&screen->playlists_title, "Playlists");
         SB_APPEND(&screen->content_title, "Content");
+
         if (screen->last_known_content_count >= 0) {
             char digits[32];
             int32 len = 0;
