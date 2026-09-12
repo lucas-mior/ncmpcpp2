@@ -1537,7 +1537,9 @@ server_info_render(void *user, NcBuffer *buffer) {
     nc_buffer_append_data(buffer, STRLIT("\n\n"));
 
     append_bold_label(buffer, "URL Handlers:");
-    for (int32 i = 0; i < owner->url_handlers.count; i += 1) {
+    for (int32 i = 0;
+         i < ncm_mpd_string_list_count(&owner->url_handlers);
+         i += 1) {
         StringView *handler = &owner->url_handlers.items[i];
 
         if (i == 0) {
@@ -1550,7 +1552,9 @@ server_info_render(void *user, NcBuffer *buffer) {
     nc_buffer_append_data(buffer, STRLIT("\n\n"));
 
     append_bold_label(buffer, "Tag Types:");
-    for (int32 i = 0; i < owner->tag_types.count; i += 1) {
+    for (int32 i = 0;
+         i < ncm_mpd_string_list_count(&owner->tag_types);
+         i += 1) {
         StringView *tag = &owner->tag_types.items[i];
 
         if (i == 0) {

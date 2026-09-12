@@ -150,32 +150,18 @@ ncm_mpd_song_list_push(NcmMpdSongList *list, NcmSong *song) {
 
 static void
 ncm_mpd_string_list_push(StringViewList *list, char *value) {
-    int32 old_capacity;
-    int32 new_capacity;
+    StringView string;
     int32 value_len;
-    int32 index;
-    StringView *string;
 
-    if (list->count >= list->capacity) {
-        old_capacity = list->capacity;
-        new_capacity = old_capacity*2;
-        if (new_capacity < 8) {
-            new_capacity = 8;
-        }
-
-        list->items = realloc2(list->items,
-                               old_capacity, new_capacity,
-                               SIZEOF(*list->items));
-        list->capacity = new_capacity;
+    if (list->arena == NULL) {
+        list->arena = arena_create(SIZEMB(2), "mpd_string_list");
     }
 
-    index = list->count;
     value_len = optional_strlen32(value);
-    string = &list->items[index];
-    string->data = malloc2(value_len + 1);
-    string->len = value_len;
-    memcpy64(string->data, value, value_len + 1);
-    list->count += 1;
+    string.data = xarena_push(list->arena, value_len + 1);
+    string.len = value_len;
+    memcpy64(string.data, value, value_len + 1);
+    ARRAY_PUSH(list->items, string);
     return;
 }
 
@@ -419,8 +405,10 @@ ncm_mpd_string_list_destroy(StringViewList *list) {
         return;
     }
 
-    ncm_mpd_string_list_clear(list);
-    free2(list->items, list->capacity*SIZEOF(*list->items));
+    ARRAY_FREE(list->items);
+    if (list->arena) {
+        arena_destroy(list->arena);
+    }
     *list = (StringViewList){0};
 
     return;
@@ -432,11 +420,8 @@ ncm_mpd_string_list_clear(StringViewList *list) {
         return;
     }
 
-    for (int32 i = 0; i < list->count; i += 1) {
-        free2(list->items[i].data, list->items[i].len + 1);
-        list->items[i] = (StringView){0};
-    }
-    list->count = 0;
+    ARRAY_CLEAR(list->items);
+    arena_reset(list->arena);
     return;
 }
 
@@ -446,7 +431,7 @@ ncm_mpd_string_list_count(StringViewList *list) {
         return 0;
     }
 
-    return list->count;
+    return ARRAY_LEN(list->items);
 }
 
 StringView *
@@ -454,7 +439,7 @@ ncm_mpd_string_list_at(StringViewList *list, int32 idx) {
     if (list == NULL) {
         return NULL;
     }
-    if ((idx < 0) || (idx >= list->count)) {
+    if ((idx < 0) || (idx >= ARRAY_LEN(list->items))) {
         return NULL;
     }
 

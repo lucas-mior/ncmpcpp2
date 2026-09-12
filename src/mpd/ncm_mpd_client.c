@@ -1212,13 +1212,14 @@ ncm_mpd_client_add_random_tag(MpdClient *client, enum TagType tag,
         ncm_mpd_client_copy_connection_error(client, ncm_error);
         goto cleanup;
     }
-    if (number > tags.count) {
+    if (number > ncm_mpd_string_list_count(&tags)) {
         status = ncm_error_set_status(ncm_error, -NCM_ERROR_UNAVAILABLE,
                                       STRLIT("not enough MPD tag values"));
         goto cleanup;
     }
 
-    rand_shuffle(tags.items, tags.count, SIZEOF(*tags.items));
+    rand_shuffle(tags.items, ncm_mpd_string_list_count(&tags),
+                 SIZEOF(*tags.items));
     for (int32 i = 0; i < number; i += 1) {
         status = ncm_mpd_connection_start_search_songs(&client->connection,
                                                         true);
@@ -1294,7 +1295,7 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
         ncm_mpd_client_copy_connection_error(client, ncm_error);
         goto cleanup;
     }
-    if (number > files.count) {
+    if (number > ncm_mpd_string_list_count(&files)) {
         status = ncm_error_set_status(ncm_error, -NCM_ERROR_UNAVAILABLE,
                                       STRLIT("not enough MPD songs"));
         goto cleanup;
@@ -1310,14 +1311,17 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
         have_regex = true;
     }
 
-    rand_shuffle(files.items, files.count, SIZEOF(*files.items));
+    rand_shuffle(files.items, ncm_mpd_string_list_count(&files),
+                 SIZEOF(*files.items));
     if ((status = ncm_mpd_client_start_command_list_ready(client,
                                                           ncm_error)) < 0) {
         goto cleanup;
     }
 
     added = 0;
-    for (int32 i = 0; (i < files.count) && (added < number); i += 1) {
+    for (int32 i = 0;
+         (i < ncm_mpd_string_list_count(&files)) && (added < number);
+         i += 1) {
         if (have_regex
             && ncm_regex_matches(&regex,
                                  files.items[i].data, files.items[i].len)) {
