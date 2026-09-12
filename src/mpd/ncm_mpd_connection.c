@@ -7,12 +7,12 @@
 #include "c/ncm_c.h"
 #include "ncmpcpp2_mpd.h"
 
-#define NCM_MPD_RETURN_IF_ERROR(expression) \
-    do { \
-        int32 status_ = (expression); \
-        if (status_ < 0) { \
-            return status_; \
-        } \
+#define NCM_MPD_RETURN_IF_ERROR(expression)   \
+    do {                                      \
+        int32 status_ = (expression);         \
+        if (status_ < 0) {                    \
+            return status_;                   \
+        }                                     \
     } while (0)
 
 static void
