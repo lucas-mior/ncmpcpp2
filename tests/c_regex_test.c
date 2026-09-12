@@ -26,7 +26,7 @@ main(void) {
     ASSERT(ncm_regex_for_each_match(&regex, NULL, 0,
                                     regex_test_count_callback,
                                     &count) == -EINVAL);
-    ASSERT(count == 0);
+    ASSERT_ZERO(count);
 
     ASSERT(ncm_regex_for_each_match(&regex, STRLIT(""),
                                     regex_test_count_callback, &count) == 1);
