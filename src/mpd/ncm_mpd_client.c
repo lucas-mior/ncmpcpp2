@@ -420,8 +420,7 @@ ncm_mpd_client_idle(MpdClient *client, NcmError *ncm_error) {
 
     if (!client->idle) {
         NCM_CLIENT_TRY_MPD(client,
-                           ncm_mpd_connection_send_idle(&client->connection,
-                                                        0),
+                           ncm_mpd_connection_send_idle(&client->connection, 0),
                            ncm_error);
         client->idle = true;
     }
