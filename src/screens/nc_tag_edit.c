@@ -2522,15 +2522,33 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
                                        NC_MENU_ITEM_INACTIVE);
             nc_editor_string_menu_add_separator(menu);
         }
-        tag_edit_append_string_row(menu, STRLIT("Capitalize First Letters"),
-                                   NC_MENU_ITEM_SELECTABLE);
-        tag_edit_append_string_row(menu, STRLIT("lower all letters"),
-                                   NC_MENU_ITEM_SELECTABLE);
+        {
+            char *label;
+            int32 label_len;
+
+            label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(
+                TAG_EDIT_TAG_TYPE_ACTION_CAPITALIZE, &label);
+            tag_edit_append_string_row(menu, label, label_len,
+                                       NC_MENU_ITEM_SELECTABLE);
+            label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(
+                TAG_EDIT_TAG_TYPE_ACTION_LOWER, &label);
+            tag_edit_append_string_row(menu, label, label_len,
+                                       NC_MENU_ITEM_SELECTABLE);
+        }
         nc_editor_string_menu_add_separator(menu);
-        tag_edit_append_string_row(menu, STRLIT("Reset"),
-                                   NC_MENU_ITEM_SELECTABLE);
-        tag_edit_append_string_row(menu, STRLIT("Save"),
-                                   NC_MENU_ITEM_SELECTABLE);
+        {
+            char *label;
+            int32 label_len;
+
+            label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(
+                TAG_EDIT_TAG_TYPE_ACTION_RESET, &label);
+            tag_edit_append_string_row(menu, label, label_len,
+                                       NC_MENU_ITEM_SELECTABLE);
+            label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(
+                TAG_EDIT_TAG_TYPE_ACTION_SAVE, &label);
+            tag_edit_append_string_row(menu, label, label_len,
+                                       NC_MENU_ITEM_SELECTABLE);
+        }
     }
     tag_edit_layout(screen);
     tag_edit_configure_menus(screen);
