@@ -554,37 +554,13 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
     return 0;
 }
 
-#define SETTINGS_PARSE_XENUM_VALUE(ENUM_PREFIX_, value, value_len,             \
-                                   result, status)                             \
-    do {                                                                       \
-        (status) = -NCM_ERROR_PARSE;                                           \
-        for (uint32 i = 0; i < CAT(ENUM_PREFIX_, COUNT); i += 1) {             \
-            char *alias;                                                       \
-            int32 alias_len;                                                   \
-            ENUM_PREFIX_ candidate;                                            \
-                                                                               \
-            candidate = (ENUM_PREFIX_)i;                                       \
-            alias_len = CAT(ENUM_PREFIX_, alias_len)(candidate, &alias);       \
-            if (STREQUAL(value, value_len, alias, alias_len)) {                \
-                *(result) = CAT(ENUM_PREFIX_, parse)(value, value_len);        \
-                (status) = 0;                                                  \
-            }                                                                  \
-            CAT(ENUM_PREFIX_, alias_free)(alias);                              \
-            if ((status) == 0) {                                               \
-                break;                                                         \
-            }                                                                  \
-        }                                                                      \
-    } while (0)
-
 static int32
 settings_parse_startup_screen(char *value, int32 value_len,
                               SCREEN_TYPE_ *screen, NcmError *ncm_error) {
-    SCREEN_TYPE_ parsed = SCREEN_TYPE_COUNT;
-    int32 status;
+    SCREEN_TYPE_ parsed;
 
-    SETTINGS_PARSE_XENUM_VALUE(SCREEN_TYPE_, value, value_len,
-                               &parsed, status);
-    if (status < 0) {
+    parsed = SCREEN_TYPE_parse(value, value_len);
+    if (parsed == SCREEN_TYPE_COUNT) {
         return settings_invalid_value(ncm_error, value, value_len);
     }
     if (!screen_type_is_startup(parsed)) {
@@ -1036,11 +1012,9 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
 static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
-    ENUM_PREFIX_ parsed = (ENUM_PREFIX_)0;                                     \
-    int32 status;                                                              \
-    SETTINGS_PARSE_XENUM_VALUE(ENUM_PREFIX_, value, value_len,                 \
-                               &parsed, status);                               \
-    if (status < 0) {                                                          \
+    ENUM_PREFIX_ parsed;                                                       \
+    parsed = CAT(ENUM_PREFIX_, parse)(value, value_len);                       \
+    if (parsed == CAT(ENUM_PREFIX_, COUNT)) {                                  \
         return settings_invalid_value(ncm_error, value, value_len);            \
     }                                                                          \
     config->NAME = parsed;                                                     \
