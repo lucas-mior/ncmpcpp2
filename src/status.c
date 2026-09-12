@@ -1556,6 +1556,7 @@ ncm_status_changes_flags(void) {
 void
 ncm_status_changes_mixer(void) {
     NcWindow *header;
+    StrBuilder volume_state = {0};
     char volume[32];
     int32 volume_len;
     int32 volume_x;
@@ -1571,10 +1572,10 @@ ncm_status_changes_mixer(void) {
 
     switch (Config.user_interface) {
     case NCM_DESIGN_CLASSIC:
-        global_volume_state_set(" Volume: ", STRLIT_LEN(" Volume: "));
+        SB_APPEND(&volume_state, " Volume: ", STRLIT_LEN(" Volume: "));
         break;
     case NCM_DESIGN_ALTERNATIVE:
-        global_volume_state_set(" Vol: ", STRLIT_LEN(" Vol: "));
+        SB_APPEND(&volume_state, " Vol: ", STRLIT_LEN(" Vol: "));
         break;
     case NCM_DESIGN_COUNT:
         break;
@@ -1583,12 +1584,13 @@ ncm_status_changes_mixer(void) {
     }
 
     if (status_volume < 0) {
-        global_volume_state_append("n/a", STRLIT_LEN("n/a"));
+        SB_APPEND(&volume_state, "n/a", STRLIT_LEN("n/a"));
     } else {
         volume_len = SNPRINTF(volume, "%d", status_volume);
-        global_volume_state_append(volume, volume_len);
-        global_volume_state_append("%", STRLIT_LEN("%"));
+        SB_APPEND(&volume_state, volume, volume_len);
+        SB_APPEND(&volume_state, "%", STRLIT_LEN("%"));
     }
+    global_volume_state_set(volume_state.data, volume_state.len);
 
     volume_x = nc_window_width(header) - global_volume_state_len();
     if (volume_x < 0) {
@@ -1600,6 +1602,7 @@ ncm_status_changes_mixer(void) {
                          global_volume_state_len());
     status_apply_formatted_color_end(header, &Config.volume_color);
     nc_window_refresh(header);
+    sb_free(&volume_state);
     return;
 }
 

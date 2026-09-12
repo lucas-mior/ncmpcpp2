@@ -49,12 +49,6 @@ global_volume_state_set(char *string, int32 string_len) {
     return;
 }
 
-void
-global_volume_state_append(char *string, int32 string_len) {
-    SB_APPEND(&global_volume_state, string, string_len);
-    return;
-}
-
 char *
 global_volume_state_cstr(void) {
     if (global_volume_state.data == NULL) {
