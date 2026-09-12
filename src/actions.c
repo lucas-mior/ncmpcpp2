@@ -4045,8 +4045,9 @@ action_runtime_toggle_screen_lock(void) {
     }
 
     if ((part < 20) || (part > 80)) {
-        sb_printf(&message, "Error: value is out of bounds "
-                  "([20, 80] expected, %d given)", part);
+        sb_printf(&message,
+                  "Error: value is out of bounds ([20, 80] expected, %d given)",
+                  part);
         ncm_statusbar_print(Config.message_delay_time,
                                     message.data, message.len);
         sb_free(&message);
