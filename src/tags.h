@@ -88,14 +88,12 @@ ncm_song_getter_column_title_len(enum SongGetter getter, char **out) {
     case SONG_GETTER_LENGTH:
         *out = "Time";
         return STRLIT_LEN("Time");
-    case SONG_GETTER_URI:
-        *out = "Filepath";
-        return STRLIT_LEN("Filepath");
     case SONG_GETTER_TRACK_NUMBER:
         *out = "Track";
         return STRLIT_LEN("Track");
     case SONG_GETTER_DIRECTORY:
     case SONG_GETTER_NAME:
+    case SONG_GETTER_URI:
     case SONG_GETTER_ARTIST:
     case SONG_GETTER_ALBUM_ARTIST:
     case SONG_GETTER_TITLE:
