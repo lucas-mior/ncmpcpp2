@@ -1572,10 +1572,10 @@ ncm_status_changes_mixer(void) {
 
     switch (Config.user_interface) {
     case NCM_DESIGN_CLASSIC:
-        SB_APPEND(&volume_state, " Volume: ", STRLIT_LEN(" Volume: "));
+        SB_APPEND(&volume_state, " Volume: ");
         break;
     case NCM_DESIGN_ALTERNATIVE:
-        SB_APPEND(&volume_state, " Vol: ", STRLIT_LEN(" Vol: "));
+        SB_APPEND(&volume_state, " Vol: ");
         break;
     case NCM_DESIGN_COUNT:
         break;
@@ -1584,11 +1584,11 @@ ncm_status_changes_mixer(void) {
     }
 
     if (status_volume < 0) {
-        SB_APPEND(&volume_state, "n/a", STRLIT_LEN("n/a"));
+        SB_APPEND(&volume_state, "n/a");
     } else {
         volume_len = SNPRINTF(volume, "%d", status_volume);
         SB_APPEND(&volume_state, volume, volume_len);
-        SB_APPEND(&volume_state, "%", STRLIT_LEN("%"));
+        SB_APPEND(&volume_state, "%");
     }
     global_volume_state_set(volume_state.data, volume_state.len);
 
