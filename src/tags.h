@@ -6,23 +6,23 @@
 #define TAG_DISPLAY_NAME(DISP) #DISP
 #define TAG_DISPLAY_NAME_LEN(DISP) STRLIT_LEN(#DISP)
 
-#define TAG_FIELD(XX, SUFFIX, DISP, CHAR)                                      \
+#define TAG_FIELD(XX, SUFFIX, DISP, CHAR)                  \
   XX(SUFFIX, DISP, CHAR, CHAR, false)
 
-#define TAG_FIELD_NUM(XX, SUFFIX, DISP, CHAR, GETTER_CHAR)                     \
+#define TAG_FIELD_NUM(XX, SUFFIX, DISP, CHAR, GETTER_CHAR) \
   XX(SUFFIX, DISP, CHAR, GETTER_CHAR, true)
 
-#define TAG_DEFS(XX)                                                           \
-  TAG_FIELD(XX, ARTIST, Artist, 'a')                                           \
-  TAG_FIELD(XX, ALBUM_ARTIST, Album Artist, 'A')                               \
-  TAG_FIELD(XX, ALBUM, Album, 'b')                                             \
-  TAG_FIELD_NUM(XX, DISC, Disc, 'd', 'd')                                      \
-  TAG_FIELD_NUM(XX, TRACK, Track, 'n', 'N')                                    \
-  TAG_FIELD(XX, GENRE, Genre, 'g')                                             \
-  TAG_FIELD(XX, DATE, Date, 'y')                                               \
-  TAG_FIELD(XX, COMPOSER, Composer, 'c')                                       \
-  TAG_FIELD(XX, PERFORMER, Performer, 'p')                                     \
-  TAG_FIELD(XX, TITLE, Title, 't')                                             \
+#define TAG_DEFS(XX)                                       \
+  TAG_FIELD(XX, ARTIST, Artist, 'a')                       \
+  TAG_FIELD(XX, ALBUM_ARTIST, Album Artist, 'A')           \
+  TAG_FIELD(XX, ALBUM, Album, 'b')                         \
+  TAG_FIELD_NUM(XX, DISC, Disc, 'd', 'd')                  \
+  TAG_FIELD_NUM(XX, TRACK, Track, 'n', 'N')                \
+  TAG_FIELD(XX, GENRE, Genre, 'g')                         \
+  TAG_FIELD(XX, DATE, Date, 'y')                           \
+  TAG_FIELD(XX, COMPOSER, Composer, 'c')                   \
+  TAG_FIELD(XX, PERFORMER, Performer, 'p')                 \
+  TAG_FIELD(XX, TITLE, Title, 't')                         \
   TAG_FIELD(XX, COMMENT, Comment, 'C')
 
 enum {
