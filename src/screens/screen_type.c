@@ -69,22 +69,19 @@ screen_type_is_startup(enum ScreenType screen_type) {
 static int32
 screen_type_parse_checked(char *string, int32 string_len, bool startup_only,
                           enum ScreenType *screen_type) {
+    enum ScreenType parsed;
+
     ASSERT(string != NULL);
     ASSERT(string_len >= 0);
     ASSERT(screen_type != NULL);
 
-    #define SCREEN_PARSE_CHECKED( \
-        screen_type_value, nc_type, nc_value, alias, flags, suffix \
-    ) \
-        if ((!startup_only || ((flags & SCREEN_FLAG_STARTUP) != 0)) \
-            && STREQUAL(string, string_len, #alias)) { \
-            *screen_type = SCREEN_TYPE_parse(string, string_len); \
-            return 0; \
-        }
+    parsed = SCREEN_TYPE_parse(string, string_len);
+    if ((parsed != SCREEN_TYPE_COUNT)
+        && (!startup_only || screen_type_is_startup(parsed))) {
+        *screen_type = parsed;
+        return 0;
+    }
 
-    SCREEN_TYPES(SCREEN_PARSE_CHECKED)
-
-    #undef SCREEN_PARSE_CHECKED
     *screen_type = SCREEN_TYPE_COUNT;
     return -NCM_ERROR_PARSE;
 }
