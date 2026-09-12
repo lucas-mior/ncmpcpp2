@@ -2111,7 +2111,6 @@ bool browser_screen_item_is_parent(NcmMpdItem *);
 typedef struct NcmSongInfoMetadata {
     char *name;
     int32 name_len;
-    enum SongGetter get;
     enum TagType tag;
 } NcmSongInfoMetadata;
 

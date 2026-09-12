@@ -40,13 +40,11 @@ struct SongInfoScreen {
     bool initialized;
 };
 
-#define NCM_SONG_INFO_TAG_ENTRY(suffix, display, tag_char, getter_char,        \
-                                taglib_num)                                   \
-    {                                                                          \
-        .name = TAG_DISPLAY_NAME(display),                                     \
-        .name_len = TAG_DISPLAY_NAME_LEN(display),                             \
-        .get = CAT(SONG_GETTER_, suffix),                                      \
-        .tag = CAT(TAG_, suffix),                                              \
+#define NCM_SONG_INFO_TAG_ENTRY(suffix, display, tag_char) \
+    {                                                       \
+        .name = TAG_DISPLAY_NAME(display),                  \
+        .name_len = TAG_DISPLAY_NAME_LEN(display),          \
+        .tag = CAT(TAG_, suffix),                           \
     },
 
 NcmSongInfoMetadata ncm_song_info_tags[] = {
@@ -54,7 +52,6 @@ NcmSongInfoMetadata ncm_song_info_tags[] = {
     {
         .name = NULL,
         .name_len = 0,
-        .get = SONG_GETTER_NONE,
         .tag = TAG_COUNT,
     },
 };
@@ -1663,10 +1660,38 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
     }
 
     for (uint32 i = 0; i < TAG_COUNT; i += 1) {
-        value = ncm_song_tags_buffer(&owner->song, ncm_song_info_tags[i].get,
-                                     Config.tags_separator,
-                                     Config.tags_separator_len,
-                                     Config.show_duplicate_tags);
+        enum TagType tag = ncm_song_info_tags[i].tag;
+
+        value = (StrBuilder){0};
+        for (int32 j = 0; ; j += 1) {
+            StringView view;
+            bool duplicate = false;
+
+            if (!ncm_song_has_tag_view(&owner->song, tag, j, &view)) {
+                break;
+            }
+            if (!Config.show_duplicate_tags) {
+                for (int32 k = 0; k < j; k += 1) {
+                    StringView previous;
+
+                    ASSERT(ncm_song_has_tag_view(&owner->song, tag, k,
+                                                 &previous));
+                    if (STREQUAL(previous.data, previous.len,
+                                 view.data, view.len)) {
+                        duplicate = true;
+                        break;
+                    }
+                }
+            }
+            if (duplicate) {
+                continue;
+            }
+            if (value.len > 0) {
+                SB_APPEND(&value, Config.tags_separator,
+                          Config.tags_separator_len);
+            }
+            SB_APPEND(&value, view.data, view.len);
+        }
         append_song_info_tag(buffer, ncm_song_info_tags[i].name,
                              ncm_song_info_tags[i].name_len, &value);
         sb_free(&value);

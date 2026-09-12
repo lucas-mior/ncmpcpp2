@@ -767,6 +767,17 @@ tag_edit_append_lowercase(StrBuilder *buffer, char *data, int32 len) {
 }
 
 static void
+tag_edit_append_parser_legend_entry(StrBuilder *legend, char tag_char,
+                                    char *name, int32 name_len) {
+    sb_append_byte(legend, '%');
+    sb_append_byte(legend, tag_char);
+    SB_APPEND(legend, " - ");
+    tag_edit_append_lowercase(legend, name, name_len);
+    sb_append_byte(legend, '\n');
+    return;
+}
+
+static void
 tag_edit_append_parser_legend_field(StrBuilder *legend,
                                     enum TagType tag_type) {
     char *name;
@@ -779,16 +790,16 @@ tag_edit_append_parser_legend_field(StrBuilder *legend,
         return;
     }
 
-    sb_append_byte(legend, '%');
-    sb_append_byte(legend, tag_char);
-    SB_APPEND(legend, " - ");
-    tag_edit_append_lowercase(legend, name, name_len);
-    sb_append_byte(legend, '\n');
+    tag_edit_append_parser_legend_entry(legend, tag_char, name, name_len);
+    if (tag_type == TAG_TRACK) {
+        tag_char = ncm_song_getter_format_char(SONG_GETTER_TRACK_TOTAL);
+        name_len = SONG_GETTER_alias_len(SONG_GETTER_TRACK_TOTAL, &name);
+        tag_edit_append_parser_legend_entry(legend, tag_char, name, name_len);
+    }
     return;
 }
 
-#define TAG_EDIT_APPEND_PARSER_FIELD(suffix, display, tag_char, getter_char,   \
-                                     taglib_num)                              \
+#define TAG_EDIT_APPEND_PARSER_FIELD(suffix, display, tag_char) \
     tag_edit_append_parser_legend_field(&screen->parser_legend,                \
                                         CAT(TAG_, suffix));
 
@@ -4040,11 +4051,15 @@ int32
 tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
                         bool preview, StrBuilder *preview_buffer) {
     StrBuilder file = {0};
+    StrBuilder track_number = {0};
+    StrBuilder track_total = {0};
     int32 mask_pos;
     int32 file_pos;
     int32 percent_pos;
     int32 name_len;
     char tag_char;
+    bool has_track_number = false;
+    bool has_track_total = false;
 
     if (mask_len < 0) {
         return -EINVAL;
@@ -4072,11 +4087,14 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
         int32 separator_len;
         char next_tag_char;
         enum TagType tag_type;
+        bool recognized;
 
         separator_len = percent_pos - mask_pos;
         if ((separator_len > 0) && (((file_pos + separator_len) > file.len)
                 || !STREQUAL(file.data + file_pos, separator_len,
                              mask + mask_pos, separator_len))) {
+            sb_free(&track_total);
+            sb_free(&track_number);
             sb_free(&file);
             return -NCM_ERROR_PARSE;
         }
@@ -4099,6 +4117,8 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
                 }
             }
             if (found < 0) {
+                sb_free(&track_total);
+                sb_free(&track_number);
                 sb_free(&file);
                 return -NCM_ERROR_PARSE;
             }
@@ -4107,29 +4127,79 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
             value_end = file.len;
         }
 
+        for (int32 i = file_pos; i < value_end; i += 1) {
+            if (file.data[i] == '_') {
+                file.data[i] = ' ';
+            }
+        }
+
         tag_type = ncm_char_to_tag_type(tag_char);
-        if (tag_type != TAG_COUNT) {
-            for (int32 i = file_pos; i < value_end; i += 1) {
-                if (file.data[i] == '_') {
-                    file.data[i] = ' ';
-                }
-            }
-            if (preview && preview_buffer) {
-                sb_append_byte(preview_buffer, '%');
-                sb_append_byte(preview_buffer, tag_char);
-                SB_APPEND(preview_buffer, ": ");
-                SB_APPEND(preview_buffer,
-                          file.data + file_pos, value_end - file_pos);
-                sb_append_byte(preview_buffer, '\n');
-            } else {
-                mutable_song_set_tags(song, tag_type,
-                                      file.data + file_pos,
-                                      value_end - file_pos, NULL, 0);
-            }
+        recognized = tag_type != TAG_COUNT;
+        if (tag_char == ncm_song_getter_format_char(
+                SONG_GETTER_TRACK_NUMBER)) {
+            sb_set(&track_number, file.data + file_pos, value_end - file_pos);
+            has_track_number = true;
+            recognized = true;
+        } else if (tag_char == ncm_song_getter_format_char(
+                       SONG_GETTER_TRACK_TOTAL)) {
+            sb_set(&track_total, file.data + file_pos, value_end - file_pos);
+            has_track_total = true;
+            recognized = true;
+        } else if (!preview && recognized) {
+            mutable_song_set_tags(song, tag_type,
+                                  file.data + file_pos,
+                                  value_end - file_pos, NULL, 0);
+        }
+
+        if (preview && preview_buffer && recognized) {
+            sb_append_byte(preview_buffer, '%');
+            sb_append_byte(preview_buffer, tag_char);
+            SB_APPEND(preview_buffer, ": ");
+            SB_APPEND(preview_buffer,
+                      file.data + file_pos, value_end - file_pos);
+            sb_append_byte(preview_buffer, '\n');
         }
         file_pos = value_end;
         mask_pos = percent_pos + 2;
     }
+
+    if (!preview && has_track_number) {
+        StrBuilder track = {0};
+
+        SB_APPEND(&track, track_number.data, track_number.len);
+        if (has_track_total && (track_total.len > 0)) {
+            sb_append_byte(&track, '/');
+            SB_APPEND(&track, track_total.data, track_total.len);
+        }
+        mutable_song_set_tags(song, TAG_TRACK,
+                              track.data, track.len, NULL, 0);
+        sb_free(&track);
+    } else if (!preview && has_track_total && (track_total.len > 0)) {
+        StrBuilder current = {0};
+        StrBuilder track = {0};
+        int32 slash;
+        int32 number_len;
+
+        mutable_song_get_tag_buffer(song, TAG_TRACK, 0, &current);
+        slash = ncm_string_find_char(current.data, current.len, '/');
+        if (slash >= 0) {
+            number_len = slash;
+        } else {
+            number_len = current.len;
+        }
+        if (number_len > 0) {
+            SB_APPEND(&track, current.data, number_len);
+            sb_append_byte(&track, '/');
+            SB_APPEND(&track, track_total.data, track_total.len);
+            mutable_song_set_tags(song, TAG_TRACK,
+                                  track.data, track.len, NULL, 0);
+        }
+        sb_free(&track);
+        sb_free(&current);
+    }
+
+    sb_free(&track_total);
+    sb_free(&track_number);
     sb_free(&file);
     return 0;
 }

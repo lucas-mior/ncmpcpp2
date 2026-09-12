@@ -707,34 +707,34 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
             SB_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
-    case SONG_GETTER_TRACK:
-        if (ncm_song_has_tag_view_unchecked(song, TAG_TRACK, idx, &view)) {
-            len = ncm_song_numeric_tag_len_unchecked(view.data, view.len);
-            sb_reserve(&buffer, len);
-            buffer.len =
-                ncm_song_format_numeric_tag_unchecked(buffer.data, buffer.cap,
-                                                      view.data, view.len);
-        }
-        return buffer;
     case SONG_GETTER_TRACK_NUMBER:
         if (ncm_song_has_tag_view_unchecked(song, TAG_TRACK, idx, &view)) {
             slash = ncm_string_find_char(view.data, view.len, '/');
-            if (ncm_song_needs_numeric_zero(view.data, view.len)) {
-                len = 1;
-            } else {
-                len = 0;
-            }
             if (slash >= 0) {
                 copy_len = slash;
             } else {
                 copy_len = view.len;
             }
-            len += copy_len;
+            len = ncm_song_numeric_tag_len_unchecked(view.data, copy_len);
             sb_reserve(&buffer, len);
             buffer.len =
                 ncm_song_format_numeric_tag_prefix(buffer.data, buffer.cap,
-                                                   view.data, view.len,
+                                                   view.data, copy_len,
                                                    copy_len);
+        }
+        return buffer;
+    case SONG_GETTER_TRACK_TOTAL:
+        if (ncm_song_has_tag_view_unchecked(song, TAG_TRACK, idx, &view)) {
+            slash = ncm_string_find_char(view.data, view.len, '/');
+            if ((slash >= 0) && (slash + 1 < view.len)) {
+                char *total = view.data + slash + 1;
+                int32 total_len = view.len - slash - 1;
+
+                len = ncm_song_numeric_tag_len_unchecked(total, total_len);
+                sb_reserve(&buffer, len);
+                buffer.len = ncm_song_format_numeric_tag_unchecked(
+                    buffer.data, buffer.cap, total, total_len);
+            }
         }
         return buffer;
     case SONG_GETTER_DISC:

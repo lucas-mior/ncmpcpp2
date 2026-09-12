@@ -454,19 +454,15 @@ mutable_song_load_originals_from_song(MutableSong *dest, NcmSong *source) {
 
     for (uint32 type_i = 0; type_i < TAG_COUNT; type_i += 1) {
         enum TagType type = (enum TagType)type_i;
-        enum SongGetter getter = ncm_tag_type_to_song_getter(type);
 
-        ASSERT(getter != SONG_GETTER_NONE);
         for (int32 i = 0; ; i += 1) {
-            StrBuilder buffer = ncm_song_getter_buffer(source, getter, i);
+            StringView tag;
 
-            if (buffer.len <= 0) {
-                sb_free(&buffer);
+            if (!ncm_song_has_tag_view(source, type, i, &tag)) {
                 break;
             }
             mutable_song_set_original_tag_unchecked(dest, type, i,
-                                                     buffer.data, buffer.len);
-            sb_free(&buffer);
+                                                     tag.data, tag.len);
         }
     }
 

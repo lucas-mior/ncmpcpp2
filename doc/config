@@ -185,7 +185,7 @@
 ## %b - album
 ## %y - date
 ## %n - track number (01/12 -> 01)
-## %N - full track info (01/12 -> 01/12)
+## %N - total tracks (01/12 -> 12)
 ## %g - genre
 ## %c - composer
 ## %p - performer
