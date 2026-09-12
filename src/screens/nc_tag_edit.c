@@ -3902,50 +3902,45 @@ tag_edit_screen_show_parser_actions(TagEditScreen *screen,
         StrBuilder path = {0};
         char *content = NULL;
         int32 content_len = 0;
-        int32 status;
+        int32 status = 0;
 
         screen->recent_patterns_loaded = true;
         tag_edit_history_path(&path);
-        status = 0;
-        if (ncm_fs_path_is_existing(path.data, path.len)) {
-            content_len = read_entire_file(path.data, &content);
-            if (content_len < 0) {
-                status = content_len;
-            } else {
-                char *content_end = content + content_len;
-                char *line = content;
 
-                while (line < content_end) {
-                    char *current_line;
-                    char *line_end;
-                    char *next;
-                    int32 line_len;
+        if ((content_len = read_entire_file(path.data, &content)) >= 0) {
+            char *content_end = content + content_len;
+            char *line = content;
 
-                    current_line = line;
-                    if ((line_end = memchr64(line, '\n',
-                                             content_end - line))) {
-                        line_len = (int32)(line_end - line);
-                        next = line_end + 1;
-                    } else {
-                        line_len = (int32)(content_end - line);
-                        next = content_end;
-                    }
-                    line = next;
-                    if ((line_len > 0)
-                        && (current_line[line_len - 1] == '\r')) {
-                        line_len -= 1;
-                    }
-                    if ((line_len > 0)
-                        && (tag_edit_find_recent_pattern(screen,
-                                                         current_line, line_len)
-                            < 0)) {
-                        StrBuilder *item;
+            while (line < content_end) {
+                char *current_line;
+                char *line_end;
+                char *next;
+                int32 line_len;
 
-                        item = str_builder_array_append(
-                            &screen->recent_patterns);
-                        ASSERT(item != NULL);
-                        sb_set(item, current_line, line_len);
-                    }
+                current_line = line;
+                if ((line_end = memchr64(line, '\n',
+                                         content_end - line))) {
+                    line_len = (int32)(line_end - line);
+                    next = line_end + 1;
+                } else {
+                    line_len = (int32)(content_end - line);
+                    next = content_end;
+                }
+                line = next;
+                if ((line_len > 0)
+                    && (current_line[line_len - 1] == '\r')) {
+                    line_len -= 1;
+                }
+                if ((line_len > 0)
+                    && (tag_edit_find_recent_pattern(screen,
+                                                     current_line, line_len)
+                        < 0)) {
+                    StrBuilder *item;
+
+                    item = str_builder_array_append(
+                        &screen->recent_patterns);
+                    ASSERT(item != NULL);
+                    sb_set(item, current_line, line_len);
                 }
             }
         }
