@@ -766,7 +766,6 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
             SB_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
-    case SONG_GETTER_NONE:
     case SONG_GETTER_COUNT:
     default:
         return buffer;
@@ -777,7 +776,8 @@ StrBuilder
 ncm_song_getter_buffer(NcmSong *song, enum SongGetter getter, int32 idx) {
     StrBuilder buffer = {0};
 
-    if ((song == NULL) || (idx < 0)) {
+    if ((song == NULL) || (idx < 0)
+        || ((uint32)getter >= (uint32)SONG_GETTER_COUNT)) {
         return buffer;
     }
 
@@ -793,7 +793,7 @@ ncm_song_tags_buffer(NcmSong *song, enum SongGetter getter,
     if (song == NULL) {
         return result;
     }
-    if (getter == SONG_GETTER_NONE) {
+    if ((uint32)getter >= (uint32)SONG_GETTER_COUNT) {
         return result;
     }
     if ((separator == NULL) || (separator_len < 0)) {

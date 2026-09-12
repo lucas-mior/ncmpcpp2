@@ -45,10 +45,6 @@ ncm_playlist_sort_indices(NcmPlaylistSortContext *context,
             char *left_data;
             char *right_data;
 
-            if (getter == SONG_GETTER_NONE) {
-                break;
-            }
-
             left_buffer
                 = ncm_song_getter_buffer(&context->songs->items[left_idx],
                                          getter, 0);
@@ -155,11 +151,7 @@ ncm_playlist_sort_range(NcmSongArray *songs, int32 start_position,
                                   STRLIT("missing sort keys"));
     }
     for (int32 i = 0; i < getters_len; i += 1) {
-        if (getters[i] == SONG_GETTER_NONE) {
-            break;
-        }
-        if ((getters[i] < SONG_GETTER_NONE)
-            || (getters[i] >= SONG_GETTER_COUNT)) {
+        if ((uint32)getters[i] >= (uint32)SONG_GETTER_COUNT) {
             return ncm_error_set_code(ncm_error, EINVAL,
                                       STRLIT("invalid playlist sort key"));
         }

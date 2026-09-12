@@ -32,7 +32,6 @@ enum {
   TAG_DEFS(TAG_TYPE_ENUM_FIELD)
 
 #define SONG_GETTER_DEFS(XX)                         \
-  XX(SONG_GETTER_NONE, none, '\0')                   \
   XX(SONG_GETTER_LENGTH, Length, 'l')                \
   XX(SONG_GETTER_DIRECTORY, Directory, 'D')          \
   XX(SONG_GETTER_NAME, Filename, 'f')                \
@@ -119,7 +118,6 @@ ncm_song_getter_column_title_len(enum SongGetter getter, char **out) {
     case SONG_GETTER_COMMENT:
     case SONG_GETTER_PRIORITY:
         return SONG_GETTER_alias_len(getter, out);
-    case SONG_GETTER_NONE:
     case SONG_GETTER_COUNT:
     default:
         *out = "?";
@@ -145,7 +143,6 @@ ncm_song_getter_sort_label_len(enum SongGetter getter, char **out) {
     case SONG_GETTER_DISC:
     case SONG_GETTER_COMMENT:
         return SONG_GETTER_alias_len(getter, out);
-    case SONG_GETTER_NONE:
     case SONG_GETTER_LENGTH:
     case SONG_GETTER_DIRECTORY:
     case SONG_GETTER_NAME:

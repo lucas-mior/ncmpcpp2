@@ -219,7 +219,7 @@ ncm_format_ast_append_column_types(NcmFormatAst *ast,
     }
 
     for (int32 i = 0; i < types_len; i += 1) {
-        if (ncm_song_getter_from_char(types[i]) == SONG_GETTER_NONE) {
+        if (ncm_song_getter_from_char(types[i]) == SONG_GETTER_COUNT) {
             return -NCM_ERROR_PARSE;
         }
     }
@@ -365,7 +365,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
 
                 if (status == 0) {
                     getter = ncm_song_getter_from_char(data[percent_i]);
-                    if (getter == SONG_GETTER_NONE) {
+                    if (getter == SONG_GETTER_COUNT) {
                         status = ncm_format_set_error(ncm_error,
                                                       "invalid tag",
                                                       percent_i);
