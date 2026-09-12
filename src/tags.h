@@ -3,9 +3,6 @@
 
 #include "cbase.h"
 
-#define TAG_DISPLAY_NAME(DISP) #DISP
-#define TAG_DISPLAY_NAME_LEN(DISP) STRLIT_LEN(#DISP)
-
 #define SONG_TAG_DEFS(XX, XX2, CTX)                                          \
   XX(CTX,  ARTIST,       Artist,       'a')                                  \
   XX(CTX,  ALBUM_ARTIST, Album Artist, 'A')                                  \
