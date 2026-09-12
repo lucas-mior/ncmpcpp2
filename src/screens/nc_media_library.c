@@ -339,6 +339,7 @@ library_update_titles(MediaLibraryScreen *screen, bool update_windows) {
     sb_clear(&screen->tags_title);
     sb_clear(&screen->albums_title);
     sb_clear(&screen->songs_title);
+
     if (Config.titles_visibility) {
         char *tag_type_name;
         int32 tag_type_name_len;
