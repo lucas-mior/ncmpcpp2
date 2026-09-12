@@ -18,7 +18,6 @@ void global_timer_update(void);
 int64 global_timer_elapsed_ms(int64);
 int64 global_timer_elapsed_seconds(int64);
 void global_volume_state_set(char *, int32);
-void global_volume_state_append(char *, int32);
 char *global_volume_state_cstr(void);
 int32 global_volume_state_len(void);
 
