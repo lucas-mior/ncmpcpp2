@@ -82,8 +82,7 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
         }
 
         for (int32 j = 0; j < column->type_len; j += 1) {
-            enum SongGetter getter =
-                ncm_song_getter_from_char(column->type[j]);
+            enum SongGetter getter = ncm_song_getter_from_char(column->type[j]);
 
             if (getter != SONG_GETTER_COUNT) {
                 StrBuilder tag_value =
