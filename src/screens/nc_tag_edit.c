@@ -27,11 +27,6 @@ enum TagEditParserActionRow {
 #define TAG_EDIT_FILENAME_ROW (TAG_COUNT + 1)
 
 static bool
-tag_edit_choice_is_field(int32 choice) {
-    return choice < (int32)TAG_COUNT;
-}
-
-static bool
 tag_edit_choice_is_filename(int32 choice) {
     return choice == TAG_EDIT_FILENAME_ROW;
 }
@@ -90,7 +85,7 @@ tag_edit_draw_tag(NcMenu *menu, NcWindow *window, void *item,
 
     tag_types = nc_editor_string_menu_base(&screen->tag_types);
     choice = nc_menu_highlight(tag_types);
-    if (tag_edit_choice_is_field(choice)) {
+    if (choice < (int32)TAG_COUNT) {
         StrBuilder tag;
         enum TagType tag_type = ncm_song_info_tags[choice].tag;
 
@@ -591,7 +586,7 @@ tag_edit_current_tag_type_action(TagEditScreen *screen,
         return TAG_EDIT_TAG_TYPE_ACTION_NONE;
     }
 
-    if (tag_edit_choice_is_field(choice)) {
+    if (choice < (int32)TAG_COUNT) {
         *tag_type = ncm_song_info_tags[choice].tag;
         if ((ncm_song_info_tags[choice].tag == TAG_TRACK)
             && (screen->active_focus == TAG_EDIT_FOCUS_TAG_TYPES)) {
@@ -2226,7 +2221,7 @@ tag_edit_tag_matches_regex(TagEditScreen *screen,
 
     tag_types = nc_editor_string_menu_base(&screen->tag_types);
     choice = nc_menu_highlight(tag_types);
-    if (tag_edit_choice_is_field(choice)) {
+    if (choice < (int32)TAG_COUNT) {
         tag_type = ncm_song_info_tags[choice].tag;
     } else if (tag_edit_choice_is_filename(choice)) {
         tag_type = TAG_COUNT;
@@ -3255,7 +3250,7 @@ tag_edit_screen_next_column_available(TagEditScreen *screen) {
         tags = nc_tag_row_menu_base(&screen->tags);
         choice = nc_menu_highlight(tag_types);
         return (nc_menu_item_count(tags) > 0)
-               && (tag_edit_choice_is_field(choice)
+               && ((choice < (int32)TAG_COUNT)
                    || tag_edit_choice_is_filename(choice));
     }
     if (screen->active_focus == TAG_EDIT_FOCUS_PARSER_ACTIONS) {

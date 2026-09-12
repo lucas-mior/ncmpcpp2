@@ -5,7 +5,7 @@
 #include "ncmpcpp2.h"
 
 #include "app_controller.h"
-#include "app_legacy_bridge.h"
+#include "app_bridge.h"
 #include "bindings.h"
 #include "c/ncm_c.h"
 #include "global.h"
