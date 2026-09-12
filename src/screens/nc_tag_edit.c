@@ -28,7 +28,7 @@ enum TagEditParserActionRow {
 
 static bool
 tag_edit_choice_is_field(int32 choice) {
-    return (choice >= 0) && (choice < (int32)TAG_COUNT);
+    return choice < (int32)TAG_COUNT;
 }
 
 static bool
