@@ -497,7 +497,6 @@ tag_edit_refresh(NcScreen *screen) {
     }
     {
         NcMenu *menu = nc_editor_string_menu_base(&editor->tag_types);
-
         tag_edit_refresh_menu(&editor->tag_types_window, menu);
     }
     tag_edit_refresh_menu(&editor->tags_window,
