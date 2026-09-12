@@ -212,8 +212,10 @@ ncm_mpd_client_destroy(MpdClient *client) {
 
     ncm_mpd_client_disconnect_ready(client);
     ncm_mpd_connection_destroy(&client->connection);
+
     sb_free(&client->host);
     sb_free(&client->password);
+
     client->port = 0;
     client->timeout_ms = 0;
     client->command_list_active = false;
@@ -221,6 +223,7 @@ ncm_mpd_client_destroy(MpdClient *client) {
     client->fd = -1;
     client->noidle_callback = NULL;
     client->noidle_user = NULL;
+
     return;
 }
 
