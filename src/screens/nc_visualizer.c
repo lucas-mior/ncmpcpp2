@@ -1106,8 +1106,11 @@ visualizer_screen_init_visualization(VisualizerScreen *screen) {
     ncm_sample_buffer_resize(&screen->samples_rendered, rendered_cap);
     ncm_sample_buffer_resize(&screen->left_ch, channel_cap);
     ncm_sample_buffer_resize(&screen->right_ch, channel_cap);
-    memset64(screen->samples_rendered.data, 0,
-             rendered_cap*SIZEOF(*screen->samples_rendered.data));
+    if (screen->samples_rendered.cap > 0) {
+        memset64(screen->samples_rendered.data, 0,
+                 screen->samples_rendered.cap
+                 *SIZEOF(*screen->samples_rendered.data));
+    }
     return;
 }
 
