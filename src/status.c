@@ -602,7 +602,6 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
 #endif
                 if (status_ui_hooks_set && status_ui_hooks.song_id_changed) {
                     void *user = status_ui_hooks.user;
-
                     status_ui_hooks.song_id_changed(mpd_status->song_id, user);
                 }
 
