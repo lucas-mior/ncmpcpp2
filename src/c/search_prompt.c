@@ -7,7 +7,7 @@
 #include "c/ncm_c.h"
 
 void
-ncm_search_prompt_state_init(SearchPromptState *state,
+search_prompt_state_init(SearchPromptState *state,
                              enum SearchDirection direction) {
     ASSERT(state != NULL);
 
@@ -23,7 +23,7 @@ ncm_search_prompt_state_init(SearchPromptState *state,
 }
 
 void
-ncm_search_prompt_state_destroy(SearchPromptState *state) {
+search_prompt_state_destroy(SearchPromptState *state) {
     ASSERT(state != NULL);
 
     sb_free(&state->last_text);
@@ -31,7 +31,7 @@ ncm_search_prompt_state_destroy(SearchPromptState *state) {
 }
 
 void
-ncm_search_prompt_state_set_start_position(SearchPromptState *state,
+search_prompt_state_set_start_position(SearchPromptState *state,
                                            int32 position) {
     ASSERT(state != NULL);
 
@@ -41,7 +41,7 @@ ncm_search_prompt_state_set_start_position(SearchPromptState *state,
 }
 
 bool
-ncm_search_prompt_state_has_cached_result(SearchPromptState *state,
+search_prompt_state_has_cached_result(SearchPromptState *state,
                                           char *text, int32 text_len,
                                           bool *found) {
     ASSERT(state != NULL);
@@ -66,7 +66,7 @@ ncm_search_prompt_state_has_cached_result(SearchPromptState *state,
 }
 
 int32
-ncm_search_prompt_state_finish_result(SearchPromptState *state,
+search_prompt_state_finish_result(SearchPromptState *state,
                                       char *text, int32 text_len,
                                       bool search_ok, bool found) {
     int32 status;
