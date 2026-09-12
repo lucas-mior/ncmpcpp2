@@ -381,22 +381,34 @@ tag_edit_update_titles(TagEditScreen *screen, bool update_windows) {
     sb_clear(&screen->parser_helper_title);
 
     if (Config.titles_visibility) {
-        SB_APPEND(&screen->directories_title, "Directories");
-        SB_APPEND(&screen->tag_types_title, "Tag types");
-        SB_APPEND(&screen->tags_title, "Tags");
-        if (screen->parser_mode == TAG_EDIT_PARSER_MODE_TAGS_FROM_FILENAME) {
-            SB_APPEND(&screen->parser_title, "Get tags from filename");
-        } else if (screen->parser_mode == TAG_EDIT_PARSER_MODE_RENAME_FILES) {
-            SB_APPEND(&screen->parser_title, "Rename files");
-        } else {
-            SB_APPEND(&screen->parser_title, "Pattern");
+        char *title;
+        int32 title_len;
+        enum TagEditParserMode parser_mode = screen->parser_mode;
+        enum TagEditFocus helper_focus;
+
+        title_len = TAG_EDIT_COLUMN_alias_len(TAG_EDIT_COLUMN_DIRECTORIES,
+                                              &title);
+        SB_APPEND(&screen->directories_title, title, title_len);
+        title_len = TAG_EDIT_COLUMN_alias_len(TAG_EDIT_COLUMN_TAG_TYPES, &title);
+        SB_APPEND(&screen->tag_types_title, title, title_len);
+        title_len = TAG_EDIT_COLUMN_alias_len(TAG_EDIT_COLUMN_TAGS, &title);
+        SB_APPEND(&screen->tags_title, title, title_len);
+
+        if ((parser_mode < TAG_EDIT_PARSER_MODE_NONE)
+            || (parser_mode >= TAG_EDIT_PARSER_MODECOUNT)) {
+            parser_mode = TAG_EDIT_PARSER_MODE_NONE;
         }
+        title_len = TAG_EDIT_PARSER_MODEalias_len(parser_mode, &title);
+        SB_APPEND(&screen->parser_title, title, title_len);
+
         if ((screen->active_focus == TAG_EDIT_FOCUS_PARSER_LEGEND)
             || !screen->parser_preview_enabled) {
-            SB_APPEND(&screen->parser_helper_title, "Legend");
+            helper_focus = TAG_EDIT_FOCUS_PARSER_LEGEND;
         } else {
-            SB_APPEND(&screen->parser_helper_title, "Preview");
+            helper_focus = TAG_EDIT_FOCUS_PARSER_PREVIEW;
         }
+        title_len = TAG_EDIT_FOCUS_alias_len(helper_focus, &title);
+        SB_APPEND(&screen->parser_helper_title, title, title_len);
     }
 
     if (!update_windows) {
