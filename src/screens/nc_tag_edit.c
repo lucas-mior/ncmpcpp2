@@ -3826,12 +3826,19 @@ tag_edit_screen_prepare_parser_menus(TagEditScreen *screen,
     nc_menu_clear_items(nc_editor_string_menu_base(&screen->parser_dialog));
     nc_menu_clear_items(nc_editor_string_menu_base(&screen->parser_actions));
 
-    tag_edit_append_parser_row(&screen->parser_dialog,
-                               STRLIT("Get tags from filename"),
-                               NC_MENU_ITEM_SELECTABLE);
-    tag_edit_append_parser_row(&screen->parser_dialog,
-                               STRLIT("Rename files"),
-                               NC_MENU_ITEM_SELECTABLE);
+    {
+        char *label;
+        int32 label_len;
+
+        label_len = TAG_EDIT_PARSER_MODE_alias_len(
+            TAG_EDIT_PARSER_MODE_TAGS_FROM_FILENAME, &label);
+        tag_edit_append_parser_row(&screen->parser_dialog, label, label_len,
+                                   NC_MENU_ITEM_SELECTABLE);
+        label_len = TAG_EDIT_PARSER_MODE_alias_len(
+            TAG_EDIT_PARSER_MODE_RENAME_FILES, &label);
+        tag_edit_append_parser_row(&screen->parser_dialog, label, label_len,
+                                   NC_MENU_ITEM_SELECTABLE);
+    }
     tag_edit_append_parser_row(&screen->parser_dialog,
                                STRLIT("Cancel"),
                                NC_MENU_ITEM_SELECTABLE);
