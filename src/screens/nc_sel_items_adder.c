@@ -685,11 +685,9 @@ adder_add_to_stored_playlist(SelectedItemsAdderScreen *screen, char *playlist,
 
 static void
 adder_action_existing_playlist(void *user) {
-    ExistingPlaylistAction *action;
-
-    action = user;
-    adder_add_to_stored_playlist(action->screen, action->playlist,
-                                 action->playlist_len);
+    ExistingPlaylistAction *action = user;
+    adder_add_to_stored_playlist(action->screen,
+                                 action->playlist, action->playlist_len);
     return;
 }
 
