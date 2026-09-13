@@ -52,22 +52,22 @@
 #define SCREEN_TYPE_VISUALIZER_ENTRY(XX)                                       \
   XX(VISUALIZER,           visualizer,           STARTUP, visualizer)
 
-#define SCREEN_ALL_TYPES(XX)                                               \
-    SCREEN_TYPE_BROWSER_ENTRY(XX)                                          \
-    SCREEN_TYPE_HELP_ENTRY(XX)                                             \
-    SCREEN_TYPE_LASTFM_ENTRY(XX)                                           \
-    SCREEN_TYPE_LYRICS_ENTRY(XX)                                           \
-    SCREEN_TYPE_MEDIA_LIBRARY_ENTRY(XX)                                    \
-    SCREEN_TYPE_OUTPUTS_ENTRY(XX)                                          \
-    SCREEN_TYPE_PLAYLIST_ENTRY(XX)                                         \
-    SCREEN_TYPE_PLAYLIST_EDITOR_ENTRY(XX)                                  \
-    SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                                    \
-    SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)                             \
-    SCREEN_TYPE_SERVER_INFO_ENTRY(XX)                                      \
-    SCREEN_TYPE_SONG_INFO_ENTRY(XX)                                        \
-    SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)                             \
-    SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                         \
-    SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)                                    \
+#define SCREEN_ALL_TYPES(XX)                                      \
+    SCREEN_TYPE_BROWSER_ENTRY(XX)                                 \
+    SCREEN_TYPE_HELP_ENTRY(XX)                                    \
+    SCREEN_TYPE_LASTFM_ENTRY(XX)                                  \
+    SCREEN_TYPE_LYRICS_ENTRY(XX)                                  \
+    SCREEN_TYPE_MEDIA_LIBRARY_ENTRY(XX)                           \
+    SCREEN_TYPE_OUTPUTS_ENTRY(XX)                                 \
+    SCREEN_TYPE_PLAYLIST_ENTRY(XX)                                \
+    SCREEN_TYPE_PLAYLIST_EDITOR_ENTRY(XX)                         \
+    SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                           \
+    SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)                      \
+    SCREEN_TYPE_SERVER_INFO_ENTRY(XX)                             \
+    SCREEN_TYPE_SONG_INFO_ENTRY(XX)                               \
+    SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)                    \
+    SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                \
+    SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)                           \
     SCREEN_TYPE_VISUALIZER_ENTRY(XX)
 
 #if defined(ENABLE_OUTPUTS)
