@@ -102,8 +102,9 @@ media_library_search_capability(NcScreen *base, enum SearchDirection direction,
 
 static int32
 media_library_current_song_capability(NcScreen *base, NcmSong *song) {
-    return nc_screen_optional_song_status(
-        media_library_screen_current_song((MediaLibraryScreen *)base, song));
+    MediaLibraryScreen *screen = (MediaLibraryScreen *)base;
+    int32 current = media_library_screen_current_song(screen, song);
+    return nc_screen_optional_song_status(current);
 }
 
 static int32
