@@ -14,10 +14,10 @@ typedef struct StringViewList {
     Arena *arena;
 } StringViewList;
 
-void ncm_mpd_string_list_push(StringViewList *, char *);
-void ncm_mpd_string_list_destroy(StringViewList *);
-void ncm_mpd_string_list_clear(StringViewList *);
-int32 ncm_mpd_string_list_count(StringViewList *);
-StringView *ncm_mpd_string_list_at(StringViewList *, int32);
+void string_list_push(StringViewList *, char *);
+void string_list_destroy(StringViewList *);
+void string_list_clear(StringViewList *);
+int32 string_list_count(StringViewList *);
+StringView *string_list_at(StringViewList *, int32);
 
 #endif /* NCMPCPP2_H */

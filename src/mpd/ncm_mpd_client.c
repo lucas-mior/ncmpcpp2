@@ -1212,13 +1212,13 @@ ncm_mpd_client_add_random_tag(MpdClient *client, enum TagType tag,
         ncm_mpd_client_copy_connection_error(client, ncm_error);
         goto cleanup;
     }
-    if (number > ncm_mpd_string_list_count(&tags)) {
+    if (number > string_list_count(&tags)) {
         status = ncm_error_set_status(ncm_error, -NCM_ERROR_UNAVAILABLE,
                                       STRLIT("not enough MPD tag values"));
         goto cleanup;
     }
 
-    rand_shuffle(tags.items, ncm_mpd_string_list_count(&tags),
+    rand_shuffle(tags.items, string_list_count(&tags),
                  SIZEOF(*tags.items));
     for (int32 i = 0; i < number; i += 1) {
         status = ncm_mpd_connection_start_search_songs(&client->connection,
@@ -1262,7 +1262,7 @@ cleanup:
         client->command_list_active = false;
     }
     ncm_mpd_song_list_destroy(&songs);
-    ncm_mpd_string_list_destroy(&tags);
+    string_list_destroy(&tags);
     return status;
 }
 
@@ -1295,7 +1295,7 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
         ncm_mpd_client_copy_connection_error(client, ncm_error);
         goto cleanup;
     }
-    if (number > ncm_mpd_string_list_count(&files)) {
+    if (number > string_list_count(&files)) {
         status = ncm_error_set_status(ncm_error, -NCM_ERROR_UNAVAILABLE,
                                       STRLIT("not enough MPD songs"));
         goto cleanup;
@@ -1311,7 +1311,7 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
         have_regex = true;
     }
 
-    rand_shuffle(files.items, ncm_mpd_string_list_count(&files),
+    rand_shuffle(files.items, string_list_count(&files),
                  SIZEOF(*files.items));
     if ((status = ncm_mpd_client_start_command_list_ready(client,
                                                           ncm_error)) < 0) {
@@ -1320,7 +1320,7 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
 
     added = 0;
     for (int32 i = 0;
-         (i < ncm_mpd_string_list_count(&files)) && (added < number);
+         (i < string_list_count(&files)) && (added < number);
          i += 1) {
         if (have_regex
             && ncm_regex_matches(&regex,
@@ -1348,7 +1348,7 @@ cleanup:
         client->command_list_active = false;
     }
     ncm_regex_destroy(&regex);
-    ncm_mpd_string_list_destroy(&files);
+    string_list_destroy(&files);
     return status;
 }
 

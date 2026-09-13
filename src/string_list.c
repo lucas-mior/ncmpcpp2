@@ -2,7 +2,7 @@
 #include "ncmpcpp2.h"
 
 void
-ncm_mpd_string_list_push(StringViewList *list, char *value) {
+string_list_push(StringViewList *list, char *value) {
     StringView string;
     int32 value_len;
 
@@ -19,7 +19,7 @@ ncm_mpd_string_list_push(StringViewList *list, char *value) {
 }
 
 void
-ncm_mpd_string_list_destroy(StringViewList *list) {
+string_list_destroy(StringViewList *list) {
     if (list == NULL) {
         return;
     }
@@ -34,7 +34,7 @@ ncm_mpd_string_list_destroy(StringViewList *list) {
 }
 
 void
-ncm_mpd_string_list_clear(StringViewList *list) {
+string_list_clear(StringViewList *list) {
     if (list == NULL) {
         return;
     }
@@ -45,7 +45,7 @@ ncm_mpd_string_list_clear(StringViewList *list) {
 }
 
 int32
-ncm_mpd_string_list_count(StringViewList *list) {
+string_list_count(StringViewList *list) {
     if (list == NULL) {
         return 0;
     }
@@ -54,7 +54,7 @@ ncm_mpd_string_list_count(StringViewList *list) {
 }
 
 StringView *
-ncm_mpd_string_list_at(StringViewList *list, int32 idx) {
+string_list_at(StringViewList *list, int32 idx) {
     if (list == NULL) {
         return NULL;
     }

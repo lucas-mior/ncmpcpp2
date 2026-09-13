@@ -1538,7 +1538,7 @@ server_info_render(void *user, NcBuffer *buffer) {
 
     append_bold_label(buffer, "URL Handlers:");
     for (int32 i = 0;
-         i < ncm_mpd_string_list_count(&owner->url_handlers);
+         i < string_list_count(&owner->url_handlers);
          i += 1) {
         StringView *handler = &owner->url_handlers.items[i];
 
@@ -1553,7 +1553,7 @@ server_info_render(void *user, NcBuffer *buffer) {
 
     append_bold_label(buffer, "Tag Types:");
     for (int32 i = 0;
-         i < ncm_mpd_string_list_count(&owner->tag_types);
+         i < string_list_count(&owner->tag_types);
          i += 1) {
         StringView *tag = &owner->tag_types.items[i];
 
@@ -1597,8 +1597,8 @@ static void
 server_info_destroy(void *user) {
     ServerInfoScreen *owner = user;
 
-    ncm_mpd_string_list_destroy(&owner->url_handlers);
-    ncm_mpd_string_list_destroy(&owner->tag_types);
+    string_list_destroy(&owner->url_handlers);
+    string_list_destroy(&owner->tag_types);
     owner->initialized = false;
 
     return;

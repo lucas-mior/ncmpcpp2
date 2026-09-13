@@ -1732,10 +1732,10 @@ media_library_tags_from_strings(MediaLibraryTagArray *tags,
         return -EINVAL;
     }
 
-    for (int32 i = 0; i < ncm_mpd_string_list_count(strings); i += 1) {
+    for (int32 i = 0; i < string_list_count(strings); i += 1) {
         StringView *string;
 
-        string = ncm_mpd_string_list_at(strings, i);
+        string = string_list_at(strings, i);
         if (library_find_tag(&replacement, string->data, string->len) >= 0) {
             continue;
         }
@@ -2735,7 +2735,7 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
                     media_library_screen_toggle_sort_mode(screen, &ignored);
                 }
                 ncm_mpd_song_list_destroy(&songs);
-                ncm_mpd_string_list_destroy(&strings);
+                string_list_destroy(&strings);
                 media_library_tag_array_destroy(&tags);
                 return status;
             }
@@ -2746,7 +2746,7 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
             if (status < 0) {
                 screen->tags_update_request = true;
                 ncm_mpd_song_list_destroy(&songs);
-                ncm_mpd_string_list_destroy(&strings);
+                string_list_destroy(&strings);
                 media_library_tag_array_destroy(&tags);
                 return status;
             }
@@ -2813,7 +2813,7 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
         }
 
         ncm_mpd_song_list_destroy(&songs);
-        ncm_mpd_string_list_destroy(&strings);
+        string_list_destroy(&strings);
         media_library_tag_array_destroy(&tags);
         return 0;
     }

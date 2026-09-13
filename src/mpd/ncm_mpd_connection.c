@@ -219,12 +219,12 @@ ncm_mpd_connection_recv_pair_list(MpdConnection *connection, char *name,
                                   StringViewList *strings) {
     struct mpd_pair *pair;
 
-    ncm_mpd_string_list_clear(strings);
+    string_list_clear(strings);
     while (true) {
         if ((pair = mpd_recv_pair_named(connection->mpd, name)) == NULL) {
             break;
         }
-        ncm_mpd_string_list_push(strings, (char *)pair->value);
+        string_list_push(strings, (char *)pair->value);
         mpd_return_pair(connection->mpd, pair);
     }
 
@@ -1383,13 +1383,13 @@ ncm_mpd_connection_list_tag_values(MpdConnection *connection,
         return ncm_mpd_connection_check_error(connection);
     }
 
-    ncm_mpd_string_list_clear(strings);
+    string_list_clear(strings);
     while (true) {
         if ((pair = mpd_recv_pair_tag(connection->mpd, mpd_tag)) == NULL) {
             break;
         }
 
-        ncm_mpd_string_list_push(strings, (char *)pair->value);
+        string_list_push(strings, (char *)pair->value);
         mpd_return_pair(connection->mpd, pair);
     }
 
