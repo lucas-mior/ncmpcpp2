@@ -1709,9 +1709,7 @@ media_library_tags_from_strings(MediaLibraryTagArray *tags,
     }
 
     for (int32 i = 0; i < strflex_list_len(strings); i += 1) {
-        StrFlex *string;
-
-        string = strflex_list_at(strings, i);
+        StrFlex *string = strflex_list_at(strings, i);
         if (library_find_tag(&replacement, string->data, string->len) >= 0) {
             continue;
         }
