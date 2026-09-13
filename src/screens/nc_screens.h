@@ -34,7 +34,7 @@
 #define SCREEN_TYPE_PLAYLIST_ENTRY(XX)                                         \
   XX(PLAYLIST,             playlist,             STARTUP, playlist)
 #define SCREEN_TYPE_PLAYLIST_EDIT_ENTRY(XX)                                    \
-  XX(PLAYLIST_EDIT,      playlist_edit,          STARTUP, playlist_edit)
+  XX(PLAYLIST_EDIT,        playlist_edit,        STARTUP, playlist_edit)
 #define SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                                    \
   XX(SEARCH_ENGINE,        search_engine,        STARTUP, search_engine)
 #define SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)                               \
