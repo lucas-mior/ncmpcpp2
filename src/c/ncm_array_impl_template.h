@@ -24,9 +24,8 @@
 #include "cbase.h"
 
 #if defined(__INCLUDE_LEVEL__) && (__INCLUDE_LEVEL__ == 0)
-#define NCM_ARRAY_TYPE      ncm_unused
-#define NCM_ARRAY_ITEM_TYPE int32
-#define NCM_ARRAY_PREFIX    ncm_unused2
+#define NCM_ARRAY_DUMMY_DEFINES 1
+#include "ncm_array_decl_template.h"
 #endif
 
 #if !defined(NCM_ARRAY_TYPE)
