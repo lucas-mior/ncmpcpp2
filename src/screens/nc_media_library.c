@@ -3149,9 +3149,10 @@ media_library_screen_list_all_songs(MediaLibraryScreen *screen,
 }
 
 int32
-media_library_screen_search_songs(
-    MediaLibraryScreen *screen,
-    MediaLibrarySongQuery *query, NcmSongArray *songs, NcmError *ncm_error) {
+media_library_screen_search_songs(MediaLibraryScreen *screen,
+                                  MediaLibrarySongQuery *query,
+                                  NcmSongArray *songs,
+                                  NcmError *ncm_error) {
     if ((screen == NULL) || (screen->hooks.search_songs == NULL)) {
         return ncm_error_set_status(ncm_error, -ENOSYS,
                                     STRLIT("song-search hook is unavailable"));
