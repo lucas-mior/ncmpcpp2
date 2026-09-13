@@ -2773,8 +2773,7 @@ tag_edit_screen_current_dir(TagEditScreen *screen, StrView *view) {
 }
 
 int32
-tag_edit_screen_current_directory_path(TagEditScreen *screen,
-                                       StrView *view) {
+tag_edit_screen_current_directory_path(TagEditScreen *screen, StrView *view) {
     char *path;
     int32 path_len;
 
