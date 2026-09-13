@@ -2405,7 +2405,6 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
 
     screen->hooks = (TagEditHooks){0};
     screen->current_dir = (StrBuilder){0};
-    screen->displayed_dir = (StrBuilder){0};
     screen->observed_dir = (StrBuilder){0};
     screen->highlighted_dir = (StrBuilder){0};
     screen->directories_title = (StrBuilder){0};
@@ -2481,7 +2480,6 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
     screen->tag_search_enabled = false;
     screen->parser_preview_enabled = true;
     screen->recent_patterns_loaded = false;
-    screen->displayed_dir_valid = false;
     screen->observed_dir_valid = false;
     screen->registered = false;
 
@@ -2568,7 +2566,6 @@ tag_edit_screen_destroy(TagEditScreen *screen) {
     sb_free(&screen->directories_title);
     sb_free(&screen->highlighted_dir);
     sb_free(&screen->observed_dir);
-    sb_free(&screen->displayed_dir);
     sb_free(&screen->current_dir);
 
     nc_window_destroy(&screen->parser_helper_window);
@@ -2683,8 +2680,6 @@ tag_edit_screen_clear_directories(TagEditScreen *screen) {
 void
 tag_edit_screen_clear_stale_tags(TagEditScreen *screen) {
     nc_menu_clear_items(nc_tag_row_menu_base(&screen->tags));
-    sb_clear(&screen->displayed_dir);
-    screen->displayed_dir_valid = false;
     screen->tags_update_requested = true;
     screen->last_known_tag_len = 0;
     tag_edit_update_titles(screen, true);
@@ -3091,9 +3086,6 @@ tag_edit_screen_add_directory(TagEditScreen *screen,
 
 void
 tag_edit_screen_load_songs(TagEditScreen *screen, NcmSongArray *songs) {
-    char *path;
-    int32 path_len;
-
     nc_menu_clear_items(nc_tag_row_menu_base(&screen->tags));
     for (int32 i = 0; i < songs->len; i += 1) {
         MutableSong mutable_song = {0};
@@ -3101,13 +3093,6 @@ tag_edit_screen_load_songs(TagEditScreen *screen, NcmSongArray *songs) {
         mutable_song_load_originals_from_song(&mutable_song, &songs->items[i]);
         tag_edit_screen_add_mutable_song(screen, &mutable_song);
         mutable_song_destroy(&mutable_song);
-    }
-    if (tag_edit_current_directory_path(screen, &path, &path_len)) {
-        sb_set(&screen->displayed_dir, path, path_len);
-        screen->displayed_dir_valid = true;
-    } else {
-        sb_clear(&screen->displayed_dir);
-        screen->displayed_dir_valid = false;
     }
     screen->tags_update_requested = false;
     screen->last_known_tag_len =

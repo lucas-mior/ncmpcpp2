@@ -788,7 +788,6 @@ browser_screen_init(BrowserScreen *screen, int32 start_x, int32 width,
     screen->filter_constraint = (StrBuilder){0};
     screen->search_constraint = (StrBuilder){0};
     screen->item_text_buffer = (StrBuilder){0};
-    screen->path_buffer = (StrBuilder){0};
     screen->scratch_buffer = (StrBuilder){0};
 
     screen->supported_extensions = (StrFlexList){0};
@@ -828,7 +827,6 @@ browser_screen_destroy(BrowserScreen *screen) {
     strflex_list_destroy(&screen->supported_extensions);
 
     sb_free(&screen->scratch_buffer);
-    sb_free(&screen->path_buffer);
     sb_free(&screen->item_text_buffer);
     sb_free(&screen->filter_constraint);
     sb_free(&screen->search_constraint);

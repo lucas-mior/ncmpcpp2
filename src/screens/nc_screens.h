@@ -1794,7 +1794,6 @@ typedef struct TagEditScreen {
     NcScrollpad parser_helper_scrollpad;
     TagEditHooks hooks;
     StrBuilder current_dir;
-    StrBuilder displayed_dir;
     StrBuilder observed_dir;
     StrBuilder highlighted_dir;
     StrBuilder directories_title;
@@ -1854,7 +1853,6 @@ typedef struct TagEditScreen {
     bool tag_search_enabled;
     bool parser_preview_enabled;
     bool recent_patterns_loaded;
-    bool displayed_dir_valid;
     bool observed_dir_valid;
     bool registered;
 } TagEditScreen;
@@ -2026,7 +2024,6 @@ typedef struct BrowserScreen {
     StrBuilder filter_constraint;
     StrBuilder search_constraint;
     StrBuilder item_text_buffer;
-    StrBuilder path_buffer;
     StrBuilder scratch_buffer;
     StrFlexList supported_extensions;
     NcmRegex filter_regex;
