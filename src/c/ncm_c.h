@@ -849,7 +849,7 @@ int32 ncm_job_queue_completed_len(NcmJobQueue *);
 
 #define NCM_LRC_NO_BUFFER_POSITION (-1)
 
-typedef struct NcmLrcEntry {
+typedef struct LrcEntry {
     int32 time_ms;
     int32 text_start;
     int32 text_len;
@@ -857,30 +857,30 @@ typedef struct NcmLrcEntry {
     int32 buffer_end;
     int32 source_order;
     int32 blank_lines_before;
-} NcmLrcEntry;
+} LrcEntry;
 
-typedef struct NcmLrcDocument {
+typedef struct LrcDocument {
     StrBuilder text;
-    NcmLrcEntry *entries;
+    LrcEntry *entries;
 
     int32 entries_len;
     int32 entries_cap;
     int32 offset_ms;
     bool has_offset;
-} NcmLrcDocument;
+} LrcDocument;
 
-typedef struct NcmLrcRenderTarget {
+typedef struct LrcRenderTarget {
     void *user;
     int32 (*position)(void *);
     void (*append)(void *, char *, int32);
-} NcmLrcRenderTarget;
+} LrcRenderTarget;
 
-void ncm_lrc_document_clear(NcmLrcDocument *);
-void ncm_lrc_document_destroy(NcmLrcDocument *);
-int32 ncm_lrc_parse(NcmLrcDocument *, char *, int32, NcmError *);
-int32 ncm_lrc_document_render_plain(NcmLrcDocument *, NcmLrcRenderTarget *);
-int32 ncm_lrc_document_entry_at_time(NcmLrcDocument *, int64);
-int32 ncm_lrc_document_next_entry_after_time(NcmLrcDocument *, int64);
+void ncm_lrc_document_clear(LrcDocument *);
+void ncm_lrc_document_destroy(LrcDocument *);
+int32 ncm_lrc_parse(LrcDocument *, char *, int32, NcmError *);
+int32 ncm_lrc_document_render_plain(LrcDocument *, LrcRenderTarget *);
+int32 ncm_lrc_document_entry_at_time(LrcDocument *, int64);
+int32 ncm_lrc_document_next_entry_after_time(LrcDocument *, int64);
 
 int32 ncm_run_external_command(char *, int32, bool, NcmError *);
 int32 ncm_run_external_console_command(char *, int32, NcmError *);

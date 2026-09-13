@@ -336,7 +336,7 @@ lyrics_screen_init(LyricsScreen *screen, int32 start_x, int32 width,
     screen->song = (NcmSong){0};
     screen->filename = (StrBuilder){0};
 
-    screen->lrc = (NcmLrcDocument){0};
+    screen->lrc = (LrcDocument){0};
     screen->result = (LyricsResult){0};
     ncm_job_queue_init(&screen->jobs);
     screen->foreground_job = NULL;
@@ -398,7 +398,7 @@ lyrics_screen_window(LyricsScreen *screen) {
 
 static bool
 lyrics_screen_update_sync_line_force(LyricsScreen *screen, bool force) {
-    NcmLrcEntry *entry;
+    LrcEntry *entry;
     int32 active_line;
 
     if (screen->mode != LYRICS_MODE_SYNCHRONIZED) {
@@ -670,7 +670,7 @@ lyrics_screen_load_file(LyricsScreen *screen,
     nc_scrollpad_reset(&screen->scrollpad);
     screen->active_lrc_line = LYRICS_NO_ACTIVE_LINE;
     if (lrc_file) {
-        NcmLrcRenderTarget target = {0};
+        LrcRenderTarget target = {0};
         status = ncm_lrc_parse(&screen->lrc, content, content_len, ncm_error);
         if (status < 0) {
             free2(content, content_len + 1);
@@ -1508,7 +1508,7 @@ lyrics_screen_filename(LyricsScreen *screen) {
     return &screen->filename;
 }
 
-NcmLrcDocument *
+LrcDocument *
 lyrics_screen_lrc(LyricsScreen *screen) {
     return &screen->lrc;
 }

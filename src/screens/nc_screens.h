@@ -728,7 +728,7 @@ typedef struct LyricsScreen {
     StrBuilder title;
     NcmSong song;
     StrBuilder filename;
-    NcmLrcDocument lrc;
+    LrcDocument lrc;
     LyricsResult result;
     NcmJobQueue jobs;
     LyricsJob *foreground_job;
@@ -793,7 +793,7 @@ LyricsFetcherDef *lyrics_screen_toggle_fetcher(LyricsScreen *,
 int32 lyrics_screen_try_take_consumer_message(LyricsScreen *, StrBuilder *);
 NcmSong *lyrics_screen_song(LyricsScreen *);
 StrBuilder *lyrics_screen_filename(LyricsScreen *);
-NcmLrcDocument *lyrics_screen_lrc(LyricsScreen *);
+LrcDocument *lyrics_screen_lrc(LyricsScreen *);
 int32 lyrics_buffer_find(NcBuffer *, char *, int32, NcmError *);
 void lyrics_buffer_clear_sync_highlight(NcBuffer *);
 void lyrics_buffer_highlight_sync_line(NcBuffer *, int32 start, int32 end);

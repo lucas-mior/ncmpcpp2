@@ -9,7 +9,7 @@
 #define NCM_LRC_MAX_LINE_TIMESTAMPS 64
 
 void
-ncm_lrc_document_clear(NcmLrcDocument *document) {
+ncm_lrc_document_clear(LrcDocument *document) {
     if (document == NULL) {
         return;
     }
@@ -22,15 +22,15 @@ ncm_lrc_document_clear(NcmLrcDocument *document) {
 }
 
 static void
-ncm_lrc_document_destroy_unchecked(NcmLrcDocument *document) {
+ncm_lrc_document_destroy_unchecked(LrcDocument *document) {
     sb_free(&document->text);
     free2(document->entries, document->entries_cap*SIZEOF(*document->entries));
-    *document = (NcmLrcDocument){0};
+    *document = (LrcDocument){0};
     return;
 }
 
 void
-ncm_lrc_document_destroy(NcmLrcDocument *document) {
+ncm_lrc_document_destroy(LrcDocument *document) {
     if (document == NULL) {
         return;
     }
@@ -96,8 +96,8 @@ ncm_lrc_parse_uint(char *data, int32 data_len, int64 *value) {
 
 static int
 ncm_lrc_entry_compare(void *left_ptr, void *right_ptr) {
-    NcmLrcEntry *left = left_ptr;
-    NcmLrcEntry *right = right_ptr;
+    LrcEntry *left = left_ptr;
+    LrcEntry *right = right_ptr;
 
     if (left->time_ms < right->time_ms) {
         return -1;
@@ -115,9 +115,9 @@ ncm_lrc_entry_compare(void *left_ptr, void *right_ptr) {
 }
 
 int32
-ncm_lrc_parse(NcmLrcDocument *document, char *data, int32 data_len,
+ncm_lrc_parse(LrcDocument *document, char *data, int32 data_len,
               NcmError *ncm_error) {
-    NcmLrcDocument parsed = {0};
+    LrcDocument parsed = {0};
     int32 source_order;
     int32 raw_line_len;
     int32 line_len;
@@ -424,7 +424,7 @@ ncm_lrc_parse(NcmLrcDocument *document, char *data, int32 data_len,
                 text = data + pos + cursor;
                 text_len = line_len - cursor;
                 for (int32 i = 0; i < times_len; i += 1) {
-                    NcmLrcEntry *entry;
+                    LrcEntry *entry;
 
                     if (parsed.entries_len >= parsed.entries_cap) {
                         int32 new_cap = parsed.entries_cap;
@@ -482,7 +482,7 @@ ncm_lrc_parse(NcmLrcDocument *document, char *data, int32 data_len,
 }
 
 static StrView
-ncm_lrc_entry_text_unchecked(NcmLrcDocument *document, NcmLrcEntry *entry) {
+ncm_lrc_entry_text_unchecked(LrcDocument *document, LrcEntry *entry) {
     StrView view;
 
     if (entry->text_len <= 0) {
@@ -495,7 +495,7 @@ ncm_lrc_entry_text_unchecked(NcmLrcDocument *document, NcmLrcEntry *entry) {
 }
 
 static void
-ncm_lrc_document_clear_buffer_positions(NcmLrcDocument *document) {
+ncm_lrc_document_clear_buffer_positions(LrcDocument *document) {
     ASSERT(document != NULL);
 
     for (int32 i = 0; i < document->entries_len; i += 1) {
@@ -507,8 +507,8 @@ ncm_lrc_document_clear_buffer_positions(NcmLrcDocument *document) {
 }
 
 int32
-ncm_lrc_document_render_plain(NcmLrcDocument *document,
-                              NcmLrcRenderTarget *target) {
+ncm_lrc_document_render_plain(LrcDocument *document,
+                              LrcRenderTarget *target) {
     char line_break[] = "\n";
 
     if ((document == NULL) || (target == NULL)) {
@@ -520,7 +520,7 @@ ncm_lrc_document_render_plain(NcmLrcDocument *document,
 
     ncm_lrc_document_clear_buffer_positions(document);
     for (int32 i = 0; i < document->entries_len; i += 1) {
-        NcmLrcEntry *entry = &document->entries[i];
+        LrcEntry *entry = &document->entries[i];
         StrView text;
 
         if (i > 0) {
@@ -541,7 +541,7 @@ ncm_lrc_document_render_plain(NcmLrcDocument *document,
 }
 
 static int32
-ncm_lrc_document_next_entry_after_time_unchecked(NcmLrcDocument *document,
+ncm_lrc_document_next_entry_after_time_unchecked(LrcDocument *document,
                                                  int64 elapsed_ms) {
     int32 left = 0;
     int32 right = document->entries_len;
@@ -563,7 +563,7 @@ ncm_lrc_document_next_entry_after_time_unchecked(NcmLrcDocument *document,
 }
 
 int32
-ncm_lrc_document_entry_at_time(NcmLrcDocument *document, int64 elapsed_ms) {
+ncm_lrc_document_entry_at_time(LrcDocument *document, int64 elapsed_ms) {
     int32 next;
 
     if ((document == NULL) || (document->entries_len <= 0)) {
@@ -583,7 +583,7 @@ ncm_lrc_document_entry_at_time(NcmLrcDocument *document, int64 elapsed_ms) {
 }
 
 int32
-ncm_lrc_document_next_entry_after_time(NcmLrcDocument *document,
+ncm_lrc_document_next_entry_after_time(LrcDocument *document,
                                        int64 elapsed_ms) {
     if ((document == NULL) || (document->entries_len <= 0)) {
         return -1;
