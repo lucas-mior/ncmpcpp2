@@ -43,16 +43,18 @@
 
 #define NCM_ARRAY_FUNCTION(SUFFIX) CAT(NCM_ARRAY_PREFIX, SUFFIX)
 
+#if !defined(NCM_ARRAY_ITEM_DESTROY)
+#define NCM_ARRAY_ITEM_DESTROY(A)
+#endif
+
 void
 NCM_ARRAY_FUNCTION(_clear)(NCM_ARRAY_TYPE *array) {
     if (array == NULL) {
         return;
     }
-#if defined(NCM_ARRAY_ITEM_DESTROY)
     for (int32 i = 0; i < array->len; i += 1) {
         NCM_ARRAY_ITEM_DESTROY(&array->items[i]);
     }
-#endif
     array->len = 0;
     return;
 }
@@ -202,10 +204,6 @@ NCM_ARRAY_FUNCTION(_append)(NCM_ARRAY_TYPE *array) {
     NCM_ARRAY_ITEM_INIT(item);
     return item;
 }
-
-#if !defined(NCM_ARRAY_ITEM_DESTROY)
-#define NCM_ARRAY_ITEM_DESTROY(A)
-#endif
 
 #if defined(NCM_ARRAY_APPEND_COPY)
 int32
