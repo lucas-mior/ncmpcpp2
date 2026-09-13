@@ -3134,8 +3134,9 @@ media_library_screen_list_tags(MediaLibraryScreen *screen,
 }
 
 int32
-media_library_screen_list_all_songs(
-    MediaLibraryScreen *screen, NcmSongArray *songs, NcmError *ncm_error) {
+media_library_screen_list_all_songs(MediaLibraryScreen *screen,
+                                    NcmSongArray *songs,
+                                    NcmError *ncm_error) {
     if ((screen == NULL) || (screen->hooks.list_all_songs == NULL)) {
         return ncm_error_set_status(ncm_error, -ENOSYS,
                                     STRLIT("song-list hook is unavailable"));
