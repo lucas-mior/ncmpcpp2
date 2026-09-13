@@ -2505,7 +2505,8 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
 
         nc_menu_clear_items(nc_editor_string_menu_base(menu));
         for (uint32 i = 0; i < TAG_COUNT; i += 1) {
-            tag_edit_append_string_row(menu, ncm_song_info_tags[i].name,
+            tag_edit_append_string_row(menu,
+                                       ncm_song_info_tags[i].name,
                                        ncm_song_info_tags[i].name_len,
                                        NC_MENU_ITEM_SELECTABLE);
         }
