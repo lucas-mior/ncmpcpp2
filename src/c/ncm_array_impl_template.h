@@ -46,6 +46,12 @@
 #if !defined(NCM_ARRAY_ITEM_DESTROY)
 #define NCM_ARRAY_ITEM_DESTROY(A)
 #endif
+#if !defined(NCM_ARRAY_ITEM_MOVE)
+#define NCM_ARRAY_ITEM_MOVE(A, B) *(A) = *(B)
+#endif
+#if !defined(NCM_ARRAY_ITEM_INIT)
+#define NCM_ARRAY_ITEM_INIT(A) *(A) = (NCM_ARRAY_ITEM_TYPE){0}
+#endif
 
 void
 NCM_ARRAY_FUNCTION(_clear)(NCM_ARRAY_TYPE *array) {
@@ -187,10 +193,6 @@ NCM_ARRAY_FUNCTION(_reserve)(NCM_ARRAY_TYPE *array, int32 extra) {
     return array->cap;
 }
 
-#if !defined(NCM_ARRAY_ITEM_INIT)
-#define NCM_ARRAY_ITEM_INIT(A) *(A) = (NCM_ARRAY_ITEM_TYPE){0}
-#endif
-
 NCM_ARRAY_ITEM_TYPE *
 NCM_ARRAY_FUNCTION(_append)(NCM_ARRAY_TYPE *array) {
     NCM_ARRAY_ITEM_TYPE *item;
@@ -234,10 +236,6 @@ NCM_ARRAY_FUNCTION(_append_copy)(NCM_ARRAY_TYPE *array,
 #endif
     return index;
 }
-#endif
-
-#if !defined(NCM_ARRAY_ITEM_MOVE)
-#define NCM_ARRAY_ITEM_MOVE(A, B) *(A) = *(B)
 #endif
 
 #if defined(NCM_ARRAY_APPEND_MOVE)
