@@ -739,7 +739,7 @@ bindings_bind_group(BindingsConfiguration *bindings,
     XX_GROUP("3", ACTION_SHOW_SEARCH_ENGINE, ACTION_RESET_SEARCH_ENGINE) \
     XX_GROUP("4", ACTION_SHOW_MEDIA_LIBRARY,                             \
              ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE)                   \
-    XX_SEQUENCE("5", ACTION_SHOW_PLAYLIST_EDITOR)                        \
+    XX_SEQUENCE("5", ACTION_SHOW_PLAYLIST_EDIT)                        \
     XX_SEQUENCE("6", ACTION_SHOW_TAG_EDIT)                               \
     XX_SEQUENCE("7", ACTION_SHOW_OUTPUTS)                                \
     XX_SEQUENCE("8", ACTION_SHOW_VISUALIZER)                             \
@@ -801,7 +801,7 @@ bindings_bind_group(BindingsConfiguration *bindings,
     XX_SEQUENCE("S", ACTION_SAVE_PLAYLIST)                               \
     XX_SEQUENCE("o", ACTION_JUMP_TO_PLAYING_SONG)                        \
     XX_GROUP("G", ACTION_JUMP_TO_BROWSER,                                \
-             ACTION_JUMP_TO_PLAYLIST_EDITOR)                             \
+             ACTION_JUMP_TO_PLAYLIST_EDIT)                             \
     XX_SEQUENCE("~", ACTION_JUMP_TO_MEDIA_LIBRARY)                       \
     XX_SEQUENCE("E", ACTION_JUMP_TO_TAG_EDIT)                            \
     XX_SEQUENCE("U", ACTION_TOGGLE_PLAYING_SONG_CENTERING)               \

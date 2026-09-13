@@ -81,7 +81,7 @@
     XX(ACTION_EDIT_LYRICS, edit_lyrics)                                     \
     XX(ACTION_JUMP_TO_BROWSER, jump_to_browser)                             \
     XX(ACTION_JUMP_TO_MEDIA_LIBRARY, jump_to_media_library)                 \
-    XX(ACTION_JUMP_TO_PLAYLIST_EDITOR, jump_to_playlist_edit)               \
+    XX(ACTION_JUMP_TO_PLAYLIST_EDIT, jump_to_playlist_edit)               \
     XX(ACTION_TOGGLE_SCREEN_LOCK, toggle_screen_lock)                       \
     XX(ACTION_JUMP_TO_TAG_EDIT, jump_to_tag_edit)                           \
     XX(ACTION_JUMP_TO_POSITION_IN_SONG, jump_to_position_in_song)           \
@@ -134,7 +134,7 @@
     XX(ACTION_SHOW_MEDIA_LIBRARY, show_media_library)                       \
     XX(ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE,                            \
        toggle_media_library_columns_mode)                                   \
-    XX(ACTION_SHOW_PLAYLIST_EDITOR, show_playlist_edit)                     \
+    XX(ACTION_SHOW_PLAYLIST_EDIT, show_playlist_edit)                     \
     XX(ACTION_SHOW_TAG_EDIT, show_tag_edit)                                 \
     XX(ACTION_SHOW_OUTPUTS, show_outputs)                                   \
     XX(ACTION_SHOW_VISUALIZER, show_visualizer)                             \

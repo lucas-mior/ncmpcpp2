@@ -1203,7 +1203,7 @@ help_render(void *user, NcBuffer *buffer) {
     append_help(buffer, ACTION_SHOW_BROWSER, "Show browser");
     append_help(buffer, ACTION_SHOW_SEARCH_ENGINE, "Show search engine");
     append_help(buffer, ACTION_SHOW_MEDIA_LIBRARY, "Show media library");
-    append_help(buffer, ACTION_SHOW_PLAYLIST_EDITOR,
+    append_help(buffer, ACTION_SHOW_PLAYLIST_EDIT,
                 "Show playlist editor");
     append_help(buffer, ACTION_SHOW_SERVER_INFO, "Show server info");
 #if defined(ENABLE_OUTPUTS)

@@ -33,8 +33,8 @@
   XX(OUTPUTS,              outputs,              STARTUP, outputs)
 #define SCREEN_TYPE_PLAYLIST_ENTRY(XX)                                         \
   XX(PLAYLIST,             playlist,             STARTUP, playlist)
-#define SCREEN_TYPE_PLAYLIST_EDITOR_ENTRY(XX)                                  \
-  XX(PLAYLIST_EDITOR,      playlist_edit,        STARTUP, playlist_edit)
+#define SCREEN_TYPE_PLAYLIST_EDIT_ENTRY(XX)                                  \
+  XX(PLAYLIST_EDIT,      playlist_edit,        STARTUP, playlist_edit)
 #define SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                                    \
   XX(SEARCH_ENGINE,        search_engine,        STARTUP, search_engine)
 #define SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)                               \
@@ -60,7 +60,7 @@
     SCREEN_TYPE_MEDIA_LIBRARY_ENTRY(XX)                           \
     SCREEN_TYPE_OUTPUTS_ENTRY(XX)                                 \
     SCREEN_TYPE_PLAYLIST_ENTRY(XX)                                \
-    SCREEN_TYPE_PLAYLIST_EDITOR_ENTRY(XX)                         \
+    SCREEN_TYPE_PLAYLIST_EDIT_ENTRY(XX)                         \
     SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                           \
     SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)                      \
     SCREEN_TYPE_SERVER_INFO_ENTRY(XX)                             \
@@ -100,7 +100,7 @@
     SCREEN_TYPE_MEDIA_LIBRARY_ENTRY(XX)            \
     SCREEN_ENABLED_OUTPUTS_TYPES(XX)               \
     SCREEN_TYPE_PLAYLIST_ENTRY(XX)                 \
-    SCREEN_TYPE_PLAYLIST_EDITOR_ENTRY(XX)          \
+    SCREEN_TYPE_PLAYLIST_EDIT_ENTRY(XX)          \
     SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)            \
     SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)       \
     SCREEN_TYPE_SERVER_INFO_ENTRY(XX)              \
@@ -295,7 +295,7 @@
     XX(lyrics, NC_SCREEN_TYPE_LYRICS)                             \
     XX(media_library, NC_SCREEN_TYPE_MEDIA_LIBRARY)               \
     XX(playlist, NC_SCREEN_TYPE_PLAYLIST)                         \
-    XX(playlist_edit, NC_SCREEN_TYPE_PLAYLIST_EDITOR)             \
+    XX(playlist_edit, NC_SCREEN_TYPE_PLAYLIST_EDIT)             \
     XX(search_engine, NC_SCREEN_TYPE_SEARCH_ENGINE)               \
     XX(selected_items_add, NC_SCREEN_TYPE_SELECTED_ITEMS_ADD) \
     XX(server_info, NC_SCREEN_TYPE_SERVER_INFO)                   \
@@ -1298,24 +1298,24 @@ int32 media_library_screen_locate_song(MediaLibraryScreen *, NcmSong *,
                                        NcmError *);
 
 #define ENUM_NAME PlaylistEditColumn
-#define ENUM_PREFIX_ PLAYLIST_EDITOR_COLUMN_
+#define ENUM_PREFIX_ PLAYLIST_EDIT_COLUMN_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(PLAYLIST_EDITOR_COLUMN_PLAYLISTS, Playlists)                            \
-    XX(PLAYLIST_EDITOR_COLUMN_CONTENT, Content)
+    XX(PLAYLIST_EDIT_COLUMN_PLAYLISTS, Playlists)                            \
+    XX(PLAYLIST_EDIT_COLUMN_CONTENT, Content)
 #include "cbase/xenums.c"
 
-#define PLAYLIST_EDITOR_FETCH_DELAY_MS 250
+#define PLAYLIST_EDIT_FETCH_DELAY_MS 250
 
 #define ENUM_NAME PlaylistEditCommandType
-#define ENUM_PREFIX_ PLAYLIST_EDITOR_COMMAND_
+#define ENUM_PREFIX_ PLAYLIST_EDIT_COMMAND_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                  \
-    XX(PLAYLIST_EDITOR_COMMAND_NONE, none)           \
-    XX(PLAYLIST_EDITOR_COMMAND_LOAD, Load)           \
-    XX(PLAYLIST_EDITOR_COMMAND_SAVE, Save)           \
-    XX(PLAYLIST_EDITOR_COMMAND_RENAME, Rename)       \
-    XX(PLAYLIST_EDITOR_COMMAND_DELETE, Delete)
+    XX(PLAYLIST_EDIT_COMMAND_NONE, none)           \
+    XX(PLAYLIST_EDIT_COMMAND_LOAD, Load)           \
+    XX(PLAYLIST_EDIT_COMMAND_SAVE, Save)           \
+    XX(PLAYLIST_EDIT_COMMAND_RENAME, Rename)       \
+    XX(PLAYLIST_EDIT_COMMAND_DELETE, Delete)
 #include "cbase/xenums.c"
 
 typedef struct PlaylistEditCommand {
