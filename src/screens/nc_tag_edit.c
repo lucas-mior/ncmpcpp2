@@ -829,8 +829,9 @@ tag_edit_find_recent_pattern(TagEditScreen *screen,
     if (pattern_len <= 0) {
         return -1;
     }
-    for (int32 i = 0; i < screen->recent_patterns.len; i += 1) {
-        StrBuilder *item = &screen->recent_patterns.items[i];
+    for (int32 i = 0; i < strflex_list_len(&screen->recent_patterns);
+         i += 1) {
+        StrFlex *item = screen->recent_patterns.items[i];
 
         if (STREQUAL(item->data, item->len, pattern, pattern_len)) {
             return i;
@@ -861,13 +862,13 @@ tag_edit_save_recent_patterns(TagEditScreen *screen) {
     int32 status;
 
     tag_edit_history_path(&path);
-    limit = screen->recent_patterns.len;
+    limit = strflex_list_len(&screen->recent_patterns);
     if (limit > TAG_EDIT_PATTERN_HISTORY_MAX) {
         limit = TAG_EDIT_PATTERN_HISTORY_MAX;
     }
 
     for (int32 i = 0; i < limit; i += 1) {
-        StrBuilder *pattern = &screen->recent_patterns.items[i];
+        StrFlex *pattern = screen->recent_patterns.items[i];
 
         if (pattern->len <= 0) {
             continue;
@@ -1279,32 +1280,29 @@ tag_edit_run_current(NcScreen *screen) {
                 return -NCM_ERROR_UNAVAILABLE;
             }
             if (success) {
-                StrBuilderArray replacement = {0};
-                StrBuilder first = {0};
                 int32 existing;
 
                 if (editor->pattern.len <= 0) {
                     return -NCM_ERROR_UNAVAILABLE;
                 }
 
-                sb_set(&first, editor->pattern.data, editor->pattern.len);
-                str_builder_array_append_copy(&replacement, &first);
-                sb_free(&first);
                 existing = tag_edit_find_recent_pattern(editor,
                                                         editor->pattern.data,
                                                         editor->pattern.len);
-                for (int32 i = 0; i < editor->recent_patterns.len; i += 1) {
-                    StrBuilder *pattern;
-                    if (i == existing) {
-                        continue;
-                    }
-
-                    pattern = &editor->recent_patterns.items[i];
-                    str_builder_array_append_copy(&replacement, pattern);
+                if (existing < 0) {
+                    strflex_list_push(&editor->recent_patterns,
+                                      editor->pattern.data,
+                                      editor->pattern.len);
+                    existing = strflex_list_len(&editor->recent_patterns) - 1;
                 }
-                str_builder_array_move(&editor->recent_patterns,
-                                       &replacement);
-                str_builder_array_destroy(&replacement);
+                if (existing > 0) {
+                    StrFlex *pattern = editor->recent_patterns.items[existing];
+
+                    memmove64(&editor->recent_patterns.items[1],
+                              &editor->recent_patterns.items[0],
+                              existing*SIZEOF(*editor->recent_patterns.items));
+                    editor->recent_patterns.items[0] = pattern;
+                }
                 tag_edit_screen_prepare_parser_menus(editor,
                                                     editor->parser_mode,
                                                     editor->pattern.data,
@@ -2419,7 +2417,7 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
     screen->parser_legend = (StrBuilder){0};
     screen->parser_preview = (StrBuilder){0};
 
-    screen->recent_patterns = (StrBuilderArray){0};
+    screen->recent_patterns = (StrFlexList){0};
 
     screen->directory_filter_constraint = (StrBuilder){0};
     screen->tag_filter_constraint = (StrBuilder){0};
@@ -2558,7 +2556,7 @@ tag_edit_screen_destroy(TagEditScreen *screen) {
     sb_free(&screen->tag_filter_constraint);
     sb_free(&screen->directory_filter_constraint);
 
-    str_builder_array_destroy(&screen->recent_patterns);
+    strflex_list_destroy(&screen->recent_patterns);
 
     sb_free(&screen->parser_preview);
     sb_free(&screen->parser_legend);
@@ -3868,13 +3866,15 @@ tag_edit_screen_prepare_parser_menus(TagEditScreen *screen,
     tag_edit_append_parser_action_label(screen, STRLIT("Proceed"));
     tag_edit_append_parser_action_label(screen, STRLIT("Cancel"));
 
-    if (screen->recent_patterns.len > 0) {
+    if (strflex_list_len(&screen->recent_patterns) > 0) {
         tag_edit_append_parser_separator(screen);
         tag_edit_append_parser_action_row(screen, STRLIT("Recent patterns"),
                                           NC_MENU_ITEM_INACTIVE);
         tag_edit_append_parser_separator(screen);
-        for (int32 i = 0; i < screen->recent_patterns.len; i += 1) {
-            StrBuilder *recent_pattern = &screen->recent_patterns.items[i];
+        for (int32 i = 0; i < strflex_list_len(&screen->recent_patterns);
+             i += 1) {
+            StrFlex *recent_pattern = screen->recent_patterns.items[i];
+
             tag_edit_append_parser_action_label(screen,
                                                 recent_pattern->data,
                                                 recent_pattern->len);
@@ -3940,11 +3940,8 @@ tag_edit_screen_show_parser_actions(TagEditScreen *screen,
                     && (tag_edit_find_recent_pattern(screen,
                                                      current_line, line_len)
                         < 0)) {
-                    StrBuilder *item;
-
-                    item = str_builder_array_append(&screen->recent_patterns);
-                    ASSERT(item != NULL);
-                    sb_set(item, current_line, line_len);
+                    strflex_list_push(&screen->recent_patterns,
+                                      current_line, line_len);
                 }
             }
         }
@@ -3954,8 +3951,10 @@ tag_edit_screen_show_parser_actions(TagEditScreen *screen,
             return;
         }
     }
-    if ((screen->pattern.len <= 0) && (screen->recent_patterns.len > 0)) {
-        StrBuilder *pattern = &screen->recent_patterns.items[0];
+    if ((screen->pattern.len <= 0)
+        && (strflex_list_len(&screen->recent_patterns) > 0)) {
+        StrFlex *pattern = screen->recent_patterns.items[0];
+
         tag_edit_set_pattern(screen, pattern->data, pattern->len);
     }
     tag_edit_screen_prepare_parser_menus(screen, mode,
