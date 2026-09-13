@@ -43,14 +43,14 @@
 
 #define NCM_ARRAY_FUNCTION(SUFFIX) CAT(NCM_ARRAY_PREFIX, SUFFIX)
 
+#if !defined(NCM_ARRAY_ITEM_INIT)
+#define NCM_ARRAY_ITEM_INIT(A) *(A) = (NCM_ARRAY_ITEM_TYPE){0}
+#endif
 #if !defined(NCM_ARRAY_ITEM_DESTROY)
 #define NCM_ARRAY_ITEM_DESTROY(A)
 #endif
 #if !defined(NCM_ARRAY_ITEM_MOVE)
 #define NCM_ARRAY_ITEM_MOVE(A, B) *(A) = *(B)
-#endif
-#if !defined(NCM_ARRAY_ITEM_INIT)
-#define NCM_ARRAY_ITEM_INIT(A) *(A) = (NCM_ARRAY_ITEM_TYPE){0}
 #endif
 
 void
