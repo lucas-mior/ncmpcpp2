@@ -20,7 +20,7 @@ typedef struct StrViewList {
 } StrViewList;
 
 typedef struct StrFlexList {
-    StrFlex *items;
+    StrFlex **items;
     Arena *arena;
 } StrFlexList;
 
