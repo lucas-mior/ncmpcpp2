@@ -3118,9 +3118,9 @@ library_move_to_album(MediaLibraryScreen *screen, char *tag, int32 tag_len,
 }
 
 int32
-media_library_screen_list_tags(
-    MediaLibraryScreen *screen, enum TagType tag_type,
-    StrFlexList *tags, NcmError *ncm_error) {
+media_library_screen_list_tags(MediaLibraryScreen *screen,
+                               enum TagType tag_type, StrFlexList *tags,
+                               NcmError *ncm_error) {
     if ((screen == NULL) || (screen->hooks.list_tags == NULL)) {
         return ncm_error_set_status(ncm_error, -ENOSYS,
                                     STRLIT("tag hook is unavailable"));
