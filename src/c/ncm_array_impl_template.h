@@ -212,19 +212,16 @@ int32
 NCM_ARRAY_FUNCTION(_append_copy)(NCM_ARRAY_TYPE *array,
                                  NCM_ARRAY_ITEM_TYPE *item) {
     NCM_ARRAY_ITEM_TYPE *dest;
-    uintptr item_address;
-    uintptr items_start;
-    uintptr items_end;
     int32 err;
     int32 index;
 
     if ((array == NULL) || (item == NULL)) {
         return -EINVAL;
     }
-    if (array->items != NULL) {
-        item_address = (uintptr)item;
-        items_start = (uintptr)array->items;
-        items_end = (uintptr)(array->items + array->cap);
+    if (DEBUGGING && array->items) {
+        uintptr item_address = (uintptr)item;
+        uintptr items_start = (uintptr)array->items;
+        uintptr items_end = (uintptr)(array->items + array->cap);
         ASSERT((item_address < items_start) || (item_address >= items_end));
     }
     if ((err = NCM_ARRAY_FUNCTION(_reserve)(array, 1)) < 0) {
@@ -254,17 +251,14 @@ void
 NCM_ARRAY_FUNCTION(_append_move)(NCM_ARRAY_TYPE *array,
                                  NCM_ARRAY_ITEM_TYPE *item) {
     NCM_ARRAY_ITEM_TYPE *dest;
-    uintptr item_address;
-    uintptr items_start;
-    uintptr items_end;
 
     if ((array == NULL) || (item == NULL)) {
         return;
     }
-    if (array->items != NULL) {
-        item_address = (uintptr)item;
-        items_start = (uintptr)array->items;
-        items_end = (uintptr)(array->items + array->cap);
+    if (DEBUGGING && array->items) {
+        uintptr item_address = (uintptr)item;
+        uintptr items_start = (uintptr)array->items;
+        uintptr items_end = (uintptr)(array->items + array->cap);
         ASSERT((item_address < items_start) || (item_address >= items_end));
     }
     dest = NCM_ARRAY_FUNCTION(_append)(array);
