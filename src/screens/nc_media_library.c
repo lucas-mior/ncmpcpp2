@@ -337,13 +337,13 @@ library_update_titles(MediaLibraryScreen *screen, bool update_windows) {
     sb_clear(&screen->albums_title);
 
     if (Config.titles_visibility) {
-        char *tag_type_name;
-        int32 tag_type_name_len;
+        char *tag_type;
+        int32 tag_type_len;
 
-        tag_type_name_len = ncm_tag_type_name_len(
-            Config.media_library_primary_tag, &tag_type_name);
+        tag_type_len = ncm_tag_type_name_len(Config.media_library_primary_tag,
+                                             &tag_type);
 
-        SB_APPEND(&screen->tags_title, tag_type_name, tag_type_name_len);
+        SB_APPEND(&screen->tags_title, tag_type, tag_type_len);
         sb_append_byte(&screen->tags_title, 's');
         SB_APPEND(&screen->albums_title, "Albums");
         songs_title = "Songs";
@@ -351,8 +351,8 @@ library_update_titles(MediaLibraryScreen *screen, bool update_windows) {
 
         if (screen->mode == MEDIA_LIBRARY_MODE_TWO_COLUMNS) {
             SB_APPEND(&screen->albums_title, " (sorted by ");
-            for (int32 i = 0; i < tag_type_name_len; i += 1) {
-                char ch = tag_type_name[i];
+            for (int32 i = 0; i < tag_type_len; i += 1) {
+                char ch = tag_type[i];
 
                 if ((ch >= 'A') && (ch <= 'Z')) {
                     ch = (char)(ch - 'A' + 'a');
