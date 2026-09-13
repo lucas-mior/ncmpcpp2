@@ -628,6 +628,8 @@ NCM_ARRAY_DECLARE_RESERVE(ncm_directory_array, NcmDirectoryArray)
 NCM_ARRAY_DECLARE_APPEND(ncm_directory_array, NcmDirectoryArray, NcmDirectory)
 NCM_ARRAY_DECLARE_APPEND_COPY(ncm_directory_array,
                               NcmDirectoryArray, NcmDirectory)
+NCM_ARRAY_DECLARE_APPEND_MOVE(ncm_directory_array,
+                              NcmDirectoryArray, NcmDirectory)
 
 NCM_ARRAY_DECLARE_TYPE(NcmPlaylistArray, NcmPlaylist)
 NCM_ARRAY_DECLARE_CLEAR(ncm_playlist_array, NcmPlaylistArray)
