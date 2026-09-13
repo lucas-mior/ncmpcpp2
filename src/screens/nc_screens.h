@@ -109,21 +109,17 @@
     SCREEN_ENABLED_TAG_EDIT_TYPES(XX)              \
     SCREEN_ENABLED_VISUALIZER_TYPES(XX)
 
-#define SCREEN_NC_TYPE_ENUM_FIELD(                       \
-    screen_type, alias, flag, suffix                     \
-)                                                        \
+#define SCREEN_NC_TYPE_ENUM_FIELD(screen_type, alias, flag, suffix) \
     SCREEN_TYPE_NC_TYPE(screen_type),
 
-#define SCREEN_TYPE_XENUM_FIELD(                         \
-    screen_type, alias, flag, suffix                     \
-)                                                        \
+#define SCREEN_TYPE_XENUM_FIELD(screen_type, alias, flag, suffix)   \
     XX(SCREEN_TYPE_TYPE(screen_type), alias)
 
-#define SCREEN_TYPE_ENUM_FIELDS                        \
+#define SCREEN_TYPE_ENUM_FIELDS                                     \
     SCREEN_TYPES(SCREEN_TYPE_XENUM_FIELD)
 
 
-#define APP_SCREEN_DIRECT_STORAGE_TYPES(XX)                \
+#define APP_SCREEN_DIRECT_STORAGE_TYPES(XX)                    \
     XX(BrowserScreen, browser_screen)                          \
     XX(LastfmScreen, lastfm_screen)                            \
     XX(LyricsScreen, lyrics_screen)                            \
