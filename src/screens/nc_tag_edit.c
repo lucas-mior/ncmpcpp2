@@ -2470,6 +2470,7 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
                    screen->parser_helper_title.data,
                    screen->parser_helper_title.len,
                    color, Config.window_border_color);
+
     nc_scrollpad_init(&screen->parser_helper_scrollpad,
                       nc_window_height(&screen->parser_helper_window));
 
