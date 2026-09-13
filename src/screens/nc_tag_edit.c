@@ -2500,6 +2500,8 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
     tag_edit_screen_set_current_dir(screen, STRLIT("/"));
     {
         NcEditorStringMenu *menu = &screen->tag_types;
+        char *label;
+        int32 label_len;
 
         nc_menu_clear_items(nc_editor_string_menu_base(menu));
         for (uint32 i = 0; i < TAG_COUNT; i += 1) {
@@ -2509,8 +2511,6 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
         }
         nc_editor_string_menu_add_separator(menu);
         {
-            char *label;
-            int32 label_len;
 
             label_len = SONG_GETTER_alias_len(SONG_GETTER_NAME, &label);
             tag_edit_append_string_row(menu, label, label_len,
@@ -2522,33 +2522,26 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
                                        NC_MENU_ITEM_INACTIVE);
             nc_editor_string_menu_add_separator(menu);
         }
-        {
-            char *label;
-            int32 label_len;
 
-            label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(
-                TAG_EDIT_TAG_TYPE_ACTION_CAPITALIZE, &label);
-            tag_edit_append_string_row(menu, label, label_len,
-                                       NC_MENU_ITEM_SELECTABLE);
-            label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(
-                TAG_EDIT_TAG_TYPE_ACTION_LOWER, &label);
-            tag_edit_append_string_row(menu, label, label_len,
-                                       NC_MENU_ITEM_SELECTABLE);
-        }
+        label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(
+            TAG_EDIT_TAG_TYPE_ACTION_CAPITALIZE, &label);
+        tag_edit_append_string_row(menu, label, label_len,
+                                   NC_MENU_ITEM_SELECTABLE);
+        label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(
+            TAG_EDIT_TAG_TYPE_ACTION_LOWER, &label);
+        tag_edit_append_string_row(menu, label, label_len,
+                                   NC_MENU_ITEM_SELECTABLE);
+
         nc_editor_string_menu_add_separator(menu);
-        {
-            char *label;
-            int32 label_len;
 
-            label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(
-                TAG_EDIT_TAG_TYPE_ACTION_RESET, &label);
-            tag_edit_append_string_row(menu, label, label_len,
-                                       NC_MENU_ITEM_SELECTABLE);
-            label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(
-                TAG_EDIT_TAG_TYPE_ACTION_SAVE, &label);
-            tag_edit_append_string_row(menu, label, label_len,
-                                       NC_MENU_ITEM_SELECTABLE);
-        }
+        label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(
+            TAG_EDIT_TAG_TYPE_ACTION_RESET, &label);
+        tag_edit_append_string_row(menu, label, label_len,
+                                   NC_MENU_ITEM_SELECTABLE);
+        label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(
+            TAG_EDIT_TAG_TYPE_ACTION_SAVE, &label);
+        tag_edit_append_string_row(menu, label, label_len,
+                                   NC_MENU_ITEM_SELECTABLE);
     }
     tag_edit_layout(screen);
     tag_edit_configure_menus(screen);
