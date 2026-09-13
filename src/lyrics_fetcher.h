@@ -45,12 +45,10 @@ typedef struct LyricsFetcherDef {
     bool enabled;
 } LyricsFetcherDef;
 
-NCM_ARRAY_DECLARE_TYPE(LyricsFetcherArray, LyricsFetcherDef)
-NCM_ARRAY_DECLARE_CLEAR(ncm_lyrics_fetcher_array, LyricsFetcherArray)
-NCM_ARRAY_DECLARE_DESTROY(ncm_lyrics_fetcher_array, LyricsFetcherArray)
-NCM_ARRAY_DECLARE_RESERVE(ncm_lyrics_fetcher_array, LyricsFetcherArray)
-NCM_ARRAY_DECLARE_APPEND(ncm_lyrics_fetcher_array, LyricsFetcherArray,
-                         LyricsFetcherDef)
+#define NCM_ARRAY_TYPE LyricsFetcherArray
+#define NCM_ARRAY_ITEM_TYPE LyricsFetcherDef
+#define NCM_ARRAY_PREFIX ncm_lyrics_fetcher_array
+#include "c/ncm_array_decl_template.h"
 
 typedef struct LyricsFetcherRegistry {
     LyricsFetcherArray fetchers;

@@ -776,12 +776,6 @@ static NcScreenOps library_callbacks = {
 };
 
 static void
-library_tag_array_item_destroy(void *item) {
-    nc_media_library_tag_row_destroy(item);
-    return;
-}
-
-static void
 library_album_array_item_init(void *item) {
     MediaLibraryAlbumItem *album = item;
 
@@ -801,38 +795,22 @@ library_album_array_item_destroy(void *item) {
     return;
 }
 
-static NcmArrayItemCallbacks library_tag_array_callbacks = {
-    .destroy = library_tag_array_item_destroy,
-};
+#define NCM_ARRAY_TYPE MediaLibraryTagArray
+#define NCM_ARRAY_ITEM_TYPE NcMediaLibraryTagRow
+#define NCM_ARRAY_PREFIX media_library_tag_array
+#define NCM_ARRAY_ITEM_DESTROY nc_media_library_tag_row_destroy
+#define NCM_ARRAY_MOVE
+#define NCM_ARRAY_REMOVE_ORDERED
+#include "c/ncm_array_impl_template.h"
 
-static NcmArrayItemCallbacks library_album_array_callbacks = {
-    .init = library_album_array_item_init,
-    .destroy = library_album_array_item_destroy,
-};
-
-NCM_ARRAY_DEFINE_CLEAR(media_library_tag_array,
-                       MediaLibraryTagArray, &library_tag_array_callbacks)
-NCM_ARRAY_DEFINE_DESTROY(media_library_tag_array, MediaLibraryTagArray)
-NCM_ARRAY_DEFINE_MOVE(media_library_tag_array, MediaLibraryTagArray)
-NCM_ARRAY_DEFINE_RESERVE(media_library_tag_array, MediaLibraryTagArray)
-NCM_ARRAY_DEFINE_APPEND(media_library_tag_array,
-                        MediaLibraryTagArray, NcMediaLibraryTagRow,
-                        &library_tag_array_callbacks)
-NCM_ARRAY_DEFINE_REMOVE_ORDERED(media_library_tag_array,
-                                MediaLibraryTagArray,
-                                &library_tag_array_callbacks)
-
-NCM_ARRAY_DEFINE_CLEAR(media_library_album_array,
-                       MediaLibraryAlbumArray, &library_album_array_callbacks)
-NCM_ARRAY_DEFINE_DESTROY(media_library_album_array, MediaLibraryAlbumArray)
-NCM_ARRAY_DEFINE_MOVE(media_library_album_array, MediaLibraryAlbumArray)
-NCM_ARRAY_DEFINE_RESERVE(media_library_album_array, MediaLibraryAlbumArray)
-NCM_ARRAY_DEFINE_APPEND(media_library_album_array,
-                        MediaLibraryAlbumArray, MediaLibraryAlbumItem,
-                        &library_album_array_callbacks)
-NCM_ARRAY_DEFINE_REMOVE_ORDERED(media_library_album_array,
-                                MediaLibraryAlbumArray,
-                                &library_album_array_callbacks)
+#define NCM_ARRAY_TYPE MediaLibraryAlbumArray
+#define NCM_ARRAY_ITEM_TYPE MediaLibraryAlbumItem
+#define NCM_ARRAY_PREFIX media_library_album_array
+#define NCM_ARRAY_ITEM_INIT library_album_array_item_init
+#define NCM_ARRAY_ITEM_DESTROY library_album_array_item_destroy
+#define NCM_ARRAY_MOVE
+#define NCM_ARRAY_REMOVE_ORDERED
+#include "c/ncm_array_impl_template.h"
 
 static int32
 library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,

@@ -25,30 +25,25 @@ typedef struct Column {
     bool display_empty_tag;
 } Column;
 
-typedef struct ColumnArray {
-    Column *items;
-    int32 len;
-    int32 cap;
-} ColumnArray;
+#define NCM_ARRAY_TYPE ColumnArray
+#define NCM_ARRAY_ITEM_TYPE Column
+#define NCM_ARRAY_PREFIX column_array
+#include "c/ncm_array_decl_template.h"
 
-NCM_ARRAY_DECLARE_TYPE(ScreenTypeArray, enum ScreenType)
-NCM_ARRAY_DECLARE_CLEAR(screen_type_array, ScreenTypeArray)
-NCM_ARRAY_DECLARE_DESTROY(screen_type_array, ScreenTypeArray)
-NCM_ARRAY_DECLARE_RESERVE(screen_type_array, ScreenTypeArray)
-NCM_ARRAY_DECLARE_APPEND(screen_type_array, ScreenTypeArray, enum ScreenType)
+#define NCM_ARRAY_TYPE ScreenTypeArray
+#define NCM_ARRAY_ITEM_TYPE enum ScreenType
+#define NCM_ARRAY_PREFIX screen_type_array
+#include "c/ncm_array_decl_template.h"
 
-NCM_ARRAY_DECLARE_TYPE(NcmInt32Array, int32)
-NCM_ARRAY_DECLARE_CLEAR(ncm_int32_array, NcmInt32Array)
-NCM_ARRAY_DECLARE_DESTROY(ncm_int32_array, NcmInt32Array)
-NCM_ARRAY_DECLARE_RESERVE(ncm_int32_array, NcmInt32Array)
-NCM_ARRAY_DECLARE_APPEND(ncm_int32_array, NcmInt32Array, int32)
+#define NCM_ARRAY_TYPE NcmInt32Array
+#define NCM_ARRAY_ITEM_TYPE int32
+#define NCM_ARRAY_PREFIX ncm_int32_array
+#include "c/ncm_array_decl_template.h"
 
-NCM_ARRAY_DECLARE_TYPE(NcmFormattedColorArray, NcFormattedColor)
-NCM_ARRAY_DECLARE_CLEAR(ncm_formatted_color_array, NcmFormattedColorArray)
-NCM_ARRAY_DECLARE_DESTROY(ncm_formatted_color_array, NcmFormattedColorArray)
-NCM_ARRAY_DECLARE_RESERVE(ncm_formatted_color_array, NcmFormattedColorArray)
-NCM_ARRAY_DECLARE_APPEND(ncm_formatted_color_array, NcmFormattedColorArray,
-                         NcFormattedColor)
+#define NCM_ARRAY_TYPE NcmFormattedColorArray
+#define NCM_ARRAY_ITEM_TYPE NcFormattedColor
+#define NCM_ARRAY_PREFIX ncm_formatted_color_array
+#include "c/ncm_array_decl_template.h"
 
 #define ENUM_NAME DefaultSearchSource
 #define ENUM_PREFIX_ NCM_DEFAULT_SEARCH_SOURCE_

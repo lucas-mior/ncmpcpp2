@@ -19,8 +19,6 @@
 static LyricsCurlPerformFn *lyrics_test_perform;
 static void *lyrics_test_user;
 
-static NcmArrayItemCallbacks lyrics_fetcher_callbacks;
-
 typedef enum LyricsSlugProfile {
     LYRICS_SLUG_PROFILE_NONE,
     LYRICS_SLUG_PROFILE_COMPACT_FOLDED,
@@ -63,23 +61,11 @@ lyrics_fetcher_def_destroy(LyricsFetcherDef *fetcher) {
     return;
 }
 
-static void
-lyrics_fetcher_array_destroy_item(void *item) {
-    ASSERT(item != NULL);
-    lyrics_fetcher_def_destroy(item);
-    return;
-}
-
-static NcmArrayItemCallbacks lyrics_fetcher_callbacks = {
-    .destroy = lyrics_fetcher_array_destroy_item,
-};
-
-NCM_ARRAY_DEFINE_CLEAR(ncm_lyrics_fetcher_array, LyricsFetcherArray,
-                       &lyrics_fetcher_callbacks)
-NCM_ARRAY_DEFINE_DESTROY(ncm_lyrics_fetcher_array, LyricsFetcherArray)
-NCM_ARRAY_DEFINE_RESERVE(ncm_lyrics_fetcher_array, LyricsFetcherArray)
-NCM_ARRAY_DEFINE_APPEND(ncm_lyrics_fetcher_array, LyricsFetcherArray,
-                        LyricsFetcherDef, &lyrics_fetcher_callbacks)
+#define NCM_ARRAY_TYPE LyricsFetcherArray
+#define NCM_ARRAY_ITEM_TYPE LyricsFetcherDef
+#define NCM_ARRAY_PREFIX ncm_lyrics_fetcher_array
+#define NCM_ARRAY_ITEM_DESTROY lyrics_fetcher_def_destroy
+#include "c/ncm_array_impl_template.h"
 
 static LyricsProviderProfile lyrics_provider_profiles[] = {
     [LYRICS_FETCHER_AMALGAMA] = {

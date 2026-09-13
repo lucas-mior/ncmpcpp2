@@ -54,44 +54,30 @@ settings_column_array_destroy_item(void *item) {
     return;
 }
 
-static NcmArrayItemCallbacks settings_screen_type_callbacks = {
-    .init = settings_screen_type_array_init_item,
-};
+#define NCM_ARRAY_TYPE ScreenTypeArray
+#define NCM_ARRAY_ITEM_TYPE enum ScreenType
+#define NCM_ARRAY_PREFIX screen_type_array
+#define NCM_ARRAY_ITEM_INIT settings_screen_type_array_init_item
+#include "c/ncm_array_impl_template.h"
 
-static NcmArrayItemCallbacks settings_formatted_color_callbacks = {
-    .init = settings_formatted_color_array_init_item,
-    .destroy = settings_formatted_color_array_destroy_item,
-};
+#define NCM_ARRAY_TYPE NcmInt32Array
+#define NCM_ARRAY_ITEM_TYPE int32
+#define NCM_ARRAY_PREFIX ncm_int32_array
+#include "c/ncm_array_impl_template.h"
 
-static NcmArrayItemCallbacks settings_column_callbacks = {
-    .init = settings_column_array_init_item,
-    .destroy = settings_column_array_destroy_item,
-};
+#define NCM_ARRAY_TYPE NcmFormattedColorArray
+#define NCM_ARRAY_ITEM_TYPE NcFormattedColor
+#define NCM_ARRAY_PREFIX ncm_formatted_color_array
+#define NCM_ARRAY_ITEM_INIT settings_formatted_color_array_init_item
+#define NCM_ARRAY_ITEM_DESTROY settings_formatted_color_array_destroy_item
+#include "c/ncm_array_impl_template.h"
 
-NCM_ARRAY_DEFINE_CLEAR(screen_type_array, ScreenTypeArray,
-                       &settings_screen_type_callbacks)
-NCM_ARRAY_DEFINE_DESTROY(screen_type_array, ScreenTypeArray)
-NCM_ARRAY_DEFINE_RESERVE(screen_type_array, ScreenTypeArray)
-NCM_ARRAY_DEFINE_APPEND(screen_type_array, ScreenTypeArray, enum ScreenType,
-                        &settings_screen_type_callbacks)
-
-NCM_ARRAY_DEFINE_CLEAR(ncm_int32_array, NcmInt32Array, NULL)
-NCM_ARRAY_DEFINE_DESTROY(ncm_int32_array, NcmInt32Array)
-NCM_ARRAY_DEFINE_RESERVE(ncm_int32_array, NcmInt32Array)
-NCM_ARRAY_DEFINE_APPEND(ncm_int32_array, NcmInt32Array, int32, NULL)
-
-NCM_ARRAY_DEFINE_CLEAR(ncm_formatted_color_array, NcmFormattedColorArray,
-                       &settings_formatted_color_callbacks)
-NCM_ARRAY_DEFINE_DESTROY(ncm_formatted_color_array, NcmFormattedColorArray)
-NCM_ARRAY_DEFINE_RESERVE(ncm_formatted_color_array, NcmFormattedColorArray)
-NCM_ARRAY_DEFINE_APPEND(ncm_formatted_color_array, NcmFormattedColorArray,
-                        NcFormattedColor, &settings_formatted_color_callbacks)
-
-NCM_ARRAY_DEFINE_CLEAR(column_array, ColumnArray, &settings_column_callbacks)
-NCM_ARRAY_DEFINE_DESTROY(column_array, ColumnArray)
-NCM_ARRAY_DEFINE_RESERVE(column_array, ColumnArray)
-NCM_ARRAY_DEFINE_APPEND(column_array, ColumnArray, Column,
-                        &settings_column_callbacks)
+#define NCM_ARRAY_TYPE ColumnArray
+#define NCM_ARRAY_ITEM_TYPE Column
+#define NCM_ARRAY_PREFIX column_array
+#define NCM_ARRAY_ITEM_INIT settings_column_array_init_item
+#define NCM_ARRAY_ITEM_DESTROY settings_column_array_destroy_item
+#include "c/ncm_array_impl_template.h"
 
 static void
 config_init_unchecked(Configuration *config) {

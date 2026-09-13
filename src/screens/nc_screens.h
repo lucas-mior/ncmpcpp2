@@ -1119,28 +1119,19 @@ typedef struct MediaLibraryAlbumItem {
     uint32 menu_flags;
 } MediaLibraryAlbumItem;
 
-NCM_ARRAY_DECLARE_TYPE(MediaLibraryTagArray, NcMediaLibraryTagRow)
-NCM_ARRAY_DECLARE_CLEAR(media_library_tag_array, MediaLibraryTagArray)
-NCM_ARRAY_DECLARE_DESTROY(media_library_tag_array, MediaLibraryTagArray)
-NCM_ARRAY_DECLARE_MOVE(media_library_tag_array, MediaLibraryTagArray)
-NCM_ARRAY_DECLARE_RESERVE(media_library_tag_array, MediaLibraryTagArray)
+#define NCM_ARRAY_TYPE MediaLibraryTagArray
+#define NCM_ARRAY_ITEM_TYPE NcMediaLibraryTagRow
+#define NCM_ARRAY_PREFIX media_library_tag_array
+#define NCM_ARRAY_MOVE
+#define NCM_ARRAY_REMOVE_ORDERED
+#include "c/ncm_array_decl_template.h"
 
-NCM_ARRAY_DECLARE_APPEND(media_library_tag_array, MediaLibraryTagArray,
-                         NcMediaLibraryTagRow)
-
-NCM_ARRAY_DECLARE_REMOVE_ORDERED(media_library_tag_array, MediaLibraryTagArray)
-
-NCM_ARRAY_DECLARE_TYPE(MediaLibraryAlbumArray, MediaLibraryAlbumItem)
-NCM_ARRAY_DECLARE_CLEAR(media_library_album_array, MediaLibraryAlbumArray)
-NCM_ARRAY_DECLARE_DESTROY(media_library_album_array, MediaLibraryAlbumArray)
-NCM_ARRAY_DECLARE_MOVE(media_library_album_array, MediaLibraryAlbumArray)
-NCM_ARRAY_DECLARE_RESERVE(media_library_album_array, MediaLibraryAlbumArray)
-
-NCM_ARRAY_DECLARE_APPEND(media_library_album_array, MediaLibraryAlbumArray,
-                         MediaLibraryAlbumItem)
-
-NCM_ARRAY_DECLARE_REMOVE_ORDERED(media_library_album_array,
-                                 MediaLibraryAlbumArray)
+#define NCM_ARRAY_TYPE MediaLibraryAlbumArray
+#define NCM_ARRAY_ITEM_TYPE MediaLibraryAlbumItem
+#define NCM_ARRAY_PREFIX media_library_album_array
+#define NCM_ARRAY_MOVE
+#define NCM_ARRAY_REMOVE_ORDERED
+#include "c/ncm_array_decl_template.h"
 
 typedef struct MediaLibrarySongQuery {
     char *grouping_value;
