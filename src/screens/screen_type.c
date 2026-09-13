@@ -49,10 +49,10 @@ bool
 screen_type_is_startup(enum ScreenType screen_type) {
     switch (screen_type) {
     #define SCREEN_STARTUP_CASE(                          \
-        screen_type_value, alias, flags, suffix           \
+        screen_type_value, alias, flag, suffix            \
     )                                                     \
         case SCREEN_TYPE_TYPE(screen_type_value):         \
-            return (flags & SCREEN_FLAG_STARTUP) != 0;
+            return (SCREEN_TYPE_FLAG(flag) & SCREEN_FLAG_STARTUP) != 0;
 
     SCREEN_TYPES(SCREEN_STARTUP_CASE)
 

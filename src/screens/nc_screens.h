@@ -17,41 +17,42 @@
 
 #define SCREEN_TYPE_TYPE(screen_type) CAT(SCREEN_TYPE_, screen_type)
 #define SCREEN_TYPE_NC_TYPE(screen_type) CAT(NC_SCREEN_TYPE_, screen_type)
+#define SCREEN_TYPE_FLAG(flag) CAT(SCREEN_FLAG_, flag)
 
 #define SCREEN_TYPE_BROWSER_ENTRY(XX)                                      \
-    XX(BROWSER, browser, SCREEN_FLAG_STARTUP, browser)
+    XX(BROWSER, browser, STARTUP, browser)
 #define SCREEN_TYPE_HELP_ENTRY(XX)                                         \
-    XX(HELP, help, SCREEN_FLAG_STARTUP, help)
+    XX(HELP, help, STARTUP, help)
 #define SCREEN_TYPE_LASTFM_ENTRY(XX)                                       \
-    XX(LASTFM, last_fm, SCREEN_FLAG_STARTUP, lastfm)
+    XX(LASTFM, last_fm, STARTUP, lastfm)
 #define SCREEN_TYPE_LYRICS_ENTRY(XX)                                       \
-    XX(LYRICS, lyrics, SCREEN_FLAG_STARTUP, lyrics)
+    XX(LYRICS, lyrics, STARTUP, lyrics)
 #define SCREEN_TYPE_MEDIA_LIBRARY_ENTRY(XX)                                \
-    XX(MEDIA_LIBRARY, media_library, SCREEN_FLAG_STARTUP, media_library)
+    XX(MEDIA_LIBRARY, media_library, STARTUP, media_library)
 #define SCREEN_TYPE_OUTPUTS_ENTRY(XX)                                      \
-    XX(OUTPUTS, outputs, SCREEN_FLAG_STARTUP, outputs)
+    XX(OUTPUTS, outputs, STARTUP, outputs)
 #define SCREEN_TYPE_PLAYLIST_ENTRY(XX)                                     \
-    XX(PLAYLIST, playlist, SCREEN_FLAG_STARTUP, playlist)
+    XX(PLAYLIST, playlist, STARTUP, playlist)
 #define SCREEN_TYPE_PLAYLIST_EDITOR_ENTRY(XX)                              \
-    XX(PLAYLIST_EDITOR, playlist_edit, SCREEN_FLAG_STARTUP, playlist_edit)
+    XX(PLAYLIST_EDITOR, playlist_edit, STARTUP, playlist_edit)
 #define SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                                \
-    XX(SEARCH_ENGINE, search_engine, SCREEN_FLAG_STARTUP, search_engine)
+    XX(SEARCH_ENGINE, search_engine, STARTUP, search_engine)
 #define SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)                         \
     XX(SELECTED_ITEMS_ADD, selected_items_add,                         \
-      SCREEN_FLAG_NONE, selected_items_add)
+      NONE, selected_items_add)
 #define SCREEN_TYPE_SERVER_INFO_ENTRY(XX)                                  \
-    XX(SERVER_INFO, server_info, SCREEN_FLAG_NONE, server_info)
+    XX(SERVER_INFO, server_info, NONE, server_info)
 #define SCREEN_TYPE_SONG_INFO_ENTRY(XX)                                    \
-    XX(SONG_INFO, song_info, SCREEN_FLAG_NONE, song_info)
+    XX(SONG_INFO, song_info, NONE, song_info)
 #define SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)                         \
     XX(SORT_PLAYLIST_DIALOG, sort_playlist_dialog,                         \
-      SCREEN_FLAG_NONE, sort_playlist_dialog)
+      NONE, sort_playlist_dialog)
 #define SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                     \
-    XX(TAG_EDIT, tag_edit, SCREEN_FLAG_STARTUP, tag_edit)
+    XX(TAG_EDIT, tag_edit, STARTUP, tag_edit)
 #define SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)                                \
-    XX(TINY_TAG_EDIT, tiny_tag_edit, SCREEN_FLAG_NONE, tiny_tag_edit)
+    XX(TINY_TAG_EDIT, tiny_tag_edit, NONE, tiny_tag_edit)
 #define SCREEN_TYPE_VISUALIZER_ENTRY(XX)                                   \
-    XX(VISUALIZER, visualizer, SCREEN_FLAG_STARTUP, visualizer)
+    XX(VISUALIZER, visualizer, STARTUP, visualizer)
 
 #define SCREEN_ALL_TYPES(XX)                                               \
     SCREEN_TYPE_BROWSER_ENTRY(XX)                                          \
@@ -111,12 +112,12 @@
     SCREEN_ENABLED_VISUALIZER_TYPES(XX)
 
 #define SCREEN_NC_TYPE_ENUM_FIELD(                       \
-    screen_type, alias, flags, suffix                    \
+    screen_type, alias, flag, suffix                     \
 )                                                        \
     SCREEN_TYPE_NC_TYPE(screen_type),
 
 #define SCREEN_TYPE_XENUM_FIELD(                         \
-    screen_type, alias, flags, suffix                    \
+    screen_type, alias, flag, suffix                     \
 )                                                        \
     XX(SCREEN_TYPE_TYPE(screen_type), alias)
 
