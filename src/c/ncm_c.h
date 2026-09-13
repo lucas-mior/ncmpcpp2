@@ -8,11 +8,6 @@
 
 #include <regex.h>
 
-typedef struct StringView {
-    char *data;
-    int32 len;
-} StringView;
-
 typedef struct NcmError {
     char message[256];
     int32 message_len;
@@ -758,11 +753,6 @@ typedef struct NcmMpdItemList {
     int32 count;
     int32 capacity;
 } NcmMpdItemList;
-
-typedef struct StringViewList {
-    StringView *items;
-    Arena *arena;
-} StringViewList;
 
 typedef struct NcmMpdOutput {
     int32 id;

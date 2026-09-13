@@ -148,23 +148,6 @@ ncm_mpd_song_list_push(NcmMpdSongList *list, NcmSong *song) {
     return index;
 }
 
-static void
-ncm_mpd_string_list_push(StringViewList *list, char *value) {
-    StringView string;
-    int32 value_len;
-
-    if (list->arena == NULL) {
-        list->arena = arena_create(SIZEMB(2), "mpd_string_list");
-    }
-
-    value_len = optional_strlen32(value);
-    string.data = xarena_push(list->arena, value_len + 1);
-    string.len = value_len;
-    memcpy64(string.data, value, value_len + 1);
-    ARRAY_PUSH(list->items, string);
-    return;
-}
-
 static char *
 ncm_mpd_connection_mpd_directory(char *directory) {
     if (directory == NULL) {
@@ -397,53 +380,6 @@ ncm_mpd_item_list_to_directory_array(NcmMpdItemList *list,
 
     ncm_directory_array_move(directories, &replacement);
     return directories->len;
-}
-
-void
-ncm_mpd_string_list_destroy(StringViewList *list) {
-    if (list == NULL) {
-        return;
-    }
-
-    ARRAY_FREE(list->items);
-    if (list->arena) {
-        arena_destroy(list->arena);
-    }
-    *list = (StringViewList){0};
-
-    return;
-}
-
-void
-ncm_mpd_string_list_clear(StringViewList *list) {
-    if (list == NULL) {
-        return;
-    }
-
-    ARRAY_CLEAR(list->items);
-    arena_reset(list->arena);
-    return;
-}
-
-int32
-ncm_mpd_string_list_count(StringViewList *list) {
-    if (list == NULL) {
-        return 0;
-    }
-
-    return ARRAY_LEN(list->items);
-}
-
-StringView *
-ncm_mpd_string_list_at(StringViewList *list, int32 idx) {
-    if (list == NULL) {
-        return NULL;
-    }
-    if ((idx < 0) || (idx >= ARRAY_LEN(list->items))) {
-        return NULL;
-    }
-
-    return &list->items[idx];
 }
 
 void
