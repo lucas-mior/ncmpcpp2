@@ -475,12 +475,9 @@ lyrics_remove_extension(StrBuilder *buffer) {
 static bool
 lyrics_song_artist_title(NcmSong *song, StrBuilder *artist, StrBuilder *title) {
     StrBuilder fallback = {0};
-    StrView artist_view;
-    StrView title_view;
-    StrView name_view;
-    artist_view = (StrView){0};
-    title_view = (StrView){0};
-    name_view = (StrView){0};
+    StrView artist_view = {0};
+    StrView title_view = {0};
+    StrView name_view = {0};
 
     sb_clear(artist);
     sb_clear(title);
