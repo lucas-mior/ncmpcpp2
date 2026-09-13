@@ -19,37 +19,37 @@
 #define SCREEN_TYPE_NC_TYPE(screen_type) CAT(NC_SCREEN_TYPE_, screen_type)
 #define SCREEN_TYPE_FLAG(flag) CAT(SCREEN_FLAG_, flag)
 
-#define SCREEN_TYPE_BROWSER_ENTRY(XX)                                      \
+#define SCREEN_TYPE_BROWSER_ENTRY(XX)                                          \
     XX(BROWSER, browser, STARTUP, browser)
-#define SCREEN_TYPE_HELP_ENTRY(XX)                                         \
+#define SCREEN_TYPE_HELP_ENTRY(XX)                                             \
     XX(HELP, help, STARTUP, help)
-#define SCREEN_TYPE_LASTFM_ENTRY(XX)                                       \
+#define SCREEN_TYPE_LASTFM_ENTRY(XX)                                           \
     XX(LASTFM, last_fm, STARTUP, lastfm)
-#define SCREEN_TYPE_LYRICS_ENTRY(XX)                                       \
+#define SCREEN_TYPE_LYRICS_ENTRY(XX)                                           \
     XX(LYRICS, lyrics, STARTUP, lyrics)
-#define SCREEN_TYPE_MEDIA_LIBRARY_ENTRY(XX)                                \
+#define SCREEN_TYPE_MEDIA_LIBRARY_ENTRY(XX)                                    \
     XX(MEDIA_LIBRARY, media_library, STARTUP, media_library)
-#define SCREEN_TYPE_OUTPUTS_ENTRY(XX)                                      \
+#define SCREEN_TYPE_OUTPUTS_ENTRY(XX)                                          \
     XX(OUTPUTS, outputs, STARTUP, outputs)
-#define SCREEN_TYPE_PLAYLIST_ENTRY(XX)                                     \
+#define SCREEN_TYPE_PLAYLIST_ENTRY(XX)                                         \
     XX(PLAYLIST, playlist, STARTUP, playlist)
-#define SCREEN_TYPE_PLAYLIST_EDITOR_ENTRY(XX)                              \
+#define SCREEN_TYPE_PLAYLIST_EDITOR_ENTRY(XX)                                  \
     XX(PLAYLIST_EDITOR, playlist_edit, STARTUP, playlist_edit)
-#define SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                                \
+#define SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                                    \
     XX(SEARCH_ENGINE, search_engine, STARTUP, search_engine)
-#define SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)                         \
+#define SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)                               \
     XX(SELECTED_ITEMS_ADD, selected_items_add, NONE, selected_items_add)
-#define SCREEN_TYPE_SERVER_INFO_ENTRY(XX)                                  \
+#define SCREEN_TYPE_SERVER_INFO_ENTRY(XX)                                      \
     XX(SERVER_INFO, server_info, NONE, server_info)
-#define SCREEN_TYPE_SONG_INFO_ENTRY(XX)                                    \
+#define SCREEN_TYPE_SONG_INFO_ENTRY(XX)                                        \
     XX(SONG_INFO, song_info, NONE, song_info)
-#define SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)                         \
+#define SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)                             \
     XX(SORT_PLAYLIST_DIALOG, sort_playlist_dialog, NONE, sort_playlist_dialog)
-#define SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                     \
+#define SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                         \
     XX(TAG_EDIT, tag_edit, STARTUP, tag_edit)
-#define SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)                                \
+#define SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)                                    \
     XX(TINY_TAG_EDIT, tiny_tag_edit, NONE, tiny_tag_edit)
-#define SCREEN_TYPE_VISUALIZER_ENTRY(XX)                                   \
+#define SCREEN_TYPE_VISUALIZER_ENTRY(XX)                                       \
     XX(VISUALIZER, visualizer, STARTUP, visualizer)
 
 #define SCREEN_ALL_TYPES(XX)                                               \
