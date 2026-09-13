@@ -86,7 +86,7 @@ APP_SCREEN_WRAPPED_STORAGE_TYPES(APP_SCREEN_DECLARE_STORAGE)
     XX(PROMPT_RESULT_ACCEPTED)
 #include "cbase/xenums.c"
 
-#define APP_SCREEN_DIRECT_ACCESSOR(suffix, type, storage, base_expr) \
+#define APP_SCREEN_DIRECT_ACCESSOR(suffix, type, storage)                \
     type *                                                               \
     app_screen_##suffix(void) {                                          \
         app_screen_##suffix##_init();                                    \
@@ -96,7 +96,7 @@ APP_SCREEN_WRAPPED_STORAGE_TYPES(APP_SCREEN_DECLARE_STORAGE)
     NcScreen *                                                           \
     app_screen_##suffix##_base(void) {                                   \
         app_screen_##suffix##_init();                                    \
-        return base_expr;                                                \
+        return storage##_base(&storage);                                 \
     }
 
 static void

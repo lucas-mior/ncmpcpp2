@@ -140,29 +140,18 @@
     XX(SongInfoScreen, song_info_screen)
 
 #define APP_SCREEN_DIRECT_ACCESSOR_TYPES(XX)                                   \
-  XX(browser, BrowserScreen, browser_screen,                                   \
-     browser_screen_base(&browser_screen))                                     \
-  XX(lastfm, LastfmScreen, lastfm_screen,                                      \
-     lastfm_screen_base(&lastfm_screen))                                       \
-  XX(lyrics, LyricsScreen, lyrics_screen,                                      \
-     lyrics_screen_base(&lyrics_screen))                                       \
-  XX(playlist, PlaylistScreen, playlist_screen,                                \
-     playlist_screen_base(&playlist_screen))                                   \
-  XX(playlist_edit, PlaylistEditScreen, playlist_edit_screen,                  \
-     playlist_edit_screen_base(&playlist_edit_screen))                         \
-  XX(selected_items_add, SelectedItemsAdderScreen,                             \
-     selected_items_add_screen,                                                \
-     selected_items_add_screen_base(&selected_items_add_screen))               \
-  XX(sort_playlist_dialog, SortPlaylistDialog, sort_playlist_dialog,           \
-     sort_playlist_dialog_base(&sort_playlist_dialog))                         \
-  XX(search_engine, SearchEngineScreen, search_engine_screen,                  \
-     search_engine_screen_base(&search_engine_screen))                         \
-  XX(media_library, MediaLibraryScreen, media_library_screen,                  \
-     media_library_screen_base(&media_library_screen))                         \
-  XX(tag_edit, TagEditScreen, tag_edit_screen,                                 \
-     tag_edit_screen_base(&tag_edit_screen))                                   \
-  XX(tiny_tag_edit, TinyTagEditScreen, tiny_tag_edit_screen,                   \
-     tiny_tag_edit_screen_base(&tiny_tag_edit_screen))
+    XX(browser, BrowserScreen, browser_screen)                                 \
+    XX(lastfm, LastfmScreen, lastfm_screen)                                    \
+    XX(lyrics, LyricsScreen, lyrics_screen)                                    \
+    XX(playlist, PlaylistScreen, playlist_screen)                              \
+    XX(playlist_edit, PlaylistEditScreen, playlist_edit_screen)                \
+    XX(selected_items_add, SelectedItemsAdderScreen,                         \
+       selected_items_add_screen)                                            \
+    XX(sort_playlist_dialog, SortPlaylistDialog, sort_playlist_dialog)         \
+    XX(search_engine, SearchEngineScreen, search_engine_screen)                \
+    XX(media_library, MediaLibraryScreen, media_library_screen)                \
+    XX(tag_edit, TagEditScreen, tag_edit_screen)                               \
+    XX(tiny_tag_edit, TinyTagEditScreen, tiny_tag_edit_screen)
 
 #define APP_SCREEN_WRAPPED_ACCESSOR_TYPES(XX)                                  \
     XX(help, nc_help_screen_base(&help_screen.screen))                         \
@@ -2137,9 +2126,7 @@ APP_SCREEN_IS_CURRENT_TYPES(APP_SCREEN_DECLARE_COMMON)
 
 #undef APP_SCREEN_DECLARE_COMMON
 
-#define APP_SCREEN_DECLARE_DIRECT_ACCESSOR(                                    \
-    suffix, type, storage, base_expr                                           \
-)                                                                              \
+#define APP_SCREEN_DECLARE_DIRECT_ACCESSOR(suffix, type, storage)              \
     type *app_screen_##suffix(void);
 
 APP_SCREEN_DIRECT_ACCESSOR_TYPES(APP_SCREEN_DECLARE_DIRECT_ACCESSOR)
