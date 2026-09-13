@@ -543,8 +543,8 @@ int32
 nc_menu_goto_selectable(NcMenu *menu, int32 y) {
     int32 pos = menu->beginning + y;
 
-    if (!menu_is_highlightable(menu, pos, menu_is_position_highlightable,
-                               menu)) {
+    if (!menu_is_highlightable(menu, pos,
+                               menu_is_position_highlightable, menu)) {
         return -NCM_ERROR_NOT_FOUND;
     }
     menu->highlight = pos;
