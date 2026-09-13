@@ -2295,8 +2295,9 @@ library_copy_song_at(MediaLibraryScreen *screen,
 }
 
 int32
-media_library_screen_selected_songs_checked(
-    MediaLibraryScreen *screen, NcmSongArray *songs, NcmError *ncm_error) {
+media_library_screen_selected_songs_checked(MediaLibraryScreen *screen,
+                                            NcmSongArray *songs,
+                                            NcmError *ncm_error) {
     if ((screen == NULL) || (songs == NULL)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing media-library songs"));
