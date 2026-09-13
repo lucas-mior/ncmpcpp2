@@ -118,6 +118,8 @@ NCM_ARRAY_DEFINE_APPEND(ncm_directory_array, NcmDirectoryArray,
                         NcmDirectory, &ncm_app_array_directory_callbacks)
 NCM_ARRAY_DEFINE_APPEND_COPY(ncm_directory_array, NcmDirectoryArray,
                              NcmDirectory, &ncm_app_array_directory_callbacks)
+NCM_ARRAY_DEFINE_APPEND_MOVE(ncm_directory_array, NcmDirectoryArray,
+                             NcmDirectory, &ncm_app_array_directory_callbacks)
 
 NCM_ARRAY_DEFINE_CLEAR(ncm_playlist_array, NcmPlaylistArray,
                        &ncm_app_array_playlist_callbacks)
