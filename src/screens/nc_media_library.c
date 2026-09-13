@@ -1716,8 +1716,7 @@ library_append_album(MediaLibraryAlbumArray *albums, char *tag, int32 tag_len,
 }
 
 static bool
-library_song_has_first_tag(NcmSong *song, enum TagType tag,
-                           StringView *view) {
+library_song_has_first_tag(NcmSong *song, enum TagType tag, StringView *view) {
     ASSERT(view != NULL);
     *view = (StringView){0};
     return ncm_song_has_tag_view(song, tag, 0, view);
