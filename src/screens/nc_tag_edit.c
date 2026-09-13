@@ -855,42 +855,41 @@ tag_edit_history_path(StrBuilder *path) {
 
 static int32
 tag_edit_save_recent_patterns(TagEditScreen *screen) {
+    StrBuilder content = {0};
     StrBuilder path = {0};
-    FILE *file;
     int32 limit;
     int32 status;
+    bool first;
 
     tag_edit_history_path(&path);
-    file = fopen(path.data, "w");
-    if (file == NULL) {
-        status = errno ? -errno : -EIO;
-        sb_free(&path);
-        return status;
-    }
-    status = 0;
     limit = screen->recent_patterns.len;
     if (limit > TAG_EDIT_PATTERN_HISTORY_MAX) {
         limit = TAG_EDIT_PATTERN_HISTORY_MAX;
     }
+
+    first = true;
     for (int32 i = 0; i < limit; i += 1) {
         StrBuilder *pattern = &screen->recent_patterns.items[i];
 
         if (pattern->len <= 0) {
             continue;
         }
-        if (fwrite64(pattern->data, 1, pattern->len, file) != pattern->len) {
+        if (!first) {
+            SB_APPEND(&content, "\n");
+        }
+        SB_APPEND(&content, pattern->data, pattern->len);
+        first = false;
+    }
+
+    status = (int32)write_entire_file(path.data, content.data, content.len);
+    if (status != content.len) {
+        if (status >= 0) {
             status = -EIO;
-            break;
-        }
-        if (fputc('\n', file) == EOF) {
-            status = errno ? -errno : -EIO;
-            break;
         }
     }
-    if ((fclose(file) == EOF) && (status == 0)) {
-        status = errno ? -errno : -EIO;
-    }
+
     sb_free(&path);
+    sb_free(&content);
     return status;
 }
 
