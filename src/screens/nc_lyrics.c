@@ -726,10 +726,7 @@ int32
 lyrics_screen_save_file(LyricsScreen *screen,
                         char *filename, int32 filename_len,
                         char *lyrics, int32 lyrics_len, NcmError *ncm_error) {
-    FILE *file;
-    int32 error_code;
-    int32 written;
-    int32 close_result;
+    int32 status;
 
     (void)screen;
     if ((filename == NULL) || (filename_len <= 0)) {
@@ -741,22 +738,13 @@ lyrics_screen_save_file(LyricsScreen *screen,
                                     STRLIT("missing lyrics buffer"));
     }
 
-    if ((file = fopen(filename, "wb")) == NULL) {
-        return ncm_error_set_status(ncm_error, -errno,
-                                    STRLIT("failed to write lyrics"));
+    status = (int32)write_entire_file(filename, lyrics, lyrics_len);
+    if (status < 0) {
+        return ncm_error_set_status(ncm_error, status,
+                                    STRLIT("failed to save lyrics"));
     }
-
-    written = 0;
-    if (lyrics && (lyrics_len > 0)) {
-        written = (int32)fwrite64(lyrics, 1, lyrics_len, file);
-    }
-    close_result = fclose(file);
-    if ((written != lyrics_len) || (close_result != 0)) {
-        error_code = errno;
-        if (error_code == 0) {
-            error_code = EIO;
-        }
-        return ncm_error_set_status(ncm_error, -error_code,
+    if (status != lyrics_len) {
+        return ncm_error_set_status(ncm_error, -EIO,
                                     STRLIT("failed to save lyrics"));
     }
 
