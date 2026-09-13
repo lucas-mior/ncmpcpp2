@@ -467,112 +467,112 @@ typedef struct NcmArrayItemCallbacks {
   }
 
 #define NCM_ARRAY_DEFINE_APPEND(PREFIX, ARRAY_TYPE, ITEM_TYPE, CALLBACKS)    \
-  ITEM_TYPE *                                                                \
-  PREFIX##_append(ARRAY_TYPE *array) {                                       \
-      ITEM_TYPE *item;                                                       \
-      NcmArrayItemCallbacks *callbacks;                                      \
+ITEM_TYPE *                                                                  \
+PREFIX##_append(ARRAY_TYPE *array) {                                         \
+    ITEM_TYPE *item;                                                         \
+    NcmArrayItemCallbacks *callbacks;                                        \
                                                                              \
-      if (PREFIX##_reserve(array, 1) < 0) {                                  \
-          return NULL;                                                       \
-      }                                                                      \
-      callbacks = CALLBACKS;                                                 \
-      item = &array->items[array->len];                                      \
-      array->len += 1;                                                       \
-      if (callbacks && callbacks->init) {                                    \
-          callbacks->init(item);                                             \
-      } else {                                                               \
-          char *bytes = (char *)item;                                        \
-          for (int32 i = 0; i < (int32)SIZEOF(*item); i += 1) {              \
-              bytes[i] = 0;                                                  \
-          }                                                                  \
-      }                                                                      \
-      return item;                                                           \
-  }
+    if (PREFIX##_reserve(array, 1) < 0) {                                    \
+        return NULL;                                                         \
+    }                                                                        \
+    callbacks = CALLBACKS;                                                   \
+    item = &array->items[array->len];                                        \
+    array->len += 1;                                                         \
+    if (callbacks && callbacks->init) {                                      \
+        callbacks->init(item);                                               \
+    } else {                                                                 \
+        char *bytes = (char *)item;                                          \
+        for (int32 i = 0; i < (int32)SIZEOF(*item); i += 1) {                \
+            bytes[i] = 0;                                                    \
+        }                                                                    \
+    }                                                                        \
+    return item;                                                             \
+}
 
 #define NCM_ARRAY_DEFINE_APPEND_COPY(PREFIX, ARRAY_TYPE, ITEM_TYPE, CALLBACKS) \
-  int32                                                                      \
-  PREFIX##_append_copy(ARRAY_TYPE *array, ITEM_TYPE *item) {                 \
-      ITEM_TYPE *dest;                                                       \
-      NcmArrayItemCallbacks *callbacks;                                      \
-      int32 err;                                                             \
-      int32 index;                                                           \
-                                                                             \
-      if ((array == NULL) || (item == NULL)) {                               \
-          return -EINVAL;                                                    \
-      }                                                                      \
-      if ((err = PREFIX##_reserve(array, 1)) < 0) {                          \
-          return err;                                                        \
-      }                                                                      \
-      index = array->len;                                                    \
-      dest = &array->items[index];                                           \
-      array->len += 1;                                                       \
-      callbacks = CALLBACKS;                                                 \
-      if (callbacks && callbacks->init) {                                    \
-          callbacks->init(dest);                                             \
-      } else {                                                               \
-          *dest = (ITEM_TYPE){0};                                            \
-      }                                                                      \
-      if (callbacks && callbacks->copy) {                                    \
-          if ((err = callbacks->copy(dest, item)) < 0) {                     \
-              array->len -= 1;                                               \
-              if (callbacks->destroy) {                                      \
-                  callbacks->destroy(dest);                                  \
-              }                                                              \
-              return err;                                                    \
-          }                                                                  \
-      } else {                                                               \
-          *dest = *item;                                                     \
-      }                                                                      \
-      return index;                                                          \
-  }
+int32                                                                          \
+PREFIX##_append_copy(ARRAY_TYPE *array, ITEM_TYPE *item) {                     \
+    ITEM_TYPE *dest;                                                           \
+    NcmArrayItemCallbacks *callbacks;                                          \
+    int32 err;                                                                 \
+    int32 index;                                                               \
+                                                                               \
+    if ((array == NULL) || (item == NULL)) {                                   \
+        return -EINVAL;                                                        \
+    }                                                                          \
+    if ((err = PREFIX##_reserve(array, 1)) < 0) {                              \
+        return err;                                                            \
+    }                                                                          \
+    index = array->len;                                                        \
+    dest = &array->items[index];                                               \
+    array->len += 1;                                                           \
+    callbacks = CALLBACKS;                                                     \
+    if (callbacks && callbacks->init) {                                        \
+        callbacks->init(dest);                                                 \
+    } else {                                                                   \
+        *dest = (ITEM_TYPE){0};                                                \
+    }                                                                          \
+    if (callbacks && callbacks->copy) {                                        \
+        if ((err = callbacks->copy(dest, item)) < 0) {                         \
+            array->len -= 1;                                                   \
+            if (callbacks->destroy) {                                          \
+                callbacks->destroy(dest);                                      \
+            }                                                                  \
+            return err;                                                        \
+        }                                                                      \
+    } else {                                                                   \
+        *dest = *item;                                                         \
+    }                                                                          \
+    return index;                                                              \
+}
 
 #define NCM_ARRAY_DEFINE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE, CALLBACKS) \
-  void                                                                         \
-  PREFIX##_append_move(ARRAY_TYPE *array, ITEM_TYPE *item) {                   \
-      ITEM_TYPE *dest;                                                         \
-      NcmArrayItemCallbacks *callbacks;                                        \
+void                                                                           \
+PREFIX##_append_move(ARRAY_TYPE *array, ITEM_TYPE *item) {                     \
+    ITEM_TYPE *dest;                                                           \
+    NcmArrayItemCallbacks *callbacks;                                          \
                                                                                \
-      if (item == NULL) {                                                      \
-          return;                                                              \
-      }                                                                        \
-      dest = PREFIX##_append(array);                                           \
-      if (dest == NULL) {                                                      \
-          return;                                                              \
-      }                                                                        \
-      callbacks = CALLBACKS;                                                   \
-      if (callbacks && callbacks->move) {                                      \
-          callbacks->move(dest, item);                                         \
-      } else {                                                                 \
-          *dest = *item;                                                       \
-      }                                                                        \
-      return;                                                                  \
-  }
+    if (item == NULL) {                                                        \
+        return;                                                                \
+    }                                                                          \
+    dest = PREFIX##_append(array);                                             \
+    if (dest == NULL) {                                                        \
+        return;                                                                \
+    }                                                                          \
+    callbacks = CALLBACKS;                                                     \
+    if (callbacks && callbacks->move) {                                        \
+        callbacks->move(dest, item);                                           \
+    } else {                                                                   \
+        *dest = *item;                                                         \
+    }                                                                          \
+    return;                                                                    \
+}
 
-#define NCM_ARRAY_DEFINE_REMOVE_ORDERED(PREFIX, ARRAY_TYPE, CALLBACKS)       \
-  void                                                                       \
-  PREFIX##_remove_ordered(ARRAY_TYPE *array, int32 idx) {                    \
-      NcmArrayItemCallbacks *callbacks;                                      \
-                                                                             \
-      if (array == NULL) {                                                   \
-          return;                                                            \
-      }                                                                      \
-      if ((idx < 0) || (idx >= array->len)) {                                \
-          return;                                                            \
-      }                                                                      \
-                                                                             \
-      callbacks = CALLBACKS;                                                 \
-      if (callbacks && callbacks->destroy) {                                 \
-          callbacks->destroy(&array->items[idx]);                            \
-      }                                                                      \
-      if (idx + 1 < array->len) {                                            \
-          memmove64(                                                         \
-              &array->items[idx],                                            \
-              &array->items[idx + 1],                                        \
-              (array->len - idx - 1)*SIZEOF(*array->items));                 \
-      }                                                                      \
-      array->len -= 1;                                                       \
-      return;                                                                \
-  }
+#define NCM_ARRAY_DEFINE_REMOVE_ORDERED(PREFIX, ARRAY_TYPE, CALLBACKS)     \
+void                                                                       \
+PREFIX##_remove_ordered(ARRAY_TYPE *array, int32 idx) {                    \
+    NcmArrayItemCallbacks *callbacks;                                      \
+                                                                           \
+    if (array == NULL) {                                                   \
+        return;                                                            \
+    }                                                                      \
+    if ((idx < 0) || (idx >= array->len)) {                                \
+        return;                                                            \
+    }                                                                      \
+                                                                           \
+    callbacks = CALLBACKS;                                                 \
+    if (callbacks && callbacks->destroy) {                                 \
+        callbacks->destroy(&array->items[idx]);                            \
+    }                                                                      \
+    if (idx + 1 < array->len) {                                            \
+        memmove64(                                                         \
+            &array->items[idx],                                            \
+            &array->items[idx + 1],                                        \
+            (array->len - idx - 1)*SIZEOF(*array->items));                 \
+    }                                                                      \
+    array->len -= 1;                                                       \
+    return;                                                                \
+}
 
 #define NCM_ARRAY_DECLARE(PREFIX, ARRAY_TYPE, ITEM_TYPE)                     \
     NCM_ARRAY_DECLARE_TYPE(ARRAY_TYPE, ITEM_TYPE)                            \
