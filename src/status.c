@@ -247,13 +247,11 @@ ncm_status_trace(MpdClient *client, bool update_timer,
                     int32 position = status_current_song_pos;
 
                     if (position >= 0) {
-                        bool highlighted;
-                        PlaylistScreen *playlist;
-                        int32 n;
+                        PlaylistScreen *playlist = app_screen_playlist();
+                        int32 n = playlist_screen_locate_position(playlist,
+                                                                  position);
+                        bool highlighted = n > 0;
 
-                        playlist = app_screen_playlist();
-                        n = playlist_screen_locate_position(playlist, position);
-                        highlighted = n > 0;
                         if (!highlighted) {
                             int32 delay = Config.message_delay_time;
                             char *message = "Song is filtered out";
