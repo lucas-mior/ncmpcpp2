@@ -41,7 +41,7 @@
 #error "NCM_ARRAY_COPY requires NCM_ARRAY_APPEND_COPY"
 #endif
 
-#define NCM_ARRAY_FUNCTION(SUFFIX) CAT(NCM_ARRAY_PREFIX, SUFFIX)
+#define NCM_ARRAY_FUNC(SUFFIX) CAT(NCM_ARRAY_PREFIX, SUFFIX)
 
 #if !defined(NCM_ARRAY_ITEM_INIT)
 #define NCM_ARRAY_ITEM_INIT(A) *(A) = (NCM_ARRAY_ITEM_TYPE){0}
@@ -54,7 +54,7 @@
 #endif
 
 void
-NCM_ARRAY_FUNCTION(_clear)(NCM_ARRAY_TYPE *array) {
+NCM_ARRAY_FUNC(_clear)(NCM_ARRAY_TYPE *array) {
     if (array == NULL) {
         return;
     }
@@ -66,11 +66,11 @@ NCM_ARRAY_FUNCTION(_clear)(NCM_ARRAY_TYPE *array) {
 }
 
 void
-NCM_ARRAY_FUNCTION(_destroy)(NCM_ARRAY_TYPE *array) {
+NCM_ARRAY_FUNC(_destroy)(NCM_ARRAY_TYPE *array) {
     if (array == NULL) {
         return;
     }
-    NCM_ARRAY_FUNCTION(_clear)(array);
+    NCM_ARRAY_FUNC(_clear)(array);
     free2(array->items, array->cap*SIZEOF(*array->items));
     *array = (NCM_ARRAY_TYPE){0};
     return;
@@ -78,7 +78,7 @@ NCM_ARRAY_FUNCTION(_destroy)(NCM_ARRAY_TYPE *array) {
 
 #if defined(NCM_ARRAY_COPY)
 int32
-NCM_ARRAY_FUNCTION(_copy)(NCM_ARRAY_TYPE *dest, NCM_ARRAY_TYPE *source) {
+NCM_ARRAY_FUNC(_copy)(NCM_ARRAY_TYPE *dest, NCM_ARRAY_TYPE *source) {
     NCM_ARRAY_TYPE replacement = {0};
     int32 err;
 
@@ -90,21 +90,21 @@ NCM_ARRAY_FUNCTION(_copy)(NCM_ARRAY_TYPE *dest, NCM_ARRAY_TYPE *source) {
     }
 
     if (source) {
-        if ((err = NCM_ARRAY_FUNCTION(_reserve)(&replacement,
+        if ((err = NCM_ARRAY_FUNC(_reserve)(&replacement,
                                                 source->len)) < 0) {
-            NCM_ARRAY_FUNCTION(_destroy)(&replacement);
+            NCM_ARRAY_FUNC(_destroy)(&replacement);
             return err;
         }
         for (int32 i = 0; i < source->len; i += 1) {
-            if ((err = NCM_ARRAY_FUNCTION(_append_copy)(
+            if ((err = NCM_ARRAY_FUNC(_append_copy)(
                      &replacement, &source->items[i])) < 0) {
-                NCM_ARRAY_FUNCTION(_destroy)(&replacement);
+                NCM_ARRAY_FUNC(_destroy)(&replacement);
                 return err;
             }
         }
     }
 
-    NCM_ARRAY_FUNCTION(_destroy)(dest);
+    NCM_ARRAY_FUNC(_destroy)(dest);
     *dest = replacement;
     return dest->len;
 }
@@ -112,7 +112,7 @@ NCM_ARRAY_FUNCTION(_copy)(NCM_ARRAY_TYPE *dest, NCM_ARRAY_TYPE *source) {
 
 #if defined(NCM_ARRAY_MOVE)
 void
-NCM_ARRAY_FUNCTION(_move)(NCM_ARRAY_TYPE *dest, NCM_ARRAY_TYPE *source) {
+NCM_ARRAY_FUNC(_move)(NCM_ARRAY_TYPE *dest, NCM_ARRAY_TYPE *source) {
     if (dest == NULL) {
         return;
     }
@@ -120,7 +120,7 @@ NCM_ARRAY_FUNCTION(_move)(NCM_ARRAY_TYPE *dest, NCM_ARRAY_TYPE *source) {
         return;
     }
 
-    NCM_ARRAY_FUNCTION(_destroy)(dest);
+    NCM_ARRAY_FUNC(_destroy)(dest);
     if (source == NULL) {
         *dest = (NCM_ARRAY_TYPE){0};
         return;
@@ -133,7 +133,7 @@ NCM_ARRAY_FUNCTION(_move)(NCM_ARRAY_TYPE *dest, NCM_ARRAY_TYPE *source) {
 
 #if defined(NCM_ARRAY_SWAP)
 void
-NCM_ARRAY_FUNCTION(_swap)(NCM_ARRAY_TYPE *left, NCM_ARRAY_TYPE *right) {
+NCM_ARRAY_FUNC(_swap)(NCM_ARRAY_TYPE *left, NCM_ARRAY_TYPE *right) {
     NCM_ARRAY_TYPE temp;
 
     if (left == NULL) {
@@ -150,7 +150,7 @@ NCM_ARRAY_FUNCTION(_swap)(NCM_ARRAY_TYPE *left, NCM_ARRAY_TYPE *right) {
 #endif
 
 int32
-NCM_ARRAY_FUNCTION(_reserve)(NCM_ARRAY_TYPE *array, int32 extra) {
+NCM_ARRAY_FUNC(_reserve)(NCM_ARRAY_TYPE *array, int32 extra) {
     int64 needed;
     int32 old_cap;
     int32 new_cap;
@@ -194,10 +194,10 @@ NCM_ARRAY_FUNCTION(_reserve)(NCM_ARRAY_TYPE *array, int32 extra) {
 }
 
 NCM_ARRAY_ITEM_TYPE *
-NCM_ARRAY_FUNCTION(_append)(NCM_ARRAY_TYPE *array) {
+NCM_ARRAY_FUNC(_append)(NCM_ARRAY_TYPE *array) {
     NCM_ARRAY_ITEM_TYPE *item;
 
-    if (NCM_ARRAY_FUNCTION(_reserve)(array, 1) < 0) {
+    if (NCM_ARRAY_FUNC(_reserve)(array, 1) < 0) {
         return NULL;
     }
     item = &array->items[array->len];
@@ -209,7 +209,7 @@ NCM_ARRAY_FUNCTION(_append)(NCM_ARRAY_TYPE *array) {
 
 #if defined(NCM_ARRAY_APPEND_COPY)
 int32
-NCM_ARRAY_FUNCTION(_append_copy)(NCM_ARRAY_TYPE *array,
+NCM_ARRAY_FUNC(_append_copy)(NCM_ARRAY_TYPE *array,
                                  NCM_ARRAY_ITEM_TYPE *item) {
     NCM_ARRAY_ITEM_TYPE *dest;
     int32 err;
@@ -221,7 +221,7 @@ NCM_ARRAY_FUNCTION(_append_copy)(NCM_ARRAY_TYPE *array,
     if (DEBUGGING && array->items) {
         ASSERT_OUTSIDE(item, array->items, array->items + array->cap);
     }
-    if ((err = NCM_ARRAY_FUNCTION(_reserve)(array, 1)) < 0) {
+    if ((err = NCM_ARRAY_FUNC(_reserve)(array, 1)) < 0) {
         return err;
     }
     index = array->len;
@@ -245,7 +245,7 @@ NCM_ARRAY_FUNCTION(_append_copy)(NCM_ARRAY_TYPE *array,
 
 #if defined(NCM_ARRAY_APPEND_MOVE)
 void
-NCM_ARRAY_FUNCTION(_append_move)(NCM_ARRAY_TYPE *array,
+NCM_ARRAY_FUNC(_append_move)(NCM_ARRAY_TYPE *array,
                                  NCM_ARRAY_ITEM_TYPE *item) {
     NCM_ARRAY_ITEM_TYPE *dest;
 
@@ -255,7 +255,7 @@ NCM_ARRAY_FUNCTION(_append_move)(NCM_ARRAY_TYPE *array,
     if (DEBUGGING && array->items) {
         ASSERT_OUTSIDE(item, array->items, array->items + array->cap);
     }
-    dest = NCM_ARRAY_FUNCTION(_append)(array);
+    dest = NCM_ARRAY_FUNC(_append)(array);
     if (dest == NULL) {
         return;
     }
@@ -267,7 +267,7 @@ NCM_ARRAY_FUNCTION(_append_move)(NCM_ARRAY_TYPE *array,
 
 #if defined(NCM_ARRAY_REMOVE_ORDERED)
 void
-NCM_ARRAY_FUNCTION(_remove_ordered)(NCM_ARRAY_TYPE *array, int32 idx) {
+NCM_ARRAY_FUNC(_remove_ordered)(NCM_ARRAY_TYPE *array, int32 idx) {
     if (array == NULL) {
         return;
     }
@@ -286,7 +286,7 @@ NCM_ARRAY_FUNCTION(_remove_ordered)(NCM_ARRAY_TYPE *array, int32 idx) {
 }
 #endif
 
-#undef NCM_ARRAY_FUNCTION
+#undef NCM_ARRAY_FUNC
 #undef NCM_ARRAY_TYPE
 #undef NCM_ARRAY_ITEM_TYPE
 #undef NCM_ARRAY_PREFIX
