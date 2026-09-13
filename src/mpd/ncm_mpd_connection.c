@@ -192,11 +192,10 @@ ncm_mpd_connection_recv_song(MpdConnection *connection, NcmSong *song,
 static int32
 ncm_mpd_connection_recv_song_list(MpdConnection *connection,
                                   NcmMpdSongList *songs) {
-    NcmSong song = {0};
-
     ncm_mpd_song_list_clear(songs);
     while (true) {
-        song = (NcmSong){0};
+        NcmSong song = {0};
+
         if (ncm_mpd_connection_recv_song(connection, &song, false) < 0) {
             ncm_song_destroy(&song);
             mpd_response_finish(connection->mpd);
