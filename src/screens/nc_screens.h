@@ -33,7 +33,7 @@
   XX(OUTPUTS,              outputs,              STARTUP, outputs)
 #define SCREEN_TYPE_PLAYLIST_ENTRY(XX)                                         \
   XX(PLAYLIST,             playlist,             STARTUP, playlist)
-#define SCREEN_TYPE_PLAYLIST_EDIT_ENTRY(XX)                                  \
+#define SCREEN_TYPE_PLAYLIST_EDIT_ENTRY(XX)                                    \
   XX(PLAYLIST_EDIT,      playlist_edit,        STARTUP, playlist_edit)
 #define SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                                    \
   XX(SEARCH_ENGINE,        search_engine,        STARTUP, search_engine)
@@ -52,94 +52,94 @@
 #define SCREEN_TYPE_VISUALIZER_ENTRY(XX)                                       \
   XX(VISUALIZER,           visualizer,           STARTUP, visualizer)
 
-#define SCREEN_ALL_TYPES(XX)                                      \
-    SCREEN_TYPE_BROWSER_ENTRY(XX)                                 \
-    SCREEN_TYPE_HELP_ENTRY(XX)                                    \
-    SCREEN_TYPE_LASTFM_ENTRY(XX)                                  \
-    SCREEN_TYPE_LYRICS_ENTRY(XX)                                  \
-    SCREEN_TYPE_MEDIA_LIBRARY_ENTRY(XX)                           \
-    SCREEN_TYPE_OUTPUTS_ENTRY(XX)                                 \
-    SCREEN_TYPE_PLAYLIST_ENTRY(XX)                                \
-    SCREEN_TYPE_PLAYLIST_EDIT_ENTRY(XX)                         \
-    SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                           \
-    SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)                      \
-    SCREEN_TYPE_SERVER_INFO_ENTRY(XX)                             \
-    SCREEN_TYPE_SONG_INFO_ENTRY(XX)                               \
-    SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)                    \
-    SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                \
-    SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)                           \
+#define SCREEN_ALL_TYPES(XX)                                                   \
+    SCREEN_TYPE_BROWSER_ENTRY(XX)                                              \
+    SCREEN_TYPE_HELP_ENTRY(XX)                                                 \
+    SCREEN_TYPE_LASTFM_ENTRY(XX)                                               \
+    SCREEN_TYPE_LYRICS_ENTRY(XX)                                               \
+    SCREEN_TYPE_MEDIA_LIBRARY_ENTRY(XX)                                        \
+    SCREEN_TYPE_OUTPUTS_ENTRY(XX)                                              \
+    SCREEN_TYPE_PLAYLIST_ENTRY(XX)                                             \
+    SCREEN_TYPE_PLAYLIST_EDIT_ENTRY(XX)                                        \
+    SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                                        \
+    SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)                                   \
+    SCREEN_TYPE_SERVER_INFO_ENTRY(XX)                                          \
+    SCREEN_TYPE_SONG_INFO_ENTRY(XX)                                            \
+    SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)                                 \
+    SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                             \
+    SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)                                        \
     SCREEN_TYPE_VISUALIZER_ENTRY(XX)
 
 #if defined(ENABLE_OUTPUTS)
-#define SCREEN_ENABLED_OUTPUTS_TYPES(XX)                          \
+#define SCREEN_ENABLED_OUTPUTS_TYPES(XX)                                       \
     SCREEN_TYPE_OUTPUTS_ENTRY(XX)
 #else
 #define SCREEN_ENABLED_OUTPUTS_TYPES(XX)
 #endif
 
 #if defined(HAVE_TAGLIB_H)
-#define SCREEN_ENABLED_TAG_EDIT_TYPES(XX)                         \
-    SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                \
+#define SCREEN_ENABLED_TAG_EDIT_TYPES(XX)                                      \
+    SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                             \
     SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)
 #else
 #define SCREEN_ENABLED_TAG_EDIT_TYPES(XX)
 #endif
 
 #if defined(ENABLE_VISUALIZER)
-#define SCREEN_ENABLED_VISUALIZER_TYPES(XX)                                \
+#define SCREEN_ENABLED_VISUALIZER_TYPES(XX)                                    \
     SCREEN_TYPE_VISUALIZER_ENTRY(XX)
 #else
 #define SCREEN_ENABLED_VISUALIZER_TYPES(XX)
 #endif
 
-#define SCREEN_TYPES(XX)                           \
-    SCREEN_TYPE_BROWSER_ENTRY(XX)                  \
-    SCREEN_TYPE_HELP_ENTRY(XX)                     \
-    SCREEN_TYPE_LASTFM_ENTRY(XX)                   \
-    SCREEN_TYPE_LYRICS_ENTRY(XX)                   \
-    SCREEN_TYPE_MEDIA_LIBRARY_ENTRY(XX)            \
-    SCREEN_ENABLED_OUTPUTS_TYPES(XX)               \
-    SCREEN_TYPE_PLAYLIST_ENTRY(XX)                 \
-    SCREEN_TYPE_PLAYLIST_EDIT_ENTRY(XX)          \
-    SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)            \
-    SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)       \
-    SCREEN_TYPE_SERVER_INFO_ENTRY(XX)              \
-    SCREEN_TYPE_SONG_INFO_ENTRY(XX)                \
-    SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)     \
-    SCREEN_ENABLED_TAG_EDIT_TYPES(XX)              \
+#define SCREEN_TYPES(XX)                                                       \
+    SCREEN_TYPE_BROWSER_ENTRY(XX)                                              \
+    SCREEN_TYPE_HELP_ENTRY(XX)                                                 \
+    SCREEN_TYPE_LASTFM_ENTRY(XX)                                               \
+    SCREEN_TYPE_LYRICS_ENTRY(XX)                                               \
+    SCREEN_TYPE_MEDIA_LIBRARY_ENTRY(XX)                                        \
+    SCREEN_ENABLED_OUTPUTS_TYPES(XX)                                           \
+    SCREEN_TYPE_PLAYLIST_ENTRY(XX)                                             \
+    SCREEN_TYPE_PLAYLIST_EDIT_ENTRY(XX)                                        \
+    SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                                        \
+    SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)                                   \
+    SCREEN_TYPE_SERVER_INFO_ENTRY(XX)                                          \
+    SCREEN_TYPE_SONG_INFO_ENTRY(XX)                                            \
+    SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)                                 \
+    SCREEN_ENABLED_TAG_EDIT_TYPES(XX)                                          \
     SCREEN_ENABLED_VISUALIZER_TYPES(XX)
 
-#define SCREEN_NC_TYPE_ENUM_FIELD(screen_type, alias, flag, suffix) \
+#define SCREEN_NC_TYPE_ENUM_FIELD(screen_type, alias, flag, suffix)            \
     SCREEN_TYPE_NC_TYPE(screen_type),
 
-#define SCREEN_TYPE_XENUM_FIELD(screen_type, alias, flag, suffix)   \
+#define SCREEN_TYPE_XENUM_FIELD(screen_type, alias, flag, suffix)              \
     XX(SCREEN_TYPE_TYPE(screen_type), alias)
 
-#define SCREEN_TYPE_ENUM_FIELDS                                     \
+#define SCREEN_TYPE_ENUM_FIELDS                                                \
     SCREEN_TYPES(SCREEN_TYPE_XENUM_FIELD)
 
 
-#define APP_SCREEN_DIRECT_STORAGE_TYPES(XX)                    \
-    XX(BrowserScreen, browser_screen)                          \
-    XX(LastfmScreen, lastfm_screen)                            \
-    XX(LyricsScreen, lyrics_screen)                            \
-    XX(VisualizerScreen, visualizer_screen)                    \
-    XX(PlaylistScreen, playlist_screen)                        \
-    XX(PlaylistEditScreen, playlist_edit_screen)               \
-    XX(SelectedItemsAdderScreen, selected_items_add_screen)  \
-    XX(SortPlaylistDialog, sort_playlist_dialog)               \
-    XX(SearchEngineScreen, search_engine_screen)               \
-    XX(MediaLibraryScreen, media_library_screen)               \
-    XX(TagEditScreen, tag_edit_screen)                         \
+#define APP_SCREEN_DIRECT_STORAGE_TYPES(XX)                                    \
+    XX(BrowserScreen, browser_screen)                                          \
+    XX(LastfmScreen, lastfm_screen)                                            \
+    XX(LyricsScreen, lyrics_screen)                                            \
+    XX(VisualizerScreen, visualizer_screen)                                    \
+    XX(PlaylistScreen, playlist_screen)                                        \
+    XX(PlaylistEditScreen, playlist_edit_screen)                               \
+    XX(SelectedItemsAdderScreen, selected_items_add_screen)                    \
+    XX(SortPlaylistDialog, sort_playlist_dialog)                               \
+    XX(SearchEngineScreen, search_engine_screen)                               \
+    XX(MediaLibraryScreen, media_library_screen)                               \
+    XX(TagEditScreen, tag_edit_screen)                                         \
     XX(TinyTagEditScreen, tiny_tag_edit_screen)
 
-#define APP_SCREEN_WRAPPED_STORAGE_TYPES(XX)               \
-    XX(HelpScreen, help_screen)                                \
-    XX(OutputsScreen, outputs_screen)                          \
-    XX(ServerInfoScreen, server_info_screen)                   \
+#define APP_SCREEN_WRAPPED_STORAGE_TYPES(XX)                                   \
+    XX(HelpScreen, help_screen)                                                \
+    XX(OutputsScreen, outputs_screen)                                          \
+    XX(ServerInfoScreen, server_info_screen)                                   \
     XX(SongInfoScreen, song_info_screen)
 
-#define APP_SCREEN_DIRECT_ACCESSOR_TYPES(XX)                               \
+#define APP_SCREEN_DIRECT_ACCESSOR_TYPES(XX)                                   \
   XX(browser, BrowserScreen, browser_screen,                                   \
      browser_screen_base(&browser_screen))                                     \
   XX(lastfm, LastfmScreen, lastfm_screen,                                      \
@@ -150,9 +150,9 @@
      playlist_screen_base(&playlist_screen))                                   \
   XX(playlist_edit, PlaylistEditScreen, playlist_edit_screen,                  \
      playlist_edit_screen_base(&playlist_edit_screen))                         \
-  XX(selected_items_add, SelectedItemsAdderScreen,                           \
-     selected_items_add_screen,                                              \
-     selected_items_add_screen_base(&selected_items_add_screen))           \
+  XX(selected_items_add, SelectedItemsAdderScreen,                             \
+     selected_items_add_screen,                                                \
+     selected_items_add_screen_base(&selected_items_add_screen))               \
   XX(sort_playlist_dialog, SortPlaylistDialog, sort_playlist_dialog,           \
      sort_playlist_dialog_base(&sort_playlist_dialog))                         \
   XX(search_engine, SearchEngineScreen, search_engine_screen,                  \
@@ -164,71 +164,71 @@
   XX(tiny_tag_edit, TinyTagEditScreen, tiny_tag_edit_screen,                   \
      tiny_tag_edit_screen_base(&tiny_tag_edit_screen))
 
-#define APP_SCREEN_WRAPPED_ACCESSOR_TYPES(XX)                              \
+#define APP_SCREEN_WRAPPED_ACCESSOR_TYPES(XX)                                  \
     XX(help, nc_help_screen_base(&help_screen.screen))                         \
     XX(server_info, nc_server_info_screen_base(&server_info_screen.screen))    \
     XX(song_info, nc_song_info_screen_base(&song_info_screen.screen))
 
-#define APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(XX)           \
+#define APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(XX)                            \
     XX(help, app_screen_help, NcHelpScreen, &help_screen.screen)
 
-#define APP_SCREEN_STANDARD_REGISTER_TYPES(XX)                \
-    XX(browser)                                                   \
-    XX(help)                                                      \
-    XX(lastfm)                                                    \
-    XX(lyrics)                                                    \
-    XX(visualizer)                                                \
-    XX(playlist)                                                  \
-    XX(playlist_edit)                                             \
-    XX(search_engine)                                             \
-    XX(media_library)                                             \
-    XX(tag_edit)                                                  \
-    XX(tiny_tag_edit)                                             \
-    XX(song_info)                                                 \
-    XX(server_info)                                               \
+#define APP_SCREEN_STANDARD_REGISTER_TYPES(XX)                                 \
+    XX(browser)                                                                \
+    XX(help)                                                                   \
+    XX(lastfm)                                                                 \
+    XX(lyrics)                                                                 \
+    XX(visualizer)                                                             \
+    XX(playlist)                                                               \
+    XX(playlist_edit)                                                          \
+    XX(search_engine)                                                          \
+    XX(media_library)                                                          \
+    XX(tag_edit)                                                               \
+    XX(tiny_tag_edit)                                                          \
+    XX(song_info)                                                              \
+    XX(server_info)                                                            \
     XX(outputs)
 
-#define APP_SCREEN_REPLACE_REGISTER_TYPES(XX)                 \
-    XX(selected_items_add, NC_SCREEN_TYPE_SELECTED_ITEMS_ADD) \
+#define APP_SCREEN_REPLACE_REGISTER_TYPES(XX)                                  \
+    XX(selected_items_add, NC_SCREEN_TYPE_SELECTED_ITEMS_ADD)                  \
     XX(sort_playlist_dialog, NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG)
 
-#define APP_SCREEN_SIMPLE_SWITCH_TYPES(XX)                    \
-    XX(browser)                                                   \
-    XX(help)                                                      \
-    XX(playlist)                                                  \
-    XX(playlist_edit)                                             \
-    XX(selected_items_add)                                      \
-    XX(search_engine)                                             \
-    XX(media_library)                                             \
-    XX(tag_edit)                                                  \
-    XX(song_info)                                                 \
-    XX(server_info)                                               \
+#define APP_SCREEN_SIMPLE_SWITCH_TYPES(XX)                                     \
+    XX(browser)                                                                \
+    XX(help)                                                                   \
+    XX(playlist)                                                               \
+    XX(playlist_edit)                                                          \
+    XX(selected_items_add)                                                     \
+    XX(search_engine)                                                          \
+    XX(media_library)                                                          \
+    XX(tag_edit)                                                               \
+    XX(song_info)                                                              \
+    XX(server_info)                                                            \
     XX(outputs)
 
-#define APP_SCREEN_REGISTER_SWITCH_TYPES(XX)                  \
+#define APP_SCREEN_REGISTER_SWITCH_TYPES(XX)                                   \
     XX(tiny_tag_edit)
 
-#define APP_SCREEN_IS_CURRENT_TYPES(XX)                       \
-    XX(browser)                                                   \
-    XX(help)                                                      \
-    XX(lastfm)                                                    \
-    XX(lyrics)                                                    \
-    XX(visualizer)                                                \
-    XX(playlist)                                                  \
-    XX(playlist_edit)                                             \
-    XX(selected_items_add)                                      \
-    XX(sort_playlist_dialog)                                      \
-    XX(search_engine)                                             \
-    XX(media_library)                                             \
-    XX(tag_edit)                                                  \
-    XX(tiny_tag_edit)                                             \
-    XX(song_info)                                                 \
-    XX(server_info)                                               \
+#define APP_SCREEN_IS_CURRENT_TYPES(XX)                                        \
+    XX(browser)                                                                \
+    XX(help)                                                                   \
+    XX(lastfm)                                                                 \
+    XX(lyrics)                                                                 \
+    XX(visualizer)                                                             \
+    XX(playlist)                                                               \
+    XX(playlist_edit)                                                          \
+    XX(selected_items_add)                                                     \
+    XX(sort_playlist_dialog)                                                   \
+    XX(search_engine)                                                          \
+    XX(media_library)                                                          \
+    XX(tag_edit)                                                               \
+    XX(tiny_tag_edit)                                                          \
+    XX(song_info)                                                              \
+    XX(server_info)                                                            \
     XX(outputs)
 
 #if defined(ENABLE_OUTPUTS)
 #define APP_SCREEN_ENABLED_OUTPUTS(XX) XX(outputs)
-#define APP_SCREEN_ENABLED_OUTPUTS_RESIZE(XX)               \
+#define APP_SCREEN_ENABLED_OUTPUTS_RESIZE(XX)                                  \
     XX(outputs, NC_SCREEN_TYPE_OUTPUTS)
 #else
 #define APP_SCREEN_ENABLED_OUTPUTS(XX)
@@ -236,11 +236,11 @@
 #endif
 
 #if defined(HAVE_TAGLIB_H)
-#define APP_SCREEN_ENABLED_TAG_EDIT(XX)                   \
-    XX(tag_edit)                                              \
+#define APP_SCREEN_ENABLED_TAG_EDIT(XX)                                        \
+    XX(tag_edit)                                                               \
     XX(tiny_tag_edit)
-#define APP_SCREEN_ENABLED_TAG_EDIT_RESIZE(XX)            \
-    XX(tag_edit, NC_SCREEN_TYPE_TAG_EDIT)                     \
+#define APP_SCREEN_ENABLED_TAG_EDIT_RESIZE(XX)                                 \
+    XX(tag_edit, NC_SCREEN_TYPE_TAG_EDIT)                                      \
     XX(tiny_tag_edit, NC_SCREEN_TYPE_TINY_TAG_EDIT)
 #else
 #define APP_SCREEN_ENABLED_TAG_EDIT(XX)
@@ -249,60 +249,60 @@
 
 #if defined(ENABLE_VISUALIZER)
 #define APP_SCREEN_ENABLED_VISUALIZER(XX) XX(visualizer)
-#define APP_SCREEN_ENABLED_VISUALIZER_RESIZE(XX)            \
+#define APP_SCREEN_ENABLED_VISUALIZER_RESIZE(XX)                               \
     XX(visualizer, NC_SCREEN_TYPE_VISUALIZER)
 #else
 #define APP_SCREEN_ENABLED_VISUALIZER(XX)
 #define APP_SCREEN_ENABLED_VISUALIZER_RESIZE(XX)
 #endif
 
-#define APP_SCREEN_INIT_ALL_TYPES(XX)                         \
-    XX(browser)                                                   \
-    XX(help)                                                      \
-    XX(lastfm)                                                    \
-    XX(lyrics)                                                    \
-    XX(media_library)                                             \
-    XX(playlist)                                                  \
-    XX(playlist_edit)                                             \
-    XX(search_engine)                                             \
-    XX(selected_items_add)                                      \
-    XX(server_info)                                               \
-    XX(song_info)                                                 \
-    XX(sort_playlist_dialog)                                      \
-    APP_SCREEN_ENABLED_TAG_EDIT(XX)                           \
-    APP_SCREEN_ENABLED_VISUALIZER(XX)                         \
+#define APP_SCREEN_INIT_ALL_TYPES(XX)                                          \
+    XX(browser)                                                                \
+    XX(help)                                                                   \
+    XX(lastfm)                                                                 \
+    XX(lyrics)                                                                 \
+    XX(media_library)                                                          \
+    XX(playlist)                                                               \
+    XX(playlist_edit)                                                          \
+    XX(search_engine)                                                          \
+    XX(selected_items_add)                                                     \
+    XX(server_info)                                                            \
+    XX(song_info)                                                              \
+    XX(sort_playlist_dialog)                                                   \
+    APP_SCREEN_ENABLED_TAG_EDIT(XX)                                            \
+    APP_SCREEN_ENABLED_VISUALIZER(XX)                                          \
     APP_SCREEN_ENABLED_OUTPUTS(XX)
 
-#define APP_SCREEN_REGISTER_INITIAL_TYPES(XX)                 \
-    XX(browser)                                                   \
-    XX(help)                                                      \
-    XX(lastfm)                                                    \
-    XX(media_library)                                             \
-    XX(search_engine)                                             \
-    XX(selected_items_add)                                      \
-    XX(song_info)                                                 \
-    XX(server_info)                                               \
-    APP_SCREEN_ENABLED_VISUALIZER(XX)                         \
-    APP_SCREEN_ENABLED_TAG_EDIT(XX)                           \
-    APP_SCREEN_ENABLED_OUTPUTS(XX)                            \
-    XX(playlist)                                                  \
+#define APP_SCREEN_REGISTER_INITIAL_TYPES(XX)                                  \
+    XX(browser)                                                                \
+    XX(help)                                                                   \
+    XX(lastfm)                                                                 \
+    XX(media_library)                                                          \
+    XX(search_engine)                                                          \
+    XX(selected_items_add)                                                     \
+    XX(song_info)                                                              \
+    XX(server_info)                                                            \
+    APP_SCREEN_ENABLED_VISUALIZER(XX)                                          \
+    APP_SCREEN_ENABLED_TAG_EDIT(XX)                                            \
+    APP_SCREEN_ENABLED_OUTPUTS(XX)                                             \
+    XX(playlist)                                                               \
     XX(playlist_edit)
 
-#define APP_SCREEN_RESIZE_REQUEST_TYPES(XX)                   \
-    XX(browser, NC_SCREEN_TYPE_BROWSER)                           \
-    XX(help, NC_SCREEN_TYPE_HELP)                                 \
-    XX(lastfm, NC_SCREEN_TYPE_LASTFM)                             \
-    XX(lyrics, NC_SCREEN_TYPE_LYRICS)                             \
-    XX(media_library, NC_SCREEN_TYPE_MEDIA_LIBRARY)               \
-    XX(playlist, NC_SCREEN_TYPE_PLAYLIST)                         \
-    XX(playlist_edit, NC_SCREEN_TYPE_PLAYLIST_EDIT)             \
-    XX(search_engine, NC_SCREEN_TYPE_SEARCH_ENGINE)               \
-    XX(selected_items_add, NC_SCREEN_TYPE_SELECTED_ITEMS_ADD) \
-    XX(server_info, NC_SCREEN_TYPE_SERVER_INFO)                   \
-    XX(song_info, NC_SCREEN_TYPE_SONG_INFO)                       \
-    XX(sort_playlist_dialog, NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG) \
-    APP_SCREEN_ENABLED_TAG_EDIT_RESIZE(XX)                    \
-    APP_SCREEN_ENABLED_VISUALIZER_RESIZE(XX)                  \
+#define APP_SCREEN_RESIZE_REQUEST_TYPES(XX)                                    \
+    XX(browser, NC_SCREEN_TYPE_BROWSER)                                        \
+    XX(help, NC_SCREEN_TYPE_HELP)                                              \
+    XX(lastfm, NC_SCREEN_TYPE_LASTFM)                                          \
+    XX(lyrics, NC_SCREEN_TYPE_LYRICS)                                          \
+    XX(media_library, NC_SCREEN_TYPE_MEDIA_LIBRARY)                            \
+    XX(playlist, NC_SCREEN_TYPE_PLAYLIST)                                      \
+    XX(playlist_edit, NC_SCREEN_TYPE_PLAYLIST_EDIT)                            \
+    XX(search_engine, NC_SCREEN_TYPE_SEARCH_ENGINE)                            \
+    XX(selected_items_add, NC_SCREEN_TYPE_SELECTED_ITEMS_ADD)                  \
+    XX(server_info, NC_SCREEN_TYPE_SERVER_INFO)                                \
+    XX(song_info, NC_SCREEN_TYPE_SONG_INFO)                                    \
+    XX(sort_playlist_dialog, NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG)              \
+    APP_SCREEN_ENABLED_TAG_EDIT_RESIZE(XX)                                     \
+    APP_SCREEN_ENABLED_VISUALIZER_RESIZE(XX)                                   \
     APP_SCREEN_ENABLED_OUTPUTS_RESIZE(XX)
 
 #define NC_SCREEN_DEFAULT_WINDOW_TIMEOUT 500
@@ -324,14 +324,14 @@ typedef struct NcScreenResizeParams {
     int32 width;
 } NcScreenResizeParams;
 
-#define NC_SCREEN_CAPABILITY_FIELDS(XX)                                      \
-    XX(NC_SCREEN_CAPABILITY_MENU)                                            \
-    XX(NC_SCREEN_CAPABILITY_FILTER)                                          \
-    XX(NC_SCREEN_CAPABILITY_SEARCH)                                          \
-    XX(NC_SCREEN_CAPABILITY_FIND)                                            \
-    XX(NC_SCREEN_CAPABILITY_SONGS)                                           \
-    XX(NC_SCREEN_CAPABILITY_COLUMNS)                                         \
-    XX(NC_SCREEN_CAPABILITY_TAGS)                                            \
+#define NC_SCREEN_CAPABILITY_FIELDS(XX)                                        \
+    XX(NC_SCREEN_CAPABILITY_MENU)                                              \
+    XX(NC_SCREEN_CAPABILITY_FILTER)                                            \
+    XX(NC_SCREEN_CAPABILITY_SEARCH)                                            \
+    XX(NC_SCREEN_CAPABILITY_FIND)                                              \
+    XX(NC_SCREEN_CAPABILITY_SONGS)                                             \
+    XX(NC_SCREEN_CAPABILITY_COLUMNS)                                           \
+    XX(NC_SCREEN_CAPABILITY_TAGS)                                              \
     XX(NC_SCREEN_CAPABILITY_DISPLAY_MODE)
 
 #define ENUM_NAME NcScreenCapabilityFlag
@@ -387,39 +387,39 @@ typedef struct NcScreenOps {
     bool mergable;
 } NcScreenOps;
 
-#define NC_SCREEN_COLUMN_CAPABILITY_CALLBACKS(PREFIX, SCREEN_TYPE,           \
-                                              PREVIOUS_AVAILABLE,            \
-                                              NEXT_AVAILABLE, PREVIOUS,      \
-                                              NEXT)                          \
-static bool                                                                  \
-PREFIX##_previous_column_available_capability(NcScreen *base) {              \
-    return PREVIOUS_AVAILABLE((SCREEN_TYPE *)base);                          \
-}                                                                            \
-                                                                             \
-static bool                                                                  \
-PREFIX##_next_column_available_capability(NcScreen *base) {                  \
-    return NEXT_AVAILABLE((SCREEN_TYPE *)base);                              \
-}                                                                            \
-                                                                             \
-static int32                                                                 \
-PREFIX##_previous_column_capability(NcScreen *base) {                        \
-    PREVIOUS((SCREEN_TYPE *)base);                                           \
-    return 0;                                                                \
-}                                                                            \
-                                                                             \
-static int32                                                                 \
-PREFIX##_next_column_capability(NcScreen *base) {                            \
-    NEXT((SCREEN_TYPE *)base);                                               \
-    return 0;                                                                \
+#define NC_SCREEN_COLUMN_CAPABILITY_CALLBACKS(PREFIX, SCREEN_TYPE,             \
+                                              PREVIOUS_AVAILABLE,              \
+                                              NEXT_AVAILABLE, PREVIOUS,        \
+                                              NEXT)                            \
+static bool                                                                    \
+PREFIX##_previous_column_available_capability(NcScreen *base) {                \
+    return PREVIOUS_AVAILABLE((SCREEN_TYPE *)base);                            \
+}                                                                              \
+                                                                               \
+static bool                                                                    \
+PREFIX##_next_column_available_capability(NcScreen *base) {                    \
+    return NEXT_AVAILABLE((SCREEN_TYPE *)base);                                \
+}                                                                              \
+                                                                               \
+static int32                                                                   \
+PREFIX##_previous_column_capability(NcScreen *base) {                          \
+    PREVIOUS((SCREEN_TYPE *)base);                                             \
+    return 0;                                                                  \
+}                                                                              \
+                                                                               \
+static int32                                                                   \
+PREFIX##_next_column_capability(NcScreen *base) {                              \
+    NEXT((SCREEN_TYPE *)base);                                                 \
+    return 0;                                                                  \
 }
 
-#define NC_SCREEN_COLUMN_CAPABILITY_SET_OPS(OPS, PREFIX)                     \
-do {                                                                         \
-    (OPS).previous_column_available =                                        \
-        PREFIX##_previous_column_available_capability;                       \
-    (OPS).next_column_available = PREFIX##_next_column_available_capability; \
-    (OPS).previous_column = PREFIX##_previous_column_capability;             \
-    (OPS).next_column = PREFIX##_next_column_capability;                     \
+#define NC_SCREEN_COLUMN_CAPABILITY_SET_OPS(OPS, PREFIX)                       \
+do {                                                                           \
+    (OPS).previous_column_available =                                          \
+        PREFIX##_previous_column_available_capability;                         \
+    (OPS).next_column_available = PREFIX##_next_column_available_capability;   \
+    (OPS).previous_column = PREFIX##_previous_column_capability;               \
+    (OPS).next_column = PREFIX##_next_column_capability;                       \
 } while (0)
 
 struct NcScreen {
@@ -1301,7 +1301,7 @@ int32 media_library_screen_locate_song(MediaLibraryScreen *, NcmSong *,
 #define ENUM_PREFIX_ PLAYLIST_EDIT_COLUMN_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(PLAYLIST_EDIT_COLUMN_PLAYLISTS, Playlists)                            \
+    XX(PLAYLIST_EDIT_COLUMN_PLAYLISTS, Playlists)                              \
     XX(PLAYLIST_EDIT_COLUMN_CONTENT, Content)
 #include "cbase/xenums.c"
 
@@ -1310,11 +1310,11 @@ int32 media_library_screen_locate_song(MediaLibraryScreen *, NcmSong *,
 #define ENUM_NAME PlaylistEditCommandType
 #define ENUM_PREFIX_ PLAYLIST_EDIT_COMMAND_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                  \
-    XX(PLAYLIST_EDIT_COMMAND_NONE, none)           \
-    XX(PLAYLIST_EDIT_COMMAND_LOAD, Load)           \
-    XX(PLAYLIST_EDIT_COMMAND_SAVE, Save)           \
-    XX(PLAYLIST_EDIT_COMMAND_RENAME, Rename)       \
+#define ENUM_FIELDS                                                            \
+    XX(PLAYLIST_EDIT_COMMAND_NONE, none)                                       \
+    XX(PLAYLIST_EDIT_COMMAND_LOAD, Load)                                       \
+    XX(PLAYLIST_EDIT_COMMAND_SAVE, Save)                                       \
+    XX(PLAYLIST_EDIT_COMMAND_RENAME, Rename)                                   \
     XX(PLAYLIST_EDIT_COMMAND_DELETE, Delete)
 #include "cbase/xenums.c"
 
@@ -1524,7 +1524,7 @@ void playlist_screen_reload_total_length(PlaylistScreen *);
 void playlist_screen_reload_remaining(PlaylistScreen *);
 
 #define SEARCH_ENGINE_CONSTRAINT_COUNT (TAG_COUNT + 2)
-#define SEARCH_ENGINE_FIRST_SEPARATOR_ROW \
+#define SEARCH_ENGINE_FIRST_SEPARATOR_ROW                                      \
     ((int32)SEARCH_ENGINE_CONSTRAINT_COUNT)
 #define SEARCH_ENGINE_SEARCH_SOURCE_ROW (SEARCH_ENGINE_FIRST_SEPARATOR_ROW + 1)
 #define SEARCH_ENGINE_SEARCH_MODE_ROW (SEARCH_ENGINE_SEARCH_SOURCE_ROW + 1)
@@ -1532,11 +1532,11 @@ void playlist_screen_reload_remaining(PlaylistScreen *);
 #define SEARCH_ENGINE_SEARCH_BUTTON_ROW (SEARCH_ENGINE_SECOND_SEPARATOR_ROW + 1)
 #define SEARCH_ENGINE_RESET_BUTTON_ROW (SEARCH_ENGINE_SEARCH_BUTTON_ROW + 1)
 #define SEARCH_ENGINE_RESULT_SEPARATOR_ROW (SEARCH_ENGINE_RESET_BUTTON_ROW + 1)
-#define SEARCH_ENGINE_RESULT_SUMMARY_ROW \
+#define SEARCH_ENGINE_RESULT_SUMMARY_ROW                                       \
     (SEARCH_ENGINE_RESULT_SEPARATOR_ROW + 1)
-#define SEARCH_ENGINE_RESULT_END_SEPARATOR_ROW \
+#define SEARCH_ENGINE_RESULT_END_SEPARATOR_ROW                                 \
     (SEARCH_ENGINE_RESULT_SUMMARY_ROW + 1)
-#define SEARCH_ENGINE_STATIC_ROW_COUNT \
+#define SEARCH_ENGINE_STATIC_ROW_COUNT                                         \
     (SEARCH_ENGINE_RESULT_END_SEPARATOR_ROW + 1)
 
 #define ENUM_NAME SearchEngineSearchMode
@@ -1544,7 +1544,7 @@ void playlist_screen_reload_remaining(PlaylistScreen *);
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
     XX(SEARCH_ENGINE_SEARCH_MODE_LITERAL,                                      \
-       Match if tag contains searched phrase (no regexes))                    \
+       Match if tag contains searched phrase (no regexes))                     \
     XX(SEARCH_ENGINE_SEARCH_MODE_REGEX,                                        \
        Match if tag contains searched phrase (regexes supported))              \
     XX(SEARCH_ENGINE_SEARCH_MODE_EXACT,                                        \
@@ -1647,7 +1647,7 @@ typedef struct PlaylistScreen PlaylistScreen;
 #define ENUM_PREFIX_ SELECTED_ITEMS_ADD_MENU_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(SELECTED_ITEMS_ADD_MENU_PLAYLISTS, Playlists)                         \
+    XX(SELECTED_ITEMS_ADD_MENU_PLAYLISTS, Playlists)                           \
     XX(SELECTED_ITEMS_ADD_MENU_POSITIONS, Positions)
 #include "cbase/xenums.c"
 
@@ -1733,40 +1733,40 @@ int32 sort_playlist_dialog_move_current_down(SortPlaylistDialog *);
 #define ENUM_NAME TagEditColumn
 #define ENUM_PREFIX_ TAG_EDIT_COLUMN_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                  \
-    XX(TAG_EDIT_COLUMN_DIRECTORIES, Directories)                   \
-    XX(TAG_EDIT_COLUMN_TAG_TYPES, Tag types)                       \
+#define ENUM_FIELDS                                                            \
+    XX(TAG_EDIT_COLUMN_DIRECTORIES, Directories)                               \
+    XX(TAG_EDIT_COLUMN_TAG_TYPES, Tag types)                                   \
     XX(TAG_EDIT_COLUMN_TAGS, Tags)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME TagEditParserMode
 #define ENUM_PREFIX_ TAG_EDIT_PARSER_MODE_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                  \
-    XX(TAG_EDIT_PARSER_MODE_NONE, Pattern)                              \
-    XX(TAG_EDIT_PARSER_MODE_TAGS_FROM_FILENAME, Get tags from filename) \
+#define ENUM_FIELDS                                                            \
+    XX(TAG_EDIT_PARSER_MODE_NONE, Pattern)                                     \
+    XX(TAG_EDIT_PARSER_MODE_TAGS_FROM_FILENAME, Get tags from filename)        \
     XX(TAG_EDIT_PARSER_MODE_RENAME_FILES, Rename files)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME TagEditFocus
 #define ENUM_PREFIX_ TAG_EDIT_FOCUS_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                  \
-    XX(TAG_EDIT_FOCUS_DIRECTORIES, Directories)                    \
-    XX(TAG_EDIT_FOCUS_TAG_TYPES, Tag types)                        \
-    XX(TAG_EDIT_FOCUS_TAGS, Tags)                                  \
-    XX(TAG_EDIT_FOCUS_PARSER_CHOICE, Pattern)                      \
-    XX(TAG_EDIT_FOCUS_PARSER_ACTIONS, Pattern actions)             \
-    XX(TAG_EDIT_FOCUS_PARSER_LEGEND, Legend)                       \
+#define ENUM_FIELDS                                                            \
+    XX(TAG_EDIT_FOCUS_DIRECTORIES, Directories)                                \
+    XX(TAG_EDIT_FOCUS_TAG_TYPES, Tag types)                                    \
+    XX(TAG_EDIT_FOCUS_TAGS, Tags)                                              \
+    XX(TAG_EDIT_FOCUS_PARSER_CHOICE, Pattern)                                  \
+    XX(TAG_EDIT_FOCUS_PARSER_ACTIONS, Pattern actions)                         \
+    XX(TAG_EDIT_FOCUS_PARSER_LEGEND, Legend)                                   \
     XX(TAG_EDIT_FOCUS_PARSER_PREVIEW, Preview)
 #include "cbase/xenums.c"
 
 #define ENUM_NAME TagEditPromptResult
 #define ENUM_PREFIX_ TAG_EDIT_PROMPT_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                  \
-    XX(TAG_EDIT_PROMPT_ERROR)                                      \
-    XX(TAG_EDIT_PROMPT_ABORTED)                                    \
+#define ENUM_FIELDS                                                            \
+    XX(TAG_EDIT_PROMPT_ERROR)                                                  \
+    XX(TAG_EDIT_PROMPT_ABORTED)                                                \
     XX(TAG_EDIT_PROMPT_ACCEPTED)
 #include "cbase/xenums.c"
 
@@ -1947,11 +1947,11 @@ enum TinyTagEditRow {
 #define ENUM_PREFIX_ TINY_TAG_EDIT_OPEN_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(TINY_TAG_EDIT_OPEN_SUCCESS)                                           \
-    XX(TINY_TAG_EDIT_OPEN_INVALID_ARGUMENT)                                  \
-    XX(TINY_TAG_EDIT_OPEN_STREAM)                                            \
-    XX(TINY_TAG_EDIT_OPEN_MISSING_MUSIC_DIRECTORY)                           \
-    XX(TINY_TAG_EDIT_OPEN_UNREADABLE_FILE)                                   \
+    XX(TINY_TAG_EDIT_OPEN_SUCCESS)                                             \
+    XX(TINY_TAG_EDIT_OPEN_INVALID_ARGUMENT)                                    \
+    XX(TINY_TAG_EDIT_OPEN_STREAM)                                              \
+    XX(TINY_TAG_EDIT_OPEN_MISSING_MUSIC_DIRECTORY)                             \
+    XX(TINY_TAG_EDIT_OPEN_UNREADABLE_FILE)                                     \
     XX(TINY_TAG_EDIT_OPEN_PREPARE_FAILED)
 #include "cbase/xenums.c"
 
@@ -1959,8 +1959,8 @@ enum TinyTagEditRow {
 #define ENUM_PREFIX_ TINY_TAG_EDIT_PROMPT_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(TINY_TAG_EDIT_PROMPT_ERROR)                                           \
-    XX(TINY_TAG_EDIT_PROMPT_ABORTED)                                         \
+    XX(TINY_TAG_EDIT_PROMPT_ERROR)                                             \
+    XX(TINY_TAG_EDIT_PROMPT_ABORTED)                                           \
     XX(TINY_TAG_EDIT_PROMPT_ACCEPTED)
 #include "cbase/xenums.c"
 
@@ -2127,17 +2127,17 @@ int32 app_screens_switch_or_open_type(enum ScreenType);
 int32 app_screens_lock_current(void);
 enum ScreenType app_screens_current_type(void);
 
-#define APP_SCREEN_DECLARE_COMMON(suffix)          \
-    void app_screen_##suffix##_init(void);             \
-    void app_screen_##suffix##_register(void);         \
-    bool app_screen_##suffix##_is_current(void);       \
+#define APP_SCREEN_DECLARE_COMMON(suffix)                                      \
+    void app_screen_##suffix##_init(void);                                     \
+    void app_screen_##suffix##_register(void);                                 \
+    bool app_screen_##suffix##_is_current(void);                               \
     NcScreen *app_screen_##suffix##_base(void);
 
 APP_SCREEN_IS_CURRENT_TYPES(APP_SCREEN_DECLARE_COMMON)
 
 #undef APP_SCREEN_DECLARE_COMMON
 
-#define APP_SCREEN_DECLARE_DIRECT_ACCESSOR(                                \
+#define APP_SCREEN_DECLARE_DIRECT_ACCESSOR(                                    \
     suffix, type, storage, base_expr                                           \
 )                                                                              \
     type *app_screen_##suffix(void);
@@ -2146,12 +2146,12 @@ APP_SCREEN_DIRECT_ACCESSOR_TYPES(APP_SCREEN_DECLARE_DIRECT_ACCESSOR)
 
 #undef APP_SCREEN_DECLARE_DIRECT_ACCESSOR
 
-#define APP_SCREEN_DECLARE_TYPED_WRAPPED_ACCESSOR(                         \
+#define APP_SCREEN_DECLARE_TYPED_WRAPPED_ACCESSOR(                             \
     suffix, function, type, expr                                               \
 )                                                                              \
     type *function(void);
 
-#define APP_SCREEN_TYPED_WRAPPED_ACCESSOR \
+#define APP_SCREEN_TYPED_WRAPPED_ACCESSOR                                      \
     APP_SCREEN_DECLARE_TYPED_WRAPPED_ACCESSOR
 
 APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(APP_SCREEN_TYPED_WRAPPED_ACCESSOR)
@@ -2159,7 +2159,7 @@ APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(APP_SCREEN_TYPED_WRAPPED_ACCESSOR)
 #undef APP_SCREEN_TYPED_WRAPPED_ACCESSOR
 #undef APP_SCREEN_DECLARE_TYPED_WRAPPED_ACCESSOR
 
-#define APP_SCREEN_DECLARE_VOID_SWITCH(suffix)                             \
+#define APP_SCREEN_DECLARE_VOID_SWITCH(suffix)                                 \
     void app_screen_##suffix##_switch_to(void);
 
 APP_SCREEN_SIMPLE_SWITCH_TYPES(APP_SCREEN_DECLARE_VOID_SWITCH)
