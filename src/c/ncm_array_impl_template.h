@@ -9,8 +9,8 @@
  * Optional item operation definitions:
  *   NCM_ARRAY_ITEM_INIT
  *   NCM_ARRAY_ITEM_DESTROY
- *   NCM_ARRAY_ITEM_COPY
  *   NCM_ARRAY_ITEM_MOVE
+ *   NCM_ARRAY_ITEM_COPY
  *
  * Optional operation markers:
  *   NCM_ARRAY_COPY
