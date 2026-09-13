@@ -863,8 +863,6 @@ typedef struct LrcDocument {
     StrBuilder text;
     LrcEntry *entries;
 
-    int32 entries_len;
-    int32 entries_cap;
     int32 offset_ms;
     bool has_offset;
 } LrcDocument;

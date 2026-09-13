@@ -15,7 +15,7 @@ lrc_document_clear(LrcDocument *document) {
     }
 
     sb_clear(&document->text);
-    document->entries_len = 0;
+    ARRAY_CLEAR(document->entries);
     document->offset_ms = 0;
     document->has_offset = false;
     return;
@@ -24,7 +24,7 @@ lrc_document_clear(LrcDocument *document) {
 static void
 lrc_document_destroy_unchecked(LrcDocument *document) {
     sb_free(&document->text);
-    free2(document->entries, document->entries_cap*SIZEOF(*document->entries));
+    ARRAY_FREE(document->entries);
     *document = (LrcDocument){0};
     return;
 }
@@ -232,8 +232,8 @@ lrc_parse_time_integer(char *data, int32 data_len, llong *value,
 }
 
 static int32
-lrc_parse_time_tag(char *tag, int32 tag_len, int32 offset_ms,
-                   int32 *time_ms, NcmError *ncm_error) {
+lrc_parse_time_tag(char *tag, int32 tag_len, int32 offset_ms, int32 *time_ms,
+                   NcmError *ncm_error) {
     int32 colon;
     int32 dot;
     int32 frac_len;
@@ -341,37 +341,21 @@ lrc_append_line_entries(LrcDocument *document, int32 *source_order,
     ASSERT_NON_NEGATIVE(times_len);
 
     for (int32 i = 0; i < times_len; i += 1) {
-        LrcEntry *entry;
+        LrcEntry entry;
 
-        if (document->entries_len >= document->entries_cap) {
-            int32 new_cap = document->entries_cap;
-
-            if (new_cap <= 0) {
-                new_cap = 8;
-            } else {
-                new_cap *= 2;
-            }
-            document->entries = realloc2(document->entries,
-                                         document->entries_cap, new_cap,
-                                         SIZEOF(*document->entries));
-            document->entries_cap = new_cap;
-        }
-
-        entry = &document->entries[document->entries_len];
-        document->entries_len += 1;
-
-        entry->time_ms = times[i];
-        entry->text_start = document->text.len;
-        entry->text_len = text_len;
-        entry->buffer_start = NCM_LRC_NO_BUFFER_POSITION;
-        entry->buffer_end = NCM_LRC_NO_BUFFER_POSITION;
-        entry->source_order = *source_order;
+        entry.time_ms = times[i];
+        entry.text_start = document->text.len;
+        entry.text_len = text_len;
+        entry.buffer_start = NCM_LRC_NO_BUFFER_POSITION;
+        entry.buffer_end = NCM_LRC_NO_BUFFER_POSITION;
+        entry.source_order = *source_order;
         if (i == 0) {
-            entry->blank_lines_before = blank_lines_before;
+            entry.blank_lines_before = blank_lines_before;
         } else {
-            entry->blank_lines_before = 0;
+            entry.blank_lines_before = 0;
         }
 
+        ARRAY_PUSH(document->entries, entry);
         *source_order += 1;
         SB_APPEND(&document->text, text, text_len);
     }
@@ -490,13 +474,13 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
         return status;
     }
 
-    if (parsed.entries_len <= 0) {
+    if (ARRAY_LEN(parsed.entries) <= 0) {
         lrc_document_destroy_unchecked(&parsed);
         return ncm_error_set_code(ncm_error, NCM_ERROR_PARSE,
                                   STRLIT("no synchronized LRC lines"));
     }
-    if (parsed.entries_len > 1) {
-        qsort64(parsed.entries, parsed.entries_len,
+    if (ARRAY_LEN(parsed.entries) > 1) {
+        qsort64(parsed.entries, ARRAY_LEN(parsed.entries),
                 SIZEOF(*parsed.entries), lrc_entry_compare);
     }
 
@@ -523,7 +507,7 @@ static void
 lrc_document_clear_buffer_positions(LrcDocument *document) {
     ASSERT(document != NULL);
 
-    for (int32 i = 0; i < document->entries_len; i += 1) {
+    for (int32 i = 0; i < ARRAY_LEN(document->entries); i += 1) {
         document->entries[i].buffer_start = NCM_LRC_NO_BUFFER_POSITION;
         document->entries[i].buffer_end = NCM_LRC_NO_BUFFER_POSITION;
     }
@@ -543,7 +527,7 @@ lrc_document_render_plain(LrcDocument *document, LrcRenderTarget *target) {
     }
 
     lrc_document_clear_buffer_positions(document);
-    for (int32 i = 0; i < document->entries_len; i += 1) {
+    for (int32 i = 0; i < ARRAY_LEN(document->entries); i += 1) {
         LrcEntry *entry = &document->entries[i];
         StrView text;
 
@@ -568,7 +552,7 @@ static int32
 lrc_document_next_entry_after_time_unchecked(LrcDocument *document,
                                              int64 elapsed_ms) {
     int32 left = 0;
-    int32 right = document->entries_len;
+    int32 right = ARRAY_LEN(document->entries);
 
     while (left < right) {
         int32 middle = left + (right - left)/2;
@@ -580,7 +564,7 @@ lrc_document_next_entry_after_time_unchecked(LrcDocument *document,
         }
     }
 
-    if (left >= document->entries_len) {
+    if (left >= ARRAY_LEN(document->entries)) {
         return -1;
     }
     return left;
@@ -590,7 +574,7 @@ int32
 lrc_document_entry_at_time(LrcDocument *document, int64 elapsed_ms) {
     int32 next;
 
-    if ((document == NULL) || (document->entries_len <= 0)) {
+    if ((document == NULL) || (ARRAY_LEN(document->entries) <= 0)) {
         return -1;
     }
     if (elapsed_ms < 0) {
@@ -599,7 +583,7 @@ lrc_document_entry_at_time(LrcDocument *document, int64 elapsed_ms) {
 
     next = lrc_document_next_entry_after_time_unchecked(document, elapsed_ms);
     if (next < 0) {
-        return document->entries_len - 1;
+        return ARRAY_LEN(document->entries) - 1;
     }
 
     return next - 1;
@@ -607,8 +591,8 @@ lrc_document_entry_at_time(LrcDocument *document, int64 elapsed_ms) {
 
 int32
 lrc_document_next_entry_after_time(LrcDocument *document,
-                                       int64 elapsed_ms) {
-    if ((document == NULL) || (document->entries_len <= 0)) {
+                                   int64 elapsed_ms) {
+    if ((document == NULL) || (ARRAY_LEN(document->entries) <= 0)) {
         return -1;
     }
 
