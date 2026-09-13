@@ -242,9 +242,8 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                          int32 start, int32 end, uint32 flags,
                          NcmError *ncm_error) {
     StrBuilder token = {0};
-    int32 status;
+    int32 status = 0;
 
-    status = 0;
     for (int32 i = start; (status == 0) && (i < end); i += 1) {
         if (data[i] == '{') {
             NcmFormatExpr *first;
