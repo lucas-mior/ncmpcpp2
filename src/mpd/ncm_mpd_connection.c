@@ -216,10 +216,9 @@ ncm_mpd_connection_recv_song_list(MpdConnection *connection,
 static int32
 ncm_mpd_connection_recv_pair_list(MpdConnection *connection, char *name,
                                   StrFlexList *strings) {
-    struct mpd_pair *pair;
-
     strflex_list_clear(strings);
     while (true) {
+        struct mpd_pair *pair;
         char *value;
 
         if ((pair = mpd_recv_pair_named(connection->mpd, name)) == NULL) {
