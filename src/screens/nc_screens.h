@@ -145,8 +145,7 @@
     XX(lyrics, LyricsScreen, lyrics_screen)                                    \
     XX(playlist, PlaylistScreen, playlist_screen)                              \
     XX(playlist_edit, PlaylistEditScreen, playlist_edit_screen)                \
-    XX(selected_items_add, SelectedItemsAdderScreen,                         \
-       selected_items_add_screen)                                            \
+    XX(selected_items_add, SelectedItemsAdderScreen, selected_items_add_screen) \
     XX(sort_playlist_dialog, SortPlaylistDialog, sort_playlist_dialog)         \
     XX(search_engine, SearchEngineScreen, search_engine_screen)                \
     XX(media_library, MediaLibraryScreen, media_library_screen)                \
