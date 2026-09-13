@@ -21,6 +21,8 @@
  *   NCM_ARRAY_REMOVE_ORDERED
  */
 
+#include "cbase.h"
+
 #if !defined(NCM_ARRAY_TYPE)
 #error "NCM_ARRAY_TYPE must be defined"
 #endif
