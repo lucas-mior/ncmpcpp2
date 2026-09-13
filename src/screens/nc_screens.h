@@ -2132,10 +2132,8 @@ APP_SCREEN_DIRECT_ACCESSOR_TYPES(APP_SCREEN_DECLARE_DIRECT_ACCESSOR)
 
 #undef APP_SCREEN_DECLARE_DIRECT_ACCESSOR
 
-#define APP_SCREEN_DECLARE_TYPED_WRAPPED_ACCESSOR(                             \
-    suffix, function, type, expr                                               \
-)                                                                              \
-    type *function(void);
+#define APP_SCREEN_DECLARE_TYPED_WRAPPED_ACCESSOR(suffix, func, type, expr) \
+    type *func(void);
 
 #define APP_SCREEN_TYPED_WRAPPED_ACCESSOR                                      \
     APP_SCREEN_DECLARE_TYPED_WRAPPED_ACCESSOR
