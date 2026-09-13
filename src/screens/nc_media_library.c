@@ -3172,9 +3172,9 @@ media_library_screen_search_songs(MediaLibraryScreen *screen,
 }
 
 int32
-media_library_screen_add_songs(
-    MediaLibraryScreen *screen, NcmSongArray *songs, bool play,
-    NcmError *ncm_error) {
+media_library_screen_add_songs(MediaLibraryScreen *screen,
+                               NcmSongArray *songs, bool play,
+                               NcmError *ncm_error) {
     if ((screen == NULL) || (screen->hooks.add_songs == NULL)) {
         return ncm_error_set_status(ncm_error, -ENOSYS,
                                     STRLIT("add-songs hook is unavailable"));
