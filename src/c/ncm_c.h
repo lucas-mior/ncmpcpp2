@@ -652,6 +652,7 @@ NCM_ARRAY_DECLARE_MOVE(ncm_mpd_item_array, NcmMpdItemArray)
 NCM_ARRAY_DECLARE_RESERVE(ncm_mpd_item_array, NcmMpdItemArray)
 NCM_ARRAY_DECLARE_APPEND(ncm_mpd_item_array, NcmMpdItemArray, NcmMpdItem)
 NCM_ARRAY_DECLARE_APPEND_COPY(ncm_mpd_item_array, NcmMpdItemArray, NcmMpdItem)
+NCM_ARRAY_DECLARE_APPEND_MOVE(ncm_mpd_item_array, NcmMpdItemArray, NcmMpdItem)
 
 #include <regex.h>
 
@@ -737,12 +738,6 @@ typedef struct NcmMpdStats {
     int32 db_play_time;
 } NcmMpdStats;
 
-typedef struct NcmMpdItemList {
-    NcmMpdItem *items;
-    int32 len;
-    int32 capacity;
-} NcmMpdItemList;
-
 typedef struct NcmMpdOutput {
     int32 id;
     char *name;
@@ -823,11 +818,8 @@ int32 ncm_mpd_connection_get_url_handlers(MpdConnection *,
                                           StrFlexList *);
 int32 ncm_mpd_connection_get_tag_types(MpdConnection *, StrFlexList *);
 
-void ncm_mpd_item_list_destroy(NcmMpdItemList *);
-void ncm_mpd_item_list_clear(NcmMpdItemList *);
-int32 ncm_mpd_item_list_to_item_array(NcmMpdItemList *, NcmMpdItemArray *);
-int32 ncm_mpd_item_list_to_directory_array(NcmMpdItemList *,
-                                           NcmDirectoryArray *);
+int32 ncm_mpd_item_array_to_directory_array(NcmMpdItemArray *,
+                                            NcmDirectoryArray *);
 
 void ncm_mpd_output_list_destroy(NcmMpdOutputList *);
 void ncm_mpd_output_list_clear(NcmMpdOutputList *);
@@ -842,7 +834,7 @@ int32 ncm_mpd_connection_get_playlist_content_no_info(MpdConnection *,
                                                       char *, NcmSongArray *);
 
 int32 ncm_mpd_connection_get_directory(MpdConnection *, char *,
-                                       NcmMpdItemList *);
+                                       NcmMpdItemArray *);
 int32 ncm_mpd_connection_get_directory_songs(MpdConnection *, char *,
                                              NcmSongArray *);
 int32 ncm_mpd_connection_list_all_songs(MpdConnection *, char *,

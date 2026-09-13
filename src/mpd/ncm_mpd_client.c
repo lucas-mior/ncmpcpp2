@@ -1112,7 +1112,7 @@ int32
 ncm_mpd_client_get_directory_entries(MpdClient *client, char *path,
                                      NcmMpdItemArray *items,
                                      NcmError *ncm_error) {
-    NcmMpdItemList list;
+    NcmMpdItemArray replacement = {0};
     int32 status;
 
     if (items == NULL) {
@@ -1124,15 +1124,15 @@ ncm_mpd_client_get_directory_entries(MpdClient *client, char *path,
         return status;
     }
 
-    list = (NcmMpdItemList){0};
-    status = ncm_mpd_connection_get_directory(&client->connection, path, &list);
+    status = ncm_mpd_connection_get_directory(&client->connection, path,
+                                               &replacement);
     if (status < 0) {
         ncm_mpd_client_copy_connection_error(client, ncm_error);
     } else {
-        ncm_mpd_item_list_to_item_array(&list, items);
+        ncm_mpd_item_array_move(items, &replacement);
         status = ncm_error_ok(ncm_error);
     }
-    ncm_mpd_item_list_destroy(&list);
+    ncm_mpd_item_array_destroy(&replacement);
     return status;
 }
 
@@ -1140,7 +1140,7 @@ int32
 ncm_mpd_client_get_directory_list(MpdClient *client, char *path,
                                   NcmDirectoryArray *directories,
                                   NcmError *ncm_error) {
-    NcmMpdItemList items;
+    NcmMpdItemArray items = {0};
     int32 status;
 
     if (directories == NULL) {
@@ -1152,16 +1152,15 @@ ncm_mpd_client_get_directory_list(MpdClient *client, char *path,
         return status;
     }
 
-    items = (NcmMpdItemList){0};
     status = ncm_mpd_connection_get_directory(&client->connection, path,
                                                &items);
     if (status < 0) {
         ncm_mpd_client_copy_connection_error(client, ncm_error);
     } else {
-        ncm_mpd_item_list_to_directory_array(&items, directories);
+        ncm_mpd_item_array_to_directory_array(&items, directories);
         status = ncm_error_ok(ncm_error);
     }
-    ncm_mpd_item_list_destroy(&items);
+    ncm_mpd_item_array_destroy(&items);
     return status;
 }
 

@@ -82,10 +82,17 @@ ncm_app_array_mpd_item_copy(void *dest, void *source) {
     return ncm_mpd_item_copy(dest, source);
 }
 
+static void
+ncm_app_array_mpd_item_move(void *dest, void *source) {
+    ncm_mpd_item_move(dest, source);
+    return;
+}
+
 static NcmArrayItemCallbacks ncm_app_array_mpd_item_callbacks = {
     .init = ncm_app_array_mpd_item_init,
     .destroy = ncm_app_array_mpd_item_destroy,
     .copy = ncm_app_array_mpd_item_copy,
+    .move = ncm_app_array_mpd_item_move,
 };
 
 NCM_ARRAY_DEFINE_CLEAR(ncm_song_array, NcmSongArray,
@@ -132,6 +139,8 @@ NCM_ARRAY_DEFINE_RESERVE(ncm_mpd_item_array, NcmMpdItemArray)
 NCM_ARRAY_DEFINE_APPEND(ncm_mpd_item_array, NcmMpdItemArray,
                         NcmMpdItem, &ncm_app_array_mpd_item_callbacks)
 NCM_ARRAY_DEFINE_APPEND_COPY(ncm_mpd_item_array, NcmMpdItemArray,
+                             NcmMpdItem, &ncm_app_array_mpd_item_callbacks)
+NCM_ARRAY_DEFINE_APPEND_MOVE(ncm_mpd_item_array, NcmMpdItemArray,
                              NcmMpdItem, &ncm_app_array_mpd_item_callbacks)
 
 #endif /* NCM_APP_ARRAYS_C */
