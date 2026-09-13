@@ -614,7 +614,7 @@ NCM_CLIENT_LIST_CALL(ncm_mpd_client_get_supported_extensions,
                      StrFlexList,
                      ncm_mpd_connection_get_supported_extensions)
 NCM_CLIENT_LIST_CALL(ncm_mpd_client_get_playlists,
-                     NcmPlaylistList, ncm_mpd_connection_get_playlists)
+                     NcmPlaylistArray, ncm_mpd_connection_get_playlists)
 NCM_CLIENT_LIST_CALL(ncm_mpd_client_get_outputs,
                      NcmMpdOutputList, ncm_mpd_connection_get_outputs)
 NCM_CLIENT_LIST_CALL(ncm_mpd_client_get_url_handlers,

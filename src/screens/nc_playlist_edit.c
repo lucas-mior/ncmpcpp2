@@ -1161,7 +1161,7 @@ playlist_edit_restore_playlist_path(PlaylistEditScreen *screen,
 
 int32
 playlist_edit_screen_load_playlists(PlaylistEditScreen *screen,
-                                      NcmPlaylistList *playlists) {
+                                      NcmPlaylistArray *playlists) {
     StrBuilder preserved = {0};
     NcMenu *menu;
     bool had_preserved;
@@ -1200,7 +1200,7 @@ int32
 playlist_edit_screen_reload_playlists_from_mpd(PlaylistEditScreen *screen,
                                                  MpdClient *client,
                                                  NcmError *ncm_error) {
-    NcmPlaylistList playlists = {0};
+    NcmPlaylistArray playlists = {0};
     int32 status;
 
     if (screen == NULL) {
@@ -1233,7 +1233,7 @@ playlist_edit_screen_reload_playlists_from_mpd(PlaylistEditScreen *screen,
         }
         playlist_edit_screen_load_playlists(screen, &playlists);
     }
-    ncm_mpd_playlist_list_destroy(&playlists);
+    ncm_playlist_array_destroy(&playlists);
     return status;
 }
 

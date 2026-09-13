@@ -832,7 +832,7 @@ selected_items_adder_screen_open(SelectedItemsAdderScreen *screen,
                                  NcmSongArray *songs,
                                  PlaylistScreen *playlist, MpdClient *client,
                                  NcmError *ncm_error) {
-    NcmPlaylistList playlists;
+    NcmPlaylistArray playlists = {0};
     NcmSongArray selected_songs = {0};
     NcmError playlist_error;
     NcScreen *adder_screen;
@@ -891,14 +891,13 @@ selected_items_adder_screen_open(SelectedItemsAdderScreen *screen,
         local_browser = browser_screen_is_local(browser);
     }
 
-    playlists = (NcmPlaylistList){0};
     if (!local_browser) {
         ncm_error_clear(&playlist_error);
         if (ncm_mpd_client_get_playlists(client, &playlists,
                                          &playlist_error) < 0) {
             StrBuilder message = {0};
 
-            ncm_mpd_playlist_list_clear(&playlists);
+            ncm_playlist_array_clear(&playlists);
             SB_APPEND(&message, "Could not fetch playlists: ");
             SB_APPEND(&message, playlist_error.message,
                       playlist_error.message_len);
@@ -981,7 +980,7 @@ selected_items_adder_screen_open(SelectedItemsAdderScreen *screen,
         nc_menu_reset(base);
         screen->active_menu = SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
     }
-    ncm_mpd_playlist_list_destroy(&playlists);
+    ncm_playlist_array_destroy(&playlists);
     adder_apply_geometry(screen);
 
     ncm_song_array_move(&screen->selected_songs, &selected_songs);

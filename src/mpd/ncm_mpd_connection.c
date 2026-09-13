@@ -306,32 +306,6 @@ ncm_mpd_output_list_clear(NcmMpdOutputList *list) {
 }
 
 void
-ncm_mpd_playlist_list_destroy(NcmPlaylistList *list) {
-    if (list == NULL) {
-        return;
-    }
-
-    ncm_mpd_playlist_list_clear(list);
-    free2(list->items, list->capacity*SIZEOF(*list->items));
-    *list = (NcmPlaylistList){0};
-
-    return;
-}
-
-void
-ncm_mpd_playlist_list_clear(NcmPlaylistList *list) {
-    if (list == NULL) {
-        return;
-    }
-
-    for (int32 i = 0; i < list->len; i += 1) {
-        ncm_playlist_destroy(&list->items[i]);
-    }
-    list->len = 0;
-    return;
-}
-
-void
 ncm_mpd_connection_destroy(MpdConnection *connection) {
     if (connection == NULL) {
         return;
@@ -869,12 +843,9 @@ ncm_mpd_connection_set_replay_gain_mode(MpdConnection *connection,
 
 int32
 ncm_mpd_connection_get_playlists(MpdConnection *connection,
-                                 NcmPlaylistList *playlists) {
+                                 NcmPlaylistArray *playlists) {
     struct mpd_playlist *playlist;
     NcmPlaylist item = {0};
-    int32 old_capacity;
-    int32 new_capacity;
-    int32 index;
     int32 err;
 
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
@@ -886,23 +857,10 @@ ncm_mpd_connection_get_playlists(MpdConnection *connection,
         return ncm_mpd_connection_check_error(connection);
     }
 
-    ncm_mpd_playlist_list_clear(playlists);
+    ncm_playlist_array_clear(playlists);
     while (true) {
         if ((playlist = mpd_recv_playlist(connection->mpd)) == NULL) {
             break;
-        }
-
-        if (playlists->len >= playlists->capacity) {
-            old_capacity = playlists->capacity;
-            new_capacity = old_capacity*2;
-            if (new_capacity < 8) {
-                new_capacity = 8;
-            }
-
-            playlists->items = realloc2(playlists->items,
-                                        old_capacity, new_capacity,
-                                        SIZEOF(*playlists->items));
-            playlists->capacity = new_capacity;
         }
 
         item = (NcmPlaylist){0};
@@ -914,10 +872,7 @@ ncm_mpd_connection_get_playlists(MpdConnection *connection,
             return -NCM_ERROR_MPD;
         }
 
-        index = playlists->len;
-        playlists->items[index] = (NcmPlaylist){0};
-        ncm_playlist_move(&playlists->items[index], &item);
-        playlists->len += 1;
+        ncm_playlist_array_append_move(playlists, &item);
         ncm_playlist_destroy(&item);
     }
 
