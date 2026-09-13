@@ -2028,7 +2028,7 @@ typedef struct BrowserScreen {
     StrBuilder item_text_buffer;
     StrBuilder path_buffer;
     StrBuilder scratch_buffer;
-    StrBuilderArray supported_extensions;
+    StrFlexList supported_extensions;
     NcmRegex filter_regex;
 
     int32 start_x;

@@ -198,10 +198,10 @@ browser_load_mpd_items(BrowserScreen *screen, NcmMpdItemArray *items) {
 }
 
 static bool
-browser_supported_extensions_contains(StrBuilderArray *extensions,
+browser_supported_extensions_contains(StrFlexList *extensions,
                                       char *extension, int32 extension_len) {
-    for (int32 i = 0; i < extensions->len; i += 1) {
-        StrBuilder *item = &extensions->items[i];
+    for (int32 i = 0; i < strflex_list_len(extensions); i += 1) {
+        StrFlex *item = strflex_list_at(extensions, i);
 
         if (STREQUAL(item->data, item->len, extension, extension_len)) {
             return true;
@@ -791,7 +791,7 @@ browser_screen_init(BrowserScreen *screen, int32 start_x, int32 width,
     screen->path_buffer = (StrBuilder){0};
     screen->scratch_buffer = (StrBuilder){0};
 
-    screen->supported_extensions = (StrBuilderArray){0};
+    screen->supported_extensions = (StrFlexList){0};
     screen->filter_regex = (NcmRegex){0};
 
     screen->start_x = start_x;
@@ -825,7 +825,7 @@ browser_screen_destroy(BrowserScreen *screen) {
     }
 
     ncm_regex_destroy(&screen->filter_regex);
-    str_builder_array_destroy(&screen->supported_extensions);
+    strflex_list_destroy(&screen->supported_extensions);
 
     sb_free(&screen->scratch_buffer);
     sb_free(&screen->path_buffer);
@@ -1276,7 +1276,7 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
                                           MpdClient *client,
                                           NcmError *ncm_error) {
     StrFlexList strings = {0};
-    StrBuilderArray extensions = {0};
+    StrFlexList extensions = {0};
     int32 status;
 
     if ((screen == NULL) || (client == NULL)) {
@@ -1305,13 +1305,14 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
 
         if (!browser_supported_extensions_contains(&extensions,
                                                    buffer.data, buffer.len)) {
-            str_builder_array_append_copy(&extensions, &buffer);
+            strflex_list_push(&extensions, buffer.data, buffer.len);
         }
         sb_free(&buffer);
     }
 
-    str_builder_array_move(&screen->supported_extensions, &extensions);
-    str_builder_array_destroy(&extensions);
+    strflex_list_destroy(&screen->supported_extensions);
+    screen->supported_extensions = extensions;
+    extensions = (StrFlexList){0};
     strflex_list_destroy(&strings);
     return ncm_error_ok(ncm_error);
 }
@@ -1387,7 +1388,8 @@ browser_screen_change_browse_mode(BrowserScreen *screen,
     browser_screen_set_local(screen, local_browser);
     browser_screen_clear(screen);
     browser_screen_request_update(screen);
-    if (local_browser && (screen->supported_extensions.len <= 0)) {
+    if (local_browser
+        && (strflex_list_len(&screen->supported_extensions) <= 0)) {
         NcmError fetch_error;
 
         ncm_error_clear(&fetch_error);
