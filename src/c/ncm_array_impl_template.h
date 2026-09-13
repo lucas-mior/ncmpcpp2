@@ -90,8 +90,8 @@ NCM_ARRAY_FUNCTION(_copy)(NCM_ARRAY_TYPE *dest, NCM_ARRAY_TYPE *source) {
     }
 
     if (source) {
-        if ((err = NCM_ARRAY_FUNCTION(_reserve)(
-                 &replacement, source->len)) < 0) {
+        if ((err = NCM_ARRAY_FUNCTION(_reserve)(&replacement,
+                                                source->len)) < 0) {
             NCM_ARRAY_FUNCTION(_destroy)(&replacement);
             return err;
         }
@@ -225,6 +225,7 @@ NCM_ARRAY_FUNCTION(_append_copy)(NCM_ARRAY_TYPE *array,
     dest = &array->items[index];
     array->len += 1;
     NCM_ARRAY_ITEM_INIT(dest);
+
 #if defined(NCM_ARRAY_ITEM_COPY)
     if ((err = NCM_ARRAY_ITEM_COPY(dest, item)) < 0) {
         array->len -= 1;
@@ -234,6 +235,7 @@ NCM_ARRAY_FUNCTION(_append_copy)(NCM_ARRAY_TYPE *array,
 #else
     *dest = *item;
 #endif
+
     return index;
 }
 #endif
