@@ -587,18 +587,18 @@ typedef struct NcmArrayItemCallbacks {
     NCM_ARRAY_DECLARE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE)             \
     NCM_ARRAY_DECLARE_REMOVE_ORDERED(PREFIX, ARRAY_TYPE)
 
-#define NCM_ARRAY_DEFINE(PREFIX, ARRAY_TYPE, ITEM_TYPE, CALLBACKS)             \
-    NCM_ARRAY_DEFINE_CLEAR(PREFIX, ARRAY_TYPE, CALLBACKS)                      \
-    NCM_ARRAY_DEFINE_DESTROY(PREFIX, ARRAY_TYPE)                               \
-    NCM_ARRAY_DEFINE_COPY(PREFIX, ARRAY_TYPE)                                  \
-    NCM_ARRAY_DEFINE_MOVE(PREFIX, ARRAY_TYPE)                                  \
-    NCM_ARRAY_DEFINE_SWAP(PREFIX, ARRAY_TYPE)                                  \
-    NCM_ARRAY_DEFINE_RESERVE(PREFIX, ARRAY_TYPE)                               \
-    NCM_ARRAY_DEFINE_APPEND(PREFIX, ARRAY_TYPE, ITEM_TYPE, CALLBACKS)          \
-    NCM_ARRAY_DEFINE_APPEND_COPY(PREFIX, ARRAY_TYPE, ITEM_TYPE,                \
-                                 CALLBACKS)                                    \
-    NCM_ARRAY_DEFINE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE,                \
-                                 CALLBACKS)                                    \
+#define NCM_ARRAY_DEFINE(PREFIX, ARRAY_TYPE, ITEM_TYPE, CALLBACKS)           \
+    NCM_ARRAY_DEFINE_CLEAR(PREFIX, ARRAY_TYPE, CALLBACKS)                    \
+    NCM_ARRAY_DEFINE_DESTROY(PREFIX, ARRAY_TYPE)                             \
+    NCM_ARRAY_DEFINE_COPY(PREFIX, ARRAY_TYPE)                                \
+    NCM_ARRAY_DEFINE_MOVE(PREFIX, ARRAY_TYPE)                                \
+    NCM_ARRAY_DEFINE_SWAP(PREFIX, ARRAY_TYPE)                                \
+    NCM_ARRAY_DEFINE_RESERVE(PREFIX, ARRAY_TYPE)                             \
+    NCM_ARRAY_DEFINE_APPEND(PREFIX, ARRAY_TYPE, ITEM_TYPE, CALLBACKS)        \
+    NCM_ARRAY_DEFINE_APPEND_COPY(PREFIX, ARRAY_TYPE, ITEM_TYPE,              \
+                                 CALLBACKS)                                  \
+    NCM_ARRAY_DEFINE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE,              \
+                                 CALLBACKS)                                  \
     NCM_ARRAY_DEFINE_REMOVE_ORDERED(PREFIX, ARRAY_TYPE, CALLBACKS)
 
 typedef struct NcmSampleBuffer {
