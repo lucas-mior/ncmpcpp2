@@ -1399,8 +1399,8 @@ media_library_screen_has_current_grouping_tag_value(MediaLibraryScreen *screen,
 }
 
 bool
-media_library_screen_has_current_album_value(
-    MediaLibraryScreen *screen, char **album, int32 *album_len) {
+media_library_screen_has_current_album_value(MediaLibraryScreen *screen,
+                                             char **album, int32 *album_len) {
     NcMediaLibraryAlbumRow *row;
 
     if ((screen == NULL) || (album == NULL) || (album_len == NULL)) {
