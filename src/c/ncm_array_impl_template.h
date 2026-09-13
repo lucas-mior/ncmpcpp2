@@ -280,10 +280,9 @@ NCM_ARRAY_FUNCTION(_remove_ordered)(NCM_ARRAY_TYPE *array, int32 idx) {
     NCM_ARRAY_ITEM_DESTROY(&array->items[idx]);
 #endif
     if (idx + 1 < array->len) {
-        memmove64(
-            &array->items[idx],
-            &array->items[idx + 1],
-            (array->len - idx - 1)*SIZEOF(*array->items));
+        memmove64(&array->items[idx],
+                  &array->items[idx + 1],
+                  (array->len - idx - 1)*SIZEOF(*array->items));
     }
     array->len -= 1;
     return;
