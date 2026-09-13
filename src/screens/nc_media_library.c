@@ -3290,9 +3290,8 @@ media_library_screen_add_item_to_playlist(MediaLibraryScreen *screen,
                       optional_strlen32(ncm_helpers_with_errors(result)));
         } else if (result && (songs.len == 1)) {
             NcmFormatAst *format = &Config.song_status_format;
-            StrBuilder rendered;
-
-            rendered = ncm_format_render_string(format, &songs.items[0]);
+            StrBuilder rendered = ncm_format_render_string(format,
+                                                           &songs.items[0]);
 
             SB_APPEND(&message, "Added to playlist: ");
             SB_APPEND(&message, rendered.data, rendered.len);
