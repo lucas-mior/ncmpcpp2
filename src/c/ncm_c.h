@@ -574,17 +574,17 @@ typedef struct NcmArrayItemCallbacks {
       return;                                                                \
   }
 
-#define NCM_ARRAY_DECLARE(PREFIX, ARRAY_TYPE, ITEM_TYPE)                       \
-    NCM_ARRAY_DECLARE_TYPE(ARRAY_TYPE, ITEM_TYPE)                              \
-    NCM_ARRAY_DECLARE_CLEAR(PREFIX, ARRAY_TYPE)                                \
-    NCM_ARRAY_DECLARE_DESTROY(PREFIX, ARRAY_TYPE)                              \
-    NCM_ARRAY_DECLARE_COPY(PREFIX, ARRAY_TYPE)                                 \
-    NCM_ARRAY_DECLARE_MOVE(PREFIX, ARRAY_TYPE)                                 \
-    NCM_ARRAY_DECLARE_SWAP(PREFIX, ARRAY_TYPE)                                 \
-    NCM_ARRAY_DECLARE_RESERVE(PREFIX, ARRAY_TYPE)                              \
-    NCM_ARRAY_DECLARE_APPEND(PREFIX, ARRAY_TYPE, ITEM_TYPE)                    \
-    NCM_ARRAY_DECLARE_APPEND_COPY(PREFIX, ARRAY_TYPE, ITEM_TYPE)               \
-    NCM_ARRAY_DECLARE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE)               \
+#define NCM_ARRAY_DECLARE(PREFIX, ARRAY_TYPE, ITEM_TYPE)                     \
+    NCM_ARRAY_DECLARE_TYPE(ARRAY_TYPE, ITEM_TYPE)                            \
+    NCM_ARRAY_DECLARE_CLEAR(PREFIX, ARRAY_TYPE)                              \
+    NCM_ARRAY_DECLARE_DESTROY(PREFIX, ARRAY_TYPE)                            \
+    NCM_ARRAY_DECLARE_COPY(PREFIX, ARRAY_TYPE)                               \
+    NCM_ARRAY_DECLARE_MOVE(PREFIX, ARRAY_TYPE)                               \
+    NCM_ARRAY_DECLARE_SWAP(PREFIX, ARRAY_TYPE)                               \
+    NCM_ARRAY_DECLARE_RESERVE(PREFIX, ARRAY_TYPE)                            \
+    NCM_ARRAY_DECLARE_APPEND(PREFIX, ARRAY_TYPE, ITEM_TYPE)                  \
+    NCM_ARRAY_DECLARE_APPEND_COPY(PREFIX, ARRAY_TYPE, ITEM_TYPE)             \
+    NCM_ARRAY_DECLARE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE)             \
     NCM_ARRAY_DECLARE_REMOVE_ORDERED(PREFIX, ARRAY_TYPE)
 
 #define NCM_ARRAY_DEFINE(PREFIX, ARRAY_TYPE, ITEM_TYPE, CALLBACKS)             \
