@@ -23,6 +23,12 @@
 
 #include "cbase.h"
 
+#if defined(__INCLUDE_LEVEL__) && (__INCLUDE_LEVEL__ == 0)
+#define NCM_ARRAY_TYPE      ncm_unused
+#define NCM_ARRAY_ITEM_TYPE int32
+#define NCM_ARRAY_PREFIX    ncm_unused2
+#endif
+
 #if !defined(NCM_ARRAY_TYPE)
 #error "NCM_ARRAY_TYPE must be defined"
 #endif
