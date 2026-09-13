@@ -597,8 +597,7 @@ typedef struct NcmArrayItemCallbacks {
     NCM_ARRAY_DEFINE_APPEND(PREFIX, ARRAY_TYPE, ITEM_TYPE, CALLBACKS)        \
     NCM_ARRAY_DEFINE_APPEND_COPY(PREFIX, ARRAY_TYPE, ITEM_TYPE,              \
                                  CALLBACKS)                                  \
-    NCM_ARRAY_DEFINE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE,              \
-                                 CALLBACKS)                                  \
+    NCM_ARRAY_DEFINE_APPEND_MOVE(PREFIX, ARRAY_TYPE, ITEM_TYPE, CALLBACKS)   \
     NCM_ARRAY_DEFINE_REMOVE_ORDERED(PREFIX, ARRAY_TYPE, CALLBACKS)
 
 typedef struct NcmSampleBuffer {
