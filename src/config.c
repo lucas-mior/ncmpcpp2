@@ -483,7 +483,6 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
     }
     for (int32 i = 0; i < options->config_paths.len; i += 1) {
         StrBuilder *path = &options->config_paths.items[i];
-
         strview_list_push(&config_paths, path->data, path->len);
     }
 
