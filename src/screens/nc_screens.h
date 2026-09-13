@@ -1169,8 +1169,8 @@ typedef struct MediaLibraryColumnState {
 typedef struct MediaLibraryHooks {
     int32 (*list_tags)(void *, enum TagType, StrFlexList *,
                        NcmError *);
-    int32 (*list_all_songs)(void *, NcmSongList *, NcmError *);
-    int32 (*search_songs)(void *, MediaLibrarySongQuery *, NcmSongList *,
+    int32 (*list_all_songs)(void *, NcmSongArray *, NcmError *);
+    int32 (*search_songs)(void *, MediaLibrarySongQuery *, NcmSongArray *,
                           NcmError *);
     int32 (*add_songs)(void *, NcmSongArray *, bool, NcmError *);
     void (*destroy)(void *);
@@ -1263,12 +1263,12 @@ void media_library_screen_format_song_row(MediaLibraryScreen *, NcmSong *,
 
 int32 media_library_tags_from_strings(MediaLibraryTagArray *,
                                       StrFlexList *);
-int32 media_library_tags_from_songs(MediaLibraryTagArray *, NcmSongList *,
+int32 media_library_tags_from_songs(MediaLibraryTagArray *, NcmSongArray *,
                                     enum TagType);
 int32 media_library_albums_from_songs(MediaLibraryAlbumArray *,
-                                      NcmSongList *, enum MediaLibraryMode,
+                                      NcmSongArray *, enum MediaLibraryMode,
                                       enum TagType, char *, int32);
-int32 media_library_songs_from_list(NcmSongArray *, NcmSongList *);
+int32 media_library_copy_sorted_songs(NcmSongArray *, NcmSongArray *);
 
 int32 media_library_screen_toggle_sort_mode(MediaLibraryScreen *, bool *);
 int32 media_library_screen_set_grouping_tag_type(MediaLibraryScreen *,
@@ -1303,10 +1303,10 @@ int32 media_library_screen_update(MediaLibraryScreen *, NcmError *);
 int32 media_library_screen_list_tags(MediaLibraryScreen *, enum TagType,
                                      StrFlexList *, NcmError *);
 int32 media_library_screen_list_all_songs(MediaLibraryScreen *,
-                                          NcmSongList *, NcmError *);
+                                          NcmSongArray *, NcmError *);
 int32 media_library_screen_search_songs(MediaLibraryScreen *,
                                         MediaLibrarySongQuery *,
-                                        NcmSongList *, NcmError *);
+                                        NcmSongArray *, NcmError *);
 int32 media_library_screen_add_songs(MediaLibraryScreen *, NcmSongArray *,
                                      bool, NcmError *);
 int32 media_library_screen_add_item_to_playlist(MediaLibraryScreen *, bool,
@@ -1418,7 +1418,7 @@ int32 playlist_edit_screen_load_playlists(PlaylistEditScreen *,
 int32 playlist_edit_screen_reload_playlists_from_mpd(PlaylistEditScreen *,
                                                      MpdClient *,
                                                      NcmError *);
-int32 playlist_edit_screen_load_content(PlaylistEditScreen *, NcmSongList *);
+int32 playlist_edit_screen_load_content(PlaylistEditScreen *, NcmSongArray *);
 int32 playlist_edit_screen_reload_content_from_mpd(PlaylistEditScreen *,
                                                    MpdClient *, NcmError *);
 int32 playlist_edit_screen_locate_playlist(PlaylistEditScreen *,

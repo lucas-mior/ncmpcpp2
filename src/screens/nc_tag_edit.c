@@ -1572,7 +1572,6 @@ tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
 static int32
 tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
                                  MpdClient *client, NcmError *ncm_error) {
-    NcmSongList list = {0};
     NcmSongArray songs = {0};
     StrBuilder preserved_uri = {0};
     char *path;
@@ -1594,15 +1593,12 @@ tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
         }
     }
 
-    status = ncm_mpd_client_get_songs(client, path, &list, ncm_error);
+    status = ncm_mpd_client_get_songs(client, path, &songs, ncm_error);
     if (status < 0) {
         sb_free(&preserved_uri);
         ncm_song_array_destroy(&songs);
-        ncm_mpd_song_list_destroy(&list);
         return status;
     }
-
-    ncm_mpd_song_list_to_song_array(&list, &songs);
 
     for (int32 i = 1; i < songs.len; i += 1) {
         NcmSong current = {0};
@@ -1663,7 +1659,6 @@ tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
 
     sb_free(&preserved_uri);
     ncm_song_array_destroy(&songs);
-    ncm_mpd_song_list_destroy(&list);
     return 0;
 }
 

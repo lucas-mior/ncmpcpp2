@@ -531,7 +531,7 @@ app_screen_sort_playlist_dialog_show(void) {
 static int32
 search_list_database_songs(void *user, NcmSongArray *songs,
                            NcmError *ncm_error) {
-    NcmSongList source = {0};
+    NcmSongArray source = {0};
     int32 status;
 
     (void)user;
@@ -540,10 +540,10 @@ search_list_database_songs(void *user, NcmSongArray *songs,
     status = ncm_mpd_client_get_directory_recursive(&global_mpd,
                                                     "/", &source, ncm_error);
     if (status >= 0) {
-        ncm_mpd_song_list_to_song_array(&source, songs);
+        ncm_song_array_move(songs, &source);
         status = 0;
     }
-    ncm_mpd_song_list_destroy(&source);
+    ncm_song_array_destroy(&source);
     return status;
 }
 

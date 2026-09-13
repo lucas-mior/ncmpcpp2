@@ -4217,7 +4217,7 @@ action_runtime_update_tag_directory(StrBuilder *shared_directory, bool valid) {
 static int32
 action_runtime_edit_library_tag(void) {
     enum TagType tag_type;
-    NcmSongList songs = {0};
+    NcmSongArray songs = {0};
     StrBuilder current_tag = {0};
     StrBuilder prompt = {0};
     StrBuilder new_tag = {0};
@@ -4281,9 +4281,8 @@ action_runtime_edit_library_tag(void) {
     }
 
     status = 0;
-    for (int32 i = 0; (status == 0) && (i < ncm_mpd_song_list_len(&songs));
-         i += 1) {
-        NcmSong *song = ncm_mpd_song_list_at(&songs, i);
+    for (int32 i = 0; (status == 0) && (i < songs.len); i += 1) {
+        NcmSong *song = &songs.items[i];
         MutableSong mutable_song = {0};
         StrView uri;
 
@@ -4335,7 +4334,7 @@ action_runtime_edit_library_tag(void) {
     }
 
 cleanup:
-    ncm_mpd_song_list_destroy(&songs);
+    ncm_song_array_destroy(&songs);
     sb_free(&shared_directory);
     sb_free(&new_tag);
     sb_free(&prompt);

@@ -1092,7 +1092,6 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
     if (screen->search_in_database && ((screen->search_mode
              == SEARCH_ENGINE_SEARCH_MODE_LITERAL)
             || (screen->search_mode == SEARCH_ENGINE_SEARCH_MODE_EXACT))) {
-        NcmSongList result = {0};
         StrBuilder *constraint;
         int32 constraint_status;
         bool exact_match;
@@ -1138,13 +1137,9 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
             status = constraint_status;
         }
         if (status == 0) {
-            status = ncm_mpd_client_commit_search_songs(client, &result,
+            status = ncm_mpd_client_commit_search_songs(client, &songs,
                                                          ncm_error);
         }
-        if (status == 0) {
-            ncm_mpd_song_list_to_song_array(&result, &songs);
-        }
-        ncm_mpd_song_list_destroy(&result);
     } else {
         if (screen->search_in_database) {
             if (screen->hooks.list_database_songs == NULL) {

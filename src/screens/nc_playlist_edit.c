@@ -1264,7 +1264,7 @@ playlist_edit_store_current_song(PlaylistEditScreen *screen, NcmSong *song) {
 
 int32
 playlist_edit_screen_load_content(PlaylistEditScreen *screen,
-                                    NcmSongList *songs) {
+                                    NcmSongArray *songs) {
     NcMenu *menu;
     NcmSong preserved_song = {0};
     bool had_preserved_song;
@@ -1313,7 +1313,7 @@ int32
 playlist_edit_screen_reload_content_from_mpd(PlaylistEditScreen *screen,
                                                MpdClient *client,
                                                NcmError *ncm_error) {
-    NcmSongList songs;
+    NcmSongArray songs;
     NcmPlaylist *playlist;
     int32 status;
 
@@ -1327,13 +1327,13 @@ playlist_edit_screen_reload_content_from_mpd(PlaylistEditScreen *screen,
                                     STRLIT("missing playlist"));
     }
 
-    songs = (NcmSongList){0};
+    songs = (NcmSongArray){0};
     status = ncm_mpd_client_get_playlist_content(client, playlist->path,
                                                  &songs, ncm_error);
     if (status == 0) {
         playlist_edit_screen_load_content(screen, &songs);
     }
-    ncm_mpd_song_list_destroy(&songs);
+    ncm_song_array_destroy(&songs);
     return status;
 }
 
@@ -1485,7 +1485,7 @@ playlist_edit_locate_song_in_playlist_range(PlaylistEditScreen *screen,
         last = nc_menu_item_len(menu);
     }
     for (int32 i = first; i < last; i += 1) {
-        NcmSongList songs = {0};
+        NcmSongArray songs = {0};
         NcmPlaylist *playlist = nc_menu_active_item_at(menu, i);
         int32 song_index;
         int32 status;
@@ -1506,7 +1506,7 @@ playlist_edit_locate_song_in_playlist_range(PlaylistEditScreen *screen,
                 ncm_error_clear(ncm_error);
             }
         }
-        ncm_mpd_song_list_destroy(&songs);
+        ncm_song_array_destroy(&songs);
         if (song_index < 0) {
             if (song_index == -ENOENT) {
                 continue;
@@ -1734,7 +1734,7 @@ playlist_edit_screen_selected_songs(PlaylistEditScreen *screen,
     if (playlist_edit_screen_selected_playlist_len(screen) > 0) {
         NcMenu *menu = nc_playlist_entry_menu_base(&screen->playlists);
         for (int32 i = 0; i < nc_menu_item_len(menu); i += 1) {
-            NcmSongList list = {0};
+            NcmSongArray list = {0};
             NcmError ncm_error = {0};
             NcmPlaylist *playlist;
 
@@ -1753,7 +1753,7 @@ playlist_edit_screen_selected_songs(PlaylistEditScreen *screen,
                 playlist_edit_report_error(context, strlen32(context),
                                            &ncm_error);
                 ncm_error_clear(&ncm_error);
-                ncm_mpd_song_list_destroy(&list);
+                ncm_song_array_destroy(&list);
                 ncm_song_array_clear(songs);
                 return status;
             }
@@ -1761,7 +1761,7 @@ playlist_edit_screen_selected_songs(PlaylistEditScreen *screen,
             for (int32 j = 0; j < list.len; j += 1) {
                 ncm_song_array_append_copy(songs, &list.items[j]);
             }
-            ncm_mpd_song_list_destroy(&list);
+            ncm_song_array_destroy(&list);
         }
         return 0;
     }
