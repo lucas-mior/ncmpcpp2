@@ -423,9 +423,10 @@ lyrics_screen_update_sync_line_force(LyricsScreen *screen, bool force) {
         nc_scrollpad_reset(&screen->scrollpad);
         return true;
     }
+
     entry = &screen->lrc.entries[active_line];
-    lyrics_buffer_highlight_sync_line(&screen->display, entry->buffer_start,
-                                      entry->buffer_end);
+    lyrics_buffer_highlight_sync_line(&screen->display,
+                                      entry->buffer_start, entry->buffer_end);
     nc_scrollpad_center_on_buffer_position(&screen->scrollpad, &screen->window,
                                            &screen->display,
                                            entry->buffer_start);
@@ -435,9 +436,11 @@ lyrics_screen_update_sync_line_force(LyricsScreen *screen, bool force) {
 void
 lyrics_screen_set_geometry(LyricsScreen *screen, int32 start_x, int32 width,
                            int32 main_start_y, int32 main_height) {
-    nc_lyrics_screen_set_geometry(&screen->screen, start_x, width, main_start_y,
-                                  main_height);
-    nc_window_resize(&screen->window, nc_lyrics_screen_width(&screen->screen),
+    nc_lyrics_screen_set_geometry(&screen->screen,
+                                  start_x, width, main_start_y, main_height);
+
+    nc_window_resize(&screen->window,
+                     nc_lyrics_screen_width(&screen->screen),
                      nc_lyrics_screen_height(&screen->screen));
     nc_window_move_to(&screen->window,
                       nc_lyrics_screen_start_x(&screen->screen),
@@ -445,6 +448,7 @@ lyrics_screen_set_geometry(LyricsScreen *screen, int32 start_x, int32 width,
     nc_scrollpad_resize(&screen->scrollpad, &screen->window,
                         nc_lyrics_screen_width(&screen->screen),
                         nc_lyrics_screen_height(&screen->screen));
+
     if (screen->mode == LYRICS_MODE_SYNCHRONIZED) {
         lyrics_screen_update_sync_line_force(screen, true);
     }
