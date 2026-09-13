@@ -2,9 +2,8 @@
 #include "ncmpcpp2.h"
 
 void
-string_list_push(StringViewList *list, char *value) {
+string_list_push(StringViewList *list, char *value, int32 value_len) {
     StringView string;
-    int32 value_len;
 
     if (list->arena == NULL) {
         list->arena = arena_create(SIZEMB(2), "mpd_string_list");

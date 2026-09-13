@@ -14,7 +14,7 @@ typedef struct StringViewList {
     Arena *arena;
 } StringViewList;
 
-void string_list_push(StringViewList *, char *);
+void string_list_push(StringViewList *, char *, int32);
 void string_list_destroy(StringViewList *);
 void string_list_clear(StringViewList *);
 int32 string_list_len(StringViewList *);

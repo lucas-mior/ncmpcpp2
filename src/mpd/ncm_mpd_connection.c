@@ -221,10 +221,14 @@ ncm_mpd_connection_recv_pair_list(MpdConnection *connection, char *name,
 
     string_list_clear(strings);
     while (true) {
+        char *value;
+
         if ((pair = mpd_recv_pair_named(connection->mpd, name)) == NULL) {
             break;
         }
-        string_list_push(strings, (char *)pair->value);
+
+        value = (char *)pair->value;
+        string_list_push(strings, value, optional_strlen32(value));
         mpd_return_pair(connection->mpd, pair);
     }
 
@@ -1385,11 +1389,14 @@ ncm_mpd_connection_list_tag_values(MpdConnection *connection,
 
     string_list_clear(strings);
     while (true) {
+        char *value;
+
         if ((pair = mpd_recv_pair_tag(connection->mpd, mpd_tag)) == NULL) {
             break;
         }
 
-        string_list_push(strings, (char *)pair->value);
+        value = (char *)pair->value;
+        string_list_push(strings, value, optional_strlen32(value));
         mpd_return_pair(connection->mpd, pair);
     }
 
