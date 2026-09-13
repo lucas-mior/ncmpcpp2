@@ -484,14 +484,14 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
     for (int32 i = 0; i < options->config_paths.len; i += 1) {
         StrBuilder *path = &options->config_paths.items[i];
 
-        string_list_push(&config_paths, path->data, path->len);
+        strview_list_push(&config_paths, path->data, path->len);
     }
 
     config_destroy(&Config);
     status = config_read(&Config, &config_paths,
                          options->ignore_config_errors, options->quiet,
                          ncm_error);
-    string_list_destroy(&config_paths);
+    strview_list_destroy(&config_paths);
     if (status < 0) {
         if (!ncm_error_is_set(ncm_error)) {
             return ncm_error_set_status(ncm_error, status,

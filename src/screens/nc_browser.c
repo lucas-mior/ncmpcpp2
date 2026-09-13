@@ -1287,11 +1287,11 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
     status = ncm_mpd_client_get_supported_extensions(client, &strings,
                                                      ncm_error);
     if (status < 0) {
-        string_list_destroy(&strings);
+        strview_list_destroy(&strings);
         return status;
     }
 
-    for (int32 i = 0; i < string_list_len(&strings);
+    for (int32 i = 0; i < strview_list_len(&strings);
          i += 1) {
         StrView *string = &strings.items[i];
         StrBuilder buffer = {0};
@@ -1312,7 +1312,7 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
 
     str_builder_array_move(&screen->supported_extensions, &extensions);
     str_builder_array_destroy(&extensions);
-    string_list_destroy(&strings);
+    strview_list_destroy(&strings);
     return ncm_error_ok(ncm_error);
 }
 

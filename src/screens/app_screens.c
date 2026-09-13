@@ -1538,7 +1538,7 @@ server_info_render(void *user, NcBuffer *buffer) {
 
     append_bold_label(buffer, "URL Handlers:");
     for (int32 i = 0;
-         i < string_list_len(&owner->url_handlers);
+         i < strview_list_len(&owner->url_handlers);
          i += 1) {
         StrView *handler = &owner->url_handlers.items[i];
 
@@ -1553,7 +1553,7 @@ server_info_render(void *user, NcBuffer *buffer) {
 
     append_bold_label(buffer, "Tag Types:");
     for (int32 i = 0;
-         i < string_list_len(&owner->tag_types);
+         i < strview_list_len(&owner->tag_types);
          i += 1) {
         StrView *tag = &owner->tag_types.items[i];
 
@@ -1597,8 +1597,8 @@ static void
 server_info_destroy(void *user) {
     ServerInfoScreen *owner = user;
 
-    string_list_destroy(&owner->url_handlers);
-    string_list_destroy(&owner->tag_types);
+    strview_list_destroy(&owner->url_handlers);
+    strview_list_destroy(&owner->tag_types);
     owner->initialized = false;
 
     return;

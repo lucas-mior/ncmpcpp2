@@ -1195,8 +1195,8 @@ config_read(Configuration *config, StrViewList *config_paths,
     int32 status;
 
     config_destroy(config);
-    for (int32 i = 0; i < string_list_len(config_paths); i += 1) {
-        StrView path = *string_list_at(config_paths, i);
+    for (int32 i = 0; i < strview_list_len(config_paths); i += 1) {
+        StrView path = *strview_list_at(config_paths, i);
         char *content;
         char *line;
         char *content_end;

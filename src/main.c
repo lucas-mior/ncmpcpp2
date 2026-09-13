@@ -8,7 +8,7 @@
 #endif
 
 #if !defined(PROJECT_INCREMENTAL_BUILD)
-#include "string_list.c"
+#include "strview_list.c"
 #endif
 
 #include "mpd/ncmpcpp2_mpd.h"

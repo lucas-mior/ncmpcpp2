@@ -219,7 +219,7 @@ ncm_mpd_connection_recv_pair_list(MpdConnection *connection, char *name,
                                   StrViewList *strings) {
     struct mpd_pair *pair;
 
-    string_list_clear(strings);
+    strview_list_clear(strings);
     while (true) {
         char *value;
 
@@ -228,7 +228,7 @@ ncm_mpd_connection_recv_pair_list(MpdConnection *connection, char *name,
         }
 
         value = (char *)pair->value;
-        string_list_push(strings, value, optional_strlen32(value));
+        strview_list_push(strings, value, optional_strlen32(value));
         mpd_return_pair(connection->mpd, pair);
     }
 
@@ -1388,7 +1388,7 @@ ncm_mpd_connection_list_tag_values(MpdConnection *connection,
         return ncm_mpd_connection_check_error(connection);
     }
 
-    string_list_clear(strings);
+    strview_list_clear(strings);
     while (true) {
         char *value;
 
@@ -1397,7 +1397,7 @@ ncm_mpd_connection_list_tag_values(MpdConnection *connection,
         }
 
         value = (char *)pair->value;
-        string_list_push(strings, value, optional_strlen32(value));
+        strview_list_push(strings, value, optional_strlen32(value));
         mpd_return_pair(connection->mpd, pair);
     }
 
