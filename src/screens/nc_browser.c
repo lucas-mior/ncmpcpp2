@@ -923,27 +923,21 @@ browser_compare_times(time_t left, time_t right) {
 
 static StringView
 browser_directory_sort_view(NcmMpdItem *item) {
-    StringView view;
-
-    view = (StringView){0};
+    StringView view = {0};
     ncm_directory_has_path_view(ncm_mpd_item_directory(item), &view);
     return view;
 }
 
 static StringView
 browser_playlist_sort_view(NcmMpdItem *item) {
-    StringView view;
-
-    view = (StringView){0};
+    StringView view = {0};
     ncm_playlist_has_path_view(ncm_mpd_item_playlist(item), &view);
     return view;
 }
 
 static StringView
 browser_song_name_sort_view(NcmMpdItem *item) {
-    StringView view;
-
-    view = (StringView){0};
+    StringView view = {0};
     ncm_song_has_filename_view(ncm_mpd_item_song(item), 0, &view);
     return view;
 }
