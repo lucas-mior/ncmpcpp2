@@ -61,8 +61,8 @@ media_library_menu_height_capability(NcScreen *base) {
 
 static StrView
 media_library_filter_constraint_capability(NcScreen *base) {
-    return media_library_screen_active_filter_constraint(
-        (MediaLibraryScreen *)base);
+    MediaLibraryScreen *screen = (MediaLibraryScreen *)base;
+    return media_library_screen_active_filter_constraint(screen);
 }
 
 static int32
