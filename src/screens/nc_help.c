@@ -29,13 +29,16 @@ nc_help_resize(NcScreen *screen) {
     if (help->hooks.resize_layout) {
         help->hooks.resize_layout(help->hooks.user, help);
     }
+
     start_x = nc_help_screen_start_x(help);
     start_y = nc_help_screen_start_y(help);
     width = nc_help_screen_width(help);
     height = nc_help_screen_height(help);
+
     nc_scrollpad_resize(&help->scrollpad, &help->window, width, height);
     nc_window_move_to(&help->window, start_x, start_y);
     nc_scrollpad_flush(&help->scrollpad, &help->window, &help->buffer);
+
     if (help->hooks.resize_background) {
         help->hooks.resize_background(help->hooks.user);
     }
