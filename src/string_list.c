@@ -1,7 +1,7 @@
 #include "cbase.h"
 #include "ncmpcpp2.h"
 
-static void
+void
 ncm_mpd_string_list_push(StringViewList *list, char *value) {
     StringView string;
     int32 value_len;

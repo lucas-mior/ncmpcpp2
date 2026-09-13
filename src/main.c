@@ -7,6 +7,10 @@
 #include "c/ncm_c.c"
 #endif
 
+#if !defined(PROJECT_INCREMENTAL_BUILD)
+#include "string_list.c"
+#endif
+
 #include "mpd/ncmpcpp2_mpd.h"
 #if !defined(PROJECT_INCREMENTAL_BUILD)
 #include "mpd/ncm_mpd.c"

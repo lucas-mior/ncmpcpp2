@@ -853,11 +853,6 @@ int32 ncm_mpd_item_list_to_item_array(NcmMpdItemList *, NcmMpdItemArray *);
 int32 ncm_mpd_item_list_to_directory_array(NcmMpdItemList *,
                                            NcmDirectoryArray *);
 
-void ncm_mpd_string_list_destroy(StringViewList *);
-void ncm_mpd_string_list_clear(StringViewList *);
-int32 ncm_mpd_string_list_count(StringViewList *);
-StringView *ncm_mpd_string_list_at(StringViewList *, int32);
-
 void ncm_mpd_output_list_destroy(NcmMpdOutputList *);
 void ncm_mpd_output_list_clear(NcmMpdOutputList *);
 
