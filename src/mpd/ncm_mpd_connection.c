@@ -216,10 +216,10 @@ ncm_mpd_connection_recv_song_list(MpdConnection *connection,
 
 static int32
 ncm_mpd_connection_recv_pair_list(MpdConnection *connection, char *name,
-                                  StrViewList *strings) {
+                                  StrFlexList *strings) {
     struct mpd_pair *pair;
 
-    strview_list_clear(strings);
+    strflex_list_clear(strings);
     while (true) {
         char *value;
 
@@ -228,7 +228,7 @@ ncm_mpd_connection_recv_pair_list(MpdConnection *connection, char *name,
         }
 
         value = (char *)pair->value;
-        strview_list_push(strings, value, optional_strlen32(value));
+        strflex_list_push(strings, value, optional_strlen32(value));
         mpd_return_pair(connection->mpd, pair);
     }
 
@@ -899,7 +899,7 @@ ncm_mpd_connection_commit_command_list(MpdConnection *connection) {
 
 int32
 ncm_mpd_connection_get_supported_extensions(MpdConnection *connection,
-                                            StrViewList *strings) {
+                                            StrFlexList *strings) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (strings == NULL) {
         return -EINVAL;
@@ -1035,7 +1035,7 @@ ncm_mpd_connection_get_playlists(MpdConnection *connection,
 
 int32
 ncm_mpd_connection_list_all_song_uris(MpdConnection *connection, char *path,
-                                      StrViewList *strings) {
+                                      StrFlexList *strings) {
     char *directory;
 
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
@@ -1053,7 +1053,7 @@ ncm_mpd_connection_list_all_song_uris(MpdConnection *connection, char *path,
 
 int32
 ncm_mpd_connection_get_url_handlers(MpdConnection *connection,
-                                    StrViewList *strings) {
+                                    StrFlexList *strings) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (strings == NULL) {
         return -EINVAL;
@@ -1068,7 +1068,7 @@ ncm_mpd_connection_get_url_handlers(MpdConnection *connection,
 
 int32
 ncm_mpd_connection_get_tag_types(MpdConnection *connection,
-                                 StrViewList *strings) {
+                                 StrFlexList *strings) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (strings == NULL) {
         return -EINVAL;
@@ -1367,7 +1367,7 @@ ncm_mpd_connection_commit_search_songs(MpdConnection *connection,
 int32
 ncm_mpd_connection_list_tag_values(MpdConnection *connection,
                                    enum TagType tag,
-                                   StrViewList *strings) {
+                                   StrFlexList *strings) {
     struct mpd_pair *pair;
     enum mpd_tag_type mpd_tag;
 
@@ -1388,7 +1388,7 @@ ncm_mpd_connection_list_tag_values(MpdConnection *connection,
         return ncm_mpd_connection_check_error(connection);
     }
 
-    strview_list_clear(strings);
+    strflex_list_clear(strings);
     while (true) {
         char *value;
 
@@ -1397,7 +1397,7 @@ ncm_mpd_connection_list_tag_values(MpdConnection *connection,
         }
 
         value = (char *)pair->value;
-        strview_list_push(strings, value, optional_strlen32(value));
+        strflex_list_push(strings, value, optional_strlen32(value));
         mpd_return_pair(connection->mpd, pair);
     }
 

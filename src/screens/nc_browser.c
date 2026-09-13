@@ -1275,7 +1275,7 @@ int32
 browser_screen_fetch_supported_extensions(BrowserScreen *screen,
                                           MpdClient *client,
                                           NcmError *ncm_error) {
-    StrViewList strings = {0};
+    StrFlexList strings = {0};
     StrBuilderArray extensions = {0};
     int32 status;
 
@@ -1287,13 +1287,13 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
     status = ncm_mpd_client_get_supported_extensions(client, &strings,
                                                      ncm_error);
     if (status < 0) {
-        strview_list_destroy(&strings);
+        strflex_list_destroy(&strings);
         return status;
     }
 
-    for (int32 i = 0; i < strview_list_len(&strings);
+    for (int32 i = 0; i < strflex_list_len(&strings);
          i += 1) {
-        StrView *string = &strings.items[i];
+        StrFlex *string = strings.items[i];
         StrBuilder buffer = {0};
 
         if ((string->len <= 0) || (string->data[0] != '.')) {
@@ -1312,7 +1312,7 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
 
     str_builder_array_move(&screen->supported_extensions, &extensions);
     str_builder_array_destroy(&extensions);
-    strview_list_destroy(&strings);
+    strflex_list_destroy(&strings);
     return ncm_error_ok(ncm_error);
 }
 

@@ -820,7 +820,7 @@ int32 ncm_mpd_connection_send_password(MpdConnection *, char *);
 int32 ncm_mpd_connection_start_command_list(MpdConnection *);
 int32 ncm_mpd_connection_commit_command_list(MpdConnection *);
 int32 ncm_mpd_connection_get_supported_extensions(MpdConnection *,
-                                                  StrViewList *);
+                                                  StrFlexList *);
 int32 ncm_mpd_connection_get_replay_gain_mode(MpdConnection *,
                                               enum NcmMpdReplayGainMode *);
 int32 ncm_mpd_connection_set_replay_gain_mode(MpdConnection *,
@@ -828,10 +828,10 @@ int32 ncm_mpd_connection_set_replay_gain_mode(MpdConnection *,
 int32 ncm_mpd_connection_get_playlists(MpdConnection *,
                                        NcmMpdPlaylistList *);
 int32 ncm_mpd_connection_list_all_song_uris(MpdConnection *, char *,
-                                            StrViewList *);
+                                            StrFlexList *);
 int32 ncm_mpd_connection_get_url_handlers(MpdConnection *,
-                                          StrViewList *);
-int32 ncm_mpd_connection_get_tag_types(MpdConnection *, StrViewList *);
+                                          StrFlexList *);
+int32 ncm_mpd_connection_get_tag_types(MpdConnection *, StrFlexList *);
 
 void ncm_mpd_song_list_destroy(NcmMpdSongList *);
 void ncm_mpd_song_list_clear(NcmMpdSongList *);
@@ -875,7 +875,7 @@ int32 ncm_mpd_connection_add_search_uri(MpdConnection *, char *);
 int32 ncm_mpd_connection_commit_search_songs(MpdConnection *,
                                              NcmMpdSongList *);
 int32 ncm_mpd_connection_list_tag_values(MpdConnection *, enum TagType,
-                                         StrViewList *);
+                                         StrFlexList *);
 
 int32 ncm_mpd_connection_update_database(MpdConnection *, char *, int32 *);
 int32 ncm_mpd_connection_get_outputs(MpdConnection *, NcmMpdOutputList *);
@@ -988,7 +988,7 @@ int32 ncm_mpd_client_get_playlist_content(MpdClient *, char *,
 int32 ncm_mpd_client_get_playlist_content_no_info(MpdClient *, char *,
                                                   NcmMpdSongList *, NcmError *);
 int32 ncm_mpd_client_get_supported_extensions(MpdClient *,
-                                              StrViewList *, NcmError *);
+                                              StrFlexList *, NcmError *);
 
 int32 ncm_mpd_client_set_repeat(MpdClient *, bool, NcmError *);
 int32 ncm_mpd_client_set_random(MpdClient *, bool, NcmError *);
@@ -1042,7 +1042,7 @@ int32 ncm_mpd_client_commit_search_songs(MpdClient *, NcmMpdSongList *,
 int32 ncm_mpd_client_get_playlists(MpdClient *, NcmMpdPlaylistList *,
                                    NcmError *);
 int32 ncm_mpd_client_get_list(MpdClient *, enum TagType,
-                              StrViewList *, NcmError *);
+                              StrFlexList *, NcmError *);
 int32 ncm_mpd_client_get_directory_recursive(MpdClient *, char *,
                                              NcmMpdSongList *, NcmError *);
 int32 ncm_mpd_client_get_songs(MpdClient *, char *, NcmMpdSongList *,
@@ -1055,9 +1055,9 @@ int32 ncm_mpd_client_get_outputs(MpdClient *, NcmMpdOutputList *,
                                  NcmError *);
 int32 ncm_mpd_client_enable_output(MpdClient *, int32, NcmError *);
 int32 ncm_mpd_client_disable_output(MpdClient *, int32, NcmError *);
-int32 ncm_mpd_client_get_url_handlers(MpdClient *, StrViewList *,
+int32 ncm_mpd_client_get_url_handlers(MpdClient *, StrFlexList *,
                                       NcmError *);
-int32 ncm_mpd_client_get_tag_types(MpdClient *, StrViewList *, NcmError *);
+int32 ncm_mpd_client_get_tag_types(MpdClient *, StrFlexList *, NcmError *);
 
 #include "configura.h"
 

@@ -27,8 +27,8 @@ struct OutputsScreen {
 
 struct ServerInfoScreen {
     NcServerInfoScreen screen;
-    StrViewList url_handlers;
-    StrViewList tag_types;
+    StrFlexList url_handlers;
+    StrFlexList tag_types;
     int64 timer;
     bool initialized;
 };
@@ -1538,9 +1538,9 @@ server_info_render(void *user, NcBuffer *buffer) {
 
     append_bold_label(buffer, "URL Handlers:");
     for (int32 i = 0;
-         i < strview_list_len(&owner->url_handlers);
+         i < strflex_list_len(&owner->url_handlers);
          i += 1) {
-        StrView *handler = &owner->url_handlers.items[i];
+        StrFlex *handler = owner->url_handlers.items[i];
 
         if (i == 0) {
             nc_buffer_append_data(buffer, STRLIT(" "));
@@ -1553,9 +1553,9 @@ server_info_render(void *user, NcBuffer *buffer) {
 
     append_bold_label(buffer, "Tag Types:");
     for (int32 i = 0;
-         i < strview_list_len(&owner->tag_types);
+         i < strflex_list_len(&owner->tag_types);
          i += 1) {
-        StrView *tag = &owner->tag_types.items[i];
+        StrFlex *tag = owner->tag_types.items[i];
 
         if (i == 0) {
             nc_buffer_append_data(buffer, STRLIT(" "));
@@ -1597,8 +1597,8 @@ static void
 server_info_destroy(void *user) {
     ServerInfoScreen *owner = user;
 
-    strview_list_destroy(&owner->url_handlers);
-    strview_list_destroy(&owner->tag_types);
+    strflex_list_destroy(&owner->url_handlers);
+    strflex_list_destroy(&owner->tag_types);
     owner->initialized = false;
 
     return;
@@ -1619,8 +1619,8 @@ app_screen_server_info_init(void) {
     hooks.title = server_info_title;
     hooks.destroy = server_info_destroy;
     hooks.user = &server_info_screen;
-    server_info_screen.url_handlers = (StrViewList){0};
-    server_info_screen.tag_types = (StrViewList){0};
+    server_info_screen.url_handlers = (StrFlexList){0};
+    server_info_screen.tag_types = (StrFlexList){0};
     nc_server_info_screen_init(&server_info_screen.screen, hooks,
                                ui_state_screen_width(),
                                ui_state_screen_height(),
