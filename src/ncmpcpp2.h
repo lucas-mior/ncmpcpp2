@@ -11,7 +11,6 @@ typedef struct StrView {
 
 typedef struct StrFlex {
     int32 len;
-    int32 padding; // so that data from StrView and StrFlex match the offset.
     char data[];
 } StrFlex;
 
