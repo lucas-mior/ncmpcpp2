@@ -1811,7 +1811,7 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
             library_song_has_first_tag(song, TAG_ALBUM, &album);
             library_song_has_first_tag(song, TAG_DATE, &date);
             if (!Config.media_library_albums_split_by_date) {
-                ncm_string_view_clear(&date);
+                date = (StringView){0};
             }
 
             existing = library_find_album(&replacement,
@@ -1840,7 +1840,7 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
             library_song_has_first_tag(song, TAG_ALBUM, &album);
             library_song_has_first_tag(song, TAG_DATE, &date);
             if (!Config.media_library_albums_split_by_date) {
-                ncm_string_view_clear(&date);
+                date = (StringView){0};
             }
 
             for (int32 j = 0;

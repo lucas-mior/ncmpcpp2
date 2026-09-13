@@ -2042,7 +2042,7 @@ action_runtime_browser_item_name(NcmMpdItem *item, StrBuilder *name) {
     int32 basename;
 
     sb_clear(name);
-    ncm_string_view_clear(&view);
+    view = (StringView){0};
 
     switch (ncm_mpd_item_kind(item)) {
     case NCM_MPD_ITEM_DIRECTORY:
