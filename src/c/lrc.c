@@ -58,19 +58,6 @@ lrc_trim_line_end(char *data, int32 data_len) {
     return data_len;
 }
 
-static bool
-lrc_has_only_digits(char *data, int32 data_len) {
-    ASSERT(data != NULL);
-    ASSERT_POSITIVE(data_len);
-
-    for (int32 i = 0; i < data_len; i += 1) {
-        if (!isdigit(data[i])) {
-            return false;
-        }
-    }
-    return true;
-}
-
 static int
 lrc_entry_compare(void *left_ptr, void *right_ptr) {
     LrcEntry *left = left_ptr;
@@ -289,22 +276,8 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
                                                            "line"));
                     }
 
-                    if (!lrc_has_only_digits(tag, colon)) {
-                        lrc_document_destroy_unchecked(&parsed);
-                        return ncm_error_set_status(ncm_error,
-                                                    -NCM_ERROR_PARSE,
-                                                    STRLIT("malformed LRC "
-                                                           "line"));
-                    }
                     status = parse_integer(tag, colon, &minutes);
-                    if (status < 0) {
-                        lrc_document_destroy_unchecked(&parsed);
-                        return ncm_error_set_status(ncm_error,
-                                                    -NCM_ERROR_PARSE,
-                                                    STRLIT("malformed LRC "
-                                                           "line"));
-                    }
-                    if (!lrc_has_only_digits(tag + colon + 1, 2)) {
+                    if ((status < 0) || (minutes < 0)) {
                         lrc_document_destroy_unchecked(&parsed);
                         return ncm_error_set_status(ncm_error,
                                                     -NCM_ERROR_PARSE,
@@ -312,16 +285,10 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
                                                            "line"));
                     }
                     status = parse_integer(tag + colon + 1, 2, &seconds);
-                    if (status < 0) {
+                    if ((status < 0) || (seconds < 0) || (seconds >= 60)) {
                         lrc_document_destroy_unchecked(&parsed);
                         return ncm_error_set_status(ncm_error,
                                                     -NCM_ERROR_PARSE,
-                                                    STRLIT("malformed LRC "
-                                                           "line"));
-                    }
-                    if (seconds >= 60) {
-                        lrc_document_destroy_unchecked(&parsed);
-                        return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
                                                     STRLIT("malformed LRC "
                                                            "line"));
                     }
@@ -336,16 +303,9 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
                                                         STRLIT("malformed LRC "
                                                                "line"));
                         }
-                        if (!lrc_has_only_digits(tag + dot + 1, frac_len)) {
-                            lrc_document_destroy_unchecked(&parsed);
-                            return ncm_error_set_status(ncm_error,
-                                                        -NCM_ERROR_PARSE,
-                                                        STRLIT("malformed LRC "
-                                                               "line"));
-                        }
                         status = parse_integer(tag + dot + 1, frac_len,
                                                &milliseconds);
-                        if (status < 0) {
+                        if ((status < 0) || (milliseconds < 0)) {
                             lrc_document_destroy_unchecked(&parsed);
                             return ncm_error_set_status(ncm_error,
                                                         -NCM_ERROR_PARSE,
