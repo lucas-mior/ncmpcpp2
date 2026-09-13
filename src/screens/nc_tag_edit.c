@@ -1572,7 +1572,7 @@ tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
 static int32
 tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
                                  MpdClient *client, NcmError *ncm_error) {
-    NcmMpdSongList list = {0};
+    NcmSongList list = {0};
     NcmSongArray songs = {0};
     StrBuilder preserved_uri = {0};
     char *path;

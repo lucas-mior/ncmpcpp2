@@ -531,7 +531,7 @@ app_screen_sort_playlist_dialog_show(void) {
 static int32
 search_list_database_songs(void *user, NcmSongArray *songs,
                            NcmError *ncm_error) {
-    NcmMpdSongList source = {0};
+    NcmSongList source = {0};
     int32 status;
 
     (void)user;

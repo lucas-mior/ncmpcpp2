@@ -151,7 +151,7 @@ media_library_tag_at_capability(NcScreen *base, int32 pos,
 
 static int32
 library_mpd_search_songs(void *user, MediaLibrarySongQuery *query,
-                         NcmMpdSongList *songs, NcmError *ncm_error) {
+                         NcmSongList *songs, NcmError *ncm_error) {
     MpdClient *client = user;
     int32 status;
 
@@ -181,7 +181,7 @@ library_mpd_search_songs(void *user, MediaLibrarySongQuery *query,
 }
 
 static int32
-library_mpd_list_all_songs(void *user, NcmMpdSongList *songs,
+library_mpd_list_all_songs(void *user, NcmSongList *songs,
                            NcmError *ncm_error) {
     MpdClient *client = user;
 
@@ -838,7 +838,7 @@ static int32
 library_mpd_add_songs(void *user, NcmSongArray *songs, bool play,
                       NcmError *ncm_error) {
     MpdClient *client = user;
-    NcmMpdSongList additions = {0};
+    NcmSongList additions = {0};
     int32 status;
 
     ASSERT(client != NULL);
@@ -1746,7 +1746,7 @@ media_library_tags_from_strings(MediaLibraryTagArray *tags,
 }
 
 int32
-media_library_tags_from_songs(MediaLibraryTagArray *tags, NcmMpdSongList *songs,
+media_library_tags_from_songs(MediaLibraryTagArray *tags, NcmSongList *songs,
                               enum TagType grouping_tag) {
     MediaLibraryTagArray replacement = {0};
 
@@ -1783,7 +1783,7 @@ media_library_tags_from_songs(MediaLibraryTagArray *tags, NcmMpdSongList *songs,
 
 int32
 media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
-                                NcmMpdSongList *songs,
+                                NcmSongList *songs,
                                 enum MediaLibraryMode mode,
                                 enum TagType grouping_tag,
                                 char *selected_tag, int32 selected_tag_len) {
@@ -1898,7 +1898,7 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
 }
 
 int32
-media_library_songs_from_list(NcmSongArray *songs, NcmMpdSongList *source) {
+media_library_songs_from_list(NcmSongArray *songs, NcmSongList *source) {
     static enum SongGetter getters[] = {
         SONG_GETTER_DATE,
         SONG_GETTER_ALBUM,
@@ -2257,7 +2257,7 @@ static int32
 library_append_query_songs(MediaLibraryScreen *screen,
                            MediaLibrarySongQuery *query,
                            NcmSongArray *songs, NcmError *ncm_error) {
-    NcmMpdSongList source = {0};
+    NcmSongList source = {0};
     NcmSongArray sorted = {0};
     int32 status;
 
@@ -2718,7 +2718,7 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
     if (library_has_pending_tags(screen)) {
         MediaLibraryTagArray tags = {0};
         StrFlexList strings = {0};
-        NcmMpdSongList songs = {0};
+        NcmSongList songs = {0};
         enum TagType grouping_tag;
         int32 status;
 
@@ -2824,7 +2824,7 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
         MediaLibraryAlbumArray albums = {0};
         MediaLibrarySongQuery query = {.grouping_tag = TAG_COUNT};
         NcMediaLibraryTagRow *tag;
-        NcmMpdSongList songs = {0};
+        NcmSongList songs = {0};
         char *selected_tag = NULL;
         int32 selected_tag_len = 0;
         int32 status;
@@ -2937,7 +2937,7 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
             || library_has_fetch_delay_elapsed(screen))) {
         MediaLibrarySongQuery query = {.grouping_tag = TAG_COUNT};
         NcMediaLibraryAlbumRow *album;
-        NcmMpdSongList source = {0};
+        NcmSongList source = {0};
         NcmSongArray songs = {0};
         int32 status;
 
@@ -3153,7 +3153,7 @@ media_library_screen_list_tags(
 
 int32
 media_library_screen_list_all_songs(
-    MediaLibraryScreen *screen, NcmMpdSongList *songs, NcmError *ncm_error) {
+    MediaLibraryScreen *screen, NcmSongList *songs, NcmError *ncm_error) {
     if ((screen == NULL) || (screen->hooks.list_all_songs == NULL)) {
         return ncm_error_set_status(ncm_error, -ENOSYS,
                                     STRLIT("song-list hook is unavailable"));
@@ -3168,7 +3168,7 @@ media_library_screen_list_all_songs(
 int32
 media_library_screen_search_songs(
     MediaLibraryScreen *screen,
-    MediaLibrarySongQuery *query, NcmMpdSongList *songs, NcmError *ncm_error) {
+    MediaLibrarySongQuery *query, NcmSongList *songs, NcmError *ncm_error) {
     if ((screen == NULL) || (screen->hooks.search_songs == NULL)) {
         return ncm_error_set_status(ncm_error, -ENOSYS,
                                     STRLIT("song-search hook is unavailable"));

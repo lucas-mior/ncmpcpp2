@@ -123,7 +123,7 @@ ncm_mpd_connection_require_connected(MpdConnection *connection) {
 }
 
 static int32
-ncm_mpd_song_list_push(NcmMpdSongList *list, NcmSong *song) {
+ncm_mpd_song_list_push(NcmSongList *list, NcmSong *song) {
     int32 old_capacity;
     int32 new_capacity;
     int32 index;
@@ -191,7 +191,7 @@ ncm_mpd_connection_recv_song(MpdConnection *connection, NcmSong *song,
 
 static int32
 ncm_mpd_connection_recv_song_list(MpdConnection *connection,
-                                  NcmMpdSongList *songs) {
+                                  NcmSongList *songs) {
     ncm_mpd_song_list_clear(songs);
     while (true) {
         NcmSong song = {0};
@@ -235,20 +235,20 @@ ncm_mpd_connection_recv_pair_list(MpdConnection *connection, char *name,
 }
 
 void
-ncm_mpd_song_list_destroy(NcmMpdSongList *list) {
+ncm_mpd_song_list_destroy(NcmSongList *list) {
     if (list == NULL) {
         return;
     }
 
     ncm_mpd_song_list_clear(list);
     free2(list->items, list->capacity*SIZEOF(*list->items));
-    *list = (NcmMpdSongList){0};
+    *list = (NcmSongList){0};
 
     return;
 }
 
 void
-ncm_mpd_song_list_clear(NcmMpdSongList *list) {
+ncm_mpd_song_list_clear(NcmSongList *list) {
     if (list == NULL) {
         return;
     }
@@ -261,7 +261,7 @@ ncm_mpd_song_list_clear(NcmMpdSongList *list) {
 }
 
 int32
-ncm_mpd_song_list_len(NcmMpdSongList *list) {
+ncm_mpd_song_list_len(NcmSongList *list) {
     if (list == NULL) {
         return 0;
     }
@@ -270,7 +270,7 @@ ncm_mpd_song_list_len(NcmMpdSongList *list) {
 }
 
 NcmSong *
-ncm_mpd_song_list_at(NcmMpdSongList *list, int32 idx) {
+ncm_mpd_song_list_at(NcmSongList *list, int32 idx) {
     if (list == NULL) {
         return NULL;
     }
@@ -282,7 +282,7 @@ ncm_mpd_song_list_at(NcmMpdSongList *list, int32 idx) {
 }
 
 int32
-ncm_mpd_song_list_append_copy(NcmMpdSongList *list, NcmSong *song) {
+ncm_mpd_song_list_append_copy(NcmSongList *list, NcmSong *song) {
     NcmSong copy = {0};
     int32 index;
 
@@ -297,7 +297,7 @@ ncm_mpd_song_list_append_copy(NcmMpdSongList *list, NcmSong *song) {
 }
 
 int32
-ncm_mpd_song_list_to_song_array(NcmMpdSongList *list, NcmSongArray *songs) {
+ncm_mpd_song_list_to_song_array(NcmSongList *list, NcmSongArray *songs) {
     NcmSongArray replacement = {0};
 
     if (songs == NULL) {
@@ -1102,7 +1102,7 @@ ncm_mpd_connection_get_current_song(MpdConnection *connection, NcmSong *song) {
 }
 
 int32
-ncm_mpd_connection_get_queue(MpdConnection *connection, NcmMpdSongList *songs) {
+ncm_mpd_connection_get_queue(MpdConnection *connection, NcmSongList *songs) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (songs == NULL) {
         return -EINVAL;
@@ -1117,7 +1117,7 @@ ncm_mpd_connection_get_queue(MpdConnection *connection, NcmMpdSongList *songs) {
 
 int32
 ncm_mpd_connection_get_queue_changes(MpdConnection *connection,
-                                     int32 version, NcmMpdSongList *songs) {
+                                     int32 version, NcmSongList *songs) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (songs == NULL) {
         return -EINVAL;
@@ -1132,7 +1132,7 @@ ncm_mpd_connection_get_queue_changes(MpdConnection *connection,
 
 int32
 ncm_mpd_connection_get_playlist_content(MpdConnection *connection,
-                                        char *path, NcmMpdSongList *songs) {
+                                        char *path, NcmSongList *songs) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (songs == NULL) {
         return -EINVAL;
@@ -1147,7 +1147,7 @@ ncm_mpd_connection_get_playlist_content(MpdConnection *connection,
 
 int32
 ncm_mpd_connection_get_playlist_content_no_info(MpdConnection *connection,
-    char *path, NcmMpdSongList *songs) {
+    char *path, NcmSongList *songs) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (songs == NULL) {
         return -EINVAL;
@@ -1226,7 +1226,7 @@ ncm_mpd_connection_get_directory(MpdConnection *connection, char *path,
 
 int32
 ncm_mpd_connection_get_directory_songs(MpdConnection *connection, char *path,
-                                       NcmMpdSongList *songs) {
+                                       NcmSongList *songs) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (songs == NULL) {
         return -EINVAL;
@@ -1242,7 +1242,7 @@ ncm_mpd_connection_get_directory_songs(MpdConnection *connection, char *path,
 
 int32
 ncm_mpd_connection_list_all_songs(MpdConnection *connection, char *path,
-                                  NcmMpdSongList *songs) {
+                                  NcmSongList *songs) {
     struct mpd_entity *entity;
     struct mpd_song *mpd_song;
     NcmSong song = {0};
@@ -1349,7 +1349,7 @@ ncm_mpd_connection_add_search_uri(MpdConnection *connection, char *value) {
 
 int32
 ncm_mpd_connection_commit_search_songs(MpdConnection *connection,
-                                       NcmMpdSongList *songs) {
+                                       NcmSongList *songs) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (songs == NULL) {
         return -EINVAL;

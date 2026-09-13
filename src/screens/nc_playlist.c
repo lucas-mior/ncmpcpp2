@@ -655,7 +655,7 @@ playlist_screen_clear(PlaylistScreen *screen) {
 static bool
 playlist_full_reload_is_required(PlaylistScreen *screen, int32 version,
                                  int32 playlist_length,
-                                 NcmMpdSongList *changes) {
+                                 NcmSongList *changes) {
     int32 count;
     int32 next_append_position;
 
@@ -720,7 +720,7 @@ playlist_apply_changed_song_to_storage(PlaylistScreen *screen, NcmSong *song) {
 
 static void
 playlist_apply_changed_songs(PlaylistScreen *screen,
-                             NcmMpdSongList *songs, int32 playlist_length) {
+                             NcmSongList *songs, int32 playlist_length) {
     NcMenu *menu;
     bool was_filtered;
 
@@ -745,7 +745,7 @@ int32
 playlist_screen_reload_from_mpd(PlaylistScreen *screen, MpdClient *client,
                                 int32 version, int32 playlist_length,
                                 NcmError *ncm_error) {
-    NcmMpdSongList songs;
+    NcmSongList songs;
     int32 status;
 
     if (screen == NULL) {
@@ -757,7 +757,7 @@ playlist_screen_reload_from_mpd(PlaylistScreen *screen, MpdClient *client,
                                     STRLIT("MPD client is NULL"));
     }
 
-    songs = (NcmMpdSongList){0};
+    songs = (NcmSongList){0};
     if (playlist_full_reload_is_required(screen, version,
                                          playlist_length, NULL)) {
         status = ncm_mpd_client_get_queue(client, &songs, ncm_error);

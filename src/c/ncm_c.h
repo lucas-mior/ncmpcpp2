@@ -735,11 +735,11 @@ typedef struct NcmMpdStats {
     int32 db_play_time;
 } NcmMpdStats;
 
-typedef struct NcmMpdSongList {
+typedef struct NcmSongList {
     NcmSong *items;
     int32 len;
     int32 capacity;
-} NcmMpdSongList;
+} NcmSongList;
 
 typedef struct NcmMpdItemList {
     NcmMpdItem *items;
@@ -833,12 +833,12 @@ int32 ncm_mpd_connection_get_url_handlers(MpdConnection *,
                                           StrFlexList *);
 int32 ncm_mpd_connection_get_tag_types(MpdConnection *, StrFlexList *);
 
-void ncm_mpd_song_list_destroy(NcmMpdSongList *);
-void ncm_mpd_song_list_clear(NcmMpdSongList *);
-int32 ncm_mpd_song_list_len(NcmMpdSongList *);
-NcmSong *ncm_mpd_song_list_at(NcmMpdSongList *, int32);
-int32 ncm_mpd_song_list_append_copy(NcmMpdSongList *, NcmSong *);
-int32 ncm_mpd_song_list_to_song_array(NcmMpdSongList *, NcmSongArray *);
+void ncm_mpd_song_list_destroy(NcmSongList *);
+void ncm_mpd_song_list_clear(NcmSongList *);
+int32 ncm_mpd_song_list_len(NcmSongList *);
+NcmSong *ncm_mpd_song_list_at(NcmSongList *, int32);
+int32 ncm_mpd_song_list_append_copy(NcmSongList *, NcmSong *);
+int32 ncm_mpd_song_list_to_song_array(NcmSongList *, NcmSongArray *);
 
 void ncm_mpd_item_list_destroy(NcmMpdItemList *);
 void ncm_mpd_item_list_clear(NcmMpdItemList *);
@@ -853,27 +853,27 @@ void ncm_mpd_playlist_list_destroy(NcmMpdPlaylistList *);
 void ncm_mpd_playlist_list_clear(NcmMpdPlaylistList *);
 
 int32 ncm_mpd_connection_get_current_song(MpdConnection *, NcmSong *);
-int32 ncm_mpd_connection_get_queue(MpdConnection *, NcmMpdSongList *);
+int32 ncm_mpd_connection_get_queue(MpdConnection *, NcmSongList *);
 int32 ncm_mpd_connection_get_queue_changes(MpdConnection *, int32,
-                                           NcmMpdSongList *);
+                                           NcmSongList *);
 int32 ncm_mpd_connection_get_playlist_content(MpdConnection *, char *,
-                                              NcmMpdSongList *);
+                                              NcmSongList *);
 int32 ncm_mpd_connection_get_playlist_content_no_info(MpdConnection *,
-                                                      char *, NcmMpdSongList *);
+                                                      char *, NcmSongList *);
 
 int32 ncm_mpd_connection_get_directory(MpdConnection *, char *,
                                        NcmMpdItemList *);
 int32 ncm_mpd_connection_get_directory_songs(MpdConnection *, char *,
-                                             NcmMpdSongList *);
+                                             NcmSongList *);
 int32 ncm_mpd_connection_list_all_songs(MpdConnection *, char *,
-                                        NcmMpdSongList *);
+                                        NcmSongList *);
 int32 ncm_mpd_connection_start_search_songs(MpdConnection *, bool);
 int32 ncm_mpd_connection_add_search_tag(MpdConnection *, enum TagType,
                                         char *);
 int32 ncm_mpd_connection_add_search_any(MpdConnection *, char *);
 int32 ncm_mpd_connection_add_search_uri(MpdConnection *, char *);
 int32 ncm_mpd_connection_commit_search_songs(MpdConnection *,
-                                             NcmMpdSongList *);
+                                             NcmSongList *);
 int32 ncm_mpd_connection_list_tag_values(MpdConnection *, enum TagType,
                                          StrFlexList *);
 
@@ -979,14 +979,14 @@ int32 ncm_mpd_client_shuffle_range(MpdClient *, int32 start, int32 end,
                                    NcmError *);
 int32 ncm_mpd_client_clear_queue(MpdClient *, NcmError *);
 
-int32 ncm_mpd_client_get_queue(MpdClient *, NcmMpdSongList *, NcmError *);
-int32 ncm_mpd_client_get_queue_changes(MpdClient *, int32, NcmMpdSongList *,
+int32 ncm_mpd_client_get_queue(MpdClient *, NcmSongList *, NcmError *);
+int32 ncm_mpd_client_get_queue_changes(MpdClient *, int32, NcmSongList *,
                                        NcmError *);
 int32 ncm_mpd_client_get_current_song(MpdClient *, NcmSong *, NcmError *);
 int32 ncm_mpd_client_get_playlist_content(MpdClient *, char *,
-                                          NcmMpdSongList *, NcmError *);
+                                          NcmSongList *, NcmError *);
 int32 ncm_mpd_client_get_playlist_content_no_info(MpdClient *, char *,
-                                                  NcmMpdSongList *, NcmError *);
+                                                  NcmSongList *, NcmError *);
 int32 ncm_mpd_client_get_supported_extensions(MpdClient *,
                                               StrFlexList *, NcmError *);
 
@@ -1008,7 +1008,7 @@ int32 ncm_mpd_client_set_priority_song(MpdClient *, NcmSong *, int32,
                                        NcmError *);
 int32 ncm_mpd_client_add_song_value(MpdClient *, NcmSong *, int32, int32 *,
                                     NcmError *);
-int32 ncm_mpd_client_add_song_list(MpdClient *, NcmMpdSongList *, int32,
+int32 ncm_mpd_client_add_song_list(MpdClient *, NcmSongList *, int32,
                                    NcmError *);
 int32 ncm_mpd_client_add(MpdClient *, char *, bool *, NcmError *);
 int32 ncm_mpd_client_add_random_tag(MpdClient *, enum TagType, int32,
@@ -1036,7 +1036,7 @@ int32 ncm_mpd_client_add_search_tag(MpdClient *, enum TagType, char *,
                                     NcmError *);
 int32 ncm_mpd_client_add_search_any(MpdClient *, char *, NcmError *);
 int32 ncm_mpd_client_add_search_uri(MpdClient *, char *, NcmError *);
-int32 ncm_mpd_client_commit_search_songs(MpdClient *, NcmMpdSongList *,
+int32 ncm_mpd_client_commit_search_songs(MpdClient *, NcmSongList *,
                                          NcmError *);
 
 int32 ncm_mpd_client_get_playlists(MpdClient *, NcmMpdPlaylistList *,
@@ -1044,8 +1044,8 @@ int32 ncm_mpd_client_get_playlists(MpdClient *, NcmMpdPlaylistList *,
 int32 ncm_mpd_client_get_list(MpdClient *, enum TagType,
                               StrFlexList *, NcmError *);
 int32 ncm_mpd_client_get_directory_recursive(MpdClient *, char *,
-                                             NcmMpdSongList *, NcmError *);
-int32 ncm_mpd_client_get_songs(MpdClient *, char *, NcmMpdSongList *,
+                                             NcmSongList *, NcmError *);
+int32 ncm_mpd_client_get_songs(MpdClient *, char *, NcmSongList *,
                                NcmError *);
 int32 ncm_mpd_client_get_directory_entries(MpdClient *, char *,
                                            NcmMpdItemArray *, NcmError *);

@@ -626,7 +626,7 @@ NCM_CLIENT_LIST_CALL(ncm_mpd_client_get_tag_types,
 
 int32
 ncm_mpd_client_get_queue(MpdClient *client,
-                         NcmMpdSongList *songs, NcmError *ncm_error) {
+                         NcmSongList *songs, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
     NCM_CLIENT_TRY_MPD(client,
                        ncm_mpd_connection_get_queue(&client->connection, songs),
@@ -637,7 +637,7 @@ ncm_mpd_client_get_queue(MpdClient *client,
 
 int32
 ncm_mpd_client_get_queue_changes(MpdClient *client, int32 version,
-                                 NcmMpdSongList *songs, NcmError *ncm_error) {
+                                 NcmSongList *songs, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
     NCM_CLIENT_TRY_MPD(client,
                        ncm_mpd_connection_get_queue_changes(&client->connection,
@@ -662,7 +662,7 @@ ncm_mpd_client_get_current_song(MpdClient *client, NcmSong *song,
 
 int32
 ncm_mpd_client_get_playlist_content(MpdClient *client, char *path,
-                                    NcmMpdSongList *songs,
+                                    NcmSongList *songs,
                                     NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
     NCM_CLIENT_TRY_MPD(client,
@@ -675,7 +675,7 @@ ncm_mpd_client_get_playlist_content(MpdClient *client, char *path,
 
 int32
 ncm_mpd_client_get_playlist_content_no_info(MpdClient *client, char *path,
-                                            NcmMpdSongList *songs,
+                                            NcmSongList *songs,
                                             NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
     NCM_CLIENT_TRY_MPD(client,
@@ -799,7 +799,7 @@ ncm_mpd_client_add_song_value(MpdClient *client, NcmSong *song,
 
 int32
 ncm_mpd_client_add_song_list(MpdClient *client,
-                             NcmMpdSongList *songs, int32 pos,
+                             NcmSongList *songs, int32 pos,
                              NcmError *ncm_error) {
     bool started;
     int32 insert_pos;
@@ -1060,7 +1060,7 @@ ncm_mpd_client_add_search_uri(MpdClient *client, char *value,
 }
 
 int32
-ncm_mpd_client_commit_search_songs(MpdClient *client, NcmMpdSongList *songs,
+ncm_mpd_client_commit_search_songs(MpdClient *client, NcmSongList *songs,
                                    NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
     NCM_CLIENT_TRY_MPD(client,
@@ -1085,7 +1085,7 @@ ncm_mpd_client_get_list(MpdClient *client, enum TagType tag,
 
 int32
 ncm_mpd_client_get_directory_recursive(MpdClient *client, char *path,
-                                       NcmMpdSongList *songs,
+                                       NcmSongList *songs,
                                        NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
     NCM_CLIENT_TRY_MPD(client,
@@ -1098,7 +1098,7 @@ ncm_mpd_client_get_directory_recursive(MpdClient *client, char *path,
 
 int32
 ncm_mpd_client_get_songs(MpdClient *client, char *path,
-                         NcmMpdSongList *songs, NcmError *ncm_error) {
+                         NcmSongList *songs, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
     NCM_CLIENT_TRY_MPD(client,
         ncm_mpd_connection_get_directory_songs(&client->connection,
@@ -1192,7 +1192,7 @@ int32
 ncm_mpd_client_add_random_tag(MpdClient *client, enum TagType tag,
                               int32 number, NcmError *ncm_error) {
     StrFlexList tags;
-    NcmMpdSongList songs;
+    NcmSongList songs;
     int32 status;
 
     if (number < 0) {
@@ -1205,7 +1205,7 @@ ncm_mpd_client_add_random_tag(MpdClient *client, enum TagType tag,
     }
 
     tags = (StrFlexList){0};
-    songs = (NcmMpdSongList){0};
+    songs = (NcmSongList){0};
     status = ncm_mpd_connection_list_tag_values(&client->connection, tag,
                                                  &tags);
     if (status < 0) {

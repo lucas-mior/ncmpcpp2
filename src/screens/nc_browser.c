@@ -1495,7 +1495,7 @@ browser_collect_item_songs(BrowserScreen *screen,
 
     switch (ncm_mpd_item_kind(item)) {
     case NCM_MPD_ITEM_DIRECTORY: {
-        NcmMpdSongList source = {0};
+        NcmSongList source = {0};
         NcmError ncm_error = {0};
         char *directory;
 

@@ -4217,7 +4217,7 @@ action_runtime_update_tag_directory(StrBuilder *shared_directory, bool valid) {
 static int32
 action_runtime_edit_library_tag(void) {
     enum TagType tag_type;
-    NcmMpdSongList songs = {0};
+    NcmSongList songs = {0};
     StrBuilder current_tag = {0};
     StrBuilder prompt = {0};
     StrBuilder new_tag = {0};

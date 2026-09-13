@@ -1264,7 +1264,7 @@ playlist_edit_store_current_song(PlaylistEditScreen *screen, NcmSong *song) {
 
 int32
 playlist_edit_screen_load_content(PlaylistEditScreen *screen,
-                                    NcmMpdSongList *songs) {
+                                    NcmSongList *songs) {
     NcMenu *menu;
     NcmSong preserved_song = {0};
     bool had_preserved_song;
@@ -1313,7 +1313,7 @@ int32
 playlist_edit_screen_reload_content_from_mpd(PlaylistEditScreen *screen,
                                                MpdClient *client,
                                                NcmError *ncm_error) {
-    NcmMpdSongList songs;
+    NcmSongList songs;
     NcmPlaylist *playlist;
     int32 status;
 
@@ -1327,7 +1327,7 @@ playlist_edit_screen_reload_content_from_mpd(PlaylistEditScreen *screen,
                                     STRLIT("missing playlist"));
     }
 
-    songs = (NcmMpdSongList){0};
+    songs = (NcmSongList){0};
     status = ncm_mpd_client_get_playlist_content(client, playlist->path,
                                                  &songs, ncm_error);
     if (status == 0) {
@@ -1485,7 +1485,7 @@ playlist_edit_locate_song_in_playlist_range(PlaylistEditScreen *screen,
         last = nc_menu_item_len(menu);
     }
     for (int32 i = first; i < last; i += 1) {
-        NcmMpdSongList songs = {0};
+        NcmSongList songs = {0};
         NcmPlaylist *playlist = nc_menu_active_item_at(menu, i);
         int32 song_index;
         int32 status;
@@ -1734,7 +1734,7 @@ playlist_edit_screen_selected_songs(PlaylistEditScreen *screen,
     if (playlist_edit_screen_selected_playlist_len(screen) > 0) {
         NcMenu *menu = nc_playlist_entry_menu_base(&screen->playlists);
         for (int32 i = 0; i < nc_menu_item_len(menu); i += 1) {
-            NcmMpdSongList list = {0};
+            NcmSongList list = {0};
             NcmError ncm_error = {0};
             NcmPlaylist *playlist;
 

@@ -1092,7 +1092,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
     if (screen->search_in_database && ((screen->search_mode
              == SEARCH_ENGINE_SEARCH_MODE_LITERAL)
             || (screen->search_mode == SEARCH_ENGINE_SEARCH_MODE_EXACT))) {
-        NcmMpdSongList result = {0};
+        NcmSongList result = {0};
         StrBuilder *constraint;
         int32 constraint_status;
         bool exact_match;
