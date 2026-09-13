@@ -194,9 +194,8 @@ lrc_parse_line_offset_tags(LrcDocument *document, char *line, int32 line_len,
 static int32
 lrc_parse_offsets(LrcDocument *document, char *data, int32 data_len,
                   NcmError *ncm_error) {
-    int32 pos;
+    int32 pos = 0;
 
-    pos = 0;
     while (pos < data_len) {
         int32 raw_line_len = lrc_raw_line_len(data, data_len, pos);
         int32 line_len = lrc_trim_line_end(data + pos, raw_line_len);
