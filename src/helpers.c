@@ -20,14 +20,14 @@ ncm_helpers_show_song_time(int32 length, char *buffer, int32 buffer_cap) {
 }
 
 static int32
-menu_item_count(NcMenu *menu, enum NcMenuItemSource source) {
+menu_item_len(NcMenu *menu, enum NcMenuItemSource source) {
     ASSERT(menu != NULL);
 
     switch (source) {
     case NC_MENU_ITEMS_FILTERED:
-        return nc_menu_filtered_item_count(menu);
+        return nc_menu_filtered_item_len(menu);
     case NC_MENU_ITEMS_ALL:
-        return nc_menu_all_item_count(menu);
+        return nc_menu_all_item_len(menu);
     case NC_MENU_ITEMS_COUNT:
     default:
         return 0;
@@ -66,7 +66,7 @@ ncm_menu_reverse_selection(NcMenu *menu, enum NcMenuItemSource source) {
 
     ASSERT(menu != NULL);
 
-    count = menu_item_count(menu, source);
+    count = menu_item_len(menu, source);
     for (int32 i = 0; i < count; i += 1) {
         uint32 flags;
         void *item;
@@ -103,7 +103,7 @@ ncm_menu_find_selected_range(NcMenu *menu, enum NcMenuItemSource source,
     }
     ASSERT(menu != NULL);
 
-    count = menu_item_count(menu, source);
+    count = menu_item_len(menu, source);
     if (last) {
         *last = count;
     }
@@ -147,7 +147,7 @@ ncm_menu_find_full_selected_range(NcMenu *menu, enum NcMenuItemSource source,
             *first = 0;
         }
         if (last) {
-            *last = menu_item_count(menu, source);
+            *last = menu_item_len(menu, source);
         }
         return 0;
     }

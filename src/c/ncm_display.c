@@ -47,21 +47,21 @@ ncm_display_append_nc_spaces(NcBuffer *buffer, int32 count) {
 
 void
 ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
-                         struct Column *columns, int32 column_count,
+                         struct Column *columns, int32 column_len,
                          int32 list_width, bool use_colors) {
     Column *last;
     int32 remained_width;
 
     ASSERT(buffer != NULL);
     ASSERT(song != NULL);
-    ASSERT((columns != NULL) || (column_count <= 0));
-    if ((column_count <= 0) || (list_width <= 0)) {
+    ASSERT((columns != NULL) || (column_len <= 0));
+    if ((column_len <= 0) || (list_width <= 0)) {
         return;
     }
 
     remained_width = list_width;
-    last = &columns[column_count - 1];
-    for (int32 i = 0; i < column_count; i += 1) {
+    last = &columns[column_len - 1];
+    for (int32 i = 0; i < column_len; i += 1) {
         StrBuilder value = {0};
         Column *column;
         int32 cut_len;
@@ -144,7 +144,7 @@ ncm_display_append_spaces(StrBuilder *buffer, int32 count) {
 
 void
 ncm_display_column_title(StrBuilder *buffer, struct Column *columns,
-                         int32 column_count, int32 list_width) {
+                         int32 column_len, int32 list_width) {
     StrBuilder name = {0};
     Column *last;
     int32 remained_width;
@@ -152,14 +152,14 @@ ncm_display_column_title(StrBuilder *buffer, struct Column *columns,
     ASSERT(buffer != NULL);
 
     sb_clear(buffer);
-    ASSERT((columns != NULL) || (column_count <= 0));
-    if ((column_count <= 0) || (list_width <= 0)) {
+    ASSERT((columns != NULL) || (column_len <= 0));
+    if ((column_len <= 0) || (list_width <= 0)) {
         return;
     }
 
     remained_width = list_width;
-    last = &columns[column_count - 1];
-    for (int32 i = 0; i < column_count; i += 1) {
+    last = &columns[column_len - 1];
+    for (int32 i = 0; i < column_len; i += 1) {
         Column *column = &columns[i];
         int32 width = ncm_display_column_width(column,
                                                list_width, remained_width);

@@ -562,7 +562,7 @@ search_snapshot_playlist(void *user, NcmSongArray *songs, NcmError *ncm_error) {
     playlist = app_screen_playlist();
     song_menu = playlist_screen_song_menu(playlist);
     menu = nc_song_menu_base(song_menu);
-    count = nc_menu_all_item_count(menu);
+    count = nc_menu_all_item_len(menu);
     for (int32 i = 0; i < count; i += 1) {
         song = nc_song_menu_item_at(song_menu, NC_MENU_ITEMS_ALL, i);
         ncm_song_array_append_copy(songs, song);
@@ -1309,7 +1309,7 @@ outputs_fetch(void *user, NcOutputsScreen *screen) {
         return;
     }
 
-    for (int32 i = 0; i < outputs.count; i += 1) {
+    for (int32 i = 0; i < outputs.len; i += 1) {
         NcmMpdOutput *output;
 
         output = outputs.items + i;
@@ -1538,7 +1538,7 @@ server_info_render(void *user, NcBuffer *buffer) {
 
     append_bold_label(buffer, "URL Handlers:");
     for (int32 i = 0;
-         i < string_list_count(&owner->url_handlers);
+         i < string_list_len(&owner->url_handlers);
          i += 1) {
         StringView *handler = &owner->url_handlers.items[i];
 
@@ -1553,7 +1553,7 @@ server_info_render(void *user, NcBuffer *buffer) {
 
     append_bold_label(buffer, "Tag Types:");
     for (int32 i = 0;
-         i < string_list_count(&owner->tag_types);
+         i < string_list_len(&owner->tag_types);
          i += 1) {
         StringView *tag = &owner->tag_types.items[i];
 

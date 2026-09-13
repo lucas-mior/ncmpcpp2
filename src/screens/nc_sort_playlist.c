@@ -205,7 +205,7 @@ sort_dialog_get_order(SortPlaylistDialog *dialog, enum SongGetter *getters,
 
     menu = nc_editor_sort_menu_base(&dialog->rows);
     len = 0;
-    for (int32 i = 0; i < nc_menu_all_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_all_item_len(menu); i += 1) {
         NcEditorSortRow *row;
 
         row = nc_editor_sort_menu_item_at(&dialog->rows, NC_MENU_ITEMS_ALL, i);
@@ -480,7 +480,7 @@ sort_playlist_dialog_move_current_up(SortPlaylistDialog *dialog) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     nc_menu_swap_item_slots(menu, NC_MENU_ITEMS_ALL, pos, pos - 1);
-    nc_menu_highlight_position(menu, pos - 1, nc_menu_item_count(menu));
+    nc_menu_highlight_position(menu, pos - 1, nc_menu_item_len(menu));
     return 0;
 }
 
@@ -501,7 +501,7 @@ sort_playlist_dialog_move_current_down(SortPlaylistDialog *dialog) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     nc_menu_swap_item_slots(menu, NC_MENU_ITEMS_ALL, pos, pos + 1);
-    nc_menu_highlight_position(menu, pos + 1, nc_menu_item_count(menu));
+    nc_menu_highlight_position(menu, pos + 1, nc_menu_item_len(menu));
     return 0;
 }
 

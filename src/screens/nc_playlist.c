@@ -114,7 +114,7 @@ nc_playlist_screen_mouse_button_pressed(NcPlaylistScreen *screen,
     if (screen->menu == NULL) {
         return;
     }
-    if (nc_menu_item_count(screen->menu) <= 0) {
+    if (nc_menu_item_len(screen->menu) <= 0) {
         return;
     }
 
@@ -128,7 +128,7 @@ nc_playlist_screen_mouse_button_pressed(NcPlaylistScreen *screen,
         return;
     }
 
-    if ((y >= 0) && (y < nc_menu_item_count(screen->menu))
+    if ((y >= 0) && (y < nc_menu_item_len(screen->menu))
         && (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED))) {
         if ((nc_playlist_screen_goto_y(screen, y) == 0)
             && (event.bstate & BUTTON3_PRESSED)) {
@@ -202,7 +202,7 @@ playlist_refresh_stats(PlaylistScreen *screen) {
 
     sb_clear(&screen->title_cache);
     SB_APPEND(&screen->title_cache, "Playlist (");
-    count = playlist_screen_song_count(screen);
+    count = playlist_screen_song_len(screen);
     sb_itoa(&screen->title_cache, count);
     if (count == 1) {
         SB_APPEND(&screen->title_cache, " item)");
@@ -666,7 +666,7 @@ playlist_full_reload_is_required(PlaylistScreen *screen, int32 version,
         return true;
     }
 
-    count = nc_menu_all_item_count(playlist_storage_menu(screen));
+    count = nc_menu_all_item_len(playlist_storage_menu(screen));
     if (count <= 0) {
         return true;
     }
@@ -675,7 +675,7 @@ playlist_full_reload_is_required(PlaylistScreen *screen, int32 version,
     }
 
     next_append_position = count;
-    for (int32 i = 0; i < changes->count; i += 1) {
+    for (int32 i = 0; i < changes->len; i += 1) {
         int32 position;
 
         position = ncm_song_position(&changes->items[i]);
@@ -692,12 +692,12 @@ playlist_full_reload_is_required(PlaylistScreen *screen, int32 version,
 static void
 playlist_truncate_storage(PlaylistScreen *screen, int32 playlist_length) {
     NcMenu *menu = playlist_storage_menu(screen);
-    int32 new_count = playlist_length;
-    int32 old_count = nc_menu_all_item_count(menu);
+    int32 new_len = playlist_length;
+    int32 old_len = nc_menu_all_item_len(menu);
 
-    while (old_count > new_count) {
-        old_count -= 1;
-        nc_menu_remove_item(menu, NC_MENU_ITEMS_ALL, old_count);
+    while (old_len > new_len) {
+        old_len -= 1;
+        nc_menu_remove_item(menu, NC_MENU_ITEMS_ALL, old_len);
     }
     return;
 }
@@ -709,7 +709,7 @@ playlist_apply_changed_song_to_storage(PlaylistScreen *screen, NcmSong *song) {
 
     ASSERT_NON_NEGATIVE(position);
 
-    if (position < nc_menu_all_item_count(menu)) {
+    if (position < nc_menu_all_item_len(menu)) {
         nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL, position, song);
         return;
     }
@@ -728,7 +728,7 @@ playlist_apply_changed_songs(PlaylistScreen *screen,
     was_filtered = nc_menu_is_filtered(menu);
 
     playlist_truncate_storage(screen, playlist_length);
-    for (int32 i = 0; i < songs->count; i += 1) {
+    for (int32 i = 0; i < songs->len; i += 1) {
         playlist_apply_changed_song_to_storage(screen, &songs->items[i]);
     }
 
@@ -778,16 +778,16 @@ playlist_screen_reload_from_mpd(PlaylistScreen *screen, MpdClient *client,
 }
 
 int32
-playlist_screen_song_count(PlaylistScreen *screen) {
+playlist_screen_song_len(PlaylistScreen *screen) {
     if (screen == NULL) {
         return 0;
     }
-    return nc_menu_all_item_count(playlist_storage_menu(screen));
+    return nc_menu_all_item_len(playlist_storage_menu(screen));
 }
 
 bool
 playlist_screen_is_empty(PlaylistScreen *screen) {
-    return playlist_screen_song_count(screen) <= 0;
+    return playlist_screen_song_len(screen) <= 0;
 }
 
 int32
@@ -930,7 +930,7 @@ playlist_screen_now_playing_song(PlaylistScreen *screen,
 
     menu = playlist_screen_song_menu(screen);
     base = nc_song_menu_base(menu);
-    count = nc_menu_all_item_count(base);
+    count = nc_menu_all_item_len(base);
     queue_position = position;
 
     if (position < count) {
@@ -966,7 +966,7 @@ playlist_screen_locate_position(PlaylistScreen *screen, int32 position) {
 
     menu = playlist_storage_menu(screen);
     height = nc_playlist_screen_height(&screen->screen);
-    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_len(menu); i += 1) {
         song = nc_menu_active_item_at(menu, i);
         if (ncm_song_position(song) == position) {
             nc_menu_highlight_position(menu, i, height);
@@ -1001,7 +1001,7 @@ playlist_screen_find_sort_range(
     int32 range_start;
 
     menu = playlist_storage_menu(screen);
-    last = nc_menu_all_item_count(menu);
+    last = nc_menu_all_item_len(menu);
     if (last <= 0) {
         return ncm_error_set_status(ncm_error, -ENOENT,
                                     STRLIT("playlist is empty"));

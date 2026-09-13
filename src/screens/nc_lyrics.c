@@ -1209,11 +1209,11 @@ lyrics_start_next_background(LyricsScreen *screen, NcmError *ncm_error) {
     bool win32_filename;
     bool found_job;
 
-    if (ncm_job_queue_pending_count(&screen->jobs) > 0) {
+    if (ncm_job_queue_pending_len(&screen->jobs) > 0) {
         ncm_error_clear(ncm_error);
         return 0;
     }
-    if (ncm_job_queue_completed_count(&screen->jobs) > 0) {
+    if (ncm_job_queue_completed_len(&screen->jobs) > 0) {
         ncm_error_clear(ncm_error);
         return 0;
     }

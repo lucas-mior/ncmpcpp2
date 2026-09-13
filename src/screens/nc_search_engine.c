@@ -642,7 +642,7 @@ search_engine_screen_init(SearchEngineScreen *screen,
     screen->main_start_y = main_start_y;
     screen->main_height = main_height;
     screen->lines_scrolled = 1;
-    screen->result_count = 0;
+    screen->result_len = 0;
     screen->search_mode = SEARCH_ENGINE_SEARCH_MODE_LITERAL;
     screen->search_in_database = true;
     screen->mouse_list_scroll_whole_page = false;
@@ -819,7 +819,7 @@ search_engine_screen_prepare_static_rows(SearchEngineScreen *screen) {
     nc_menu_clear_items(search_engine_screen_menu(screen));
     screen->prepared = false;
     screen->result_rows_present = false;
-    screen->result_count = 0;
+    screen->result_len = 0;
     screen->constraints_locked = false;
 
     for (uint32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
@@ -855,7 +855,7 @@ search_engine_screen_prepare_static_rows(SearchEngineScreen *screen) {
     nc_menu_reset(search_engine_screen_menu(screen));
     screen->prepared = true;
     screen->result_rows_present = false;
-    screen->result_count = 0;
+    screen->result_len = 0;
     screen->constraints_locked = false;
     return;
 }
@@ -973,7 +973,7 @@ search_engine_screen_can_run_current(SearchEngineScreen *screen) {
     }
 
     menu = search_engine_screen_menu(screen);
-    if (nc_menu_item_count(menu) <= 0) {
+    if (nc_menu_item_len(menu) <= 0) {
         return false;
     }
     pos = nc_menu_highlight(menu);
@@ -1325,12 +1325,12 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
         nc_buffer_destroy(&buffer);
     }
     screen->result_rows_present = true;
-    screen->result_count = songs.len;
+    screen->result_len = songs.len;
 
     screen->constraints_locked =
         Config.block_search_constraints_change_if_items_found;
     menu = search_engine_screen_menu(screen);
-    if (nc_menu_all_item_count(menu) > SEARCH_ENGINE_SEARCH_BUTTON_ROW) {
+    if (nc_menu_all_item_len(menu) > SEARCH_ENGINE_SEARCH_BUTTON_ROW) {
         for (int32 i = 0; i <= SEARCH_ENGINE_SEARCH_BUTTON_ROW; i += 1) {
             uint32 flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
 
@@ -1386,7 +1386,7 @@ search_engine_screen_can_search(SearchEngineScreen *screen) {
         return false;
     }
     menu = search_engine_screen_menu(screen);
-    count = nc_menu_item_count(menu);
+    count = nc_menu_item_len(menu);
     if (count <= 0) {
         return false;
     }

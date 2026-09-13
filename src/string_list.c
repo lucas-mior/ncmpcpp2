@@ -45,7 +45,7 @@ string_list_clear(StringViewList *list) {
 }
 
 int32
-string_list_count(StringViewList *list) {
+string_list_len(StringViewList *list) {
     if (list == NULL) {
         return 0;
     }

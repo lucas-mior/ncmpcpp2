@@ -362,10 +362,10 @@ static void
 tag_edit_update_titles(TagEditScreen *screen, bool update_windows) {
     ASSERT(screen != NULL);
 
-    screen->last_known_directory_count =
-        nc_menu_item_count(nc_editor_pair_menu_base(&screen->directories));
-    screen->last_known_tag_count =
-        nc_menu_item_count(nc_tag_row_menu_base(&screen->tags));
+    screen->last_known_directory_len =
+        nc_menu_item_len(nc_editor_pair_menu_base(&screen->directories));
+    screen->last_known_tag_len =
+        nc_menu_item_len(nc_tag_row_menu_base(&screen->tags));
 
     sb_clear(&screen->directories_title);
     sb_clear(&screen->tag_types_title);
@@ -639,13 +639,13 @@ tag_edit_can_run_current(NcScreen *screen) {
                    >= (int32)TAG_EDIT_PARSER_ACTION_RECENT_START;
         }
     case TAG_EDIT_FOCUS_TAG_TYPES:
-        if (nc_menu_item_count(nc_tag_row_menu_base(&editor->tags)) <= 0) {
+        if (nc_menu_item_len(nc_tag_row_menu_base(&editor->tags)) <= 0) {
             return false;
         }
         return tag_edit_current_tag_type_action(editor, &tag_type)
                != TAG_EDIT_TAG_TYPE_ACTION_NONE;
     case TAG_EDIT_FOCUS_TAGS:
-        if (nc_menu_item_count(nc_tag_row_menu_base(&editor->tags)) <= 0) {
+        if (nc_menu_item_len(nc_tag_row_menu_base(&editor->tags)) <= 0) {
             return false;
         }
         switch (tag_edit_current_tag_type_action(editor, &tag_type)) {
@@ -806,7 +806,7 @@ tag_edit_build_parser_legend(TagEditScreen *screen) {
     SB_APPEND(&screen->parser_legend, "\nFiles:\n");
 
     tags = nc_tag_row_menu_base(&screen->tags);
-    count = nc_menu_item_count(tags);
+    count = nc_menu_item_len(tags);
     for (int32 i = 0; i < count; i += 1) {
         MutableSong *song = nc_menu_active_item_at(tags, i);
 
@@ -966,7 +966,7 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
     tag_edit_status_message(screen, STRLIT("Parsing..."));
     sb_clear(&screen->parser_preview);
     tags = nc_tag_row_menu_base(&screen->tags);
-    count = nc_menu_item_count(tags);
+    count = nc_menu_item_len(tags);
     for (int32 i = 0; i < count; i += 1) {
         MutableSong *song;
 
@@ -1428,7 +1428,7 @@ tag_edit_restore_current_directory(TagEditScreen *screen, StrBuilder *path) {
         return;
     }
     menu = nc_editor_pair_menu_base(&screen->directories);
-    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_len(menu); i += 1) {
         StrBuilderPair *pair = nc_menu_active_item_at(menu, i);
 
         ASSERT(pair != NULL);
@@ -1644,7 +1644,7 @@ tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
     if (preserved_uri.len > 0) {
         NcMenu *menu = nc_tag_row_menu_base(&screen->tags);
 
-        for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        for (int32 i = 0; i < nc_menu_item_len(menu); i += 1) {
             MutableSong *item = nc_menu_active_item_at(menu, i);
 
             if (item->uri == NULL) {
@@ -1692,7 +1692,7 @@ tag_edit_update(NcScreen *screen) {
     tag_edit_screen_finish_directory_change(editor);
     ncm_error_clear(&ncm_error);
     if (editor->directories_update_requested
-        || (nc_menu_item_count(nc_editor_pair_menu_base(&editor->directories))
+        || (nc_menu_item_len(nc_editor_pair_menu_base(&editor->directories))
             <= 0)) {
         status = tag_edit_reload_directories_from_mpd(editor, &global_mpd,
                                                       &ncm_error);
@@ -1711,7 +1711,7 @@ tag_edit_update(NcScreen *screen) {
     if (continue_update) {
         tag_edit_screen_finish_directory_change(editor);
         if (!editor->tags_update_requested
-            && (nc_menu_item_count(nc_tag_row_menu_base(&editor->tags)) > 0)) {
+            && (nc_menu_item_len(nc_tag_row_menu_base(&editor->tags)) > 0)) {
             tag_edit_update_titles(editor, true);
             continue_update = false;
         }
@@ -1869,7 +1869,7 @@ tag_edit_mouse_callback(NcScreen *screen, MEVENT event) {
                 return;
             }
             if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
-                if ((y >= 0) && (y < nc_menu_item_count(menu))
+                if ((y >= 0) && (y < nc_menu_item_len(menu))
                     && (nc_menu_goto_selectable(menu, y) >= 0)
                     && (event.bstate & BUTTON3_PRESSED)) {
                     tag_edit_run_current_action(editor);
@@ -1896,7 +1896,7 @@ tag_edit_mouse_callback(NcScreen *screen, MEVENT event) {
                 return;
             }
             if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
-                if ((y >= 0) && (y < nc_menu_item_count(menu))
+                if ((y >= 0) && (y < nc_menu_item_len(menu))
                     && (nc_menu_goto_selectable(menu, y) >= 0)
                     && (event.bstate & BUTTON3_PRESSED)) {
                     tag_edit_run_current_action(editor);
@@ -1947,7 +1947,7 @@ tag_edit_mouse_callback(NcScreen *screen, MEVENT event) {
         if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
             NcMenu *menu = nc_editor_pair_menu_base(&editor->directories);
 
-            if ((y >= 0) && (y < nc_menu_item_count(menu))
+            if ((y >= 0) && (y < nc_menu_item_len(menu))
                 && (nc_menu_goto_selectable(menu, y) >= 0)) {
                 tag_edit_screen_finish_directory_change(editor);
                 if (event.bstate & BUTTON1_PRESSED) {
@@ -1973,7 +1973,7 @@ tag_edit_mouse_callback(NcScreen *screen, MEVENT event) {
         if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
             NcMenu *menu = nc_editor_string_menu_base(&editor->tag_types);
 
-            if ((y >= 0) && (y < nc_menu_item_count(menu))
+            if ((y >= 0) && (y < nc_menu_item_len(menu))
                 && (nc_menu_goto_selectable(menu, y) >= 0)) {
                 tag_edit_finish_tag_type_change(editor, true);
                 if (event.bstate & BUTTON3_PRESSED) {
@@ -1999,7 +1999,7 @@ tag_edit_mouse_callback(NcScreen *screen, MEVENT event) {
         if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
             NcMenu *menu = nc_tag_row_menu_base(&editor->tags);
 
-            if ((y >= 0) && (y < nc_menu_item_count(menu))
+            if ((y >= 0) && (y < nc_menu_item_len(menu))
                 && (nc_menu_goto_selectable(menu, y) >= 0)
                 && (event.bstate & BUTTON3_PRESSED)) {
                 tag_edit_run_current_action(editor);
@@ -2481,8 +2481,8 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
     screen->active_focus = TAG_EDIT_FOCUS_DIRECTORIES;
     screen->last_directory_highlight = -1;
     screen->last_tag_type_highlight = -1;
-    screen->last_known_directory_count = 0;
-    screen->last_known_tag_count = 0;
+    screen->last_known_directory_len = 0;
+    screen->last_known_tag_len = 0;
     screen->window_timeout_ms = -1;
     screen->parser_mode = TAG_EDIT_PARSER_MODE_NONE;
     screen->directories_update_requested = false;
@@ -2704,7 +2704,7 @@ tag_edit_screen_clear_stale_tags(TagEditScreen *screen) {
     sb_clear(&screen->displayed_dir);
     screen->displayed_dir_valid = false;
     screen->tags_update_requested = true;
-    screen->last_known_tag_count = 0;
+    screen->last_known_tag_len = 0;
     tag_edit_update_titles(screen, true);
     return;
 }
@@ -2907,7 +2907,7 @@ tag_edit_screen_locate_song(TagEditScreen *screen, NcmSong *song) {
         NcMenu *menu = nc_editor_pair_menu_base(&screen->directories);
         bool found = false;
 
-        for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        for (int32 i = 0; i < nc_menu_item_len(menu); i += 1) {
             StrBuilderPair *item;
 
             item = nc_menu_active_item_at(menu, i);
@@ -2937,7 +2937,7 @@ tag_edit_screen_locate_song(TagEditScreen *screen, NcmSong *song) {
 
         nc_menu_reset(nc_editor_string_menu_base(&screen->tag_types));
         tag_edit_set_focus(screen, TAG_EDIT_FOCUS_TAGS);
-        for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        for (int32 i = 0; i < nc_menu_item_len(menu); i += 1) {
             MutableSong *item;
 
             item = nc_menu_active_item_at(menu, i);
@@ -3100,8 +3100,8 @@ tag_edit_screen_add_directory(TagEditScreen *screen,
     sb_set(&pair.first, label, label_len);
     sb_set(&pair.second, path, path_len);
     nc_editor_pair_menu_add(&screen->directories, &pair);
-    screen->last_known_directory_count =
-        nc_menu_item_count(nc_editor_pair_menu_base(&screen->directories));
+    screen->last_known_directory_len =
+        nc_menu_item_len(nc_editor_pair_menu_base(&screen->directories));
     tag_edit_update_titles(screen, true);
     sb_free(&pair.second);
     sb_free(&pair.first);
@@ -3129,8 +3129,8 @@ tag_edit_screen_load_songs(TagEditScreen *screen, NcmSongArray *songs) {
         screen->displayed_dir_valid = false;
     }
     screen->tags_update_requested = false;
-    screen->last_known_tag_count =
-        nc_menu_item_count(nc_tag_row_menu_base(&screen->tags));
+    screen->last_known_tag_len =
+        nc_menu_item_len(nc_tag_row_menu_base(&screen->tags));
     tag_edit_update_titles(screen, true);
     return;
 }
@@ -3138,8 +3138,8 @@ tag_edit_screen_load_songs(TagEditScreen *screen, NcmSongArray *songs) {
 void
 tag_edit_screen_add_mutable_song(TagEditScreen *screen, MutableSong *song) {
     nc_tag_row_menu_add(&screen->tags, song);
-    screen->last_known_tag_count =
-        nc_menu_item_count(nc_tag_row_menu_base(&screen->tags));
+    screen->last_known_tag_len =
+        nc_menu_item_len(nc_tag_row_menu_base(&screen->tags));
     tag_edit_update_titles(screen, true);
     return;
 }
@@ -3189,14 +3189,14 @@ tag_edit_screen_selected_songs(TagEditScreen *screen, NcmSongArray *songs) {
 
     menu = nc_tag_row_menu_base(&screen->tags);
     if (!nc_menu_has_selected(menu)) {
-        if (nc_menu_item_count(menu) <= 0) {
+        if (nc_menu_item_len(menu) <= 0) {
             return 0;
         }
         tag_edit_copy_selected_song_at(screen, songs, nc_menu_highlight(menu));
         return 0;
     }
 
-    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_len(menu); i += 1) {
         if (!nc_menu_position_is_selected(menu, i)) {
             continue;
         }
@@ -3212,18 +3212,18 @@ tag_edit_screen_previous_column_available(TagEditScreen *screen) {
     }
     if (screen->active_focus == TAG_EDIT_FOCUS_TAGS) {
         NcMenu *menu = nc_editor_string_menu_base(&screen->tag_types);
-        return nc_menu_item_count(menu) > 0;
+        return nc_menu_item_len(menu) > 0;
     }
     if (screen->active_focus == TAG_EDIT_FOCUS_TAG_TYPES) {
         NcMenu *menu = nc_editor_pair_menu_base(&screen->directories);
-        if (nc_menu_item_count(menu) <= 0) {
+        if (nc_menu_item_len(menu) <= 0) {
             return false;
         }
         return true;
     }
     if (tag_edit_focus_is_parser_helper(screen->active_focus)) {
         NcMenu *menu = nc_editor_string_menu_base(&screen->parser_actions);
-        return nc_menu_item_count(menu) > 0;
+        return nc_menu_item_len(menu) > 0;
     }
     return false;
 }
@@ -3240,14 +3240,14 @@ tag_edit_screen_next_column_available(TagEditScreen *screen) {
     if (screen->active_focus == TAG_EDIT_FOCUS_DIRECTORIES) {
         tag_types = nc_editor_string_menu_base(&screen->tag_types);
         tags = nc_tag_row_menu_base(&screen->tags);
-        return (nc_menu_item_count(tag_types) > 0)
-               && (nc_menu_item_count(tags) > 0);
+        return (nc_menu_item_len(tag_types) > 0)
+               && (nc_menu_item_len(tags) > 0);
     }
     if (screen->active_focus == TAG_EDIT_FOCUS_TAG_TYPES) {
         tag_types = nc_editor_string_menu_base(&screen->tag_types);
         tags = nc_tag_row_menu_base(&screen->tags);
         choice = nc_menu_highlight(tag_types);
-        return (nc_menu_item_count(tags) > 0)
+        return (nc_menu_item_len(tags) > 0)
                && ((choice < (int32)TAG_COUNT)
                    || tag_edit_choice_is_filename(choice));
     }
@@ -3268,7 +3268,7 @@ tag_edit_screen_previous_column(TagEditScreen *screen) {
         NcMenu *menu = nc_tag_row_menu_base(&screen->tags);
         bool modified = false;
 
-        for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        for (int32 i = 0; i < nc_menu_item_len(menu); i += 1) {
             MutableSong *song = nc_menu_active_item_at(menu, i);
 
             ASSERT(song != NULL);
@@ -3318,7 +3318,7 @@ tag_edit_for_each_target(TagEditScreen *screen,
     int32 count = 0;
     int32 status;
 
-    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_len(menu); i += 1) {
         MutableSong *song;
 
         if (has_selected && !nc_menu_position_is_selected(menu, i)) {
@@ -3402,9 +3402,9 @@ tag_edit_screen_number_tracks(TagEditScreen *screen, bool extended) {
 
     numberer.current = 1;
     if (nc_menu_has_selected(menu)) {
-        numberer.total = nc_menu_selected_count(menu);
+        numberer.total = nc_menu_selected_len(menu);
     } else {
-        numberer.total = nc_menu_item_count(menu);
+        numberer.total = nc_menu_item_len(menu);
     }
     numberer.extended = extended;
     return tag_edit_for_each_target(screen,
@@ -3485,7 +3485,7 @@ void
 tag_edit_screen_clear_modifications(TagEditScreen *screen) {
     NcMenu *menu = nc_tag_row_menu_base(&screen->tags);
 
-    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_len(menu); i += 1) {
         MutableSong *song = nc_menu_active_item_at(menu, i);
         ASSERT(song != NULL);
         mutable_song_clear_modifications(song);
@@ -3906,7 +3906,7 @@ void
 tag_edit_screen_show_parser_dialog(TagEditScreen *screen) {
     NcMenu *menu = nc_editor_string_menu_base(&screen->parser_dialog);
 
-    if (nc_menu_item_count(menu) <= 0) {
+    if (nc_menu_item_len(menu) <= 0) {
         tag_edit_screen_prepare_parser_menus(screen, TAG_EDIT_PARSER_MODE_NONE,
                                             NULL, 0);
     }

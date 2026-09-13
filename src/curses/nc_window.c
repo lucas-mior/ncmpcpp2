@@ -345,10 +345,10 @@ nc_color_pair_number(NcColor color) {
     }
     if (!nc_color_is_default(color)) {
         if (!nc_color_has_current_background(color)) {
-            result = (color.background + 1) % nc_color_count();
+            result = (color.background + 1) % nc_color_len();
         }
         result *= NC_COLOR_COMPONENT_COUNT;
-        result += color.foreground % nc_color_count();
+        result += color.foreground % nc_color_len();
 
         ASSERT_LESS(result, ARRAY_LEN(color_pair_map));
 
@@ -584,7 +584,7 @@ nc_init_screen(bool enable_colors, bool enable_mouse) {
         }
 
         color_pair_counter = 1;
-        for (int32 fg = 0; fg < nc_color_count(); fg += 1) {
+        for (int32 fg = 0; fg < nc_color_len(); fg += 1) {
             init_pair((int16)color_pair_counter, (int16)fg, -1);
             color_pair_map[fg] = color_pair_counter;
             color_pair_counter += 1;
@@ -603,7 +603,7 @@ nc_init_screen(bool enable_colors, bool enable_mouse) {
 }
 
 int32
-nc_color_count(void) {
+nc_color_len(void) {
     return max_color;
 }
 

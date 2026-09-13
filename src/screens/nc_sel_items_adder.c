@@ -710,7 +710,7 @@ selected_items_adder_screen_destroy(SelectedItemsAdderScreen *screen) {
     }
     app_controller_unregister_screen(selected_items_adder_screen_base(screen));
     playlist_menu = nc_editor_action_menu_base(&screen->playlist_selector);
-    for (int32 i = 0; i < nc_menu_all_item_count(playlist_menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_all_item_len(playlist_menu); i += 1) {
         NcEditorActionRow *row;
 
         row = nc_editor_action_menu_item_at(&screen->playlist_selector,
@@ -913,7 +913,7 @@ selected_items_adder_screen_open(SelectedItemsAdderScreen *screen,
         int32 stored_begin;
         int32 stored_end;
 
-        for (int32 i = 0; i < nc_menu_all_item_count(base); i += 1) {
+        for (int32 i = 0; i < nc_menu_all_item_len(base); i += 1) {
             NcEditorActionRow *row;
 
             row = nc_editor_action_menu_item_at(menu, NC_MENU_ITEMS_ALL, i);
@@ -931,9 +931,9 @@ selected_items_adder_screen_open(SelectedItemsAdderScreen *screen,
                                  adder_action_new_playlist, screen);
         }
         nc_editor_action_menu_add_separator(menu);
-        stored_begin = nc_menu_all_item_count(base);
+        stored_begin = nc_menu_all_item_len(base);
         if (!local_browser) {
-            for (int32 i = 0; i < playlists.count; i += 1) {
+            for (int32 i = 0; i < playlists.len; i += 1) {
                 ExistingPlaylistAction *action;
                 NcmPlaylist *stored_playlist = &playlists.items[i];
                 char *path = stored_playlist->path;
@@ -951,7 +951,7 @@ selected_items_adder_screen_open(SelectedItemsAdderScreen *screen,
                                      adder_action_existing_playlist, action);
             }
         }
-        stored_end = nc_menu_all_item_count(base);
+        stored_end = nc_menu_all_item_len(base);
         for (int32 i = stored_begin; i < stored_end; i += 1) {
             int32 smallest = i;
 

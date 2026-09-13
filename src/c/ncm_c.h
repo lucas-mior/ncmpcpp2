@@ -744,13 +744,13 @@ typedef struct NcmMpdStats {
 
 typedef struct NcmMpdSongList {
     NcmSong *items;
-    int32 count;
+    int32 len;
     int32 capacity;
 } NcmMpdSongList;
 
 typedef struct NcmMpdItemList {
     NcmMpdItem *items;
-    int32 count;
+    int32 len;
     int32 capacity;
 } NcmMpdItemList;
 
@@ -763,13 +763,13 @@ typedef struct NcmMpdOutput {
 
 typedef struct NcmMpdOutputList {
     NcmMpdOutput *items;
-    int32 count;
+    int32 len;
     int32 capacity;
 } NcmMpdOutputList;
 
 typedef struct NcmMpdPlaylistList {
     NcmPlaylist *items;
-    int32 count;
+    int32 len;
     int32 capacity;
 } NcmMpdPlaylistList;
 
@@ -842,7 +842,7 @@ int32 ncm_mpd_connection_get_tag_types(MpdConnection *, StringViewList *);
 
 void ncm_mpd_song_list_destroy(NcmMpdSongList *);
 void ncm_mpd_song_list_clear(NcmMpdSongList *);
-int32 ncm_mpd_song_list_count(NcmMpdSongList *);
+int32 ncm_mpd_song_list_len(NcmMpdSongList *);
 NcmSong *ncm_mpd_song_list_at(NcmMpdSongList *, int32);
 int32 ncm_mpd_song_list_append_copy(NcmMpdSongList *, NcmSong *);
 int32 ncm_mpd_song_list_to_song_array(NcmMpdSongList *, NcmSongArray *);
@@ -1221,8 +1221,8 @@ int32 ncm_job_queue_start(NcmJobQueue *, NcmError *);
 int32 ncm_job_queue_push(NcmJobQueue *, NcmJob, NcmError *);
 int32 ncm_job_queue_dispatch_completed(NcmJobQueue *);
 void ncm_job_queue_destroy(NcmJobQueue *);
-int32 ncm_job_queue_pending_count(NcmJobQueue *);
-int32 ncm_job_queue_completed_count(NcmJobQueue *);
+int32 ncm_job_queue_pending_len(NcmJobQueue *);
+int32 ncm_job_queue_completed_len(NcmJobQueue *);
 
 #define NCM_LRC_NO_BUFFER_POSITION (-1)
 
@@ -1449,9 +1449,9 @@ struct Column;
 
 void ncm_display_song_row(NcBuffer *, NcmFormatAst *, NcmSong *, uint32);
 void ncm_display_song_columns(NcBuffer *, NcmSong *, struct Column *,
-                              int32 column_count, int32 list_width, bool);
+                              int32 column_len, int32 list_width, bool);
 void ncm_display_column_title(StrBuilder *, struct Column *,
-                              int32 column_count, int32 list_width);
+                              int32 column_len, int32 list_width);
 void ncm_display_directory_row(NcBuffer *, NcmDirectory *);
 void ncm_display_playlist_row(NcBuffer *, NcmPlaylist *, char *, int32);
 

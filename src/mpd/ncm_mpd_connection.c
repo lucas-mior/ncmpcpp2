@@ -128,7 +128,7 @@ ncm_mpd_song_list_push(NcmMpdSongList *list, NcmSong *song) {
     int32 new_capacity;
     int32 index;
 
-    if (list->count >= list->capacity) {
+    if (list->len >= list->capacity) {
         old_capacity = list->capacity;
         new_capacity = old_capacity*2;
         if (new_capacity < 8) {
@@ -141,10 +141,10 @@ ncm_mpd_song_list_push(NcmMpdSongList *list, NcmSong *song) {
         list->capacity = new_capacity;
     }
 
-    index = list->count;
+    index = list->len;
     list->items[index] = (NcmSong){0};
     ncm_song_move(&list->items[index], song);
-    list->count += 1;
+    list->len += 1;
     return index;
 }
 
@@ -251,20 +251,20 @@ ncm_mpd_song_list_clear(NcmMpdSongList *list) {
         return;
     }
 
-    for (int32 i = 0; i < list->count; i += 1) {
+    for (int32 i = 0; i < list->len; i += 1) {
         ncm_song_destroy(&list->items[i]);
     }
-    list->count = 0;
+    list->len = 0;
     return;
 }
 
 int32
-ncm_mpd_song_list_count(NcmMpdSongList *list) {
+ncm_mpd_song_list_len(NcmMpdSongList *list) {
     if (list == NULL) {
         return 0;
     }
 
-    return list->count;
+    return list->len;
 }
 
 NcmSong *
@@ -272,7 +272,7 @@ ncm_mpd_song_list_at(NcmMpdSongList *list, int32 idx) {
     if (list == NULL) {
         return NULL;
     }
-    if ((idx < 0) || (idx >= list->count)) {
+    if ((idx < 0) || (idx >= list->len)) {
         return NULL;
     }
 
@@ -303,7 +303,7 @@ ncm_mpd_song_list_to_song_array(NcmMpdSongList *list, NcmSongArray *songs) {
     }
 
     if (list) {
-        for (int32 i = 0; i < list->count; i += 1) {
+        for (int32 i = 0; i < list->len; i += 1) {
             ncm_song_array_append_copy(&replacement, &list->items[i]);
         }
     }
@@ -331,10 +331,10 @@ ncm_mpd_item_list_clear(NcmMpdItemList *list) {
         return;
     }
 
-    for (int32 i = 0; i < list->count; i += 1) {
+    for (int32 i = 0; i < list->len; i += 1) {
         ncm_mpd_item_destroy(&list->items[i]);
     }
-    list->count = 0;
+    list->len = 0;
     return;
 }
 
@@ -347,7 +347,7 @@ ncm_mpd_item_list_to_item_array(NcmMpdItemList *list, NcmMpdItemArray *items) {
     }
 
     if (list) {
-        for (int32 i = 0; i < list->count; i += 1) {
+        for (int32 i = 0; i < list->len; i += 1) {
             ncm_mpd_item_array_append_copy(&replacement, &list->items[i]);
         }
     }
@@ -366,7 +366,7 @@ ncm_mpd_item_list_to_directory_array(NcmMpdItemList *list,
     }
 
     if (list) {
-        for (int32 i = 0; i < list->count; i += 1) {
+        for (int32 i = 0; i < list->len; i += 1) {
             NcmDirectory *directory;
 
             if (ncm_mpd_item_kind(&list->items[i]) != NCM_MPD_ITEM_DIRECTORY) {
@@ -401,11 +401,11 @@ ncm_mpd_output_list_clear(NcmMpdOutputList *list) {
         return;
     }
 
-    for (int32 i = 0; i < list->count; i += 1) {
+    for (int32 i = 0; i < list->len; i += 1) {
         free2(list->items[i].name, list->items[i].name_len + 1);
         list->items[i] = (NcmMpdOutput){0};
     }
-    list->count = 0;
+    list->len = 0;
     return;
 }
 
@@ -428,10 +428,10 @@ ncm_mpd_playlist_list_clear(NcmMpdPlaylistList *list) {
         return;
     }
 
-    for (int32 i = 0; i < list->count; i += 1) {
+    for (int32 i = 0; i < list->len; i += 1) {
         ncm_playlist_destroy(&list->items[i]);
     }
-    list->count = 0;
+    list->len = 0;
     return;
 }
 
@@ -996,7 +996,7 @@ ncm_mpd_connection_get_playlists(MpdConnection *connection,
             break;
         }
 
-        if (playlists->count >= playlists->capacity) {
+        if (playlists->len >= playlists->capacity) {
             old_capacity = playlists->capacity;
             new_capacity = old_capacity*2;
             if (new_capacity < 8) {
@@ -1018,10 +1018,10 @@ ncm_mpd_connection_get_playlists(MpdConnection *connection,
             return -NCM_ERROR_MPD;
         }
 
-        index = playlists->count;
+        index = playlists->len;
         playlists->items[index] = (NcmPlaylist){0};
         ncm_playlist_move(&playlists->items[index], &item);
-        playlists->count += 1;
+        playlists->len += 1;
         ncm_playlist_destroy(&item);
     }
 
@@ -1198,7 +1198,7 @@ ncm_mpd_connection_get_directory(MpdConnection *connection, char *path,
             return -NCM_ERROR_MPD;
         }
 
-        if (items->count >= items->capacity) {
+        if (items->len >= items->capacity) {
             old_capacity = items->capacity;
             new_capacity = old_capacity*2;
             if (new_capacity < 8) {
@@ -1210,10 +1210,10 @@ ncm_mpd_connection_get_directory(MpdConnection *connection, char *path,
             items->capacity = new_capacity;
         }
 
-        index = items->count;
+        index = items->len;
         ncm_mpd_item_init(&items->items[index]);
         ncm_mpd_item_move(&items->items[index], &item);
-        items->count += 1;
+        items->len += 1;
         ncm_mpd_item_destroy(&item);
     }
 
@@ -1449,7 +1449,7 @@ ncm_mpd_connection_get_outputs(MpdConnection *connection,
             break;
         }
 
-        if (outputs->count >= outputs->capacity) {
+        if (outputs->len >= outputs->capacity) {
             old_capacity = outputs->capacity;
             new_capacity = old_capacity*2;
             if (new_capacity < 8) {
@@ -1462,7 +1462,7 @@ ncm_mpd_connection_get_outputs(MpdConnection *connection,
             outputs->capacity = new_capacity;
         }
 
-        index = outputs->count;
+        index = outputs->len;
         name = (char *)mpd_output_get_name(output);
         name_len = optional_strlen32(name);
 
@@ -1473,7 +1473,7 @@ ncm_mpd_connection_get_outputs(MpdConnection *connection,
         item->enabled = mpd_output_get_enabled(output);
 
         memcpy64(item->name, name, name_len + 1);
-        outputs->count += 1;
+        outputs->len += 1;
 
         mpd_output_free(output);
     }

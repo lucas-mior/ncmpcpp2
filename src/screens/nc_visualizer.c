@@ -756,7 +756,7 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
         return status;
     }
 
-    for (int32 i = 0; i < outputs.count; i += 1) {
+    for (int32 i = 0; i < outputs.len; i += 1) {
         NcmMpdOutput *output = outputs.items + i;
 
         if (STREQUAL(screen->output_name.data, screen->output_name.len,

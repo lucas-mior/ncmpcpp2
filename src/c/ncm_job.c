@@ -255,7 +255,7 @@ ncm_job_queue_destroy(NcmJobQueue *queue) {
 }
 
 int32
-ncm_job_queue_pending_count(NcmJobQueue *queue) {
+ncm_job_queue_pending_len(NcmJobQueue *queue) {
     int32 result;
 
     if (queue == NULL) {
@@ -270,7 +270,7 @@ ncm_job_queue_pending_count(NcmJobQueue *queue) {
 }
 
 int32
-ncm_job_queue_completed_count(NcmJobQueue *queue) {
+ncm_job_queue_completed_len(NcmJobQueue *queue) {
     int32 result;
 
     if (queue == NULL) {

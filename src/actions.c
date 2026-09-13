@@ -312,7 +312,7 @@ action_runtime_playlist_find_song(NcmSong *song, NcmSong **match) {
     }
 
     menu = nc_song_menu_base(song_menu);
-    count = nc_menu_all_item_count(menu);
+    count = nc_menu_all_item_len(menu);
     for (int32 i = 0; i < count; i += 1) {
         NcmSong *item;
 
@@ -344,7 +344,7 @@ action_runtime_playlist_remove_song(NcmSong *song, NcmError *ncm_error) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     menu = nc_song_menu_base(song_menu);
-    count = nc_menu_all_item_count(menu);
+    count = nc_menu_all_item_len(menu);
 
     ok = ncm_mpd_client_start_command_list(&global_mpd, ncm_error) == 0;
     for (int32 i = count; ok && (i > 0); i -= 1) {
@@ -559,7 +559,7 @@ action_runtime_menu_has_items(void) {
     if ((menu = action_runtime_current_menu()) == NULL) {
         return false;
     }
-    return nc_menu_item_count(menu) > 0;
+    return nc_menu_item_len(menu) > 0;
 }
 
 static bool
@@ -670,7 +670,7 @@ action_runtime_search_prompt_init(ActionRuntimeSearchPrompt *state,
         return;
     }
 
-    count = nc_menu_item_count(menu);
+    count = nc_menu_item_len(menu);
     highlight = nc_menu_highlight(menu);
     if ((highlight < 0) || (highlight >= count)) {
         return;
@@ -699,7 +699,7 @@ action_runtime_search_from_prompt_start(ActionRuntimeSearchPrompt *state,
     bool restore = false;
 
     if (menu && state->has_start_position) {
-        count = nc_menu_item_count(menu);
+        count = nc_menu_item_len(menu);
         if ((state->start_position >= 0) && (state->start_position < count)) {
             old_beginning = menu->beginning;
             old_highlight = menu->highlight;
@@ -1650,7 +1650,7 @@ action_runtime_playlist_edit_has_playlists(void) {
         return false;
     }
     playlists = playlist_edit_screen_playlists(screen);
-    return nc_menu_all_item_count(nc_playlist_entry_menu_base(playlists)) > 0;
+    return nc_menu_all_item_len(nc_playlist_entry_menu_base(playlists)) > 0;
 }
 
 static bool
@@ -1662,7 +1662,7 @@ action_runtime_playlist_edit_has_content(void) {
         return false;
     }
     content = playlist_edit_screen_content(screen);
-    return nc_menu_all_item_count(nc_song_menu_base(content)) > 0;
+    return nc_menu_all_item_len(nc_song_menu_base(content)) > 0;
 }
 
 static NcMenu *
@@ -1685,7 +1685,7 @@ action_runtime_tag_scroll_available(enum SongGetter getter) {
     bool available;
 
     if (((menu = action_runtime_current_tag_scroll_menu()) == NULL)
-        || (nc_menu_item_count(menu) <= 0)) {
+        || (nc_menu_item_len(menu) <= 0)) {
         return false;
     }
 
@@ -1707,7 +1707,7 @@ action_runtime_scroll_by_tag(enum SongGetter getter, bool down) {
     bool same;
 
     if (((menu = action_runtime_current_tag_scroll_menu()) == NULL)
-        || (nc_menu_item_count(menu) <= 0)) {
+        || (nc_menu_item_len(menu) <= 0)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -1717,7 +1717,7 @@ action_runtime_scroll_by_tag(enum SongGetter getter, bool down) {
     }
 
     target = current;
-    count = nc_menu_item_count(menu);
+    count = nc_menu_item_len(menu);
     if (down) {
         step = 1;
     } else {
@@ -2086,7 +2086,7 @@ action_runtime_delete_browser_items(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     if (((menu = browser_screen_menu(screen)) == NULL)
-        || (nc_menu_item_count(menu) <= 0)) {
+        || (nc_menu_item_len(menu) <= 0)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     if (!Config.allow_for_physical_item_deletion) {
@@ -2311,7 +2311,7 @@ action_runtime_delete_stored_playlists(void) {
 
     ncm_error_clear(&ncm_error);
     success = true;
-    count = nc_menu_item_count(menu);
+    count = nc_menu_item_len(menu);
     for (int32 i = 0; success && (i < count); i += 1) {
         if (has_selected && !nc_menu_position_is_selected(menu, i)) {
             continue;
@@ -2435,7 +2435,7 @@ action_runtime_crop_playlist(bool main_playlist) {
 
     songs = (NcmSongArray){0};
     if (main_playlist) {
-        if (playlist_screen_song_count(app_screen_playlist()) <= 1) {
+        if (playlist_screen_song_len(app_screen_playlist()) <= 1) {
             ncm_song_array_destroy(&songs);
             return 0;
         }
@@ -2458,7 +2458,7 @@ action_runtime_crop_playlist(bool main_playlist) {
             NcSongMenu *content = playlist_edit_screen_content(editor);
             NcMenu *menu = nc_song_menu_base(content);
 
-            if (nc_menu_all_item_count(menu) <= 1) {
+            if (nc_menu_all_item_len(menu) <= 1) {
                 ncm_song_array_destroy(&songs);
                 return 0;
             }
@@ -2593,7 +2593,7 @@ action_runtime_move_stored_playlist_items(NcmSongArray *songs, bool down) {
     NcmError ncm_error;
     NcMenu *active_menu;
     int32 *positions;
-    int32 item_count;
+    int32 item_len;
     int32 count;
     bool success;
 
@@ -2611,12 +2611,12 @@ action_runtime_move_stored_playlist_items(NcmSongArray *songs, bool down) {
 
     action_runtime_sort_positions(positions, count, down);
     active_menu = playlist_edit_screen_active_menu(screen);
-    item_count = nc_menu_all_item_count(active_menu);
+    item_len = nc_menu_all_item_len(active_menu);
     ncm_error_clear(&ncm_error);
     success = ncm_mpd_client_start_command_list(&global_mpd, &ncm_error) == 0;
     for (int32 i = 0; success && (i < count); i += 1) {
         if (down) {
-            if (positions[i] + 1 >= item_count) {
+            if (positions[i] + 1 >= item_len) {
                 continue;
             }
             success = ncm_mpd_client_playlist_move(&global_mpd, playlist.path,
@@ -2700,7 +2700,7 @@ action_runtime_move_main_playlist_items_to(void) {
     int32 *positions;
     int32 target;
     int32 destination;
-    int32 item_count;
+    int32 item_len;
     int32 count;
     bool success;
 
@@ -2721,30 +2721,30 @@ action_runtime_move_main_playlist_items_to(void) {
     }
     target = ncm_song_position(song);
 
-    item_count = nc_menu_all_item_count(menu);
-    positions = malloc2(item_count*SIZEOF(*positions));
+    item_len = nc_menu_all_item_len(menu);
+    positions = malloc2(item_len*SIZEOF(*positions));
     count = 0;
-    for (int32 i = 0; i < item_count; i += 1) {
+    for (int32 i = 0; i < item_len; i += 1) {
         uint32 flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
 
         if (!(flags & NC_MENU_ITEM_SELECTED)) {
             continue;
         }
         if ((song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i)) == NULL) {
-            free2(positions, item_count*SIZEOF(*positions));
+            free2(positions, item_len*SIZEOF(*positions));
             return -NCM_ERROR_UNAVAILABLE;
         }
         positions[count] = ncm_song_position(song);
         count += 1;
     }
     if (count <= 0) {
-        free2(positions, item_count*SIZEOF(*positions));
+        free2(positions, item_len*SIZEOF(*positions));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
     action_runtime_sort_positions(positions, count, false);
     if ((target >= positions[0]) && (target <= positions[count - 1])) {
-        free2(positions, item_count*SIZEOF(*positions));
+        free2(positions, item_len*SIZEOF(*positions));
         return 0;
     }
 
@@ -2771,7 +2771,7 @@ action_runtime_move_main_playlist_items_to(void) {
     if (!success && global_mpd.command_list_active) {
         global_mpd.command_list_active = false;
     }
-    free2(positions, item_count*SIZEOF(*positions));
+    free2(positions, item_len*SIZEOF(*positions));
     if (!success) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
@@ -2790,7 +2790,7 @@ action_runtime_move_playlist_edit_items_to(void) {
     int32 *positions;
     int32 target;
     int32 destination;
-    int32 item_count;
+    int32 item_len;
     int32 count;
     bool success;
 
@@ -2818,24 +2818,24 @@ action_runtime_move_playlist_edit_items_to(void) {
     }
     target = ncm_song_position(song);
 
-    item_count = nc_menu_all_item_count(menu);
-    positions = malloc2(item_count*SIZEOF(*positions));
+    item_len = nc_menu_all_item_len(menu);
+    positions = malloc2(item_len*SIZEOF(*positions));
     count = 0;
-    for (int32 i = 0; i < item_count; i += 1) {
+    for (int32 i = 0; i < item_len; i += 1) {
         uint32 flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
 
         if (!(flags & NC_MENU_ITEM_SELECTED)) {
             continue;
         }
         if ((song = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, i)) == NULL) {
-            free2(positions, item_count*SIZEOF(*positions));
+            free2(positions, item_len*SIZEOF(*positions));
             return -NCM_ERROR_UNAVAILABLE;
         }
         positions[count] = ncm_song_position(song);
         count += 1;
     }
     if (count <= 0) {
-        free2(positions, item_count*SIZEOF(*positions));
+        free2(positions, item_len*SIZEOF(*positions));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -2843,14 +2843,14 @@ action_runtime_move_playlist_edit_items_to(void) {
     success = playlist_edit_screen_current_playlist(screen, &playlist) > 0;
     if (!success) {
         ncm_playlist_destroy(&playlist);
-        free2(positions, item_count*SIZEOF(*positions));
+        free2(positions, item_len*SIZEOF(*positions));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
     action_runtime_sort_positions(positions, count, false);
     if ((target >= positions[0]) && (target <= positions[count - 1])) {
         ncm_playlist_destroy(&playlist);
-        free2(positions, item_count*SIZEOF(*positions));
+        free2(positions, item_len*SIZEOF(*positions));
         return 0;
     }
 
@@ -2883,7 +2883,7 @@ action_runtime_move_playlist_edit_items_to(void) {
     }
 
     ncm_playlist_destroy(&playlist);
-    free2(positions, item_count*SIZEOF(*positions));
+    free2(positions, item_len*SIZEOF(*positions));
     if (!success) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
@@ -3138,7 +3138,7 @@ action_runtime_select_album(void) {
     bool equal;
 
     if (((menu = action_runtime_current_tag_scroll_menu()) == NULL)
-        || (nc_menu_item_count(menu) <= 0)) {
+        || (nc_menu_item_len(menu) <= 0)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -3161,7 +3161,7 @@ action_runtime_select_album(void) {
         (void)nc_menu_set_position_selected(menu, position, true);
     }
 
-    count = nc_menu_item_count(menu);
+    count = nc_menu_item_len(menu);
     for (int32 position = current + 1; position < count; position += 1) {
         if (action_runtime_song_tag_at(position, SONG_GETTER_ALBUM,
                                         &candidate) < 0) {
@@ -3200,7 +3200,7 @@ action_runtime_select_found_items(void) {
     }
 
     if (((menu = action_runtime_current_menu()) == NULL)
-        || (nc_menu_item_count(menu) <= 0)) {
+        || (nc_menu_item_len(menu) <= 0)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -3753,7 +3753,7 @@ action_runtime_toggle_library_tag_type(void) {
     }
     column = media_library_screen_active_column(screen);
     if ((column != MEDIA_LIBRARY_COLUMN_TAGS)
-        && ((media_library_screen_column_count(screen) != 2)
+        && ((media_library_screen_column_len(screen) != 2)
             || (column != MEDIA_LIBRARY_COLUMN_ALBUMS))) {
         return -NCM_ERROR_UNAVAILABLE;
     }
@@ -4281,7 +4281,7 @@ action_runtime_edit_library_tag(void) {
     }
 
     status = 0;
-    for (int32 i = 0; (status == 0) && (i < ncm_mpd_song_list_count(&songs));
+    for (int32 i = 0; (status == 0) && (i < ncm_mpd_song_list_len(&songs));
          i += 1) {
         NcmSong *song = ncm_mpd_song_list_at(&songs, i);
         MutableSong mutable_song = {0};
@@ -5137,7 +5137,7 @@ action_availability_custom_can_run(enum ActionType type, int32 argument) {
         }
         return true;
     case ACTION_CROP_MAIN_PLAYLIST:
-        return playlist_screen_song_count(app_screen_playlist()) > 1;
+        return playlist_screen_song_len(app_screen_playlist()) > 1;
     case ACTION_SORT_PLAYLIST:
         return playlist_screen_has_sortable_range(app_screen_playlist());
     case ACTION_REVERSE_PLAYLIST: {
@@ -5147,7 +5147,7 @@ action_availability_custom_can_run(enum ActionType type, int32 argument) {
         int32 last;
 
         if (((menu = action_runtime_current_menu()) == NULL)
-            || (nc_menu_item_count(menu) <= 0)) {
+            || (nc_menu_item_len(menu) <= 0)) {
             return false;
         }
         source = action_runtime_menu_item_source(menu);
@@ -5164,7 +5164,7 @@ action_availability_custom_can_run(enum ActionType type, int32 argument) {
         library = app_screen_media_library();
         column = media_library_screen_active_column(library);
         return (column == MEDIA_LIBRARY_COLUMN_TAGS)
-               || ((media_library_screen_column_count(library) == 2)
+               || ((media_library_screen_column_len(library) == 2)
                    && (column == MEDIA_LIBRARY_COLUMN_ALBUMS));
     }
     case ACTION_SHOW_ARTIST_INFO:

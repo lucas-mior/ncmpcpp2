@@ -1227,7 +1227,7 @@ void media_library_screen_set_geometry(MediaLibraryScreen *, int32 start_x,
                                        int32 width, int32 main_start_y,
                                        int32 main_height);
 
-int32 media_library_screen_column_count(MediaLibraryScreen *);
+int32 media_library_screen_column_len(MediaLibraryScreen *);
 int32 media_library_screen_set_mode(MediaLibraryScreen *,
                                     enum MediaLibraryMode);
 
@@ -1378,7 +1378,7 @@ typedef struct PlaylistEditScreen {
     int32 column_ratio_right;
     int32 fetching_delay_ms;
     int32 last_playlist_highlight;
-    int32 last_known_content_count;
+    int32 last_known_content_len;
     int32 window_timeout_ms;
     int32 active_column;
 
@@ -1431,7 +1431,7 @@ int32 playlist_edit_screen_current_playlist(PlaylistEditScreen *,
 int32 playlist_edit_screen_current_song(PlaylistEditScreen *, NcmSong *);
 int32 playlist_edit_screen_current_content_song(PlaylistEditScreen *,
                                                 NcmSong *);
-int32 playlist_edit_screen_selected_playlist_count(PlaylistEditScreen *);
+int32 playlist_edit_screen_selected_playlist_len(PlaylistEditScreen *);
 int32 playlist_edit_screen_selected_songs(PlaylistEditScreen *, NcmSongArray *);
 int32 playlist_edit_screen_apply_active_filter(PlaylistEditScreen *, char *,
                                                int32, uint32, NcmError *);
@@ -1512,7 +1512,7 @@ void playlist_screen_clear(PlaylistScreen *);
 int32 playlist_screen_reload_from_mpd(PlaylistScreen *, MpdClient *,
                                       int32 version, int32 playlist_length,
                                       NcmError *);
-int32 playlist_screen_song_count(PlaylistScreen *);
+int32 playlist_screen_song_len(PlaylistScreen *);
 bool playlist_screen_is_empty(PlaylistScreen *);
 int32 playlist_screen_current_song(PlaylistScreen *, NcmSong *);
 int32 playlist_screen_update_current_mutable_song(PlaylistScreen *,
@@ -1601,7 +1601,7 @@ typedef struct SearchEngineScreen {
     int32 main_start_y;
     int32 main_height;
     int32 lines_scrolled;
-    int32 result_count;
+    int32 result_len;
 
     enum SearchEngineSearchMode search_mode;
     bool search_in_database;
@@ -1849,8 +1849,8 @@ typedef struct TagEditScreen {
     enum TagEditColumn active_column;
     int32 last_directory_highlight;
     int32 last_tag_type_highlight;
-    int32 last_known_directory_count;
-    int32 last_known_tag_count;
+    int32 last_known_directory_len;
+    int32 last_known_tag_len;
     int32 window_timeout_ms;
 
     enum TagEditParserMode parser_mode;

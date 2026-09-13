@@ -809,7 +809,7 @@ ncm_mpd_client_add_song_list(MpdClient *client,
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing MPD song list"));
     }
-    if (songs->count <= 0) {
+    if (songs->len <= 0) {
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("empty MPD song list"));
     }
@@ -826,7 +826,7 @@ ncm_mpd_client_add_song_list(MpdClient *client,
         started = true;
     }
 
-    for (int32 i = 0; i < songs->count; i += 1) {
+    for (int32 i = 0; i < songs->len; i += 1) {
         StringView uri;
 
         if (!ncm_song_has_uri_view(&songs->items[i], 0, &uri)) {
@@ -1212,13 +1212,13 @@ ncm_mpd_client_add_random_tag(MpdClient *client, enum TagType tag,
         ncm_mpd_client_copy_connection_error(client, ncm_error);
         goto cleanup;
     }
-    if (number > string_list_count(&tags)) {
+    if (number > string_list_len(&tags)) {
         status = ncm_error_set_status(ncm_error, -NCM_ERROR_UNAVAILABLE,
                                       STRLIT("not enough MPD tag values"));
         goto cleanup;
     }
 
-    rand_shuffle(tags.items, string_list_count(&tags),
+    rand_shuffle(tags.items, string_list_len(&tags),
                  SIZEOF(*tags.items));
     for (int32 i = 0; i < number; i += 1) {
         status = ncm_mpd_connection_start_search_songs(&client->connection,
@@ -1244,7 +1244,7 @@ ncm_mpd_client_add_random_tag(MpdClient *client, enum TagType tag,
                                                               ncm_error)) < 0) {
             goto cleanup;
         }
-        for (int32 j = 0; j < songs.count; j += 1) {
+        for (int32 j = 0; j < songs.len; j += 1) {
             ncm_mpd_client_add_song_ready(client, songs.items[j].uri, -1,
                                           NULL, ncm_error);
         }
@@ -1295,7 +1295,7 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
         ncm_mpd_client_copy_connection_error(client, ncm_error);
         goto cleanup;
     }
-    if (number > string_list_count(&files)) {
+    if (number > string_list_len(&files)) {
         status = ncm_error_set_status(ncm_error, -NCM_ERROR_UNAVAILABLE,
                                       STRLIT("not enough MPD songs"));
         goto cleanup;
@@ -1311,7 +1311,7 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
         have_regex = true;
     }
 
-    rand_shuffle(files.items, string_list_count(&files),
+    rand_shuffle(files.items, string_list_len(&files),
                  SIZEOF(*files.items));
     if ((status = ncm_mpd_client_start_command_list_ready(client,
                                                           ncm_error)) < 0) {
@@ -1320,7 +1320,7 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
 
     added = 0;
     for (int32 i = 0;
-         (i < string_list_count(&files)) && (added < number);
+         (i < string_list_len(&files)) && (added < number);
          i += 1) {
         if (have_regex
             && ncm_regex_matches(&regex,

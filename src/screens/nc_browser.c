@@ -25,7 +25,7 @@ browser_switch_to(NcScreen *screen) {
     BrowserScreen *browser = (BrowserScreen *)screen;
 
     nc_screen_switcher_finish_switch(screen);
-    if (nc_menu_item_count(browser_screen_menu(browser)) <= 0) {
+    if (nc_menu_item_len(browser_screen_menu(browser)) <= 0) {
         browser_screen_request_update(browser);
     }
     browser->redraw_header = true;
@@ -158,7 +158,7 @@ browser_locate_last_directory(BrowserScreen *screen) {
     }
 
     menu = browser_screen_menu(screen);
-    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_len(menu); i += 1) {
         NcmMpdItem *item = nc_menu_active_item_at(menu, i);
 
         if (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_DIRECTORY) {
@@ -468,7 +468,7 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     int32 x = event.x;
     int32 y = event.y;
 
-    if (nc_menu_item_count(menu) <= 0) {
+    if (nc_menu_item_len(menu) <= 0) {
         return;
     }
 
@@ -1034,7 +1034,7 @@ browser_screen_sort(BrowserScreen *screen) {
 
     menu = browser_screen_menu(screen);
     begin = 0;
-    count = nc_menu_all_item_count(menu);
+    count = nc_menu_all_item_len(menu);
     if (count > 0) {
         NcmMpdItem *first_item = nc_menu_item_at(menu, NC_MENU_ITEMS_ALL, 0);
 
@@ -1297,7 +1297,7 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
         return status;
     }
 
-    for (int32 i = 0; i < string_list_count(&strings);
+    for (int32 i = 0; i < string_list_len(&strings);
          i += 1) {
         StringView *string = &strings.items[i];
         StrBuilder buffer = {0};
@@ -1521,7 +1521,7 @@ browser_collect_item_songs(BrowserScreen *screen,
         status = ncm_mpd_client_get_directory_recursive(&global_mpd, directory,
                                                         &source, &ncm_error);
         if (status >= 0) {
-            for (int32 i = 0; i < source.count; i += 1) {
+            for (int32 i = 0; i < source.len; i += 1) {
                 ncm_song_array_append_copy(songs, &source.items[i]);
             }
         }
@@ -1552,7 +1552,7 @@ browser_screen_selected_songs(BrowserScreen *screen, NcmSongArray *songs) {
     }
 
     menu = browser_screen_menu(screen);
-    if (nc_menu_item_count(menu) <= 0) {
+    if (nc_menu_item_len(menu) <= 0) {
         return 0;
     }
 
@@ -1561,7 +1561,7 @@ browser_screen_selected_songs(BrowserScreen *screen, NcmSongArray *songs) {
                                           nc_menu_current_item(menu));
     }
 
-    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_len(menu); i += 1) {
         if (!nc_menu_position_is_selected(menu, i)) {
             continue;
         }
@@ -1692,7 +1692,7 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
     }
 
     menu = browser_screen_menu(screen);
-    if (nc_menu_item_count(menu) <= 0) {
+    if (nc_menu_item_len(menu) <= 0) {
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("no browser item selected"));
     }
@@ -1702,7 +1702,7 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
     }
 
     any_selected = nc_menu_has_selected(menu);
-    count = nc_menu_item_count(menu);
+    count = nc_menu_item_len(menu);
     for (int32 i = 0; i < count; i += 1) {
         NcmMpdItem *item;
 
@@ -2072,7 +2072,7 @@ browser_screen_locate_song(BrowserScreen *screen,
     {
         NcMenu *menu = browser_screen_menu(screen);
 
-        for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+        for (int32 i = 0; i < nc_menu_item_len(menu); i += 1) {
             NcmMpdItem *item = nc_menu_active_item_at(menu, i);
 
             if ((ncm_mpd_item_kind(item) != NCM_MPD_ITEM_SONG)

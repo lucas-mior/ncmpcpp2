@@ -485,7 +485,7 @@ nc_screen_collect_selected_menu_songs(NcMenu *menu, NcmSongArray *songs,
     if ((menu == NULL) || (song_callback == NULL)) {
         return -EINVAL;
     }
-    if (nc_menu_item_count(menu) <= 0) {
+    if (nc_menu_item_len(menu) <= 0) {
         return 0;
     }
     if (!nc_menu_has_selected(menu)) {
@@ -493,7 +493,7 @@ nc_screen_collect_selected_menu_songs(NcMenu *menu, NcmSongArray *songs,
                                       song_callback);
         return 0;
     }
-    for (int32 i = 0; i < nc_menu_item_count(menu); i += 1) {
+    for (int32 i = 0; i < nc_menu_item_len(menu); i += 1) {
         if (nc_menu_position_is_selected(menu, i)) {
             nc_screen_append_menu_song_at(menu, i, songs, song_callback);
         }

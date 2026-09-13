@@ -17,7 +17,7 @@ typedef struct StringViewList {
 void string_list_push(StringViewList *, char *);
 void string_list_destroy(StringViewList *);
 void string_list_clear(StringViewList *);
-int32 string_list_count(StringViewList *);
+int32 string_list_len(StringViewList *);
 StringView *string_list_at(StringViewList *, int32);
 
 #endif /* NCMPCPP2_H */

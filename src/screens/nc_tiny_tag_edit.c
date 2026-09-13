@@ -25,11 +25,11 @@ tiny_editor_action_runnable(TinyTagEditScreen *screen) {
         return false;
     }
     menu = nc_editor_buffer_menu_base(&screen->rows);
-    if (nc_menu_item_count(menu) <= 0) {
+    if (nc_menu_item_len(menu) <= 0) {
         return false;
     }
     row = tiny_editor_current_row(screen);
-    return (row >= 0) && (row < nc_menu_all_item_count(menu))
+    return (row >= 0) && (row < nc_menu_all_item_len(menu))
            && nc_menu_position_is_selectable(menu, row);
 }
 
@@ -749,7 +749,7 @@ tiny_tag_edit_screen_run_row(TinyTagEditScreen *screen, int32 row) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     menu = nc_editor_buffer_menu_base(&screen->rows);
-    if ((row < 0) || (row >= nc_menu_all_item_count(menu))
+    if ((row < 0) || (row >= nc_menu_all_item_len(menu))
         || !nc_menu_position_is_selectable(menu, row)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
