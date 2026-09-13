@@ -3187,8 +3187,8 @@ media_library_screen_add_songs(MediaLibraryScreen *screen,
 }
 
 int32
-media_library_screen_add_item_to_playlist(
-    MediaLibraryScreen *screen, bool play, NcmError *ncm_error) {
+media_library_screen_add_item_to_playlist(MediaLibraryScreen *screen,
+                                          bool play, NcmError *ncm_error) {
     NcmSongArray songs = {0};
     int32 status = 0;
 
