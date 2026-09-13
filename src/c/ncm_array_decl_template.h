@@ -18,11 +18,14 @@
 #include "cbase.h"
 
 #if !defined(NCM_ARRAY_DUMMY_DEFINES)
-#define NCM_ARRAY_DUMMY_DEFINES 0
+#if defined(__INCLUDE_LEVEL__) && (__INCLUDE_LEVEL__ == 0)
+  #define NCM_ARRAY_DUMMY_DEFINES 1
+#else
+  #define NCM_ARRAY_DUMMY_DEFINES 0
+#endif
 #endif
 
-#if NCM_ARRAY_DUMMY_DEFINES \
-    || (defined(__INCLUDE_LEVEL__) && (__INCLUDE_LEVEL__ == 0))
+#if NCM_ARRAY_DUMMY_DEFINES
 #define NCM_ARRAY_TYPE      ncm_unused
 #define NCM_ARRAY_ITEM_TYPE int32
 #define NCM_ARRAY_PREFIX    ncm_unused2
@@ -77,6 +80,7 @@ void NCM_ARRAY_FUNCTION(_append_move)(NCM_ARRAY_TYPE *,
 void NCM_ARRAY_FUNCTION(_remove_ordered)(NCM_ARRAY_TYPE *, int32);
 #endif
 
+#if !NCM_ARRAY_DUMMY_DEFINES
 #undef NCM_ARRAY_FUNCTION
 #undef NCM_ARRAY_TYPE
 #undef NCM_ARRAY_ITEM_TYPE
@@ -87,3 +91,4 @@ void NCM_ARRAY_FUNCTION(_remove_ordered)(NCM_ARRAY_TYPE *, int32);
 #undef NCM_ARRAY_APPEND_COPY
 #undef NCM_ARRAY_APPEND_MOVE
 #undef NCM_ARRAY_REMOVE_ORDERED
+#endif
