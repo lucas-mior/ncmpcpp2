@@ -190,8 +190,7 @@ int32 mutable_song_set_tag(MutableSong *, enum TagType, int32 idx,
 int32 mutable_song_set_tags(MutableSong *, enum TagType,
                             char *value, int32 value_len,
                             char *separator, int32 separator_len);
-bool mutable_song_has_tag_view(MutableSong *, enum TagType, int32,
-                               StrView *);
+bool mutable_song_has_tag_view(MutableSong *, enum TagType, int32, StrView *);
 void mutable_song_get_tag_buffer(MutableSong *, enum TagType,
                                  int32, StrBuilder *);
 StrBuilder mutable_song_tags_buffer(MutableSong *, enum TagType,
