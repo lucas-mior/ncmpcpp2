@@ -306,20 +306,20 @@ ncm_mpd_output_list_clear(NcmMpdOutputList *list) {
 }
 
 void
-ncm_mpd_playlist_list_destroy(NcmMpdPlaylistList *list) {
+ncm_mpd_playlist_list_destroy(NcmPlaylistList *list) {
     if (list == NULL) {
         return;
     }
 
     ncm_mpd_playlist_list_clear(list);
     free2(list->items, list->capacity*SIZEOF(*list->items));
-    *list = (NcmMpdPlaylistList){0};
+    *list = (NcmPlaylistList){0};
 
     return;
 }
 
 void
-ncm_mpd_playlist_list_clear(NcmMpdPlaylistList *list) {
+ncm_mpd_playlist_list_clear(NcmPlaylistList *list) {
     if (list == NULL) {
         return;
     }
@@ -869,7 +869,7 @@ ncm_mpd_connection_set_replay_gain_mode(MpdConnection *connection,
 
 int32
 ncm_mpd_connection_get_playlists(MpdConnection *connection,
-                                 NcmMpdPlaylistList *playlists) {
+                                 NcmPlaylistList *playlists) {
     struct mpd_playlist *playlist;
     NcmPlaylist item = {0};
     int32 old_capacity;

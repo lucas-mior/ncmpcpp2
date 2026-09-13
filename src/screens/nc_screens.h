@@ -1414,7 +1414,7 @@ bool playlist_edit_screen_can_move_to_next_column(PlaylistEditScreen *);
 void playlist_edit_screen_previous_column(PlaylistEditScreen *);
 void playlist_edit_screen_next_column(PlaylistEditScreen *);
 int32 playlist_edit_screen_load_playlists(PlaylistEditScreen *,
-                                          NcmMpdPlaylistList *);
+                                          NcmPlaylistList *);
 int32 playlist_edit_screen_reload_playlists_from_mpd(PlaylistEditScreen *,
                                                      MpdClient *,
                                                      NcmError *);

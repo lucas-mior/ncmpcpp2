@@ -1161,7 +1161,7 @@ playlist_edit_restore_playlist_path(PlaylistEditScreen *screen,
 
 int32
 playlist_edit_screen_load_playlists(PlaylistEditScreen *screen,
-                                      NcmMpdPlaylistList *playlists) {
+                                      NcmPlaylistList *playlists) {
     StrBuilder preserved = {0};
     NcMenu *menu;
     bool had_preserved;
@@ -1200,7 +1200,7 @@ int32
 playlist_edit_screen_reload_playlists_from_mpd(PlaylistEditScreen *screen,
                                                  MpdClient *client,
                                                  NcmError *ncm_error) {
-    NcmMpdPlaylistList playlists = {0};
+    NcmPlaylistList playlists = {0};
     int32 status;
 
     if (screen == NULL) {

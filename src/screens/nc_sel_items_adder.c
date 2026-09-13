@@ -832,7 +832,7 @@ selected_items_adder_screen_open(SelectedItemsAdderScreen *screen,
                                  NcmSongArray *songs,
                                  PlaylistScreen *playlist, MpdClient *client,
                                  NcmError *ncm_error) {
-    NcmMpdPlaylistList playlists;
+    NcmPlaylistList playlists;
     NcmSongArray selected_songs = {0};
     NcmError playlist_error;
     NcScreen *adder_screen;
@@ -891,7 +891,7 @@ selected_items_adder_screen_open(SelectedItemsAdderScreen *screen,
         local_browser = browser_screen_is_local(browser);
     }
 
-    playlists = (NcmMpdPlaylistList){0};
+    playlists = (NcmPlaylistList){0};
     if (!local_browser) {
         ncm_error_clear(&playlist_error);
         if (ncm_mpd_client_get_playlists(client, &playlists,

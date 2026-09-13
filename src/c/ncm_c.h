@@ -755,11 +755,11 @@ typedef struct NcmMpdOutputList {
     int32 capacity;
 } NcmMpdOutputList;
 
-typedef struct NcmMpdPlaylistList {
+typedef struct NcmPlaylistList {
     NcmPlaylist *items;
     int32 len;
     int32 capacity;
-} NcmMpdPlaylistList;
+} NcmPlaylistList;
 
 #define ENUM_NAME NcmMpdReplayGainMode
 #define ENUM_PREFIX_ NCM_MPD_REPLAY_GAIN_
@@ -821,7 +821,7 @@ int32 ncm_mpd_connection_get_replay_gain_mode(MpdConnection *,
 int32 ncm_mpd_connection_set_replay_gain_mode(MpdConnection *,
                                               enum NcmMpdReplayGainMode);
 int32 ncm_mpd_connection_get_playlists(MpdConnection *,
-                                       NcmMpdPlaylistList *);
+                                       NcmPlaylistList *);
 int32 ncm_mpd_connection_list_all_song_uris(MpdConnection *, char *,
                                             StrFlexList *);
 int32 ncm_mpd_connection_get_url_handlers(MpdConnection *,
@@ -837,8 +837,8 @@ int32 ncm_mpd_item_list_to_directory_array(NcmMpdItemList *,
 void ncm_mpd_output_list_destroy(NcmMpdOutputList *);
 void ncm_mpd_output_list_clear(NcmMpdOutputList *);
 
-void ncm_mpd_playlist_list_destroy(NcmMpdPlaylistList *);
-void ncm_mpd_playlist_list_clear(NcmMpdPlaylistList *);
+void ncm_mpd_playlist_list_destroy(NcmPlaylistList *);
+void ncm_mpd_playlist_list_clear(NcmPlaylistList *);
 
 int32 ncm_mpd_connection_get_current_song(MpdConnection *, NcmSong *);
 int32 ncm_mpd_connection_get_queue(MpdConnection *, NcmSongArray *);
@@ -1027,7 +1027,7 @@ int32 ncm_mpd_client_add_search_uri(MpdClient *, char *, NcmError *);
 int32 ncm_mpd_client_commit_search_songs(MpdClient *, NcmSongArray *,
                                          NcmError *);
 
-int32 ncm_mpd_client_get_playlists(MpdClient *, NcmMpdPlaylistList *,
+int32 ncm_mpd_client_get_playlists(MpdClient *, NcmPlaylistList *,
                                    NcmError *);
 int32 ncm_mpd_client_get_list(MpdClient *, enum TagType,
                               StrFlexList *, NcmError *);
