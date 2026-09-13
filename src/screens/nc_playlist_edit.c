@@ -15,6 +15,9 @@
 
 static void
 playlist_edit_update_titles(PlaylistEditScreen *screen, bool update_windows) {
+    char *playlists_title = NULL;
+    int32 playlists_title_len = 0;
+
     ASSERT(screen != NULL);
 
     if (screen->last_known_content_len >= 0) {
@@ -22,10 +25,10 @@ playlist_edit_update_titles(PlaylistEditScreen *screen, bool update_windows) {
             nc_menu_item_len(nc_song_menu_base(&screen->content));
     }
 
-    sb_clear(&screen->playlists_title);
     sb_clear(&screen->content_title);
     if (Config.titles_visibility) {
-        SB_APPEND(&screen->playlists_title, "Playlists");
+        playlists_title = "Playlists";
+        playlists_title_len = STRLIT_LEN("Playlists");
         SB_APPEND(&screen->content_title, "Content");
 
         if (screen->last_known_content_len >= 0) {
@@ -57,8 +60,7 @@ playlist_edit_update_titles(PlaylistEditScreen *screen, bool update_windows) {
 
     if (update_windows) {
         nc_window_set_title(&screen->playlists_window,
-                            screen->playlists_title.data,
-                            screen->playlists_title.len);
+                            playlists_title, playlists_title_len);
         nc_window_set_title(&screen->content_window,
                             screen->content_title.data,
                             screen->content_title.len);
@@ -778,6 +780,8 @@ playlist_edit_screen_init(PlaylistEditScreen *screen,
     NcScreenOps callbacks = {0};
     int32 initial_left_width;
     int32 initial_right_width;
+    char *playlists_title = NULL;
+    int32 playlists_title_len = 0;
 
     if (width < 1) {
         width = 1;
@@ -837,7 +841,6 @@ playlist_edit_screen_init(PlaylistEditScreen *screen,
     screen->content_filter_constraint = (StrBuilder){0};
     screen->playlist_search_constraint = (StrBuilder){0};
     screen->content_search_constraint = (StrBuilder){0};
-    screen->playlists_title = (StrBuilder){0};
     screen->content_title = (StrBuilder){0};
     screen->displayed_playlist_path = (StrBuilder){0};
     screen->observed_playlist_path = (StrBuilder){0};
@@ -872,10 +875,13 @@ playlist_edit_screen_init(PlaylistEditScreen *screen,
     screen->registered = false;
 
     playlist_edit_update_titles(screen, false);
+    if (Config.titles_visibility) {
+        playlists_title = "Playlists";
+        playlists_title_len = STRLIT_LEN("Playlists");
+    }
     nc_window_init(&screen->playlists_window, start_x, main_start_y,
                    initial_left_width, main_height,
-                   screen->playlists_title.data,
-                   screen->playlists_title.len, color, border);
+                   playlists_title, playlists_title_len, color, border);
     nc_window_init(&screen->content_window,
                    start_x + initial_left_width, main_start_y,
                    initial_right_width, main_height,
@@ -940,7 +946,6 @@ playlist_edit_screen_destroy(PlaylistEditScreen *screen) {
     sb_free(&screen->observed_playlist_path);
     sb_free(&screen->displayed_playlist_path);
     sb_free(&screen->content_title);
-    sb_free(&screen->playlists_title);
     sb_free(&screen->content_search_constraint);
     sb_free(&screen->playlist_search_constraint);
     sb_free(&screen->content_filter_constraint);

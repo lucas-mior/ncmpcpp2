@@ -336,9 +336,11 @@ library_refresh_menu(NcMenu *menu, NcWindow *window) {
 
 static void
 library_update_titles(MediaLibraryScreen *screen, bool update_windows) {
+    char *songs_title = NULL;
+    int32 songs_title_len = 0;
+
     sb_clear(&screen->tags_title);
     sb_clear(&screen->albums_title);
-    sb_clear(&screen->songs_title);
 
     if (Config.titles_visibility) {
         char *tag_type_name;
@@ -350,7 +352,8 @@ library_update_titles(MediaLibraryScreen *screen, bool update_windows) {
         SB_APPEND(&screen->tags_title, tag_type_name, tag_type_name_len);
         sb_append_byte(&screen->tags_title, 's');
         SB_APPEND(&screen->albums_title, "Albums");
-        SB_APPEND(&screen->songs_title, "Songs");
+        songs_title = "Songs";
+        songs_title_len = STRLIT_LEN("Songs");
 
         if (screen->mode == MEDIA_LIBRARY_MODE_TWO_COLUMNS) {
             SB_APPEND(&screen->albums_title, " (sorted by ");
@@ -380,8 +383,7 @@ library_update_titles(MediaLibraryScreen *screen, bool update_windows) {
                             screen->albums_title.data,
                             screen->albums_title.len);
         nc_window_set_title(&screen->songs_window,
-                            screen->songs_title.data,
-                            screen->songs_title.len);
+                            songs_title, songs_title_len);
     }
     return;
 }
@@ -990,6 +992,8 @@ media_library_screen_init(MediaLibraryScreen *screen, MediaLibraryHooks hooks,
     NcMenu *tag_menu;
     NcMenu *album_menu;
     NcMenu *song_menu;
+    char *songs_title = NULL;
+    int32 songs_title_len = 0;
 
     screen->hooks = hooks;
 
@@ -1011,7 +1015,6 @@ media_library_screen_init(MediaLibraryScreen *screen, MediaLibraryHooks hooks,
     }
     screen->tags_title = (StrBuilder){0};
     screen->albums_title = (StrBuilder){0};
-    screen->songs_title = (StrBuilder){0};
     screen->observed_tag = (NcMediaLibraryTagRow){0};
     screen->observed_album = (NcMediaLibraryAlbumRow){0};
 
@@ -1039,6 +1042,10 @@ media_library_screen_init(MediaLibraryScreen *screen, MediaLibraryHooks hooks,
     screen->registered = false;
 
     library_update_titles(screen, false);
+    if (Config.titles_visibility) {
+        songs_title = "Songs";
+        songs_title_len = STRLIT_LEN("Songs");
+    }
     nc_window_init(&screen->tags_window,
                    start_x, main_start_y, width, main_height,
                    screen->tags_title.data, screen->tags_title.len,
@@ -1049,8 +1056,7 @@ media_library_screen_init(MediaLibraryScreen *screen, MediaLibraryHooks hooks,
                    color, border);
     nc_window_init(&screen->songs_window,
                    start_x, main_start_y, width, main_height,
-                   screen->songs_title.data, screen->songs_title.len,
-                   color, border);
+                   songs_title, songs_title_len, color, border);
 
     callbacks = library_display_callbacks(screen, MEDIA_LIBRARY_COLUMN_TAGS,
                                           false);
@@ -1119,7 +1125,6 @@ media_library_screen_destroy(MediaLibraryScreen *screen) {
         sb_free(&screen->column_state[i].search_constraint);
         sb_free(&screen->column_state[i].filter_constraint);
     }
-    sb_free(&screen->songs_title);
     sb_free(&screen->albums_title);
     sb_free(&screen->tags_title);
 

@@ -1182,7 +1182,6 @@ typedef struct MediaLibraryScreen {
         MEDIA_LIBRARY_COLUMN_COUNT];
     StrBuilder tags_title;
     StrBuilder albums_title;
-    StrBuilder songs_title;
     int64 update_timer;
     NcMediaLibraryTagRow observed_tag;
     NcMediaLibraryAlbumRow observed_album;
@@ -1346,7 +1345,6 @@ typedef struct PlaylistEditScreen {
     StrBuilder content_filter_constraint;
     StrBuilder playlist_search_constraint;
     StrBuilder content_search_constraint;
-    StrBuilder playlists_title;
     StrBuilder content_title;
     StrBuilder displayed_playlist_path;
     StrBuilder observed_playlist_path;
@@ -1583,7 +1581,6 @@ typedef struct SearchEngineScreen {
     StrBuilder filter_constraint;
     StrBuilder search_constraint;
     StrBuilder row_text;
-    StrBuilder title;
     StrBuilder column_title;
     NcmRegex filter_regex;
 
@@ -1796,12 +1793,6 @@ typedef struct TagEditScreen {
     StrBuilder current_dir;
     StrBuilder observed_dir;
     StrBuilder highlighted_dir;
-    StrBuilder directories_title;
-    StrBuilder tag_types_title;
-    StrBuilder tags_title;
-    StrBuilder parser_dialog_title;
-    StrBuilder parser_title;
-    StrBuilder parser_helper_title;
     StrBuilder parser_legend;
     StrBuilder parser_preview;
     StrFlexList recent_patterns;

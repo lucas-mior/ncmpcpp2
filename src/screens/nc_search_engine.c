@@ -140,9 +140,8 @@ search_resize(NcScreen *screen) {
 
 static char *
 search_title(NcScreen *screen) {
-    SearchEngineScreen *search = (SearchEngineScreen *)screen;
-
-    return search->title.data;
+    (void)screen;
+    return "Search engine";
 }
 
 static void
@@ -630,10 +629,8 @@ search_engine_screen_init(SearchEngineScreen *screen,
     screen->filter_constraint = (StrBuilder){0};
     screen->search_constraint = (StrBuilder){0};
     screen->row_text = (StrBuilder){0};
-    screen->title = (StrBuilder){0};
     screen->column_title = (StrBuilder){0};
 
-    SB_APPEND(&screen->title, "Search engine");
     screen->filter_regex = (NcmRegex){0};
 
     screen->hooks = (SearchEngineHooks){0};
@@ -679,7 +676,6 @@ search_engine_screen_destroy(SearchEngineScreen *screen) {
     ncm_regex_destroy(&screen->filter_regex);
     sb_free(&screen->filter_constraint);
     sb_free(&screen->row_text);
-    sb_free(&screen->title);
     sb_free(&screen->column_title);
     sb_free(&screen->search_constraint);
     for (uint32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {

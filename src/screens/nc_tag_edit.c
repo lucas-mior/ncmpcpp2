@@ -360,6 +360,19 @@ tag_edit_update_menu_highlights(TagEditScreen *screen) {
 
 static void
 tag_edit_update_titles(TagEditScreen *screen, bool update_windows) {
+    char *directories_title = NULL;
+    char *tag_types_title = NULL;
+    char *tags_title = NULL;
+    char *parser_title = NULL;
+    char *parser_helper_title = NULL;
+    int32 directories_title_len = 0;
+    int32 tag_types_title_len = 0;
+    int32 tags_title_len = 0;
+    int32 parser_title_len = 0;
+    int32 parser_helper_title_len = 0;
+    enum TagEditParserMode parser_mode;
+    enum TagEditFocus helper_focus;
+
     ASSERT(screen != NULL);
 
     screen->last_known_directory_len =
@@ -367,33 +380,25 @@ tag_edit_update_titles(TagEditScreen *screen, bool update_windows) {
     screen->last_known_tag_len =
         nc_menu_item_len(nc_tag_row_menu_base(&screen->tags));
 
-    sb_clear(&screen->directories_title);
-    sb_clear(&screen->tag_types_title);
-    sb_clear(&screen->tags_title);
-    sb_clear(&screen->parser_dialog_title);
-    sb_clear(&screen->parser_title);
-    sb_clear(&screen->parser_helper_title);
+    if (!update_windows) {
+        return;
+    }
 
     if (Config.titles_visibility) {
-        char *title;
-        int32 title_len;
-        enum TagEditParserMode parser_mode = screen->parser_mode;
-        enum TagEditFocus helper_focus;
+        directories_title_len = TAG_EDIT_COLUMN_alias_len(
+            TAG_EDIT_COLUMN_DIRECTORIES, &directories_title);
+        tag_types_title_len = TAG_EDIT_COLUMN_alias_len(
+            TAG_EDIT_COLUMN_TAG_TYPES, &tag_types_title);
+        tags_title_len = TAG_EDIT_COLUMN_alias_len(
+            TAG_EDIT_COLUMN_TAGS, &tags_title);
 
-        title_len = TAG_EDIT_COLUMN_alias_len(TAG_EDIT_COLUMN_DIRECTORIES,
-                                              &title);
-        SB_APPEND(&screen->directories_title, title, title_len);
-        title_len = TAG_EDIT_COLUMN_alias_len(TAG_EDIT_COLUMN_TAG_TYPES, &title);
-        SB_APPEND(&screen->tag_types_title, title, title_len);
-        title_len = TAG_EDIT_COLUMN_alias_len(TAG_EDIT_COLUMN_TAGS, &title);
-        SB_APPEND(&screen->tags_title, title, title_len);
-
+        parser_mode = screen->parser_mode;
         if ((parser_mode < TAG_EDIT_PARSER_MODE_NONE)
             || (parser_mode >= TAG_EDIT_PARSER_MODE_COUNT)) {
             parser_mode = TAG_EDIT_PARSER_MODE_NONE;
         }
-        title_len = TAG_EDIT_PARSER_MODE_alias_len(parser_mode, &title);
-        SB_APPEND(&screen->parser_title, title, title_len);
+        parser_title_len = TAG_EDIT_PARSER_MODE_alias_len(
+            parser_mode, &parser_title);
 
         if ((screen->active_focus == TAG_EDIT_FOCUS_PARSER_LEGEND)
             || !screen->parser_preview_enabled) {
@@ -401,31 +406,19 @@ tag_edit_update_titles(TagEditScreen *screen, bool update_windows) {
         } else {
             helper_focus = TAG_EDIT_FOCUS_PARSER_PREVIEW;
         }
-        title_len = TAG_EDIT_FOCUS_alias_len(helper_focus, &title);
-        SB_APPEND(&screen->parser_helper_title, title, title_len);
+        parser_helper_title_len = TAG_EDIT_FOCUS_alias_len(
+            helper_focus, &parser_helper_title);
     }
 
-    if (!update_windows) {
-        return;
-    }
     nc_window_set_title(&screen->directories_window,
-                        screen->directories_title.data,
-                        screen->directories_title.len);
+                        directories_title, directories_title_len);
     nc_window_set_title(&screen->tag_types_window,
-                        screen->tag_types_title.data,
-                        screen->tag_types_title.len);
-    nc_window_set_title(&screen->tags_window,
-                        screen->tags_title.data,
-                        screen->tags_title.len);
-    nc_window_set_title(&screen->parser_dialog_window,
-                        screen->parser_dialog_title.data,
-                        screen->parser_dialog_title.len);
-    nc_window_set_title(&screen->parser_window,
-                        screen->parser_title.data,
-                        screen->parser_title.len);
+                        tag_types_title, tag_types_title_len);
+    nc_window_set_title(&screen->tags_window, tags_title, tags_title_len);
+    nc_window_set_title(&screen->parser_dialog_window, NULL, 0);
+    nc_window_set_title(&screen->parser_window, parser_title, parser_title_len);
     nc_window_set_title(&screen->parser_helper_window,
-                        screen->parser_helper_title.data,
-                        screen->parser_helper_title.len);
+                        parser_helper_title, parser_helper_title_len);
 
     return;
 }
@@ -2396,6 +2389,17 @@ void
 tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
                      int32 main_start_y, int32 main_height,
                      NcColor color, NcBorder border) {
+    char *directories_title = NULL;
+    char *tag_types_title = NULL;
+    char *tags_title = NULL;
+    char *parser_title = NULL;
+    char *parser_helper_title = NULL;
+    int32 directories_title_len = 0;
+    int32 tag_types_title_len = 0;
+    int32 tags_title_len = 0;
+    int32 parser_title_len = 0;
+    int32 parser_helper_title_len = 0;
+
     nc_editor_pair_menu_init(&screen->directories);
     nc_editor_string_menu_init(&screen->tag_types);
     nc_tag_row_menu_init(&screen->tags);
@@ -2407,12 +2411,6 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
     screen->current_dir = (StrBuilder){0};
     screen->observed_dir = (StrBuilder){0};
     screen->highlighted_dir = (StrBuilder){0};
-    screen->directories_title = (StrBuilder){0};
-    screen->tag_types_title = (StrBuilder){0};
-    screen->tags_title = (StrBuilder){0};
-    screen->parser_dialog_title = (StrBuilder){0};
-    screen->parser_title = (StrBuilder){0};
-    screen->parser_helper_title = (StrBuilder){0};
     screen->parser_legend = (StrBuilder){0};
     screen->parser_preview = (StrBuilder){0};
 
@@ -2429,32 +2427,38 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
     screen->tag_search_regex = (NcmRegex){0};
 
     tag_edit_update_titles(screen, false);
+    if (Config.titles_visibility) {
+        directories_title_len = TAG_EDIT_COLUMN_alias_len(
+            TAG_EDIT_COLUMN_DIRECTORIES, &directories_title);
+        tag_types_title_len = TAG_EDIT_COLUMN_alias_len(
+            TAG_EDIT_COLUMN_TAG_TYPES, &tag_types_title);
+        tags_title_len = TAG_EDIT_COLUMN_alias_len(
+            TAG_EDIT_COLUMN_TAGS, &tags_title);
+        parser_title_len = TAG_EDIT_PARSER_MODE_alias_len(
+            TAG_EDIT_PARSER_MODE_NONE, &parser_title);
+        parser_helper_title_len = TAG_EDIT_FOCUS_alias_len(
+            TAG_EDIT_FOCUS_PARSER_LEGEND, &parser_helper_title);
+    }
 
     nc_window_init(&screen->directories_window,
                    start_x, main_start_y, width, main_height,
-                   screen->directories_title.data,
-                   screen->directories_title.len, color, border);
+                   directories_title, directories_title_len, color, border);
     nc_window_init(&screen->tag_types_window,
                    start_x, main_start_y, width, main_height,
-                   screen->tag_types_title.data, screen->tag_types_title.len,
-                   color, border);
+                   tag_types_title, tag_types_title_len, color, border);
     nc_window_init(&screen->tags_window,
                    start_x, main_start_y, width, main_height,
-                   screen->tags_title.data, screen->tags_title.len,
-                   color, border);
+                   tags_title, tags_title_len, color, border);
     nc_window_init(&screen->parser_dialog_window,
                    start_x, main_start_y, width, main_height,
-                   screen->parser_dialog_title.data,
-                   screen->parser_dialog_title.len,
-                   color, Config.window_border_color);
+                   NULL, 0, color, Config.window_border_color);
     nc_window_init(&screen->parser_window,
                    start_x, main_start_y, width, main_height,
-                   screen->parser_title.data, screen->parser_title.len,
+                   parser_title, parser_title_len,
                    color, Config.window_border_color);
     nc_window_init(&screen->parser_helper_window,
                    start_x, main_start_y, width, main_height,
-                   screen->parser_helper_title.data,
-                   screen->parser_helper_title.len,
+                   parser_helper_title, parser_helper_title_len,
                    color, Config.window_border_color);
 
     nc_scrollpad_init(&screen->parser_helper_scrollpad,
@@ -2558,12 +2562,6 @@ tag_edit_screen_destroy(TagEditScreen *screen) {
 
     sb_free(&screen->parser_preview);
     sb_free(&screen->parser_legend);
-    sb_free(&screen->parser_helper_title);
-    sb_free(&screen->parser_title);
-    sb_free(&screen->parser_dialog_title);
-    sb_free(&screen->tags_title);
-    sb_free(&screen->tag_types_title);
-    sb_free(&screen->directories_title);
     sb_free(&screen->highlighted_dir);
     sb_free(&screen->observed_dir);
     sb_free(&screen->current_dir);
