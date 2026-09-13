@@ -859,7 +859,6 @@ tag_edit_save_recent_patterns(TagEditScreen *screen) {
     StrBuilder path = {0};
     int32 limit;
     int32 status;
-    bool first;
 
     tag_edit_history_path(&path);
     limit = screen->recent_patterns.len;
@@ -867,18 +866,14 @@ tag_edit_save_recent_patterns(TagEditScreen *screen) {
         limit = TAG_EDIT_PATTERN_HISTORY_MAX;
     }
 
-    first = true;
     for (int32 i = 0; i < limit; i += 1) {
         StrBuilder *pattern = &screen->recent_patterns.items[i];
 
         if (pattern->len <= 0) {
             continue;
         }
-        if (!first) {
-            SB_APPEND(&content, "\n");
-        }
         SB_APPEND(&content, pattern->data, pattern->len);
-        first = false;
+        SB_APPEND(&content, "\n");
     }
 
     status = (int32)write_entire_file(path.data, content.data, content.len);
