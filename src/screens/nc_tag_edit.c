@@ -2628,6 +2628,7 @@ tag_edit_screen_active_menu(TagEditScreen *screen) {
     if (screen == NULL) {
         return NULL;
     }
+
     switch (screen->active_focus) {
     case TAG_EDIT_FOCUS_DIRECTORIES:
         return nc_editor_pair_menu_base(&screen->directories);
@@ -2644,9 +2645,8 @@ tag_edit_screen_active_menu(TagEditScreen *screen) {
         return NULL;
     case TAG_EDIT_FOCUS_COUNT:
     default:
-        break;
+        return NULL;
     }
-    return NULL;
 }
 
 NcWindow *
