@@ -15,9 +15,9 @@
 #define SCREEN_FLAG_NONE 0
 #define SCREEN_FLAG_STARTUP 1
 
-#define SCREEN_TYPE_TYPE(screen_type) CAT(SCREEN_TYPE_, screen_type)
+#define SCREEN_TYPE_TYPE(screen_type)    CAT(SCREEN_TYPE_, screen_type)
 #define SCREEN_TYPE_NC_TYPE(screen_type) CAT(NC_SCREEN_TYPE_, screen_type)
-#define SCREEN_TYPE_FLAG(flag) CAT(SCREEN_FLAG_, flag)
+#define SCREEN_TYPE_FLAG(flag)           CAT(SCREEN_FLAG_, flag)
 
 #define SCREEN_TYPE_BROWSER_ENTRY(XX)                                          \
   XX(BROWSER, browser,                           STARTUP, browser)
