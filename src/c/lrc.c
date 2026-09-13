@@ -166,9 +166,8 @@ lrc_parse_offset_tag(LrcDocument *document, char *tag, int32 tag_len,
 static int32
 lrc_parse_line_offset_tags(LrcDocument *document, char *line, int32 line_len,
                            NcmError *ncm_error) {
-    int32 cursor;
+    int32 cursor = 0;
 
-    cursor = 0;
     while ((cursor < line_len) && (line[cursor] == '[')) {
         char *tag;
         int32 close;
