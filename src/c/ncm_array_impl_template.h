@@ -90,14 +90,13 @@ NCM_ARRAY_FUNC(_copy)(NCM_ARRAY_TYPE *dest, NCM_ARRAY_TYPE *source) {
     }
 
     if (source) {
-        if ((err = NCM_ARRAY_FUNC(_reserve)(&replacement,
-                                                source->len)) < 0) {
+        if ((err = NCM_ARRAY_FUNC(_reserve)(&replacement, source->len)) < 0) {
             NCM_ARRAY_FUNC(_destroy)(&replacement);
             return err;
         }
         for (int32 i = 0; i < source->len; i += 1) {
-            if ((err = NCM_ARRAY_FUNC(_append_copy)(
-                     &replacement, &source->items[i])) < 0) {
+            if ((err = NCM_ARRAY_FUNC(_append_copy)(&replacement,
+                                                    &source->items[i])) < 0) {
                 NCM_ARRAY_FUNC(_destroy)(&replacement);
                 return err;
             }
@@ -187,8 +186,8 @@ NCM_ARRAY_FUNC(_reserve)(NCM_ARRAY_TYPE *array, int32 extra) {
         }
     }
 
-    array->items = realloc2(
-        array->items, old_cap, new_cap, SIZEOF(*array->items));
+    array->items = realloc2(array->items,
+                           old_cap, new_cap, SIZEOF(*array->items));
     array->cap = new_cap;
     return array->cap;
 }
@@ -209,8 +208,7 @@ NCM_ARRAY_FUNC(_append)(NCM_ARRAY_TYPE *array) {
 
 #if defined(NCM_ARRAY_APPEND_COPY)
 int32
-NCM_ARRAY_FUNC(_append_copy)(NCM_ARRAY_TYPE *array,
-                                 NCM_ARRAY_ITEM_TYPE *item) {
+NCM_ARRAY_FUNC(_append_copy)(NCM_ARRAY_TYPE *array, NCM_ARRAY_ITEM_TYPE *item) {
     NCM_ARRAY_ITEM_TYPE *dest;
     int32 err;
     int32 index;
@@ -245,8 +243,7 @@ NCM_ARRAY_FUNC(_append_copy)(NCM_ARRAY_TYPE *array,
 
 #if defined(NCM_ARRAY_APPEND_MOVE)
 void
-NCM_ARRAY_FUNC(_append_move)(NCM_ARRAY_TYPE *array,
-                                 NCM_ARRAY_ITEM_TYPE *item) {
+NCM_ARRAY_FUNC(_append_move)(NCM_ARRAY_TYPE *array, NCM_ARRAY_ITEM_TYPE *item) {
     NCM_ARRAY_ITEM_TYPE *dest;
 
     if ((array == NULL) || (item == NULL)) {
