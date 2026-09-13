@@ -621,6 +621,7 @@ selected_items_adder_screen_init(SelectedItemsAdderScreen *screen,
     nc_menu_set_display_callbacks(playlist_menu, display_callbacks);
     nc_menu_set_display_callbacks(position_menu, display_callbacks);
     nc_menu_clear_items(position_menu);
+
     adder_add_action_row(&screen->position_selector,
                          STRLIT("At the end of playlist"),
                          adder_action_position_end, screen);
@@ -636,6 +637,7 @@ selected_items_adder_screen_init(SelectedItemsAdderScreen *screen,
     adder_add_action_row(&screen->position_selector,
                          STRLIT("After highlighted item"),
                          adder_action_position_highlighted, screen);
+
     nc_editor_action_menu_add_separator(&screen->position_selector);
     adder_add_action_row(&screen->position_selector, STRLIT("Cancel"),
                          adder_action_position_cancel, screen);
