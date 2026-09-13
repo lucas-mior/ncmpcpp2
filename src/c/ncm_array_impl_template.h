@@ -219,10 +219,7 @@ NCM_ARRAY_FUNCTION(_append_copy)(NCM_ARRAY_TYPE *array,
         return -EINVAL;
     }
     if (DEBUGGING && array->items) {
-        uintptr item_address = (uintptr)item;
-        uintptr items_start = (uintptr)array->items;
-        uintptr items_end = (uintptr)(array->items + array->cap);
-        ASSERT((item_address < items_start) || (item_address >= items_end));
+        ASSERT_OUTSIDE(item, array->items, array->items + array->cap);
     }
     if ((err = NCM_ARRAY_FUNCTION(_reserve)(array, 1)) < 0) {
         return err;
@@ -256,10 +253,7 @@ NCM_ARRAY_FUNCTION(_append_move)(NCM_ARRAY_TYPE *array,
         return;
     }
     if (DEBUGGING && array->items) {
-        uintptr item_address = (uintptr)item;
-        uintptr items_start = (uintptr)array->items;
-        uintptr items_end = (uintptr)(array->items + array->cap);
-        ASSERT((item_address < items_start) || (item_address >= items_end));
+        ASSERT_OUTSIDE(item, array->items, array->items + array->cap);
     }
     dest = NCM_ARRAY_FUNCTION(_append)(array);
     if (dest == NULL) {
