@@ -873,12 +873,12 @@ tag_edit_save_recent_patterns(TagEditScreen *screen) {
         limit = TAG_EDIT_PATTERN_HISTORY_MAX;
     }
     for (int32 i = 0; i < limit; i += 1) {
-        StrBuilder *pattern;
+        StrBuilder *pattern = &screen->recent_patterns.items[i];
 
-        pattern = &screen->recent_patterns.items[i];
-        if ((pattern->len > 0)
-            && (fwrite64(pattern->data, 1, pattern->len, file)
-                != pattern->len)) {
+        if (pattern->len <= 0) {
+            continue;
+        }
+        if (fwrite64(pattern->data, 1, pattern->len, file) != pattern->len) {
             status = -EIO;
             break;
         }
