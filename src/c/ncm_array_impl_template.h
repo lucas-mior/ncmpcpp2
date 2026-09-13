@@ -185,6 +185,10 @@ NCM_ARRAY_FUNCTION(_reserve)(NCM_ARRAY_TYPE *array, int32 extra) {
     return array->cap;
 }
 
+#if !defined(NCM_ARRAY_ITEM_INIT)
+#define NCM_ARRAY_ITEM_INIT(A) *(A) = (NCM_ARRAY_ITEM_TYPE){0}
+#endif
+
 NCM_ARRAY_ITEM_TYPE *
 NCM_ARRAY_FUNCTION(_append)(NCM_ARRAY_TYPE *array) {
     NCM_ARRAY_ITEM_TYPE *item;
@@ -194,11 +198,8 @@ NCM_ARRAY_FUNCTION(_append)(NCM_ARRAY_TYPE *array) {
     }
     item = &array->items[array->len];
     array->len += 1;
-#if defined(NCM_ARRAY_ITEM_INIT)
+
     NCM_ARRAY_ITEM_INIT(item);
-#else
-    *item = (NCM_ARRAY_ITEM_TYPE){0};
-#endif
     return item;
 }
 
@@ -223,11 +224,7 @@ NCM_ARRAY_FUNCTION(_append_copy)(NCM_ARRAY_TYPE *array,
     index = array->len;
     dest = &array->items[index];
     array->len += 1;
-#if defined(NCM_ARRAY_ITEM_INIT)
     NCM_ARRAY_ITEM_INIT(dest);
-#else
-    *dest = (NCM_ARRAY_ITEM_TYPE){0};
-#endif
 #if defined(NCM_ARRAY_ITEM_COPY)
     if ((err = NCM_ARRAY_ITEM_COPY(dest, item)) < 0) {
         array->len -= 1;
