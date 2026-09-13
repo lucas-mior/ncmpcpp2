@@ -1018,7 +1018,7 @@ app_screens_switch_or_open_type(enum ScreenType screen_type) {
     #define APP_SCREEN_SWITCH_OR_OPEN_CASE(                          \
         screen_type_value, alias, flags, suffix                      \
     )                                                                \
-        case screen_type_value:                                      \
+        case SCREEN_TYPE_TYPE(screen_type_value):                    \
             return app_screen_##suffix##_show();
 
     SCREEN_TYPES(APP_SCREEN_SWITCH_OR_OPEN_CASE)
