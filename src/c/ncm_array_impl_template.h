@@ -244,6 +244,10 @@ NCM_ARRAY_FUNCTION(_append_copy)(NCM_ARRAY_TYPE *array,
 }
 #endif
 
+#if !defined(NCM_ARRAY_ITEM_MOVE)
+#define NCM_ARRAY_ITEM_MOVE(A, B) *(A) = *(B)
+#endif
+
 #if defined(NCM_ARRAY_APPEND_MOVE)
 void
 NCM_ARRAY_FUNCTION(_append_move)(NCM_ARRAY_TYPE *array,
@@ -257,11 +261,8 @@ NCM_ARRAY_FUNCTION(_append_move)(NCM_ARRAY_TYPE *array,
     if (dest == NULL) {
         return;
     }
-#if defined(NCM_ARRAY_ITEM_MOVE)
+
     NCM_ARRAY_ITEM_MOVE(dest, item);
-#else
-    *dest = *item;
-#endif
     return;
 }
 #endif
