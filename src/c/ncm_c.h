@@ -232,6 +232,7 @@ int32 ncm_playlist_set(NcmPlaylist *, char *, int32, time_t);
 int32 ncm_playlist_copy(NcmPlaylist *dest, NcmPlaylist *source);
 bool ncm_playlist_has_path_view(NcmPlaylist *, StrView *);
 time_t ncm_playlist_last_modified(NcmPlaylist *);
+
 #define ENUM_NAME NcmMpdItemKind
 #define ENUM_PREFIX_ NCM_MPD_ITEM_
 #define ENUM_BITFLAGS 0
