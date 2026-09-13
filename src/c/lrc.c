@@ -349,6 +349,7 @@ lrc_append_line_entries(LrcDocument *document, int32 *source_order,
         entry.buffer_start = NCM_LRC_NO_BUFFER_POSITION;
         entry.buffer_end = NCM_LRC_NO_BUFFER_POSITION;
         entry.source_order = *source_order;
+
         if (i == 0) {
             entry.blank_lines_before = blank_lines_before;
         } else {
