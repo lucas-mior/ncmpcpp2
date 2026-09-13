@@ -468,25 +468,25 @@ app_screen_playlist_edit_init(void) {
 }
 
 void
-app_screen_selected_items_adder_init(void) {
-    static bool selected_items_adder_screen_initialized = false;
-    if (selected_items_adder_screen_initialized) {
+app_screen_selected_items_add_init(void) {
+    static bool selected_items_add_screen_initialized = false;
+    if (selected_items_add_screen_initialized) {
         return;
     }
-    selected_items_adder_screen_init(&selected_items_adder_screen, 0,
+    selected_items_add_screen_init(&selected_items_add_screen, 0,
                                      ui_state_main_start_y(),
                                      ui_state_screen_width(),
                                      ui_state_main_height(),
                                      Config.main_window_color,
                                      Config.window_border_color);
-    selected_items_adder_screen_initialized = true;
+    selected_items_add_screen_initialized = true;
     return;
 }
 
 int32
-app_screen_selected_items_adder_open(NcmSongArray *songs, NcmError *ncm_error) {
-    app_screen_selected_items_adder_register();
-    return selected_items_adder_screen_open(app_screen_selected_items_adder(),
+app_screen_selected_items_add_open(NcmSongArray *songs, NcmError *ncm_error) {
+    app_screen_selected_items_add_register();
+    return selected_items_add_screen_open(app_screen_selected_items_add(),
                                             songs, app_screen_playlist(),
                                             &global_mpd, ncm_error);
 }

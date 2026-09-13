@@ -32,7 +32,7 @@ adder_add_action_row(NcEditorActionMenu *menu,
 }
 
 static StrView
-selected_items_adder_search_constraint_capability(NcScreen *base) {
+selected_items_add_search_constraint_capability(NcScreen *base) {
     SelectedItemsAdderScreen *screen = (SelectedItemsAdderScreen *)base;
 
     return ncm_string_view(screen->search_constraint,
@@ -40,7 +40,7 @@ selected_items_adder_search_constraint_capability(NcScreen *base) {
 }
 
 static void
-selected_items_adder_search_clear_capability(NcScreen *base) {
+selected_items_add_search_clear_capability(NcScreen *base) {
     SelectedItemsAdderScreen *screen = (SelectedItemsAdderScreen *)base;
 
     screen->search_enabled = false;
@@ -50,7 +50,7 @@ selected_items_adder_search_clear_capability(NcScreen *base) {
 }
 
 static int32
-selected_items_adder_search_capability(NcScreen *base,
+selected_items_add_search_capability(NcScreen *base,
                                        enum SearchDirection direction,
                                        char *pattern, int32 pattern_len,
                                        uint32 regex_flags, bool wrap,
@@ -61,7 +61,7 @@ selected_items_adder_search_capability(NcScreen *base,
     int32 status;
 
     forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
-    status = selected_items_adder_screen_search(screen, pattern, pattern_len,
+    status = selected_items_add_screen_search(screen, pattern, pattern_len,
                                                 regex_flags, forward, wrap,
                                                 skip_current, ncm_error);
     if (status >= 0) {
@@ -84,7 +84,7 @@ adder_display(SelectedItemsAdderScreen *adder) {
     NcMenu *menu;
     NcWindow *window;
 
-    if (adder->active_menu == SELECTED_ITEMS_ADDER_MENU_POSITIONS) {
+    if (adder->active_menu == SELECTED_ITEMS_ADD_MENU_POSITIONS) {
         menu = nc_editor_action_menu_base(&adder->playlist_selector);
         nc_menu_prepare_refresh(menu, nc_window_height(&adder->playlist_window),
                                 NULL, NULL);
@@ -94,8 +94,8 @@ adder_display(SelectedItemsAdderScreen *adder) {
                         nc_window_height(&adder->playlist_window));
     }
 
-    menu = selected_items_adder_screen_active_menu(adder);
-    window = selected_items_adder_screen_active_window(adder);
+    menu = selected_items_add_screen_active_menu(adder);
+    window = selected_items_add_screen_active_window(adder);
     nc_menu_prepare_refresh(menu, nc_window_height(window), NULL, NULL);
     nc_window_display(window);
     nc_menu_refresh(menu, window, nc_window_width(window),
@@ -112,7 +112,7 @@ adder_can_run_current_callback(NcScreen *screen) {
     if (!adder->ready) {
         return false;
     }
-    row = nc_menu_current_item(selected_items_adder_screen_active_menu(adder));
+    row = nc_menu_current_item(selected_items_add_screen_active_menu(adder));
     return row && row->run;
 }
 
@@ -120,7 +120,7 @@ static int32
 adder_run_current_callback(NcScreen *screen) {
     SelectedItemsAdderScreen *adder = (SelectedItemsAdderScreen *)screen;
 
-    return selected_items_adder_screen_run_current(adder);
+    return selected_items_add_screen_run_current(adder);
 }
 
 static void
@@ -223,8 +223,8 @@ adder_mouse_callback(NcScreen *screen, MEVENT event) {
     int32 y;
 
     adder = (SelectedItemsAdderScreen *)screen;
-    menu = selected_items_adder_screen_active_menu(adder);
-    window = selected_items_adder_screen_active_window(adder);
+    menu = selected_items_add_screen_active_menu(adder);
+    window = selected_items_add_screen_active_window(adder);
     x = event.x;
     y = event.y;
     if (!nc_window_has_coords(window, &x, &y)) {
@@ -233,7 +233,7 @@ adder_mouse_callback(NcScreen *screen, MEVENT event) {
     if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
         nc_menu_goto_selectable(menu, y);
         if (event.bstate & BUTTON3_PRESSED) {
-            selected_items_adder_screen_run_current(adder);
+            selected_items_add_screen_run_current(adder);
         }
         return;
     }
@@ -262,12 +262,12 @@ adder_mouse_callback(NcScreen *screen, MEVENT event) {
 
 #define NC_SCREEN_IMPL_TYPE SelectedItemsAdderScreen
 #define NC_SCREEN_IMPL_PREFIX adder
-#define NC_SCREEN_IMPL_PUBLIC_PREFIX selected_items_adder_screen
+#define NC_SCREEN_IMPL_PUBLIC_PREFIX selected_items_add_screen
 #define NC_SCREEN_IMPL_BASE_FIELD screen
 #define NC_SCREEN_IMPL_WINDOW(screen) \
-    selected_items_adder_screen_active_window(screen)
+    selected_items_add_screen_active_window(screen)
 #define NC_SCREEN_IMPL_MENU(screen) \
-    selected_items_adder_screen_active_menu(screen)
+    selected_items_add_screen_active_menu(screen)
 #define NC_SCREEN_IMPL_MENU_CAPABILITY
 #define NC_SCREEN_IMPL_REFRESH_CALLBACK adder_display
 #define NC_SCREEN_IMPL_CAN_RUN_CURRENT_CALLBACK \
@@ -278,7 +278,7 @@ adder_mouse_callback(NcScreen *screen, MEVENT event) {
 #define NC_SCREEN_IMPL_UPDATE_CALLBACK adder_update_callback
 #define NC_SCREEN_IMPL_MOUSE_CALLBACK adder_mouse_callback
 #define NC_SCREEN_IMPL_DESTROY_TYPED_CALLBACK \
-    selected_items_adder_screen_destroy
+    selected_items_add_screen_destroy
 #include "screens/nc_screen_impl_template.h"
 
 static void
@@ -370,7 +370,7 @@ adder_finish(SelectedItemsAdderScreen *screen) {
     screen->playlist = NULL;
     screen->previous_screen = NULL;
     screen->client = NULL;
-    screen->active_menu = SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
+    screen->active_menu = SELECTED_ITEMS_ADD_MENU_PLAYLISTS;
     screen->search_enabled = false;
     stupid_string_free(&screen->search_constraint,
                        &screen->search_constraint_len);
@@ -562,12 +562,12 @@ adder_action_position_cancel(void *user) {
     SelectedItemsAdderScreen *screen;
 
     screen = user;
-    screen->active_menu = SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
+    screen->active_menu = SELECTED_ITEMS_ADD_MENU_PLAYLISTS;
     return;
 }
 
 void
-selected_items_adder_screen_init(SelectedItemsAdderScreen *screen,
+selected_items_add_screen_init(SelectedItemsAdderScreen *screen,
                                  int32 start_x, int32 start_y,
                                  int32 width, int32 height,
                                  NcColor color, NcBorder border) {
@@ -606,7 +606,7 @@ selected_items_adder_screen_init(SelectedItemsAdderScreen *screen,
     screen->playlist_height = height;
     screen->position_width = width;
     screen->position_height = height;
-    screen->active_menu = SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
+    screen->active_menu = SELECTED_ITEMS_ADD_MENU_PLAYLISTS;
     screen->local_browser = false;
     screen->search_enabled = false;
     screen->registered = false;
@@ -614,11 +614,11 @@ selected_items_adder_screen_init(SelectedItemsAdderScreen *screen,
     ops = adder_ops;
     ops.capabilities |= NC_SCREEN_CAPABILITY_SEARCH;
     ops.current_search_constraint =
-        selected_items_adder_search_constraint_capability;
-    ops.clear_search_constraint = selected_items_adder_search_clear_capability;
-    ops.search = selected_items_adder_search_capability;
+        selected_items_add_search_constraint_capability;
+    ops.clear_search_constraint = selected_items_add_search_clear_capability;
+    ops.search = selected_items_add_search_capability;
     nc_screen_init_ops(&screen->screen, ops, screen,
-                       NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER);
+                       NC_SCREEN_TYPE_SELECTED_ITEMS_ADD);
     display_callbacks.draw = adder_draw_row;
     display_callbacks.matches_filter = adder_filter_callback;
     display_callbacks.user = screen;
@@ -706,13 +706,13 @@ existing_playlist_action_destroy(void *user) {
 }
 
 void
-selected_items_adder_screen_destroy(SelectedItemsAdderScreen *screen) {
+selected_items_add_screen_destroy(SelectedItemsAdderScreen *screen) {
     NcMenu *playlist_menu;
 
     if (screen == NULL) {
         return;
     }
-    app_controller_unregister_screen(selected_items_adder_screen_base(screen));
+    app_controller_unregister_screen(selected_items_add_screen_base(screen));
     playlist_menu = nc_editor_action_menu_base(&screen->playlist_selector);
     for (int32 i = 0; i < nc_menu_all_item_len(playlist_menu); i += 1) {
         NcEditorActionRow *row;
@@ -741,22 +741,22 @@ selected_items_adder_screen_destroy(SelectedItemsAdderScreen *screen) {
 }
 
 NcMenu *
-selected_items_adder_screen_active_menu(SelectedItemsAdderScreen *screen) {
+selected_items_add_screen_active_menu(SelectedItemsAdderScreen *screen) {
     if (screen == NULL) {
         return NULL;
     }
-    if (screen->active_menu == SELECTED_ITEMS_ADDER_MENU_POSITIONS) {
+    if (screen->active_menu == SELECTED_ITEMS_ADD_MENU_POSITIONS) {
         return nc_editor_action_menu_base(&screen->position_selector);
     }
     return nc_editor_action_menu_base(&screen->playlist_selector);
 }
 
 NcWindow *
-selected_items_adder_screen_active_window(SelectedItemsAdderScreen *screen) {
+selected_items_add_screen_active_window(SelectedItemsAdderScreen *screen) {
     if (screen == NULL) {
         return NULL;
     }
-    if (screen->active_menu == SELECTED_ITEMS_ADDER_MENU_POSITIONS) {
+    if (screen->active_menu == SELECTED_ITEMS_ADD_MENU_POSITIONS) {
         return &screen->position_window;
     }
     return &screen->playlist_window;
@@ -767,7 +767,7 @@ adder_action_current_playlist(void *user) {
     SelectedItemsAdderScreen *screen;
 
     screen = user;
-    screen->active_menu = SELECTED_ITEMS_ADDER_MENU_POSITIONS;
+    screen->active_menu = SELECTED_ITEMS_ADD_MENU_POSITIONS;
     nc_menu_reset(nc_editor_action_menu_base(&screen->position_selector));
     return;
 }
@@ -833,7 +833,7 @@ adder_action_cancel_target(void *user) {
 }
 
 int32
-selected_items_adder_screen_open(SelectedItemsAdderScreen *screen,
+selected_items_add_screen_open(SelectedItemsAdderScreen *screen,
                                  NcmSongArray *songs,
                                  PlaylistScreen *playlist, MpdClient *client,
                                  NcmError *ncm_error) {
@@ -869,7 +869,7 @@ selected_items_adder_screen_open(SelectedItemsAdderScreen *screen,
                                            "already open"));
     }
 
-    adder_screen = selected_items_adder_screen_base(screen);
+    adder_screen = selected_items_add_screen_base(screen);
     if (((current = nc_screen_switcher_current()) == NULL)
         || (current == adder_screen)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
@@ -882,7 +882,7 @@ selected_items_adder_screen_open(SelectedItemsAdderScreen *screen,
     position_menu = nc_editor_action_menu_base(&screen->position_selector);
     nc_menu_reset(playlist_menu);
     nc_menu_reset(position_menu);
-    screen->active_menu = SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
+    screen->active_menu = SELECTED_ITEMS_ADD_MENU_PLAYLISTS;
     screen->search_enabled = false;
     stupid_string_free(&screen->search_constraint,
                        &screen->search_constraint_len);
@@ -984,7 +984,7 @@ selected_items_adder_screen_open(SelectedItemsAdderScreen *screen,
         adder_add_action_row(menu, STRLIT("Cancel"),
                              adder_action_cancel_target, screen);
         nc_menu_reset(base);
-        screen->active_menu = SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
+        screen->active_menu = SELECTED_ITEMS_ADD_MENU_PLAYLISTS;
     }
     ncm_playlist_array_destroy(&playlists);
     adder_apply_geometry(screen);
@@ -1011,13 +1011,13 @@ selected_items_adder_screen_open(SelectedItemsAdderScreen *screen,
 }
 
 int32
-selected_items_adder_screen_run_current(SelectedItemsAdderScreen *screen) {
+selected_items_add_screen_run_current(SelectedItemsAdderScreen *screen) {
     NcEditorActionRow *row;
 
     if (screen == NULL) {
         return -EINVAL;
     }
-    row = nc_menu_current_item(selected_items_adder_screen_active_menu(screen));
+    row = nc_menu_current_item(selected_items_add_screen_active_menu(screen));
     if ((row == NULL) || (row->run == NULL)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
@@ -1026,7 +1026,7 @@ selected_items_adder_screen_run_current(SelectedItemsAdderScreen *screen) {
 }
 
 int32
-selected_items_adder_screen_return_to_previous(
+selected_items_add_screen_return_to_previous(
     SelectedItemsAdderScreen *screen) {
     if (screen == NULL) {
         return -EINVAL;
@@ -1045,7 +1045,7 @@ adder_position_matches(NcMenu *menu, int32 pos, void *user) {
 }
 
 int32
-selected_items_adder_screen_search(SelectedItemsAdderScreen *screen,
+selected_items_add_screen_search(SelectedItemsAdderScreen *screen,
                                    char *pattern, int32 pattern_len,
                                    uint32 regex_flags, bool forward,
                                    bool wrap, bool skip_current,
@@ -1072,8 +1072,8 @@ selected_items_adder_screen_search(SelectedItemsAdderScreen *screen,
         return status;
     }
 
-    menu = selected_items_adder_screen_active_menu(screen);
-    window = selected_items_adder_screen_active_window(screen);
+    menu = selected_items_add_screen_active_menu(screen);
+    window = selected_items_add_screen_active_window(screen);
     found = nc_menu_search_selectable(menu, nc_window_height(window),
                                       forward, wrap, skip_current,
                                       adder_position_matches, &regex,

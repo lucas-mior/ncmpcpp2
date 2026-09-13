@@ -190,10 +190,10 @@ action_runtime_switch_to_screen(enum ScreenType type) {
     SelectedItemsAdderScreen *adder;
     int32 status;
 
-    if ((type != SCREEN_TYPE_SELECTED_ITEMS_ADDER)
-        && action_runtime_current_screen_is(SCREEN_TYPE_SELECTED_ITEMS_ADDER)) {
-        adder = app_screen_selected_items_adder();
-        status = selected_items_adder_screen_return_to_previous(adder);
+    if ((type != SCREEN_TYPE_SELECTED_ITEMS_ADD)
+        && action_runtime_current_screen_is(SCREEN_TYPE_SELECTED_ITEMS_ADD)) {
+        adder = app_screen_selected_items_add();
+        status = selected_items_add_screen_return_to_previous(adder);
         if (status < 0) {
             return status;
         }
@@ -229,9 +229,9 @@ action_runtime_switch_to_next_screen(bool reverse) {
     int32 next_index;
 
     if (Config.screen_switcher_previous
-        && action_runtime_current_screen_is(SCREEN_TYPE_SELECTED_ITEMS_ADDER)) {
-        adder = app_screen_selected_items_adder();
-        return selected_items_adder_screen_return_to_previous(adder);
+        && action_runtime_current_screen_is(SCREEN_TYPE_SELECTED_ITEMS_ADD)) {
+        adder = app_screen_selected_items_add();
+        return selected_items_add_screen_return_to_previous(adder);
     }
     if (Config.screen_switcher_previous) {
         if ((current = app_controller_previous_screen()) == NULL) {
@@ -5556,10 +5556,10 @@ action_runtime_custom_run(ActionRuntime *runtime, enum ActionType type) {
         return 0;
     }
     case ACTION_ADD:
-        if (app_screens_current_type() == SCREEN_TYPE_SELECTED_ITEMS_ADDER) {
-            SelectedItemsAdderScreen *adder = app_screen_selected_items_adder();
+        if (app_screens_current_type() == SCREEN_TYPE_SELECTED_ITEMS_ADD) {
+            SelectedItemsAdderScreen *adder = app_screen_selected_items_add();
 
-            return selected_items_adder_screen_run_current(adder);
+            return selected_items_add_screen_run_current(adder);
         }
         return action_runtime_add_prompt();
     case ACTION_TOGGLE_PLAYING_SONG_CENTERING:
@@ -5633,7 +5633,7 @@ action_runtime_custom_run(ActionRuntime *runtime, enum ActionType type) {
         }
 
         ncm_error_clear(&ncm_error);
-        status = app_screen_selected_items_adder_open(&songs, &ncm_error);
+        status = app_screen_selected_items_add_open(&songs, &ncm_error);
         ncm_song_array_destroy(&songs);
         if (status < 0) {
             return action_runtime_mpd_error_status(&ncm_error);

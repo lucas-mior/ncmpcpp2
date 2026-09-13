@@ -36,9 +36,9 @@
     XX(PLAYLIST_EDITOR, playlist_edit, SCREEN_FLAG_STARTUP, playlist_edit)
 #define SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                                \
     XX(SEARCH_ENGINE, search_engine, SCREEN_FLAG_STARTUP, search_engine)
-#define SCREEN_TYPE_SELECTED_ITEMS_ADDER_ENTRY(XX)                         \
-    XX(SELECTED_ITEMS_ADDER, selected_items_adder,                         \
-      SCREEN_FLAG_NONE, selected_items_adder)
+#define SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)                         \
+    XX(SELECTED_ITEMS_ADD, selected_items_add,                         \
+      SCREEN_FLAG_NONE, selected_items_add)
 #define SCREEN_TYPE_SERVER_INFO_ENTRY(XX)                                  \
     XX(SERVER_INFO, server_info, SCREEN_FLAG_NONE, server_info)
 #define SCREEN_TYPE_SONG_INFO_ENTRY(XX)                                    \
@@ -63,7 +63,7 @@
     SCREEN_TYPE_PLAYLIST_ENTRY(XX)                                         \
     SCREEN_TYPE_PLAYLIST_EDITOR_ENTRY(XX)                                  \
     SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                                    \
-    SCREEN_TYPE_SELECTED_ITEMS_ADDER_ENTRY(XX)                             \
+    SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)                             \
     SCREEN_TYPE_SERVER_INFO_ENTRY(XX)                                      \
     SCREEN_TYPE_SONG_INFO_ENTRY(XX)                                        \
     SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)                             \
@@ -103,7 +103,7 @@
     SCREEN_TYPE_PLAYLIST_ENTRY(XX)                 \
     SCREEN_TYPE_PLAYLIST_EDITOR_ENTRY(XX)          \
     SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)            \
-    SCREEN_TYPE_SELECTED_ITEMS_ADDER_ENTRY(XX)     \
+    SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)     \
     SCREEN_TYPE_SERVER_INFO_ENTRY(XX)              \
     SCREEN_TYPE_SONG_INFO_ENTRY(XX)                \
     SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)     \
@@ -131,7 +131,7 @@
     XX(VisualizerScreen, visualizer_screen)                    \
     XX(PlaylistScreen, playlist_screen)                        \
     XX(PlaylistEditScreen, playlist_edit_screen)               \
-    XX(SelectedItemsAdderScreen, selected_items_adder_screen)  \
+    XX(SelectedItemsAdderScreen, selected_items_add_screen)  \
     XX(SortPlaylistDialog, sort_playlist_dialog)               \
     XX(SearchEngineScreen, search_engine_screen)               \
     XX(MediaLibraryScreen, media_library_screen)               \
@@ -155,9 +155,9 @@
      playlist_screen_base(&playlist_screen))                                   \
   XX(playlist_edit, PlaylistEditScreen, playlist_edit_screen,                  \
      playlist_edit_screen_base(&playlist_edit_screen))                         \
-  XX(selected_items_adder, SelectedItemsAdderScreen,                           \
-     selected_items_adder_screen,                                              \
-     selected_items_adder_screen_base(&selected_items_adder_screen))           \
+  XX(selected_items_add, SelectedItemsAdderScreen,                           \
+     selected_items_add_screen,                                              \
+     selected_items_add_screen_base(&selected_items_add_screen))           \
   XX(sort_playlist_dialog, SortPlaylistDialog, sort_playlist_dialog,           \
      sort_playlist_dialog_base(&sort_playlist_dialog))                         \
   XX(search_engine, SearchEngineScreen, search_engine_screen,                  \
@@ -194,7 +194,7 @@
     XX(outputs)
 
 #define APP_SCREEN_REPLACE_REGISTER_TYPES(XX)                 \
-    XX(selected_items_adder, NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER) \
+    XX(selected_items_add, NC_SCREEN_TYPE_SELECTED_ITEMS_ADD) \
     XX(sort_playlist_dialog, NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG)
 
 #define APP_SCREEN_SIMPLE_SWITCH_TYPES(XX)                    \
@@ -202,7 +202,7 @@
     XX(help)                                                      \
     XX(playlist)                                                  \
     XX(playlist_edit)                                             \
-    XX(selected_items_adder)                                      \
+    XX(selected_items_add)                                      \
     XX(search_engine)                                             \
     XX(media_library)                                             \
     XX(tag_edit)                                                  \
@@ -221,7 +221,7 @@
     XX(visualizer)                                                \
     XX(playlist)                                                  \
     XX(playlist_edit)                                             \
-    XX(selected_items_adder)                                      \
+    XX(selected_items_add)                                      \
     XX(sort_playlist_dialog)                                      \
     XX(search_engine)                                             \
     XX(media_library)                                             \
@@ -270,7 +270,7 @@
     XX(playlist)                                                  \
     XX(playlist_edit)                                             \
     XX(search_engine)                                             \
-    XX(selected_items_adder)                                      \
+    XX(selected_items_add)                                      \
     XX(server_info)                                               \
     XX(song_info)                                                 \
     XX(sort_playlist_dialog)                                      \
@@ -284,7 +284,7 @@
     XX(lastfm)                                                    \
     XX(media_library)                                             \
     XX(search_engine)                                             \
-    XX(selected_items_adder)                                      \
+    XX(selected_items_add)                                      \
     XX(song_info)                                                 \
     XX(server_info)                                               \
     APP_SCREEN_ENABLED_VISUALIZER(XX)                         \
@@ -302,7 +302,7 @@
     XX(playlist, NC_SCREEN_TYPE_PLAYLIST)                         \
     XX(playlist_edit, NC_SCREEN_TYPE_PLAYLIST_EDITOR)             \
     XX(search_engine, NC_SCREEN_TYPE_SEARCH_ENGINE)               \
-    XX(selected_items_adder, NC_SCREEN_TYPE_SELECTED_ITEMS_ADDER) \
+    XX(selected_items_add, NC_SCREEN_TYPE_SELECTED_ITEMS_ADD) \
     XX(server_info, NC_SCREEN_TYPE_SERVER_INFO)                   \
     XX(song_info, NC_SCREEN_TYPE_SONG_INFO)                       \
     XX(sort_playlist_dialog, NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG) \
@@ -1649,11 +1649,11 @@ int32 search_engine_screen_search(SearchEngineScreen *, char *, int32,
 typedef struct PlaylistScreen PlaylistScreen;
 
 #define ENUM_NAME SelectedItemsAdderMenu
-#define ENUM_PREFIX_ SELECTED_ITEMS_ADDER_MENU_
+#define ENUM_PREFIX_ SELECTED_ITEMS_ADD_MENU_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(SELECTED_ITEMS_ADDER_MENU_PLAYLISTS, Playlists)                         \
-    XX(SELECTED_ITEMS_ADDER_MENU_POSITIONS, Positions)
+    XX(SELECTED_ITEMS_ADD_MENU_PLAYLISTS, Playlists)                         \
+    XX(SELECTED_ITEMS_ADD_MENU_POSITIONS, Positions)
 #include "cbase/xenums.c"
 
 typedef struct SelectedItemsAdderScreen {
@@ -1682,21 +1682,21 @@ typedef struct SelectedItemsAdderScreen {
     bool ready;
 } SelectedItemsAdderScreen;
 
-void selected_items_adder_screen_init(SelectedItemsAdderScreen *,
+void selected_items_add_screen_init(SelectedItemsAdderScreen *,
                                       int32 start_x, int32 start_y,
                                       int32 width, int32 height, NcColor,
                                       NcBorder);
-void selected_items_adder_screen_destroy(SelectedItemsAdderScreen *);
-NcScreen *selected_items_adder_screen_base(SelectedItemsAdderScreen *);
-NcMenu *selected_items_adder_screen_active_menu(SelectedItemsAdderScreen *);
-NcWindow *selected_items_adder_screen_active_window(SelectedItemsAdderScreen *);
-int32 selected_items_adder_screen_open(SelectedItemsAdderScreen *,
+void selected_items_add_screen_destroy(SelectedItemsAdderScreen *);
+NcScreen *selected_items_add_screen_base(SelectedItemsAdderScreen *);
+NcMenu *selected_items_add_screen_active_menu(SelectedItemsAdderScreen *);
+NcWindow *selected_items_add_screen_active_window(SelectedItemsAdderScreen *);
+int32 selected_items_add_screen_open(SelectedItemsAdderScreen *,
                                        NcmSongArray *, PlaylistScreen *,
                                        MpdClient *, NcmError *);
-int32 selected_items_adder_screen_run_current(SelectedItemsAdderScreen *);
+int32 selected_items_add_screen_run_current(SelectedItemsAdderScreen *);
 int32
-selected_items_adder_screen_return_to_previous(SelectedItemsAdderScreen *);
-int32 selected_items_adder_screen_search(SelectedItemsAdderScreen *, char *,
+selected_items_add_screen_return_to_previous(SelectedItemsAdderScreen *);
+int32 selected_items_add_screen_search(SelectedItemsAdderScreen *, char *,
                                          int32, uint32,
                                          bool forward, bool wrap,
                                          bool skip_current, NcmError *);
@@ -2177,7 +2177,7 @@ VisualizerScreen *app_screen_visualizer(void);
 void app_screen_lyrics_set_resize(void);
 void app_screen_lyrics_switch_to(void);
 void app_screen_browser_fetch_supported_extensions(void);
-int32 app_screen_selected_items_adder_open(NcmSongArray *, NcmError *);
+int32 app_screen_selected_items_add_open(NcmSongArray *, NcmError *);
 int32 app_screen_sort_playlist_dialog_switch_to(void);
 void app_screen_outputs_toggle(void);
 void app_screen_outputs_fetch_list(void);
