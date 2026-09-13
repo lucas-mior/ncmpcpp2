@@ -48,6 +48,14 @@ NcScreen *nc_screen_impl_dummy_base(NcScreenImplDummy *);
 #if !defined(NC_SCREEN_IMPL_REFRESH_CALLBACK)
 #error "NC_SCREEN_IMPL_REFRESH_CALLBACK is undefined"
 #endif
+#if defined(NC_SCREEN_IMPL_FILTER_CONSTRAINT_FIELD)                            \
+    && !defined(NC_SCREEN_IMPL_FILTER_CONSTRAINT_LEN_FIELD)
+#error "filter constraint length field is undefined"
+#endif
+#if defined(NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD)                            \
+    && !defined(NC_SCREEN_IMPL_SEARCH_CONSTRAINT_LEN_FIELD)
+#error "search constraint length field is undefined"
+#endif
 
 #if !defined(NC_SCREEN_IMPL_FIRST_FIELD)
 #define NC_SCREEN_IMPL_FIRST_FIELD NC_SCREEN_IMPL_BASE_FIELD
@@ -210,9 +218,9 @@ NC_SCREEN_IMPL_CURRENT_MENU_HEIGHT(NcScreen *screen) {
 static StrView
 NC_SCREEN_IMPL_CURRENT_FILTER(NcScreen *screen) {
     NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
-    StrBuilder *constraint = &impl->NC_SCREEN_IMPL_FILTER_CONSTRAINT_FIELD;
 
-    return ncm_string_view(constraint->data, constraint->len);
+    return ncm_string_view(impl->NC_SCREEN_IMPL_FILTER_CONSTRAINT_FIELD,
+                           impl->NC_SCREEN_IMPL_FILTER_CONSTRAINT_LEN_FIELD);
 }
 #endif
 
@@ -242,9 +250,9 @@ NC_SCREEN_IMPL_CAN_SEARCH(NcScreen *screen) {
 static StrView
 NC_SCREEN_IMPL_CURRENT_SEARCH_CONSTRAINT(NcScreen *screen) {
     NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
-    StrBuilder *constraint = &impl->NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD;
 
-    return ncm_string_view(constraint->data, constraint->len);
+    return ncm_string_view(impl->NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD,
+                           impl->NC_SCREEN_IMPL_SEARCH_CONSTRAINT_LEN_FIELD);
 }
 #endif
 
@@ -261,7 +269,8 @@ static void
 NC_SCREEN_IMPL_CLEAR_SEARCH_CONSTRAINT(NcScreen *screen) {
     NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
 
-    sb_clear(&impl->NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD);
+    stupid_string_free(&impl->NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD,
+                       &impl->NC_SCREEN_IMPL_SEARCH_CONSTRAINT_LEN_FIELD);
     return;
 }
 #endif
@@ -282,8 +291,9 @@ NC_SCREEN_IMPL_SEARCH(NcScreen *screen, enum SearchDirection direction,
                                             ncm_error);
 #if defined(NC_SCREEN_IMPL_SEARCH_SAVE_ON_SUCCESS)
     if (status >= 0) {
-        sb_set(&impl->NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD, pattern,
-               pattern_len);
+        stupid_string_set(&impl->NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD,
+                          &impl->NC_SCREEN_IMPL_SEARCH_CONSTRAINT_LEN_FIELD,
+                          pattern, pattern_len);
     }
 #endif
     return status;
@@ -539,8 +549,10 @@ static const NcScreenOps NC_SCREEN_IMPL_OPS = {
 #undef NC_SCREEN_IMPL_SEARCH_CLEAR_CALLBACK
 #undef NC_SCREEN_IMPL_SEARCH_CALLBACK
 #undef NC_SCREEN_IMPL_SEARCH_CAN_CALLBACK
+#undef NC_SCREEN_IMPL_SEARCH_CONSTRAINT_LEN_FIELD
 #undef NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD
 #undef NC_SCREEN_IMPL_FILTER_APPLY_CALLBACK
+#undef NC_SCREEN_IMPL_FILTER_CONSTRAINT_LEN_FIELD
 #undef NC_SCREEN_IMPL_FILTER_CONSTRAINT_FIELD
 #undef NC_SCREEN_IMPL_TAG_MENU
 #undef NC_SCREEN_IMPL_MENU_CAPABILITY

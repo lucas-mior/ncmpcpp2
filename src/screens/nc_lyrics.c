@@ -191,6 +191,7 @@ lyrics_display(LyricsScreen *screen) {
 #define NC_SCREEN_IMPL_TITLE_CALLBACK lyrics_title_callback
 #define NC_SCREEN_IMPL_WINDOW_TIMEOUT_CALLBACK lyrics_window_timeout_callback
 #define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD search_constraint
+#define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_LEN_FIELD search_constraint_len
 #define NC_SCREEN_IMPL_FIND_CALLBACK lyrics_screen_find
 #define NC_SCREEN_IMPL_UPDATE_CALLBACK lyrics_update_callback
 #define NC_SCREEN_IMPL_MOUSE_CALLBACK lyrics_mouse_button_pressed_callback
@@ -331,7 +332,8 @@ lyrics_screen_init(LyricsScreen *screen, int32 start_x, int32 width,
                       nc_lyrics_screen_height(&screen->screen));
     screen->display = (NcBuffer){0};
 
-    screen->search_constraint = (StrBuilder){0};
+    screen->search_constraint = NULL;
+    screen->search_constraint_len = 0;
     screen->title = (StrBuilder){0};
     screen->song = (NcmSong){0};
     screen->filename = (StrBuilder){0};
@@ -375,7 +377,8 @@ lyrics_screen_destroy(LyricsScreen *screen) {
     sb_free(&screen->filename);
     ncm_song_destroy(&screen->song);
     sb_free(&screen->title);
-    sb_free(&screen->search_constraint);
+    stupid_string_free(&screen->search_constraint,
+                       &screen->search_constraint_len);
     nc_buffer_destroy(&screen->display);
     nc_window_destroy(&screen->window);
 
@@ -1576,9 +1579,11 @@ lyrics_screen_find(LyricsScreen *screen, char *pattern, int32 pattern_len,
     }
 
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        sb_clear(&screen->search_constraint);
+        stupid_string_free(&screen->search_constraint,
+                           &screen->search_constraint_len);
     } else {
-        sb_set(&screen->search_constraint, pattern, pattern_len);
+        stupid_string_set(&screen->search_constraint,
+                          &screen->search_constraint_len, pattern, pattern_len);
     }
     nc_scrollpad_flush(&screen->scrollpad, &screen->window, &screen->display);
     lyrics_display(screen);

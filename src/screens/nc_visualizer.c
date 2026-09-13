@@ -634,15 +634,19 @@ visualizer_screen_init_data_source(VisualizerScreen *screen,
         }
     }
 
-    sb_clear(&screen->source_location);
-    sb_clear(&screen->source_port);
+    stupid_string_free(&screen->source_location, &screen->source_location_len);
+    stupid_string_free(&screen->source_port, &screen->source_port_len);
     if ((source_location_len > 0) && (source_location[0] != '/')
         && (colon >= 0)) {
-        sb_set(&screen->source_location, source_location, colon);
-        sb_set(&screen->source_port, source_location + colon + 1,
-               source_location_len - colon - 1);
+        stupid_string_set(&screen->source_location,
+                          &screen->source_location_len, source_location, colon);
+        stupid_string_set(&screen->source_port, &screen->source_port_len,
+                          source_location + colon + 1,
+                          source_location_len - colon - 1);
     } else {
-        sb_set(&screen->source_location, source_location, source_location_len);
+        stupid_string_set(&screen->source_location,
+                          &screen->source_location_len, source_location,
+                          source_location_len);
     }
     return;
 }
@@ -654,25 +658,25 @@ visualizer_screen_open_data_source(VisualizerScreen *screen) {
     }
 
     {
-        char *location = sb_opt_cstr(&screen->source_location);
-        char *port = sb_opt_cstr(&screen->source_port);
+        char *location = screen->source_location ? screen->source_location : "";
+        char *port = screen->source_port ? screen->source_port : "";
         int32 fd;
 
-        if (screen->source_port.len > 0) {
+        if (screen->source_port_len > 0) {
             if (screen->data_source_hooks.open_udp == NULL) {
                 return -NCM_ERROR_UNAVAILABLE;
             }
             fd = screen->data_source_hooks.open_udp(
                 screen->data_source_hooks.user,
-                location, screen->source_location.len,
-                port, screen->source_port.len);
+                location, screen->source_location_len,
+                port, screen->source_port_len);
         } else {
             if (screen->data_source_hooks.open_fifo == NULL) {
                 return -NCM_ERROR_UNAVAILABLE;
             }
             fd = screen->data_source_hooks.open_fifo(
                 screen->data_source_hooks.user,
-                location, screen->source_location.len);
+                location, screen->source_location_len);
         }
 
         if (fd < 0) {
@@ -733,7 +737,7 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
     bool found = false;
 
     screen->output_id = -1;
-    if ((screen->output_name.len <= 0) || (screen->source_port.len > 0)) {
+    if ((screen->output_name_len <= 0) || (screen->source_port_len > 0)) {
         return 0;
     }
     if (screen->data_source_hooks.get_outputs == NULL) {
@@ -759,7 +763,7 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
     for (int32 i = 0; i < outputs.len; i += 1) {
         NcmMpdOutput *output = outputs.items + i;
 
-        if (STREQUAL(screen->output_name.data, screen->output_name.len,
+        if (STREQUAL(screen->output_name, screen->output_name_len,
                      output->name, output->name_len)) {
             screen->output_id = output->id;
             found = true;
@@ -772,7 +776,7 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
         StrBuilder message = {0};
 
         SB_APPEND(&message, "There is no output named \"");
-        SB_APPEND(&message, screen->output_name.data, screen->output_name.len);
+        SB_APPEND(&message, screen->output_name, screen->output_name_len);
         SB_APPEND(&message, "\"");
         ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                             message.data, message.len);
@@ -892,28 +896,34 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
     nc_window_init(&screen->window, start_x, start_y, width, height,
                    STRLIT(""), color, border);
 
-    screen->source_location = (StrBuilder){0};
-    screen->source_port = (StrBuilder){0};
-    screen->output_name = (StrBuilder){0};
-    screen->visualizer_chars = (StrBuilder){0};
+    screen->source_location = NULL;
+    screen->source_port = NULL;
+    screen->output_name = NULL;
+    screen->visualizer_chars = NULL;
+    screen->source_location_len = 0;
+    screen->source_port_len = 0;
+    screen->output_name_len = 0;
+    screen->visualizer_chars_len = 0;
 
     screen->visualizer_colors = NULL;
     screen->visualizer_colors_len = 0;
     visualizer_screen_init_data_source(screen,
                                        source_location, source_location_len);
-    sb_set(&screen->output_name, output_name, output_name_len);
+    stupid_string_set(&screen->output_name, &screen->output_name_len,
+                      output_name, output_name_len);
     {
         int32 next;
 
-        sb_set(&screen->visualizer_chars,
-               visualizer_chars, visualizer_chars_len);
+        stupid_string_set(&screen->visualizer_chars,
+                          &screen->visualizer_chars_len, visualizer_chars,
+                          visualizer_chars_len);
         next = utf8_next_position(
-            screen->visualizer_chars.data, screen->visualizer_chars.len,
+            screen->visualizer_chars, screen->visualizer_chars_len,
             0);
         screen->point_char_offset = 0;
         screen->point_char_len = next;
         screen->bar_char_offset = next;
-        screen->bar_char_len = screen->visualizer_chars.len - next;
+        screen->bar_char_len = screen->visualizer_chars_len - next;
     }
     {
         visualizer_destroy_colors(screen);
@@ -1023,10 +1033,11 @@ visualizer_screen_destroy(VisualizerScreen *screen) {
     ncm_sample_buffer_destroy(&screen->samples_buf);
     ncm_sample_buffer_destroy(&screen->samples_in);
     visualizer_destroy_colors(screen);
-    sb_free(&screen->visualizer_chars);
-    sb_free(&screen->output_name);
-    sb_free(&screen->source_port);
-    sb_free(&screen->source_location);
+    stupid_string_free(&screen->visualizer_chars,
+                       &screen->visualizer_chars_len);
+    stupid_string_free(&screen->output_name, &screen->output_name_len);
+    stupid_string_free(&screen->source_port, &screen->source_port_len);
+    stupid_string_free(&screen->source_location, &screen->source_location_len);
     nc_window_destroy(&screen->window);
 
     screen->output_id = -1;
@@ -1302,7 +1313,7 @@ static void
 visualizer_draw_wave(VisualizerScreen *screen,
                      int16 *samples, int32 samples_len,
                      int32 y_offset, int32 height) {
-    char *character = screen->visualizer_chars.data + screen->point_char_offset;
+    char *character = screen->visualizer_chars + screen->point_char_offset;
     int32 character_len = screen->point_char_len;
     int32 width = nc_window_width(&screen->window);
     int32 half_height;
@@ -1369,7 +1380,7 @@ static void
 visualizer_draw_wave_filled(VisualizerScreen *screen,
                             int16 *samples, int32 samples_len,
                             int32 y_offset, int32 height) {
-    char *character = screen->visualizer_chars.data + screen->bar_char_offset;
+    char *character = screen->visualizer_chars + screen->bar_char_offset;
     int32 character_len = screen->bar_char_len;
     int32 width = nc_window_width(&screen->window);
     int32 samples_per_column;
@@ -1672,7 +1683,7 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                     y = y_offset + height - j - 1;
                 }
                 color = visualizer_color(screen, j, height, false);
-                character = screen->visualizer_chars.data
+                character = screen->visualizer_chars
                             + screen->bar_char_offset;
                 character_len = screen->bar_char_len;
                 reverse = false;
@@ -1760,7 +1771,7 @@ visualizer_screen_draw(VisualizerScreen *screen,
             break;
 #endif
         case VISUALIZER_ELLIPSE: {
-            char *character = screen->visualizer_chars.data
+            char *character = screen->visualizer_chars
                               + screen->point_char_offset;
             int32 character_len = screen->point_char_len;
             int32 width = nc_window_width(&screen->window);
@@ -1822,7 +1833,7 @@ visualizer_screen_draw(VisualizerScreen *screen,
         break;
 #endif
     case VISUALIZER_ELLIPSE: {
-        char *character = screen->visualizer_chars.data
+        char *character = screen->visualizer_chars
                           + screen->point_char_offset;
         int32 character_len = screen->point_char_len;
         int32 width = nc_window_width(&screen->window);

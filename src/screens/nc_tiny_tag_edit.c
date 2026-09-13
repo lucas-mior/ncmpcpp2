@@ -129,8 +129,8 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
 
         type = ncm_writable_tag_at(row - (int32)TINY_TAG_EDIT_FIRST_TAG_ROW);
         ASSERT(type != TAG_COUNT);
-        tag_separator = screen->tag_separator.data;
-        tag_separator_len = screen->tag_separator.len;
+        tag_separator = screen->tag_separator;
+        tag_separator_len = screen->tag_separator_len;
 
         tag_value = mutable_song_tags_buffer(&screen->edited, type,
                                              tag_separator, tag_separator_len,
@@ -252,10 +252,10 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         if (screen->hooks.write_song) {
             status = screen->hooks.write_song(screen->hooks.user,
                                               &screen->edited,
-                                              screen->music_dir.data);
+                                              screen->music_dir);
         } else {
             status = mutable_song_write(&screen->edited,
-                                        screen->music_dir.data);
+                                        screen->music_dir);
         }
         if (status < 0) {
             error_len = SNPRINTF(error_buffer, "Error while writing tags: %s",
@@ -477,8 +477,10 @@ tiny_tag_edit_screen_init(TinyTagEditScreen *screen, int32 start_x, int32 width,
     screen->hooks = (TinyTagEditHooks){0};
     screen->edited = (MutableSong){0};
 
-    screen->music_dir = (StrBuilder){0};
-    screen->tag_separator = (StrBuilder){0};
+    screen->music_dir = NULL;
+    screen->tag_separator = NULL;
+    screen->music_dir_len = 0;
+    screen->tag_separator_len = 0;
 
     screen->previous_screen = NULL;
     screen->start_x = start_x;
@@ -499,8 +501,8 @@ void
 tiny_tag_edit_screen_destroy(TinyTagEditScreen *screen) {
     app_controller_unregister_screen(tiny_tag_edit_screen_base(screen));
     mutable_song_destroy(&screen->edited);
-    sb_free(&screen->music_dir);
-    sb_free(&screen->tag_separator);
+    stupid_string_free(&screen->music_dir, &screen->music_dir_len);
+    stupid_string_free(&screen->tag_separator, &screen->tag_separator_len);
     nc_window_destroy(&screen->window);
 
     nc_editor_buffer_menu_destroy(&screen->rows);
@@ -581,8 +583,10 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     if (ncm_song_is_from_database(song) && (music_dir_len <= 0)) {
         return TINY_TAG_EDIT_OPEN_MISSING_MUSIC_DIRECTORY;
     }
-    sb_set(&screen->music_dir, music_dir, music_dir_len);
-    sb_set(&screen->tag_separator, tag_separator, tag_separator_len);
+    stupid_string_set(&screen->music_dir, &screen->music_dir_len,
+                      music_dir, music_dir_len);
+    stupid_string_set(&screen->tag_separator, &screen->tag_separator_len,
+                      tag_separator, tag_separator_len);
     screen->show_duplicate_tags = show_duplicate_tags;
 
     status = mutable_song_load_originals_from_song(&edited, song);

@@ -35,8 +35,8 @@ static StrView
 selected_items_adder_search_constraint_capability(NcScreen *base) {
     SelectedItemsAdderScreen *screen = (SelectedItemsAdderScreen *)base;
 
-    return ncm_string_view(screen->search_constraint.data,
-                           screen->search_constraint.len);
+    return ncm_string_view(screen->search_constraint,
+                           screen->search_constraint_len);
 }
 
 static void
@@ -44,7 +44,8 @@ selected_items_adder_search_clear_capability(NcScreen *base) {
     SelectedItemsAdderScreen *screen = (SelectedItemsAdderScreen *)base;
 
     screen->search_enabled = false;
-    sb_clear(&screen->search_constraint);
+    stupid_string_free(&screen->search_constraint,
+                       &screen->search_constraint_len);
     return;
 }
 
@@ -64,7 +65,8 @@ selected_items_adder_search_capability(NcScreen *base,
                                                 regex_flags, forward, wrap,
                                                 skip_current, ncm_error);
     if (status >= 0) {
-        sb_set(&screen->search_constraint, pattern, pattern_len);
+        stupid_string_set(&screen->search_constraint,
+                          &screen->search_constraint_len, pattern, pattern_len);
         screen->search_enabled = true;
     }
     return status;
@@ -370,7 +372,8 @@ adder_finish(SelectedItemsAdderScreen *screen) {
     screen->client = NULL;
     screen->active_menu = SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
     screen->search_enabled = false;
-    sb_clear(&screen->search_constraint);
+    stupid_string_free(&screen->search_constraint,
+                       &screen->search_constraint_len);
     nc_menu_show_all_items(playlist_menu);
     nc_menu_show_all_items(position_menu);
     return;
@@ -593,7 +596,8 @@ selected_items_adder_screen_init(SelectedItemsAdderScreen *screen,
     screen->selected_songs = (NcmSongArray){0};
     screen->search_regex = (NcmRegex){0};
 
-    screen->search_constraint = (StrBuilder){0};
+    screen->search_constraint = NULL;
+    screen->search_constraint_len = 0;
 
     screen->playlist = NULL;
     screen->previous_screen = NULL;
@@ -726,7 +730,8 @@ selected_items_adder_screen_destroy(SelectedItemsAdderScreen *screen) {
     nc_window_destroy(&screen->position_window);
     ncm_song_array_destroy(&screen->selected_songs);
     ncm_regex_destroy(&screen->search_regex);
-    sb_free(&screen->search_constraint);
+    stupid_string_free(&screen->search_constraint,
+                       &screen->search_constraint_len);
     screen->playlist = NULL;
     screen->previous_screen = NULL;
     screen->client = NULL;
@@ -879,7 +884,8 @@ selected_items_adder_screen_open(SelectedItemsAdderScreen *screen,
     nc_menu_reset(position_menu);
     screen->active_menu = SELECTED_ITEMS_ADDER_MENU_PLAYLISTS;
     screen->search_enabled = false;
-    sb_clear(&screen->search_constraint);
+    stupid_string_free(&screen->search_constraint,
+                       &screen->search_constraint_len);
     nc_menu_show_all_items(playlist_menu);
     nc_menu_show_all_items(position_menu);
 

@@ -61,11 +61,8 @@ media_library_menu_height_capability(NcScreen *base) {
 
 static StrView
 media_library_filter_constraint_capability(NcScreen *base) {
-    StrBuilder *constraint;
-
-    constraint = media_library_screen_active_filter_constraint(
+    return media_library_screen_active_filter_constraint(
         (MediaLibraryScreen *)base);
-    return ncm_string_view(constraint->data, constraint->len);
 }
 
 static int32
@@ -79,11 +76,8 @@ media_library_filter_apply_capability(NcScreen *base, char *pattern,
 
 static StrView
 media_library_search_constraint_capability(NcScreen *base) {
-    StrBuilder *constraint;
-
-    constraint = media_library_screen_active_search_constraint(
+    return media_library_screen_active_search_constraint(
         (MediaLibraryScreen *)base);
-    return ncm_string_view(constraint->data, constraint->len);
 }
 
 static void
@@ -1006,8 +1000,10 @@ media_library_screen_init(MediaLibraryScreen *screen, MediaLibraryHooks hooks,
     song_menu = nc_media_library_song_menu_base(&screen->songs);
 
     for (uint32 i = 0; i < MEDIA_LIBRARY_COLUMN_COUNT; i += 1) {
-        screen->column_state[i].filter_constraint = (StrBuilder){0};
-        screen->column_state[i].search_constraint = (StrBuilder){0};
+        screen->column_state[i].filter_constraint = NULL;
+        screen->column_state[i].search_constraint = NULL;
+        screen->column_state[i].filter_constraint_len = 0;
+        screen->column_state[i].search_constraint_len = 0;
         screen->column_state[i].filter_regex = (NcmRegex){0};
         screen->column_state[i].search_regex = (NcmRegex){0};
         screen->column_state[i].filter_enabled = false;
@@ -1122,8 +1118,10 @@ media_library_screen_destroy(MediaLibraryScreen *screen) {
     for (uint32 i = 0; i < MEDIA_LIBRARY_COLUMN_COUNT; i += 1) {
         ncm_regex_destroy(&screen->column_state[i].search_regex);
         ncm_regex_destroy(&screen->column_state[i].filter_regex);
-        sb_free(&screen->column_state[i].search_constraint);
-        sb_free(&screen->column_state[i].filter_constraint);
+        stupid_string_free(&screen->column_state[i].search_constraint,
+                           &screen->column_state[i].search_constraint_len);
+        stupid_string_free(&screen->column_state[i].filter_constraint,
+                           &screen->column_state[i].filter_constraint_len);
     }
     sb_free(&screen->albums_title);
     sb_free(&screen->tags_title);
@@ -1338,16 +1336,18 @@ library_active_column_state(MediaLibraryScreen *screen) {
     return &screen->column_state[screen->active_column];
 }
 
-StrBuilder *
+StrView
 media_library_screen_active_filter_constraint(MediaLibraryScreen *screen) {
     MediaLibraryColumnState *state = library_active_column_state(screen);
-    return &state->filter_constraint;
+    return ncm_string_view(state->filter_constraint,
+                           state->filter_constraint_len);
 }
 
-StrBuilder *
+StrView
 media_library_screen_active_search_constraint(MediaLibraryScreen *screen) {
     MediaLibraryColumnState *state = library_active_column_state(screen);
-    return &state->search_constraint;
+    return ncm_string_view(state->search_constraint,
+                           state->search_constraint_len);
 }
 
 NcMediaLibraryTagRow *
@@ -2421,7 +2421,8 @@ media_library_screen_apply_filter(
                                     ncm_error)) < 0) {
         return status;
     }
-    sb_set(&state->filter_constraint, pattern, pattern_len);
+    stupid_string_set(&state->filter_constraint, &state->filter_constraint_len,
+                      pattern, pattern_len);
 
     callbacks = library_display_callbacks(screen, screen->active_column, true);
     menu = media_library_screen_active_menu(screen);
@@ -2445,7 +2446,8 @@ media_library_screen_clear_filter(MediaLibraryScreen *screen) {
     state = library_active_column_state(screen);
     ncm_regex_destroy(&state->filter_regex);
     state->filter_regex = (NcmRegex){0};
-    sb_clear(&state->filter_constraint);
+    stupid_string_free(&state->filter_constraint,
+                       &state->filter_constraint_len);
     menu = media_library_screen_active_menu(screen);
     callbacks = library_display_callbacks(screen, screen->active_column, false);
     nc_menu_set_display_callbacks(menu, callbacks);
@@ -2505,7 +2507,8 @@ media_library_screen_search(MediaLibraryScreen *screen,
                                     ncm_error)) < 0) {
         return status;
     }
-    sb_set(&state->search_constraint, pattern, pattern_len);
+    stupid_string_set(&state->search_constraint, &state->search_constraint_len,
+                      pattern, pattern_len);
     state->search_enabled = true;
 
     menu = media_library_screen_active_menu(screen);
@@ -2532,7 +2535,8 @@ media_library_screen_clear_search(MediaLibraryScreen *screen) {
     state = library_active_column_state(screen);
     ncm_regex_destroy(&state->search_regex);
     state->search_regex = (NcmRegex){0};
-    sb_clear(&state->search_constraint);
+    stupid_string_free(&state->search_constraint,
+                       &state->search_constraint_len);
     state->search_enabled = false;
     return;
 }
@@ -3029,7 +3033,8 @@ library_clear_column_filter(MediaLibraryScreen *screen,
 
     ncm_regex_destroy(&state->filter_regex);
     state->filter_regex = (NcmRegex){0};
-    sb_clear(&state->filter_constraint);
+    stupid_string_free(&state->filter_constraint,
+                       &state->filter_constraint_len);
     callbacks = library_display_callbacks(screen, column, false);
     nc_menu_set_display_callbacks(menu, callbacks);
     nc_menu_show_all_items(menu);

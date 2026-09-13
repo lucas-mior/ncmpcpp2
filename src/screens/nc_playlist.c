@@ -282,8 +282,10 @@ playlist_toggle_display_mode(NcScreen *base) {
 #define NC_SCREEN_IMPL_MENU_CAPABILITY_HEIGHT(playlist) \
     ((playlist)->screen.main_height)
 #define NC_SCREEN_IMPL_FILTER_CONSTRAINT_FIELD filter_constraint
+#define NC_SCREEN_IMPL_FILTER_CONSTRAINT_LEN_FIELD filter_constraint_len
 #define NC_SCREEN_IMPL_FILTER_APPLY_CALLBACK playlist_screen_apply_filter
 #define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD search_constraint
+#define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_LEN_FIELD search_constraint_len
 #define NC_SCREEN_IMPL_SEARCH_CALLBACK playlist_screen_search
 #define NC_SCREEN_IMPL_CURRENT_SONG_CALLBACK playlist_screen_current_song
 #define NC_SCREEN_IMPL_SELECTED_SONGS_CALLBACK playlist_screen_selected_songs
@@ -436,8 +438,10 @@ playlist_screen_init(PlaylistScreen *screen, int32 start_x,
 
     screen->title_cache = (StrBuilder){0};
     screen->column_title = (StrBuilder){0};
-    screen->filter_constraint = (StrBuilder){0};
-    screen->search_constraint = (StrBuilder){0};
+    screen->filter_constraint = NULL;
+    screen->search_constraint = NULL;
+    screen->filter_constraint_len = 0;
+    screen->search_constraint_len = 0;
 
     screen->filter_regex = (NcmRegex){0};
     screen->total_length = 0;
@@ -488,8 +492,10 @@ playlist_screen_destroy(PlaylistScreen *screen) {
     nc_song_menu_destroy(&screen->songs);
     sb_free(&screen->title_cache);
     sb_free(&screen->column_title);
-    sb_free(&screen->filter_constraint);
-    sb_free(&screen->search_constraint);
+    stupid_string_free(&screen->filter_constraint,
+                       &screen->filter_constraint_len);
+    stupid_string_free(&screen->search_constraint,
+                       &screen->search_constraint_len);
     ncm_regex_destroy(&screen->filter_regex);
     return;
 }
@@ -1169,7 +1175,8 @@ playlist_screen_apply_filter(PlaylistScreen *screen,
                                     ncm_error)) < 0) {
         return status;
     }
-    sb_set(&screen->filter_constraint, pattern, pattern_len);
+    stupid_string_set(&screen->filter_constraint,
+                      &screen->filter_constraint_len, pattern, pattern_len);
     callbacks = playlist_display_callbacks();
     callbacks.matches_filter = playlist_song_matches_filter;
     callbacks.user = screen;
@@ -1186,7 +1193,8 @@ playlist_screen_clear_filter(PlaylistScreen *screen) {
 
     ncm_regex_destroy(&screen->filter_regex);
     screen->filter_regex = (NcmRegex){0};
-    sb_clear(&screen->filter_constraint);
+    stupid_string_free(&screen->filter_constraint,
+                       &screen->filter_constraint_len);
     nc_menu_set_display_callbacks(playlist_storage_menu(screen),
                                   playlist_display_callbacks());
     nc_menu_show_all_items(playlist_storage_menu(screen));
@@ -1246,7 +1254,8 @@ playlist_screen_search(PlaylistScreen *screen, char *pattern, int32 pattern_len,
         ncm_regex_destroy(&regex);
         return status;
     }
-    sb_set(&screen->search_constraint, pattern, pattern_len);
+    stupid_string_set(&screen->search_constraint,
+                      &screen->search_constraint_len, pattern, pattern_len);
 
     status = playlist_search_menu(screen, playlist_storage_menu(screen), &regex,
                                   forward, wrap, skip_current);

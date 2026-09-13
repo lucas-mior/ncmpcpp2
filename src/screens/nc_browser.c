@@ -151,8 +151,8 @@ browser_locate_last_directory(BrowserScreen *screen) {
     StrView path;
     NcMenu *menu;
 
-    target = ncm_string_view(screen->last_highlighted_directory.data,
-                             screen->last_highlighted_directory.len);
+    target = ncm_string_view(screen->last_highlighted_directory,
+                             screen->last_highlighted_directory_len);
     if (target.len <= 0) {
         return;
     }
@@ -535,8 +535,10 @@ browser_toggle_display_mode(NcScreen *base) {
 #define NC_SCREEN_IMPL_SCROLL_HEIGHT(screen) ((screen)->main_height)
 #define NC_SCREEN_IMPL_MENU_CAPABILITY_HEIGHT(screen) ((screen)->main_height)
 #define NC_SCREEN_IMPL_FILTER_CONSTRAINT_FIELD filter_constraint
+#define NC_SCREEN_IMPL_FILTER_CONSTRAINT_LEN_FIELD filter_constraint_len
 #define NC_SCREEN_IMPL_FILTER_APPLY_CALLBACK browser_screen_apply_filter
 #define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD search_constraint
+#define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_LEN_FIELD search_constraint_len
 #define NC_SCREEN_IMPL_SEARCH_CALLBACK browser_screen_search
 #define NC_SCREEN_IMPL_CURRENT_SONG_CALLBACK browser_screen_current_song
 #define NC_SCREEN_IMPL_SELECTED_SONGS_CALLBACK browser_screen_selected_songs
@@ -782,11 +784,14 @@ browser_screen_init(BrowserScreen *screen, int32 start_x, int32 width,
                    NULL, 0, color, border);
 
     screen->current_directory = (StrBuilder){0};
-    screen->last_highlighted_directory = (StrBuilder){0};
+    screen->last_highlighted_directory = NULL;
     screen->title_text = (StrBuilder){0};
     screen->column_title_text = (StrBuilder){0};
-    screen->filter_constraint = (StrBuilder){0};
-    screen->search_constraint = (StrBuilder){0};
+    screen->filter_constraint = NULL;
+    screen->search_constraint = NULL;
+    screen->last_highlighted_directory_len = 0;
+    screen->filter_constraint_len = 0;
+    screen->search_constraint_len = 0;
     screen->item_text_buffer = (StrBuilder){0};
     screen->scratch_buffer = (StrBuilder){0};
 
@@ -828,11 +833,14 @@ browser_screen_destroy(BrowserScreen *screen) {
 
     sb_free(&screen->scratch_buffer);
     sb_free(&screen->item_text_buffer);
-    sb_free(&screen->filter_constraint);
-    sb_free(&screen->search_constraint);
+    stupid_string_free(&screen->filter_constraint,
+                       &screen->filter_constraint_len);
+    stupid_string_free(&screen->search_constraint,
+                       &screen->search_constraint_len);
     sb_free(&screen->column_title_text);
     sb_free(&screen->title_text);
-    sb_free(&screen->last_highlighted_directory);
+    stupid_string_free(&screen->last_highlighted_directory,
+                       &screen->last_highlighted_directory_len);
     sb_free(&screen->current_directory);
 
     nc_window_destroy(&screen->window);
@@ -1141,7 +1149,9 @@ browser_screen_set_current_directory(BrowserScreen *screen,
                               screen->current_directory.len);
     replacement = ncm_string_view(directory, directory_len);
     if (!browser_string_views_matches(current, replacement)) {
-        sb_set(&screen->last_highlighted_directory, current.data, current.len);
+        stupid_string_set(&screen->last_highlighted_directory,
+                          &screen->last_highlighted_directory_len,
+                          current.data, current.len);
         screen->title_scroll_beginning = 0;
         screen->redraw_header = true;
     }
@@ -2137,7 +2147,8 @@ browser_screen_apply_filter(BrowserScreen *screen,
     if (status < 0) {
         return status;
     }
-    sb_set(&screen->filter_constraint, pattern, pattern_len);
+    stupid_string_set(&screen->filter_constraint,
+                      &screen->filter_constraint_len, pattern, pattern_len);
     screen->filter_enabled = true;
     browser_install_menu_callbacks(screen);
     nc_menu_apply_filter(browser_screen_menu(screen));
@@ -2151,7 +2162,8 @@ browser_screen_clear_filter(BrowserScreen *screen) {
     }
     ncm_regex_destroy(&screen->filter_regex);
     screen->filter_regex = (NcmRegex){0};
-    sb_clear(&screen->filter_constraint);
+    stupid_string_free(&screen->filter_constraint,
+                       &screen->filter_constraint_len);
     screen->filter_enabled = false;
     browser_install_menu_callbacks(screen);
     nc_menu_show_all_items(browser_screen_menu(screen));
@@ -2191,7 +2203,8 @@ browser_screen_search(BrowserScreen *screen, char *pattern, int32 pattern_len,
         ncm_regex_destroy(&regex);
         return status;
     }
-    sb_set(&screen->search_constraint, pattern, pattern_len);
+    stupid_string_set(&screen->search_constraint,
+                      &screen->search_constraint_len, pattern, pattern_len);
 
     menu = browser_screen_menu(screen);
     context.screen = screen;

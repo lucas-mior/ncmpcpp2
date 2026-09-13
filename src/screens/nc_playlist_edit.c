@@ -117,14 +117,13 @@ playlist_edit_menu_height_capability(NcScreen *base) {
 static StrView
 playlist_edit_filter_constraint_capability(NcScreen *base) {
     PlaylistEditScreen *screen = (PlaylistEditScreen *)base;
-    StrBuilder *constraint;
 
     if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
-        constraint = &screen->content_filter_constraint;
-    } else {
-        constraint = &screen->playlist_filter_constraint;
+        return ncm_string_view(screen->content_filter_constraint,
+                               screen->content_filter_constraint_len);
     }
-    return ncm_string_view(constraint->data, constraint->len);
+    return ncm_string_view(screen->playlist_filter_constraint,
+                           screen->playlist_filter_constraint_len);
 }
 
 static int32
@@ -139,31 +138,33 @@ playlist_edit_filter_apply_capability(NcScreen *base, char *pattern,
 static StrView
 playlist_edit_search_constraint_capability(NcScreen *base) {
     PlaylistEditScreen *screen = (PlaylistEditScreen *)base;
-    StrBuilder *constraint;
 
     if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
-        constraint = &screen->content_search_constraint;
-    } else {
-        constraint = &screen->playlist_search_constraint;
+        return ncm_string_view(screen->content_search_constraint,
+                               screen->content_search_constraint_len);
     }
-    return ncm_string_view(constraint->data, constraint->len);
+    return ncm_string_view(screen->playlist_search_constraint,
+                           screen->playlist_search_constraint_len);
 }
 
 static void
 playlist_edit_search_clear_capability(NcScreen *base) {
     PlaylistEditScreen *screen = (PlaylistEditScreen *)base;
-    StrBuilder *constraint;
+    char **constraint;
+    int32 *constraint_len;
     bool *enabled;
 
     if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
         constraint = &screen->content_search_constraint;
+        constraint_len = &screen->content_search_constraint_len;
         enabled = &screen->content_search_enabled;
     } else {
         constraint = &screen->playlist_search_constraint;
+        constraint_len = &screen->playlist_search_constraint_len;
         enabled = &screen->playlist_search_enabled;
     }
     *enabled = false;
-    sb_clear(constraint);
+    stupid_string_free(constraint, constraint_len);
     return;
 }
 
@@ -305,12 +306,14 @@ playlist_edit_observe_current_playlist(PlaylistEditScreen *screen) {
     screen->last_playlist_highlight = nc_menu_highlight(menu);
 
     if (!playlist_edit_has_current_playlist_path(screen, &path, &path_len)) {
-        sb_clear(&screen->observed_playlist_path);
+        stupid_string_free(&screen->observed_playlist_path,
+                           &screen->observed_playlist_path_len);
         screen->observed_playlist_valid = false;
         return;
     }
 
-    sb_set(&screen->observed_playlist_path, path, path_len);
+    stupid_string_set(&screen->observed_playlist_path,
+                      &screen->observed_playlist_path_len, path, path_len);
     screen->observed_playlist_valid = true;
     return;
 }
@@ -318,7 +321,8 @@ playlist_edit_observe_current_playlist(PlaylistEditScreen *screen) {
 static void
 playlist_edit_clear_stale_content(PlaylistEditScreen *screen) {
     nc_menu_clear_items(nc_song_menu_base(&screen->content));
-    sb_clear(&screen->displayed_playlist_path);
+    stupid_string_free(&screen->displayed_playlist_path,
+                       &screen->displayed_playlist_path_len);
     screen->displayed_playlist_valid = false;
     screen->content_update_requested = true;
     screen->last_known_content_len = -1;
@@ -345,8 +349,8 @@ playlist_edit_finish_playlist_change(PlaylistEditScreen *screen) {
         playlist_edit_observe_current_playlist(screen);
     } else {
         changed = !screen->observed_playlist_valid
-                  || !STREQUAL(screen->observed_playlist_path.data,
-                               screen->observed_playlist_path.len,
+                  || !STREQUAL(screen->observed_playlist_path,
+                               screen->observed_playlist_path_len,
                                path, path_len)
                   || (screen->last_playlist_highlight
                       != nc_menu_highlight(menu));
@@ -399,8 +403,8 @@ playlist_edit_displayed_playlist_is_current(PlaylistEditScreen *screen) {
     if (!playlist_edit_has_current_playlist_path(screen, &path, &path_len)) {
         return false;
     }
-    return STREQUAL(screen->displayed_playlist_path.data,
-                    screen->displayed_playlist_path.len, path, path_len);
+    return STREQUAL(screen->displayed_playlist_path,
+                    screen->displayed_playlist_path_len, path, path_len);
 }
 
 static int32
@@ -837,13 +841,19 @@ playlist_edit_screen_init(PlaylistEditScreen *screen,
     nc_playlist_entry_menu_init(&screen->playlists);
     nc_song_menu_init(&screen->content);
 
-    screen->playlist_filter_constraint = (StrBuilder){0};
-    screen->content_filter_constraint = (StrBuilder){0};
-    screen->playlist_search_constraint = (StrBuilder){0};
-    screen->content_search_constraint = (StrBuilder){0};
+    screen->playlist_filter_constraint = NULL;
+    screen->content_filter_constraint = NULL;
+    screen->playlist_search_constraint = NULL;
+    screen->content_search_constraint = NULL;
+    screen->displayed_playlist_path = NULL;
+    screen->observed_playlist_path = NULL;
     screen->content_title = (StrBuilder){0};
-    screen->displayed_playlist_path = (StrBuilder){0};
-    screen->observed_playlist_path = (StrBuilder){0};
+    screen->playlist_filter_constraint_len = 0;
+    screen->content_filter_constraint_len = 0;
+    screen->playlist_search_constraint_len = 0;
+    screen->content_search_constraint_len = 0;
+    screen->displayed_playlist_path_len = 0;
+    screen->observed_playlist_path_len = 0;
 
     screen->playlist_filter_regex = (NcmRegex){0};
     screen->content_filter_regex = (NcmRegex){0};
@@ -943,13 +953,19 @@ playlist_edit_screen_destroy(PlaylistEditScreen *screen) {
     ncm_regex_destroy(&screen->content_filter_regex);
     ncm_regex_destroy(&screen->playlist_filter_regex);
 
-    sb_free(&screen->observed_playlist_path);
-    sb_free(&screen->displayed_playlist_path);
+    stupid_string_free(&screen->observed_playlist_path,
+                       &screen->observed_playlist_path_len);
+    stupid_string_free(&screen->displayed_playlist_path,
+                       &screen->displayed_playlist_path_len);
     sb_free(&screen->content_title);
-    sb_free(&screen->content_search_constraint);
-    sb_free(&screen->playlist_search_constraint);
-    sb_free(&screen->content_filter_constraint);
-    sb_free(&screen->playlist_filter_constraint);
+    stupid_string_free(&screen->content_search_constraint,
+                       &screen->content_search_constraint_len);
+    stupid_string_free(&screen->playlist_search_constraint,
+                       &screen->playlist_search_constraint_len);
+    stupid_string_free(&screen->content_filter_constraint,
+                       &screen->content_filter_constraint_len);
+    stupid_string_free(&screen->playlist_filter_constraint,
+                       &screen->playlist_filter_constraint_len);
 
     screen->registered = false;
     return;
@@ -1299,10 +1315,13 @@ playlist_edit_screen_load_content(PlaylistEditScreen *screen,
 
         if (!playlist_edit_has_current_playlist_path(screen,
                                                      &path, &path_len)) {
-            sb_clear(&screen->displayed_playlist_path);
+            stupid_string_free(&screen->displayed_playlist_path,
+                               &screen->displayed_playlist_path_len);
             screen->displayed_playlist_valid = false;
         } else {
-            sb_set(&screen->displayed_playlist_path, path, path_len);
+            stupid_string_set(&screen->displayed_playlist_path,
+                              &screen->displayed_playlist_path_len,
+                              path, path_len);
             screen->displayed_playlist_valid = true;
         }
     }
@@ -1348,7 +1367,8 @@ playlist_edit_clear_playlist_filter(PlaylistEditScreen *screen) {
     bool has_path = playlist_edit_store_current_playlist_path(screen, &path);
 
     screen->playlist_filter_enabled = false;
-    sb_clear(&screen->playlist_filter_constraint);
+    stupid_string_free(&screen->playlist_filter_constraint,
+                       &screen->playlist_filter_constraint_len);
     nc_menu_show_all_items(nc_playlist_entry_menu_base(&screen->playlists));
     if (has_path) {
         playlist_edit_restore_playlist_path(screen, &path);
@@ -1364,7 +1384,8 @@ playlist_edit_clear_content_filter(PlaylistEditScreen *screen) {
     bool has_song = playlist_edit_store_current_song(screen, &song);
 
     screen->content_filter_enabled = false;
-    sb_clear(&screen->content_filter_constraint);
+    stupid_string_free(&screen->content_filter_constraint,
+                       &screen->content_filter_constraint_len);
     nc_menu_show_all_items(nc_song_menu_base(&screen->content));
     if (has_song) {
         playlist_edit_restore_content_song(screen, &song);
@@ -1788,7 +1809,8 @@ playlist_edit_screen_apply_active_filter(PlaylistEditScreen *screen,
                                          NcmError *ncm_error) {
     NcMenu *menu;
     NcmRegex *regex;
-    StrBuilder *constraint;
+    char **constraint;
+    int32 *constraint_len;
     bool *enabled;
     int32 status;
 
@@ -1801,16 +1823,18 @@ playlist_edit_screen_apply_active_filter(PlaylistEditScreen *screen,
     if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
         regex = &screen->content_filter_regex;
         constraint = &screen->content_filter_constraint;
+        constraint_len = &screen->content_filter_constraint_len;
         enabled = &screen->content_filter_enabled;
     } else {
         regex = &screen->playlist_filter_regex;
         constraint = &screen->playlist_filter_constraint;
+        constraint_len = &screen->playlist_filter_constraint_len;
         enabled = &screen->playlist_filter_enabled;
     }
 
     if ((pattern == NULL) || (pattern_len <= 0)) {
         *enabled = false;
-        sb_clear(constraint);
+        stupid_string_free(constraint, constraint_len);
         nc_menu_show_all_items(menu);
         playlist_edit_update_titles(screen, true);
         return ncm_error_ok(ncm_error);
@@ -1819,7 +1843,7 @@ playlist_edit_screen_apply_active_filter(PlaylistEditScreen *screen,
                                     regex_flags, ncm_error)) < 0) {
         return status;
     }
-    sb_set(constraint, pattern, pattern_len);
+    stupid_string_set(constraint, constraint_len, pattern, pattern_len);
     *enabled = true;
     nc_menu_apply_filter(menu);
     playlist_edit_update_titles(screen, true);
@@ -1845,7 +1869,8 @@ playlist_edit_screen_search_active(PlaylistEditScreen *screen,
                                    uint32 regex_flags,
                                    bool forward, bool wrap, bool skip_current,
                                    NcmError *ncm_error) {
-    StrBuilder *constraint;
+    char **constraint;
+    int32 *constraint_len;
     NcmRegex *regex;
     NcMenu *menu;
     bool *enabled;
@@ -1858,15 +1883,17 @@ playlist_edit_screen_search_active(PlaylistEditScreen *screen,
     if (screen->active_column == PLAYLIST_EDITOR_COLUMN_CONTENT) {
         regex = &screen->content_search_regex;
         constraint = &screen->content_search_constraint;
+        constraint_len = &screen->content_search_constraint_len;
         enabled = &screen->content_search_enabled;
     } else {
         regex = &screen->playlist_search_regex;
         constraint = &screen->playlist_search_constraint;
+        constraint_len = &screen->playlist_search_constraint_len;
         enabled = &screen->playlist_search_enabled;
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
         *enabled = false;
-        sb_clear(constraint);
+        stupid_string_free(constraint, constraint_len);
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing search pattern"));
     }
@@ -1874,7 +1901,7 @@ playlist_edit_screen_search_active(PlaylistEditScreen *screen,
                                     regex_flags, ncm_error)) < 0) {
         return status;
     }
-    sb_set(constraint, pattern, pattern_len);
+    stupid_string_set(constraint, constraint_len, pattern, pattern_len);
     *enabled = true;
     menu = playlist_edit_screen_active_menu(screen);
     if (nc_menu_search_selectable(menu, screen->main_height, forward,

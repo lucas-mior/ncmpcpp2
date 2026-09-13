@@ -623,10 +623,11 @@ struct NcHelpScreen {
     NcWindow window;
     NcScrollpad scrollpad;
     NcBuffer buffer;
-    StrBuilder search_constraint;
     NcHelpHooks hooks;
+    char *search_constraint;
 
     int32 lines_scrolled;
+    int32 search_constraint_len;
 };
 
 void nc_help_screen_init(NcHelpScreen *, NcHelpHooks, int32 start_x,
@@ -654,15 +655,17 @@ typedef struct LastfmScreen {
     NcWindow window;
     NcScrollpad scrollpad;
     NcBuffer buffer;
-    StrBuilder search_constraint;
 
     NcmLastfmService service;
     NcmLastfmResult result;
     NcmJobQueue jobs;
 
     char *title;
+    char *search_constraint;
+
     int32 title_len;
     int32 title_cap;
+    int32 search_constraint_len;
 
     bool has_service;
     bool refresh_window;
@@ -723,7 +726,6 @@ typedef struct LyricsScreen {
     NcWindow window;
     NcScrollpad scrollpad;
     NcBuffer display;
-    StrBuilder search_constraint;
 
     StrBuilder title;
     NcmSong song;
@@ -736,9 +738,12 @@ typedef struct LyricsScreen {
     StrBuilder consumer_message;
 
     LyricsFetcherDef *fetcher;
+    char *search_constraint;
+
     int32 queued_songs_len;
     int32 queued_songs_cap;
     int32 active_lrc_line;
+    int32 search_constraint_len;
     LyricsMode mode;
 
     bool has_song;
@@ -1019,10 +1024,10 @@ typedef struct VisualizerScreen {
     NcScreen screen;
     NcWindow window;
 
-    StrBuilder source_location;
-    StrBuilder source_port;
-    StrBuilder output_name;
-    StrBuilder visualizer_chars;
+    char *source_location;
+    char *source_port;
+    char *output_name;
+    char *visualizer_chars;
     NcFormattedColor *visualizer_colors;
     VisualizerDataSourceHooks data_source_hooks;
 
@@ -1039,6 +1044,10 @@ typedef struct VisualizerScreen {
     double auto_scale_multiplier;
     enum VisualizerScreenType visualization_type;
 
+    int32 source_location_len;
+    int32 source_port_len;
+    int32 output_name_len;
+    int32 visualizer_chars_len;
     int32 source_fd;
     int32 output_id;
     int32 fps;
@@ -1149,10 +1158,12 @@ typedef struct MediaLibrarySongQuery {
 } MediaLibrarySongQuery;
 
 typedef struct MediaLibraryColumnState {
-    StrBuilder filter_constraint;
-    StrBuilder search_constraint;
+    char *filter_constraint;
+    char *search_constraint;
     NcmRegex filter_regex;
     NcmRegex search_regex;
+    int32 filter_constraint_len;
+    int32 search_constraint_len;
     bool filter_enabled;
     bool search_enabled;
 } MediaLibraryColumnState;
@@ -1233,8 +1244,8 @@ bool media_library_screen_column_is_visible(MediaLibraryScreen *,
 MediaLibraryColumnState *
 media_library_screen_column_state(MediaLibraryScreen *,
                                   enum MediaLibraryColumn);
-StrBuilder *media_library_screen_active_filter_constraint(MediaLibraryScreen *);
-StrBuilder *media_library_screen_active_search_constraint(MediaLibraryScreen *);
+StrView media_library_screen_active_filter_constraint(MediaLibraryScreen *);
+StrView media_library_screen_active_search_constraint(MediaLibraryScreen *);
 NcMediaLibraryTagRow *media_library_screen_current_tag(MediaLibraryScreen *);
 NcMediaLibraryAlbumRow *
 media_library_screen_current_album(MediaLibraryScreen *);
@@ -1341,13 +1352,13 @@ typedef struct PlaylistEditScreen {
     NcSongMenu content;
     NcWindow playlists_window;
     NcWindow content_window;
-    StrBuilder playlist_filter_constraint;
-    StrBuilder content_filter_constraint;
-    StrBuilder playlist_search_constraint;
-    StrBuilder content_search_constraint;
+    char *playlist_filter_constraint;
+    char *content_filter_constraint;
+    char *playlist_search_constraint;
+    char *content_search_constraint;
+    char *displayed_playlist_path;
+    char *observed_playlist_path;
     StrBuilder content_title;
-    StrBuilder displayed_playlist_path;
-    StrBuilder observed_playlist_path;
 
     NcmRegex playlist_filter_regex;
     NcmRegex content_filter_regex;
@@ -1370,6 +1381,12 @@ typedef struct PlaylistEditScreen {
     int32 last_known_content_len;
     int32 window_timeout_ms;
     int32 active_column;
+    int32 playlist_filter_constraint_len;
+    int32 content_filter_constraint_len;
+    int32 playlist_search_constraint_len;
+    int32 content_search_constraint_len;
+    int32 displayed_playlist_path_len;
+    int32 observed_playlist_path_len;
 
     bool playlists_update_requested;
     bool content_update_requested;
@@ -1449,13 +1466,15 @@ typedef struct PlaylistScreen {
     NcWindow window;
     StrBuilder title_cache;
     StrBuilder column_title;
-    StrBuilder filter_constraint;
-    StrBuilder search_constraint;
+    char *filter_constraint;
+    char *search_constraint;
     NcmRegex filter_regex;
 
     uint64 total_length;
     uint64 remaining_time;
     int32 scroll_begin;
+    int32 filter_constraint_len;
+    int32 search_constraint_len;
     int64 highlight_timer;
 
     bool reload_total_length;
@@ -1564,8 +1583,7 @@ typedef struct SearchEngineHooks {
     int32 (*list_database_songs)(void *, NcmSongArray *, NcmError *);
     int32 (*snapshot_playlist)(void *, NcmSongArray *, NcmError *);
     enum SearchEnginePromptResult (*prompt_constraint)(void *, char *, int32,
-                                                       StrBuilder *initial,
-                                                       StrBuilder *result);
+                                                       StrView, StrBuilder *);
     void (*status_message)(void *, char *, int32);
     int32 (*add_song)(void *, NcmSong *, bool, NcmError *);
     int32 (*format_song)(void *, NcmSong *, StrBuilder *);
@@ -1577,9 +1595,9 @@ typedef struct SearchEngineScreen {
     NcSearchRowMenu rows;
     NcWindow window;
     SearchEngineHooks hooks;
-    StrBuilder constraints[SEARCH_ENGINE_CONSTRAINT_COUNT];
-    StrBuilder filter_constraint;
-    StrBuilder search_constraint;
+    char *constraints[SEARCH_ENGINE_CONSTRAINT_COUNT];
+    char *filter_constraint;
+    char *search_constraint;
     StrBuilder row_text;
     StrBuilder column_title;
     NcmRegex filter_regex;
@@ -1590,6 +1608,9 @@ typedef struct SearchEngineScreen {
     int32 main_height;
     int32 lines_scrolled;
     int32 result_len;
+    int32 constraint_lens[SEARCH_ENGINE_CONSTRAINT_COUNT];
+    int32 filter_constraint_len;
+    int32 search_constraint_len;
 
     enum SearchEngineSearchMode search_mode;
     bool search_in_database;
@@ -1656,7 +1677,7 @@ typedef struct SelectedItemsAdderScreen {
     NcWindow position_window;
     NcmSongArray selected_songs;
     NcmRegex search_regex;
-    StrBuilder search_constraint;
+    char *search_constraint;
     PlaylistScreen *playlist;
     NcScreen *previous_screen;
     MpdClient *client;
@@ -1666,6 +1687,7 @@ typedef struct SelectedItemsAdderScreen {
     int32 position_width;
     int32 position_height;
     int32 active_menu;
+    int32 search_constraint_len;
 
     bool local_browser;
     bool search_enabled;
@@ -1790,17 +1812,17 @@ typedef struct TagEditScreen {
     NcWindow parser_helper_window;
     NcScrollpad parser_helper_scrollpad;
     TagEditHooks hooks;
-    StrBuilder current_dir;
-    StrBuilder observed_dir;
-    StrBuilder highlighted_dir;
+    char *current_dir;
+    char *observed_dir;
+    char *highlighted_dir;
+    char *directory_filter_constraint;
+    char *tag_filter_constraint;
+    char *directory_search_constraint;
+    char *tag_search_constraint;
+    char *pattern;
     StrBuilder parser_legend;
     StrBuilder parser_preview;
     StrFlexList recent_patterns;
-    StrBuilder directory_filter_constraint;
-    StrBuilder tag_filter_constraint;
-    StrBuilder directory_search_constraint;
-    StrBuilder tag_search_constraint;
-    StrBuilder pattern;
 
     NcmRegex directory_filter_regex;
     NcmRegex tag_filter_regex;
@@ -1833,6 +1855,14 @@ typedef struct TagEditScreen {
     int32 last_known_directory_len;
     int32 last_known_tag_len;
     int32 window_timeout_ms;
+    int32 current_dir_len;
+    int32 observed_dir_len;
+    int32 highlighted_dir_len;
+    int32 directory_filter_constraint_len;
+    int32 tag_filter_constraint_len;
+    int32 directory_search_constraint_len;
+    int32 tag_search_constraint_len;
+    int32 pattern_len;
 
     enum TagEditParserMode parser_mode;
     enum TagEditFocus active_focus;
@@ -1975,14 +2005,16 @@ typedef struct TinyTagEditScreen {
     NcWindow window;
     TinyTagEditHooks hooks;
     MutableSong edited;
-    StrBuilder music_dir;
-    StrBuilder tag_separator;
+    char *music_dir;
+    char *tag_separator;
     NcScreen *previous_screen;
 
     int32 start_x;
     int32 width;
     int32 main_start_y;
     int32 main_height;
+    int32 music_dir_len;
+    int32 tag_separator_len;
 
     bool has_edited;
     bool show_duplicate_tags;
@@ -2009,11 +2041,11 @@ typedef struct BrowserScreen {
     NcBrowserEntryMenu entries;
     NcWindow window;
     StrBuilder current_directory;
-    StrBuilder last_highlighted_directory;
+    char *last_highlighted_directory;
+    char *filter_constraint;
+    char *search_constraint;
     StrBuilder title_text;
     StrBuilder column_title_text;
-    StrBuilder filter_constraint;
-    StrBuilder search_constraint;
     StrBuilder item_text_buffer;
     StrBuilder scratch_buffer;
     StrFlexList supported_extensions;
@@ -2025,6 +2057,9 @@ typedef struct BrowserScreen {
     int32 main_height;
     int32 lines_scrolled;
     int32 title_scroll_beginning;
+    int32 last_highlighted_directory_len;
+    int32 filter_constraint_len;
+    int32 search_constraint_len;
 
     enum DisplayMode active_display_mode;
 

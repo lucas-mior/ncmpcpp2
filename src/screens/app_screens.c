@@ -578,7 +578,7 @@ search_prompt_should_continue(char *text, void *user) {
 
 static enum SearchEnginePromptResult
 search_prompt_constraint(void *user, char *label, int32 label_len,
-                         StrBuilder *initial, StrBuilder *result) {
+                         StrView initial, StrBuilder *result) {
     NcmStatusbarScopedLock scoped_lock;
     enum NcPromptStatus status;
     NcPrompt prompt = {0};
@@ -589,7 +589,7 @@ search_prompt_constraint(void *user, char *label, int32 label_len,
 
     (void)user;
     input = NULL;
-    initial_text = initial->data;
+    initial_text = initial.data;
     if (initial_text == NULL) {
         initial_text = "";
     }

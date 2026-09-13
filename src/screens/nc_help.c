@@ -66,6 +66,8 @@ static void
 nc_help_destroy_callback(NcScreen *screen) {
     NcHelpScreen *help = (NcHelpScreen *)screen;
 
+    stupid_string_free(&help->search_constraint,
+                       &help->search_constraint_len);
     if (help->hooks.destroy) {
         help->hooks.destroy(help->hooks.user);
     }
@@ -83,6 +85,7 @@ nc_help_destroy_callback(NcScreen *screen) {
 #define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK nc_help_switch_to
 #define NC_SCREEN_IMPL_RESIZE_CALLBACK nc_help_resize
 #define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD search_constraint
+#define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_LEN_FIELD search_constraint_len
 #define NC_SCREEN_IMPL_SEARCH_CLEAR_CALLBACK nc_help_screen_clear_search
 #define NC_SCREEN_IMPL_FIND_CALLBACK nc_help_screen_find
 #define NC_SCREEN_IMPL_TITLE_LITERAL "Help"
@@ -109,7 +112,8 @@ nc_help_screen_init(NcHelpScreen *screen, NcHelpHooks hooks,
     nc_scrollpad_screen_init(&screen->scrollpad_screen, ops, hooks.user,
                              NC_SCREEN_TYPE_HELP, 0, 0, 0, 0);
     screen->buffer = (NcBuffer){0};
-    screen->search_constraint = (StrBuilder){0};
+    screen->search_constraint = NULL;
+    screen->search_constraint_len = 0;
     nc_help_screen_set_geometry(screen, start_x, width, main_start_y,
                                 main_height);
     window_start_x = nc_help_screen_start_x(screen);
@@ -182,7 +186,8 @@ nc_help_screen_find(NcHelpScreen *screen, char *pattern, int32 pattern_len,
     ASSERT(screen != NULL);
     nc_buffer_remove_properties(&screen->buffer, 0);
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        sb_clear(&screen->search_constraint);
+        stupid_string_free(&screen->search_constraint,
+                           &screen->search_constraint_len);
         nc_scrollpad_flush(&screen->scrollpad, &screen->window,
                            &screen->buffer);
         return ncm_error_ok(ncm_error);
@@ -196,7 +201,8 @@ nc_help_screen_find(NcHelpScreen *screen, char *pattern, int32 pattern_len,
         return status;
     }
 
-    sb_set(&screen->search_constraint, pattern, pattern_len);
+    stupid_string_set(&screen->search_constraint,
+                      &screen->search_constraint_len, pattern, pattern_len);
 
     data = nc_buffer_data(&screen->buffer);
     match_count = ncm_regex_for_each_match(&regex, data, screen->buffer.len,
@@ -213,7 +219,8 @@ nc_help_screen_find(NcHelpScreen *screen, char *pattern, int32 pattern_len,
 void
 nc_help_screen_clear_search(NcHelpScreen *screen) {
     ASSERT(screen != NULL);
-    sb_clear(&screen->search_constraint);
+    stupid_string_free(&screen->search_constraint,
+                       &screen->search_constraint_len);
     nc_buffer_remove_properties(&screen->buffer, 0);
     nc_scrollpad_flush(&screen->scrollpad, &screen->window, &screen->buffer);
     return;

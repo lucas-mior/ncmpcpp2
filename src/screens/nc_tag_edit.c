@@ -173,16 +173,16 @@ tag_edit_filter_available_capability(NcScreen *base) {
 static StrView
 tag_edit_filter_constraint_capability(NcScreen *base) {
     TagEditScreen *screen = tag_edit_from_screen(base);
-    StrBuilder *constraint;
 
     if (screen->active_column == TAG_EDIT_COLUMN_DIRECTORIES) {
-        constraint = &screen->directory_filter_constraint;
-    } else if (screen->active_column == TAG_EDIT_COLUMN_TAGS) {
-        constraint = &screen->tag_filter_constraint;
-    } else {
-        return ncm_string_view(NULL, 0);
+        return ncm_string_view(screen->directory_filter_constraint,
+                               screen->directory_filter_constraint_len);
     }
-    return ncm_string_view(constraint->data, constraint->len);
+    if (screen->active_column == TAG_EDIT_COLUMN_TAGS) {
+        return ncm_string_view(screen->tag_filter_constraint,
+                               screen->tag_filter_constraint_len);
+    }
+    return ncm_string_view(NULL, 0);
 }
 
 static int32
@@ -216,16 +216,16 @@ tag_edit_search_available_capability(NcScreen *base) {
 static StrView
 tag_edit_search_constraint_capability(NcScreen *base) {
     TagEditScreen *screen = tag_edit_from_screen(base);
-    StrBuilder *constraint;
 
     if (screen->active_column == TAG_EDIT_COLUMN_DIRECTORIES) {
-        constraint = &screen->directory_search_constraint;
-    } else if (screen->active_column == TAG_EDIT_COLUMN_TAGS) {
-        constraint = &screen->tag_search_constraint;
-    } else {
-        return ncm_string_view(NULL, 0);
+        return ncm_string_view(screen->directory_search_constraint,
+                               screen->directory_search_constraint_len);
     }
-    return ncm_string_view(constraint->data, constraint->len);
+    if (screen->active_column == TAG_EDIT_COLUMN_TAGS) {
+        return ncm_string_view(screen->tag_search_constraint,
+                               screen->tag_search_constraint_len);
+    }
+    return ncm_string_view(NULL, 0);
 }
 
 static void
@@ -234,10 +234,12 @@ tag_edit_search_clear_capability(NcScreen *base) {
 
     if (screen->active_column == TAG_EDIT_COLUMN_DIRECTORIES) {
         screen->directory_search_enabled = false;
-        sb_clear(&screen->directory_search_constraint);
+        stupid_string_free(&screen->directory_search_constraint,
+                           &screen->directory_search_constraint_len);
     } else if (screen->active_column == TAG_EDIT_COLUMN_TAGS) {
         screen->tag_search_enabled = false;
-        sb_clear(&screen->tag_search_constraint);
+        stupid_string_free(&screen->tag_search_constraint,
+                           &screen->tag_search_constraint_len);
     }
     return;
 }
@@ -731,7 +733,8 @@ tag_edit_refresh_if_visible(TagEditScreen *screen) {
 static void
 tag_edit_set_pattern(TagEditScreen *screen, char *pattern, int32 pattern_len) {
     ASSERT(screen != NULL);
-    sb_set(&screen->pattern, pattern, pattern_len);
+    stupid_string_set(&screen->pattern, &screen->pattern_len,
+                      pattern, pattern_len);
     return;
 }
 
@@ -966,8 +969,8 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
                 SB_APPEND(&screen->parser_preview, ":\n");
             }
             status = tag_edit_parse_filename(song,
-                                             screen->pattern.data,
-                                             screen->pattern.len,
+                                             screen->pattern,
+                                             screen->pattern_len,
                                              !apply, &screen->parser_preview);
             if ((status < 0) && !apply) {
                 SB_APPEND(&screen->parser_preview,
@@ -982,8 +985,8 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
             int32 extension_start;
 
             status = tag_edit_generate_filename(song,
-                                                screen->pattern.data,
-                                                screen->pattern.len, &stem);
+                                                screen->pattern,
+                                                screen->pattern_len, &stem);
             if (status < 0) {
                 sb_free(&new_name);
                 sb_free(&stem);
@@ -1229,8 +1232,8 @@ tag_edit_run_current(NcScreen *screen) {
                 StrView initial;
                 enum TagEditPromptResult prompt_result;
 
-                initial.data = editor->pattern.data;
-                initial.len = editor->pattern.len;
+                initial.data = editor->pattern;
+                initial.len = editor->pattern_len;
                 prompt_result = editor->hooks.prompt(editor->hooks.user,
                                                      STRLIT("Pattern"),
                                                      initial, &input);
@@ -1240,8 +1243,8 @@ tag_edit_run_current(NcScreen *screen) {
                     tag_edit_set_pattern(editor, input.data, input.len);
                     tag_edit_screen_prepare_parser_menus(editor,
                                                          editor->parser_mode,
-                                                         editor->pattern.data,
-                                                         editor->pattern.len);
+                                                         editor->pattern,
+                                                         editor->pattern_len);
                     result = true;
                 }
                 sb_free(&input);
@@ -1275,17 +1278,17 @@ tag_edit_run_current(NcScreen *screen) {
             if (success) {
                 int32 existing;
 
-                if (editor->pattern.len <= 0) {
+                if (editor->pattern_len <= 0) {
                     return -NCM_ERROR_UNAVAILABLE;
                 }
 
                 existing = tag_edit_find_recent_pattern(editor,
-                                                        editor->pattern.data,
-                                                        editor->pattern.len);
+                                                        editor->pattern,
+                                                        editor->pattern_len);
                 if (existing < 0) {
                     strflex_list_push(&editor->recent_patterns,
-                                      editor->pattern.data,
-                                      editor->pattern.len);
+                                      editor->pattern,
+                                      editor->pattern_len);
                     existing = strflex_list_len(&editor->recent_patterns) - 1;
                 }
                 if (existing > 0) {
@@ -1298,8 +1301,8 @@ tag_edit_run_current(NcScreen *screen) {
                 }
                 tag_edit_screen_prepare_parser_menus(editor,
                                                     editor->parser_mode,
-                                                    editor->pattern.data,
-                                                    editor->pattern.len);
+                                                    editor->pattern,
+                                                    editor->pattern_len);
                 tag_edit_save_recent_patterns(editor);
                 tag_edit_status_message(editor, STRLIT("Operation finished"));
                 tag_edit_screen_close_parser(editor);
@@ -1317,9 +1320,9 @@ tag_edit_run_current(NcScreen *screen) {
 
             if ((row = nc_menu_active_item_at(menu, choice))) {
                 tag_edit_set_pattern(editor, row->data, row->len);
-                tag_edit_screen_prepare_parser_menus(editor, editor->parser_mode,
-                                                    editor->pattern.data,
-                                                    editor->pattern.len);
+                tag_edit_screen_prepare_parser_menus(
+                    editor, editor->parser_mode,
+                    editor->pattern, editor->pattern_len);
                 tag_edit_set_focus(editor, TAG_EDIT_FOCUS_PARSER_ACTIONS);
                 nc_menu_goto_selectable(menu, TAG_EDIT_PARSER_ACTION_PATTERN);
                 return 0;
@@ -1394,11 +1397,13 @@ tag_edit_observe_current_directory(TagEditScreen *screen) {
     menu = nc_editor_pair_menu_base(&screen->directories);
     screen->last_directory_highlight = nc_menu_highlight(menu);
     if (!tag_edit_current_directory_path(screen, &path, &path_len)) {
-        sb_clear(&screen->observed_dir);
+        stupid_string_free(&screen->observed_dir,
+                           &screen->observed_dir_len);
         screen->observed_dir_valid = false;
         return;
     }
-    sb_set(&screen->observed_dir, path, path_len);
+    stupid_string_set(&screen->observed_dir, &screen->observed_dir_len,
+                      path, path_len);
     screen->observed_dir_valid = true;
     return;
 }
@@ -1445,11 +1450,11 @@ tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
             sb_set(&preserved, data, data_len);
         }
     }
-    if ((preserved.len <= 0) && (screen->highlighted_dir.len > 0)) {
+    if ((preserved.len <= 0) && (screen->highlighted_dir_len > 0)) {
         sb_set(&preserved,
-               screen->highlighted_dir.data, screen->highlighted_dir.len);
+               screen->highlighted_dir, screen->highlighted_dir_len);
     }
-    dir = screen->current_dir.data;
+    dir = screen->current_dir;
     if (dir == NULL) {
         dir = "/";
     }
@@ -1504,8 +1509,8 @@ tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
     nc_menu_show_all_items(nc_editor_pair_menu_base(&screen->directories));
     nc_menu_clear_items(nc_editor_pair_menu_base(&screen->directories));
     {
-        char *control_dir = screen->current_dir.data;
-        int32 control_dir_len = screen->current_dir.len;
+        char *control_dir = screen->current_dir;
+        int32 control_dir_len = screen->current_dir_len;
 
         if ((control_dir == NULL) || (control_dir_len <= 0)
             || STREQUAL(control_dir, control_dir_len, "/")) {
@@ -1546,7 +1551,8 @@ tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
         tag_edit_restore_current_directory(screen, &preserved);
     }
     tag_edit_observe_current_directory(screen);
-    sb_clear(&screen->highlighted_dir);
+    stupid_string_free(&screen->highlighted_dir,
+                       &screen->highlighted_dir_len);
     screen->directories_update_requested = false;
 
     sb_free(&preserved);
@@ -2408,19 +2414,27 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
     nc_editor_string_menu_init(&screen->parser_actions);
 
     screen->hooks = (TagEditHooks){0};
-    screen->current_dir = (StrBuilder){0};
-    screen->observed_dir = (StrBuilder){0};
-    screen->highlighted_dir = (StrBuilder){0};
+    screen->current_dir = NULL;
+    screen->observed_dir = NULL;
+    screen->highlighted_dir = NULL;
+    screen->directory_filter_constraint = NULL;
+    screen->tag_filter_constraint = NULL;
+    screen->directory_search_constraint = NULL;
+    screen->tag_search_constraint = NULL;
+    screen->pattern = NULL;
     screen->parser_legend = (StrBuilder){0};
     screen->parser_preview = (StrBuilder){0};
 
     screen->recent_patterns = (StrFlexList){0};
 
-    screen->directory_filter_constraint = (StrBuilder){0};
-    screen->tag_filter_constraint = (StrBuilder){0};
-    screen->directory_search_constraint = (StrBuilder){0};
-    screen->tag_search_constraint = (StrBuilder){0};
-    screen->pattern = (StrBuilder){0};
+    screen->current_dir_len = 0;
+    screen->observed_dir_len = 0;
+    screen->highlighted_dir_len = 0;
+    screen->directory_filter_constraint_len = 0;
+    screen->tag_filter_constraint_len = 0;
+    screen->directory_search_constraint_len = 0;
+    screen->tag_search_constraint_len = 0;
+    screen->pattern_len = 0;
     screen->directory_filter_regex = (NcmRegex){0};
     screen->tag_filter_regex = (NcmRegex){0};
     screen->directory_search_regex = (NcmRegex){0};
@@ -2552,19 +2566,24 @@ tag_edit_screen_destroy(TagEditScreen *screen) {
     ncm_regex_destroy(&screen->tag_filter_regex);
     ncm_regex_destroy(&screen->directory_filter_regex);
 
-    sb_free(&screen->pattern);
-    sb_free(&screen->tag_search_constraint);
-    sb_free(&screen->directory_search_constraint);
-    sb_free(&screen->tag_filter_constraint);
-    sb_free(&screen->directory_filter_constraint);
+    stupid_string_free(&screen->pattern, &screen->pattern_len);
+    stupid_string_free(&screen->tag_search_constraint,
+                       &screen->tag_search_constraint_len);
+    stupid_string_free(&screen->directory_search_constraint,
+                       &screen->directory_search_constraint_len);
+    stupid_string_free(&screen->tag_filter_constraint,
+                       &screen->tag_filter_constraint_len);
+    stupid_string_free(&screen->directory_filter_constraint,
+                       &screen->directory_filter_constraint_len);
 
     strflex_list_destroy(&screen->recent_patterns);
 
     sb_free(&screen->parser_preview);
     sb_free(&screen->parser_legend);
-    sb_free(&screen->highlighted_dir);
-    sb_free(&screen->observed_dir);
-    sb_free(&screen->current_dir);
+    stupid_string_free(&screen->highlighted_dir,
+                       &screen->highlighted_dir_len);
+    stupid_string_free(&screen->observed_dir, &screen->observed_dir_len);
+    stupid_string_free(&screen->current_dir, &screen->current_dir_len);
 
     nc_window_destroy(&screen->parser_helper_window);
     nc_window_destroy(&screen->parser_window);
@@ -2701,8 +2720,8 @@ tag_edit_screen_finish_directory_change(TagEditScreen *screen) {
         tag_edit_observe_current_directory(screen);
     } else {
         changed = !screen->observed_dir_valid
-                  || !STREQUAL(screen->observed_dir.data,
-                               screen->observed_dir.len, path, path_len)
+                  || !STREQUAL(screen->observed_dir,
+                               screen->observed_dir_len, path, path_len)
                   || (screen->last_directory_highlight
                       != nc_menu_highlight(menu));
         if (changed) {
@@ -2720,10 +2739,11 @@ tag_edit_screen_set_current_dir(TagEditScreen *screen,
                                 char *dir, int32 dir_len) {
     bool changed;
 
-    changed = screen->current_dir.data
-              && !STREQUAL(screen->current_dir.data, screen->current_dir.len,
+    changed = screen->current_dir
+              && !STREQUAL(screen->current_dir, screen->current_dir_len,
                            dir, dir_len);
-    sb_set(&screen->current_dir, dir, dir_len);
+    stupid_string_set(&screen->current_dir, &screen->current_dir_len,
+                      dir, dir_len);
     screen->directories_update_requested = true;
     if (changed) {
         tag_edit_screen_clear_stale_tags(screen);
@@ -2740,8 +2760,8 @@ tag_edit_screen_current_dir(TagEditScreen *screen, StrView *view) {
         return -EINVAL;
     }
     ncm_string_view_set(view,
-                        screen->current_dir.data, screen->current_dir.len);
-    if (screen->current_dir.data == NULL) {
+                        screen->current_dir, screen->current_dir_len);
+    if (screen->current_dir == NULL) {
         return -NCM_ERROR_NOT_FOUND;
     }
     return 0;
@@ -2794,7 +2814,8 @@ tag_edit_screen_enter_directory(TagEditScreen *screen) {
         tag_edit_status_message(screen, STRLIT("No subdirectories found"));
         return -NCM_ERROR_NOT_FOUND;
     }
-    sb_clear(&screen->highlighted_dir);
+    stupid_string_free(&screen->highlighted_dir,
+                       &screen->highlighted_dir_len);
     tag_edit_screen_set_current_dir(screen, path.data, path.len);
     nc_menu_clear_items(nc_editor_pair_menu_base(&screen->directories));
     tag_edit_screen_clear_stale_tags(screen);
@@ -2816,19 +2837,19 @@ tag_edit_screen_go_to_parent(TagEditScreen *screen) {
     if (screen->active_focus != TAG_EDIT_FOCUS_DIRECTORIES) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    if ((screen->current_dir.data == NULL) || (screen->current_dir.len <= 0)
-        || STREQUAL(screen->current_dir.data, screen->current_dir.len, "/")) {
+    if ((screen->current_dir == NULL) || (screen->current_dir_len <= 0)
+        || STREQUAL(screen->current_dir, screen->current_dir_len, "/")) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    sb_set(&screen->highlighted_dir,
-           screen->current_dir.data, screen->current_dir.len);
-    parent_len = ncm_string_parent_directory_len(screen->current_dir.data,
-                                                 screen->current_dir.len);
+    stupid_string_set(&screen->highlighted_dir, &screen->highlighted_dir_len,
+                      screen->current_dir, screen->current_dir_len);
+    parent_len = ncm_string_parent_directory_len(screen->current_dir,
+                                                 screen->current_dir_len);
     if (parent_len <= 0) {
         sb_set(&parent, STRLIT("/"));
     } else {
-        sb_set(&parent, screen->current_dir.data, parent_len);
+        sb_set(&parent, screen->current_dir, parent_len);
     }
     tag_edit_screen_set_current_dir(screen, parent.data, parent.len);
     sb_free(&parent);
@@ -2871,7 +2892,8 @@ tag_edit_screen_locate_song(TagEditScreen *screen, NcmSong *song) {
         sb_set(&parent, directory.data, parent_len);
     }
     tag_edit_screen_set_current_dir(screen, parent.data, parent.len);
-    sb_set(&screen->highlighted_dir, directory.data, directory.len);
+    stupid_string_set(&screen->highlighted_dir, &screen->highlighted_dir_len,
+                      directory.data, directory.len);
 
     nc_menu_clear_items(nc_editor_pair_menu_base(&screen->directories));
     ncm_error_clear(&ncm_error);
@@ -3016,7 +3038,7 @@ tag_edit_screen_rename_current_directory(TagEditScreen *screen,
     ncm_fs_join(&old_path, music_dir, music_dir_len,
                 pair->second.data, pair->second.len);
     ncm_fs_join(&new_relative,
-                screen->current_dir.data, screen->current_dir.len,
+                screen->current_dir, screen->current_dir_len,
                 name.data, name.len);
     ncm_fs_join(&new_path, music_dir, music_dir_len,
                 new_relative.data, new_relative.len);
@@ -3050,10 +3072,12 @@ tag_edit_screen_rename_current_directory(TagEditScreen *screen,
         sb_free(&message);
         if (screen->hooks.update_directory) {
             screen->hooks.update_directory(screen->hooks.user,
-                                           screen->current_dir.data,
-                                           screen->current_dir.len);
+                                           screen->current_dir,
+                                           screen->current_dir_len);
         }
-        sb_set(&screen->highlighted_dir, new_relative.data, new_relative.len);
+        stupid_string_set(&screen->highlighted_dir,
+                          &screen->highlighted_dir_len,
+                          new_relative.data, new_relative.len);
         screen->directories_update_requested = true;
         tag_edit_update_titles(screen, true);
     }
@@ -3616,7 +3640,8 @@ tag_edit_screen_apply_directory_filter(TagEditScreen *screen,
     if ((pattern == NULL) || (pattern_len <= 0)) {
         ncm_regex_destroy(&screen->directory_filter_regex);
         screen->directory_filter_regex = (NcmRegex){0};
-        sb_clear(&screen->directory_filter_constraint);
+        stupid_string_free(&screen->directory_filter_constraint,
+                           &screen->directory_filter_constraint_len);
         screen->directory_filter_enabled = false;
         nc_menu_show_all_items(nc_editor_pair_menu_base(&screen->directories));
         tag_edit_update_titles(screen, true);
@@ -3628,7 +3653,9 @@ tag_edit_screen_apply_directory_filter(TagEditScreen *screen,
                                               ncm_error)) < 0) {
         return status;
     }
-    sb_set(&screen->directory_filter_constraint, pattern, pattern_len);
+    stupid_string_set(&screen->directory_filter_constraint,
+                      &screen->directory_filter_constraint_len,
+                      pattern, pattern_len);
     {
         NcMenu *menu = nc_editor_pair_menu_base(&screen->directories);
         NcMenuDisplayCallbacks callbacks;
@@ -3655,7 +3682,8 @@ tag_edit_screen_apply_tag_filter(TagEditScreen *screen,
     if ((pattern == NULL) || (pattern_len <= 0)) {
         ncm_regex_destroy(&screen->tag_filter_regex);
         screen->tag_filter_regex = (NcmRegex){0};
-        sb_clear(&screen->tag_filter_constraint);
+        stupid_string_free(&screen->tag_filter_constraint,
+                           &screen->tag_filter_constraint_len);
         screen->tag_filter_enabled = false;
         nc_menu_show_all_items(nc_tag_row_menu_base(&screen->tags));
         tag_edit_update_titles(screen, true);
@@ -3666,7 +3694,8 @@ tag_edit_screen_apply_tag_filter(TagEditScreen *screen,
                                               ncm_error)) < 0) {
         return status;
     }
-    sb_set(&screen->tag_filter_constraint, pattern, pattern_len);
+    stupid_string_set(&screen->tag_filter_constraint,
+                      &screen->tag_filter_constraint_len, pattern, pattern_len);
     nc_menu_set_display_callbacks(nc_tag_row_menu_base(&screen->tags),
                                   tag_edit_tag_display_callbacks(screen));
     screen->tag_filter_enabled = true;
@@ -3697,7 +3726,8 @@ tag_edit_screen_search(TagEditScreen *screen, char *pattern, int32 pattern_len,
                        NcmError *ncm_error) {
     TagEditSearchContext context;
     NcmRegex *regex;
-    StrBuilder *constraint;
+    char **constraint;
+    int32 *constraint_len;
     bool *enabled;
     int32 status;
 
@@ -3718,10 +3748,12 @@ tag_edit_screen_search(TagEditScreen *screen, char *pattern, int32 pattern_len,
     if (screen->active_focus == TAG_EDIT_FOCUS_TAGS) {
         regex = &screen->tag_search_regex;
         constraint = &screen->tag_search_constraint;
+        constraint_len = &screen->tag_search_constraint_len;
         enabled = &screen->tag_search_enabled;
     } else {
         regex = &screen->directory_search_regex;
         constraint = &screen->directory_search_constraint;
+        constraint_len = &screen->directory_search_constraint_len;
         enabled = &screen->directory_search_enabled;
     }
     if ((status = tag_edit_compile_constraint(regex, pattern, pattern_len,
@@ -3729,7 +3761,7 @@ tag_edit_screen_search(TagEditScreen *screen, char *pattern, int32 pattern_len,
                                               ncm_error)) < 0) {
         return status;
     }
-    sb_set(constraint, pattern, pattern_len);
+    stupid_string_set(constraint, constraint_len, pattern, pattern_len);
     *enabled = true;
 
     {
@@ -3802,7 +3834,7 @@ tag_edit_screen_prepare_parser_menus(TagEditScreen *screen,
     screen->parser_mode = mode;
     if (pattern) {
         tag_edit_set_pattern(screen, pattern, pattern_len);
-    } else if ((mode != TAG_EDIT_PARSER_MODE_NONE) && (screen->pattern.len <= 0)
+    } else if ((mode != TAG_EDIT_PARSER_MODE_NONE) && (screen->pattern_len <= 0)
                && Config.default_tag_edit_pattern) {
         tag_edit_set_pattern(screen, Config.default_tag_edit_pattern,
                              Config.default_tag_edit_pattern_len);
@@ -3833,7 +3865,7 @@ tag_edit_screen_prepare_parser_menus(TagEditScreen *screen,
         StrBuilder row = {0};
 
         SB_APPEND(&row, "Pattern: ");
-        SB_APPEND(&row, screen->pattern.data, screen->pattern.len);
+        SB_APPEND(&row, screen->pattern, screen->pattern_len);
         tag_edit_append_parser_action_label(screen, row.data, row.len);
         sb_free(&row);
     }
@@ -3934,15 +3966,15 @@ tag_edit_screen_show_parser_actions(TagEditScreen *screen,
             return;
         }
     }
-    if ((screen->pattern.len <= 0)
+    if ((screen->pattern_len <= 0)
         && (strflex_list_len(&screen->recent_patterns) > 0)) {
         StrFlex *pattern = screen->recent_patterns.items[0];
 
         tag_edit_set_pattern(screen, pattern->data, pattern->len);
     }
     tag_edit_screen_prepare_parser_menus(screen, mode,
-                                         screen->pattern.data,
-                                         screen->pattern.len);
+                                         screen->pattern,
+                                         screen->pattern_len);
     tag_edit_build_parser_legend(screen);
     screen->parser_preview_enabled = false;
     tag_edit_set_focus(screen, TAG_EDIT_FOCUS_PARSER_ACTIONS);

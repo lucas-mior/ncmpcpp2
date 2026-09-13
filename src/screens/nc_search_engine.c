@@ -265,7 +265,8 @@ static void
 search_build_constraint_row(SearchEngineScreen *screen, uint32 idx,
                             NcBuffer *buffer) {
     SearchConstraintMetadata *metadata;
-    StrBuilder *value = &screen->constraints[idx];
+    char *value = screen->constraints[idx];
+    int32 value_len = screen->constraint_lens[idx];
 
     metadata = search_constraint_metadata(idx);
     nc_buffer_clear(buffer);
@@ -277,8 +278,8 @@ search_build_constraint_row(SearchEngineScreen *screen, uint32 idx,
     search_append_format(buffer, NC_FORMAT_NO_BOLD);
     nc_buffer_append_data(buffer, STRLIT(": "));
 
-    if (value->len > 0) {
-        nc_buffer_append_data(buffer, value->data, value->len);
+    if (value_len > 0) {
+        nc_buffer_append_data(buffer, value, value_len);
         return;
     }
     if ((Config.empty_tag_marker == NULL)
@@ -316,19 +317,22 @@ search_run_current(NcScreen *base_screen) {
         if (screen->hooks.prompt_constraint == NULL) {
             prompt_status = SEARCH_ENGINE_PROMPT_ERROR;
         } else {
-            StrBuilder *constraint = &screen->constraints[pos];
-            SearchConstraintMetadata *metadata;
+            SearchConstraintMetadata *metadata =
+                search_constraint_metadata((uint32)pos);
+            StrView initial = ncm_string_view(screen->constraints[pos],
+                                              screen->constraint_lens[pos]);
 
-            metadata = search_constraint_metadata((uint32)pos);
             prompt_status =
                 screen->hooks.prompt_constraint(screen->hooks.user,
                                                 metadata->name,
                                                 metadata->name_len,
-                                                constraint, &value);
+                                                initial, &value);
         }
 
         if (prompt_status == SEARCH_ENGINE_PROMPT_ACCEPTED) {
-            sb_set(&screen->constraints[pos], value.data, value.len);
+            stupid_string_set(&screen->constraints[pos],
+                              &screen->constraint_lens[pos],
+                              value.data, value.len);
             if (screen->prepared) {
                 NcBuffer buffer = {0};
 
@@ -413,9 +417,11 @@ search_toggle_display_mode(NcScreen *base) {
 #define NC_SCREEN_IMPL_MENU_CAPABILITY_HEIGHT(screen) \
     nc_window_height(&(screen)->window)
 #define NC_SCREEN_IMPL_FILTER_CONSTRAINT_FIELD filter_constraint
+#define NC_SCREEN_IMPL_FILTER_CONSTRAINT_LEN_FIELD filter_constraint_len
 #define NC_SCREEN_IMPL_FILTER_APPLY_CALLBACK search_engine_screen_apply_filter
 #define NC_SCREEN_IMPL_SEARCH_CAN_CALLBACK search_engine_screen_can_search
 #define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD search_constraint
+#define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_LEN_FIELD search_constraint_len
 #define NC_SCREEN_IMPL_SEARCH_CALLBACK search_engine_screen_search
 #define NC_SCREEN_IMPL_SEARCH_SAVE_ON_SUCCESS
 #define NC_SCREEN_IMPL_CURRENT_SONG_CALLBACK \
@@ -623,11 +629,14 @@ search_engine_screen_init(SearchEngineScreen *screen,
     nc_window_init(&screen->window, start_x, main_start_y, width, main_height,
                    NULL, 0, color, border);
     for (uint32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
-        screen->constraints[i] = (StrBuilder){0};
+        screen->constraints[i] = NULL;
+        screen->constraint_lens[i] = 0;
     }
 
-    screen->filter_constraint = (StrBuilder){0};
-    screen->search_constraint = (StrBuilder){0};
+    screen->filter_constraint = NULL;
+    screen->search_constraint = NULL;
+    screen->filter_constraint_len = 0;
+    screen->search_constraint_len = 0;
     screen->row_text = (StrBuilder){0};
     screen->column_title = (StrBuilder){0};
 
@@ -674,12 +683,15 @@ search_engine_screen_destroy(SearchEngineScreen *screen) {
         return;
     }
     ncm_regex_destroy(&screen->filter_regex);
-    sb_free(&screen->filter_constraint);
+    stupid_string_free(&screen->filter_constraint,
+                       &screen->filter_constraint_len);
     sb_free(&screen->row_text);
     sb_free(&screen->column_title);
-    sb_free(&screen->search_constraint);
+    stupid_string_free(&screen->search_constraint,
+                       &screen->search_constraint_len);
     for (uint32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
-        sb_free(&screen->constraints[i]);
+        stupid_string_free(&screen->constraints[i],
+                           &screen->constraint_lens[i]);
     }
     nc_window_destroy(&screen->window);
     nc_search_row_menu_destroy(&screen->rows);
@@ -880,10 +892,12 @@ search_engine_screen_reset(SearchEngineScreen *screen) {
         return;
     }
     for (uint32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
-        sb_clear(&screen->constraints[i]);
+        stupid_string_free(&screen->constraints[i],
+                           &screen->constraint_lens[i]);
     }
     search_engine_screen_clear_filter(screen);
-    sb_clear(&screen->search_constraint);
+    stupid_string_free(&screen->search_constraint,
+                       &screen->search_constraint_len);
     screen->match_to_pattern = false;
     search_engine_screen_prepare_static_rows(screen);
     search_engine_screen_status_message(screen, STRLIT("Search state reset"));
@@ -1002,9 +1016,9 @@ search_pattern_regex_flags(SearchEngineScreen *screen) {
 }
 
 static int32
-search_compile_regex(NcmRegex *regex, StrBuilder *constraint,
+search_compile_regex(NcmRegex *regex, char *constraint, int32 constraint_len,
                      uint32 flags, NcmError *ncm_error) {
-    return ncm_regex_compile(regex, constraint->data, constraint->len,
+    return ncm_regex_compile(regex, constraint, constraint_len,
                              flags, ncm_error);
 }
 
@@ -1029,9 +1043,9 @@ search_song_has_field_view(NcmSong *song, uint32 field, StrView *view) {
 }
 
 static bool
-search_view_exact(StrView view, StrBuilder *constraint) {
+search_view_exact(StrView view, char *constraint, int32 constraint_len) {
     return ncm_compare_locale_strings(view.data, view.len,
-                                      constraint->data, constraint->len,
+                                      constraint, constraint_len,
                                       Config.ignore_leading_the) == 0;
 }
 
@@ -1073,7 +1087,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
 
     has_constraints = false;
     for (uint32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
-        if (screen->constraints[i].len > 0) {
+        if (screen->constraint_lens[i] > 0) {
             has_constraints = true;
             break;
         }
@@ -1088,7 +1102,8 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
     if (screen->search_in_database && ((screen->search_mode
              == SEARCH_ENGINE_SEARCH_MODE_LITERAL)
             || (screen->search_mode == SEARCH_ENGINE_SEARCH_MODE_EXACT))) {
-        StrBuilder *constraint;
+        char *constraint;
+        int32 constraint_len;
         int32 constraint_status;
         bool exact_match;
 
@@ -1096,10 +1111,11 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
         status = ncm_mpd_client_start_search(client, exact_match, ncm_error);
         if (status == 0) {
             constraint_status = 0;
-            constraint = &screen->constraints[0];
-            if (constraint->len > 0) {
+            constraint = screen->constraints[0];
+            constraint_len = screen->constraint_lens[0];
+            if (constraint_len > 0) {
                 constraint_status =
-                    ncm_mpd_client_add_search_any(client, constraint->data,
+                    ncm_mpd_client_add_search_any(client, constraint,
                                                   ncm_error);
             }
 
@@ -1109,19 +1125,20 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                  i += 1) {
                 SearchConstraintMetadata *metadata;
 
-                constraint = &screen->constraints[i];
-                if (constraint->len <= 0) {
+                constraint = screen->constraints[i];
+                constraint_len = screen->constraint_lens[i];
+                if (constraint_len <= 0) {
                     continue;
                 }
                 metadata = search_constraint_metadata(i);
                 switch (metadata->kind) {
                 case SEARCH_CONSTRAINT_TAG:
                     constraint_status = ncm_mpd_client_add_search_tag(
-                        client, metadata->tag, constraint->data, ncm_error);
+                        client, metadata->tag, constraint, ncm_error);
                     break;
                 case SEARCH_CONSTRAINT_FILENAME:
                     constraint_status = ncm_mpd_client_add_search_uri(
-                        client, constraint->data, ncm_error);
+                        client, constraint, ncm_error);
                     break;
                 case SEARCH_CONSTRAINT_ANY:
                 default:
@@ -1172,12 +1189,14 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
             status = 0;
             if (!exact_match) {
                 for (uint32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
-                    StrBuilder *constraint = &screen->constraints[i];
+                    char *constraint = screen->constraints[i];
+                    int32 constraint_len = screen->constraint_lens[i];
 
-                    if (constraint->len <= 0) {
+                    if (constraint_len <= 0) {
                         continue;
                     }
                     if ((status = search_compile_regex(&regexes[i], constraint,
+                                                       constraint_len,
                                                        regex_flags,
                                                        ncm_error)) < 0) {
                         break;
@@ -1190,8 +1209,9 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                     NcmSong *song = &source.items[i];
                     bool matches = true;
 
-                    if (screen->constraints[0].len > 0) {
-                        StrBuilder *constraint = &screen->constraints[0];
+                    if (screen->constraint_lens[0] > 0) {
+                        char *constraint = screen->constraints[0];
+                        int32 constraint_len = screen->constraint_lens[0];
 
                         matches = false;
                         if ((screen->search_mode
@@ -1210,7 +1230,8 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                                 }
                                 if (screen->search_mode
                                     == SEARCH_ENGINE_SEARCH_MODE_EXACT) {
-                                    if (search_view_exact(value, constraint)) {
+                                    if (search_view_exact(value, constraint,
+                                                          constraint_len)) {
                                         matches = true;
                                         break;
                                     }
@@ -1230,11 +1251,13 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                     for (uint32 field = 1;
                          field < SEARCH_ENGINE_CONSTRAINT_COUNT;
                          field += 1) {
-                        StrBuilder *constraint;
+                        char *constraint;
                         StrView value;
+                        int32 constraint_len;
 
-                        constraint = &screen->constraints[field];
-                        if (constraint->len <= 0) {
+                        constraint = screen->constraints[field];
+                        constraint_len = screen->constraint_lens[field];
+                        if (constraint_len <= 0) {
                             continue;
                         }
                         if (!search_song_has_field_view(song, field, &value)) {
@@ -1242,7 +1265,8 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                         }
                         if (screen->search_mode
                             == SEARCH_ENGINE_SEARCH_MODE_EXACT) {
-                            if (!search_view_exact(value, constraint)) {
+                            if (!search_view_exact(value, constraint,
+                                                   constraint_len)) {
                                 matches = false;
                                 break;
                             }
@@ -1436,7 +1460,8 @@ search_engine_screen_apply_filter(SearchEngineScreen *screen,
                                      ncm_error)) < 0) {
         return status;
     }
-    sb_set(&screen->filter_constraint, pattern, pattern_len);
+    stupid_string_set(&screen->filter_constraint,
+                      &screen->filter_constraint_len, pattern, pattern_len);
     callbacks = search_display_callbacks(screen, true);
     nc_menu_set_display_callbacks(search_engine_screen_menu(screen), callbacks);
     screen->filter_enabled = true;
@@ -1453,7 +1478,8 @@ search_engine_screen_clear_filter(SearchEngineScreen *screen) {
     }
     ncm_regex_destroy(&screen->filter_regex);
     screen->filter_regex = (NcmRegex){0};
-    sb_clear(&screen->filter_constraint);
+    stupid_string_free(&screen->filter_constraint,
+                       &screen->filter_constraint_len);
     screen->filter_enabled = false;
     callbacks = search_display_callbacks(screen, false);
     nc_menu_set_display_callbacks(search_engine_screen_menu(screen), callbacks);

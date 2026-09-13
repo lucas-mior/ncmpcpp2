@@ -99,6 +99,7 @@ lastfm_display(LastfmScreen *screen) {
 #define NC_SCREEN_IMPL_RESIZE_CALLBACK lastfm_resize_callback
 #define NC_SCREEN_IMPL_TITLE_CALLBACK lastfm_title_callback
 #define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD search_constraint
+#define NC_SCREEN_IMPL_SEARCH_CONSTRAINT_LEN_FIELD search_constraint_len
 #define NC_SCREEN_IMPL_FIND_CALLBACK lastfm_screen_find
 #define NC_SCREEN_IMPL_UPDATE_CALLBACK lastfm_update_callback
 #define NC_SCREEN_IMPL_MOUSE_CALLBACK lastfm_mouse_button_pressed_callback
@@ -187,7 +188,8 @@ lastfm_screen_init(LastfmScreen *screen, int32 start_x, int32 width,
                       nc_lastfm_screen_height(&screen->screen));
 
     screen->buffer = (NcBuffer){0};
-    screen->search_constraint = (StrBuilder){0};
+    screen->search_constraint = NULL;
+    screen->search_constraint_len = 0;
     screen->service = (NcmLastfmService){0};
     screen->result = (NcmLastfmResult){0};
     ncm_job_queue_init(&screen->jobs);
@@ -214,7 +216,8 @@ lastfm_screen_destroy(LastfmScreen *screen) {
     ncm_lastfm_service_destroy(&screen->service);
     ncm_lastfm_result_destroy(&screen->result);
     free2(screen->title, screen->title_cap);
-    sb_free(&screen->search_constraint);
+    stupid_string_free(&screen->search_constraint,
+                       &screen->search_constraint_len);
     nc_buffer_destroy(&screen->buffer);
     nc_window_destroy(&screen->window);
 
@@ -509,9 +512,11 @@ lastfm_screen_find(LastfmScreen *screen, char *pattern, int32 pattern_len,
         return result;
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        sb_clear(&screen->search_constraint);
+        stupid_string_free(&screen->search_constraint,
+                           &screen->search_constraint_len);
     } else {
-        sb_set(&screen->search_constraint, pattern, pattern_len);
+        stupid_string_set(&screen->search_constraint,
+                          &screen->search_constraint_len, pattern, pattern_len);
     }
     lastfm_flush(screen);
     return result;
