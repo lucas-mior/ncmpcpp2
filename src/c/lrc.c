@@ -170,12 +170,12 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
                 int64 signed_value;
                 int32 offset_ms;
 
-                while ((value_len > 0) && lrc_char_is_space(*value)) {
+                while ((value_len > 0) && isspace(*value)) {
                     value += 1;
                     value_len -= 1;
                 }
                 while ((value_len > 0)
-                       && lrc_char_is_space(value[value_len - 1])) {
+                       && isspace(value[value_len - 1])) {
                     value_len -= 1;
                 }
                 if (value_len <= 0) {
