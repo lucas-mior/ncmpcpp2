@@ -770,8 +770,8 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, int32 event,
                 StrBuilder message = {0};
 
                 status_notify_statusbar();
-                sb_printf(&message, "Crossfade set to %u seconds",
-                          (uint32)mpd_status->crossfade);
+                sb_printf(&message,
+                          "Crossfade set to %d seconds", mpd_status->crossfade);
                 ncm_statusbar_print(Config.message_delay_time,
                                                     message.data, message.len);
                 sb_free(&message);
