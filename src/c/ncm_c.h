@@ -615,12 +615,6 @@ int32 ncm_sample_buffer_get_clamped(NcmSampleBuffer *, int32 samples_len,
                                     int16 *, int32 dest_len);
 void ncm_sample_buffer_resize(NcmSampleBuffer *, int32);
 
-NCM_ARRAY_DECLARE_TYPE(StrViewArray, StrView)
-NCM_ARRAY_DECLARE_CLEAR(ncm_string_view_array, StrViewArray)
-NCM_ARRAY_DECLARE_DESTROY(ncm_string_view_array, StrViewArray)
-NCM_ARRAY_DECLARE_RESERVE(ncm_string_view_array, StrViewArray)
-NCM_ARRAY_DECLARE_APPEND(ncm_string_view_array, StrViewArray, StrView)
-
 NCM_ARRAY_DECLARE_TYPE(NcmSongArray, NcmSong)
 NCM_ARRAY_DECLARE_CLEAR(ncm_song_array, NcmSongArray)
 NCM_ARRAY_DECLARE_DESTROY(ncm_song_array, NcmSongArray)

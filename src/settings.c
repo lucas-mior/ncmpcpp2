@@ -1189,15 +1189,14 @@ _Static_assert(LENGTH(ncmpcpp_options) == SETTINGS_OPTION_COUNT,
 #undef OPT
 
 int32
-config_read(Configuration *config, StrViewArray *config_paths,
+config_read(Configuration *config, StrViewList *config_paths,
             bool ignore_errors, bool quiet, NcmError *ncm_error) {
     bool used[SETTINGS_OPTION_COUNT] = {0};
     int32 status;
 
     config_destroy(config);
-    for (int32 i = 0; i < config_paths->len; i += 1) {
-        StrView path = config_paths->items[i];
-        StrBuilder path_buffer = {0};
+    for (int32 i = 0; i < string_list_len(config_paths); i += 1) {
+        StrView path = *string_list_at(config_paths, i);
         char *content;
         char *line;
         char *content_end;
@@ -1207,8 +1206,7 @@ config_read(Configuration *config, StrViewArray *config_paths,
             continue;
         }
 
-        SB_APPEND(&path_buffer, path.data, path.len);
-        if ((content_len = read_entire_file(path_buffer.data, &content)) < 0) {
+        if ((content_len = read_entire_file(path.data, &content)) < 0) {
             char message[256];
             int32 error_code;
             int32 len;
@@ -1219,7 +1217,6 @@ config_read(Configuration *config, StrViewArray *config_paths,
                            path.len, path.data, strerror(error_code));
             ncm_error_set_status(ncm_error, content_len, message, len);
             status = settings_report_or_ignore(ncm_error, ignore_errors);
-            sb_free(&path_buffer);
             if (status < 0) {
                 return status;
             }
@@ -1227,7 +1224,8 @@ config_read(Configuration *config, StrViewArray *config_paths,
         }
 
         if (!quiet) {
-            error2("Reading configuration from %s...\n", path_buffer.data);
+            error2("Reading configuration from %.*s...\n",
+                   path.len, path.data);
         }
         content_end = content + content_len;
         line = content;
@@ -1261,7 +1259,6 @@ config_read(Configuration *config, StrViewArray *config_paths,
                 status = settings_report_or_ignore(ncm_error, ignore_errors);
                 if (status < 0) {
                     free2(content, content_len + 1);
-                    sb_free(&path_buffer);
                     return status;
                 }
                 continue;
@@ -1289,7 +1286,6 @@ config_read(Configuration *config, StrViewArray *config_paths,
                 status = settings_report_or_ignore(ncm_error, ignore_errors);
                 if (status < 0) {
                     free2(content, content_len + 1);
-                    sb_free(&path_buffer);
                     return status;
                 }
                 continue;
@@ -1307,7 +1303,6 @@ config_read(Configuration *config, StrViewArray *config_paths,
                 status = settings_report_or_ignore(ncm_error, ignore_errors);
                 if (status < 0) {
                     free2(content, content_len + 1);
-                    sb_free(&path_buffer);
                     return status;
                 }
                 continue;
@@ -1319,12 +1314,10 @@ config_read(Configuration *config, StrViewArray *config_paths,
                                            false, ignore_errors, ncm_error);
             if (status < 0) {
                 free2(content, content_len + 1);
-                sb_free(&path_buffer);
                 return status;
             }
         }
         free2(content, content_len + 1);
-        sb_free(&path_buffer);
     }
 
     for (uint32 i = 0; i < SETTINGS_OPTION_COUNT; i += 1) {

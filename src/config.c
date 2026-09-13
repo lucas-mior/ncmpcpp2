@@ -469,7 +469,7 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
 int32
 ncm_config_options_apply(NcmConfigurationOptions *options,
                          NcmError *ncm_error) {
-    StrViewArray config_views = {0};
+    StrViewList config_paths = {0};
     char *env_host;
     char *env_port;
     int32 port;
@@ -482,26 +482,23 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
         }
     }
     for (int32 i = 0; i < options->config_paths.len; i += 1) {
-        StrView *view = ncm_string_view_array_append(&config_views);
-        StrBuilder *buffer = &options->config_paths.items[i];
+        StrBuilder *path = &options->config_paths.items[i];
 
-        view->data = buffer->data;
-        view->len = buffer->len;
+        string_list_push(&config_paths, path->data, path->len);
     }
 
     config_destroy(&Config);
-    status = config_read(&Config, &config_views,
+    status = config_read(&Config, &config_paths,
                          options->ignore_config_errors, options->quiet,
                          ncm_error);
+    string_list_destroy(&config_paths);
     if (status < 0) {
-        ncm_string_view_array_destroy(&config_views);
         if (!ncm_error_is_set(ncm_error)) {
             return ncm_error_set_status(ncm_error, status,
                                         STRLIT("failed to read configuration"));
         }
         return status;
     }
-    ncm_string_view_array_destroy(&config_views);
 
     if (!ncm_fs_path_is_existing(Config.ncmpcpp_directory,
                                  Config.ncmpcpp_directory_len)
