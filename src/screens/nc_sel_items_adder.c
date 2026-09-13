@@ -778,7 +778,6 @@ adder_action_new_playlist(void *user) {
     SelectedItemsAdderScreen *screen;
     NcmStatusbarScopedLock scoped_lock;
     enum NcPromptStatus prompt_status;
-    NcPrompt prompt;
     NcWindow *window;
     char *input;
     char *playlist;
@@ -789,8 +788,9 @@ adder_action_new_playlist(void *user) {
     prompt_status = NC_PROMPT_ABORTED;
     ncm_statusbar_scoped_lock_init(&scoped_lock);
     if ((window = ncm_statusbar_put())) {
+        NcPrompt prompt = {0};
+
         nc_window_print_data(window, STRLIT("Save playlist as: "));
-        prompt = (NcPrompt){0};
         prompt.initial_text = "";
         prompt.width = -1;
         prompt.should_continue = adder_statusbar_prompt_can_continue;
