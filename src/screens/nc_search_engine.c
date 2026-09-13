@@ -1215,8 +1215,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
 
                                 if (!search_song_has_field_view(song, field,
                                                                  &value)) {
-                                    value = (StrView){search_empty_string,
-                                                         0};
+                                    value = (StrView){0, search_empty_string};
                                 }
                                 if (screen->search_mode
                                     == SEARCH_ENGINE_SEARCH_MODE_EXACT) {
@@ -1248,7 +1247,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                             continue;
                         }
                         if (!search_song_has_field_view(song, field, &value)) {
-                            value = (StrView){search_empty_string, 0};
+                            value = (StrView){0, search_empty_string};
                         }
                         if (screen->search_mode
                             == SEARCH_ENGINE_SEARCH_MODE_EXACT) {

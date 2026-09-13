@@ -5,8 +5,8 @@
 #include "tags.h"
 
 typedef struct StrView {
-    char *data;
     int32 len;
+    char *data;
 } StrView;
 
 typedef struct StrFlex {
@@ -29,5 +29,10 @@ void strview_list_destroy(StrViewList *);
 void strview_list_clear(StrViewList *);
 int32 strview_list_len(StrViewList *);
 StrView *strview_list_at(StrViewList *, int32);
+
+#define SFLIT(literal) ((StrFlex *)&(struct {                                  \
+    int32 len;                                                                 \
+    char data[sizeof(literal)];                                                \
+}){ sizeof(literal) - 1, literal })
 
 #endif /* NCMPCPP2_H */
