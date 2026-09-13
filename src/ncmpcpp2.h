@@ -9,10 +9,20 @@ typedef struct StrView {
     int32 len;
 } StrView;
 
+typedef struct StrFlex {
+    int32 len;
+    char data[];
+} StrFlex;
+
 typedef struct StrViewList {
     StrView *items;
     Arena *arena;
 } StrViewList;
+
+typedef struct StrFlexList {
+    StrFlex *items;
+    Arena *arena;
+} StrFlexList;
 
 void strview_list_push(StrViewList *, char *, int32);
 void strview_list_destroy(StrViewList *);
