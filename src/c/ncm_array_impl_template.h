@@ -197,12 +197,7 @@ NCM_ARRAY_FUNCTION(_append)(NCM_ARRAY_TYPE *array) {
 #if defined(NCM_ARRAY_ITEM_INIT)
     NCM_ARRAY_ITEM_INIT(item);
 #else
-    {
-        char *bytes = (char *)item;
-        for (int32 i = 0; i < (int32)SIZEOF(*item); i += 1) {
-            bytes[i] = 0;
-        }
-    }
+    *item = (NCM_ARRAY_ITEM_TYPE){0};
 #endif
     return item;
 }
