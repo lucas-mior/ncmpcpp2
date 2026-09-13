@@ -141,7 +141,7 @@ void config_destroy(Configuration *);
 int32 config_validate(Configuration *, NcmError *);
 double config_locked_screen_width_fraction(Configuration *);
 enum SearchEngineSearchMode config_search_engine_default_mode(Configuration *);
-int32 config_read(Configuration *, StringViewArray *,
+int32 config_read(Configuration *, StrViewArray *,
                   bool ignore_errors, bool quiet, NcmError *);
 int32 config_apply_runtime(Configuration *, MpdClient *, bool, NcmError *);
 

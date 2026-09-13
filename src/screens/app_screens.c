@@ -27,8 +27,8 @@ struct OutputsScreen {
 
 struct ServerInfoScreen {
     NcServerInfoScreen screen;
-    StringViewList url_handlers;
-    StringViewList tag_types;
+    StrViewList url_handlers;
+    StrViewList tag_types;
     int64 timer;
     bool initialized;
 };
@@ -709,7 +709,7 @@ statusbar_prompt_should_continue(char *text, void *user) {
 
 static enum PromptResult
 prompt_buffer(char *label, int32 label_len,
-              StringView initial, StrBuilder *result, bool bold_label) {
+              StrView initial, StrBuilder *result, bool bold_label) {
     NcmStatusbarScopedLock scoped_lock;
     enum NcPromptStatus status;
     NcPrompt prompt = {0};
@@ -760,7 +760,7 @@ prompt_buffer(char *label, int32 label_len,
 
 static enum TagEditPromptResult
 tag_edit_hook_prompt(void *user, char *label, int32 label_len,
-                     StringView initial, StrBuilder *result) {
+                     StrView initial, StrBuilder *result) {
     enum PromptResult prompt_result;
 
     (void)user;
@@ -848,7 +848,7 @@ app_screen_tag_edit_init(void) {
 
 static enum TinyTagEditPromptResult
 tiny_tag_edit_prompt(void *user, char *label, int32 label_len,
-                     StringView initial, StrBuilder *result) {
+                     StrView initial, StrBuilder *result) {
     enum PromptResult prompt_result;
 
     (void)user;
@@ -1540,7 +1540,7 @@ server_info_render(void *user, NcBuffer *buffer) {
     for (int32 i = 0;
          i < string_list_len(&owner->url_handlers);
          i += 1) {
-        StringView *handler = &owner->url_handlers.items[i];
+        StrView *handler = &owner->url_handlers.items[i];
 
         if (i == 0) {
             nc_buffer_append_data(buffer, STRLIT(" "));
@@ -1555,7 +1555,7 @@ server_info_render(void *user, NcBuffer *buffer) {
     for (int32 i = 0;
          i < string_list_len(&owner->tag_types);
          i += 1) {
-        StringView *tag = &owner->tag_types.items[i];
+        StrView *tag = &owner->tag_types.items[i];
 
         if (i == 0) {
             nc_buffer_append_data(buffer, STRLIT(" "));
@@ -1619,8 +1619,8 @@ app_screen_server_info_init(void) {
     hooks.title = server_info_title;
     hooks.destroy = server_info_destroy;
     hooks.user = &server_info_screen;
-    server_info_screen.url_handlers = (StringViewList){0};
-    server_info_screen.tag_types = (StringViewList){0};
+    server_info_screen.url_handlers = (StrViewList){0};
+    server_info_screen.tag_types = (StrViewList){0};
     nc_server_info_screen_init(&server_info_screen.screen, hooks,
                                ui_state_screen_width(),
                                ui_state_screen_height(),
@@ -1661,7 +1661,7 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
 
         value = (StrBuilder){0};
         for (int32 j = 0; ; j += 1) {
-            StringView view;
+            StrView view;
             bool duplicate = false;
 
             if (!ncm_song_has_tag_view(&owner->song, tag, j, &view)) {
@@ -1669,7 +1669,7 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
             }
             if (!Config.show_duplicate_tags) {
                 for (int32 k = 0; k < j; k += 1) {
-                    StringView previous;
+                    StrView previous;
 
                     ASSERT(ncm_song_has_tag_view(&owner->song, tag, k,
                                                  &previous));

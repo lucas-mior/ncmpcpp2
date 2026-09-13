@@ -1189,14 +1189,14 @@ _Static_assert(LENGTH(ncmpcpp_options) == SETTINGS_OPTION_COUNT,
 #undef OPT
 
 int32
-config_read(Configuration *config, StringViewArray *config_paths,
+config_read(Configuration *config, StrViewArray *config_paths,
             bool ignore_errors, bool quiet, NcmError *ncm_error) {
     bool used[SETTINGS_OPTION_COUNT] = {0};
     int32 status;
 
     config_destroy(config);
     for (int32 i = 0; i < config_paths->len; i += 1) {
-        StringView path = config_paths->items[i];
+        StrView path = config_paths->items[i];
         StrBuilder path_buffer = {0};
         char *content;
         char *line;

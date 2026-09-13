@@ -141,14 +141,14 @@ browser_add_parent_directory_item(BrowserScreen *screen) {
 }
 
 static bool
-browser_string_views_matches(StringView left, StringView right) {
+browser_string_views_matches(StrView left, StrView right) {
     return STREQUAL(left.data, left.len, right.data, right.len);
 }
 
 static void
 browser_locate_last_directory(BrowserScreen *screen) {
-    StringView target;
-    StringView path;
+    StrView target;
+    StrView path;
     NcMenu *menu;
 
     target = ncm_string_view(screen->last_highlighted_directory.data,
@@ -280,7 +280,7 @@ browser_reload_from_local(BrowserScreen *screen, NcmError *ncm_error) {
             return status;
         }
     } else {
-        StringView current = browser_screen_current_directory(screen);
+        StrView current = browser_screen_current_directory(screen);
 
         if (browser_path_is_parent_directory(current.data, current.len)) {
             status = browser_set_normalized_directory(screen,
@@ -407,7 +407,7 @@ browser_update(NcScreen *screen) {
             if (browser->current_directory.len <= 0) {
                 browser_screen_set_current_directory(browser, STRLIT("/"));
             } else {
-                StringView current = browser_screen_current_directory(browser);
+                StrView current = browser_screen_current_directory(browser);
 
                 if (browser_path_is_parent_directory(current.data,
                                                      current.len)) {
@@ -423,7 +423,7 @@ browser_update(NcScreen *screen) {
 
             while (status >= 0) {
                 NcmMpdItemArray items = {0};
-                StringView dir = browser_screen_current_directory(browser);
+                StrView dir = browser_screen_current_directory(browser);
                 char *path = dir.data;
 
                 status = ncm_mpd_client_get_directory_entries(&global_mpd, path,
@@ -680,7 +680,7 @@ browser_set_item_selected(void *item, bool selected, void *user) {
 static bool
 browser_item_matches(BrowserScreen *screen, NcmMpdItem *item,
                      NcmRegex *regex, bool filter) {
-    StringView path = {0};
+    StrView path = {0};
     StrBuilder rendered = {0};
     int32 basename;
 
@@ -904,7 +904,7 @@ browser_item_sort_rank(NcmMpdItem *item) {
 }
 
 static int32
-browser_compare_views(StringView left, StringView right) {
+browser_compare_views(StrView left, StrView right) {
     return ncm_compare_locale_strings(left.data, left.len,
                                       right.data, right.len,
                                       Config.ignore_leading_the);
@@ -921,23 +921,23 @@ browser_compare_times(time_t left, time_t right) {
     return 0;
 }
 
-static StringView
+static StrView
 browser_directory_sort_view(NcmMpdItem *item) {
-    StringView view = {0};
+    StrView view = {0};
     ncm_directory_has_path_view(ncm_mpd_item_directory(item), &view);
     return view;
 }
 
-static StringView
+static StrView
 browser_playlist_sort_view(NcmMpdItem *item) {
-    StringView view = {0};
+    StrView view = {0};
     ncm_playlist_has_path_view(ncm_mpd_item_playlist(item), &view);
     return view;
 }
 
-static StringView
+static StrView
 browser_song_name_sort_view(NcmMpdItem *item) {
-    StringView view = {0};
+    StrView view = {0};
     ncm_song_has_filename_view(ncm_mpd_item_song(item), 0, &view);
     return view;
 }
@@ -964,8 +964,8 @@ static int32
 browser_compare_song_sort_format(NcmMpdItem *right, NcmMpdItem *left) {
     StrBuilder right_buffer;
     StrBuilder left_buffer;
-    StringView right_view;
-    StringView left_view;
+    StrView right_view;
+    StrView left_view;
     int32 comp;
 
     right_buffer = ncm_format_render_string(&Config.browser_sort_format,
@@ -1126,8 +1126,8 @@ browser_screen_sort(BrowserScreen *screen) {
 int32
 browser_screen_set_current_directory(BrowserScreen *screen,
                                      char *directory, int32 directory_len) {
-    StringView current;
-    StringView replacement;
+    StrView current;
+    StrView replacement;
 
     if (screen == NULL) {
         return -EINVAL;
@@ -1151,7 +1151,7 @@ browser_screen_set_current_directory(BrowserScreen *screen,
     return 0;
 }
 
-StringView
+StrView
 browser_screen_current_directory(BrowserScreen *screen) {
     if (screen == NULL) {
         return ncm_string_view(NULL, 0);
@@ -1163,7 +1163,7 @@ browser_screen_current_directory(BrowserScreen *screen) {
 void
 browser_screen_update_title_text(BrowserScreen *screen) {
     StrBuilder scroll_buffer = {0};
-    StringView directory;
+    StrView directory;
     int32 scroll_beginning;
     int32 scroll_width;
     int32 screen_width;
@@ -1275,7 +1275,7 @@ int32
 browser_screen_fetch_supported_extensions(BrowserScreen *screen,
                                           MpdClient *client,
                                           NcmError *ncm_error) {
-    StringViewList strings = {0};
+    StrViewList strings = {0};
     StrBuilderArray extensions = {0};
     int32 status;
 
@@ -1293,7 +1293,7 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
 
     for (int32 i = 0; i < string_list_len(&strings);
          i += 1) {
-        StringView *string = &strings.items[i];
+        StrView *string = &strings.items[i];
         StrBuilder buffer = {0};
 
         if ((string->len <= 0) || (string->data[0] != '.')) {
@@ -1490,7 +1490,7 @@ browser_collect_local_directory_songs(BrowserScreen *screen,
 static int32
 browser_collect_item_songs(BrowserScreen *screen,
                            NcmSongArray *songs, NcmMpdItem *item) {
-    StringView path;
+    StrView path;
     int32 status;
 
     switch (ncm_mpd_item_kind(item)) {
@@ -1569,7 +1569,7 @@ browser_screen_selected_songs(BrowserScreen *screen, NcmSongArray *songs) {
 }
 
 static int32
-browser_real_path(BrowserScreen *screen, StringView path,
+browser_real_path(BrowserScreen *screen, StrView path,
                   StrBuilder *real_path, NcmError *ncm_error) {
     sb_clear(real_path);
     if (screen->local_browser) {
@@ -1716,7 +1716,7 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
 
         switch (ncm_mpd_item_kind(item)) {
         case NCM_MPD_ITEM_DIRECTORY: {
-            StringView path = {0};
+            StrView path = {0};
             StrBuilder real_path = {0};
 
             ncm_directory_has_path_view(ncm_mpd_item_directory(item), &path);
@@ -1730,7 +1730,7 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
             break;
         }
         case NCM_MPD_ITEM_SONG: {
-            StringView path = {0};
+            StrView path = {0};
             StrBuilder real_path = {0};
 
             ncm_song_has_uri_view(ncm_mpd_item_song(item), 0, &path);
@@ -1743,7 +1743,7 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
             break;
         }
         case NCM_MPD_ITEM_PLAYLIST: {
-            StringView path = {0};
+            StrView path = {0};
             StrBuilder real_path = {0};
 
             if (client == NULL) {
@@ -1799,11 +1799,11 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
 }
 
 static int32
-browser_current_directory_item_path(BrowserScreen *screen, StringView *path,
+browser_current_directory_item_path(BrowserScreen *screen, StrView *path,
                                     NcmError *ncm_error) {
     NcmMpdItem *item;
 
-    *path = (StringView){0};
+    *path = (StrView){0};
 
     if ((item = browser_screen_current_item(screen)) == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
@@ -1823,7 +1823,7 @@ browser_current_directory_item_path(BrowserScreen *screen, StringView *path,
 
 bool
 browser_screen_has_current_directory_path(BrowserScreen *screen,
-                                          StringView *path) {
+                                          StrView *path) {
     NcmError ncm_error;
 
     if ((screen == NULL) || (path == NULL)) {
@@ -1834,11 +1834,11 @@ browser_screen_has_current_directory_path(BrowserScreen *screen,
 }
 
 static int32
-browser_current_playlist_item_path(BrowserScreen *screen, StringView *path,
+browser_current_playlist_item_path(BrowserScreen *screen, StrView *path,
                                    NcmError *ncm_error) {
     NcmMpdItem *item;
 
-    *path = (StringView){0};
+    *path = (StrView){0};
 
     if ((item = browser_screen_current_item(screen)) == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
@@ -1854,7 +1854,7 @@ browser_current_playlist_item_path(BrowserScreen *screen, StringView *path,
 
 bool
 browser_screen_has_current_playlist_path(BrowserScreen *screen,
-                                         StringView *path) {
+                                         StrView *path) {
     NcmError ncm_error;
 
     if ((screen == NULL) || (path == NULL)) {
@@ -1866,7 +1866,7 @@ browser_screen_has_current_playlist_path(BrowserScreen *screen,
 
 bool
 browser_screen_can_rename_directory(BrowserScreen *screen) {
-    StringView path;
+    StrView path;
     NcmError ncm_error;
 
     if (screen == NULL) {
@@ -1880,7 +1880,7 @@ browser_screen_can_rename_directory(BrowserScreen *screen) {
 
 bool
 browser_screen_can_rename_playlist(BrowserScreen *screen) {
-    StringView path;
+    StrView path;
     NcmError ncm_error;
 
     if (screen == NULL) {
@@ -1895,8 +1895,8 @@ browser_screen_rename_current_directory(BrowserScreen *screen,
                                         char *new_path, int32 new_path_len,
                                         MpdClient *client,
                                         NcmError *ncm_error) {
-    StringView old_path;
-    StringView new_path_view;
+    StrView old_path;
+    StrView new_path_view;
     int32 status;
 
     if (screen == NULL) {
@@ -1969,7 +1969,7 @@ browser_screen_rename_current_playlist(BrowserScreen *screen,
                                        char *new_path, int32 new_path_len,
                                        MpdClient *client,
                                        NcmError *ncm_error) {
-    StringView old_path;
+    StrView old_path;
     int32 status;
 
     if (screen == NULL) {
@@ -2005,7 +2005,7 @@ int32
 browser_screen_locate_song(BrowserScreen *screen,
                            NcmSong *song, MpdClient *client,
                            NcmError *ncm_error) {
-    StringView directory;
+    StrView directory;
     bool local_browser;
     int32 status;
 
@@ -2213,7 +2213,7 @@ browser_screen_search(BrowserScreen *screen, char *pattern, int32 pattern_len,
 
 bool
 browser_screen_item_is_parent(NcmMpdItem *item) {
-    StringView view;
+    StrView view;
 
     if (item == NULL) {
         return false;

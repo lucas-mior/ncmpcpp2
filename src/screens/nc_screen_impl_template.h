@@ -207,7 +207,7 @@ NC_SCREEN_IMPL_CURRENT_MENU_HEIGHT(NcScreen *screen) {
 }
 #endif
 #if defined(NC_SCREEN_IMPL_FILTER_CONSTRAINT_FIELD)
-static StringView
+static StrView
 NC_SCREEN_IMPL_CURRENT_FILTER(NcScreen *screen) {
     NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
     StrBuilder *constraint = &impl->NC_SCREEN_IMPL_FILTER_CONSTRAINT_FIELD;
@@ -239,7 +239,7 @@ NC_SCREEN_IMPL_CAN_SEARCH(NcScreen *screen) {
 #endif
 
 #if defined(NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD)
-static StringView
+static StrView
 NC_SCREEN_IMPL_CURRENT_SEARCH_CONSTRAINT(NcScreen *screen) {
     NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
     StrBuilder *constraint = &impl->NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD;

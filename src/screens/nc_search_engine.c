@@ -441,7 +441,7 @@ search_toggle_display_mode(NcScreen *base) {
 static bool
 search_row_matches(SearchEngineScreen *screen,
                    NcSearchRow *row, NcmRegex *regex) {
-    StringView view;
+    StrView view;
 
     if (!row->is_song) {
         return false;
@@ -1013,7 +1013,7 @@ search_compile_regex(NcmRegex *regex, StrBuilder *constraint,
 }
 
 static bool
-search_song_has_field_view(NcmSong *song, uint32 field, StringView *view) {
+search_song_has_field_view(NcmSong *song, uint32 field, StrView *view) {
     SearchConstraintMetadata *metadata;
 
     if ((field == 0) || (field >= SEARCH_ENGINE_CONSTRAINT_COUNT)) {
@@ -1033,14 +1033,14 @@ search_song_has_field_view(NcmSong *song, uint32 field, StringView *view) {
 }
 
 static bool
-search_view_exact(StringView view, StrBuilder *constraint) {
+search_view_exact(StrView view, StrBuilder *constraint) {
     return ncm_compare_locale_strings(view.data, view.len,
                                       constraint->data, constraint->len,
                                       Config.ignore_leading_the) == 0;
 }
 
 static bool
-search_view_regex(NcmRegex *regex, StringView view) {
+search_view_regex(NcmRegex *regex, StrView view) {
     return ncm_regex_matches(regex, view.data, view.len);
 }
 
@@ -1211,11 +1211,11 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                             for (uint32 field = 1;
                                  field < SEARCH_ENGINE_CONSTRAINT_COUNT;
                                  field += 1) {
-                                StringView value;
+                                StrView value;
 
                                 if (!search_song_has_field_view(song, field,
                                                                  &value)) {
-                                    value = (StringView){search_empty_string,
+                                    value = (StrView){search_empty_string,
                                                          0};
                                 }
                                 if (screen->search_mode
@@ -1241,14 +1241,14 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                          field < SEARCH_ENGINE_CONSTRAINT_COUNT;
                          field += 1) {
                         StrBuilder *constraint;
-                        StringView value;
+                        StrView value;
 
                         constraint = &screen->constraints[field];
                         if (constraint->len <= 0) {
                             continue;
                         }
                         if (!search_song_has_field_view(song, field, &value)) {
-                            value = (StringView){search_empty_string, 0};
+                            value = (StrView){search_empty_string, 0};
                         }
                         if (screen->search_mode
                             == SEARCH_ENGINE_SEARCH_MODE_EXACT) {

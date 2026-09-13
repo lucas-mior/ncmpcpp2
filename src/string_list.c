@@ -2,8 +2,8 @@
 #include "ncmpcpp2.h"
 
 void
-string_list_push(StringViewList *list, char *value, int32 value_len) {
-    StringView string;
+string_list_push(StrViewList *list, char *value, int32 value_len) {
+    StrView string;
 
     if (list->arena == NULL) {
         list->arena = arena_create(SIZEMB(2), "mpd_string_list");
@@ -17,7 +17,7 @@ string_list_push(StringViewList *list, char *value, int32 value_len) {
 }
 
 void
-string_list_destroy(StringViewList *list) {
+string_list_destroy(StrViewList *list) {
     if (list == NULL) {
         return;
     }
@@ -26,13 +26,13 @@ string_list_destroy(StringViewList *list) {
     if (list->arena) {
         arena_destroy(list->arena);
     }
-    *list = (StringViewList){0};
+    *list = (StrViewList){0};
 
     return;
 }
 
 void
-string_list_clear(StringViewList *list) {
+string_list_clear(StrViewList *list) {
     if (list == NULL) {
         return;
     }
@@ -43,7 +43,7 @@ string_list_clear(StringViewList *list) {
 }
 
 int32
-string_list_len(StringViewList *list) {
+string_list_len(StrViewList *list) {
     if (list == NULL) {
         return 0;
     }
@@ -51,8 +51,8 @@ string_list_len(StringViewList *list) {
     return ARRAY_LEN(list->items);
 }
 
-StringView *
-string_list_at(StringViewList *list, int32 idx) {
+StrView *
+string_list_at(StrViewList *list, int32 idx) {
     if (list == NULL) {
         return NULL;
     }

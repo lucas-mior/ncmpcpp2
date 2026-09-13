@@ -90,7 +90,7 @@ ncm_progressbar_is_unlocked(void) {
 
 void
 ncm_progressbar_draw(int32 elapsed, int32 time) {
-    StringView progressbar[3];
+    StrView progressbar[3];
     NcWindow *window;
     int32 width;
     int32 filled;

@@ -31,7 +31,7 @@ adder_add_action_row(NcEditorActionMenu *menu,
     return;
 }
 
-static StringView
+static StrView
 selected_items_adder_search_constraint_capability(NcScreen *base) {
     SelectedItemsAdderScreen *screen = (SelectedItemsAdderScreen *)base;
 
@@ -476,7 +476,7 @@ adder_action_position_current_song(void *user) {
 }
 
 static void
-adder_song_album_view(NcmSong *song, StringView *album) {
+adder_song_album_view(NcmSong *song, StrView *album) {
     if (!ncm_song_has_tag_view(song, TAG_ALBUM, 0, album)) {
         ncm_string_view_set(album, "", 0);
     }
@@ -488,8 +488,8 @@ adder_action_position_current_album(void *user) {
     SelectedItemsAdderScreen *screen;
     NcmSong current;
     NcmSong next;
-    StringView album;
-    StringView next_album;
+    StrView album;
+    StrView next_album;
     int32 position;
 
     screen = user;

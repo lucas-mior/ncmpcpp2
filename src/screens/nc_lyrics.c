@@ -95,9 +95,9 @@ static char *
 lyrics_title_callback(NcScreen *screen) {
     StrBuilder song_title = {0};
     StrBuilder scroll_buffer = {0};
-    StringView artist_view = {0};
-    StringView title_view = {0};
-    StringView name_view = {0};
+    StrView artist_view = {0};
+    StrView title_view = {0};
+    StrView name_view = {0};
     int32 scroll_begin;
     int32 scroll_width;
     char separator[] = " ** ";
@@ -471,12 +471,12 @@ lyrics_remove_extension(StrBuilder *buffer) {
 static bool
 lyrics_song_artist_title(NcmSong *song, StrBuilder *artist, StrBuilder *title) {
     StrBuilder fallback = {0};
-    StringView artist_view;
-    StringView title_view;
-    StringView name_view;
-    artist_view = (StringView){0};
-    title_view = (StringView){0};
-    name_view = (StringView){0};
+    StrView artist_view;
+    StrView title_view;
+    StrView name_view;
+    artist_view = (StrView){0};
+    title_view = (StrView){0};
+    name_view = (StrView){0};
 
     sb_clear(artist);
     sb_clear(title);
@@ -507,11 +507,11 @@ lyrics_filename_from_song_with_extension(StrBuilder *filename,
     bool win32_filename, char *extension, int32 extension_len) {
     StrBuilder artist = {0};
     StrBuilder title = {0};
-    StringView uri;
+    StrView uri;
     int32 basename_start;
     int32 basename_len;
 
-    uri = (StringView){0};
+    uri = (StrView){0};
     sb_clear(filename);
 
     if (store_in_song_dir && !ncm_song_is_stream(song)) {

@@ -469,7 +469,7 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
 int32
 ncm_config_options_apply(NcmConfigurationOptions *options,
                          NcmError *ncm_error) {
-    StringViewArray config_views = {0};
+    StrViewArray config_views = {0};
     char *env_host;
     char *env_port;
     int32 port;
@@ -482,7 +482,7 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
         }
     }
     for (int32 i = 0; i < options->config_paths.len; i += 1) {
-        StringView *view = ncm_string_view_array_append(&config_views);
+        StrView *view = ncm_string_view_array_append(&config_views);
         StrBuilder *buffer = &options->config_paths.items[i];
 
         view->data = buffer->data;

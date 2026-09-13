@@ -126,7 +126,7 @@ mutable_song_destroy_unchecked(MutableSong *song) {
 static bool
 mutable_song_has_tag_view_unchecked(MutableSong *song,
                                     enum TagType type, int32 idx,
-                                    StringView *view) {
+                                    StrView *view) {
     MutableSongTag *tag;
 
     if ((tag = mutable_song_find_tag(song, type, idx)) == NULL) {
@@ -143,7 +143,7 @@ mutable_song_has_tag_view_unchecked(MutableSong *song,
 
 static bool
 mutable_song_write_callback(enum TagType type, int32 idx,
-                            StringView *value, void *user) {
+                            StrView *value, void *user) {
     MutableSong *song = user;
     return mutable_song_has_tag_view_unchecked(song, type, idx, value);
 }
@@ -299,11 +299,11 @@ mutable_song_set_tags(MutableSong *song, enum TagType type,
 
 bool
 mutable_song_has_tag_view(MutableSong *song, enum TagType type, int32 idx,
-                          StringView *view) {
+                          StrView *view) {
     if (view == NULL) {
         return false;
     }
-    *view = (StringView){0};
+    *view = (StrView){0};
     if (song == NULL) {
         return false;
     }
@@ -321,7 +321,7 @@ static void
 mutable_song_get_tag_buffer_unchecked(MutableSong *song,
                                       enum TagType type, int32 idx,
                                       StrBuilder *buffer) {
-    StringView view;
+    StrView view;
 
     sb_clear(buffer);
     if (!mutable_song_has_tag_view_unchecked(song, type, idx, &view)) {
@@ -414,7 +414,7 @@ mutable_song_tags_buffer(MutableSong *song, enum TagType type,
 
 int32
 mutable_song_load_originals_from_song(MutableSong *dest, NcmSong *source) {
-    StringView view;
+    StrView view;
 
     if (dest == NULL) {
         return -EINVAL;
@@ -443,7 +443,7 @@ mutable_song_load_originals_from_song(MutableSong *dest, NcmSong *source) {
         enum TagType type = (enum TagType)type_i;
 
         for (int32 i = 0; ; i += 1) {
-            StringView tag;
+            StrView tag;
 
             if (!ncm_song_has_tag_view(source, type, i, &tag)) {
                 break;
@@ -484,11 +484,11 @@ mutable_song_set_new_name(MutableSong *song, char *new_name,
 }
 
 bool
-mutable_song_has_new_name_view(MutableSong *song, StringView *view) {
+mutable_song_has_new_name_view(MutableSong *song, StrView *view) {
     if (view == NULL) {
         return false;
     }
-    *view = (StringView){0};
+    *view = (StrView){0};
     if (song == NULL) {
         return false;
     }

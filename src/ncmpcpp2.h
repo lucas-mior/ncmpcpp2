@@ -4,20 +4,20 @@
 #include "cbase.h"
 #include "tags.h"
 
-typedef struct StringView {
+typedef struct StrView {
     char *data;
     int32 len;
-} StringView;
+} StrView;
 
-typedef struct StringViewList {
-    StringView *items;
+typedef struct StrViewList {
+    StrView *items;
     Arena *arena;
-} StringViewList;
+} StrViewList;
 
-void string_list_push(StringViewList *, char *, int32);
-void string_list_destroy(StringViewList *);
-void string_list_clear(StringViewList *);
-int32 string_list_len(StringViewList *);
-StringView *string_list_at(StringViewList *, int32);
+void string_list_push(StrViewList *, char *, int32);
+void string_list_destroy(StrViewList *);
+void string_list_clear(StrViewList *);
+int32 string_list_len(StrViewList *);
+StrView *string_list_at(StrViewList *, int32);
 
 #endif /* NCMPCPP2_H */

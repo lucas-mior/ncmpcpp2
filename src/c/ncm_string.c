@@ -38,9 +38,9 @@ stupid_string_set(char **dst, int32 *dst_len, char *src, int32 src_len) {
     return;
 }
 
-StringView
+StrView
 ncm_string_view(char *data, int32 len) {
-    StringView result;
+    StrView result;
 
     result.data = data;
     result.len = len;
@@ -54,7 +54,7 @@ ncm_string_view(char *data, int32 len) {
 }
 
 void
-ncm_string_view_set(StringView *view, char *data, int32 len) {
+ncm_string_view_set(StrView *view, char *data, int32 len) {
     ASSERT(view != NULL);
 
     *view = ncm_string_view(data, len);

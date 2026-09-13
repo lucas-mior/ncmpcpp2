@@ -219,7 +219,7 @@ ncm_display_column_title(StrBuilder *buffer, struct Column *columns,
 
 void
 ncm_display_directory_row(NcBuffer *buffer, NcmDirectory *directory) {
-    StringView path;
+    StrView path;
 
     if (!ncm_directory_has_path_view(directory, &path)) {
         return;
@@ -234,7 +234,7 @@ ncm_display_directory_row(NcBuffer *buffer, NcmDirectory *directory) {
 void
 ncm_display_playlist_row(NcBuffer *buffer, NcmPlaylist *playlist,
                          char *prefix, int32 prefix_len) {
-    StringView path;
+    StrView path;
 
     if (prefix && (prefix_len > 0)) {
         nc_buffer_append_data(buffer, prefix, prefix_len);

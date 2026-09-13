@@ -112,7 +112,7 @@ playlist_edit_menu_height_capability(NcScreen *base) {
     return screen->main_height;
 }
 
-static StringView
+static StrView
 playlist_edit_filter_constraint_capability(NcScreen *base) {
     PlaylistEditScreen *screen = (PlaylistEditScreen *)base;
     StrBuilder *constraint;
@@ -134,7 +134,7 @@ playlist_edit_filter_apply_capability(NcScreen *base, char *pattern,
                                                    regex_flags, ncm_error);
 }
 
-static StringView
+static StrView
 playlist_edit_search_constraint_capability(NcScreen *base) {
     PlaylistEditScreen *screen = (PlaylistEditScreen *)base;
     StrBuilder *constraint;

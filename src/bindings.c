@@ -75,7 +75,7 @@ ncm_trim_end(char *string, int32 string_len) {
 
 static int32
 ncm_extract_enclosed(char *line, int32 line_len, char open, char close,
-                     StringView *result) {
+                     StrView *result) {
     int32 start;
     int32 end;
 
@@ -868,7 +868,7 @@ binding_directive_find(char *name, int32 name_len) {
 static int32
 binding_parse_directive(BindingAction *action,
                         BindingDirective *directive,
-                        StringView argument, NcmError *ncm_error) {
+                        StrView argument, NcmError *ncm_error) {
     switch (directive->kind) {
     case BINDING_DIRECTIVE_DUMMY:
         action->kind = BINDING_ACTION_NORMAL;
@@ -950,7 +950,7 @@ static int32
 binding_parse_action_line(BindingAction *action, char *line, int32 line_len,
                           NcmError *ncm_error) {
     BindingDirective *directive;
-    StringView argument = {0};
+    StrView argument = {0};
     int32 name_len;
 
     name_len = 0;
@@ -1141,7 +1141,7 @@ bindings_config_read(BindingsConfiguration *bindings,
         char *next;
         int32 len;
         int32 start;
-        StringView enclosed;
+        StrView enclosed;
 
         current_line = line;
         if ((line_end = memchr64(current_line, '\n',

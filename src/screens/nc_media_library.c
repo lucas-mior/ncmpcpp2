@@ -59,7 +59,7 @@ media_library_menu_height_capability(NcScreen *base) {
     return nc_window_height(media_library_screen_active_window(screen));
 }
 
-static StringView
+static StrView
 media_library_filter_constraint_capability(NcScreen *base) {
     StrBuilder *constraint;
 
@@ -77,7 +77,7 @@ media_library_filter_apply_capability(NcScreen *base, char *pattern,
                                              pattern, pattern_len, ncm_error);
 }
 
-static StringView
+static StrView
 media_library_search_constraint_capability(NcScreen *base) {
     StrBuilder *constraint;
 
@@ -192,7 +192,7 @@ library_mpd_list_all_songs(void *user, NcmMpdSongList *songs,
 
 static int32
 library_mpd_list_tags(void *user, enum TagType tag_type,
-                      StringViewList *tags, NcmError *ncm_error) {
+                      StrViewList *tags, NcmError *ncm_error) {
     MpdClient *client = user;
 
     ASSERT(client != NULL);
@@ -1716,15 +1716,15 @@ library_append_album(MediaLibraryAlbumArray *albums, char *tag, int32 tag_len,
 }
 
 static bool
-library_song_has_first_tag(NcmSong *song, enum TagType tag, StringView *view) {
+library_song_has_first_tag(NcmSong *song, enum TagType tag, StrView *view) {
     ASSERT(view != NULL);
-    *view = (StringView){0};
+    *view = (StrView){0};
     return ncm_song_has_tag_view(song, tag, 0, view);
 }
 
 int32
 media_library_tags_from_strings(MediaLibraryTagArray *tags,
-                                StringViewList *strings) {
+                                StrViewList *strings) {
     MediaLibraryTagArray replacement = {0};
 
     if ((tags == NULL) || (strings == NULL)) {
@@ -1732,7 +1732,7 @@ media_library_tags_from_strings(MediaLibraryTagArray *tags,
     }
 
     for (int32 i = 0; i < string_list_len(strings); i += 1) {
-        StringView *string;
+        StrView *string;
 
         string = string_list_at(strings, i);
         if (library_find_tag(&replacement, string->data, string->len) >= 0) {
@@ -1756,7 +1756,7 @@ media_library_tags_from_songs(MediaLibraryTagArray *tags, NcmMpdSongList *songs,
 
     for (int32 i = 0; i < ncm_mpd_song_list_len(songs); i += 1) {
         NcmSong *song = ncm_mpd_song_list_at(songs, i);
-        StringView grouping_value;
+        StrView grouping_value;
 
         for (int32 j = 0;
              ncm_song_has_tag_view(song, grouping_tag, j, &grouping_value);
@@ -1803,14 +1803,14 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
         NcmSong *song = ncm_mpd_song_list_at(songs, i);
 
         if (mode == MEDIA_LIBRARY_MODE_THREE_COLUMNS) {
-            StringView album = {0};
-            StringView date = {0};
+            StrView album = {0};
+            StrView date = {0};
             int32 existing;
 
             library_song_has_first_tag(song, TAG_ALBUM, &album);
             library_song_has_first_tag(song, TAG_DATE, &date);
             if (!Config.media_library_albums_split_by_date) {
-                date = (StringView){0};
+                date = (StrView){0};
             }
 
             existing = library_find_album(&replacement,
@@ -1832,14 +1832,14 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
                                      NC_MENU_ITEM_SELECTABLE);
             }
         } else {
-            StringView album = {0};
-            StringView date = {0};
-            StringView grouping_value = {0};
+            StrView album = {0};
+            StrView date = {0};
+            StrView grouping_value = {0};
 
             library_song_has_first_tag(song, TAG_ALBUM, &album);
             library_song_has_first_tag(song, TAG_DATE, &date);
             if (!Config.media_library_albums_split_by_date) {
-                date = (StringView){0};
+                date = (StrView){0};
             }
 
             for (int32 j = 0;
@@ -2717,7 +2717,7 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
 
     if (library_has_pending_tags(screen)) {
         MediaLibraryTagArray tags = {0};
-        StringViewList strings = {0};
+        StrViewList strings = {0};
         NcmMpdSongList songs = {0};
         enum TagType grouping_tag;
         int32 status;
@@ -3138,7 +3138,7 @@ library_move_to_album(MediaLibraryScreen *screen, char *tag, int32 tag_len,
 int32
 media_library_screen_list_tags(
     MediaLibraryScreen *screen, enum TagType tag_type,
-    StringViewList *tags, NcmError *ncm_error) {
+    StrViewList *tags, NcmError *ncm_error) {
     if ((screen == NULL) || (screen->hooks.list_tags == NULL)) {
         return ncm_error_set_status(ncm_error, -ENOSYS,
                                     STRLIT("tag hook is unavailable"));
@@ -3332,9 +3332,9 @@ media_library_screen_add_item_to_playlist(
 int32
 media_library_screen_locate_song(MediaLibraryScreen *screen,
                                  NcmSong *song, NcmError *ncm_error) {
-    StringView grouping_value;
-    StringView album;
-    StringView date;
+    StrView grouping_value;
+    StrView album;
+    StrView date;
     char *album_date;
     char *album_tag;
     int32 album_date_len;

@@ -216,7 +216,7 @@ ncm_mpd_connection_recv_song_list(MpdConnection *connection,
 
 static int32
 ncm_mpd_connection_recv_pair_list(MpdConnection *connection, char *name,
-                                  StringViewList *strings) {
+                                  StrViewList *strings) {
     struct mpd_pair *pair;
 
     string_list_clear(strings);
@@ -899,7 +899,7 @@ ncm_mpd_connection_commit_command_list(MpdConnection *connection) {
 
 int32
 ncm_mpd_connection_get_supported_extensions(MpdConnection *connection,
-                                            StringViewList *strings) {
+                                            StrViewList *strings) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (strings == NULL) {
         return -EINVAL;
@@ -1035,7 +1035,7 @@ ncm_mpd_connection_get_playlists(MpdConnection *connection,
 
 int32
 ncm_mpd_connection_list_all_song_uris(MpdConnection *connection, char *path,
-                                      StringViewList *strings) {
+                                      StrViewList *strings) {
     char *directory;
 
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
@@ -1053,7 +1053,7 @@ ncm_mpd_connection_list_all_song_uris(MpdConnection *connection, char *path,
 
 int32
 ncm_mpd_connection_get_url_handlers(MpdConnection *connection,
-                                    StringViewList *strings) {
+                                    StrViewList *strings) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (strings == NULL) {
         return -EINVAL;
@@ -1068,7 +1068,7 @@ ncm_mpd_connection_get_url_handlers(MpdConnection *connection,
 
 int32
 ncm_mpd_connection_get_tag_types(MpdConnection *connection,
-                                 StringViewList *strings) {
+                                 StrViewList *strings) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (strings == NULL) {
         return -EINVAL;
@@ -1367,7 +1367,7 @@ ncm_mpd_connection_commit_search_songs(MpdConnection *connection,
 int32
 ncm_mpd_connection_list_tag_values(MpdConnection *connection,
                                    enum TagType tag,
-                                   StringViewList *strings) {
+                                   StrViewList *strings) {
     struct mpd_pair *pair;
     enum mpd_tag_type mpd_tag;
 

@@ -611,16 +611,16 @@ NAME(MpdClient *client, LIST_TYPE *list, NcmError *ncm_error) {                \
 }
 
 NCM_CLIENT_LIST_CALL(ncm_mpd_client_get_supported_extensions,
-                     StringViewList,
+                     StrViewList,
                      ncm_mpd_connection_get_supported_extensions)
 NCM_CLIENT_LIST_CALL(ncm_mpd_client_get_playlists,
                      NcmMpdPlaylistList, ncm_mpd_connection_get_playlists)
 NCM_CLIENT_LIST_CALL(ncm_mpd_client_get_outputs,
                      NcmMpdOutputList, ncm_mpd_connection_get_outputs)
 NCM_CLIENT_LIST_CALL(ncm_mpd_client_get_url_handlers,
-                     StringViewList, ncm_mpd_connection_get_url_handlers)
+                     StrViewList, ncm_mpd_connection_get_url_handlers)
 NCM_CLIENT_LIST_CALL(ncm_mpd_client_get_tag_types,
-                     StringViewList, ncm_mpd_connection_get_tag_types)
+                     StrViewList, ncm_mpd_connection_get_tag_types)
 
 #undef NCM_CLIENT_LIST_CALL
 
@@ -782,7 +782,7 @@ ncm_mpd_client_set_priority_song(MpdClient *client, NcmSong *song,
 int32
 ncm_mpd_client_add_song_value(MpdClient *client, NcmSong *song,
                               int32 pos, int32 *id, NcmError *ncm_error) {
-    StringView uri;
+    StrView uri;
 
     if (song == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
@@ -827,7 +827,7 @@ ncm_mpd_client_add_song_list(MpdClient *client,
     }
 
     for (int32 i = 0; i < songs->len; i += 1) {
-        StringView uri;
+        StrView uri;
 
         if (!ncm_song_has_uri_view(&songs->items[i], 0, &uri)) {
             if (started) {
@@ -951,7 +951,7 @@ int32
 ncm_mpd_client_add_song_to_playlist(MpdClient *client,
                                     char *playlist, NcmSong *song,
                                     NcmError *ncm_error) {
-    StringView uri;
+    StrView uri;
 
     if (song == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
@@ -1072,7 +1072,7 @@ ncm_mpd_client_commit_search_songs(MpdClient *client, NcmMpdSongList *songs,
 
 int32
 ncm_mpd_client_get_list(MpdClient *client, enum TagType tag,
-                        StringViewList *strings, NcmError *ncm_error) {
+                        StrViewList *strings, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
     NCM_CLIENT_TRY_MPD(client,
                        ncm_mpd_connection_list_tag_values(&client->connection,
@@ -1191,7 +1191,7 @@ ncm_mpd_client_disable_output(MpdClient *client, int32 id,
 int32
 ncm_mpd_client_add_random_tag(MpdClient *client, enum TagType tag,
                               int32 number, NcmError *ncm_error) {
-    StringViewList tags;
+    StrViewList tags;
     NcmMpdSongList songs;
     int32 status;
 
@@ -1204,7 +1204,7 @@ ncm_mpd_client_add_random_tag(MpdClient *client, enum TagType tag,
         return status;
     }
 
-    tags = (StringViewList){0};
+    tags = (StrViewList){0};
     songs = (NcmMpdSongList){0};
     status = ncm_mpd_connection_list_tag_values(&client->connection, tag,
                                                  &tags);
@@ -1271,7 +1271,7 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
                                 char *exclude_pattern,
                                 int32 exclude_pattern_len,
                                 NcmError *ncm_error) {
-    StringViewList files = {0};
+    StrViewList files = {0};
     NcmRegex regex = {0};
     bool have_regex = false;
     int32 added;

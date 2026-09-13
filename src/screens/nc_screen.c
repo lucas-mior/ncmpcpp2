@@ -353,7 +353,7 @@ nc_screen_can_filter(NcScreen *screen) {
     return true;
 }
 
-StringView
+StrView
 nc_screen_current_filter(NcScreen *screen) {
     if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_FILTER)
         || (screen->ops->current_filter == NULL)) {
@@ -392,7 +392,7 @@ nc_screen_can_find(NcScreen *screen) {
     return nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_FIND);
 }
 
-StringView
+StrView
 nc_screen_current_search_constraint(NcScreen *screen) {
     if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_SEARCH)
         || (screen->ops->current_search_constraint == NULL)) {
