@@ -2395,9 +2395,9 @@ media_library_screen_copy_visible_songs(MediaLibraryScreen *screen,
 }
 
 int32
-media_library_screen_apply_filter(
-    MediaLibraryScreen *screen, char *pattern, int32 pattern_len,
-    NcmError *ncm_error) {
+media_library_screen_apply_filter(MediaLibraryScreen *screen,
+                                  char *pattern, int32 pattern_len,
+                                  NcmError *ncm_error) {
     MediaLibraryColumnState *state;
     NcMenuDisplayCallbacks callbacks;
     NcMenu *menu;
