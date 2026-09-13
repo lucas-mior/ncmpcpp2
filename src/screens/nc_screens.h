@@ -71,15 +71,15 @@
     SCREEN_TYPE_VISUALIZER_ENTRY(XX)
 
 #if defined(ENABLE_OUTPUTS)
-#define SCREEN_ENABLED_OUTPUTS_TYPES(XX)                                   \
+#define SCREEN_ENABLED_OUTPUTS_TYPES(XX)                          \
     SCREEN_TYPE_OUTPUTS_ENTRY(XX)
 #else
 #define SCREEN_ENABLED_OUTPUTS_TYPES(XX)
 #endif
 
 #if defined(HAVE_TAGLIB_H)
-#define SCREEN_ENABLED_TAG_EDIT_TYPES(XX)                                  \
-    SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                         \
+#define SCREEN_ENABLED_TAG_EDIT_TYPES(XX)                         \
+    SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                \
     SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)
 #else
 #define SCREEN_ENABLED_TAG_EDIT_TYPES(XX)
