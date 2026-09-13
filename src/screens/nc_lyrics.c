@@ -79,7 +79,7 @@ lyrics_window_timeout_callback(NcScreen *screen) {
     }
 
     elapsed_ms = ncm_status_state_elapsed_time_ms();
-    next_line = ncm_lrc_document_next_entry_after_time(&lyrics->lrc,
+    next_line = lrc_document_next_entry_after_time(&lyrics->lrc,
                                                        elapsed_ms);
     if (next_line < 0) {
         return LYRICS_DEFAULT_TIMEOUT_MS;
@@ -371,7 +371,7 @@ lyrics_screen_destroy(LyricsScreen *screen) {
 
     sb_free(&screen->consumer_message);
     ncm_lyrics_result_destroy(&screen->result);
-    ncm_lrc_document_destroy(&screen->lrc);
+    lrc_document_destroy(&screen->lrc);
     sb_free(&screen->filename);
     ncm_song_destroy(&screen->song);
     sb_free(&screen->title);
@@ -411,7 +411,7 @@ lyrics_screen_update_sync_line_force(LyricsScreen *screen, bool force) {
     }
 
     active_line =
-        ncm_lrc_document_entry_at_time(&screen->lrc,
+        lrc_document_entry_at_time(&screen->lrc,
                                        ncm_status_state_elapsed_time_ms());
     if (!force && (active_line == screen->active_lrc_line)) {
         return false;
@@ -638,7 +638,7 @@ lyrics_lrc_buffer_append(void *user, char *data, int32 data_len) {
 static void
 lyrics_screen_clear_lyrics_state(LyricsScreen *screen, LyricsMode mode) {
     nc_buffer_clear(&screen->display);
-    ncm_lrc_document_clear(&screen->lrc);
+    lrc_document_clear(&screen->lrc);
     screen->active_lrc_line = LYRICS_NO_ACTIVE_LINE;
     screen->mode = mode;
     return;
@@ -671,7 +671,7 @@ lyrics_screen_load_file(LyricsScreen *screen,
     screen->active_lrc_line = LYRICS_NO_ACTIVE_LINE;
     if (lrc_file) {
         LrcRenderTarget target = {0};
-        status = ncm_lrc_parse(&screen->lrc, content, content_len, ncm_error);
+        status = lrc_parse(&screen->lrc, content, content_len, ncm_error);
         if (status < 0) {
             free2(content, content_len + 1);
             lyrics_screen_clear_lyrics_state(screen, LYRICS_MODE_FETCH_LOG);
@@ -682,7 +682,7 @@ lyrics_screen_load_file(LyricsScreen *screen,
         target.user = screen;
         target.position = lyrics_lrc_buffer_position;
         target.append = lyrics_lrc_buffer_append;
-        ncm_lrc_document_render_plain(&screen->lrc, &target);
+        lrc_document_render_plain(&screen->lrc, &target);
         ncm_error_clear(ncm_error);
         screen->mode = LYRICS_MODE_SYNCHRONIZED;
     } else {
@@ -690,7 +690,7 @@ lyrics_screen_load_file(LyricsScreen *screen,
         char *content_end = content + content_len;
         char *line = content;
 
-        ncm_lrc_document_clear(&screen->lrc);
+        lrc_document_clear(&screen->lrc);
 
         while (line < content_end) {
             char *line_end;
@@ -1375,7 +1375,7 @@ lyrics_screen_update(LyricsScreen *screen) {
         if (log_dirty) {
             nc_buffer_destroy(&screen->display);
             nc_buffer_move(&screen->display, &copy);
-            ncm_lrc_document_clear(&screen->lrc);
+            lrc_document_clear(&screen->lrc);
             screen->active_lrc_line = LYRICS_NO_ACTIVE_LINE;
             screen->mode = LYRICS_MODE_FETCH_LOG;
             nc_lyrics_screen_request_refresh(&screen->screen);

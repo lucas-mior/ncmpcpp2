@@ -13,7 +13,7 @@
 #include "c/ncm_fs.c"
 #include "c/ncm_html.c"
 #include "c/ncm_job.c"
-#include "c/ncm_lrc.c"
+#include "c/lrc.c"
 #include "c/ncm_utilities.c"
 #include "c/mutable_song.c"
 #include "c/ncm_option_parser.c"

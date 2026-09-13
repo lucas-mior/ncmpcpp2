@@ -875,12 +875,12 @@ typedef struct LrcRenderTarget {
     void (*append)(void *, char *, int32);
 } LrcRenderTarget;
 
-void ncm_lrc_document_clear(LrcDocument *);
-void ncm_lrc_document_destroy(LrcDocument *);
-int32 ncm_lrc_parse(LrcDocument *, char *, int32, NcmError *);
-int32 ncm_lrc_document_render_plain(LrcDocument *, LrcRenderTarget *);
-int32 ncm_lrc_document_entry_at_time(LrcDocument *, int64);
-int32 ncm_lrc_document_next_entry_after_time(LrcDocument *, int64);
+void lrc_document_clear(LrcDocument *);
+void lrc_document_destroy(LrcDocument *);
+int32 lrc_parse(LrcDocument *, char *, int32, NcmError *);
+int32 lrc_document_render_plain(LrcDocument *, LrcRenderTarget *);
+int32 lrc_document_entry_at_time(LrcDocument *, int64);
+int32 lrc_document_next_entry_after_time(LrcDocument *, int64);
 
 int32 ncm_run_external_command(char *, int32, bool, NcmError *);
 int32 ncm_run_external_console_command(char *, int32, NcmError *);
