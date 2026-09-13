@@ -229,9 +229,7 @@ ncm_format_ast_append_column_types(NcmFormatAst *ast,
     first->value.list = (NcmFormatExprList){0};
 
     for (int32 i = 0; i < types_len; i += 1) {
-        NcmFormatExpr *tag;
-
-        tag = ncm_format_expr_list_append(&first->value.list);
+        NcmFormatExpr *tag = ncm_format_expr_list_append(&first->value.list);
         tag->type = NCM_FORMAT_EXPR_SONG_TAG;
         tag->value.song_tag.getter = ncm_song_getter_from_char(types[i]);
         tag->value.song_tag.delimiter = 0;
