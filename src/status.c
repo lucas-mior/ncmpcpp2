@@ -1201,7 +1201,7 @@ status_tracklength_buffer(StrBuilder *buffer) {
         sb_append_byte(buffer, ']');
     } else if ((Config.display_bitrate) && (status_kbps != 0)) {
         SB_APPEND(buffer, " (");
-        sb_printf(buffer, "%d", status_kbps);
+        sb_itoa(buffer, status_kbps);
         SB_APPEND(buffer, " kbps)");
     }
     return;
