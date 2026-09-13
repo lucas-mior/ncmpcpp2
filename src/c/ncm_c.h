@@ -260,8 +260,7 @@ int32 ncm_mpd_item_from_entity_copy(NcmMpdItem *, void *);
 int32 ncm_mpd_item_song_from_mpd_song_copy(NcmSong *, void *);
 int32 ncm_mpd_item_song_from_mpd_song_copy_with_properties(NcmSong *, void *);
 int32 ncm_mpd_item_playlist_from_mpd_playlist(NcmPlaylist *, void *);
-void ncm_mpd_item_local_song(NcmSong *, char *path, int32 path_len,
-                             time_t mtime);
+void ncm_mpd_item_local_song(NcmSong *, char *path, int32 path_len, time_t);
 enum NcmMpdItemKind ncm_mpd_item_kind(NcmMpdItem *);
 NcmSong *ncm_mpd_item_song(NcmMpdItem *);
 NcmDirectory *ncm_mpd_item_directory(NcmMpdItem *);
