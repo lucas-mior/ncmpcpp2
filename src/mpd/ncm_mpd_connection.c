@@ -1209,7 +1209,8 @@ ncm_mpd_connection_get_directory(MpdConnection *connection, char *path,
                 new_capacity = 8;
             }
 
-            items->items = realloc2(items->items, old_capacity, new_capacity,
+            items->items = realloc2(items->items,
+                                    old_capacity, new_capacity,
                                     SIZEOF(*items->items));
             items->capacity = new_capacity;
         }
