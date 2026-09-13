@@ -780,33 +780,36 @@ void generic_array_set_count(void *array, int32 count);
 #define ARRAY_HEADER(ARRAY)   ((GenericArrayHeader *)((void *)(ARRAY)) - 1)
 #define ARRAY_LEN(ARRAY)      ((ARRAY) ? ARRAY_HEADER(ARRAY)->count : 0)
 #define ARRAY_CAPACITY(ARRAY) generic_array_capacity(ARRAY)
-#define ARRAY_RESERVE(ARRAY, NEEDED_COUNT)                                     \
-    generic_array_reserve((void **)&(ARRAY),                                   \
-                          (NEEDED_COUNT),                                      \
+
+#define ARRAY_RESERVE(ARRAY, NEEDED_COUNT)                       \
+    generic_array_reserve((void **)&(ARRAY),                     \
+                          (NEEDED_COUNT),                        \
                           SIZEOF(*(ARRAY)))
-#define ARRAY_SET_COUNT(ARRAY, COUNT)                                          \
+#define ARRAY_SET_COUNT(ARRAY, COUNT)                            \
     generic_array_set_count((ARRAY), (COUNT))
-#define ARRAY_INIT_COUNT(ARRAY, COUNT) do {                                    \
-    ARRAY_INIT((ARRAY), (COUNT));                                              \
-    ARRAY_SET_COUNT((ARRAY), (COUNT));                                         \
+
+#define ARRAY_INIT_COUNT(ARRAY, COUNT) do {                      \
+    ARRAY_INIT((ARRAY), (COUNT));                                \
+    ARRAY_SET_COUNT((ARRAY), (COUNT));                           \
 } while (0)
-#define ARRAY_CLEAR(ARRAY) do {                                                \
-    if (ARRAY) {                                                               \
-        ARRAY_HEADER(ARRAY)->count = 0;                                        \
-    }                                                                          \
+#define ARRAY_CLEAR(ARRAY) do {                                  \
+    if (ARRAY) {                                                 \
+        ARRAY_HEADER(ARRAY)->count = 0;                          \
+    }                                                            \
 } while (0)
-#define ARRAY_FREE(ARRAY) do {                                                 \
-    if (ARRAY) {                                                               \
-        GenericArrayHeader *array_header_ = ARRAY_HEADER(ARRAY);               \
-        free2(array_header_, SIZEOF(*array_header_)                            \
-              + array_header_->cap*SIZEOF(*(ARRAY)));                          \
-        (ARRAY) = NULL;                                                        \
-    }                                                                          \
+#define ARRAY_FREE(ARRAY) do {                                   \
+    if (ARRAY) {                                                 \
+        GenericArrayHeader *array_header_ = ARRAY_HEADER(ARRAY); \
+        free2(array_header_, SIZEOF(*array_header_)              \
+              + array_header_->cap*SIZEOF(*(ARRAY)));            \
+        (ARRAY) = NULL;                                          \
+    }                                                            \
 } while (0)
-#define ARRAY_PUSH(ARRAY, ...)                                                 \
-    ((ARRAY) = generic_array_grow((ARRAY), SIZEOF(*(ARRAY))),                  \
+
+#define ARRAY_PUSH(ARRAY, ...)                                   \
+    ((ARRAY) = generic_array_grow((ARRAY), SIZEOF(*(ARRAY))),    \
      (ARRAY)[ARRAY_HEADER(ARRAY)->count++] = (__VA_ARGS__))
-#define ARRAY_INIT(ARRAY, CAPACITY)                                            \
+#define ARRAY_INIT(ARRAY, CAPACITY)                              \
     ((ARRAY) = generic_array_init((CAPACITY), SIZEOF(*(ARRAY))))
 
 #if CC_CLANG
