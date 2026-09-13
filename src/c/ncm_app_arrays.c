@@ -6,7 +6,6 @@
 
 #include "c/ncm_c.h"
 
-static NcmArrayItemCallbacks ncm_app_array_no_callbacks = {0};
 static void
 ncm_app_array_song_destroy(void *item) {
     ncm_song_destroy(item);
