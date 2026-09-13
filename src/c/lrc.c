@@ -58,30 +58,17 @@ lrc_trim_line_end(char *data, int32 data_len) {
     return data_len;
 }
 
-static int32
-lrc_parse_uint(char *data, int32 data_len, int64 *value) {
-    int64 result;
-
+static bool
+lrc_has_only_digits(char *data, int32 data_len) {
     ASSERT(data != NULL);
     ASSERT_POSITIVE(data_len);
-    ASSERT(value != NULL);
 
-    result = 0;
     for (int32 i = 0; i < data_len; i += 1) {
-        int32 digit;
-
         if (!isdigit(data[i])) {
-            return -NCM_ERROR_PARSE;
+            return false;
         }
-        digit = data[i] - '0';
-        if (result > (MAXOF(result) - digit)/10) {
-            return -NCM_ERROR_PARSE;
-        }
-        result = result*10 + digit;
     }
-
-    *value = result;
-    return 0;
+    return true;
 }
 
 static int
@@ -164,10 +151,7 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
             if (matched) {
                 char *value = tag + STRLIT_LEN("offset:");
                 int32 value_len = tag_len - STRLIT_LEN("offset:");
-                int32 sign = 1;
-                int32 start = 0;
-                int64 unsigned_value;
-                int64 signed_value;
+                llong signed_value;
                 int32 offset_ms;
 
                 while ((value_len > 0) && isspace(*value)) {
@@ -184,27 +168,13 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
                                                 STRLIT("malformed LRC offset"));
                 }
 
-                if ((value[0] == '+') || (value[0] == '-')) {
-                    if (value[0] == '-') {
-                        sign = -1;
-                    }
-                    start = 1;
-                }
-                if (start >= value_len) {
+                status = parse_integer(value, value_len, &signed_value);
+                if (status < 0) {
                     lrc_document_destroy_unchecked(&parsed);
                     return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
                                                 STRLIT("malformed LRC offset"));
                 }
 
-                status = lrc_parse_uint(value + start, value_len - start,
-                                        &unsigned_value);
-                if (status < 0) {
-                    lrc_document_destroy_unchecked(&parsed);
-                    return ncm_error_set_status(ncm_error, status,
-                                                STRLIT("malformed LRC offset"));
-                }
-
-                signed_value = sign*unsigned_value;
                 if ((signed_value < MINOF(offset_ms))
                     || (signed_value > MAXOF(offset_ms))) {
                     lrc_document_destroy_unchecked(&parsed);
@@ -265,10 +235,10 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
                     int32 colon;
                     int32 dot;
                     int32 frac_len;
-                    int64 minutes;
-                    int64 seconds;
-                    int64 milliseconds;
-                    int64 value;
+                    llong minutes;
+                    llong seconds;
+                    llong milliseconds;
+                    llong value;
 
                     if (tag_len < STRLIT_LEN("0:00")) {
                         lrc_document_destroy_unchecked(&parsed);
@@ -319,17 +289,33 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
                                                            "line"));
                     }
 
-                    status = lrc_parse_uint(tag, colon, &minutes);
-                    if (status < 0) {
+                    if (!lrc_has_only_digits(tag, colon)) {
                         lrc_document_destroy_unchecked(&parsed);
-                        return ncm_error_set_status(ncm_error, status,
+                        return ncm_error_set_status(ncm_error,
+                                                    -NCM_ERROR_PARSE,
                                                     STRLIT("malformed LRC "
                                                            "line"));
                     }
-                    status = lrc_parse_uint(tag + colon + 1, 2, &seconds);
+                    status = parse_integer(tag, colon, &minutes);
                     if (status < 0) {
                         lrc_document_destroy_unchecked(&parsed);
-                        return ncm_error_set_status(ncm_error, status,
+                        return ncm_error_set_status(ncm_error,
+                                                    -NCM_ERROR_PARSE,
+                                                    STRLIT("malformed LRC "
+                                                           "line"));
+                    }
+                    if (!lrc_has_only_digits(tag + colon + 1, 2)) {
+                        lrc_document_destroy_unchecked(&parsed);
+                        return ncm_error_set_status(ncm_error,
+                                                    -NCM_ERROR_PARSE,
+                                                    STRLIT("malformed LRC "
+                                                           "line"));
+                    }
+                    status = parse_integer(tag + colon + 1, 2, &seconds);
+                    if (status < 0) {
+                        lrc_document_destroy_unchecked(&parsed);
+                        return ncm_error_set_status(ncm_error,
+                                                    -NCM_ERROR_PARSE,
                                                     STRLIT("malformed LRC "
                                                            "line"));
                     }
@@ -350,11 +336,19 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
                                                         STRLIT("malformed LRC "
                                                                "line"));
                         }
-                        status = lrc_parse_uint(tag + dot + 1, frac_len,
-                                                &milliseconds);
+                        if (!lrc_has_only_digits(tag + dot + 1, frac_len)) {
+                            lrc_document_destroy_unchecked(&parsed);
+                            return ncm_error_set_status(ncm_error,
+                                                        -NCM_ERROR_PARSE,
+                                                        STRLIT("malformed LRC "
+                                                               "line"));
+                        }
+                        status = parse_integer(tag + dot + 1, frac_len,
+                                               &milliseconds);
                         if (status < 0) {
                             lrc_document_destroy_unchecked(&parsed);
-                            return ncm_error_set_status(ncm_error, status,
+                            return ncm_error_set_status(ncm_error,
+                                                        -NCM_ERROR_PARSE,
                                                         STRLIT("malformed LRC "
                                                                "line"));
                         }
