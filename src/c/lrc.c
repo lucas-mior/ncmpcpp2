@@ -411,13 +411,10 @@ lrc_parse_line_entries(LrcDocument *document, char *line, int32 line_len,
 static int32
 lrc_parse_entries(LrcDocument *document, char *data, int32 data_len,
                   NcmError *ncm_error) {
-    int32 source_order;
-    int32 blank_lines_before;
-    int32 pos;
+    int32 source_order = 0;
+    int32 blank_lines_before = 0;
+    int32 pos = 0;
 
-    source_order = 0;
-    blank_lines_before = 0;
-    pos = 0;
     while (pos < data_len) {
         char *line;
         int32 raw_line_len;
