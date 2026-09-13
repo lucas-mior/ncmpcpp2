@@ -76,8 +76,8 @@ media_library_filter_apply_capability(NcScreen *base, char *pattern,
 
 static StrView
 media_library_search_constraint_capability(NcScreen *base) {
-    return media_library_screen_active_search_constraint(
-        (MediaLibraryScreen *)base);
+    MediaLibraryScreen *screen = (MediaLibraryScreen *)base;
+    return media_library_screen_active_search_constraint(screen);
 }
 
 static void
