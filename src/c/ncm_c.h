@@ -1315,7 +1315,6 @@ int32 search_prompt_state_finish_result(SearchPromptState *,
 
 StringView ncm_string_view(char *, int32);
 void ncm_string_view_set(StringView *, char *, int32);
-void ncm_string_view_clear(StringView *);
 
 void ncm_string_lowercase_ascii(char *, int32);
 int32 ncm_string_find_char(char *, int32, char);

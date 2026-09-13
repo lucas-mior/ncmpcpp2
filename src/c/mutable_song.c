@@ -303,7 +303,7 @@ mutable_song_has_tag_view(MutableSong *song, enum TagType type, int32 idx,
     if (view == NULL) {
         return false;
     }
-    ncm_string_view_clear(view);
+    *view = (StringView){0};
     if (song == NULL) {
         return false;
     }
@@ -488,7 +488,7 @@ mutable_song_has_new_name_view(MutableSong *song, StringView *view) {
     if (view == NULL) {
         return false;
     }
-    ncm_string_view_clear(view);
+    *view = (StringView){0};
     if (song == NULL) {
         return false;
     }

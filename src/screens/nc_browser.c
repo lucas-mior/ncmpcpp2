@@ -1809,7 +1809,7 @@ browser_current_directory_item_path(BrowserScreen *screen, StringView *path,
                                     NcmError *ncm_error) {
     NcmMpdItem *item;
 
-    ncm_string_view_clear(path);
+    *path = (StringView){0};
 
     if ((item = browser_screen_current_item(screen)) == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
@@ -1844,7 +1844,7 @@ browser_current_playlist_item_path(BrowserScreen *screen, StringView *path,
                                    NcmError *ncm_error) {
     NcmMpdItem *item;
 
-    ncm_string_view_clear(path);
+    *path = (StringView){0};
 
     if ((item = browser_screen_current_item(screen)) == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,

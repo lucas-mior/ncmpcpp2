@@ -424,7 +424,7 @@ ncm_song_has_tag_view_unchecked(NcmSong *song, enum TagType tag,
                                 int32 idx, StringView *view) {
     int32 seen;
 
-    ncm_string_view_clear(view);
+    *view = (StringView){0};
     seen = 0;
     for (int32 i = 0; i < song->tags_len; i += 1) {
         if (song->tags[i].type != tag) {
@@ -443,7 +443,7 @@ ncm_song_has_tag_view_unchecked(NcmSong *song, enum TagType tag,
 
 static bool
 ncm_song_has_uri_view_unchecked(NcmSong *song, int32 idx, StringView *view) {
-    ncm_string_view_clear(view);
+    *view = (StringView){0};
     if (idx != 0) {
         return false;
     }
@@ -474,7 +474,7 @@ ncm_song_has_filename_view_unchecked(NcmSong *song, int32 idx,
     int32 basename;
 
     if (view != NULL) {
-        ncm_string_view_clear(view);
+        *view = (StringView){0};
     }
     if (idx != 0) {
         return false;
@@ -497,7 +497,7 @@ ncm_song_has_directory_view_unchecked(NcmSong *song, int32 idx,
     StringView uri;
     int32 basename;
 
-    ncm_string_view_clear(view);
+    *view = (StringView){0};
     if (idx != 0) {
         return false;
     }
@@ -511,7 +511,7 @@ ncm_song_has_directory_view_unchecked(NcmSong *song, int32 idx,
         return true;
     }
 
-    ncm_string_view_clear(view);
+    *view = (StringView){0};
     basename = ncm_path_basename_start(uri.data, uri.len);
     if (basename == 0) {
         ncm_string_view_set(view, STRLIT("/"));
@@ -542,7 +542,7 @@ bool
 ncm_song_has_tag_view(NcmSong *song, enum TagType tag, int32 idx,
                       StringView *view) {
     if ((song == NULL) || (idx < 0)) {
-        ncm_string_view_clear(view);
+        *view = (StringView){0};
         return false;
     }
 
@@ -552,7 +552,7 @@ ncm_song_has_tag_view(NcmSong *song, enum TagType tag, int32 idx,
 bool
 ncm_song_has_uri_view(NcmSong *song, int32 idx, StringView *view) {
     if (song == NULL) {
-        ncm_string_view_clear(view);
+        *view = (StringView){0};
         return false;
     }
 
@@ -562,7 +562,7 @@ ncm_song_has_uri_view(NcmSong *song, int32 idx, StringView *view) {
 bool
 ncm_song_has_filename_view(NcmSong *song, int32 idx, StringView *view) {
     if ((song == NULL) || (idx < 0)) {
-        ncm_string_view_clear(view);
+        *view = (StringView){0};
         return false;
     }
 
@@ -572,7 +572,7 @@ ncm_song_has_filename_view(NcmSong *song, int32 idx, StringView *view) {
 bool
 ncm_song_has_directory_view(NcmSong *song, int32 idx, StringView *view) {
     if (song == NULL) {
-        ncm_string_view_clear(view);
+        *view = (StringView){0};
         return false;
     }
 
