@@ -48,10 +48,10 @@ screen_type_from_nc_type(enum NcScreenType nc_type) {
 bool
 screen_type_is_startup(enum ScreenType screen_type) {
     switch (screen_type) {
-    #define SCREEN_STARTUP_CASE(                                  \
-        screen_type_value, nc_value, alias, flags, suffix         \
-    )                                                             \
-        case screen_type_value:                                   \
+    #define SCREEN_STARTUP_CASE(                          \
+        screen_type_value, alias, flags, suffix           \
+    )                                                     \
+        case screen_type_value:                           \
             return (flags & SCREEN_FLAG_STARTUP) != 0;
 
     SCREEN_TYPES(SCREEN_STARTUP_CASE)
