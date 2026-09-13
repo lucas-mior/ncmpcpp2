@@ -9,7 +9,6 @@ string_list_push(StringViewList *list, char *value, int32 value_len) {
         list->arena = arena_create(SIZEMB(2), "mpd_string_list");
     }
 
-    value_len = optional_strlen32(value);
     string.data = xarena_push(list->arena, value_len + 1);
     string.len = value_len;
     memcpy64(string.data, value, value_len + 1);
