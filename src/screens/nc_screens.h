@@ -38,17 +38,17 @@
 #define SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                                    \
     XX(SEARCH_ENGINE,        search_engine,        STARTUP, search_engine)
 #define SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)                               \
-    XX(SELECTED_ITEMS_ADD,   selected_items_add,   NONE, selected_items_add)
+    XX(SELECTED_ITEMS_ADD,   selected_items_add,   NONE,    selected_items_add)
 #define SCREEN_TYPE_SERVER_INFO_ENTRY(XX)                                      \
-    XX(SERVER_INFO,          server_info,          NONE, server_info)
+    XX(SERVER_INFO,          server_info,          NONE,    server_info)
 #define SCREEN_TYPE_SONG_INFO_ENTRY(XX)                                        \
-    XX(SONG_INFO,            song_info,            NONE, song_info)
+    XX(SONG_INFO,            song_info,            NONE,    song_info)
 #define SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)                             \
-    XX(SORT_PLAYLIST_DIALOG, sort_playlist_dialog, NONE, sort_playlist_dialog)
+    XX(SORT_PLAYLIST_DIALOG, sort_playlist_dialog, NONE,    sort_playlist_dialog)
 #define SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                         \
     XX(TAG_EDIT,             tag_edit,             STARTUP, tag_edit)
 #define SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)                                    \
-    XX(TINY_TAG_EDIT,        tiny_tag_edit, NONE, tiny_tag_edit)
+    XX(TINY_TAG_EDIT,        tiny_tag_edit,        NONE,    tiny_tag_edit)
 #define SCREEN_TYPE_VISUALIZER_ENTRY(XX)                                       \
     XX(VISUALIZER,           visualizer,           STARTUP, visualizer)
 
