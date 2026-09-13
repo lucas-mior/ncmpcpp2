@@ -58,16 +58,6 @@ lrc_trim_line_end(char *data, int32 data_len) {
     return data_len;
 }
 
-static bool
-lrc_char_is_space(char c) {
-    return (c == ' ') || (c == '\t');
-}
-
-static bool
-lrc_char_is_digit(char c) {
-    return (c >= '0') && (c <= '9');
-}
-
 static int32
 lrc_parse_uint(char *data, int32 data_len, int64 *value) {
     int64 result;
@@ -80,7 +70,7 @@ lrc_parse_uint(char *data, int32 data_len, int64 *value) {
     for (int32 i = 0; i < data_len; i += 1) {
         int32 digit;
 
-        if (!lrc_char_is_digit(data[i])) {
+        if (!isdigit(data[i])) {
             return -NCM_ERROR_PARSE;
         }
         digit = data[i] - '0';
@@ -271,7 +261,7 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
 
                 tag = data + pos + cursor + 1;
                 tag_len = close - cursor - 1;
-                if ((tag_len > 0) && lrc_char_is_digit(tag[0])) {
+                if ((tag_len > 0) && isdigit(tag[0])) {
                     int32 colon;
                     int32 dot;
                     int32 frac_len;
