@@ -207,6 +207,10 @@ NCM_ARRAY_FUNCTION(_append)(NCM_ARRAY_TYPE *array) {
     return item;
 }
 
+#if !defined(NCM_ARRAY_ITEM_DESTROY)
+#define NCM_ARRAY_ITEM_DESTROY(A)
+#endif
+
 #if defined(NCM_ARRAY_APPEND_COPY)
 int32
 NCM_ARRAY_FUNCTION(_append_copy)(NCM_ARRAY_TYPE *array,
@@ -232,9 +236,7 @@ NCM_ARRAY_FUNCTION(_append_copy)(NCM_ARRAY_TYPE *array,
 #if defined(NCM_ARRAY_ITEM_COPY)
     if ((err = NCM_ARRAY_ITEM_COPY(dest, item)) < 0) {
         array->len -= 1;
-#if defined(NCM_ARRAY_ITEM_DESTROY)
         NCM_ARRAY_ITEM_DESTROY(dest);
-#endif
         return err;
     }
 #else
@@ -277,9 +279,7 @@ NCM_ARRAY_FUNCTION(_remove_ordered)(NCM_ARRAY_TYPE *array, int32 idx) {
         return;
     }
 
-#if defined(NCM_ARRAY_ITEM_DESTROY)
     NCM_ARRAY_ITEM_DESTROY(&array->items[idx]);
-#endif
     if (idx + 1 < array->len) {
         memmove64(&array->items[idx],
                   &array->items[idx + 1],
