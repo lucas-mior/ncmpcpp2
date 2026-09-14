@@ -165,7 +165,7 @@ NCM_ARRAY_FUNC(_reserve)(NCM_ARRAY_TYPE *array, int32 extra) {
     }
 
     needed = (int64)array->len + extra;
-    if (needed <= array->cap) {
+    if (array->items && (needed <= array->cap)) {
         return array->cap;
     }
     if (needed >= MAXOF(array->cap)) {
