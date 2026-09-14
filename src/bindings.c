@@ -881,9 +881,9 @@ binding_parse_directive(BindingAction *action, BindingDirective *directive,
 
         action_key = nc_key_parse(argument.data, argument.len);
         if (action_key == NC_KEY_NONE) {
-            bindings_error(ncm_error, "invalid character passed to "
-                               "push_character: '%.*s'",
-                               argument.len, argument.data);
+            bindings_error(ncm_error,
+                           "invalid character passed to push_character: '%.*s'",
+                           argument.len, argument.data);
             return -NCM_ERROR_PARSE;
         }
         action->kind = BINDING_ACTION_PUSH_CHARACTERS;
