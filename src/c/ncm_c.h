@@ -360,16 +360,19 @@ enum NcmMpdServerError {
     NCM_MPD_SERVER_ERROR_UNKNOWN,
 };
 
-enum NcmMpdIdle {
-    NCM_MPD_IDLE_DATABASE = 1 << 0,
-    NCM_MPD_IDLE_STORED_PLAYLIST = 1 << 1,
-    NCM_MPD_IDLE_PLAYLIST = 1 << 2,
-    NCM_MPD_IDLE_PLAYER = 1 << 3,
-    NCM_MPD_IDLE_MIXER = 1 << 4,
-    NCM_MPD_IDLE_OUTPUT = 1 << 5,
-    NCM_MPD_IDLE_UPDATE = 1 << 6,
-    NCM_MPD_IDLE_OPTIONS = 1 << 7,
-};
+#define ENUM_NAME NcmMpdIdle
+#define ENUM_PREFIX_ NCM_MPD_IDLE_
+#define ENUM_BITFLAGS 1
+#define ENUM_FIELDS                         \
+    XX(NCM_MPD_IDLE_DATABASE)               \
+    XX(NCM_MPD_IDLE_STORED_PLAYLIST)        \
+    XX(NCM_MPD_IDLE_PLAYLIST)               \
+    XX(NCM_MPD_IDLE_PLAYER)                 \
+    XX(NCM_MPD_IDLE_MIXER)                  \
+    XX(NCM_MPD_IDLE_OUTPUT)                 \
+    XX(NCM_MPD_IDLE_UPDATE)                 \
+    XX(NCM_MPD_IDLE_OPTIONS)
+#include "cbase/xenums.c"
 
 enum NcmMpdState {
     NCM_MPD_STATE_UNKNOWN = 0,
