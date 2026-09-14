@@ -112,8 +112,7 @@
   XX(ACTION_ADD_RANDOM_ITEMS, add_random_items)                           \
   XX(ACTION_TOGGLE_BROWSER_SORT_MODE, toggle_browser_sort_mode)           \
   XX(ACTION_TOGGLE_LIBRARY_TAG_TYPE, toggle_library_tag_type)             \
-  XX(ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE,                               \
-     toggle_media_library_sort_mode)                                      \
+  XX(ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE, toggle_media_library_sort_mode) \
   XX(ACTION_FETCH_LYRICS_IN_BACKGROUND, fetch_lyrics_in_background)       \
   XX(ACTION_REFETCH_LYRICS, refetch_lyrics)                               \
   XX(ACTION_SET_SELECTED_ITEMS_PRIORITY, set_selected_items_priority)     \
@@ -132,8 +131,7 @@
   XX(ACTION_SHOW_SEARCH_ENGINE, show_search_engine)                       \
   XX(ACTION_RESET_SEARCH_ENGINE, reset_search_engine)                     \
   XX(ACTION_SHOW_MEDIA_LIBRARY, show_media_library)                       \
-  XX(ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE,                            \
-     toggle_media_library_columns_mode)                                   \
+  XX(ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE, toggle_media_library_columns_mode) \
   XX(ACTION_SHOW_PLAYLIST_EDIT, show_playlist_edit)                     \
   XX(ACTION_SHOW_TAG_EDIT, show_tag_edit)                                 \
   XX(ACTION_SHOW_OUTPUTS, show_outputs)                                   \
