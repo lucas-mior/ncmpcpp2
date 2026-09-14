@@ -114,9 +114,6 @@ main(int32 argc, char **argv) {
     int64 connect_attempt;
     int32 redirect_status;
 
-    StrFlex *a = SFLIT("abc");
-    (void)a;
-
     program = argv[0];
 
     global_state_init();
