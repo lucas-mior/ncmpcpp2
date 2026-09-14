@@ -83,11 +83,8 @@ cleanup:
     writer.buffer = NULL;
     sb_free(&referer_string);
     sb_free(&url_string);
-#if CC_CLANG
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wswitch-enum"
-#endif
-    switch (result) {
+
+    switch ((int32)result) {
     case CURLE_OK:
         return 0;
     case CURLE_OUT_OF_MEMORY:
@@ -100,9 +97,6 @@ cleanup:
     default:
         return -NCM_ERROR_NETWORK;
     }
-#if CC_CLANG
-#pragma clang diagnostic pop
-#endif
 }
 
 int32
