@@ -1035,8 +1035,9 @@ bindings_finalize_definition(BindingsConfiguration *bindings,
 
         if (bindings_command_index(bindings,
                                    command.name, command.name_len) >= 0) {
-            bindings_error(ncm_error, "redefinition of command '%.*s'",
-                               command.name_len, command.name);
+            bindings_error(ncm_error,
+                           "redefinition of command '%.*s'",
+                           command.name_len, command.name);
             status = -NCM_ERROR_PARSE;
         } else {
             NcmCommand copy = {0};
