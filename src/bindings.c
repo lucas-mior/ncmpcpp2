@@ -1097,17 +1097,17 @@ bindings_config_read(BindingsConfiguration *bindings,
     int32 path_cap;
     int32 content_len;
     int32 in_progress = IN_PROGRESS_NONE;
-    int32 line_no;
-    int32 status;
-    Binding actions;
-    char *command_name;
-    char *key_name;
-    int32 command_name_len;
-    int32 key_name_len;
-    int32 command_name_cap;
-    int32 key_name_cap;
-    NcKey key;
-    bool command_immediate;
+    int32 line_no = 0;
+    int32 status = 0;
+    Binding actions = {0};
+    char *command_name = NULL;
+    char *key_name = NULL;
+    int32 command_name_len = 0;
+    int32 key_name_len = 0;
+    int32 command_name_cap = 0;
+    int32 key_name_cap = 0;
+    NcKey key = NC_KEY_NONE;
+    bool command_immediate = false;
 
     path_copy = ncm_string_copy(path, path_len, &path_cap);
     if (!ncm_fs_path_is_existing(path, path_len)) {
@@ -1122,17 +1122,6 @@ bindings_config_read(BindingsConfiguration *bindings,
         return content_len;
     }
 
-    line_no = 0;
-    status = 0;
-    command_name = NULL;
-    key_name = NULL;
-    command_name_len = 0;
-    key_name_len = 0;
-    command_name_cap = 0;
-    key_name_cap = 0;
-    key = NC_KEY_NONE;
-    command_immediate = false;
-    actions = (Binding){0};
     content_end = content + content_len;
     line = content;
 
