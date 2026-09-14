@@ -1831,8 +1831,7 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
                                               album.data, album.len, date.data,
                                               date.len);
                 if (existing >= 0) {
-                    replacement.items[existing].row.mtime =
-                        song->last_modified;
+                    replacement.items[existing].row.mtime = song->last_modified;
                     continue;
                 }
                 library_append_album(&replacement, tag, tag_len, album.data,
