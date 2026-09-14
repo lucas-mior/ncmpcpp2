@@ -717,8 +717,8 @@ bindings_bind_group(BindingsConfiguration *bindings,
   XX_GROUP("enter", ACTION_ENTER_DIRECTORY, ACTION_TOGGLE_OUTPUT,              \
            ACTION_RUN_ACTION, ACTION_PLAY_ITEM)                                \
   XX_GROUP("space", ACTION_ADD_ITEM_TO_PLAYLIST,                               \
-           ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE,                         \
-           ACTION_TOGGLE_VISUALIZATION_TYPE)                                   \
+                    ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE,                \
+                    ACTION_TOGGLE_VISUALIZATION_TYPE)                          \
   XX_GROUP("delete", ACTION_DELETE_PLAYLIST_ITEMS,                             \
                      ACTION_DELETE_BROWSER_ITEMS,                              \
                      ACTION_DELETE_STORED_PLAYLIST)                            \
