@@ -152,9 +152,8 @@ nc_lastfm_screen_height(NcLastfmScreen *screen) {
 
 static void
 lastfm_set_title(LastfmScreen *screen, char *title, int32 title_len) {
-    int32 cap;
+    int32 cap = title_len + 1;
 
-    cap = title_len + 1;
     if (cap > screen->title_cap) {
         screen->title = realloc2(screen->title,
                                  screen->title_cap, cap,
