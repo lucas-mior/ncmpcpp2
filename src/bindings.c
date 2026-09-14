@@ -919,9 +919,9 @@ binding_parse_directive(BindingAction *action, BindingDirective *directive,
     case BINDING_DIRECTIVE_REQUIRE_RUNNABLE:
         if (ncm_action_type_parse(argument.data, argument.len,
                                   &action->value.type) < 0) {
-            bindings_error(ncm_error, "unknown action passed to "
-                               "require_runnable: '%.*s'",
-                               argument.len, argument.data);
+            bindings_error(ncm_error,
+                           "unknown action passed to require_runnable: '%.*s'",
+                           argument.len, argument.data);
             return -NCM_ERROR_PARSE;
         }
         action->kind = BINDING_ACTION_REQUIRE_RUNNABLE;
