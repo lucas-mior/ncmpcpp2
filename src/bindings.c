@@ -1096,7 +1096,7 @@ bindings_config_read(BindingsConfiguration *bindings,
     char *line;
     int32 path_cap;
     int32 content_len;
-    int32 in_progress;
+    int32 in_progress = IN_PROGRESS_NONE;
     int32 line_no;
     int32 status;
     Binding actions;
@@ -1122,7 +1122,6 @@ bindings_config_read(BindingsConfiguration *bindings,
         return content_len;
     }
 
-    in_progress = IN_PROGRESS_NONE;
     line_no = 0;
     status = 0;
     command_name = NULL;
