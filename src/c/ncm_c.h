@@ -450,7 +450,7 @@ bool ncm_mpd_connection_is_connected(MpdConnection *);
 int32 ncm_mpd_connection_fd(MpdConnection *);
 int32 ncm_mpd_connection_set_timeout(MpdConnection *, int32);
 int32 ncm_mpd_connection_noidle(MpdConnection *);
-int32 ncm_mpd_connection_send_idle(MpdConnection *, int32);
+int32 ncm_mpd_connection_send_idle(MpdConnection *, uint32);
 int32 ncm_mpd_connection_recv_idle(MpdConnection *, bool, uint32 *);
 int32 ncm_mpd_connection_check_error(MpdConnection *);
 char *ncm_mpd_connection_error(MpdConnection *);

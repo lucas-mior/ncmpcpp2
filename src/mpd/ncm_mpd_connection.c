@@ -346,9 +346,8 @@ ncm_mpd_connection_set_timeout(MpdConnection *connection, int32 timeout_ms) {
 }
 
 int32
-ncm_mpd_connection_send_idle(MpdConnection *connection, int32 events) {
+ncm_mpd_connection_send_idle(MpdConnection *connection, uint32 events) {
     enum mpd_idle mpd_events = (enum mpd_idle)0;
-    uint32 event_mask;
 
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
@@ -359,29 +358,28 @@ ncm_mpd_connection_send_idle(MpdConnection *connection, int32 events) {
         return 0;
     }
 
-    event_mask = (uint32)events;
-    if ((event_mask & NCM_MPD_IDLE_DATABASE) != 0) {
+    if ((events & NCM_MPD_IDLE_DATABASE) != 0) {
         mpd_events |= MPD_IDLE_DATABASE;
     }
-    if ((event_mask & NCM_MPD_IDLE_STORED_PLAYLIST) != 0) {
+    if ((events & NCM_MPD_IDLE_STORED_PLAYLIST) != 0) {
         mpd_events |= MPD_IDLE_STORED_PLAYLIST;
     }
-    if ((event_mask & NCM_MPD_IDLE_PLAYLIST) != 0) {
+    if ((events & NCM_MPD_IDLE_PLAYLIST) != 0) {
         mpd_events |= MPD_IDLE_PLAYLIST;
     }
-    if ((event_mask & NCM_MPD_IDLE_PLAYER) != 0) {
+    if ((events & NCM_MPD_IDLE_PLAYER) != 0) {
         mpd_events |= MPD_IDLE_PLAYER;
     }
-    if ((event_mask & NCM_MPD_IDLE_MIXER) != 0) {
+    if ((events & NCM_MPD_IDLE_MIXER) != 0) {
         mpd_events |= MPD_IDLE_MIXER;
     }
-    if ((event_mask & NCM_MPD_IDLE_OUTPUT) != 0) {
+    if ((events & NCM_MPD_IDLE_OUTPUT) != 0) {
         mpd_events |= MPD_IDLE_OUTPUT;
     }
-    if ((event_mask & NCM_MPD_IDLE_UPDATE) != 0) {
+    if ((events & NCM_MPD_IDLE_UPDATE) != 0) {
         mpd_events |= MPD_IDLE_UPDATE;
     }
-    if ((event_mask & NCM_MPD_IDLE_OPTIONS) != 0) {
+    if ((events & NCM_MPD_IDLE_OPTIONS) != 0) {
         mpd_events |= MPD_IDLE_OPTIONS;
     }
 
