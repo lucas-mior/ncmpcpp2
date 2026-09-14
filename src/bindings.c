@@ -720,7 +720,8 @@ bindings_bind_group(BindingsConfiguration *bindings,
            ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE,                         \
            ACTION_TOGGLE_VISUALIZATION_TYPE)                                   \
   XX_GROUP("delete", ACTION_DELETE_PLAYLIST_ITEMS,                             \
-           ACTION_DELETE_BROWSER_ITEMS, ACTION_DELETE_STORED_PLAYLIST)         \
+                     ACTION_DELETE_BROWSER_ITEMS,                              \
+                     ACTION_DELETE_STORED_PLAYLIST)                            \
   XX_GROUP("right", ACTION_NEXT_COLUMN,                                        \
                     ACTION_SLAVE_SCREEN,                                       \
                     ACTION_VOLUME_UP)                                          \
