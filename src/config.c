@@ -374,9 +374,7 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
             if ((c != 'h') && (c != 'p') && (c != 'c') && (c != 'b')
                 && (c != 's') && (c != 'S')) {
                 char message[128];
-                int32 len;
-
-                len = SNPRINTF(message, "unrecognized option '-%c'", c);
+                int32 len = SNPRINTF(message, "unrecognized option '-%c'", c);
                 return ncm_error_set_status(ncm_error, -EINVAL, message, len);
             }
 
