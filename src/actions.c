@@ -863,6 +863,7 @@ static int32
 action_runtime_set_crossfade(void) {
     StrBuilder input = {0};
     NcmError ncm_error;
+    int64 parsed;
     int32 seconds;
     bool prompted;
 
@@ -877,13 +878,14 @@ action_runtime_set_crossfade(void) {
         return 0;
     }
 
-    ncm_error_clear(&ncm_error);
-    if (ncm_parse_int32(input.data, input.len, &seconds, &ncm_error) < 0) {
+    if ((parse_integer(input.data, input.len, &parsed) < 0)
+        || (parsed < 0) || (parsed > MAXOF(seconds))) {
         sb_free(&input);
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("Crossfade must be a non-negative number"));
         return 0;
     }
+    seconds = (int32)parsed;
     sb_free(&input);
 
     Config.mpd_crossfade_time = seconds;
@@ -899,6 +901,7 @@ action_runtime_set_volume(void) {
     StrBuilder input = {0};
     StrBuilder message = {0};
     NcmError ncm_error;
+    int64 parsed;
     int32 volume;
     bool prompted;
 
@@ -914,14 +917,14 @@ action_runtime_set_volume(void) {
         return 0;
     }
 
-    ncm_error_clear(&ncm_error);
-    if (ncm_parse_int32(input.data, input.len, &volume, &ncm_error) < 0
-        || (volume > 100)) {
+    if ((parse_integer(input.data, input.len, &parsed) < 0)
+        || (parsed < 0) || (parsed > 100)) {
         sb_free(&input);
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("Volume must be between 0 and 100"));
         return 0;
     }
+    volume = (int32)parsed;
     sb_free(&input);
 
     ncm_error_clear(&ncm_error);
@@ -950,9 +953,9 @@ action_runtime_add_random_items(void) {
     };
     char tag_name[32];
     char *source_name;
+    int64 parsed;
     int32 count;
     int32 source_name_len;
-    int32 number;
     enum TagType tag_type = TAG_ARTIST;
     char random_type = 0;
     int32 status = 0;
@@ -1005,8 +1008,8 @@ action_runtime_add_random_items(void) {
         return 0;
     }
 
-    ncm_error_clear(&ncm_error);
-    if (ncm_parse_int32(input.data, input.len, &number, &ncm_error) < 0) {
+    if ((parse_integer(input.data, input.len, &parsed) < 0)
+        || (parsed < 0) || (parsed > MAXOF(count))) {
         sb_free(&input);
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("Random item count must be a non-negative "
@@ -1014,7 +1017,7 @@ action_runtime_add_random_items(void) {
         return 0;
     }
     sb_free(&input);
-    count = number;
+    count = (int32)parsed;
     if (count <= 0) {
         return 0;
     }
@@ -1178,11 +1181,10 @@ action_runtime_toggle_bitrate_visibility(void) {
 static int32
 action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
                                    int32 *position) {
-    NcmError ncm_error;
-    int32 first;
-    int32 second;
-    int32 third;
-    int32 result;
+    int64 first;
+    int64 second;
+    int64 third;
+    int64 result;
     int32 first_colon = -1;
     int32 second_colon = -1;
     int32 number_len;
@@ -1206,7 +1208,6 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
         }
     }
 
-    ncm_error_clear(&ncm_error);
     if (first_colon >= 0) {
         if ((first_colon == 0) || (first_colon == text_len - 1)) {
             return -NCM_ERROR_PARSE;
@@ -1215,9 +1216,9 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
             if ((text_len - first_colon - 1) != 2) {
                 return -NCM_ERROR_PARSE;
             }
-            if (ncm_parse_int32(text, first_colon, &first, &ncm_error) < 0
-                || ncm_parse_int32(text + first_colon + 1, 2, &second,
-                                    &ncm_error) < 0 || (second > 60)) {
+            if ((parse_integer(text, first_colon, &first) < 0)
+                || (parse_integer(text + first_colon + 1, 2, &second) < 0)
+                || (first < 0) || (second < 0) || (second > 60)) {
                 return -NCM_ERROR_PARSE;
             }
             result = first*60 + second;
@@ -1226,11 +1227,10 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
                 || ((text_len - second_colon - 1) != 2)) {
                 return -NCM_ERROR_PARSE;
             }
-            if (ncm_parse_int32(text, first_colon, &first, &ncm_error) < 0
-                || ncm_parse_int32(text + first_colon + 1, 2, &second,
-                                    &ncm_error) < 0
-                || ncm_parse_int32(text + second_colon + 1, 2, &third,
-                                    &ncm_error) < 0
+            if ((parse_integer(text, first_colon, &first) < 0)
+                || (parse_integer(text + first_colon + 1, 2, &second) < 0)
+                || (parse_integer(text + second_colon + 1, 2, &third) < 0)
+                || (first < 0) || (second < 0) || (third < 0)
                 || (second > 60) || (third > 60)) {
                 return -NCM_ERROR_PARSE;
             }
@@ -1239,7 +1239,7 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
         if (result > MAXOF(*position)) {
             return -NCM_ERROR_PARSE;
         }
-        *position = result;
+        *position = (int32)result;
         return 0;
     }
 
@@ -1249,10 +1249,11 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
         if (number_len <= 0) {
             return -NCM_ERROR_PARSE;
         }
-        if (ncm_parse_int32(text, number_len, &first, &ncm_error) < 0) {
+        if ((parse_integer(text, number_len, &first) < 0) || (first < 0)
+            || (first > MAXOF(*position))) {
             return -NCM_ERROR_PARSE;
         }
-        *position = first;
+        *position = (int32)first;
         return 0;
     }
     if (text[text_len - 1] == '%') {
@@ -1261,11 +1262,11 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
     if (number_len <= 0) {
         return -NCM_ERROR_PARSE;
     }
-    if (ncm_parse_int32(text, number_len, &first, &ncm_error) < 0
+    if ((parse_integer(text, number_len, &first) < 0) || (first < 0)
         || (first > 100)) {
         return -NCM_ERROR_PARSE;
     }
-    *position = (first*total) / 100;
+    *position = (int32)((first*total) / 100);
     return 0;
 }
 
@@ -3035,6 +3036,7 @@ action_runtime_set_selected_items_priority(void) {
     PlaylistScreen *screen = app_screen_playlist();
     StrBuilder input = {0};
     NcmError ncm_error;
+    int64 parsed;
     int32 priority;
     bool prompted;
 
@@ -3058,14 +3060,14 @@ action_runtime_set_selected_items_priority(void) {
         return 0;
     }
 
-    ncm_error_clear(&ncm_error);
-    if (ncm_parse_int32(input.data, input.len, &priority, &ncm_error) < 0
-        || (priority > 255)) {
+    if ((parse_integer(input.data, input.len, &parsed) < 0)
+        || (parsed < 0) || (parsed > 255)) {
         sb_free(&input);
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("Priority must be between 0 and 255"));
         return 0;
     }
+    priority = (int32)parsed;
     sb_free(&input);
 
     ncm_error_clear(&ncm_error);
@@ -3975,10 +3977,10 @@ static int32
 action_runtime_toggle_screen_lock(void) {
     StrBuilder input = {0};
     StrBuilder message = {0};
-    NcmError ncm_error;
     NcScreen *current;
     char initial[16];
     char *prompt;
+    int64 parsed;
     int32 part = (int32)Config.locked_screen_width_part*100;
     bool prompted;
 
@@ -4012,13 +4014,14 @@ action_runtime_toggle_screen_lock(void) {
             return 0;
         }
 
-        ncm_error_clear(&ncm_error);
-        if (ncm_parse_int32(input.data, input.len, &part, &ncm_error) < 0) {
+        if ((parse_integer(input.data, input.len, &parsed) < 0)
+            || (parsed < MINOF(part)) || (parsed > MAXOF(part))) {
             action_runtime_print_message(STRLIT("Invalid value: "),
                                          input.data, input.len, STRLIT(""));
             sb_free(&input);
             return 0;
         }
+        part = (int32)parsed;
         sb_free(&input);
     }
 

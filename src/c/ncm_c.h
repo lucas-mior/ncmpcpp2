@@ -757,8 +757,6 @@ int32 ncm_mpd_client_get_tag_types(MpdClient *, StrFlexList *, NcmError *);
 int32 ncm_compare_locale_strings(char *left, int32 left_len, char *right,
                                  int32 right_len, bool);
 
-int32 ncm_parse_int32(char *, int32, int32 *, NcmError *);
-int32 ncm_parse_int64(char *, int32, int64 *, NcmError *);
 int32 ncm_parse_double(char *, int32, double *, NcmError *);
 
 int32 ncm_bounds_check_i64(int64 value, int64 min, int64 max, NcmError *);

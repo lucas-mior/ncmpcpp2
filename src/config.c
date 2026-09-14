@@ -185,9 +185,9 @@ static int32
 config_parse_port(char *value, int32 value_len,
                   char *option, int32 option_len,
                   int32 *port, NcmError *ncm_error) {
-    int32 parsed;
+    int64 parsed;
 
-    if (ncm_parse_int32(value, value_len, &parsed, ncm_error) < 0) {
+    if ((parse_integer(value, value_len, &parsed) < 0) || (parsed < 0)) {
         char message[192];
         int32 len;
 
@@ -201,7 +201,7 @@ config_parse_port(char *value, int32 value_len,
                                     STRLIT("port must be between 0 and 65535"));
     }
 
-    *port = parsed;
+    *port = (int32)parsed;
     return 0;
 }
 
@@ -526,14 +526,18 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
                                     ncm_error);
     }
     if (env_port != NULL) {
-        if ((status = ncm_parse_int32(env_port, strlen32(env_port), &port,
-                                      ncm_error)) < 0) {
-            return status;
+        int64 parsed_port;
+
+        status = parse_integer(env_port, strlen32(env_port), &parsed_port);
+        if (status < 0) {
+            return ncm_error_set_status(ncm_error, status,
+                                        STRLIT("invalid MPD_PORT"));
         }
-        if (port > 65535) {
+        if ((parsed_port < 0) || (parsed_port > 65535)) {
             return ncm_error_set_status(ncm_error, -ERANGE,
                                         STRLIT("MPD_PORT is out of range"));
         }
+        port = (int32)parsed_port;
         ncm_mpd_client_set_port(&global_mpd, (uint16)port);
     }
 

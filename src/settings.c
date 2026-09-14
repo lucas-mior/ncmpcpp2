@@ -207,7 +207,7 @@ settings_parse_bool(char *value, int32 value_len, bool *result,
 static int32
 settings_parse_int_range(char *value, int32 value_len, int32 *result,
                          int32 minimum, int32 maximum, NcmError *ncm_error) {
-    llong parsed;
+    int64 parsed;
     int32 status;
 
     status = parse_integer(value, value_len, &parsed);
@@ -253,7 +253,7 @@ settings_parse_double_range(char *value, int32 value_len, double *result,
 static int32
 settings_parse_single_color(char *value, int32 value_len, bool background,
                             int16 *result, NcmError *ncm_error) {
-    int32 parsed;
+    int64 parsed;
     int32 status;
 
     if (STREQUAL(value, value_len, "black")) {
@@ -297,12 +297,12 @@ settings_parse_single_color(char *value, int32 value_len, bool background,
         return 0;
     }
 
-    status = ncm_parse_int32(value, value_len, &parsed, ncm_error);
+    status = parse_integer(value, value_len, &parsed);
     if (status < 0) {
-        return status;
+        return settings_invalid_value(ncm_error, value, value_len);
     }
     if (background) {
-        if (parsed > 256) {
+        if ((parsed < 0) || (parsed > 256)) {
             return settings_invalid_value(ncm_error, value, value_len);
         }
     } else if ((parsed < 1) || (parsed > 256)) {
@@ -520,14 +520,14 @@ static int32
 settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
                      int32 expected_len, NcmError *ncm_error) {
     int32 start;
-    int32 total;
+    int64 total;
 
     ncm_int32_array_clear(array);
     start = 0;
     total = 0;
     while (start <= value_len) {
         int32 end;
-        int32 parsed;
+        int64 parsed;
         int32 status;
         int32 *slot;
 
@@ -535,13 +535,15 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
         while ((end < value_len) && (value[end] != ':')) {
             end += 1;
         }
-        status = ncm_parse_int32(value + start, end - start, &parsed,
-                                 ncm_error);
+        status = parse_integer(value + start, end - start, &parsed);
         if (status < 0) {
-            return status;
+            return settings_invalid_value(ncm_error, value, value_len);
+        }
+        if ((parsed < 0) || (parsed > MAXOF((int32)0))) {
+            return settings_invalid_value(ncm_error, value, value_len);
         }
         slot = ncm_int32_array_append(array);
-        *slot = parsed;
+        *slot = (int32)parsed;
         total += parsed;
         if (end >= value_len) {
             break;
@@ -637,6 +639,7 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
         StrBuilder color = {0};
         StrBuilder tag = {0};
         Column *column;
+        int64 width_value;
         int32 next;
         int32 parsed_width;
 
@@ -658,14 +661,20 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
             width.len -= 1;
             width.data[width.len] = '\0';
         }
-        status = ncm_parse_int32(width.data, width.len, &parsed_width,
-                                 ncm_error);
+        status = parse_integer(width.data, width.len, &width_value);
         if (status < 0) {
             sb_free(&width);
             sb_free(&color);
             sb_free(&tag);
-            return status;
+            return settings_invalid_value(ncm_error, value, value_len);
         }
+        if ((width_value < 0) || (width_value > MAXOF(parsed_width))) {
+            sb_free(&width);
+            sb_free(&color);
+            sb_free(&tag);
+            return settings_invalid_value(ncm_error, value, value_len);
+        }
+        parsed_width = (int32)width_value;
         column->width = parsed_width;
         if (color.len > 0) {
             status = settings_parse_color(color.data, color.len,
