@@ -750,7 +750,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
         if (idx > 0) {
             return buffer;
         }
-        sb_printf(&buffer, "%d", song->priority);
+        sb_itoa(&buffer, song->priority);
         return buffer;
     case SONG_GETTER_ARTIST:
     case SONG_GETTER_ALBUM_ARTIST:
