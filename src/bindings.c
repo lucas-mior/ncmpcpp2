@@ -1118,8 +1118,8 @@ bindings_config_read(BindingsConfiguration *bindings,
         int32 code;
 
         code = -content_len;
-        bindings_error(ncm_error, "%.*s: read error: %s", path_len,
-                           path, strerror(code));
+        bindings_error(ncm_error,
+                       "%.*s: read error: %s", path_len, path, strerror(code));
         free2(path_copy, path_cap);
         return content_len;
     }
