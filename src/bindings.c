@@ -1167,15 +1167,15 @@ bindings_config_read(BindingsConfiguration *bindings,
             if (ncm_extract_enclosed(current_line + start, len - start,
                                      '"', '"', &enclosed) < 0) {
                 bindings_error(ncm_error,
-                                   "%.*s:%d: command must have non-empty name",
-                                   path_len, path, line_no);
+                               "%.*s:%d: command must have non-empty name",
+                               path_len, path, line_no);
                 status = -NCM_ERROR_PARSE;
                 break;
             }
             if (enclosed.len <= 0) {
                 bindings_error(ncm_error,
-                                   "%.*s:%d: command must have non-empty name",
-                                   path_len, path, line_no);
+                               "%.*s:%d: command must have non-empty name",
+                               path_len, path, line_no);
                 status = -NCM_ERROR_PARSE;
                 break;
             }
@@ -1185,8 +1185,9 @@ bindings_config_read(BindingsConfiguration *bindings,
             command_name_len = enclosed.len;
             if (ncm_extract_enclosed(current_line + start, len - start,
                                      '[', ']', &enclosed) < 0) {
-                bindings_error(ncm_error, "%.*s:%d: missing command type",
-                                   path_len, path, line_no);
+                bindings_error(ncm_error,
+                               "%.*s:%d: missing command type",
+                               path_len, path, line_no);
                 status = -NCM_ERROR_PARSE;
                 break;
             }
@@ -1196,9 +1197,9 @@ bindings_config_read(BindingsConfiguration *bindings,
                 command_immediate = false;
             } else {
                 bindings_error(ncm_error,
-                                   "%.*s:%d: invalid command type '%.*s'",
-                                   path_len, path, line_no,
-                                   enclosed.len, enclosed.data);
+                               "%.*s:%d: invalid command type '%.*s'",
+                               path_len, path, line_no,
+                               enclosed.len, enclosed.data);
                 status = -NCM_ERROR_PARSE;
                 break;
             }
@@ -1219,16 +1220,17 @@ bindings_config_read(BindingsConfiguration *bindings,
             }
             if (ncm_extract_enclosed(current_line + start, len - start,
                                      '"', '"', &enclosed) < 0) {
-                bindings_error(ncm_error, "%.*s:%d: invalid key", path_len,
-                                   path, line_no);
+                bindings_error(ncm_error,
+                               "%.*s:%d: invalid key", path_len, path, line_no);
                 status = -NCM_ERROR_PARSE;
                 break;
             }
             key = nc_key_parse(enclosed.data, enclosed.len);
             if (key == NC_KEY_NONE) {
-                bindings_error(ncm_error, "%.*s:%d: invalid key '%.*s'",
-                                   path_len, path, line_no, enclosed.len,
-                                   enclosed.data);
+                bindings_error(ncm_error,
+                               "%.*s:%d: invalid key '%.*s'",
+                               path_len, path, line_no,
+                               enclosed.len, enclosed.data);
                 status = -NCM_ERROR_PARSE;
                 break;
             }
@@ -1255,8 +1257,9 @@ bindings_config_read(BindingsConfiguration *bindings,
             binding_append_action(&actions, &action);
             binding_action_destroy(&action);
         } else {
-            bindings_error(ncm_error, "%.*s:%d: invalid line '%.*s'",
-                               path_len, path, line_no, len, current_line);
+            bindings_error(ncm_error,
+                           "%.*s:%d: invalid line '%.*s'",
+                           path_len, path, line_no, len, current_line);
             status = -NCM_ERROR_PARSE;
         }
     }
