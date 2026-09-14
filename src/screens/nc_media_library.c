@@ -2043,6 +2043,7 @@ media_library_screen_set_grouping_tag_type(MediaLibraryScreen *screen,
     library_update_titles(screen, true);
     media_library_screen_request_tags_update(screen);
     nc_screen_finish_list_change(&screen->screen);
+
     return 0;
 }
 
