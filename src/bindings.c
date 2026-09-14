@@ -1115,9 +1115,7 @@ bindings_config_read(BindingsConfiguration *bindings,
         return 0;
     }
     if ((content_len = read_entire_file(path_copy, &content)) < 0) {
-        int32 code;
-
-        code = -content_len;
+        int32 code = -content_len;
         bindings_error(ncm_error,
                        "%.*s: read error: %s", path_len, path, strerror(code));
         free2(path_copy, path_cap);
