@@ -929,8 +929,9 @@ binding_parse_directive(BindingAction *action, BindingDirective *directive,
     case BINDING_DIRECTIVE_EXTERNAL_COMMAND:
     case BINDING_DIRECTIVE_EXTERNAL_CONSOLE_COMMAND:
         if (argument.len <= 0) {
-            bindings_error(ncm_error, "empty command passed to %.*s",
-                               directive->name_len, directive->name);
+            bindings_error(ncm_error,
+                           "empty command passed to %.*s",
+                           directive->name_len, directive->name);
             return -NCM_ERROR_PARSE;
         }
         if (directive->kind == BINDING_DIRECTIVE_EXTERNAL_COMMAND) {
