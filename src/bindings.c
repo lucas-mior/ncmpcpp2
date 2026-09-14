@@ -869,8 +869,7 @@ binding_directive_find(char *name, int32 name_len) {
 }
 
 static int32
-binding_parse_directive(BindingAction *action,
-                        BindingDirective *directive,
+binding_parse_directive(BindingAction *action, BindingDirective *directive,
                         StrView argument, NcmError *ncm_error) {
     switch (directive->kind) {
     case BINDING_DIRECTIVE_DUMMY:
