@@ -636,9 +636,8 @@ configure(int32 argc, char **argv) {
         printf("  -b, --bindings PATH          specify bindings file(s)\n");
         printf("                               default: ");
         for (int32 i = 0; i < bindings_paths.len; i += 1) {
-            StrBuilder *path;
+            StrBuilder *path = &bindings_paths.items[i];
 
-            path = &bindings_paths.items[i];
             if (i > 0) {
                 printf(" AND ");
             }
