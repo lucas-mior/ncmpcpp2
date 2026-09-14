@@ -281,11 +281,11 @@ lastfm_apply_literal_format(NcBuffer *buffer, char *needle, int32 needle_len,
 static void
 lastfm_job_complete(int32 status, NcmError *ncm_error, void *user) {
     LastfmJob *job = user;
-    LastfmScreen *screen;
+    LastfmScreen *screen = job->screen;
 
     (void)status;
     (void)ncm_error;
-    screen = job->screen;
+
     if (!screen->has_service
         || !ncm_lastfm_service_is_equal(&job->service, &screen->service)) {
         return;
