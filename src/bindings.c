@@ -515,6 +515,7 @@ binding_append_normal(Binding *binding, enum ActionType type) {
     action.value.type = type;
     binding_append_action(binding, &action);
     binding_action_destroy(&action);
+
     return;
 }
 
