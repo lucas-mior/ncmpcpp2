@@ -109,7 +109,6 @@ tiny_editor_finish(TinyTagEditScreen *screen) {
 static int32
 tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
     enum TinyTagEditPromptResult prompt_result;
-    enum TagType type;
     StrView initial;
     StrView current_name;
     StrBuilder input = {0};
@@ -129,6 +128,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         int32 field_name_len;
         int32 tag_separator_len;
         NcBuffer row_buffer = {0};
+        enum TagType type;
 
         type = ncm_writable_tag_at(row - (int32)TINY_TAG_EDIT_FIRST_TAG_ROW);
         ASSERT(type != TAG_COUNT);
