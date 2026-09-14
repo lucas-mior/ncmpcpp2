@@ -24,6 +24,7 @@ write_data(char *buffer, size_t size, size_t nmemb, void *data) {
 
     bytes = size*nmemb;
     writer = data;
+
     ASSERT(writer != NULL);
     ASSERT(writer->buffer != NULL);
 
