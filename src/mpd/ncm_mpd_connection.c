@@ -358,28 +358,28 @@ ncm_mpd_connection_send_idle(MpdConnection *connection, uint32 events) {
         return 0;
     }
 
-    if ((events & NCM_MPD_IDLE_DATABASE)) {
+    if (events & NCM_MPD_IDLE_DATABASE) {
         mpd_events |= MPD_IDLE_DATABASE;
     }
-    if ((events & NCM_MPD_IDLE_STORED_PLAYLIST)) {
+    if (events & NCM_MPD_IDLE_STORED_PLAYLIST) {
         mpd_events |= MPD_IDLE_STORED_PLAYLIST;
     }
-    if ((events & NCM_MPD_IDLE_PLAYLIST)) {
+    if (events & NCM_MPD_IDLE_PLAYLIST) {
         mpd_events |= MPD_IDLE_PLAYLIST;
     }
-    if ((events & NCM_MPD_IDLE_PLAYER)) {
+    if (events & NCM_MPD_IDLE_PLAYER) {
         mpd_events |= MPD_IDLE_PLAYER;
     }
-    if ((events & NCM_MPD_IDLE_MIXER)) {
+    if (events & NCM_MPD_IDLE_MIXER) {
         mpd_events |= MPD_IDLE_MIXER;
     }
-    if ((events & NCM_MPD_IDLE_OUTPUT)) {
+    if (events & NCM_MPD_IDLE_OUTPUT) {
         mpd_events |= MPD_IDLE_OUTPUT;
     }
-    if ((events & NCM_MPD_IDLE_UPDATE)) {
+    if (events & NCM_MPD_IDLE_UPDATE) {
         mpd_events |= MPD_IDLE_UPDATE;
     }
-    if ((events & NCM_MPD_IDLE_OPTIONS)) {
+    if (events & NCM_MPD_IDLE_OPTIONS) {
         mpd_events |= MPD_IDLE_OPTIONS;
     }
 
