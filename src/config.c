@@ -248,10 +248,10 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
 
 #define REQUIRE_LONG(VALUE, VALUE_LEN) do {                                \
     if ((VALUE) == NULL) {                                                 \
-        status = config_require_value(argc, argv, &i,               \
-                                      arg, name_len + 2,            \
-                                      &(VALUE), &(VALUE_LEN),       \
-                                      ncm_error);                   \
+        status = config_require_value(argc, argv, &i,                      \
+                                      arg, name_len + 2,                   \
+                                      &(VALUE), &(VALUE_LEN),              \
+                                      ncm_error);                          \
         if (status < 0) {                                                  \
             return status;                                                 \
         }                                                                  \
