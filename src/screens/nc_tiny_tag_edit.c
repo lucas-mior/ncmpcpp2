@@ -257,8 +257,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
                                               &screen->edited,
                                               screen->music_dir);
         } else {
-            status = mutable_song_write(&screen->edited,
-                                        screen->music_dir);
+            status = mutable_song_write(&screen->edited, screen->music_dir);
         }
         if (status < 0) {
             error_len = SNPRINTF(error_buffer, "Error while writing tags: %s",
