@@ -395,7 +395,8 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
                                 (NcmJob){
                                     .run = lastfm_job_run,
                                     .complete = lastfm_job_complete,
-                                    .destroy = lastfm_job_destroy, .user = job,
+                                    .destroy = lastfm_job_destroy,
+                                    .user = job,
                                 }, ncm_error);
     if (status < 0) {
         lastfm_job_destroy(job);
