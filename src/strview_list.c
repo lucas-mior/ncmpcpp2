@@ -12,6 +12,7 @@ strview_list_push(StrViewList *list, char *value, int32 value_len) {
     string.data = xarena_push(list->arena, value_len + 1);
     string.len = value_len;
     memcpy64(string.data, value, value_len + 1);
+    string.data[value_len] = '\0';
     ARRAY_PUSH(list->items, string);
     return;
 }
