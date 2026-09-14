@@ -264,6 +264,7 @@ nc_cyclic_buffer_write(NcBuffer *buffer, NcWindow *window,
     ASSERT(buffer != NULL);
     ASSERT(window != NULL);
     ASSERT(start_pos != NULL);
+
     if (separator == NULL) {
         separator_len = 0;
     }
