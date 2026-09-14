@@ -114,8 +114,8 @@ nc_lastfm_screen_init(NcLastfmScreen *screen, NcScreenOps callbacks, void *user,
                       int32 main_start_y, int32 main_height) {
     nc_scrollpad_screen_init(&screen->scrollpad_screen, callbacks, user,
                              NC_SCREEN_TYPE_LASTFM, 0, 0, 0, 0);
-    nc_lastfm_screen_set_geometry(screen, start_x, width,
-                                  main_start_y, main_height);
+    nc_lastfm_screen_set_geometry(screen,
+                                  start_x, width, main_start_y, main_height);
     return;
 }
 
