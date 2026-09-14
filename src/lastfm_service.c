@@ -212,9 +212,11 @@ lastfm_strip_unescape_trim(StrBuilder *out, char *data, int32 data_len) {
     SB_APPEND(&tmp, text, text_len);
     sb_clear(out);
     SB_APPEND(out, tmp.data, tmp.len);
+
     sb_free(&tmp);
     sb_free(&unescaped);
     sb_free(&stripped);
+
     return;
 }
 
