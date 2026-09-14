@@ -36,9 +36,8 @@ static HtmlEntity html_entities[] = {
 StrBuilder
 ncm_html_unescape_utf8(char *data, int32 data_len) {
     StrBuilder out = {0};
-    int32 i;
+    int32 i = 0;
 
-    i = 0;
     while (i < data_len) {
         int32 entity_start;
         int32 entity_len;
