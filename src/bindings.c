@@ -795,8 +795,7 @@ bindings_bind_group(BindingsConfiguration *bindings,
   XX_SEQ("A", ACTION_ADD)                                                      \
   XX_SEQ("S", ACTION_SAVE_PLAYLIST)                                            \
   XX_SEQ("o", ACTION_JUMP_TO_PLAYING_SONG)                                     \
-  XX_GROUP("G", ACTION_JUMP_TO_BROWSER,                                        \
-           ACTION_JUMP_TO_PLAYLIST_EDIT)                                       \
+  XX_GROUP("G", ACTION_JUMP_TO_BROWSER, ACTION_JUMP_TO_PLAYLIST_EDIT)          \
   XX_SEQ("~", ACTION_JUMP_TO_MEDIA_LIBRARY)                                    \
   XX_SEQ("E", ACTION_JUMP_TO_TAG_EDIT)                                         \
   XX_SEQ("U", ACTION_TOGGLE_PLAYING_SONG_CENTERING)                            \
