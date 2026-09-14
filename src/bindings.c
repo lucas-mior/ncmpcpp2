@@ -763,8 +763,8 @@ bindings_bind_group(BindingsConfiguration *bindings,
   XX_SEQ("X", ACTION_SET_CROSSFADE)                                            \
   XX_SEQ("u", ACTION_UPDATE_DATABASE)                                          \
   XX_GROUP("ctrl-s", ACTION_SORT_PLAYLIST,                                     \
-           ACTION_TOGGLE_BROWSER_SORT_MODE,                                    \
-           ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE)                              \
+                     ACTION_TOGGLE_BROWSER_SORT_MODE,                          \
+                     ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE)                    \
   XX_SEQ("ctrl-r", ACTION_REVERSE_PLAYLIST)                                    \
   XX_SEQ("ctrl-f", ACTION_APPLY_FILTER)                                        \
   XX_SEQ("ctrl-_", ACTION_SELECT_FOUND_ITEMS)                                  \
