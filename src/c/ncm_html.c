@@ -135,7 +135,7 @@ ncm_html_unescape_entities(char *data, int32 data_len) {
 
         if (data[i] == '&') {
             for (int32 j = 0; j < LENGTH(html_entities); j += 1) {
-                HtmlEntity *entity = html_entities + j;
+                HtmlEntity *entity = &html_entities[j];
 
                 if (BEGINS_WITH(data + i, data_len - i,
                                 entity->from, entity->from_len)) {
