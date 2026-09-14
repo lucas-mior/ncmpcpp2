@@ -789,8 +789,7 @@ bindings_bind_group(BindingsConfiguration *bindings,
   XX_SEQ("a", ACTION_ADD_SELECTED_ITEMS)                                       \
   XX_GROUP("c", ACTION_CLEAR_PLAYLIST, ACTION_CLEAR_MAIN_PLAYLIST)             \
   XX_GROUP("C", ACTION_CROP_PLAYLIST, ACTION_CROP_MAIN_PLAYLIST)               \
-  XX_GROUP("m", ACTION_MOVE_SORT_ORDER_UP,                                     \
-           ACTION_MOVE_SELECTED_ITEMS_UP)                                      \
+  XX_GROUP("m", ACTION_MOVE_SORT_ORDER_UP, ACTION_MOVE_SELECTED_ITEMS_UP)      \
   XX_GROUP("n", ACTION_MOVE_SORT_ORDER_DOWN,                                   \
            ACTION_MOVE_SELECTED_ITEMS_DOWN)                                    \
   XX_SEQ("M", ACTION_MOVE_SELECTED_ITEMS_TO)                                   \
