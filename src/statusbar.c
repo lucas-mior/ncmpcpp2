@@ -353,8 +353,9 @@ ncm_statusbar_message_delay_time(void) {
 }
 
 int32
-ncm_statusbar_prompt_return_one_of(NcWindow *window, char *values,
-                                   int32 values_len, char *result) {
+ncm_statusbar_prompt_return_one_of(NcWindow *window,
+                                   char *values, int32 values_len,
+                                   char *result) {
     if ((window == NULL) || (values_len <= 0) || (result == NULL)) {
         return -EINVAL;
     }
