@@ -699,119 +699,119 @@ bindings_bind_group(BindingsConfiguration *bindings,
     return;
 }
 
-#define NCM_DEFAULT_BINDINGS(XX_SEQ, XX_GROUP)                       \
-  XX_SEQ("mouse", ACTION_MOUSE_EVENT)                             \
-  XX_SEQ("up", ACTION_SCROLL_UP)                                  \
-  XX_SEQ("shift-up", ACTION_SELECT_ITEM, ACTION_SCROLL_UP)         \
-  XX_SEQ("down", ACTION_SCROLL_DOWN)                              \
-  XX_SEQ("shift-down", ACTION_SELECT_ITEM, ACTION_SCROLL_DOWN)     \
-  XX_SEQ("[", ACTION_SCROLL_UP_ALBUM)                             \
-  XX_SEQ("]", ACTION_SCROLL_DOWN_ALBUM)                           \
-  XX_SEQ("{", ACTION_SCROLL_UP_ARTIST)                            \
-  XX_SEQ("}", ACTION_SCROLL_DOWN_ARTIST)                          \
-  XX_SEQ("page_up", ACTION_PAGE_UP)                               \
-  XX_SEQ("page_down", ACTION_PAGE_DOWN)                           \
-  XX_SEQ("home", ACTION_MOVE_HOME)                                \
-  XX_SEQ("end", ACTION_MOVE_END)                                  \
-  XX_SEQ("insert", ACTION_SELECT_ITEM)                            \
-  XX_GROUP("enter", ACTION_ENTER_DIRECTORY, ACTION_TOGGLE_OUTPUT,       \
-           ACTION_RUN_ACTION, ACTION_PLAY_ITEM)                        \
-  XX_GROUP("space", ACTION_ADD_ITEM_TO_PLAYLIST,                       \
-           ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE,                 \
-           ACTION_TOGGLE_VISUALIZATION_TYPE)                           \
-  XX_GROUP("delete", ACTION_DELETE_PLAYLIST_ITEMS,                     \
-           ACTION_DELETE_BROWSER_ITEMS, ACTION_DELETE_STORED_PLAYLIST)  \
-  XX_GROUP("right", ACTION_NEXT_COLUMN, ACTION_SLAVE_SCREEN,           \
-           ACTION_VOLUME_UP)                                           \
-  XX_SEQ("+", ACTION_VOLUME_UP)                                   \
-  XX_GROUP("left", ACTION_PREVIOUS_COLUMN, ACTION_MASTER_SCREEN,        \
-           ACTION_VOLUME_DOWN)                                         \
-  XX_SEQ("-", ACTION_VOLUME_DOWN)                                 \
-  XX_SEQ(":", ACTION_EXECUTE_COMMAND)                             \
-  XX_SEQ("tab", ACTION_NEXT_SCREEN)                               \
-  XX_SEQ("shift-tab", ACTION_PREVIOUS_SCREEN)                     \
-  XX_SEQ("f1", ACTION_SHOW_HELP)                                  \
-  XX_SEQ("1", ACTION_SHOW_PLAYLIST)                               \
-  XX_GROUP("2", ACTION_SHOW_BROWSER, ACTION_CHANGE_BROWSE_MODE)        \
-  XX_GROUP("3", ACTION_SHOW_SEARCH_ENGINE, ACTION_RESET_SEARCH_ENGINE) \
-  XX_GROUP("4", ACTION_SHOW_MEDIA_LIBRARY,                             \
-           ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE)                   \
-  XX_SEQ("5", ACTION_SHOW_PLAYLIST_EDIT)                        \
-  XX_SEQ("6", ACTION_SHOW_TAG_EDIT)                               \
-  XX_SEQ("7", ACTION_SHOW_OUTPUTS)                                \
-  XX_SEQ("8", ACTION_SHOW_VISUALIZER)                             \
-  XX_SEQ("@", ACTION_SHOW_SERVER_INFO)                            \
-  XX_SEQ("s", ACTION_STOP)                                        \
-  XX_SEQ("p", ACTION_PAUSE)                                       \
-  XX_SEQ(">", ACTION_NEXT)                                        \
-  XX_SEQ("<", ACTION_PREVIOUS)                                    \
-  XX_GROUP("ctrl-h", ACTION_JUMP_TO_PARENT_DIRECTORY,                  \
-           ACTION_REPLAY_SONG)                                         \
-  XX_GROUP("backspace", ACTION_JUMP_TO_PARENT_DIRECTORY,               \
-           ACTION_REPLAY_SONG, ACTION_PLAY)                            \
-  XX_SEQ("f", ACTION_SEEK_FORWARD)                                \
-  XX_SEQ("b", ACTION_SEEK_BACKWARD)                               \
-  XX_SEQ("r", ACTION_TOGGLE_REPEAT)                               \
-  XX_SEQ("z", ACTION_TOGGLE_RANDOM)                               \
-  XX_GROUP("y", ACTION_SAVE_TAG_CHANGES, ACTION_START_SEARCHING,       \
-           ACTION_TOGGLE_SINGLE)                                       \
-  XX_SEQ("R", ACTION_TOGGLE_CONSUME)                              \
-  XX_SEQ("Y", ACTION_TOGGLE_REPLAY_GAIN_MODE)                     \
-  XX_SEQ("T", ACTION_TOGGLE_ADD_MODE)                             \
-  XX_SEQ("|", ACTION_TOGGLE_MOUSE)                                \
-  XX_SEQ("#", ACTION_TOGGLE_BITRATE_VISIBILITY)                   \
-  XX_SEQ("Z", ACTION_SHUFFLE)                                     \
-  XX_SEQ("x", ACTION_TOGGLE_CROSSFADE)                            \
-  XX_SEQ("X", ACTION_SET_CROSSFADE)                               \
-  XX_SEQ("u", ACTION_UPDATE_DATABASE)                             \
-  XX_GROUP("ctrl-s", ACTION_SORT_PLAYLIST,                             \
-           ACTION_TOGGLE_BROWSER_SORT_MODE,                            \
-           ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE)                      \
-  XX_SEQ("ctrl-r", ACTION_REVERSE_PLAYLIST)                       \
-  XX_SEQ("ctrl-f", ACTION_APPLY_FILTER)                           \
-  XX_SEQ("ctrl-_", ACTION_SELECT_FOUND_ITEMS)                     \
-  XX_GROUP("/", ACTION_FIND, ACTION_FIND_ITEM_FORWARD)                 \
-  XX_GROUP("?", ACTION_FIND, ACTION_FIND_ITEM_BACKWARD)                \
-  XX_SEQ(".", ACTION_NEXT_FOUND_ITEM)                             \
-  XX_SEQ(",", ACTION_PREVIOUS_FOUND_ITEM)                         \
-  XX_SEQ("w", ACTION_TOGGLE_FIND_MODE)                            \
-  XX_GROUP("e", ACTION_EDIT_SONG, ACTION_EDIT_LIBRARY_TAG,             \
-           ACTION_EDIT_LIBRARY_ALBUM, ACTION_EDIT_DIRECTORY_NAME,       \
-           ACTION_EDIT_PLAYLIST_NAME, ACTION_EDIT_LYRICS)              \
-  XX_SEQ("i", ACTION_SHOW_SONG_INFO)                              \
-  XX_SEQ("I", ACTION_SHOW_ARTIST_INFO)                            \
-  XX_SEQ("g", ACTION_JUMP_TO_POSITION_IN_SONG)                    \
-  XX_SEQ("l", ACTION_SHOW_LYRICS)                                 \
-  XX_SEQ("ctrl-v", ACTION_SELECT_RANGE)                           \
-  XX_SEQ("v", ACTION_REVERSE_SELECTION)                           \
-  XX_SEQ("V", ACTION_REMOVE_SELECTION)                            \
-  XX_SEQ("B", ACTION_SELECT_ALBUM)                                \
-  XX_SEQ("a", ACTION_ADD_SELECTED_ITEMS)                          \
-  XX_GROUP("c", ACTION_CLEAR_PLAYLIST, ACTION_CLEAR_MAIN_PLAYLIST)     \
-  XX_GROUP("C", ACTION_CROP_PLAYLIST, ACTION_CROP_MAIN_PLAYLIST)       \
-  XX_GROUP("m", ACTION_MOVE_SORT_ORDER_UP,                             \
-           ACTION_MOVE_SELECTED_ITEMS_UP)                              \
-  XX_GROUP("n", ACTION_MOVE_SORT_ORDER_DOWN,                           \
-           ACTION_MOVE_SELECTED_ITEMS_DOWN)                            \
-  XX_SEQ("M", ACTION_MOVE_SELECTED_ITEMS_TO)                      \
-  XX_SEQ("A", ACTION_ADD)                                         \
-  XX_SEQ("S", ACTION_SAVE_PLAYLIST)                               \
-  XX_SEQ("o", ACTION_JUMP_TO_PLAYING_SONG)                        \
-  XX_GROUP("G", ACTION_JUMP_TO_BROWSER,                                \
-           ACTION_JUMP_TO_PLAYLIST_EDIT)                             \
-  XX_SEQ("~", ACTION_JUMP_TO_MEDIA_LIBRARY)                       \
-  XX_SEQ("E", ACTION_JUMP_TO_TAG_EDIT)                            \
-  XX_SEQ("U", ACTION_TOGGLE_PLAYING_SONG_CENTERING)               \
-  XX_SEQ("P", ACTION_TOGGLE_DISPLAY_MODE)                         \
-  XX_SEQ("\\", ACTION_TOGGLE_INTERFACE)                          \
-  XX_SEQ("!", ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS)            \
-  XX_SEQ("L", ACTION_TOGGLE_LYRICS_FETCHER)                       \
-  XX_SEQ("F", ACTION_FETCH_LYRICS_IN_BACKGROUND)                  \
-  XX_SEQ("alt-l", ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND)    \
-  XX_SEQ("ctrl-l", ACTION_TOGGLE_SCREEN_LOCK)                     \
-  XX_GROUP("`", ACTION_TOGGLE_LIBRARY_TAG_TYPE, ACTION_REFETCH_LYRICS, \
-           ACTION_ADD_RANDOM_ITEMS)                                    \
-  XX_SEQ("ctrl-p", ACTION_SET_SELECTED_ITEMS_PRIORITY)            \
+#define NCM_DEFAULT_BINDINGS(XX_SEQ, XX_GROUP)                                 \
+  XX_SEQ("mouse", ACTION_MOUSE_EVENT)                                          \
+  XX_SEQ("up", ACTION_SCROLL_UP)                                               \
+  XX_SEQ("shift-up", ACTION_SELECT_ITEM, ACTION_SCROLL_UP)                     \
+  XX_SEQ("down", ACTION_SCROLL_DOWN)                                           \
+  XX_SEQ("shift-down", ACTION_SELECT_ITEM, ACTION_SCROLL_DOWN)                 \
+  XX_SEQ("[", ACTION_SCROLL_UP_ALBUM)                                          \
+  XX_SEQ("]", ACTION_SCROLL_DOWN_ALBUM)                                        \
+  XX_SEQ("{", ACTION_SCROLL_UP_ARTIST)                                         \
+  XX_SEQ("}", ACTION_SCROLL_DOWN_ARTIST)                                       \
+  XX_SEQ("page_up", ACTION_PAGE_UP)                                            \
+  XX_SEQ("page_down", ACTION_PAGE_DOWN)                                        \
+  XX_SEQ("home", ACTION_MOVE_HOME)                                             \
+  XX_SEQ("end", ACTION_MOVE_END)                                               \
+  XX_SEQ("insert", ACTION_SELECT_ITEM)                                         \
+  XX_GROUP("enter", ACTION_ENTER_DIRECTORY, ACTION_TOGGLE_OUTPUT,              \
+           ACTION_RUN_ACTION, ACTION_PLAY_ITEM)                                \
+  XX_GROUP("space", ACTION_ADD_ITEM_TO_PLAYLIST,                               \
+           ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE,                         \
+           ACTION_TOGGLE_VISUALIZATION_TYPE)                                   \
+  XX_GROUP("delete", ACTION_DELETE_PLAYLIST_ITEMS,                             \
+           ACTION_DELETE_BROWSER_ITEMS, ACTION_DELETE_STORED_PLAYLIST)         \
+  XX_GROUP("right", ACTION_NEXT_COLUMN, ACTION_SLAVE_SCREEN,                   \
+           ACTION_VOLUME_UP)                                                   \
+  XX_SEQ("+", ACTION_VOLUME_UP)                                                \
+  XX_GROUP("left", ACTION_PREVIOUS_COLUMN, ACTION_MASTER_SCREEN,               \
+           ACTION_VOLUME_DOWN)                                                 \
+  XX_SEQ("-", ACTION_VOLUME_DOWN)                                              \
+  XX_SEQ(":", ACTION_EXECUTE_COMMAND)                                          \
+  XX_SEQ("tab", ACTION_NEXT_SCREEN)                                            \
+  XX_SEQ("shift-tab", ACTION_PREVIOUS_SCREEN)                                  \
+  XX_SEQ("f1", ACTION_SHOW_HELP)                                               \
+  XX_SEQ("1", ACTION_SHOW_PLAYLIST)                                            \
+  XX_GROUP("2", ACTION_SHOW_BROWSER, ACTION_CHANGE_BROWSE_MODE)                \
+  XX_GROUP("3", ACTION_SHOW_SEARCH_ENGINE, ACTION_RESET_SEARCH_ENGINE)         \
+  XX_GROUP("4", ACTION_SHOW_MEDIA_LIBRARY,                                     \
+           ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE)                           \
+  XX_SEQ("5", ACTION_SHOW_PLAYLIST_EDIT)                                       \
+  XX_SEQ("6", ACTION_SHOW_TAG_EDIT)                                            \
+  XX_SEQ("7", ACTION_SHOW_OUTPUTS)                                             \
+  XX_SEQ("8", ACTION_SHOW_VISUALIZER)                                          \
+  XX_SEQ("@", ACTION_SHOW_SERVER_INFO)                                         \
+  XX_SEQ("s", ACTION_STOP)                                                     \
+  XX_SEQ("p", ACTION_PAUSE)                                                    \
+  XX_SEQ(">", ACTION_NEXT)                                                     \
+  XX_SEQ("<", ACTION_PREVIOUS)                                                 \
+  XX_GROUP("ctrl-h", ACTION_JUMP_TO_PARENT_DIRECTORY,                          \
+           ACTION_REPLAY_SONG)                                                 \
+  XX_GROUP("backspace", ACTION_JUMP_TO_PARENT_DIRECTORY,                       \
+           ACTION_REPLAY_SONG, ACTION_PLAY)                                    \
+  XX_SEQ("f", ACTION_SEEK_FORWARD)                                             \
+  XX_SEQ("b", ACTION_SEEK_BACKWARD)                                            \
+  XX_SEQ("r", ACTION_TOGGLE_REPEAT)                                            \
+  XX_SEQ("z", ACTION_TOGGLE_RANDOM)                                            \
+  XX_GROUP("y", ACTION_SAVE_TAG_CHANGES, ACTION_START_SEARCHING,               \
+           ACTION_TOGGLE_SINGLE)                                               \
+  XX_SEQ("R", ACTION_TOGGLE_CONSUME)                                           \
+  XX_SEQ("Y", ACTION_TOGGLE_REPLAY_GAIN_MODE)                                  \
+  XX_SEQ("T", ACTION_TOGGLE_ADD_MODE)                                          \
+  XX_SEQ("|", ACTION_TOGGLE_MOUSE)                                             \
+  XX_SEQ("#", ACTION_TOGGLE_BITRATE_VISIBILITY)                                \
+  XX_SEQ("Z", ACTION_SHUFFLE)                                                  \
+  XX_SEQ("x", ACTION_TOGGLE_CROSSFADE)                                         \
+  XX_SEQ("X", ACTION_SET_CROSSFADE)                                            \
+  XX_SEQ("u", ACTION_UPDATE_DATABASE)                                          \
+  XX_GROUP("ctrl-s", ACTION_SORT_PLAYLIST,                                     \
+           ACTION_TOGGLE_BROWSER_SORT_MODE,                                    \
+           ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE)                              \
+  XX_SEQ("ctrl-r", ACTION_REVERSE_PLAYLIST)                                    \
+  XX_SEQ("ctrl-f", ACTION_APPLY_FILTER)                                        \
+  XX_SEQ("ctrl-_", ACTION_SELECT_FOUND_ITEMS)                                  \
+  XX_GROUP("/", ACTION_FIND, ACTION_FIND_ITEM_FORWARD)                         \
+  XX_GROUP("?", ACTION_FIND, ACTION_FIND_ITEM_BACKWARD)                        \
+  XX_SEQ(".", ACTION_NEXT_FOUND_ITEM)                                          \
+  XX_SEQ(",", ACTION_PREVIOUS_FOUND_ITEM)                                      \
+  XX_SEQ("w", ACTION_TOGGLE_FIND_MODE)                                         \
+  XX_GROUP("e", ACTION_EDIT_SONG, ACTION_EDIT_LIBRARY_TAG,                     \
+           ACTION_EDIT_LIBRARY_ALBUM, ACTION_EDIT_DIRECTORY_NAME,              \
+           ACTION_EDIT_PLAYLIST_NAME, ACTION_EDIT_LYRICS)                      \
+  XX_SEQ("i", ACTION_SHOW_SONG_INFO)                                           \
+  XX_SEQ("I", ACTION_SHOW_ARTIST_INFO)                                         \
+  XX_SEQ("g", ACTION_JUMP_TO_POSITION_IN_SONG)                                 \
+  XX_SEQ("l", ACTION_SHOW_LYRICS)                                              \
+  XX_SEQ("ctrl-v", ACTION_SELECT_RANGE)                                        \
+  XX_SEQ("v", ACTION_REVERSE_SELECTION)                                        \
+  XX_SEQ("V", ACTION_REMOVE_SELECTION)                                         \
+  XX_SEQ("B", ACTION_SELECT_ALBUM)                                             \
+  XX_SEQ("a", ACTION_ADD_SELECTED_ITEMS)                                       \
+  XX_GROUP("c", ACTION_CLEAR_PLAYLIST, ACTION_CLEAR_MAIN_PLAYLIST)             \
+  XX_GROUP("C", ACTION_CROP_PLAYLIST, ACTION_CROP_MAIN_PLAYLIST)               \
+  XX_GROUP("m", ACTION_MOVE_SORT_ORDER_UP,                                     \
+           ACTION_MOVE_SELECTED_ITEMS_UP)                                      \
+  XX_GROUP("n", ACTION_MOVE_SORT_ORDER_DOWN,                                   \
+           ACTION_MOVE_SELECTED_ITEMS_DOWN)                                    \
+  XX_SEQ("M", ACTION_MOVE_SELECTED_ITEMS_TO)                                   \
+  XX_SEQ("A", ACTION_ADD)                                                      \
+  XX_SEQ("S", ACTION_SAVE_PLAYLIST)                                            \
+  XX_SEQ("o", ACTION_JUMP_TO_PLAYING_SONG)                                     \
+  XX_GROUP("G", ACTION_JUMP_TO_BROWSER,                                        \
+           ACTION_JUMP_TO_PLAYLIST_EDIT)                                       \
+  XX_SEQ("~", ACTION_JUMP_TO_MEDIA_LIBRARY)                                    \
+  XX_SEQ("E", ACTION_JUMP_TO_TAG_EDIT)                                         \
+  XX_SEQ("U", ACTION_TOGGLE_PLAYING_SONG_CENTERING)                            \
+  XX_SEQ("P", ACTION_TOGGLE_DISPLAY_MODE)                                      \
+  XX_SEQ("\\", ACTION_TOGGLE_INTERFACE)                                        \
+  XX_SEQ("!", ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS)                         \
+  XX_SEQ("L", ACTION_TOGGLE_LYRICS_FETCHER)                                    \
+  XX_SEQ("F", ACTION_FETCH_LYRICS_IN_BACKGROUND)                               \
+  XX_SEQ("alt-l", ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND)                 \
+  XX_SEQ("ctrl-l", ACTION_TOGGLE_SCREEN_LOCK)                                  \
+  XX_GROUP("`", ACTION_TOGGLE_LIBRARY_TAG_TYPE, ACTION_REFETCH_LYRICS,         \
+           ACTION_ADD_RANDOM_ITEMS)                                            \
+  XX_SEQ("ctrl-p", ACTION_SET_SELECTED_ITEMS_PRIORITY)                         \
   XX_SEQ("q", ACTION_QUIT)
 
 
