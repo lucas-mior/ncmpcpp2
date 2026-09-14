@@ -804,8 +804,9 @@ bindings_bind_group(BindingsConfiguration *bindings,
   XX_SEQ("F", ACTION_FETCH_LYRICS_IN_BACKGROUND)                               \
   XX_SEQ("alt-l", ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND)                 \
   XX_SEQ("ctrl-l", ACTION_TOGGLE_SCREEN_LOCK)                                  \
-  XX_GROUP("`", ACTION_TOGGLE_LIBRARY_TAG_TYPE, ACTION_REFETCH_LYRICS,         \
-           ACTION_ADD_RANDOM_ITEMS)                                            \
+  XX_GROUP("`", ACTION_TOGGLE_LIBRARY_TAG_TYPE,                                \
+                ACTION_REFETCH_LYRICS,                                         \
+                ACTION_ADD_RANDOM_ITEMS)                                       \
   XX_SEQ("ctrl-p", ACTION_SET_SELECTED_ITEMS_PRIORITY)                         \
   XX_SEQ("q", ACTION_QUIT)
 
