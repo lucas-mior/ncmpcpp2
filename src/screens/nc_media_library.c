@@ -1736,10 +1736,9 @@ media_library_tags_from_songs(MediaLibraryTagArray *tags, NcmSongArray *songs,
         for (int32 j = 0;
              ncm_song_has_tag_view(song, grouping_tag, j, &grouping_value);
              j += 1) {
-            int32 existing;
-
-            existing = library_find_tag(&replacement, grouping_value.data,
-                                        grouping_value.len);
+            int32 existing = library_find_tag(&replacement,
+                                              grouping_value.data,
+                                              grouping_value.len);
             if (existing >= 0) {
                 if (song->last_modified > replacement.items[existing].mtime) {
                     replacement.items[existing].mtime =
