@@ -734,7 +734,7 @@ bindings_bind_group(BindingsConfiguration *bindings,
   XX_GROUP("2", ACTION_SHOW_BROWSER, ACTION_CHANGE_BROWSE_MODE)                \
   XX_GROUP("3", ACTION_SHOW_SEARCH_ENGINE, ACTION_RESET_SEARCH_ENGINE)         \
   XX_GROUP("4", ACTION_SHOW_MEDIA_LIBRARY,                                     \
-           ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE)                           \
+                ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE)                      \
   XX_SEQ("5", ACTION_SHOW_PLAYLIST_EDIT)                                       \
   XX_SEQ("6", ACTION_SHOW_TAG_EDIT)                                            \
   XX_SEQ("7", ACTION_SHOW_OUTPUTS)                                             \
