@@ -909,9 +909,9 @@ binding_parse_directive(BindingAction *action, BindingDirective *directive,
     case BINDING_DIRECTIVE_REQUIRE_SCREEN:
         if (screen_type_parse(argument.data, argument.len,
                               &action->value.screen_type) < 0) {
-            bindings_error(ncm_error, "unknown screen passed to "
-                               "require_screen: '%.*s'",
-                               argument.len, argument.data);
+            bindings_error(ncm_error,
+                           "unknown screen passed to require_screen: '%.*s'",
+                           argument.len, argument.data);
             return -NCM_ERROR_PARSE;
         }
         action->kind = BINDING_ACTION_REQUIRE_SCREEN;
