@@ -117,7 +117,6 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
     char error_buffer[256];
     int32 error_len;
     int32 status;
-    int32 dot;
 
     menu = nc_editor_buffer_menu_base(&screen->rows);
 
@@ -178,6 +177,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         StrBuilder new_name = {0};
         char *label;
         int32 label_len;
+        int32 dot;
 
         if (!mutable_song_has_new_name_view(&screen->edited, &current_name)) {
             current_name.data = screen->edited.name;
