@@ -301,27 +301,30 @@ lastfm_job_complete(int32 status, NcmError *ncm_error, void *user) {
                               screen->result.text, screen->result.text_len);
         if (ncm_lastfm_service_type(&screen->service)
             == NCM_LASTFM_SERVICE_ARTIST_INFO) {
+            NcBuffer *buffer = &screen->buffer;
+            int32 needle_len = STRLIT_LEN("\n * ");
+            char *data;
+            int32 len;
+
             lastfm_apply_literal_format(&screen->buffer,
                                         STRLIT("\n\nSimilar artists:\n"),
                                         NC_FORMAT_BOLD, NC_FORMAT_NO_BOLD);
             lastfm_apply_literal_format(&screen->buffer,
                                         STRLIT("\n\nSimilar tags:\n"),
                                         NC_FORMAT_BOLD, NC_FORMAT_NO_BOLD);
-            {
-                NcBuffer *buffer = &screen->buffer;
-                char *data = buffer->data;
-                int32 len = buffer->len;
-                int32 needle_len = STRLIT_LEN("\n * ");
 
-                for (int32 i = 0; i + needle_len <= len; i += 1) {
-                    if (BEGINS_WITH(data + i, len - i, STRLIT("\n * "))) {
-                        nc_buffer_add_formatted_color(buffer, i, &Config.color2,
+            buffer = &screen->buffer;
+            data = buffer->data;
+            len = buffer->len;
+
+            for (int32 i = 0; i + needle_len <= len; i += 1) {
+                if (BEGINS_WITH(data + i, len - i, STRLIT("\n * "))) {
+                    nc_buffer_add_formatted_color(buffer, i, &Config.color2,
+                                                  LASTFM_PROPERTY_ID);
+                    nc_buffer_add_formatted_color_end(buffer,
+                                                      i + needle_len,
+                                                      &Config.color2,
                                                       LASTFM_PROPERTY_ID);
-                        nc_buffer_add_formatted_color_end(buffer,
-                                                          i + needle_len,
-                                                          &Config.color2,
-                                                          LASTFM_PROPERTY_ID);
-                    }
                 }
             }
         }
