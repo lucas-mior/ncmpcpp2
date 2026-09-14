@@ -391,7 +391,8 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
                                 candidate.lang, candidate.lang_len);
     ncm_lastfm_service_destroy(&candidate);
 
-    status = ncm_job_queue_push(&screen->jobs, (NcmJob){
+    status = ncm_job_queue_push(&screen->jobs,
+                                (NcmJob){
                                     .run = lastfm_job_run,
                                     .complete = lastfm_job_complete,
                                     .destroy = lastfm_job_destroy, .user = job,
