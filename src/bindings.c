@@ -839,13 +839,13 @@ typedef struct BindingDirective {
     enum BindingDirectiveKind kind;
 } BindingDirective;
 
-#define BINDING_DIRECTIVES(XX)                                      \
-    XX(set_visualizer_sample_multiplier, false, DUMMY)                  \
-    XX(push_character, true, PUSH_CHARACTER)                            \
-    XX(push_characters, true, PUSH_CHARACTERS)                          \
-    XX(require_screen, true, REQUIRE_SCREEN)                            \
-    XX(require_runnable, true, REQUIRE_RUNNABLE)                        \
-    XX(run_external_command, true, EXTERNAL_COMMAND)                    \
+#define BINDING_DIRECTIVES(XX)                                       \
+    XX(set_visualizer_sample_multiplier, false, DUMMY)               \
+    XX(push_character,               true, PUSH_CHARACTER)           \
+    XX(push_characters,              true, PUSH_CHARACTERS)          \
+    XX(require_screen,               true, REQUIRE_SCREEN)           \
+    XX(require_runnable,             true, REQUIRE_RUNNABLE)         \
+    XX(run_external_command,         true, EXTERNAL_COMMAND)         \
     XX(run_external_console_command, true, EXTERNAL_CONSOLE_COMMAND)
 
 #define BINDING_DIRECTIVE_ENTRY(name, required, type) \
