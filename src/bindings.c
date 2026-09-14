@@ -525,14 +525,11 @@ bindings_command_lower_bound(BindingsConfiguration *bindings,
     int32 count = bindings->commands_len;
 
     while (count > 0) {
-        int32 step;
-        int32 mid;
+        int32 step = count / 2;
+        int32 mid = first + step;
+        int32 min_len = bindings->commands[mid].name_len;
         int32 cmp;
-        int32 min_len;
 
-        step = count / 2;
-        mid = first + step;
-        min_len = bindings->commands[mid].name_len;
         if (name_len < min_len) {
             min_len = name_len;
         }
