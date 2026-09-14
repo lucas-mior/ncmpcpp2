@@ -234,8 +234,8 @@ lastfm_screen_destroy(LastfmScreen *screen) {
 void
 lastfm_screen_set_geometry(LastfmScreen *screen, int32 start_x, int32 width,
                            int32 main_start_y, int32 main_height) {
-    nc_lastfm_screen_set_geometry(&screen->screen, start_x, width,
-                                  main_start_y, main_height);
+    nc_lastfm_screen_set_geometry(&screen->screen,
+                                  start_x, width, main_start_y, main_height);
     nc_window_resize(&screen->window,
                      nc_lastfm_screen_width(&screen->screen),
                      nc_lastfm_screen_height(&screen->screen));
