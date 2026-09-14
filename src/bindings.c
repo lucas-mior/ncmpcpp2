@@ -989,8 +989,8 @@ binding_parse_action_line(BindingAction *action, char *line, int32 line_len,
 
     if (ncm_extract_enclosed(line + name_len, line_len - name_len,
                              '"', '"', &argument) < 0) {
-        bindings_error(ncm_error, "missing quoted argument: '%.*s'",
-                           line_len, line);
+        bindings_error(ncm_error,
+                       "missing quoted argument: '%.*s'", line_len, line);
         return -NCM_ERROR_PARSE;
     }
 
