@@ -860,9 +860,9 @@ static BindingDirective binding_directives[] = {
 static BindingDirective *
 binding_directive_find(char *name, int32 name_len) {
     for (int32 i = 0; i < LENGTH(binding_directives); i += 1) {
-        if (STREQUAL(name, name_len, binding_directives[i].name,
-                     binding_directives[i].name_len)) {
-            return binding_directives + i;
+        BindingDirective *binding = &binding_directives[i];
+        if (STREQUAL(name, name_len, binding->name, binding->name_len)) {
+            return binding;
         }
     }
     return NULL;
