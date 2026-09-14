@@ -174,8 +174,8 @@ lastfm_screen_init(LastfmScreen *screen, int32 start_x, int32 width,
                    NcColor color, NcBorder border, int32 lines_scrolled) {
     NcScreenOps ops = lastfm_ops;
 
-    nc_lastfm_screen_init(&screen->screen, ops, screen, start_x, width,
-                          main_start_y, main_height);
+    nc_lastfm_screen_init(&screen->screen, ops, screen,
+                          start_x, width, main_start_y, main_height);
 
     nc_window_init(&screen->window,
                    nc_lastfm_screen_start_x(&screen->screen),
