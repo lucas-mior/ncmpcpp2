@@ -58,9 +58,7 @@ static void
 tiny_editor_buffer_getter_value(NcBuffer *buffer, enum SongGetter getter,
                                 char *value, int32 value_len) {
     char *key;
-    int32 key_len;
-
-    key_len = SONG_GETTER_alias_len(getter, &key);
+    int32 key_len = SONG_GETTER_alias_len(getter, &key);
     tiny_editor_buffer_key_value(buffer, key, key_len, value, value_len);
     return;
 }
