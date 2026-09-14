@@ -423,9 +423,7 @@ lastfm_screen_dispatch_jobs(LastfmScreen *screen) {
 
 static bool
 lastfm_take_refresh_request(LastfmScreen *screen) {
-    bool result;
-
-    result = screen->refresh_window;
+    bool result = screen->refresh_window;
     screen->refresh_window = false;
     return result;
 }
