@@ -793,7 +793,7 @@ ncm_song_tags_buffer(NcmSong *song, enum SongGetter getter,
     if (song == NULL) {
         return result;
     }
-    if ((uint32)getter >= (uint32)SONG_GETTER_COUNT) {
+    if (getter >= SONG_GETTER_COUNT) {
         return result;
     }
     if ((separator == NULL) || (separator_len < 0)) {
