@@ -773,9 +773,12 @@ bindings_bind_group(BindingsConfiguration *bindings,
   XX_SEQ(".", ACTION_NEXT_FOUND_ITEM)                                          \
   XX_SEQ(",", ACTION_PREVIOUS_FOUND_ITEM)                                      \
   XX_SEQ("w", ACTION_TOGGLE_FIND_MODE)                                         \
-  XX_GROUP("e", ACTION_EDIT_SONG, ACTION_EDIT_LIBRARY_TAG,                     \
-           ACTION_EDIT_LIBRARY_ALBUM, ACTION_EDIT_DIRECTORY_NAME,              \
-           ACTION_EDIT_PLAYLIST_NAME, ACTION_EDIT_LYRICS)                      \
+  XX_GROUP("e", ACTION_EDIT_SONG,                                              \
+                ACTION_EDIT_LIBRARY_TAG,                                       \
+                ACTION_EDIT_LIBRARY_ALBUM,                                     \
+                ACTION_EDIT_DIRECTORY_NAME,                                    \
+                ACTION_EDIT_PLAYLIST_NAME,                                     \
+                ACTION_EDIT_LYRICS)                                            \
   XX_SEQ("i", ACTION_SHOW_SONG_INFO)                                           \
   XX_SEQ("I", ACTION_SHOW_ARTIST_INFO)                                         \
   XX_SEQ("g", ACTION_JUMP_TO_POSITION_IN_SONG)                                 \
