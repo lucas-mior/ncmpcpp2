@@ -449,7 +449,7 @@ bindings_config_clear(BindingsConfiguration *bindings) {
         ncm_command_destroy(bindings->commands + i);
     }
     for (int32 i = 0; i < bindings->keys_len; i += 1) {
-        NcmKeyBindings *key_bindings = bindings->keys + i;
+        NcmKeyBindings *key_bindings = &bindings->keys[i];
 
         for (int32 j = 0; j < key_bindings->bindings_len; j += 1) {
             binding_destroy(key_bindings->bindings + j);
