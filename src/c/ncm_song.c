@@ -803,14 +803,13 @@ ncm_song_tags_buffer(NcmSong *song, enum SongGetter getter,
 
     for (int32 i = 0; ; i += 1) {
         StrBuilder tag = ncm_song_getter_buffer_unchecked(song, getter, i);
-        bool already_present;
+        bool already_present = false;
 
         if (tag.len <= 0) {
             sb_free(&tag);
             break;
         }
 
-        already_present = false;
         if (!show_duplicates) {
             for (int32 j = 0; j < i; j += 1) {
                 StrBuilder previous
