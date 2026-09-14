@@ -404,28 +404,28 @@ ncm_mpd_connection_recv_idle(MpdConnection *connection, bool disable_timeout,
     status = ncm_mpd_connection_check_error(connection);
 
     events = 0;
-    if ((mpd_events & MPD_IDLE_DATABASE) != 0) {
+    if (mpd_events & MPD_IDLE_DATABASE) {
         events |= NCM_MPD_IDLE_DATABASE;
     }
-    if ((mpd_events & MPD_IDLE_STORED_PLAYLIST) != 0) {
+    if (mpd_events & MPD_IDLE_STORED_PLAYLIST) {
         events |= NCM_MPD_IDLE_STORED_PLAYLIST;
     }
-    if ((mpd_events & MPD_IDLE_PLAYLIST) != 0) {
+    if (mpd_events & MPD_IDLE_PLAYLIST) {
         events |= NCM_MPD_IDLE_PLAYLIST;
     }
-    if ((mpd_events & MPD_IDLE_PLAYER) != 0) {
+    if (mpd_events & MPD_IDLE_PLAYER) {
         events |= NCM_MPD_IDLE_PLAYER;
     }
-    if ((mpd_events & MPD_IDLE_MIXER) != 0) {
+    if (mpd_events & MPD_IDLE_MIXER) {
         events |= NCM_MPD_IDLE_MIXER;
     }
-    if ((mpd_events & MPD_IDLE_OUTPUT) != 0) {
+    if (mpd_events & MPD_IDLE_OUTPUT) {
         events |= NCM_MPD_IDLE_OUTPUT;
     }
-    if ((mpd_events & MPD_IDLE_UPDATE) != 0) {
+    if (mpd_events & MPD_IDLE_UPDATE) {
         events |= NCM_MPD_IDLE_UPDATE;
     }
-    if ((mpd_events & MPD_IDLE_OPTIONS) != 0) {
+    if (mpd_events & MPD_IDLE_OPTIONS) {
         events |= NCM_MPD_IDLE_OPTIONS;
     }
     if (out_events) {
