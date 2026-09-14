@@ -542,13 +542,13 @@ tiny_editor_add_row(TinyTagEditScreen *screen, NcBuffer *buffer, uint32 flags) {
 }
 
 static void
-tiny_editor_buffer_key_uint(NcBuffer *buffer, char *key, int32 key_len,
-                            uint32 value, char *suffix, int32 suffix_len) {
+tiny_editor_buffer_key_int(NcBuffer *buffer, char *key, int32 key_len,
+                            int32 value, char *suffix, int32 suffix_len) {
     char number[64];
     int32 len;
 
     tiny_editor_buffer_key_value(buffer, key, key_len, NULL, 0);
-    len = SNPRINTF(number, "%u", value);
+    len = SNPRINTF(number, "%d", value);
     nc_buffer_append_data(buffer, number, len);
     nc_buffer_append_data(buffer, suffix, suffix_len);
     return;
@@ -673,15 +673,13 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
     nc_buffer_clear(&row);
 
-    tiny_editor_buffer_key_uint(&row, STRLIT("Bitrate"),
-                                (uint32)properties.bitrate,
-                                STRLIT(" kbps"));
+    tiny_editor_buffer_key_int(&row, STRLIT("Bitrate"),
+                               properties.bitrate, STRLIT(" kbps"));
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
     nc_buffer_clear(&row);
 
-    tiny_editor_buffer_key_uint(&row, STRLIT("Sample rate"),
-                                (uint32)properties.sample_rate,
-                                STRLIT(" Hz"));
+    tiny_editor_buffer_key_int(&row, STRLIT("Sample rate"),
+                               properties.sample_rate, STRLIT(" Hz"));
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
     nc_buffer_clear(&row);
 
