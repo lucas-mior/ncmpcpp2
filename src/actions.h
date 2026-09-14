@@ -53,8 +53,7 @@
   XX(ACTION_SEEK_BACKWARD, seek_backward)                                 \
   XX(ACTION_TOGGLE_DISPLAY_MODE, toggle_display_mode)                     \
   XX(ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS, toggle_separators_between_albums) \
-  XX(ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE,                          \
-     toggle_lyrics_update_on_song_change)                                 \
+  XX(ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE, toggle_lyrics_update_on_song_change) \
   XX(ACTION_TOGGLE_LYRICS_FETCHER, toggle_lyrics_fetcher)                 \
   XX(ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND,                         \
      toggle_fetch_lyrics_in_background)                                   \
