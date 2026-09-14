@@ -980,8 +980,7 @@ binding_parse_action_line(BindingAction *action, char *line, int32 line_len,
 
     if (name_len == line_len) {
         if (ncm_action_type_parse(line, name_len, &action->value.type) < 0) {
-            bindings_error(ncm_error, "unknown action: '%.*s'",
-                               name_len, line);
+            bindings_error(ncm_error, "unknown action: '%.*s'", name_len, line);
             return -NCM_ERROR_PARSE;
         }
         action->kind = BINDING_ACTION_NORMAL;
