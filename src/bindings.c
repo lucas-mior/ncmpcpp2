@@ -746,7 +746,8 @@ bindings_bind_group(BindingsConfiguration *bindings,
   XX_SEQ("<", ACTION_PREVIOUS)                                                 \
   XX_GROUP("ctrl-h", ACTION_JUMP_TO_PARENT_DIRECTORY, ACTION_REPLAY_SONG)      \
   XX_GROUP("backspace", ACTION_JUMP_TO_PARENT_DIRECTORY,                       \
-           ACTION_REPLAY_SONG, ACTION_PLAY)                                    \
+                        ACTION_REPLAY_SONG,                                    \
+                        ACTION_PLAY)                                           \
   XX_SEQ("f", ACTION_SEEK_FORWARD)                                             \
   XX_SEQ("b", ACTION_SEEK_BACKWARD)                                            \
   XX_SEQ("r", ACTION_TOGGLE_REPEAT)                                            \
