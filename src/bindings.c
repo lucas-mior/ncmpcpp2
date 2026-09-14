@@ -1207,12 +1207,12 @@ bindings_config_read(BindingsConfiguration *bindings,
         } else if ((len - start >= 7)
                    && STREQUAL(current_line + start, 7, "def_key")) {
             status = bindings_finalize_definition(bindings, in_progress,
-                                                      &actions, key,
-                                                      key_name, key_name_len,
-                                                      command_name,
-                                                      command_name_len,
-                                                      command_immediate,
-                                                      ncm_error);
+                                                  &actions, key,
+                                                  key_name, key_name_len,
+                                                  command_name,
+                                                  command_name_len,
+                                                  command_immediate,
+                                                  ncm_error);
             binding_clear(&actions);
             in_progress = IN_PROGRESS_NONE;
             if (status < 0) {
