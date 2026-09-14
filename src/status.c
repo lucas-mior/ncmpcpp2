@@ -78,10 +78,14 @@ status_active_hooks(NcmStatusHooks *hooks) {
 
 static int32
 status_full_event_mask(void) {
-    return NCM_MPD_IDLE_DATABASE | NCM_MPD_IDLE_STORED_PLAYLIST
-           | NCM_MPD_IDLE_PLAYLIST | NCM_MPD_IDLE_PLAYER
-           | NCM_MPD_IDLE_MIXER | NCM_MPD_IDLE_OUTPUT
-           | NCM_MPD_IDLE_UPDATE | NCM_MPD_IDLE_OPTIONS;
+    return NCM_MPD_IDLE_DATABASE
+           | NCM_MPD_IDLE_STORED_PLAYLIST
+           | NCM_MPD_IDLE_PLAYLIST
+           | NCM_MPD_IDLE_PLAYER
+           | NCM_MPD_IDLE_MIXER
+           | NCM_MPD_IDLE_OUTPUT
+           | NCM_MPD_IDLE_UPDATE
+           | NCM_MPD_IDLE_OPTIONS;
 }
 
 void
