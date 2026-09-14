@@ -801,7 +801,6 @@ int32
 ncm_mpd_connection_get_playlists(MpdConnection *connection,
                                  NcmPlaylistArray *playlists) {
     struct mpd_playlist *playlist;
-    NcmPlaylist item = {0};
     int32 err;
 
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
@@ -815,11 +814,12 @@ ncm_mpd_connection_get_playlists(MpdConnection *connection,
 
     ncm_playlist_array_clear(playlists);
     while (true) {
+        NcmPlaylist item = {0};
+
         if ((playlist = mpd_recv_playlist(connection->mpd)) == NULL) {
             break;
         }
 
-        item = (NcmPlaylist){0};
         err = ncm_mpd_item_playlist_from_mpd_playlist(&item, playlist);
         mpd_playlist_free(playlist);
         if (err < 0) {
