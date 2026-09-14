@@ -751,8 +751,9 @@ bindings_bind_group(BindingsConfiguration *bindings,
   XX_SEQ("b", ACTION_SEEK_BACKWARD)                                            \
   XX_SEQ("r", ACTION_TOGGLE_REPEAT)                                            \
   XX_SEQ("z", ACTION_TOGGLE_RANDOM)                                            \
-  XX_GROUP("y", ACTION_SAVE_TAG_CHANGES, ACTION_START_SEARCHING,               \
-           ACTION_TOGGLE_SINGLE)                                               \
+  XX_GROUP("y", ACTION_SAVE_TAG_CHANGES,                                       \
+                ACTION_START_SEARCHING,                                        \
+                ACTION_TOGGLE_SINGLE)                                          \
   XX_SEQ("R", ACTION_TOGGLE_CONSUME)                                           \
   XX_SEQ("Y", ACTION_TOGGLE_REPLAY_GAIN_MODE)                                  \
   XX_SEQ("T", ACTION_TOGGLE_ADD_MODE)                                          \
