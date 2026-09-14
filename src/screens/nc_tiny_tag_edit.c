@@ -32,8 +32,10 @@ tiny_editor_action_runnable(TinyTagEditScreen *screen) {
     if ((row = tiny_editor_current_row(screen)) < 0) {
         return false;
     }
-    return (row < nc_menu_all_item_len(menu))
-           && nc_menu_position_is_selectable(menu, row);
+    if (row >= nc_menu_all_item_len(menu)) {
+        return false;
+    }
+    return nc_menu_position_is_selectable(menu, row);
 }
 
 static bool
