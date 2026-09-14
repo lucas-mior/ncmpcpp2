@@ -55,8 +55,7 @@
   XX(ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS, toggle_separators_between_albums) \
   XX(ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE, toggle_lyrics_update_on_song_change) \
   XX(ACTION_TOGGLE_LYRICS_FETCHER, toggle_lyrics_fetcher)                 \
-  XX(ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND,                         \
-     toggle_fetch_lyrics_in_background)                                   \
+  XX(ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND, toggle_fetch_lyrics_in_background) \
   XX(ACTION_TOGGLE_PLAYING_SONG_CENTERING, toggle_playing_song_centering) \
   XX(ACTION_UPDATE_DATABASE, update_database)                             \
   XX(ACTION_JUMP_TO_PLAYING_SONG, jump_to_playing_song)                   \
