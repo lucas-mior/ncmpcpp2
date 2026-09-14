@@ -1996,6 +1996,7 @@ media_library_screen_toggle_sort_mode(MediaLibraryScreen *screen,
     media_library_screen_request_tags_update(screen);
     media_library_screen_request_albums_update(screen);
     media_library_screen_request_songs_update(screen);
+
     if (enabled) {
         *enabled = screen->sort_by_mtime;
     }
