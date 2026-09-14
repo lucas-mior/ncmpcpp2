@@ -152,12 +152,12 @@ ncm_progressbar_draw(int32 elapsed, int32 time) {
         statusbar_apply_formatted_color(window,
                                         &Config.progressbar_elapsed_color);
         for (int32 i = 0; i < filled; i += 1) {
-            nc_window_print_data(window, progressbar[0].data,
-                                 progressbar[0].len);
+            nc_window_print_data(window,
+                                 progressbar[0].data, progressbar[0].len);
         }
         if (howlong < (int64)width) {
-            nc_window_print_data(window, progressbar[1].data,
-                                 progressbar[1].len);
+            nc_window_print_data(window,
+                                 progressbar[1].data, progressbar[1].len);
         }
         statusbar_apply_formatted_color_end(window,
                                             &Config.progressbar_elapsed_color);
