@@ -721,7 +721,9 @@ bindings_bind_group(BindingsConfiguration *bindings,
            ACTION_TOGGLE_VISUALIZATION_TYPE)                                   \
   XX_GROUP("delete", ACTION_DELETE_PLAYLIST_ITEMS,                             \
            ACTION_DELETE_BROWSER_ITEMS, ACTION_DELETE_STORED_PLAYLIST)         \
-  XX_GROUP("right", ACTION_NEXT_COLUMN, ACTION_SLAVE_SCREEN, ACTION_VOLUME_UP) \
+  XX_GROUP("right", ACTION_NEXT_COLUMN,                                        \
+                    ACTION_SLAVE_SCREEN,                                       \
+                    ACTION_VOLUME_UP)                                          \
   XX_SEQ("+", ACTION_VOLUME_UP)                                                \
   XX_GROUP("left", ACTION_PREVIOUS_COLUMN,                                     \
                    ACTION_MASTER_SCREEN,                                       \
