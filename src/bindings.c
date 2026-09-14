@@ -311,7 +311,7 @@ binding_runtime_run_external_console_command(char *command, int32 command_len,
 BindingRuntime *
 binding_default_runtime(void) {
     static BindingRuntime runtime;
-    static bool initialized;
+    static bool initialized = false;
 
     if (!initialized) {
         runtime.can_run_action = binding_runtime_can_run_action;
