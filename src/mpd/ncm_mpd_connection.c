@@ -394,9 +394,9 @@ ncm_mpd_connection_send_idle(MpdConnection *connection, int32 events) {
 
 int32
 ncm_mpd_connection_recv_idle(MpdConnection *connection, bool disable_timeout,
-                             int32 *out_events) {
+                             uint32 *out_events) {
     enum mpd_idle mpd_events;
-    int32 events;
+    uint32 events;
     int32 status;
 
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));

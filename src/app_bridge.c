@@ -81,7 +81,7 @@ app_bridge_report_mpd_error(NcmError *ncm_error) {
 }
 
 static void
-app_bridge_noidle_status_update(int32 flags, void *user) {
+app_bridge_noidle_status_update(uint32 flags, void *user) {
     NcmError ncm_error;
 
     (void)user;

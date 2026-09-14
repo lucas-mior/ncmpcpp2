@@ -64,9 +64,9 @@ void ncm_status_set_database_update_observer(void (*callback)(void *user),
                                              void *user);
 void ncm_status_set_playlist_update_observer(void (*callback)(void *user),
                                              void *user);
-int32 ncm_status_apply_mpd_status(NcmMpdStatus *, int32, NcmStatusHooks *,
+int32 ncm_status_apply_mpd_status(NcmMpdStatus *, uint32, NcmStatusHooks *,
                                   NcmError *);
-int32 ncm_status_update(MpdClient *, int32, NcmError *);
+int32 ncm_status_update(MpdClient *, uint32, NcmError *);
 int32 ncm_status_update_full(MpdClient *, NcmStatusHooks *, NcmError *);
 int32 ncm_status_update_from_noidle(MpdClient *, NcmStatusHooks *, NcmError *);
 void ncm_status_clear(void);

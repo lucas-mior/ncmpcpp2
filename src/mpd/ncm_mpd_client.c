@@ -61,9 +61,9 @@ ncm_mpd_client_require_connected(MpdClient *client, NcmError *ncm_error) {
 }
 
 static int32
-ncm_mpd_client_noidle_connected(MpdClient *client, int32 *flags,
+ncm_mpd_client_noidle_connected(MpdClient *client, uint32 *flags,
                                 NcmError *ncm_error) {
-    int32 events = 0;
+    uint32 events = 0;
 
     ASSERT(client != NULL);
 
@@ -79,15 +79,15 @@ ncm_mpd_client_noidle_connected(MpdClient *client, int32 *flags,
                            ncm_error);
     }
 
-    if (flags != NULL) {
-        *flags = (int32)events;
+    if (flags) {
+        *flags = events;
     }
     return ncm_error_ok(ncm_error);
 }
 
 static int32
 ncm_mpd_client_prechecks_connected(MpdClient *client, NcmError *ncm_error) {
-    int32 flags = 0;
+    uint32 flags = 0;
     int32 status;
 
     if ((status = ncm_mpd_client_noidle_connected(client, &flags,
@@ -429,7 +429,7 @@ ncm_mpd_client_idle(MpdClient *client, NcmError *ncm_error) {
 }
 
 int32
-ncm_mpd_client_noidle(MpdClient *client, int32 *flags, NcmError *ncm_error) {
+ncm_mpd_client_noidle(MpdClient *client, uint32 *flags, NcmError *ncm_error) {
     NCM_CLIENT_TRY(ncm_mpd_client_require_connected(client, ncm_error));
     return ncm_mpd_client_noidle_connected(client, flags, ncm_error);
 }

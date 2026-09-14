@@ -451,7 +451,7 @@ int32 ncm_mpd_connection_fd(MpdConnection *);
 int32 ncm_mpd_connection_set_timeout(MpdConnection *, int32);
 int32 ncm_mpd_connection_noidle(MpdConnection *);
 int32 ncm_mpd_connection_send_idle(MpdConnection *, int32);
-int32 ncm_mpd_connection_recv_idle(MpdConnection *, bool, int32 *);
+int32 ncm_mpd_connection_recv_idle(MpdConnection *, bool, uint32 *);
 int32 ncm_mpd_connection_check_error(MpdConnection *);
 char *ncm_mpd_connection_error(MpdConnection *);
 void ncm_mpd_connection_clear_error(MpdConnection *);
@@ -553,7 +553,7 @@ int32 ncm_mpd_connection_delete_playlist(MpdConnection *, char *);
 int32 ncm_mpd_connection_load_playlist(MpdConnection *, char *, bool *);
 int32 ncm_mpd_connection_save_playlist(MpdConnection *, char *);
 
-typedef void NcmMpdNoidleCallback(int32, void *);
+typedef void NcmMpdNoidleCallback(uint32, void *);
 
 typedef struct MpdClient {
     MpdConnection connection;
@@ -584,7 +584,7 @@ int32 ncm_mpd_client_connect(MpdClient *, NcmError *);
 void ncm_mpd_client_disconnect(MpdClient *);
 int32 ncm_mpd_client_send_password(MpdClient *, NcmError *);
 int32 ncm_mpd_client_idle(MpdClient *, NcmError *);
-int32 ncm_mpd_client_noidle(MpdClient *, int32 *, NcmError *);
+int32 ncm_mpd_client_noidle(MpdClient *, uint32 *, NcmError *);
 
 enum NcmMpdError ncm_mpd_client_error_code(MpdClient *);
 enum NcmMpdServerError ncm_mpd_client_server_error_code(MpdClient *);
