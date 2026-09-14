@@ -894,8 +894,8 @@ binding_parse_directive(BindingAction *action, BindingDirective *directive,
     }
     case BINDING_DIRECTIVE_PUSH_CHARACTERS:
         if (argument.len <= 0) {
-            bindings_error(ncm_error, "empty argument passed to "
-                               "push_characters");
+            bindings_error(ncm_error,
+                           "empty argument passed to push_characters");
             return -NCM_ERROR_PARSE;
         }
         action->kind = BINDING_ACTION_PUSH_CHARACTERS;
