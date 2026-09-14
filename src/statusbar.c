@@ -138,8 +138,8 @@ ncm_progressbar_draw(int32 elapsed, int32 time) {
     statusbar_apply_formatted_color(window, &Config.progressbar_color);
     if ((progressbar[2].len > 0) && (progressbar[2].data[0] != '\0')) {
         for (int32 i = 0; i < width; i += 1) {
-            nc_window_print_data(window, progressbar[2].data,
-                                 progressbar[2].len);
+            nc_window_print_data(window,
+                                 progressbar[2].data, progressbar[2].len);
         }
         nc_window_go_to_xy(window, 0, 0);
     } else {
