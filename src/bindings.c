@@ -1012,12 +1012,12 @@ bindings_finalize_definition(BindingsConfiguration *bindings,
     if (actions->actions_len == 0) {
         if (in_progress == 1) {
             bindings_error(ncm_error,
-                               "definition of command '%.*s' cannot be empty",
-                               command_name_len, command_name);
+                           "definition of command '%.*s' cannot be empty",
+                           command_name_len, command_name);
         } else {
             bindings_error(ncm_error,
-                               "definition of key '%.*s' cannot be empty",
-                               key_name_len, key_name);
+                           "definition of key '%.*s' cannot be empty",
+                           key_name_len, key_name);
         }
         return -NCM_ERROR_PARSE;
     }
