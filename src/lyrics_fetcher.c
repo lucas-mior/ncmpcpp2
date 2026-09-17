@@ -2498,8 +2498,7 @@ lyrics_url_query_has_key(char *url, int32 url_len,
                          char *wanted_key, int32 wanted_key_len) {
     char *match;
 
-    match = memchr64(url, '?', url_len);
-    if (match == NULL) {
+    if ((match = memchr64(url, '?', url_len)) == NULL) {
         return false;
     }
     for (int32 query = (int32)(match - url) + 1; query < url_len; ) {
