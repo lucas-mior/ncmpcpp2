@@ -2508,8 +2508,8 @@ lyrics_url_query_has_key(char *url, int32 url_len,
         int32 key_len;
         int32 value_len;
 
-        query = lyrics_url_query_value(url, url_len, query, &key, &key_len,
-                                       &value, &value_len);
+        query = lyrics_url_query_value(url, url_len, query,
+                                       &key, &key_len, &value, &value_len);
         (void)value;
         (void)value_len;
         if ((key != NULL) && (key_len == wanted_key_len)
