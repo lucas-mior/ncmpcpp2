@@ -214,23 +214,23 @@ APP_SCREEN_REGISTER_SWITCH_TYPES(APP_SCREEN_DEFINE_REGISTER_SWITCH)
 
 #undef APP_SCREEN_DEFINE_REGISTER_SWITCH
 
-#define APP_SCREEN_DEFINE_SIMPLE_SHOW(suffix)                             \
-    static int32                                                        \
-    app_screen_##suffix##_show(void) {                                        \
-        app_screen_##suffix##_register();                                     \
-        app_screen_##suffix##_switch_to();                                    \
-        return 0;                                                             \
+#define APP_SCREEN_DEFINE_SIMPLE_SHOW(suffix)                               \
+    static int32                                                            \
+    app_screen_##suffix##_show(void) {                                      \
+        app_screen_##suffix##_register();                                   \
+        app_screen_##suffix##_switch_to();                                  \
+        return 0;                                                           \
     }
 
 APP_SCREEN_SIMPLE_SWITCH_TYPES(APP_SCREEN_DEFINE_SIMPLE_SHOW)
 
 #undef APP_SCREEN_DEFINE_SIMPLE_SHOW
 
-#define APP_SCREEN_DEFINE_REGISTER_SHOW(suffix)                           \
-    static int32                                                        \
-    app_screen_##suffix##_show(void) {                                        \
-        app_screen_##suffix##_switch_to();                                    \
-        return 0;                                                             \
+#define APP_SCREEN_DEFINE_REGISTER_SHOW(suffix)                             \
+    static int32                                                            \
+    app_screen_##suffix##_show(void) {                                      \
+        app_screen_##suffix##_switch_to();                                  \
+        return 0;                                                           \
     }
 
 APP_SCREEN_REGISTER_SWITCH_TYPES(APP_SCREEN_DEFINE_REGISTER_SHOW)
