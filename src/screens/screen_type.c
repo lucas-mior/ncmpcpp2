@@ -72,7 +72,7 @@ screen_type_parse_checked(char *string, int32 string_len, bool startup_only,
     enum ScreenType parsed;
 
     ASSERT(string != NULL);
-    ASSERT(string_len >= 0);
+    ASSERT_NON_NEGATIVE(string_len);
     ASSERT(screen_type != NULL);
 
     parsed = SCREEN_TYPE_parse(string, string_len);

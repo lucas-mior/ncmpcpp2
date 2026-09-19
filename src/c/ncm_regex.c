@@ -10,7 +10,7 @@ static void
 ncm_regex_prepare_string(char *string, int32 string_len, StrBuilder *buffer) {
     ASSERT(buffer != NULL);
     ASSERT(string != NULL);
-    ASSERT(string_len >= 0);
+    ASSERT_NON_NEGATIVE(string_len);
 
     sb_clear(buffer);
     SB_APPEND(buffer, string, string_len);
