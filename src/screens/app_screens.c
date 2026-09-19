@@ -191,23 +191,23 @@ APP_SCREEN_REPLACE_REGISTER_TYPES(APP_SCREEN_DEFINE_REPLACE_REGISTER)
 
 #undef APP_SCREEN_DEFINE_REPLACE_REGISTER
 
-#define APP_SCREEN_DEFINE_SIMPLE_SWITCH(suffix)                            \
-    void                                                                       \
-    app_screen_##suffix##_switch_to(void) {                                    \
-        app_screen_switch_to(app_screen_##suffix##_base());                    \
-        return;                                                                \
+#define APP_SCREEN_DEFINE_SIMPLE_SWITCH(suffix)                             \
+    void                                                                    \
+    app_screen_##suffix##_switch_to(void) {                                 \
+        app_screen_switch_to(app_screen_##suffix##_base());                 \
+        return;                                                             \
     }
 
 APP_SCREEN_SIMPLE_SWITCH_TYPES(APP_SCREEN_DEFINE_SIMPLE_SWITCH)
 
 #undef APP_SCREEN_DEFINE_SIMPLE_SWITCH
 
-#define APP_SCREEN_DEFINE_REGISTER_SWITCH(suffix)                          \
-    void                                                                       \
-    app_screen_##suffix##_switch_to(void) {                                    \
-        app_screen_##suffix##_register();                                      \
-        app_screen_switch_to(app_screen_##suffix##_base());                    \
-        return;                                                                \
+#define APP_SCREEN_DEFINE_REGISTER_SWITCH(suffix)                           \
+    void                                                                    \
+    app_screen_##suffix##_switch_to(void) {                                 \
+        app_screen_##suffix##_register();                                   \
+        app_screen_switch_to(app_screen_##suffix##_base());                 \
+        return;                                                             \
     }
 
 APP_SCREEN_REGISTER_SWITCH_TYPES(APP_SCREEN_DEFINE_REGISTER_SWITCH)
