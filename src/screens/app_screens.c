@@ -119,7 +119,7 @@ app_screen_register_replacing(NcScreen *screen, enum NcScreenType type) {
 
     registered = app_controller_find_screen_type(type);
     if (registered && (registered != screen)) {
-        ASSERT(app_controller_unregister_screen(registered) == 0);
+        ASSERT(!app_controller_unregister_screen(registered));
     }
     app_register_screen(screen);
     return;
