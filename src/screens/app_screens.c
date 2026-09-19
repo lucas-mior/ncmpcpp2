@@ -237,10 +237,10 @@ APP_SCREEN_REGISTER_SWITCH_TYPES(APP_SCREEN_DEFINE_REGISTER_SHOW)
 
 #undef APP_SCREEN_DEFINE_REGISTER_SHOW
 
-#define APP_SCREEN_DEFINE_IS_CURRENT(suffix)                               \
-    bool                                                                       \
-    app_screen_##suffix##_is_current(void) {                                   \
-        return app_screen_is_current(app_screen_##suffix##_base());            \
+#define APP_SCREEN_DEFINE_IS_CURRENT(suffix)                                \
+    bool                                                                    \
+    app_screen_##suffix##_is_current(void) {                                \
+        return app_screen_is_current(app_screen_##suffix##_base());         \
     }
 
 APP_SCREEN_IS_CURRENT_TYPES(APP_SCREEN_DEFINE_IS_CURRENT)
