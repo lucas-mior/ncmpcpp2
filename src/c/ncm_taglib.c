@@ -151,8 +151,8 @@ ncm_taglib_read_mapped_properties(TaglibFile *file,
             (enum TagType)i, property, LENGTH(property));
         name_len = ncm_tag_type_taglib_name_len((enum TagType)i,
                                                 name, LENGTH(name));
-        ASSERT(property_len > 0);
-        ASSERT(name_len > 0);
+        ASSERT_POSITIVE(property_len);
+        ASSERT_POSITIVE(name_len);
 
         if ((values = taglib_property_get(handle, property)) == NULL) {
             continue;

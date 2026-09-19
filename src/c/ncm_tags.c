@@ -72,7 +72,7 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
 
         property_len = ncm_tag_type_taglib_property_len(
             tag, property, LENGTH(property));
-        ASSERT(property_len > 0);
+        ASSERT_POSITIVE(property_len);
 
         if ((status = ncm_taglib_clear_property(&file, property)) < 0) {
             ncm_taglib_file_close(&file);
