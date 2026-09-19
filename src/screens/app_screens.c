@@ -147,7 +147,7 @@ APP_SCREEN_DIRECT_ACCESSOR_TYPES(APP_SCREEN_DIRECT_ACCESSOR)
 
 #undef APP_SCREEN_DIRECT_ACCESSOR
 
-#define APP_SCREEN_DEFINE_WRAPPED_ACCESSOR(suffix, base_expr)           \
+#define APP_SCREEN_DEFINE_WRAPPED_ACCESSOR(suffix, base_expr)               \
     NcScreen *                                                              \
     app_screen_##suffix##_base(void) {                                      \
         app_screen_##suffix##_init();                                       \
@@ -158,7 +158,7 @@ APP_SCREEN_WRAPPED_ACCESSOR_TYPES(APP_SCREEN_DEFINE_WRAPPED_ACCESSOR)
 
 #undef APP_SCREEN_DEFINE_WRAPPED_ACCESSOR
 
-#define APP_SCREEN_TYPED_WRAPPED_ACCESSOR(suffix, function, type, expr) \
+#define APP_SCREEN_TYPED_WRAPPED_ACCESSOR(suffix, function, type, expr)     \
     type *                                                                  \
     function(void) {                                                        \
         app_screen_##suffix##_init();                                       \
@@ -169,22 +169,22 @@ APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(APP_SCREEN_TYPED_WRAPPED_ACCESSOR)
 
 #undef APP_SCREEN_TYPED_WRAPPED_ACCESSOR
 
-#define APP_SCREEN_DEFINE_STANDARD_REGISTER(suffix)                        \
-    void                                                                       \
-    app_screen_##suffix##_register(void) {                                     \
-        app_screen_register_once(app_screen_##suffix##_base());                \
-        return;                                                                \
+#define APP_SCREEN_DEFINE_STANDARD_REGISTER(suffix)                         \
+    void                                                                    \
+    app_screen_##suffix##_register(void) {                                  \
+        app_screen_register_once(app_screen_##suffix##_base());             \
+        return;                                                             \
     }
 
 APP_SCREEN_STANDARD_REGISTER_TYPES(APP_SCREEN_DEFINE_STANDARD_REGISTER)
 
 #undef APP_SCREEN_DEFINE_STANDARD_REGISTER
 
-#define APP_SCREEN_DEFINE_REPLACE_REGISTER(suffix, type)                   \
-    void                                                                       \
-    app_screen_##suffix##_register(void) {                                     \
-        app_screen_register_replacing(app_screen_##suffix##_base(), type);     \
-        return;                                                                \
+#define APP_SCREEN_DEFINE_REPLACE_REGISTER(suffix, type)                    \
+    void                                                                    \
+    app_screen_##suffix##_register(void) {                                  \
+        app_screen_register_replacing(app_screen_##suffix##_base(), type);  \
+        return;                                                             \
     }
 
 APP_SCREEN_REPLACE_REGISTER_TYPES(APP_SCREEN_DEFINE_REPLACE_REGISTER)
