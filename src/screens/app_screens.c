@@ -102,7 +102,7 @@ APP_SCREEN_WRAPPED_STORAGE_TYPES(APP_SCREEN_DECLARE_STORAGE)
 static void
 app_register_screen(NcScreen *screen) {
     if (!app_controller_is_screen_registered(screen)) {
-        ASSERT(app_controller_register_screen(screen) == 0);
+        ASSERT(!app_controller_register_screen(screen));
     }
     return;
 }
