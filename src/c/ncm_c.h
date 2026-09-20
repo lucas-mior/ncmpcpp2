@@ -1036,7 +1036,7 @@ struct NcmFormatExpr {
         enum NcFormat format;
         NcmFormatSongTag song_tag;
         NcmFormatExprList list;
-    } value;
+    };
 };
 
 typedef struct NcmFormatAst {

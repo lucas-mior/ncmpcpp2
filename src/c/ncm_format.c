@@ -99,7 +99,7 @@ ncm_format_text_append(NcmFormatExprList *list, StrBuilder *token) {
 
     expr = ncm_format_expr_list_append(list);
     expr->type = NCM_FORMAT_EXPR_TEXT;
-    expr->value.text = *token;
+    expr->text = *token;
     *token = (StrBuilder){0};
 
     return;
@@ -112,14 +112,14 @@ ncm_format_expr_list_clear_unchecked(NcmFormatExprList *list) {
 
         switch (expr->type) {
         case NCM_FORMAT_EXPR_TEXT:
-            sb_free(&expr->value.text);
+            sb_free(&expr->text);
             break;
         case NCM_FORMAT_EXPR_GROUP:
         case NCM_FORMAT_EXPR_FIRST_OF:
-            ncm_format_expr_list_clear_unchecked(&expr->value.list);
-            free2(expr->value.list.items,
-                  expr->value.list.cap*SIZEOF(*expr->value.list.items));
-            expr->value.list = (NcmFormatExprList){0};
+            ncm_format_expr_list_clear_unchecked(&expr->list);
+            free2(expr->list.items,
+                  expr->list.cap*SIZEOF(*expr->list.items));
+            expr->list = (NcmFormatExprList){0};
             break;
         case NCM_FORMAT_EXPR_COLOR:
         case NCM_FORMAT_EXPR_FORMAT:
@@ -226,13 +226,13 @@ ncm_format_ast_append_column_types(NcmFormatAst *ast,
 
     first = ncm_format_expr_list_append(&ast->root);
     first->type = NCM_FORMAT_EXPR_FIRST_OF;
-    first->value.list = (NcmFormatExprList){0};
+    first->list = (NcmFormatExprList){0};
 
     for (int32 i = 0; i < types_len; i += 1) {
-        NcmFormatExpr *tag = ncm_format_expr_list_append(&first->value.list);
+        NcmFormatExpr *tag = ncm_format_expr_list_append(&first->list);
         tag->type = NCM_FORMAT_EXPR_SONG_TAG;
-        tag->value.song_tag.getter = ncm_song_getter_from_char(types[i]);
-        tag->value.song_tag.delimiter = 0;
+        tag->song_tag.getter = ncm_song_getter_from_char(types[i]);
+        tag->song_tag.delimiter = 0;
     }
     return 0;
 }
@@ -253,7 +253,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
             ncm_format_text_append(out, &token);
             first = ncm_format_expr_list_append(out);
             first->type = NCM_FORMAT_EXPR_FIRST_OF;
-            first->value.list = (NcmFormatExprList){0};
+            first->list = (NcmFormatExprList){0};
 
             first_i = i;
             done = false;
@@ -284,15 +284,15 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                 if (status == 0) {
                     NcmFormatExpr *expr;
 
-                    expr = ncm_format_expr_list_append(&first->value.list);
+                    expr = ncm_format_expr_list_append(&first->list);
                     if (inner.len == 1) {
                         *expr = inner.items[0];
                         inner.items[0].type = NCM_FORMAT_EXPR_TEXT;
-                        inner.items[0].value.text = (StrBuilder){0};
+                        inner.items[0].text = (StrBuilder){0};
                         inner.len = 0;
                     } else {
                         expr->type = NCM_FORMAT_EXPR_GROUP;
-                        ncm_format_expr_list_move(&expr->value.list, &inner);
+                        ncm_format_expr_list_move(&expr->list, &inner);
                     }
                 }
                 ncm_format_expr_list_destroy_unchecked(&inner);
@@ -329,7 +329,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
             } else if (data[percent_i] == '%') {
                 expr = ncm_format_expr_list_append(out);
                 expr->type = NCM_FORMAT_EXPR_TEXT;
-                sb_append_byte(&expr->value.text, '%');
+                sb_append_byte(&expr->text, '%');
                 i = percent_i;
             } else {
                 delimiter = 0;
@@ -369,8 +369,8 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                     } else {
                         expr = ncm_format_expr_list_append(out);
                         expr->type = NCM_FORMAT_EXPR_SONG_TAG;
-                        expr->value.song_tag.getter = getter;
-                        expr->value.song_tag.delimiter = delimiter;
+                        expr->song_tag.getter = getter;
+                        expr->song_tag.delimiter = delimiter;
                         i = percent_i;
                     }
                 }
@@ -388,7 +388,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
             } else if (data[dollar_i] == '$') {
                 expr = ncm_format_expr_list_append(out);
                 expr->type = NCM_FORMAT_EXPR_TEXT;
-                sb_append_byte(&expr->value.text, '$');
+                sb_append_byte(&expr->text, '$');
                 i = dollar_i;
             } else {
                 expr = ncm_format_expr_list_append(out);
@@ -399,42 +399,42 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                     color_index = ncm_color_index_from_char(data[dollar_i]);
                     switch (color_index) {
                     case 0:
-                        expr->value.color = nc_color_default();
+                        expr->color = nc_color_default();
                         break;
                     case 1:
-                        expr->value.color = nc_color_make(COLOR_BLACK, -1,
+                        expr->color = nc_color_make(COLOR_BLACK, -1,
                                                           false, false);
                         break;
                     case 2:
-                        expr->value.color = nc_color_make(COLOR_RED, -1,
+                        expr->color = nc_color_make(COLOR_RED, -1,
                                                           false, false);
                         break;
                     case 3:
-                        expr->value.color = nc_color_make(COLOR_GREEN, -1,
+                        expr->color = nc_color_make(COLOR_GREEN, -1,
                                                           false, false);
                         break;
                     case 4:
-                        expr->value.color = nc_color_make(COLOR_YELLOW, -1,
+                        expr->color = nc_color_make(COLOR_YELLOW, -1,
                                                           false, false);
                         break;
                     case 5:
-                        expr->value.color = nc_color_make(COLOR_BLUE, -1,
+                        expr->color = nc_color_make(COLOR_BLUE, -1,
                                                           false, false);
                         break;
                     case 6:
-                        expr->value.color = nc_color_make(COLOR_MAGENTA, -1,
+                        expr->color = nc_color_make(COLOR_MAGENTA, -1,
                                                           false, false);
                         break;
                     case 7:
-                        expr->value.color = nc_color_make(COLOR_CYAN, -1,
+                        expr->color = nc_color_make(COLOR_CYAN, -1,
                                                           false, false);
                         break;
                     case 8:
-                        expr->value.color = nc_color_make(COLOR_WHITE, -1,
+                        expr->color = nc_color_make(COLOR_WHITE, -1,
                                                           false, false);
                         break;
                     case 9:
-                        expr->value.color = nc_color_end();
+                        expr->color = nc_color_end();
                         break;
                     default:
                         status = ncm_format_set_error(ncm_error,
@@ -472,9 +472,9 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                     color_len = dollar_i - color_start;
                     color_status = 0;
                     if (STREQUAL(color_data, color_len, "default")) {
-                        expr->value.color = nc_color_default();
+                        expr->color = nc_color_default();
                     } else if (STREQUAL(color_data, color_len, "end")) {
-                        expr->value.color = nc_color_end();
+                        expr->color = nc_color_end();
                     } else {
                         underscore = -1;
                         for (int32 j = 0; j < color_len; j += 1) {
@@ -488,7 +488,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                             color_status = ncm_format_parse_color_component(
                                 color_data, color_len, false, &foreground);
                             if (color_status == 0) {
-                                expr->value.color = nc_color_make(foreground,
+                                expr->color = nc_color_make(foreground,
                                     -2, false, false);
                             }
                         } else if (ncm_format_parse_color_component(color_data,
@@ -501,7 +501,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                                        true, &background) < 0) {
                             color_status = -NCM_ERROR_PARSE;
                         } else {
-                            expr->value.color = nc_color_make(foreground,
+                            expr->color = nc_color_make(foreground,
                                 background, false, false);
                         }
                     }
@@ -521,27 +521,27 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                 } else if ((flags & NCM_FORMAT_FLAG_FORMAT)
                            && (data[dollar_i] == 'b')) {
                     expr->type = NCM_FORMAT_EXPR_FORMAT;
-                    expr->value.format = NC_FORMAT_BOLD;
+                    expr->format = NC_FORMAT_BOLD;
                     i = dollar_i;
                 } else if ((flags & NCM_FORMAT_FLAG_FORMAT)
                            && (data[dollar_i] == 'u')) {
                     expr->type = NCM_FORMAT_EXPR_FORMAT;
-                    expr->value.format = NC_FORMAT_UNDERLINE;
+                    expr->format = NC_FORMAT_UNDERLINE;
                     i = dollar_i;
                 } else if ((flags & NCM_FORMAT_FLAG_FORMAT)
                            && (data[dollar_i] == 'a')) {
                     expr->type = NCM_FORMAT_EXPR_FORMAT;
-                    expr->value.format = NC_FORMAT_ALT_CHARSET;
+                    expr->format = NC_FORMAT_ALT_CHARSET;
                     i = dollar_i;
                 } else if ((flags & NCM_FORMAT_FLAG_FORMAT)
                            && (data[dollar_i] == 'r')) {
                     expr->type = NCM_FORMAT_EXPR_FORMAT;
-                    expr->value.format = NC_FORMAT_REVERSE;
+                    expr->format = NC_FORMAT_REVERSE;
                     i = dollar_i;
                 } else if ((flags & NCM_FORMAT_FLAG_FORMAT)
                            && (data[dollar_i] == 'i')) {
                     expr->type = NCM_FORMAT_EXPR_FORMAT;
-                    expr->value.format = NC_FORMAT_ITALIC;
+                    expr->format = NC_FORMAT_ITALIC;
                     i = dollar_i;
                 } else if ((flags & NCM_FORMAT_FLAG_FORMAT)
                            && (data[dollar_i] == '/')) {
@@ -553,15 +553,15 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                     } else {
                         expr->type = NCM_FORMAT_EXPR_FORMAT;
                         if (data[dollar_i] == 'b') {
-                            expr->value.format = NC_FORMAT_NO_BOLD;
+                            expr->format = NC_FORMAT_NO_BOLD;
                         } else if (data[dollar_i] == 'u') {
-                            expr->value.format = NC_FORMAT_NO_UNDERLINE;
+                            expr->format = NC_FORMAT_NO_UNDERLINE;
                         } else if (data[dollar_i] == 'a') {
-                            expr->value.format = NC_FORMAT_NO_ALT_CHARSET;
+                            expr->format = NC_FORMAT_NO_ALT_CHARSET;
                         } else if (data[dollar_i] == 'r') {
-                            expr->value.format = NC_FORMAT_NO_REVERSE;
+                            expr->format = NC_FORMAT_NO_REVERSE;
                         } else if (data[dollar_i] == 'i') {
-                            expr->value.format = NC_FORMAT_NO_ITALIC;
+                            expr->format = NC_FORMAT_NO_ITALIC;
                         } else {
                             status = ncm_format_set_error(ncm_error,
                                                           "invalid format",
@@ -668,24 +668,24 @@ ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
 
     switch (expr->type) {
     case NCM_FORMAT_EXPR_TEXT:
-        if (expr->value.text.len <= 0) {
+        if (expr->text.len <= 0) {
             return NCM_FORMAT_RESULT_EMPTY;
         }
         if (*no_output <= 0) {
-            ncm_format_emit_text(cb, output, expr->value.text.data,
-                                 expr->value.text.len, NULL);
+            ncm_format_emit_text(cb, output,
+                                 expr->text.data, expr->text.len, NULL);
         }
         return NCM_FORMAT_RESULT_OK;
     case NCM_FORMAT_EXPR_COLOR:
         if ((*no_output <= 0) && (flags & NCM_FORMAT_FLAG_COLOR)
             && cb && cb->color) {
-            cb->color(output, expr->value.color);
+            cb->color(output, expr->color);
         }
         return NCM_FORMAT_RESULT_EMPTY;
     case NCM_FORMAT_EXPR_FORMAT:
         if ((*no_output <= 0) && (flags & NCM_FORMAT_FLAG_FORMAT)
             && cb && cb->format) {
-            cb->format(output, expr->value.format);
+            cb->format(output, expr->format);
         }
         return NCM_FORMAT_RESULT_EMPTY;
     case NCM_FORMAT_EXPR_OUTPUT_SWITCH:
@@ -697,24 +697,24 @@ ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
         if (!(flags & NCM_FORMAT_FLAG_TAG) || (song == NULL)) {
             return NCM_FORMAT_RESULT_MISSING;
         }
-        tag = ncm_format_render_tag_unchecked(song, &expr->value.song_tag);
+        tag = ncm_format_render_tag_unchecked(song, &expr->song_tag);
         if (tag.len <= 0) {
             sb_free(&tag);
             return NCM_FORMAT_RESULT_MISSING;
         }
         if (*no_output <= 0) {
             ncm_format_emit_text(cb, output, tag.data, tag.len,
-                                 &expr->value.song_tag);
+                                 &expr->song_tag);
         }
         sb_free(&tag);
         return NCM_FORMAT_RESULT_OK;
     case NCM_FORMAT_EXPR_GROUP:
         *no_output += 1;
         result = NCM_FORMAT_RESULT_EMPTY;
-        for (int32 i = 0; i < expr->value.list.len; i += 1) {
+        for (int32 i = 0; i < expr->list.len; i += 1) {
             enum NcmFormatResult part;
 
-            part = ncm_format_render_expr(&expr->value.list.items[i],
+            part = ncm_format_render_expr(&expr->list.items[i],
                                           song, cb, left, right, flags,
                                           no_output, switched);
             if ((result == NCM_FORMAT_RESULT_MISSING)
@@ -736,10 +736,10 @@ ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
         }
         if ((*no_output <= 0) && (result == NCM_FORMAT_RESULT_OK)) {
             result = NCM_FORMAT_RESULT_EMPTY;
-            for (int32 i = 0; i < expr->value.list.len; i += 1) {
+            for (int32 i = 0; i < expr->list.len; i += 1) {
                 enum NcmFormatResult part;
 
-                part = ncm_format_render_expr(&expr->value.list.items[i],
+                part = ncm_format_render_expr(&expr->list.items[i],
                                               song, cb, left, right, flags,
                                               no_output, switched);
                 if ((result == NCM_FORMAT_RESULT_MISSING)
@@ -758,8 +758,8 @@ ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
         }
         return result;
     case NCM_FORMAT_EXPR_FIRST_OF:
-        for (int32 i = 0; i < expr->value.list.len; i += 1) {
-            result = ncm_format_render_expr(&expr->value.list.items[i],
+        for (int32 i = 0; i < expr->list.len; i += 1) {
+            result = ncm_format_render_expr(&expr->list.items[i],
                                             song, cb, left, right, flags,
                                             no_output, switched);
             if (result == NCM_FORMAT_RESULT_OK) {
