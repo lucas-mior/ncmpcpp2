@@ -568,9 +568,9 @@ adder_action_position_cancel(void *user) {
 
 void
 selected_items_add_screen_init(SelectedItemsAdderScreen *screen,
-                                 int32 start_x, int32 start_y,
-                                 int32 width, int32 height,
-                                 NcColor color, NcBorder border) {
+                               int32 start_x, int32 start_y,
+                               int32 width, int32 height,
+                               NcColor color, NcBorder border) {
     NcMenuDisplayCallbacks display_callbacks = {0};
     NcScreenOps ops;
     NcMenu *playlist_menu;

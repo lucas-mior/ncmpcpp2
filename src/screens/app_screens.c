@@ -471,12 +471,12 @@ app_screen_selected_items_add_init(void) {
     if (selected_items_add_screen_initialized) {
         return;
     }
-    selected_items_add_screen_init(&selected_items_add_screen, 0,
-                                     ui_state_main_start_y(),
-                                     ui_state_screen_width(),
-                                     ui_state_main_height(),
-                                     Config.main_window_color,
-                                     Config.window_border_color);
+    selected_items_add_screen_init(&selected_items_add_screen,
+                                   0, ui_state_main_start_y(),
+                                   ui_state_screen_width(),
+                                   ui_state_main_height(),
+                                   Config.main_window_color,
+                                   Config.window_border_color);
     selected_items_add_screen_initialized = true;
     return;
 }
