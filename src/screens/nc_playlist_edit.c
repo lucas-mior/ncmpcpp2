@@ -184,8 +184,9 @@ playlist_edit_search_capability(NcScreen *base, enum SearchDirection direction,
 
 static int32
 playlist_edit_current_song_capability(NcScreen *base, NcmSong *song) {
-    return nc_screen_optional_song_status(
-        playlist_edit_screen_current_song((PlaylistEditScreen *)base, song));
+    PlaylistEditScreen *screen = (PlaylistEditScreen *)base;
+    int32 status = playlist_edit_screen_current_song(screen, song);
+    return nc_screen_optional_song_status(status);
 }
 
 static int32

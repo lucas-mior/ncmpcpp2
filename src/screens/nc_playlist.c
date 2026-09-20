@@ -997,9 +997,11 @@ playlist_screen_selected_songs(PlaylistScreen *screen, NcmSongArray *songs) {
 }
 
 static int32
-playlist_screen_find_sort_range(
-    PlaylistScreen *screen, int32 *first_position,
-    int32 *last_position, int32 *start_position, NcmError *ncm_error) {
+playlist_screen_find_sort_range(PlaylistScreen *screen,
+                                int32 *first_position,
+                                int32 *last_position,
+                                int32 *start_position,
+                                NcmError *ncm_error) {
     NcMenu *menu;
     NcmSong *song;
     int32 first;
