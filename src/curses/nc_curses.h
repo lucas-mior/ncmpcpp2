@@ -308,7 +308,7 @@ typedef struct NcBufferProperty {
         NcColor color;
         enum NcFormat format;
         NcTextStyle text_style;
-    } value;
+    };
 
     int64 id;
     int32 position;
