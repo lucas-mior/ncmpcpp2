@@ -8,7 +8,8 @@
 
 static MutableSongTag *
 mutable_song_find_tag(MutableSong *song, enum TagType type, int32 idx) {
-    ASSERT((song != NULL) && (idx >= 0));
+    ASSERT(song != NULL);
+    ASSERT_NON_NEGATIVE(idx);
 
     for (int32 i = 0; i < song->tags_len; i += 1) {
         MutableSongTag *tag = &song->tags[i];
@@ -25,7 +26,8 @@ static MutableSongTag *
 mutable_song_add_tag(MutableSong *song, enum TagType type, int32 idx) {
     MutableSongTag *tag;
 
-    ASSERT((song != NULL) && (idx >= 0));
+    ASSERT(song != NULL);
+    ASSERT_NON_NEGATIVE(idx);
     if (song->tags_len >= song->tags_cap) {
         int32 new_cap;
 
