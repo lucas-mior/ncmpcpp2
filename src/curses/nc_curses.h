@@ -278,7 +278,6 @@ int32 nc_window_get_x(NcWindow *);
 int32 nc_window_get_y(NcWindow *);
 bool nc_window_has_coords(NcWindow *, int32 *x, int32 *y);
 
-void nc_window_print_cstring(NcWindow *, char *);
 void nc_window_print_data(NcWindow *, char *, int32);
 void nc_window_print_char(NcWindow *, char);
 

@@ -1718,12 +1718,6 @@ nc_window_has_coords(NcWindow *window, int32 *x, int32 *y) {
 }
 
 void
-nc_window_print_cstring(NcWindow *window, char *string) {
-    waddstr(window->window, string);
-    return;
-}
-
-void
 nc_window_print_data(NcWindow *window, char *string, int32 string_len) {
     waddnstr(window->window, string, string_len);
     return;

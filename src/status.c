@@ -181,7 +181,7 @@ ncm_status_handle_server_error_value(MpdClient *client, int32 code,
         return;
     }
 
-    nc_window_print_cstring(window, "Password: ");
+    nc_window_print_data(window, STRLIT("Password: "));
     prompt.initial_text = "";
     prompt.width = -1;
     prompt.encrypted = true;
