@@ -495,7 +495,8 @@ app_screen_sort_playlist_dialog_init(void) {
     if (sort_playlist_dialog_initialized) {
         return;
     }
-    sort_playlist_dialog_init(&sort_playlist_dialog, 0, ui_state_main_start_y(),
+    sort_playlist_dialog_init(&sort_playlist_dialog,
+                              0, ui_state_main_start_y(),
                               30, ui_state_main_height(),
                               Config.main_window_color,
                               Config.window_border_color);
