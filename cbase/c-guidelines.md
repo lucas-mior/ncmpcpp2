@@ -216,7 +216,7 @@ typeof(var)  // good
           NcmSong song;
           NcmDirectory directory;
           NcmPlaylist playlist;
-      } value;
+      };
   } NcmMpdItem;
   ```
 
