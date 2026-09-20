@@ -60,8 +60,8 @@ mutable_song_add_tag(MutableSong *song, enum TagType type, int32 idx) {
 
 static void
 mutable_song_set_original_tag_unchecked(MutableSong *song,
-                                            enum TagType type, int32 idx,
-                                            char *value, int32 value_len) {
+                                        enum TagType type, int32 idx,
+                                        char *value, int32 value_len) {
     MutableSongTag *tag;
 
     if ((tag = mutable_song_find_tag(song, type, idx)) == NULL) {
@@ -73,8 +73,8 @@ mutable_song_set_original_tag_unchecked(MutableSong *song,
 
 static void
 mutable_song_set_tag_unchecked(MutableSong *song,
-                                   enum TagType type, int32 idx,
-                                   char *value, int32 value_len) {
+                               enum TagType type, int32 idx,
+                               char *value, int32 value_len) {
     MutableSongTag *tag;
 
     if ((tag = mutable_song_find_tag(song, type, idx)) == NULL) {
@@ -334,8 +334,7 @@ mutable_song_get_tag_buffer_unchecked(MutableSong *song,
 
 void
 mutable_song_get_tag_buffer(MutableSong *song,
-                            enum TagType type, int32 idx,
-                            StrBuilder *buffer) {
+                            enum TagType type, int32 idx, StrBuilder *buffer) {
     if (buffer == NULL) {
         return;
     }
@@ -449,7 +448,7 @@ mutable_song_load_originals_from_song(MutableSong *dest, NcmSong *source) {
                 break;
             }
             mutable_song_set_original_tag_unchecked(dest, type, i,
-                                                     tag.data, tag.len);
+                                                    tag.data, tag.len);
         }
     }
 
@@ -457,8 +456,8 @@ mutable_song_load_originals_from_song(MutableSong *dest, NcmSong *source) {
 }
 
 int32
-mutable_song_set_new_name(MutableSong *song, char *new_name,
-                              int32 new_name_len) {
+mutable_song_set_new_name(MutableSong *song,
+                          char *new_name, int32 new_name_len) {
     if (song == NULL) {
         return -EINVAL;
     }
