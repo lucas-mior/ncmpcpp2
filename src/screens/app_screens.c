@@ -455,11 +455,9 @@ app_screen_playlist_edit_init(void) {
     if ((Config.playlist_edit_column_width_ratio.len >= 2)
         && (Config.playlist_edit_column_width_ratio.items[0] > 0)
         && (Config.playlist_edit_column_width_ratio.items[1] > 0)) {
-        int32 first_ratio;
-        int32 second_ratio;
+        int32 first_ratio = Config.playlist_edit_column_width_ratio.items[0];
+        int32 second_ratio = Config.playlist_edit_column_width_ratio.items[1];
 
-        first_ratio = Config.playlist_edit_column_width_ratio.items[0];
-        second_ratio = Config.playlist_edit_column_width_ratio.items[1];
         playlist_edit_screen_set_column_ratio(&playlist_edit_screen,
                                               first_ratio, second_ratio);
     }
