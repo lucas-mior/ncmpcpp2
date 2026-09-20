@@ -247,7 +247,7 @@ typedef struct NcmMpdItem {
         NcmSong song;
         NcmDirectory directory;
         NcmPlaylist playlist;
-    } value;
+    };
 } NcmMpdItem;
 
 void ncm_mpd_item_init(NcmMpdItem *);

@@ -51,13 +51,13 @@ ncm_mpd_item_destroy(NcmMpdItem *item) {
 
     switch (item->kind) {
     case NCM_MPD_ITEM_SONG:
-        ncm_song_destroy(&item->value.song);
+        ncm_song_destroy(&item->song);
         break;
     case NCM_MPD_ITEM_DIRECTORY:
-        ncm_directory_destroy(&item->value.directory);
+        ncm_directory_destroy(&item->directory);
         break;
     case NCM_MPD_ITEM_PLAYLIST:
-        ncm_playlist_destroy(&item->value.playlist);
+        ncm_playlist_destroy(&item->playlist);
         break;
     case NCM_MPD_ITEM_COUNT:
     default:
@@ -102,8 +102,8 @@ ncm_mpd_item_set_song(NcmMpdItem *item, NcmSong *source) {
 
     ncm_mpd_item_init(&replacement);
     replacement.kind = NCM_MPD_ITEM_SONG;
-    replacement.value.song = (NcmSong){0};
-    if ((status = ncm_song_copy(&replacement.value.song, source)) < 0) {
+    replacement.song = (NcmSong){0};
+    if ((status = ncm_song_copy(&replacement.song, source)) < 0) {
         ncm_mpd_item_destroy(&replacement);
         return status;
     }
@@ -127,9 +127,8 @@ ncm_mpd_item_set_directory(NcmMpdItem *item, NcmDirectory *source) {
 
     ncm_mpd_item_init(&replacement);
     replacement.kind = NCM_MPD_ITEM_DIRECTORY;
-    replacement.value.directory = (NcmDirectory){0};
-    if ((status = ncm_directory_copy(&replacement.value.directory,
-                                     source)) < 0) {
+    replacement.directory = (NcmDirectory){0};
+    if ((status = ncm_directory_copy(&replacement.directory, source)) < 0) {
         ncm_mpd_item_destroy(&replacement);
         return status;
     }
@@ -156,18 +155,16 @@ ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
     status = 0;
     switch (source->kind) {
     case NCM_MPD_ITEM_SONG:
-        replacement.value.song = (NcmSong){0};
-        status = ncm_song_copy(&replacement.value.song, &source->value.song);
+        replacement.song = (NcmSong){0};
+        status = ncm_song_copy(&replacement.song, &source->song);
         break;
     case NCM_MPD_ITEM_DIRECTORY:
-        replacement.value.directory = (NcmDirectory){0};
-        status = ncm_directory_copy(&replacement.value.directory,
-                                    &source->value.directory);
+        replacement.directory = (NcmDirectory){0};
+        status = ncm_directory_copy(&replacement.directory, &source->directory);
         break;
     case NCM_MPD_ITEM_PLAYLIST:
-        replacement.value.playlist = (NcmPlaylist){0};
-        status = ncm_playlist_copy(&replacement.value.playlist,
-                                   &source->value.playlist);
+        replacement.playlist = (NcmPlaylist){0};
+        status = ncm_playlist_copy(&replacement.playlist, &source->playlist);
         break;
     case NCM_MPD_ITEM_COUNT:
     default:
@@ -404,8 +401,8 @@ ncm_mpd_item_from_entity_copy(NcmMpdItem *item, void *mpd_entity) {
 
         ncm_mpd_item_init(&replacement);
         replacement.kind = NCM_MPD_ITEM_SONG;
-        replacement.value.song = (NcmSong){0};
-        song = &replacement.value.song;
+        replacement.song = (NcmSong){0};
+        song = &replacement.song;
         if ((status = ncm_mpd_item_song_from_mpd_song_copy(song, source)) < 0) {
             ncm_mpd_item_destroy(&replacement);
             return status;
@@ -424,12 +421,12 @@ ncm_mpd_item_from_entity_copy(NcmMpdItem *item, void *mpd_entity) {
 
         ncm_mpd_item_init(&replacement);
         replacement.kind = NCM_MPD_ITEM_DIRECTORY;
-        replacement.value.directory = (NcmDirectory){0};
+        replacement.directory = (NcmDirectory){0};
         if ((source == NULL)
             || ((path = (char *)mpd_directory_get_path(source)) == NULL)) {
             status = -NCM_ERROR_NOT_FOUND;
         } else {
-            status = ncm_directory_set(&replacement.value.directory,
+            status = ncm_directory_set(&replacement.directory,
                                        path, optional_strlen32(path),
                                        mpd_directory_get_last_modified(source));
         }
@@ -451,8 +448,8 @@ ncm_mpd_item_from_entity_copy(NcmMpdItem *item, void *mpd_entity) {
 
         ncm_mpd_item_init(&replacement);
         replacement.kind = NCM_MPD_ITEM_PLAYLIST;
-        replacement.value.playlist = (NcmPlaylist){0};
-        playlist = &replacement.value.playlist;
+        replacement.playlist = (NcmPlaylist){0};
+        playlist = &replacement.playlist;
         status = ncm_mpd_item_playlist_from_mpd_playlist(playlist, source);
         if (status < 0) {
             ncm_mpd_item_destroy(&replacement);
@@ -488,7 +485,7 @@ ncm_mpd_item_song(NcmMpdItem *item) {
         return NULL;
     }
 
-    return &item->value.song;
+    return &item->song;
 }
 
 NcmDirectory *
@@ -500,7 +497,7 @@ ncm_mpd_item_directory(NcmMpdItem *item) {
         return NULL;
     }
 
-    return &item->value.directory;
+    return &item->directory;
 }
 
 NcmPlaylist *
@@ -512,7 +509,7 @@ ncm_mpd_item_playlist(NcmMpdItem *item) {
         return NULL;
     }
 
-    return &item->value.playlist;
+    return &item->playlist;
 }
 
 #endif /* NCM_MPD_ITEM_C */
