@@ -148,7 +148,7 @@ typeof(var)  // good
   * Use the arena allocator from `cbase/arena.c` as much as possible. 
     Only use `malloc2`, `realloc2`, and `free2` if you
     really need the flexibility, for instance:
-    + if you need to grow the allocation
+    + if you need to grow each individual allocation
     + if you are inside a callback that would be infeasible to pass an arena
       pointer
     + possible other reasons
@@ -164,7 +164,7 @@ typeof(var)  // good
 - Clean exit: use `exit(EXIT_SUCCESS)`
 
 ## Enums, structs, and unions
-- Enums that don't need the `_str` and `_parse` functions, and arent bit flags,
+- Enums that don't need the `_str` or `_parse` functions, and arent bit flags,
   don't need xenums.c. Define the enum manually.
 - But do use include-based `xenums.c` for creating enums if it is a bit flag
   enum, or if we need the `_str` or the `_parse` functions.
@@ -186,6 +186,7 @@ typeof(var)  // good
   ```c
   typedef struct MyStruct {
       int32 number;
+      char *string;
   } MyStruct;
   ```
 - Never typedef enums and unions, except for the automatic
