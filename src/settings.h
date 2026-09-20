@@ -40,9 +40,9 @@ typedef struct Column {
 #define NCM_ARRAY_PREFIX ncm_int32_array
 #include "c/ncm_array_decl_template.h"
 
-#define NCM_ARRAY_TYPE NcmFormattedColorArray
-#define NCM_ARRAY_ITEM_TYPE NcFormattedColor
-#define NCM_ARRAY_PREFIX ncm_formatted_color_array
+#define NCM_ARRAY_TYPE NcmTextStyleArray
+#define NCM_ARRAY_ITEM_TYPE NcTextStyle
+#define NCM_ARRAY_PREFIX ncm_text_style_array
 #include "c/ncm_array_decl_template.h"
 
 #define ENUM_NAME DefaultSearchSource
@@ -97,8 +97,8 @@ typedef struct Configuration {
     bool PRESENT_FIELD;
 #define XX_COLOR(NAME, DEFAULT)                                           \
     NcColor NAME;
-#define XX_FORMATTED_COLOR(NAME, DEFAULT)                                 \
-    NcFormattedColor NAME;
+#define XX_TEXT_STYLE(NAME, DEFAULT)                                      \
+    NcTextStyle NAME;
 #define XX_BORDER(NAME, DEFAULT)                                          \
     NcBorder NAME;
 #define XX_FORMAT(NAME, DEFAULT, FLAGS)                                   \
@@ -109,8 +109,8 @@ typedef struct Configuration {
     StrBuilder NAME;
 #define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                             \
     NcmInt32Array NAME;
-#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT)                            \
-    NcmFormattedColorArray NAME;
+#define XX_TEXT_STYLE_LIST(NAME, DEFAULT)                                 \
+    NcmTextStyleArray NAME;
 #define XX_LYRICS_FETCHERS(NAME, DEFAULT)                                 \
     LyricsFetcherRegistry NAME;
 #define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                     \

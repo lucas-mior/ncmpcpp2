@@ -15,15 +15,15 @@ settings_screen_type_array_init_item(void *item) {
 }
 
 static void
-settings_formatted_color_array_init_item(void *item) {
-    nc_formatted_color_init(item);
+settings_text_style_array_init_item(void *item) {
+    nc_text_style_init(item);
     return;
 }
 
 static void
-settings_formatted_color_array_destroy_item(void *item) {
+settings_text_style_array_destroy_item(void *item) {
     ASSERT(item != NULL);
-    nc_formatted_color_destroy(item);
+    nc_text_style_destroy(item);
     return;
 }
 
@@ -65,11 +65,11 @@ settings_column_array_destroy_item(void *item) {
 #define NCM_ARRAY_PREFIX ncm_int32_array
 #include "c/ncm_array_impl_template.h"
 
-#define NCM_ARRAY_TYPE NcmFormattedColorArray
-#define NCM_ARRAY_ITEM_TYPE NcFormattedColor
-#define NCM_ARRAY_PREFIX ncm_formatted_color_array
-#define NCM_ARRAY_ITEM_INIT settings_formatted_color_array_init_item
-#define NCM_ARRAY_ITEM_DESTROY settings_formatted_color_array_destroy_item
+#define NCM_ARRAY_TYPE NcmTextStyleArray
+#define NCM_ARRAY_ITEM_TYPE NcTextStyle
+#define NCM_ARRAY_PREFIX ncm_text_style_array
+#define NCM_ARRAY_ITEM_INIT settings_text_style_array_init_item
+#define NCM_ARRAY_ITEM_DESTROY settings_text_style_array_destroy_item
 #include "c/ncm_array_impl_template.h"
 
 #define NCM_ARRAY_TYPE ColumnArray
@@ -107,8 +107,8 @@ config_init_unchecked(Configuration *config) {
     config->PRESENT_FIELD = false;
 #define XX_COLOR(NAME, DEFAULT)                                           \
     config->NAME = nc_color_default();
-#define XX_FORMATTED_COLOR(NAME, DEFAULT)                                 \
-    nc_formatted_color_init(&config->NAME);
+#define XX_TEXT_STYLE(NAME, DEFAULT)                                      \
+    nc_text_style_init(&config->NAME);
 #define XX_BORDER(NAME, DEFAULT)                                          \
     config->NAME = nc_border_none();
 #define XX_FORMAT(NAME, DEFAULT, FLAGS)                                   \
@@ -119,8 +119,8 @@ config_init_unchecked(Configuration *config) {
     config->NAME = (StrBuilder){0};
 #define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                             \
     config->NAME = (NcmInt32Array){0};
-#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT)                            \
-    config->NAME = (NcmFormattedColorArray){0};
+#define XX_TEXT_STYLE_LIST(NAME, DEFAULT)                                 \
+    config->NAME = (NcmTextStyleArray){0};
 #define XX_LYRICS_FETCHERS(NAME, DEFAULT)                                 \
     config->NAME = (LyricsFetcherRegistry){0};
 #define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                     \
@@ -165,8 +165,8 @@ config_destroy(Configuration *config) {
     free2(config->NAME, config->NAME##_len + 1);                          \
     config->NAME = NULL;                                                  \
     config->NAME##_len = 0;
-#define XX_FORMATTED_COLOR(NAME, DEFAULT)                                 \
-    nc_formatted_color_destroy(&config->NAME);
+#define XX_TEXT_STYLE(NAME, DEFAULT)                                      \
+    nc_text_style_destroy(&config->NAME);
 #define XX_FORMAT(NAME, DEFAULT, FLAGS)                                   \
     ncm_format_ast_destroy(&config->NAME);
 #define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                           \
@@ -175,8 +175,8 @@ config_destroy(Configuration *config) {
     sb_free(&config->NAME);
 #define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                             \
     ncm_int32_array_destroy(&config->NAME);
-#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT)                            \
-    ncm_formatted_color_array_destroy(&config->NAME);
+#define XX_TEXT_STYLE_LIST(NAME, DEFAULT)                                 \
+    ncm_text_style_array_destroy(&config->NAME);
 #define XX_LYRICS_FETCHERS(NAME, DEFAULT)                                 \
     ncm_lyrics_fetcher_registry_destroy(&config->NAME);
 #define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                     \

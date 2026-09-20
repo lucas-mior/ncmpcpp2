@@ -1075,14 +1075,14 @@ append_format(NcBuffer *buffer, enum NcFormat format) {
 }
 
 static void
-append_formatted_color(NcBuffer *buffer, NcFormattedColor *color) {
-    nc_buffer_add_formatted_color(buffer, buffer->len, color, 0);
+append_text_style(NcBuffer *buffer, NcTextStyle *text_style) {
+    nc_buffer_add_text_style(buffer, buffer->len, text_style, 0);
     return;
 }
 
 static void
-append_formatted_color_end(NcBuffer *buffer, NcFormattedColor *color) {
-    nc_buffer_add_formatted_color_end(buffer, buffer->len, color, 0);
+append_text_style_end(NcBuffer *buffer, NcTextStyle *text_style) {
+    nc_buffer_add_text_style_end(buffer, buffer->len, text_style, 0);
     return;
 }
 
@@ -1097,10 +1097,10 @@ append_bold_label(NcBuffer *buffer, char *label) {
 static void
 append_song_tag(NcBuffer *buffer, StrBuilder *tag) {
     if (tag->len <= 0) {
-        append_formatted_color(buffer, &Config.empty_tag_color);
+        append_text_style(buffer, &Config.empty_tag_color);
         append_data(buffer,
                     Config.empty_tag_marker, Config.empty_tag_marker_len);
-        append_formatted_color_end(buffer, &Config.empty_tag_color);
+        append_text_style_end(buffer, &Config.empty_tag_color);
         return;
     }
     append_data(buffer, tag->data, tag->len);
@@ -1124,19 +1124,19 @@ static void
 append_song_key_value(NcBuffer *buffer, char *key, int32 key_len,
                       StrBuilder *value, bool empty_as_missing) {
     append_format(buffer, NC_FORMAT_BOLD);
-    append_formatted_color(buffer, &Config.color1);
+    append_text_style(buffer, &Config.color1);
     nc_buffer_append_data(buffer, key, key_len);
     nc_buffer_append_data(buffer, STRLIT(":"));
-    append_formatted_color_end(buffer, &Config.color1);
+    append_text_style_end(buffer, &Config.color1);
     append_format(buffer, NC_FORMAT_NO_BOLD);
     nc_buffer_append_data(buffer, STRLIT(" "));
-    append_formatted_color(buffer, &Config.color2);
+    append_text_style(buffer, &Config.color2);
     if (empty_as_missing) {
         append_song_tag(buffer, value);
     } else {
         append_data(buffer, value->data, value->len);
     }
-    append_formatted_color_end(buffer, &Config.color2);
+    append_text_style_end(buffer, &Config.color2);
     nc_buffer_append_data(buffer, STRLIT("\n"));
     return;
 }

@@ -54,9 +54,9 @@ nc_buffer_property_destroy(NcBufferProperty *property) {
     case NC_BUFFER_PROPERTY_COLOR:
     case NC_BUFFER_PROPERTY_FORMAT:
         break;
-    case NC_BUFFER_PROPERTY_FORMATTED_COLOR:
-    case NC_BUFFER_PROPERTY_FORMATTED_COLOR_END:
-        nc_formatted_color_destroy(&property->value.formatted_color);
+    case NC_BUFFER_PROPERTY_TEXT_STYLE:
+    case NC_BUFFER_PROPERTY_TEXT_STYLE_END:
+        nc_text_style_destroy(&property->value.text_style);
         break;
     case NC_BUFFER_PROPERTY_COUNT:
     default:
@@ -84,10 +84,10 @@ nc_buffer_copy(NcBuffer *dest, NcBuffer *source) {
         case NC_BUFFER_PROPERTY_FORMAT:
             property.value.format = source_property->value.format;
             break;
-        case NC_BUFFER_PROPERTY_FORMATTED_COLOR:
-        case NC_BUFFER_PROPERTY_FORMATTED_COLOR_END:
-            nc_formatted_color_copy(&property.value.formatted_color,
-                                    &source_property->value.formatted_color);
+        case NC_BUFFER_PROPERTY_TEXT_STYLE:
+        case NC_BUFFER_PROPERTY_TEXT_STYLE_END:
+            nc_text_style_copy(&property.value.text_style,
+                               &source_property->value.text_style);
             break;
         case NC_BUFFER_PROPERTY_COUNT:
         default:
@@ -206,28 +206,28 @@ nc_buffer_add_format(NcBuffer *buffer, int32 position,
 }
 
 void
-nc_buffer_add_formatted_color(NcBuffer *buffer, int32 position,
-                              NcFormattedColor *formatted_color, int64 id) {
+nc_buffer_add_text_style(NcBuffer *buffer, int32 position,
+                         NcTextStyle *text_style, int64 id) {
     NcBufferProperty property;
 
-    nc_formatted_color_copy(&property.value.formatted_color, formatted_color);
+    nc_text_style_copy(&property.value.text_style, text_style);
     property.id = id;
     property.position = position;
-    property.type = NC_BUFFER_PROPERTY_FORMATTED_COLOR;
+    property.type = NC_BUFFER_PROPERTY_TEXT_STYLE;
 
     nc_buffer_add_property(buffer, &property);
     return;
 }
 
 void
-nc_buffer_add_formatted_color_end(NcBuffer *buffer, int32 position,
-                                  NcFormattedColor *formatted_color, int64 id) {
+nc_buffer_add_text_style_end(NcBuffer *buffer, int32 position,
+                             NcTextStyle *text_style, int64 id) {
     NcBufferProperty property;
 
-    nc_formatted_color_copy(&property.value.formatted_color, formatted_color);
+    nc_text_style_copy(&property.value.text_style, text_style);
     property.id = id;
     property.position = position;
-    property.type = NC_BUFFER_PROPERTY_FORMATTED_COLOR_END;
+    property.type = NC_BUFFER_PROPERTY_TEXT_STYLE_END;
 
     nc_buffer_add_property(buffer, &property);
     return;
@@ -258,7 +258,7 @@ nc_buffer_remove_properties(NcBuffer *buffer, int64 id) {
 
 void
 nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property) {
-    NcFormattedColor *formatted_color;
+    NcTextStyle *text_style;
     int32 count;
 
     switch (property->type) {
@@ -268,24 +268,24 @@ nc_buffer_apply_property(NcWindow *window, NcBufferProperty *property) {
     case NC_BUFFER_PROPERTY_FORMAT:
         nc_window_apply_format(window, property->value.format);
         break;
-    case NC_BUFFER_PROPERTY_FORMATTED_COLOR:
-        formatted_color = &property->value.formatted_color;
-        nc_window_push_color(window, formatted_color->color);
-        count = ARRAY_LEN(formatted_color->formats);
+    case NC_BUFFER_PROPERTY_TEXT_STYLE:
+        text_style = &property->value.text_style;
+        nc_window_push_color(window, text_style->color);
+        count = ARRAY_LEN(text_style->formats);
         for (int32 i = 0; i < count; i += 1) {
-            nc_window_apply_format(window, formatted_color->formats[i]);
+            nc_window_apply_format(window, text_style->formats[i]);
         }
         break;
-    case NC_BUFFER_PROPERTY_FORMATTED_COLOR_END:
-        formatted_color = &property->value.formatted_color;
-        if (!nc_color_is_default(formatted_color->color)) {
+    case NC_BUFFER_PROPERTY_TEXT_STYLE_END:
+        text_style = &property->value.text_style;
+        if (!nc_color_is_default(text_style->color)) {
             nc_window_push_color(window, nc_color_end());
         }
-        count = ARRAY_LEN(formatted_color->formats);
+        count = ARRAY_LEN(text_style->formats);
         for (int32 i = count - 1; i >= 0; i -= 1) {
             enum NcFormat format;
 
-            switch (formatted_color->formats[i]) {
+            switch (text_style->formats[i]) {
             case NC_FORMAT_BOLD:
                 format = NC_FORMAT_NO_BOLD;
                 break;

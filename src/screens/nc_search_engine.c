@@ -286,11 +286,11 @@ search_build_constraint_row(SearchEngineScreen *screen, uint32 idx,
         || (Config.empty_tag_marker_len <= 0)) {
         return;
     }
-    nc_buffer_add_formatted_color(buffer, buffer->len,
+    nc_buffer_add_text_style(buffer, buffer->len,
                                   &Config.empty_tag_color, 0);
     nc_buffer_append_data(buffer, Config.empty_tag_marker,
                           Config.empty_tag_marker_len);
-    nc_buffer_add_formatted_color_end(buffer, buffer->len,
+    nc_buffer_add_text_style_end(buffer, buffer->len,
                                       &Config.empty_tag_color, 0);
     return;
 }

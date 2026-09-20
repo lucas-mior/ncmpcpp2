@@ -525,7 +525,7 @@ visualizer_data_source_system_hooks(MpdClient *client) {
 static void
 visualizer_destroy_colors(VisualizerScreen *screen) {
     for (int32 i = 0; i < screen->visualizer_colors_len; i += 1) {
-        nc_formatted_color_destroy(&screen->visualizer_colors[i]);
+        nc_text_style_destroy(&screen->visualizer_colors[i]);
     }
     free2(screen->visualizer_colors,
           screen->visualizer_colors_len*SIZEOF(*screen->visualizer_colors));
@@ -534,7 +534,7 @@ visualizer_destroy_colors(VisualizerScreen *screen) {
     return;
 }
 
-static NcFormattedColor *
+static NcTextStyle *
 visualizer_color(VisualizerScreen *screen, double number, double max,
                  bool wrap) {
     int32 index;
@@ -560,7 +560,7 @@ visualizer_color(VisualizerScreen *screen, double number, double max,
 
 static void
 visualizer_draw_character(VisualizerScreen *screen, int32 x, int32 y,
-                          NcFormattedColor *color, bool reverse,
+                          NcTextStyle *style, bool reverse,
                           char *character, int32 character_len) {
     enum NcFormat *formats = NULL;
     int32 count = 0;
@@ -572,10 +572,10 @@ visualizer_draw_character(VisualizerScreen *screen, int32 x, int32 y,
     }
 
     nc_window_go_to_xy(&screen->window, x, y);
-    if (color) {
-        nc_window_push_color(&screen->window, color->color);
-        formats = color->formats;
-        count = ARRAY_LEN(color->formats);
+    if (style) {
+        nc_window_push_color(&screen->window, style->color);
+        formats = style->formats;
+        count = ARRAY_LEN(style->formats);
         for (int32 i = 0; i < count; i += 1) {
             nc_window_apply_format(&screen->window, formats[i]);
         }
@@ -589,12 +589,12 @@ visualizer_draw_character(VisualizerScreen *screen, int32 x, int32 y,
     if (reverse) {
         nc_window_apply_format(&screen->window, NC_FORMAT_NO_REVERSE);
     }
-    if (color) {
+    if (style) {
         for (int32 i = count - 1; i >= 0; i -= 1) {
             nc_window_apply_format(&screen->window,
                                    nc_format_reverse(formats[i]));
         }
-        if (!nc_color_is_default(color->color)) {
+        if (!nc_color_is_default(style->color)) {
             nc_window_push_color(&screen->window, nc_color_end());
         }
     }
@@ -804,7 +804,7 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
     char *source_location = NULL;
     char *output_name = NULL;
     char *visualizer_chars = (char *)VISUALIZER_DEFAULT_CHARS;
-    NcFormattedColor *visualizer_colors = NULL;
+    NcTextStyle *visualizer_colors = NULL;
     int32 source_location_len = 0;
     int32 output_name_len = 0;
     int32 visualizer_chars_len = STRLIT_LEN(VISUALIZER_DEFAULT_CHARS);
@@ -930,14 +930,14 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
         if ((visualizer_colors == NULL) || (visualizer_colors_len <= 0)) {
             screen->visualizer_colors =
                 malloc2(SIZEOF(*screen->visualizer_colors));
-            nc_formatted_color_init(&screen->visualizer_colors[0]);
+            nc_text_style_init(&screen->visualizer_colors[0]);
             screen->visualizer_colors_len = 1;
         } else {
             screen->visualizer_colors =
                 malloc2(visualizer_colors_len
                         *SIZEOF(*screen->visualizer_colors));
             for (int32 i = 0; i < visualizer_colors_len; i += 1) {
-                nc_formatted_color_copy(&screen->visualizer_colors[i],
+                nc_text_style_copy(&screen->visualizer_colors[i],
                                         &visualizer_colors[i]);
             }
             screen->visualizer_colors_len = visualizer_colors_len;
@@ -1353,20 +1353,20 @@ visualizer_draw_wave(VisualizerScreen *screen,
 
             if (prev_y < point_y) {
                 for (int32 y = prev_y; y < point_y; y += 1) {
-                    NcFormattedColor *color;
+                    NcTextStyle *style;
 
-                    color = visualizer_color(screen, y, half_height, false);
+                    style = visualizer_color(screen, y, half_height, false);
                     visualizer_draw_character(screen, x - (y < half),
-                                              base_y + y, color, false,
+                                              base_y + y, style, false,
                                               character, character_len);
                 }
             } else {
                 for (int32 y = prev_y; y > point_y; y -= 1) {
-                    NcFormattedColor *color;
+                    NcTextStyle *style;
 
-                    color = visualizer_color(screen, y, half_height, false);
+                    style = visualizer_color(screen, y, half_height, false);
                     visualizer_draw_character(screen, x - (y > half),
-                                              base_y + y, color, false,
+                                              base_y + y, style, false,
                                               character, character_len);
                 }
             }
@@ -1671,7 +1671,7 @@ visualizer_draw_frequency(VisualizerScreen *screen,
             }
 
             for (int32 j = 0; (double)j < h; j += 1) {
-                NcFormattedColor *color;
+                NcTextStyle *style;
                 char *character;
                 int32 character_len;
                 int32 y;
@@ -1682,7 +1682,7 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                 } else {
                     y = y_offset + height - j - 1;
                 }
-                color = visualizer_color(screen, j, height, false);
+                style = visualizer_color(screen, j, height, false);
                 character = screen->visualizer_chars
                             + screen->bar_char_offset;
                 character_len = screen->bar_char_len;
@@ -1713,7 +1713,7 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                         character_len = visualizer_smooth_char_lens[index];
                     }
                 }
-                visualizer_draw_character(screen, x, y, color, reverse,
+                visualizer_draw_character(screen, x, y, style, reverse,
                                           character, character_len);
             }
         }
@@ -1783,7 +1783,7 @@ visualizer_screen_draw(VisualizerScreen *screen,
 
             for (int32 i = 0; i < channel_samples; i += 1) {
                 double distance;
-                NcFormattedColor *color;
+                NcTextStyle *style;
                 int32 x;
                 int32 y;
 
@@ -1802,12 +1802,12 @@ visualizer_screen_draw(VisualizerScreen *screen,
                                 /32768.0*(double)bottom_half_height);
                 }
                 distance = sqrt((double)x*(double)x + 4.0*(double)y*(double)y);
-                color = visualizer_color(screen, distance, radius, true);
+                style = visualizer_color(screen, distance, radius, true);
 
                 visualizer_draw_character(screen,
                                           left_half_width + x,
                                           top_half_height + y,
-                                          color, false,
+                                          style, false,
                                           character, character_len);
             }
             break;
@@ -1849,15 +1849,15 @@ visualizer_screen_draw(VisualizerScreen *screen,
             double x2 = SQUARE((double)x);
             double y2 = SQUARE((double)y);
             double max_radius = sqrt(x2 + y2);
-            NcFormattedColor *color;
+            NcTextStyle *style;
 
             x = (int32)((double)x*radius);
             y = (int32)((double)y*radius);
-            color = visualizer_color(screen, sqrt(x2 + y2), max_radius, false);
+            style = visualizer_color(screen, sqrt(x2 + y2), max_radius, false);
 
             visualizer_draw_character(screen,
                                       half_width + x, ellipse_half_height + y,
-                                      color, false, character, character_len);
+                                      style, false, character, character_len);
         }
         break;
     }

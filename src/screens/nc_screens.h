@@ -935,7 +935,7 @@ typedef struct VisualizerScreenConfig {
     char *source_location;
     char *output_name;
     char *visualizer_chars;
-    NcFormattedColor *visualizer_colors;
+    NcTextStyle *visualizer_colors;
 
     int32 source_location_len;
     int32 output_name_len;
@@ -998,7 +998,7 @@ typedef struct VisualizerScreen {
     char *source_port;
     char *output_name;
     char *visualizer_chars;
-    NcFormattedColor *visualizer_colors;
+    NcTextStyle *visualizer_colors;
     VisualizerDataSourceHooks data_source_hooks;
 
     NcmSampleBuffer samples_in;

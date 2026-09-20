@@ -114,9 +114,9 @@ used where boolean or enum storage would misrepresent the runtime value.
 
 Stores `NcColor`.
 
-`XX_FORMATTED_COLOR(NAME, DEFAULT_VALUE)`
+`XX_TEXT_STYLE(NAME, DEFAULT_VALUE)`
 
-Stores `NcFormattedColor`, including the lifecycle needed by its formatting
+Stores `NcTextStyle`, including the lifecycle needed by its formatting
 attributes.
 
 `XX_BORDER(NAME, DEFAULT_VALUE)`
@@ -146,9 +146,9 @@ accepted value is NUL-padded to the maximum length.
 Stores `NcmInt32Array` parsed from a colon-separated integer ratio with an
 exact element count.
 
-`XX_FORMATTED_COLOR_LIST(NAME, DEFAULT_VALUE)`
+`XX_TEXT_STYLE_LIST(NAME, DEFAULT_VALUE)`
 
-Stores `NcmFormattedColorArray` parsed from the common comma-separated list
+Stores `NcmTextStyleArray` parsed from the common comma-separated list
 syntax.
 
 `XX_LYRICS_FETCHERS(NAME, DEFAULT_VALUE)`

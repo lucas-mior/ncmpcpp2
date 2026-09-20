@@ -1125,13 +1125,13 @@ ncm_status_changes_player_state(void) {
 }
 
 static void
-status_apply_formatted_color(NcWindow *window, NcFormattedColor *color) {
+status_apply_text_style(NcWindow *window, NcTextStyle *text_style) {
     enum NcFormat *formats;
     int32 count;
 
-    nc_window_push_color(window, color->color);
-    formats = color->formats;
-    count = ARRAY_LEN(color->formats);
+    nc_window_push_color(window, text_style->color);
+    formats = text_style->formats;
+    count = ARRAY_LEN(text_style->formats);
     for (int32 i = 0; i < count; i += 1) {
         nc_window_apply_format(window, formats[i]);
     }
@@ -1139,15 +1139,15 @@ status_apply_formatted_color(NcWindow *window, NcFormattedColor *color) {
 }
 
 static void
-status_apply_formatted_color_end(NcWindow *window, NcFormattedColor *color) {
+status_apply_text_style_end(NcWindow *window, NcTextStyle *text_style) {
     enum NcFormat *formats;
     int32 count;
 
-    if (!nc_color_is_default(color->color)) {
+    if (!nc_color_is_default(text_style->color)) {
         nc_window_push_color(window, nc_color_end());
     }
-    formats = color->formats;
-    count = ARRAY_LEN(color->formats);
+    formats = text_style->formats;
+    count = ARRAY_LEN(text_style->formats);
     for (int32 i = count - 1; i >= 0; i -= 1) {
         nc_window_apply_format(window, nc_format_reverse(formats[i]));
     }
@@ -1278,7 +1278,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
         if ((footer != NULL) && Config.statusbar_visibility
             && ncm_statusbar_is_unlocked()) {
             NcBuffer rendered_song = {0};
-            NcFormattedColor *time_color;
+            NcTextStyle *time_color;
             StrBuilder tracklength = {0};
             int32 text_width;
             int32 track_x;
@@ -1292,10 +1292,10 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
 
             nc_window_go_to_xy(footer, 0, 1);
             nc_window_apply_term_manip(footer, NC_TERM_CLEAR_TO_EOL);
-            status_apply_formatted_color(footer, &Config.player_state_color);
+            status_apply_text_style(footer, &Config.player_state_color);
             nc_window_print_data(footer, player_state, player_state_len);
-            status_apply_formatted_color_end(footer,
-                                             &Config.player_state_color);
+            status_apply_text_style_end(footer,
+                                        &Config.player_state_color);
             nc_window_print_char(footer, ' ');
 
             text_width = nc_window_width(footer) - player_state_len;
@@ -1313,9 +1313,9 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
                 track_x = 0;
             }
             nc_window_go_to_xy(footer, track_x, 1);
-            status_apply_formatted_color(footer, time_color);
+            status_apply_text_style(footer, time_color);
             nc_window_print_data(footer, tracklength.data, tracklength.len);
-            status_apply_formatted_color_end(footer, time_color);
+            status_apply_text_style_end(footer, time_color);
 
             sb_free(&tracklength);
             nc_buffer_destroy(&rendered_song);
@@ -1326,7 +1326,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
         if (header != NULL) {
             NcBuffer first = {0};
             NcBuffer second = {0};
-            NcFormattedColor *time_color;
+            NcTextStyle *time_color;
             NcmFormatAst *first_format;
             NcmFormatAst *second_format;
             StrBuilder tracklength = {0};
@@ -1375,9 +1375,9 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
             if (!global_seeking_in_progress) {
                 nc_window_go_to_xy(header, 0, 0);
                 nc_window_apply_term_manip(header, NC_TERM_CLEAR_TO_EOL);
-                status_apply_formatted_color(header, time_color);
+                status_apply_text_style(header, time_color);
                 nc_window_print_data(header, tracklength.data, tracklength.len);
-                status_apply_formatted_color_end(header, time_color);
+                status_apply_text_style_end(header, time_color);
             }
 
             nc_window_go_to_xy(header, first_start, 0);
@@ -1392,10 +1392,10 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
 
             nc_window_go_to_xy(header, 0, 1);
             nc_window_apply_term_manip(header, NC_TERM_CLEAR_TO_EOL);
-            status_apply_formatted_color(header, &Config.player_state_color);
+            status_apply_text_style(header, &Config.player_state_color);
             nc_window_print_data(header, player_state, player_state_len);
-            status_apply_formatted_color_end(header,
-                                             &Config.player_state_color);
+            status_apply_text_style_end(header,
+                                        &Config.player_state_color);
             nc_window_go_to_xy(header, second_start, 1);
 
             text_width = COLS - player_state_len - 10;
@@ -1411,10 +1411,10 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
                 volume_x = 0;
             }
             nc_window_go_to_xy(header, volume_x, 0);
-            status_apply_formatted_color(header, &Config.volume_color);
+            status_apply_text_style(header, &Config.volume_color);
             nc_window_print_data(header, global_volume_state_cstr(),
                                  global_volume_state_len());
-            status_apply_formatted_color_end(header, &Config.volume_color);
+            status_apply_text_style_end(header, &Config.volume_color);
 
             ncm_status_changes_flags();
             sb_free(&tracklength);
@@ -1460,9 +1460,9 @@ ncm_status_changes_flags(void) {
         sb_append_byte(&switch_state, status_crossfade);
         sb_append_byte(&switch_state, status_db_updating);
 
-        status_apply_formatted_color(header, &Config.state_line_color);
+        status_apply_text_style(header, &Config.state_line_color);
         mvwhline(nc_window_raw(header), 1, 0, 0, COLS);
-        status_apply_formatted_color_end(header, &Config.state_line_color);
+        status_apply_text_style_end(header, &Config.state_line_color);
 
         if (switch_state.len > 0) {
             flags_x = COLS - switch_state.len - 3;
@@ -1470,15 +1470,15 @@ ncm_status_changes_flags(void) {
                 flags_x = 0;
             }
             nc_window_go_to_xy(header, flags_x, 1);
-            status_apply_formatted_color(header, &Config.state_line_color);
+            status_apply_text_style(header, &Config.state_line_color);
             nc_window_print_char(header, '[');
-            status_apply_formatted_color_end(header, &Config.state_line_color);
-            status_apply_formatted_color(header, &Config.state_flags_color);
+            status_apply_text_style_end(header, &Config.state_line_color);
+            status_apply_text_style(header, &Config.state_flags_color);
             nc_window_print_data(header, switch_state.data, switch_state.len);
-            status_apply_formatted_color_end(header, &Config.state_flags_color);
-            status_apply_formatted_color(header, &Config.state_line_color);
+            status_apply_text_style_end(header, &Config.state_flags_color);
+            status_apply_text_style(header, &Config.state_line_color);
             nc_window_print_char(header, ']');
-            status_apply_formatted_color_end(header, &Config.state_line_color);
+            status_apply_text_style_end(header, &Config.state_line_color);
         }
         break;
     case NCM_DESIGN_ALTERNATIVE:
@@ -1520,14 +1520,14 @@ ncm_status_changes_flags(void) {
             flags_x = 0;
         }
         nc_window_go_to_xy(header, flags_x, 1);
-        status_apply_formatted_color(header, &Config.state_flags_color);
+        status_apply_text_style(header, &Config.state_flags_color);
         nc_window_print_data(header, switch_state.data, switch_state.len);
-        status_apply_formatted_color_end(header, &Config.state_flags_color);
+        status_apply_text_style_end(header, &Config.state_flags_color);
         if (!Config.header_visibility) {
-            NcFormattedColor *color= &Config.alternative_ui_separator_color;
-            status_apply_formatted_color(header, color);
+            NcTextStyle *text_style = &Config.alternative_ui_separator_color;
+            status_apply_text_style(header, text_style);
             mvwhline(nc_window_raw(header), 2, 0, 0, COLS);
-            status_apply_formatted_color_end(header, color);
+            status_apply_text_style_end(header, text_style);
         }
         break;
     case NCM_DESIGN_COUNT:
@@ -1582,10 +1582,10 @@ ncm_status_changes_mixer(void) {
         volume_x = 0;
     }
     nc_window_go_to_xy(header, volume_x, 0);
-    status_apply_formatted_color(header, &Config.volume_color);
+    status_apply_text_style(header, &Config.volume_color);
     nc_window_print_data(header, global_volume_state_cstr(),
                          global_volume_state_len());
-    status_apply_formatted_color_end(header, &Config.volume_color);
+    status_apply_text_style_end(header, &Config.volume_color);
     nc_window_refresh(header);
     sb_free(&volume_state);
     return;

@@ -117,20 +117,20 @@ XX_OPT_STARTUP_SCREEN(startup_slave_screen, "",
                            has_startup_slave_screen_type, SCREEN_TYPE_COUNT)
 
 /* Color-backed settings. */
-XX_FORMATTED_COLOR(empty_tag_color, "cyan")
+XX_TEXT_STYLE(empty_tag_color, "cyan")
 XX_COLOR(header_window_color, "default")
-XX_FORMATTED_COLOR(volume_color, "default")
-XX_FORMATTED_COLOR(state_line_color, "default")
-XX_FORMATTED_COLOR(state_flags_color, "default:b")
+XX_TEXT_STYLE(volume_color, "default")
+XX_TEXT_STYLE(state_line_color, "default")
+XX_TEXT_STYLE(state_flags_color, "default:b")
 XX_COLOR(main_window_color, "yellow")
-XX_FORMATTED_COLOR(color1, "white")
-XX_FORMATTED_COLOR(color2, "green")
-XX_FORMATTED_COLOR(progressbar_color, "black:b")
-XX_FORMATTED_COLOR(progressbar_elapsed_color, "green:b")
+XX_TEXT_STYLE(color1, "white")
+XX_TEXT_STYLE(color2, "green")
+XX_TEXT_STYLE(progressbar_color, "black:b")
+XX_TEXT_STYLE(progressbar_elapsed_color, "green:b")
 XX_COLOR(statusbar_color, "default")
-XX_FORMATTED_COLOR(statusbar_time_color, "default:b")
-XX_FORMATTED_COLOR(player_state_color, "default:b")
-XX_FORMATTED_COLOR(alternative_ui_separator_color, "black:b")
+XX_TEXT_STYLE(statusbar_time_color, "default:b")
+XX_TEXT_STYLE(player_state_color, "default:b")
+XX_TEXT_STYLE(alternative_ui_separator_color, "black:b")
 XX_BORDER(window_border_color, "green")
 XX_BORDER(active_window_border, "red")
 
@@ -166,8 +166,8 @@ XX_LOOK(visualizer_look, "●▮", 2, 2, false)
 XX_LOOK(progressbar_look, "=>", 2, 3, true)
 
 /* Collection/list-backed settings. */
-XX_FORMATTED_COLOR_LIST(visualizer_color,
-                        "blue, cyan, green, yellow, magenta, red")
+XX_TEXT_STYLE_LIST(visualizer_color,
+                   "blue, cyan, green, yellow, magenta, red")
 XX_LYRICS_FETCHERS(
     lyrics_fetchers,
     "azlyrics, genius, letras, musixmatch, tekstowo, vagalume, internet")

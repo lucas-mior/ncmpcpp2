@@ -103,11 +103,11 @@
 #endif
 #endif
 
-#if !defined(XX_FORMATTED_COLOR)
+#if !defined(XX_TEXT_STYLE)
 #if defined(XX_OPTION)
-#define XX_FORMATTED_COLOR XX_OPTION
+#define XX_TEXT_STYLE XX_OPTION
 #else
-#define XX_FORMATTED_COLOR(NAME, DEFAULT)
+#define XX_TEXT_STYLE(NAME, DEFAULT)
 #endif
 #endif
 
@@ -152,11 +152,11 @@
 #endif
 #endif
 
-#if !defined(XX_FORMATTED_COLOR_LIST)
+#if !defined(XX_TEXT_STYLE_LIST)
 #if defined(XX_OPTION)
-#define XX_FORMATTED_COLOR_LIST XX_OPTION
+#define XX_TEXT_STYLE_LIST XX_OPTION
 #else
-#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT)
+#define XX_TEXT_STYLE_LIST(NAME, DEFAULT)
 #endif
 #endif
 
@@ -198,13 +198,13 @@
 #undef XX_UINT32_CHOICE
 #undef XX_SCREEN_LIST
 #undef XX_LYRICS_FETCHERS
-#undef XX_FORMATTED_COLOR_LIST
+#undef XX_TEXT_STYLE_LIST
 #undef XX_RATIO
 #undef XX_LOOK
 #undef XX_BUFFER
 #undef XX_FORMAT
 #undef XX_BORDER
-#undef XX_FORMATTED_COLOR
+#undef XX_TEXT_STYLE
 #undef XX_COLOR
 #undef XX_OPT_STARTUP_SCREEN
 #undef XX_STARTUP_SCREEN

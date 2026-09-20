@@ -282,17 +282,17 @@ void nc_window_print_cstring(NcWindow *, char *);
 void nc_window_print_data(NcWindow *, char *, int32);
 void nc_window_print_char(NcWindow *, char);
 
-typedef struct NcFormattedColor {
+typedef struct NcTextStyle {
     enum NcFormat *formats;
     NcColor color;
-} NcFormattedColor;
+} NcTextStyle;
 
-void nc_formatted_color_init(NcFormattedColor *);
-void nc_formatted_color_init_color(NcFormattedColor *, NcColor);
-void nc_formatted_color_copy(NcFormattedColor *dest, NcFormattedColor *source);
-void nc_formatted_color_move(NcFormattedColor *dest, NcFormattedColor *source);
-void nc_formatted_color_destroy(NcFormattedColor *);
-void nc_formatted_color_add_format(NcFormattedColor *, enum NcFormat);
+void nc_text_style_init(NcTextStyle *);
+void nc_text_style_init_color(NcTextStyle *, NcColor);
+void nc_text_style_copy(NcTextStyle *dest, NcTextStyle *source);
+void nc_text_style_move(NcTextStyle *dest, NcTextStyle *source);
+void nc_text_style_destroy(NcTextStyle *);
+void nc_text_style_add_format(NcTextStyle *, enum NcFormat);
 
 #define ENUM_NAME NcBufferPropertyType
 #define ENUM_PREFIX_ NC_BUFFER_PROPERTY_
@@ -300,15 +300,15 @@ void nc_formatted_color_add_format(NcFormattedColor *, enum NcFormat);
 #define ENUM_FIELDS                             \
     XX(NC_BUFFER_PROPERTY_COLOR)                \
     XX(NC_BUFFER_PROPERTY_FORMAT)               \
-    XX(NC_BUFFER_PROPERTY_FORMATTED_COLOR)      \
-    XX(NC_BUFFER_PROPERTY_FORMATTED_COLOR_END)
+    XX(NC_BUFFER_PROPERTY_TEXT_STYLE)           \
+    XX(NC_BUFFER_PROPERTY_TEXT_STYLE_END)
 #include "cbase/xenums.c"
 
 typedef struct NcBufferProperty {
     union {
         NcColor color;
         enum NcFormat format;
-        NcFormattedColor formatted_color;
+        NcTextStyle text_style;
     } value;
 
     int64 id;
@@ -339,10 +339,10 @@ void nc_buffer_append_int64(NcBuffer *, int64);
 
 void nc_buffer_add_color(NcBuffer *, int32, NcColor, int64);
 void nc_buffer_add_format(NcBuffer *, int32, enum NcFormat, int64);
-void nc_buffer_add_formatted_color(NcBuffer *, int32, NcFormattedColor *,
-                                   int64);
-void nc_buffer_add_formatted_color_end(NcBuffer *, int32, NcFormattedColor *,
-                                       int64);
+void nc_buffer_add_text_style(NcBuffer *, int32, NcTextStyle *,
+                              int64);
+void nc_buffer_add_text_style_end(NcBuffer *, int32, NcTextStyle *,
+                                  int64);
 void nc_buffer_remove_properties(NcBuffer *, int64);
 void nc_buffer_apply_property(NcWindow *, NcBufferProperty *);
 

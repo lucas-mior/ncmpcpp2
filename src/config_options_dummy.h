@@ -9,13 +9,13 @@
 #define XX_UINT32_CHOICE         XX
 #define XX_SCREEN_LIST           XX
 #define XX_LYRICS_FETCHERS       XX
-#define XX_FORMATTED_COLOR_LIST  XX
+#define XX_TEXT_STYLE_LIST  XX
 #define XX_RATIO                 XX
 #define XX_LOOK                  XX
 #define XX_BUFFER                XX
 #define XX_FORMAT                XX
 #define XX_BORDER                XX
-#define XX_FORMATTED_COLOR       XX
+#define XX_TEXT_STYLE       XX
 #define XX_COLOR                 XX
 #define XX_OPT_STARTUP_SCREEN    XX
 #define XX_STARTUP_SCREEN        XX

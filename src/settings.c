@@ -58,8 +58,8 @@ typedef struct SettingsOption {
     SETTINGS_ASSERT_FIELD_TYPE(PRESENT_FIELD, bool);
 #define XX_COLOR(NAME, DEFAULT)                                          \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcColor);
-#define XX_FORMATTED_COLOR(NAME, DEFAULT)                                \
-    SETTINGS_ASSERT_FIELD_TYPE(NAME, NcFormattedColor);
+#define XX_TEXT_STYLE(NAME, DEFAULT)                                     \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, NcTextStyle);
 #define XX_BORDER(NAME, DEFAULT)                                         \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcBorder);
 #define XX_FORMAT(NAME, DEFAULT, FLAGS)                                  \
@@ -70,8 +70,8 @@ typedef struct SettingsOption {
     SETTINGS_ASSERT_FIELD_TYPE(NAME, StrBuilder);
 #define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                            \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcmInt32Array);
-#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT)                           \
-    SETTINGS_ASSERT_FIELD_TYPE(NAME, NcmFormattedColorArray);
+#define XX_TEXT_STYLE_LIST(NAME, DEFAULT)                                \
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, NcmTextStyleArray);
 #define XX_LYRICS_FETCHERS(NAME, DEFAULT)                                \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, LyricsFetcherRegistry);
 #define XX_SCREEN_LIST(NAME, DEFAULT, PREVIOUS_FIELD)                    \
@@ -360,12 +360,12 @@ settings_parse_color(char *value, int32 value_len, NcColor *color,
 }
 
 static int32
-settings_parse_formatted_color(char *value, int32 value_len,
-                               NcFormattedColor *color, NcmError *ncm_error) {
+settings_parse_text_style(char *value, int32 value_len,
+                          NcTextStyle *text_style, NcmError *ncm_error) {
     int32 colon;
     int32 status;
     NcColor base;
-    NcFormattedColor tmp;
+    NcTextStyle tmp;
 
     colon = ncm_string_find_char(value, value_len, ':');
     if (colon < 0) {
@@ -379,32 +379,32 @@ settings_parse_formatted_color(char *value, int32 value_len,
         return settings_invalid_value(ncm_error, value, value_len);
     }
 
-    nc_formatted_color_init_color(&tmp, base);
+    nc_text_style_init_color(&tmp, base);
     for (int32 i = colon + 1; i < value_len; i += 1) {
         switch (value[i]) {
         case 'b':
-            nc_formatted_color_add_format(&tmp, NC_FORMAT_BOLD);
+            nc_text_style_add_format(&tmp, NC_FORMAT_BOLD);
             break;
         case 'u':
-            nc_formatted_color_add_format(&tmp, NC_FORMAT_UNDERLINE);
+            nc_text_style_add_format(&tmp, NC_FORMAT_UNDERLINE);
             break;
         case 'r':
-            nc_formatted_color_add_format(&tmp, NC_FORMAT_REVERSE);
+            nc_text_style_add_format(&tmp, NC_FORMAT_REVERSE);
             break;
         case 'a':
-            nc_formatted_color_add_format(&tmp, NC_FORMAT_ALT_CHARSET);
+            nc_text_style_add_format(&tmp, NC_FORMAT_ALT_CHARSET);
             break;
         case 'i':
-            nc_formatted_color_add_format(&tmp, NC_FORMAT_ITALIC);
+            nc_text_style_add_format(&tmp, NC_FORMAT_ITALIC);
             break;
         default:
-            nc_formatted_color_destroy(&tmp);
+            nc_text_style_destroy(&tmp);
             return settings_invalid_value(ncm_error, value, value_len);
         }
     }
 
-    nc_formatted_color_destroy(color);
-    nc_formatted_color_move(color, &tmp);
+    nc_text_style_destroy(text_style);
+    nc_text_style_move(text_style, &tmp);
     return 0;
 }
 
@@ -600,20 +600,20 @@ settings_parse_media_library_grouping_tag(char *value, int32 value_len,
 }
 
 static int32
-settings_append_formatted_color(void *context, char *item, int32 item_len,
+settings_append_text_style(void *context, char *item, int32 item_len,
                                 NcmError *ncm_error) {
-    NcmFormattedColorArray *array = context;
-    NcFormattedColor *dest = ncm_formatted_color_array_append(array);
-    return settings_parse_formatted_color(item, item_len, dest, ncm_error);
+    NcmTextStyleArray *array = context;
+    NcTextStyle *dest = ncm_text_style_array_append(array);
+    return settings_parse_text_style(item, item_len, dest, ncm_error);
 }
 
 static int32
-settings_parse_formatted_color_list(NcmFormattedColorArray *array,
+settings_parse_text_style_list(NcmTextStyleArray *array,
                                     char *value, int32 value_len,
                                     NcmError *ncm_error) {
-    ncm_formatted_color_array_clear(array);
+    ncm_text_style_array_clear(array);
     return settings_parse_list(value, value_len, array,
-                               settings_append_formatted_color, ncm_error);
+                               settings_append_text_style, ncm_error);
 }
 
 static int32
@@ -1082,12 +1082,12 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
                                 ncm_error);                                    \
 }
 
-#define XX_FORMATTED_COLOR(NAME, DEFAULT)                                      \
+#define XX_TEXT_STYLE(NAME, DEFAULT)                                      \
 static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
-    return settings_parse_formatted_color(value, value_len,                    \
-                                          &config->NAME, ncm_error);           \
+    return settings_parse_text_style(value, value_len, &config->NAME,          \
+                                     ncm_error);                               \
 }
 
 #define XX_BORDER(NAME, DEFAULT)                                               \
@@ -1131,12 +1131,12 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
                                 EXPECTED_LEN, ncm_error);                      \
 }
 
-#define XX_FORMATTED_COLOR_LIST(NAME, DEFAULT)                                 \
+#define XX_TEXT_STYLE_LIST(NAME, DEFAULT)                                      \
 static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
-    return settings_parse_formatted_color_list(&config->NAME,                  \
-                                               value, value_len, ncm_error);   \
+    return settings_parse_text_style_list(&config->NAME, value, value_len,     \
+                                          ncm_error);                          \
 }
 
 #define XX_LYRICS_FETCHERS(NAME, DEFAULT)                                      \

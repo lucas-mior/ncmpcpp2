@@ -13,15 +13,15 @@
 static bool window_title_enabled;
 
 static void
-title_apply_formatted_color(NcWindow *window, NcFormattedColor *color) {
+title_apply_text_style(NcWindow *window, NcTextStyle *text_style) {
     enum NcFormat *formats;
     int32 count;
 
-    ASSERT(color != NULL);
+    ASSERT(text_style != NULL);
 
-    nc_window_push_color(window, color->color);
-    formats = color->formats;
-    count = ARRAY_LEN(color->formats);
+    nc_window_push_color(window, text_style->color);
+    formats = text_style->formats;
+    count = ARRAY_LEN(text_style->formats);
     for (int32 i = 0; i < count; i += 1) {
         nc_window_apply_format(window, formats[i]);
     }
@@ -29,17 +29,17 @@ title_apply_formatted_color(NcWindow *window, NcFormattedColor *color) {
 }
 
 static void
-title_apply_formatted_color_end(NcWindow *window, NcFormattedColor *color) {
+title_apply_text_style_end(NcWindow *window, NcTextStyle *text_style) {
     enum NcFormat *formats;
     int32 count;
 
-    ASSERT(color != NULL);
+    ASSERT(text_style != NULL);
 
-    if (!nc_color_is_default(color->color)) {
+    if (!nc_color_is_default(text_style->color)) {
         nc_window_push_color(window, nc_color_end());
     }
-    formats = color->formats;
-    count = ARRAY_LEN(color->formats);
+    formats = text_style->formats;
+    count = ARRAY_LEN(text_style->formats);
     for (int32 i = count - 1; i >= 0; i -= 1) {
         nc_window_apply_format(window, nc_format_reverse(formats[i]));
     }
@@ -106,8 +106,8 @@ ncm_window_title_set_cstring(char *title) {
 void
 ncm_title_draw_header_with_config(char *title, int32 title_len,
                                   bool header_visibility, enum Design design,
-                                  NcFormattedColor *volume_color,
-                                  NcFormattedColor *separator_color) {
+                                  NcTextStyle *volume_color,
+                                  NcTextStyle *separator_color) {
     NcWindow *window;
 
     if (!header_visibility) {
@@ -139,10 +139,10 @@ ncm_title_draw_header_with_config(char *title, int32 title_len,
             volume_x = 0;
         }
         nc_window_go_to_xy(window, volume_x, 0);
-        title_apply_formatted_color(window, volume_color);
+        title_apply_text_style(window, volume_color);
         nc_window_print_data(window, global_volume_state_cstr(),
                              global_volume_state_len());
-        title_apply_formatted_color_end(window, volume_color);
+        title_apply_text_style_end(window, volume_color);
         break;
     }
     case NCM_DESIGN_ALTERNATIVE: {
@@ -151,10 +151,10 @@ ncm_title_draw_header_with_config(char *title, int32 title_len,
 
         nc_window_go_to_xy(window, 0, 3);
         nc_window_apply_term_manip(window, NC_TERM_CLEAR_TO_EOL);
-        title_apply_formatted_color(window, separator_color);
+        title_apply_text_style(window, separator_color);
         mvwhline(nc_window_raw(window), 2, 0, 0, COLS);
         mvwhline(nc_window_raw(window), 4, 0, 0, COLS);
-        title_apply_formatted_color_end(window, separator_color);
+        title_apply_text_style_end(window, separator_color);
 
         title_width = utf8_width(title, title_len);
         title_x = (COLS - title_width) / 2;

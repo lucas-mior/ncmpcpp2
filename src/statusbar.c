@@ -33,15 +33,15 @@ statusbar_set_active_footer_line_locked(bool locked) {
 }
 
 static void
-statusbar_apply_formatted_color(NcWindow *window, NcFormattedColor *color) {
+statusbar_apply_text_style(NcWindow *window, NcTextStyle *text_style) {
     enum NcFormat *formats;
     int32 count;
 
-    ASSERT(color != NULL);
+    ASSERT(text_style != NULL);
 
-    nc_window_push_color(window, color->color);
-    formats = color->formats;
-    count = ARRAY_LEN(color->formats);
+    nc_window_push_color(window, text_style->color);
+    formats = text_style->formats;
+    count = ARRAY_LEN(text_style->formats);
     for (int32 i = 0; i < count; i += 1) {
         nc_window_apply_format(window, formats[i]);
     }
@@ -49,17 +49,17 @@ statusbar_apply_formatted_color(NcWindow *window, NcFormattedColor *color) {
 }
 
 static void
-statusbar_apply_formatted_color_end(NcWindow *window, NcFormattedColor *color) {
+statusbar_apply_text_style_end(NcWindow *window, NcTextStyle *text_style) {
     enum NcFormat *formats;
     int32 count;
 
-    ASSERT(color != NULL);
+    ASSERT(text_style != NULL);
 
-    if (!nc_color_is_default(color->color)) {
+    if (!nc_color_is_default(text_style->color)) {
         nc_window_push_color(window, nc_color_end());
     }
-    formats = color->formats;
-    count = ARRAY_LEN(color->formats);
+    formats = text_style->formats;
+    count = ARRAY_LEN(text_style->formats);
     for (int32 i = count - 1; i >= 0; i -= 1) {
         nc_window_apply_format(window, nc_format_reverse(formats[i]));
     }
@@ -135,7 +135,7 @@ ncm_progressbar_draw(int32 elapsed, int32 time) {
         }
     }
     nc_window_go_to_xy(window, 0, 0);
-    statusbar_apply_formatted_color(window, &Config.progressbar_color);
+    statusbar_apply_text_style(window, &Config.progressbar_color);
     if ((progressbar[2].len > 0) && (progressbar[2].data[0] != '\0')) {
         for (int32 i = 0; i < width; i += 1) {
             nc_window_print_data(window,
@@ -146,10 +146,10 @@ ncm_progressbar_draw(int32 elapsed, int32 time) {
         mvwhline(nc_window_raw(window), 0, 0, 0, width);
         nc_window_go_to_xy(window, 0, 0);
     }
-    statusbar_apply_formatted_color_end(window, &Config.progressbar_color);
+    statusbar_apply_text_style_end(window, &Config.progressbar_color);
 
     if (time != 0) {
-        statusbar_apply_formatted_color(window,
+        statusbar_apply_text_style(window,
                                         &Config.progressbar_elapsed_color);
         for (int32 i = 0; i < filled; i += 1) {
             nc_window_print_data(window,
@@ -159,7 +159,7 @@ ncm_progressbar_draw(int32 elapsed, int32 time) {
             nc_window_print_data(window,
                                  progressbar[1].data, progressbar[1].len);
         }
-        statusbar_apply_formatted_color_end(window,
+        statusbar_apply_text_style_end(window,
                                             &Config.progressbar_elapsed_color);
     }
     nc_window_go_to_xy(window, 0, 0);

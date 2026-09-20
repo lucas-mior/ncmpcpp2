@@ -50,14 +50,14 @@ typedef struct SaveContext SaveContext;
 // callbacks
 
 static void
-tag_edit_append_formatted_color_end(NcBuffer *buffer, NcFormattedColor *color) {
-    nc_buffer_add_formatted_color_end(buffer, buffer->len, color, 0);
+tag_edit_append_text_style_end(NcBuffer *buffer, NcTextStyle *text_style) {
+    nc_buffer_add_text_style_end(buffer, buffer->len, text_style, 0);
     return;
 }
 
 static void
-tag_edit_append_formatted_color(NcBuffer *buffer, NcFormattedColor *color) {
-    nc_buffer_add_formatted_color(buffer, buffer->len, color, 0);
+tag_edit_append_text_style(NcBuffer *buffer, NcTextStyle *text_style) {
+    nc_buffer_add_text_style(buffer, buffer->len, text_style, 0);
     return;
 }
 
@@ -94,11 +94,11 @@ tag_edit_draw_tag(NcMenu *menu, NcWindow *window, void *item,
                                        Config.tags_separator_len,
                                        Config.show_duplicate_tags);
         if (tag.len <= 0) {
-            tag_edit_append_formatted_color(&buffer, &Config.empty_tag_color);
+            tag_edit_append_text_style(&buffer, &Config.empty_tag_color);
             nc_buffer_append_data(&buffer,
                                   Config.empty_tag_marker,
                                   Config.empty_tag_marker_len);
-            tag_edit_append_formatted_color_end(&buffer,
+            tag_edit_append_text_style_end(&buffer,
                                                 &Config.empty_tag_color);
         } else {
             nc_buffer_append_data(&buffer, tag.data, tag.len);
@@ -107,9 +107,9 @@ tag_edit_draw_tag(NcMenu *menu, NcWindow *window, void *item,
     } else if (tag_edit_choice_is_filename(choice)) {
         nc_buffer_append_data(&buffer, song->name, song->name_len);
         if (song->new_name && (song->new_name_len > 0)) {
-            tag_edit_append_formatted_color(&buffer, &Config.color2);
+            tag_edit_append_text_style(&buffer, &Config.color2);
             nc_buffer_append_data(&buffer, STRLIT(" -> "));
-            tag_edit_append_formatted_color_end(&buffer, &Config.color2);
+            tag_edit_append_text_style_end(&buffer, &Config.color2);
             nc_buffer_append_data(&buffer, song->new_name, song->new_name_len);
         }
     }
