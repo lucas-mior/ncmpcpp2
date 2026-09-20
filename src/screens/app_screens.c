@@ -485,8 +485,8 @@ int32
 app_screen_selected_items_add_open(NcmSongArray *songs, NcmError *ncm_error) {
     app_screen_selected_items_add_register();
     return selected_items_add_screen_open(app_screen_selected_items_add(),
-                                            songs, app_screen_playlist(),
-                                            &global_mpd, ncm_error);
+                                          songs, app_screen_playlist(),
+                                          &global_mpd, ncm_error);
 }
 
 void
