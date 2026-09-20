@@ -36,7 +36,7 @@ typedef struct BindingAction {
         enum ScreenType screen_type;
         BindingActionArgument argument;
         BindingActionKeys keys;
-    } value;
+    };
 } BindingAction;
 
 typedef struct Binding {
