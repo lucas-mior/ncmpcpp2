@@ -1412,9 +1412,10 @@ playlist_edit_show_screen(PlaylistEditScreen *screen) {
 }
 
 int32
-playlist_edit_screen_locate_playlist(
-    PlaylistEditScreen *screen, MpdClient *client,
-    char *path, int32 path_len, NcmError *ncm_error) {
+playlist_edit_screen_locate_playlist(PlaylistEditScreen *screen,
+                                     MpdClient *client,
+                                     char *path, int32 path_len,
+                                     NcmError *ncm_error) {
     NcMenu *menu;
     int32 pos;
     int32 status;
