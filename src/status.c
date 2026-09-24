@@ -139,8 +139,8 @@ status_print_value(char *prefix, int32 prefix_len,
         value_len = optional_strlen32(value);
     }
 
-    SB_APPEND(&message, prefix, prefix_len);
-    SB_APPEND(&message, value, value_len);
+    STR_APPEND(&message, prefix, prefix_len);
+    STR_APPEND(&message, value, value_len);
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
     sb_free(&message);
     return;
@@ -1169,7 +1169,7 @@ status_tracklength_buffer(String *buffer) {
         && (Config.user_interface == NCM_DESIGN_CLASSIC)) {
         sb_append_byte(buffer, '(');
         sb_itoa(buffer, status_kbps);
-        SB_APPEND(buffer, " kbps) ");
+        STR_APPEND(buffer, " kbps) ");
     }
 
     if (Config.user_interface == NCM_DESIGN_CLASSIC) {
@@ -1192,21 +1192,21 @@ status_tracklength_buffer(String *buffer) {
         time_len = status_song_time_string(status_elapsed_time, time_buffer,
                                            SIZEOF(time_buffer));
     }
-    SB_APPEND(buffer, time_buffer, time_len);
+    STR_APPEND(buffer, time_buffer, time_len);
 
     if (status_total_time != 0) {
         sb_append_byte(buffer, '/');
         time_len = status_song_time_string(status_total_time, time_buffer,
                                            SIZEOF(time_buffer));
-        SB_APPEND(buffer, time_buffer, time_len);
+        STR_APPEND(buffer, time_buffer, time_len);
     }
 
     if (Config.user_interface == NCM_DESIGN_CLASSIC) {
         sb_append_byte(buffer, ']');
     } else if ((Config.display_bitrate) && (status_kbps != 0)) {
-        SB_APPEND(buffer, " (");
+        STR_APPEND(buffer, " (");
         sb_itoa(buffer, status_kbps);
-        SB_APPEND(buffer, " kbps)");
+        STR_APPEND(buffer, " kbps)");
     }
     return;
 }
@@ -1558,10 +1558,10 @@ ncm_status_changes_mixer(void) {
 
     switch (Config.user_interface) {
     case NCM_DESIGN_CLASSIC:
-        SB_APPEND(&volume_state, " Volume: ");
+        STR_APPEND(&volume_state, " Volume: ");
         break;
     case NCM_DESIGN_ALTERNATIVE:
-        SB_APPEND(&volume_state, " Vol: ");
+        STR_APPEND(&volume_state, " Vol: ");
         break;
     case NCM_DESIGN_COUNT:
         break;
@@ -1570,10 +1570,10 @@ ncm_status_changes_mixer(void) {
     }
 
     if (status_volume < 0) {
-        SB_APPEND(&volume_state, "n/a");
+        STR_APPEND(&volume_state, "n/a");
     } else {
         sb_itoa(&volume_state, status_volume);
-        SB_APPEND(&volume_state, "%");
+        STR_APPEND(&volume_state, "%");
     }
     global_volume_state_set(volume_state.data, volume_state.len);
 

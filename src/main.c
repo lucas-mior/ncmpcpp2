@@ -131,9 +131,9 @@ main(int32 argc, char **argv) {
     {
         String path = {0};
 
-        SB_APPEND(&path,
+        STR_APPEND(&path,
                   Config.ncmpcpp_directory, Config.ncmpcpp_directory_len);
-        SB_APPEND(&path, "error.log");
+        STR_APPEND(&path, "error.log");
 
         if ((app_saved_stderr_fd = dup(STDERR_FILENO)) < 0) {
             redirect_status = -errno;

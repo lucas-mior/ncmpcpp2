@@ -64,7 +64,7 @@ ncm_compare_copy_to_buffer(String *buffer, char *string, int32 string_len) {
         buffer->data[0] = '\0';
         return;
     }
-    SB_APPEND(buffer, string, string_len);
+    STR_APPEND(buffer, string, string_len);
     return;
 }
 

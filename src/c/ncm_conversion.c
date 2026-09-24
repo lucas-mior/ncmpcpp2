@@ -28,7 +28,7 @@ ncm_conversion_copy_source(String *buffer, char *source, int32 source_len) {
     ASSERT_NON_NEGATIVE(source_len);
 
     sb_clear(buffer);
-    SB_APPEND(buffer, source, source_len);
+    STR_APPEND(buffer, source, source_len);
     return;
 }
 

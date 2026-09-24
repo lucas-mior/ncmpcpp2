@@ -27,7 +27,7 @@
 static void
 ncm_mpd_client_set_buffer(String *buffer, char *string, int32 string_len) {
     sb_clear(buffer);
-    SB_APPEND(buffer, string, string_len);
+    STR_APPEND(buffer, string, string_len);
     return;
 }
 

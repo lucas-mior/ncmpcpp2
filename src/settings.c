@@ -106,26 +106,26 @@ settings_expand_home(String *buffer, char *value, int32 value_len) {
 
     sb_clear(buffer);
     if ((value_len <= 0) || (value[0] != '~')) {
-        SB_APPEND(buffer, value, value_len);
+        STR_APPEND(buffer, value, value_len);
         return;
     }
 
     if ((home = getenv("HOME")) == NULL) {
-        SB_APPEND(buffer, value, value_len);
+        STR_APPEND(buffer, value, value_len);
         return;
     }
     home_len = strlen32(home);
-    SB_APPEND(buffer, home, home_len);
+    STR_APPEND(buffer, home, home_len);
     if (value_len == 1) {
         return;
     }
     sb_append_byte(buffer, '/');
     if (value[1] == '/') {
         if (value_len > 2) {
-            SB_APPEND(buffer, value + 2, value_len - 2);
+            STR_APPEND(buffer, value + 2, value_len - 2);
         }
     } else {
-        SB_APPEND(buffer, value + 1, value_len - 1);
+        STR_APPEND(buffer, value + 1, value_len - 1);
     }
     return;
 }
@@ -772,7 +772,7 @@ settings_parse_look(String *look, char *value, int32 value_len,
         return settings_invalid_value(ncm_error, value, value_len);
     }
     sb_clear(look);
-    SB_APPEND(look, value, value_len);
+    STR_APPEND(look, value, value_len);
     if (pad_to_max) {
         char zero = '\0';
 

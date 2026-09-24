@@ -29,8 +29,8 @@ ncm_config_options_init(NcmConfigurationOptions *options) {
     options->config_paths = (StringArray){0};
     options->bindings_paths = (StringArray){0};
 
-    SB_APPEND(&options->host, "localhost");
-    SB_APPEND(&options->current_song_format, "{{{(%l) }{{%a - }%t}}|{%f}}");
+    STR_APPEND(&options->host, "localhost");
+    STR_APPEND(&options->current_song_format, "{{{(%l) }{{%a - }%t}}|{%f}}");
     options->port = 6600;
 
     options->host_provided = false;
@@ -61,7 +61,7 @@ static void
 command_line_options_append_path(StringArray *paths,
                                  char *path, int32 path_len) {
     String *slot = string_array_append(paths);
-    SB_APPEND(slot, path, path_len);
+    STR_APPEND(slot, path, path_len);
     return;
 }
 
@@ -78,7 +78,7 @@ config_default_file_exists(String *path) {
     bool exists;
 
     ncm_error_clear(&ncm_error);
-    SB_APPEND(&expanded, path->data, path->len);
+    STR_APPEND(&expanded, path->data, path->len);
     if (ncm_path_expand_home(&expanded, &ncm_error) < 0) {
         sb_free(&expanded);
         return false;
@@ -98,9 +98,9 @@ config_append_default_file(StringArray *paths,
 
     if ((xdg_config_home = getenv("XDG_CONFIG_HOME"))
         && (xdg_config_home[0] != '\0')) {
-        SB_APPEND(&base_directory, xdg_config_home, strlen32(xdg_config_home));
+        STR_APPEND(&base_directory, xdg_config_home, strlen32(xdg_config_home));
     } else {
-        SB_APPEND(&base_directory, "~/.config");
+        STR_APPEND(&base_directory, "~/.config");
     }
     ncm_fs_join(&directory, base_directory.data, base_directory.len,
                 STRLIT("ncmpcpp2"));
@@ -125,7 +125,7 @@ config_append_legacy_file(StringArray *paths,
     String directory = {0};
     String path = {0};
 
-    SB_APPEND(&directory, "~/.ncmpcpp");
+    STR_APPEND(&directory, "~/.ncmpcpp");
     ncm_fs_join(&path, directory.data, directory.len, filename, filename_len);
     config_append_buffer_path(paths, &path);
 
@@ -154,7 +154,7 @@ config_discover_default_paths(StringArray *config_paths,
 static void
 config_copy_string(String *buffer, char *string, int32 string_len) {
     sb_clear(buffer);
-    SB_APPEND(buffer, string, string_len);
+    STR_APPEND(buffer, string, string_len);
     return;
 }
 

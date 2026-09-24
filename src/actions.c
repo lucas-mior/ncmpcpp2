@@ -429,8 +429,8 @@ ncm_action_add_song_to_playlist_with_mode(NcmSong *song, bool play,
     }
 
     formatted = ncm_format_render_string(&Config.song_status_format, song);
-    SB_APPEND(&message, "Added to playlist: ");
-    SB_APPEND(&message, formatted.data, formatted.len);
+    STR_APPEND(&message, "Added to playlist: ");
+    STR_APPEND(&message, formatted.data, formatted.len);
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
     sb_free(&message);
     sb_free(&formatted);
@@ -588,11 +588,11 @@ action_runtime_print_message(char *prefix, int32 prefix_len,
                              char *suffix, int32 suffix_len) {
     String message = {0};
 
-    SB_APPEND(&message, prefix, prefix_len);
+    STR_APPEND(&message, prefix, prefix_len);
     if ((text != NULL) && (text_len > 0)) {
-        SB_APPEND(&message, text, text_len);
+        STR_APPEND(&message, text, text_len);
     }
-    SB_APPEND(&message, suffix, suffix_len);
+    STR_APPEND(&message, suffix, suffix_len);
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
     sb_free(&message);
     return;
@@ -997,9 +997,9 @@ action_runtime_add_random_items(void) {
         source_name = tag_name;
     }
 
-    SB_APPEND(&prompt, "Number of random ");
-    SB_APPEND(&prompt, source_name, source_name_len);
-    SB_APPEND(&prompt, "s: ");
+    STR_APPEND(&prompt, "Number of random ");
+    STR_APPEND(&prompt, source_name, source_name_len);
+    STR_APPEND(&prompt, "s: ");
     prompted = action_runtime_prompt_string(prompt.data, prompt.len, "", false,
                                             NULL, NULL, &input);
     sb_free(&prompt);
@@ -1039,11 +1039,11 @@ action_runtime_add_random_items(void) {
     }
 
     sb_printf(&message, "%d random ", count);
-    SB_APPEND(&message, source_name, source_name_len);
+    STR_APPEND(&message, source_name, source_name_len);
     if (count != 1) {
-        SB_APPEND(&message, "s");
+        STR_APPEND(&message, "s");
     }
-    SB_APPEND(&message, " added to playlist");
+    STR_APPEND(&message, " added to playlist");
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
     sb_free(&message);
     return 0;
@@ -1353,9 +1353,9 @@ action_runtime_save_playlist(void) {
             == NCM_MPD_SERVER_ERROR_EXIST)) {
         String question = {0};
 
-        SB_APPEND(&question, "Playlist \"");
-        SB_APPEND(&question, name.data, name.len);
-        SB_APPEND(&question, "\" already exists, overwrite?");
+        STR_APPEND(&question, "Playlist \"");
+        STR_APPEND(&question, name.data, name.len);
+        STR_APPEND(&question, "\" already exists, overwrite?");
         success = action_runtime_confirm(question.data, question.len);
         sb_free(&question);
         if (!success) {
@@ -1880,9 +1880,9 @@ action_runtime_add_prompt(void) {
     sb_free(&path);
 
     if (!success && (server_error != NCM_MPD_SERVER_ERROR_NONE)) {
-        SB_APPEND(&message, "Error while adding item: ");
+        STR_APPEND(&message, "Error while adding item: ");
         if (ncm_error_is_set(&ncm_error)) {
-            SB_APPEND(&message, ncm_error.message, ncm_error.message_len);
+            STR_APPEND(&message, ncm_error.message, ncm_error.message_len);
         }
         ncm_statusbar_print(Config.message_delay_time,
                             message.data, message.len);
@@ -2068,7 +2068,7 @@ action_runtime_browser_item_name(NcmMpdItem *item, String *name) {
     }
 
     basename = ncm_path_basename_start(view.data, view.len);
-    SB_APPEND(name, view.data + basename, view.len - basename);
+    STR_APPEND(name, view.data + basename, view.len - basename);
     return 0;
 }
 
@@ -2106,7 +2106,7 @@ action_runtime_delete_browser_items(void) {
 
     has_selected = nc_menu_has_selected(menu);
     if (has_selected) {
-        SB_APPEND(&question, "Delete selected items?");
+        STR_APPEND(&question, "Delete selected items?");
     } else {
         item = nc_menu_current_item(menu);
         if (browser_screen_item_is_parent(item)) {
@@ -2119,9 +2119,9 @@ action_runtime_delete_browser_items(void) {
             sb_free(&question);
             return -NCM_ERROR_UNAVAILABLE;
         }
-        SB_APPEND(&question, "Delete \"");
-        SB_APPEND(&question, name.data, name.len);
-        SB_APPEND(&question, "\"?");
+        STR_APPEND(&question, "Delete \"");
+        STR_APPEND(&question, name.data, name.len);
+        STR_APPEND(&question, "\"?");
     }
 
     success = action_runtime_confirm(question.data, question.len);
@@ -2146,9 +2146,9 @@ static void
 action_runtime_print_renamed(char *prefix, int32 prefix_len, String *name) {
     String message = {0};
 
-    SB_APPEND(&message, prefix, prefix_len);
-    SB_APPEND(&message, name->data, name->len);
-    SB_APPEND(&message, "\"");
+    STR_APPEND(&message, prefix, prefix_len);
+    STR_APPEND(&message, name->data, name->len);
+    STR_APPEND(&message, "\"");
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
     sb_free(&message);
     return;
@@ -2293,16 +2293,16 @@ action_runtime_delete_stored_playlists(void) {
     has_selected = nc_menu_has_selected(menu);
 
     if (has_selected) {
-        SB_APPEND(&question, "Delete selected playlists?");
+        STR_APPEND(&question, "Delete selected playlists?");
     } else {
         if (((playlist = nc_menu_current_item(menu)) == NULL)
             || (playlist->path == NULL)) {
             sb_free(&question);
             return -NCM_ERROR_UNAVAILABLE;
         }
-        SB_APPEND(&question, "Delete playlist \"");
-        SB_APPEND(&question, playlist->path, playlist->path_len);
-        SB_APPEND(&question, "\"?");
+        STR_APPEND(&question, "Delete playlist \"");
+        STR_APPEND(&question, playlist->path, playlist->path_len);
+        STR_APPEND(&question, "\"?");
     }
     success = action_runtime_confirm(question.data, question.len);
     sb_free(&question);
@@ -2391,9 +2391,9 @@ action_runtime_clear_playlist(bool main_playlist) {
 
     if (Config.ask_before_clearing_playlists) {
         String question = {0};
-        SB_APPEND(&question, "Do you really want to clear playlist \"");
-        SB_APPEND(&question, playlist.path, playlist.path_len);
-        SB_APPEND(&question, "\"?");
+        STR_APPEND(&question, "Do you really want to clear playlist \"");
+        STR_APPEND(&question, playlist.path, playlist.path_len);
+        STR_APPEND(&question, "\"?");
 
         success = action_runtime_confirm(question.data, question.len);
         sb_free(&question);
@@ -2406,9 +2406,9 @@ action_runtime_clear_playlist(bool main_playlist) {
     success = ncm_mpd_client_clear_playlist(&global_mpd, playlist.path,
                                             &ncm_error) == 0;
     if (success) {
-        SB_APPEND(&message, "Playlist \"");
-        SB_APPEND(&message, playlist.path, playlist.path_len);
-        SB_APPEND(&message, "\" cleared");
+        STR_APPEND(&message, "Playlist \"");
+        STR_APPEND(&message, playlist.path, playlist.path_len);
+        STR_APPEND(&message, "\" cleared");
         ncm_statusbar_print(Config.message_delay_time,
                             message.data, message.len);
         sb_free(&message);
@@ -2497,9 +2497,9 @@ action_runtime_crop_playlist(bool main_playlist) {
     success = playlist_edit_screen_current_playlist(editor, &playlist) > 0;
     if (success && Config.ask_before_clearing_playlists) {
         String question = {0};
-        SB_APPEND(&question, "Do you really want to crop playlist \"");
-        SB_APPEND(&question, playlist.path, playlist.path_len);
-        SB_APPEND(&question, "\"?");
+        STR_APPEND(&question, "Do you really want to crop playlist \"");
+        STR_APPEND(&question, playlist.path, playlist.path_len);
+        STR_APPEND(&question, "\"?");
         success = action_runtime_confirm(question.data, question.len);
         sb_free(&question);
         if (!success) {
@@ -2509,9 +2509,9 @@ action_runtime_crop_playlist(bool main_playlist) {
         }
     }
     if (success) {
-        SB_APPEND(&message, "Cropping playlist \"");
-        SB_APPEND(&message, playlist.path, playlist.path_len);
-        SB_APPEND(&message, "\"...");
+        STR_APPEND(&message, "Cropping playlist \"");
+        STR_APPEND(&message, playlist.path, playlist.path_len);
+        STR_APPEND(&message, "\"...");
         ncm_statusbar_print(Config.message_delay_time,
                             message.data, message.len);
         sb_free(&message);
@@ -2526,9 +2526,9 @@ action_runtime_crop_playlist(bool main_playlist) {
                                                       &ncm_error) == 0;
     }
     if (success) {
-        SB_APPEND(&message, "Playlist \"");
-        SB_APPEND(&message, playlist.path, playlist.path_len);
-        SB_APPEND(&message, "\" cropped");
+        STR_APPEND(&message, "Playlist \"");
+        STR_APPEND(&message, playlist.path, playlist.path_len);
+        STR_APPEND(&message, "\" cropped");
         ncm_statusbar_print(Config.message_delay_time,
                             message.data, message.len);
         sb_free(&message);
@@ -4162,9 +4162,9 @@ action_runtime_print_updating_song(NcmSong *song) {
         return;
     }
 
-    SB_APPEND(&message, "Updating tags in \"");
-    SB_APPEND(&message, name.data, name.len);
-    SB_APPEND(&message, "\"...");
+    STR_APPEND(&message, "Updating tags in \"");
+    STR_APPEND(&message, name.data, name.len);
+    STR_APPEND(&message, "\"...");
     ncm_statusbar_print(0, message.data, message.len);
     sb_free(&message);
     return;
@@ -4247,8 +4247,8 @@ action_runtime_edit_library_tag(void) {
         goto cleanup;
     }
     tag_len = ncm_tag_type_name_len(Config.media_library_primary_tag, &tag);
-    SB_APPEND(&prompt, tag, tag_len);
-    SB_APPEND(&prompt, ": ");
+    STR_APPEND(&prompt, tag, tag_len);
+    STR_APPEND(&prompt, ": ");
     prompted = action_runtime_prompt_string(prompt.data, prompt.len,
                                             current_tag.data, false,
                                             NULL, NULL, &new_tag);
@@ -4309,10 +4309,10 @@ action_runtime_edit_library_tag(void) {
                 String message = {0};
                 char *error_message = strerror(errno);
 
-                SB_APPEND(&message, "Error while writing tags to \"");
-                SB_APPEND(&message, name.data, name.len);
-                SB_APPEND(&message, "\": ");
-                SB_APPEND(&message, error_message,
+                STR_APPEND(&message, "Error while writing tags to \"");
+                STR_APPEND(&message, name.data, name.len);
+                STR_APPEND(&message, "\": ");
+                STR_APPEND(&message, error_message,
                           optional_strlen32(error_message));
                 ncm_statusbar_print(Config.message_delay_time,
                                                     message.data, message.len);
@@ -4412,8 +4412,8 @@ action_runtime_edit_library_album(void) {
             status = -NCM_ERROR_UNAVAILABLE;
             break;
         }
-        SB_APPEND(&path, Config.mpd_music_dir, Config.mpd_music_dir_len);
-        SB_APPEND(&path, uri.data, uri.len);
+        STR_APPEND(&path, Config.mpd_music_dir, Config.mpd_music_dir_len);
+        STR_APPEND(&path, uri.data, uri.len);
         if (ncm_song_has_directory_view(song, 0, &directory)) {
             StrView dir = directory;
 
@@ -4582,9 +4582,9 @@ action_runtime_edit_lyrics(void) {
     filename_len = filename->len;
     ncm_string_append_shell_escaped_single_quotes(&escaped,
                                                   filename_data, filename_len);
-    SB_APPEND(&command, Config.external_editor, Config.external_editor_len);
-    SB_APPEND(&command, " '");
-    SB_APPEND(&command, escaped.data, escaped.len);
+    STR_APPEND(&command, Config.external_editor, Config.external_editor_len);
+    STR_APPEND(&command, " '");
+    STR_APPEND(&command, escaped.data, escaped.len);
     sb_append_byte(&command, '\'');
 
     ncm_error_clear(&ncm_error);

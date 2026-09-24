@@ -330,7 +330,7 @@ mutable_song_get_tag_buffer_unchecked(MutableSong *song,
         return;
     }
 
-    SB_APPEND(buffer, view.data, view.len);
+    STR_APPEND(buffer, view.data, view.len);
     return;
 }
 
@@ -403,9 +403,9 @@ mutable_song_tags_buffer(MutableSong *song, enum TagType type,
 
         if (!already_present) {
             if (result.len > 0) {
-                SB_APPEND(&result, separator, separator_len);
+                STR_APPEND(&result, separator, separator_len);
             }
-            SB_APPEND(&result, tag.data, tag.len);
+            STR_APPEND(&result, tag.data, tag.len);
         }
         sb_free(&tag);
     }

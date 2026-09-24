@@ -691,24 +691,24 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
         if (song->duration > 0) {
             len = ncm_song_show_time_unchecked(song->duration, number_buffer,
                                                LENGTH(number_buffer));
-            SB_APPEND(&buffer, number_buffer, len);
+            STR_APPEND(&buffer, number_buffer, len);
         } else {
-            SB_APPEND(&buffer, "-:--");
+            STR_APPEND(&buffer, "-:--");
         }
         return buffer;
     case SONG_GETTER_DIRECTORY:
         if (ncm_song_has_directory_view_unchecked(song, idx, &view)) {
-            SB_APPEND(&buffer, view.data, view.len);
+            STR_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
     case SONG_GETTER_NAME:
         if (ncm_song_has_filename_view_unchecked(song, idx, &view)) {
-            SB_APPEND(&buffer, view.data, view.len);
+            STR_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
     case SONG_GETTER_URI:
         if (ncm_song_has_uri_view_unchecked(song, idx, &view)) {
-            SB_APPEND(&buffer, view.data, view.len);
+            STR_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
     case SONG_GETTER_TRACK_NUMBER:
@@ -767,7 +767,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
     case SONG_GETTER_COMMENT:
         tag = ncm_song_getter_to_tag_type(getter);
         if (ncm_song_has_tag_view_unchecked(song, tag, idx, &view)) {
-            SB_APPEND(&buffer, view.data, view.len);
+            STR_APPEND(&buffer, view.data, view.len);
         }
         return buffer;
     case SONG_GETTER_COUNT:
@@ -831,9 +831,9 @@ ncm_song_tags_buffer(NcmSong *song, enum SongGetter getter,
 
         if (!already_present) {
             if (result.len > 0) {
-                SB_APPEND(&result, separator, separator_len);
+                STR_APPEND(&result, separator, separator_len);
             }
-            SB_APPEND(&result, tag.data, tag.len);
+            STR_APPEND(&result, tag.data, tag.len);
         }
         sb_free(&tag);
     }

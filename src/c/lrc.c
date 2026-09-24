@@ -352,7 +352,7 @@ lrc_append_line_entries(LrcDocument *document, int32 *source_order,
 
         ARRAY_PUSH(document->entries, entry);
         *source_order += 1;
-        SB_APPEND(&document->text, text, text_len);
+        STR_APPEND(&document->text, text, text_len);
     }
 
     return;

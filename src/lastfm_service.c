@@ -137,7 +137,7 @@ lastfm_append_escaped(String *buffer, char *string, int32 string_len) {
         status = ncm_curl_escape(&escaped, string, string_len);
     }
     if (status == 0) {
-        SB_APPEND(buffer, escaped.data, escaped.len);
+        STR_APPEND(buffer, escaped.data, escaped.len);
     }
     sb_free(&escaped);
     return status;
@@ -178,7 +178,7 @@ lastfm_extract_between(String *out, char *data, int32 data_len,
     if (b < 0) {
         return -NCM_ERROR_NOT_FOUND;
     }
-    SB_APPEND(out, data + a, b - a);
+    STR_APPEND(out, data + a, b - a);
     return 0;
 }
 
@@ -193,7 +193,7 @@ lastfm_strip_unescape_trim(String *out, char *data, int32 data_len) {
     sb_clear(out);
     stripped = ncm_html_strip_tags(data, data_len);
     unescaped = ncm_html_unescape_utf8(stripped.data, stripped.len);
-    SB_APPEND(out, unescaped.data, unescaped.len);
+    STR_APPEND(out, unescaped.data, unescaped.len);
 
     text = out->data;
     text_len = out->len;
@@ -209,9 +209,9 @@ lastfm_strip_unescape_trim(String *out, char *data, int32 data_len) {
                || (text[text_len - 1] == '\r'))) {
         text_len -= 1;
     }
-    SB_APPEND(&tmp, text, text_len);
+    STR_APPEND(&tmp, text, text_len);
     sb_clear(out);
-    SB_APPEND(out, tmp.data, tmp.len);
+    STR_APPEND(out, tmp.data, tmp.len);
 
     sb_free(&tmp);
     sb_free(&unescaped);
@@ -265,13 +265,13 @@ lastfm_append_similars(String *out, char *data, int32 data_len,
             lastfm_strip_unescape_trim(&clean_name, name.data, name.len);
             lastfm_strip_unescape_trim(&clean_url, url.data, url.len);
             if (!wrote_heading) {
-                SB_APPEND(out, heading, heading_len);
+                STR_APPEND(out, heading, heading_len);
                 wrote_heading = true;
             }
-            SB_APPEND(out, "\n*");
-            SB_APPEND(out, clean_name.data, clean_name.len);
-            SB_APPEND(out, " (");
-            SB_APPEND(out, clean_url.data, clean_url.len);
+            STR_APPEND(out, "\n*");
+            STR_APPEND(out, clean_name.data, clean_name.len);
+            STR_APPEND(out, " (");
+            STR_APPEND(out, clean_url.data, clean_url.len);
             sb_append_byte(out, ')');
         }
         sb_free(&clean_url);
@@ -304,14 +304,14 @@ ncm_lastfm_service_fetch(NcmLastfmService *service, NcmLastfmResult *result) {
         return 0;
     }
 
-    SB_APPEND(&url, LASTFM_API_URL);
-    SB_APPEND(&url, "artist.getinfo&artist=");
+    STR_APPEND(&url, LASTFM_API_URL);
+    STR_APPEND(&url, "artist.getinfo&artist=");
     status = lastfm_append_escaped(&url, service->artist, service->artist_len);
     if (status < 0) {
         goto cleanup;
     }
     if (service->lang_len > 0) {
-        SB_APPEND(&url, "&lang=");
+        STR_APPEND(&url, "&lang=");
         status = lastfm_append_escaped(&url, service->lang, service->lang_len);
         if (status < 0) {
             goto cleanup;
@@ -364,7 +364,7 @@ ncm_lastfm_service_fetch(NcmLastfmService *service, NcmLastfmResult *result) {
     }
 
     lastfm_strip_unescape_trim(&desc, content.data, content.len);
-    SB_APPEND(&output, desc.data, desc.len);
+    STR_APPEND(&output, desc.data, desc.len);
     lastfm_append_similars(&output, data.data, data.len,
                            STRLIT("<similar>"), STRLIT("</similar>"),
                            STRLIT("\n\nSimilar artists:\n"));
@@ -377,8 +377,8 @@ ncm_lastfm_service_fetch(NcmLastfmService *service, NcmLastfmResult *result) {
         lastfm_strip_unescape_trim(&clean_url, original_link.data,
                                    original_link.len);
         if (clean_url.len > 0) {
-            SB_APPEND(&output, "\n\n");
-            SB_APPEND(&output, clean_url.data, clean_url.len);
+            STR_APPEND(&output, "\n\n");
+            STR_APPEND(&output, clean_url.data, clean_url.len);
         }
         sb_free(&clean_url);
     }

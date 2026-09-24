@@ -1300,8 +1300,8 @@ outputs_fetch(void *user, NcOutputsScreen *screen) {
     if (ncm_mpd_client_get_outputs(&global_mpd, &outputs, &ncm_error) < 0) {
         String message = {0};
 
-        SB_APPEND(&message, "Could not fetch outputs: ");
-        SB_APPEND(&message,
+        STR_APPEND(&message, "Could not fetch outputs: ");
+        STR_APPEND(&message,
                   ncm_error.message, ncm_error.message_len);
         ncm_statusbar_print(5, message.data, message.len);
         sb_free(&message);
@@ -1341,10 +1341,10 @@ outputs_toggle(void *user, int32 id, bool enabled, char *name, int32 name_len) {
     if (status < 0) {
         String message = {0};
 
-        SB_APPEND(&message, "Could not toggle output ");
-        SB_APPEND(&message, name, name_len);
-        SB_APPEND(&message, ": ");
-        SB_APPEND(&message, ncm_error.message,
+        STR_APPEND(&message, "Could not toggle output ");
+        STR_APPEND(&message, name, name_len);
+        STR_APPEND(&message, ": ");
+        STR_APPEND(&message, ncm_error.message,
                   ncm_error.message_len);
         ncm_statusbar_print(5, message.data, message.len);
         sb_free(&message);
@@ -1354,12 +1354,12 @@ outputs_toggle(void *user, int32 id, bool enabled, char *name, int32 name_len) {
     {
         String message = {0};
 
-        SB_APPEND(&message, "Output ");
-        SB_APPEND(&message, name, name_len);
+        STR_APPEND(&message, "Output ");
+        STR_APPEND(&message, name, name_len);
         if (enabled) {
-            SB_APPEND(&message, " disabled");
+            STR_APPEND(&message, " disabled");
         } else {
-            SB_APPEND(&message, " enabled");
+            STR_APPEND(&message, " enabled");
         }
         ncm_statusbar_print(3, message.data, message.len);
         sb_free(&message);
@@ -1684,10 +1684,10 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
                 continue;
             }
             if (value.len > 0) {
-                SB_APPEND(&value, Config.tags_separator,
+                STR_APPEND(&value, Config.tags_separator,
                           Config.tags_separator_len);
             }
-            SB_APPEND(&value, view.data, view.len);
+            STR_APPEND(&value, view.data, view.len);
         }
         append_song_info_tag(buffer, ncm_song_info_tags[i].name,
                              ncm_song_info_tags[i].name_len, &value);
@@ -1718,10 +1718,10 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
             }
             if (!duplicate) {
                 if (properties.len > 0) {
-                    SB_APPEND(&properties, Config.tags_separator,
+                    STR_APPEND(&properties, Config.tags_separator,
                               Config.tags_separator_len);
                 }
-                SB_APPEND(&properties, candidate->value, candidate->value_len);
+                STR_APPEND(&properties, candidate->value, candidate->value_len);
             }
             next += 1;
         }
@@ -1757,8 +1757,8 @@ song_info_switch_to(void *user, NcSongInfoScreen *screen) {
     if (!owner->has_song) {
         String message = {0};
 
-        SB_APPEND(&message, "Could not fetch current song: ");
-        SB_APPEND(&message, ncm_error.message,
+        STR_APPEND(&message, "Could not fetch current song: ");
+        STR_APPEND(&message, ncm_error.message,
                   ncm_error.message_len);
         ncm_statusbar_print(5, message.data, message.len);
         sb_free(&message);

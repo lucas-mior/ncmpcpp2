@@ -70,11 +70,11 @@ app_bridge_report_mpd_error(NcmError *ncm_error) {
 
     if ((ncm_mpd_client_error_code(&global_mpd) == NCM_MPD_ERROR_SERVER)
         || (ncm_error->code == NCM_MPD_ERROR_SERVER)) {
-        SB_APPEND(&output, "MPD: ");
+        STR_APPEND(&output, "MPD: ");
     } else {
-        SB_APPEND(&output, "ncmpcpp: ");
+        STR_APPEND(&output, "ncmpcpp: ");
     }
-    SB_APPEND(&output, message, optional_strlen32(message));
+    STR_APPEND(&output, message, optional_strlen32(message));
     ncm_statusbar_print(Config.message_delay_time, output.data, output.len);
     sb_free(&output);
     return;

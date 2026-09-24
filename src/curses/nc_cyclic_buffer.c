@@ -79,7 +79,7 @@ nc_cyclic_text_append(String *output, char *string, int32 string_len,
         if ((*written_width + char_width) > width) {
             break;
         }
-        SB_APPEND(output, string + byte, next_byte - byte);
+        STR_APPEND(output, string + byte, next_byte - byte);
         *written_width += char_width;
         byte = next_byte;
     }
@@ -119,7 +119,7 @@ nc_cyclic_text_write(String *output, char *string, int32 string_len,
 
     string_width = utf8_width(string, string_len);
     if (!scrolling_enabled || (string_width <= width)) {
-        SB_APPEND(output, string, string_len);
+        STR_APPEND(output, string, string_len);
         return;
     }
 

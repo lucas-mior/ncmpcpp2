@@ -29,13 +29,13 @@ playlist_edit_update_titles(PlaylistEditScreen *screen, bool update_windows) {
     if (Config.titles_visibility) {
         playlists_title = "Playlists";
         playlists_title_len = STRLIT_LEN("Playlists");
-        SB_APPEND(&screen->content_title, "Content");
+        STR_APPEND(&screen->content_title, "Content");
 
         if (screen->last_known_content_len >= 0) {
             char digits[32];
             int32 len = 0;
             int32 value = screen->last_known_content_len;
-            SB_APPEND(&screen->content_title, " (");
+            STR_APPEND(&screen->content_title, " (");
 
             if (value == 0) {
                 sb_append_byte(&screen->content_title, '0');
@@ -51,9 +51,9 @@ playlist_edit_update_titles(PlaylistEditScreen *screen, bool update_windows) {
             }
 
             if (screen->last_known_content_len == 1) {
-                SB_APPEND(&screen->content_title, " item)");
+                STR_APPEND(&screen->content_title, " item)");
             } else {
-                SB_APPEND(&screen->content_title, " items)");
+                STR_APPEND(&screen->content_title, " items)");
             }
         }
     }
@@ -436,10 +436,10 @@ playlist_edit_report_error(char *context, int32 context_len,
 
     ASSERT(ncm_error != NULL);
 
-    SB_APPEND(&message, context, context_len);
+    STR_APPEND(&message, context, context_len);
     if (ncm_error->message[0] != 0) {
-        SB_APPEND(&message, ": ");
-        SB_APPEND(&message, ncm_error->message, ncm_error->message_len);
+        STR_APPEND(&message, ": ");
+        STR_APPEND(&message, ncm_error->message, ncm_error->message_len);
     }
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
     sb_free(&message);
@@ -589,9 +589,9 @@ playlist_edit_mouse_callback(NcScreen *screen, MEVENT event) {
                     } else if (loaded) {
                         String message = {0};
 
-                        SB_APPEND(&message, "Playlist \"");
-                        SB_APPEND(&message, playlist->path, playlist->path_len);
-                        SB_APPEND(&message, "\" loaded");
+                        STR_APPEND(&message, "Playlist \"");
+                        STR_APPEND(&message, playlist->path, playlist->path_len);
+                        STR_APPEND(&message, "\" loaded");
 
                         ncm_statusbar_print(Config.message_delay_time,
                                             message.data, message.len);

@@ -860,7 +860,7 @@ static void
 ncm_format_string_text(void *user, char *data, int32 data_len,
                        NcmFormatSongTag *tag) {
     (void)tag;
-    SB_APPEND((String *)user, data, data_len);
+    STR_APPEND((String *)user, data, data_len);
     return;
 }
 

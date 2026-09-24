@@ -201,13 +201,13 @@ playlist_refresh_stats(PlaylistScreen *screen) {
     int32 count;
 
     sb_clear(&screen->title_cache);
-    SB_APPEND(&screen->title_cache, "Playlist (");
+    STR_APPEND(&screen->title_cache, "Playlist (");
     count = playlist_screen_song_len(screen);
     sb_itoa(&screen->title_cache, count);
     if (count == 1) {
-        SB_APPEND(&screen->title_cache, " item)");
+        STR_APPEND(&screen->title_cache, " item)");
     } else {
-        SB_APPEND(&screen->title_cache, " items)");
+        STR_APPEND(&screen->title_cache, " items)");
     }
     return;
 }
@@ -826,12 +826,12 @@ playlist_set_mutable_uri(NcmSong *song, MutableSong *edited) {
     }
 
     if (edited->directory_len > 0) {
-        SB_APPEND(&uri, edited->directory, edited->directory_len);
+        STR_APPEND(&uri, edited->directory, edited->directory_len);
         if (edited->directory[edited->directory_len - 1] != '/') {
-            SB_APPEND(&uri, "/");
+            STR_APPEND(&uri, "/");
         }
     }
-    SB_APPEND(&uri, new_name.data, new_name.len);
+    STR_APPEND(&uri, new_name.data, new_name.len);
     ncm_song_set_uri(song, uri.data, uri.len);
     sb_free(&uri);
     return;

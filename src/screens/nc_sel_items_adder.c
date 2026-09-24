@@ -433,9 +433,9 @@ adder_add_to_current_playlist(SelectedItemsAdderScreen *screen,
         }
     }
 
-    SB_APPEND(&message, "Selected items added");
+    STR_APPEND(&message, "Selected items added");
     suffix = ncm_helpers_with_errors(success);
-    SB_APPEND(&message, suffix, optional_strlen32(suffix));
+    STR_APPEND(&message, suffix, optional_strlen32(suffix));
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
     sb_free(&message);
     adder_finish(screen);
@@ -678,9 +678,9 @@ adder_add_to_stored_playlist(SelectedItemsAdderScreen *screen, char *playlist,
         return;
     }
 
-    SB_APPEND(&message, "Selected item(s) added to playlist \"");
-    SB_APPEND(&message, playlist, playlist_len);
-    SB_APPEND(&message, "\"");
+    STR_APPEND(&message, "Selected item(s) added to playlist \"");
+    STR_APPEND(&message, playlist, playlist_len);
+    STR_APPEND(&message, "\"");
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
     sb_free(&message);
     adder_finish(screen);
@@ -904,8 +904,8 @@ selected_items_add_screen_open(SelectedItemsAdderScreen *screen,
             String message = {0};
 
             ncm_playlist_array_clear(&playlists);
-            SB_APPEND(&message, "Could not fetch playlists: ");
-            SB_APPEND(&message, playlist_error.message,
+            STR_APPEND(&message, "Could not fetch playlists: ");
+            STR_APPEND(&message, playlist_error.message,
                       playlist_error.message_len);
             ncm_statusbar_print(Config.message_delay_time,
                                 message.data, message.len);

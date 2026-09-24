@@ -33,7 +33,7 @@ write_data(char *buffer, size_t size, size_t nmemb, void *data) {
         return 0;
     }
     if (bytes > 0) {
-        SB_APPEND(writer->buffer, buffer, (int32)bytes);
+        STR_APPEND(writer->buffer, buffer, (int32)bytes);
     }
 
     return bytes;
@@ -51,8 +51,8 @@ ncm_curl_perform(String *data, char *url, int32 url_len, char *referer,
 
     sb_clear(data);
 
-    SB_APPEND(&url_string, url, url_len);
-    SB_APPEND(&referer_string, referer, referer_len);
+    STR_APPEND(&url_string, url, url_len);
+    STR_APPEND(&referer_string, referer, referer_len);
 
     if ((curl = curl_easy_init()) == NULL) {
         result = CURLE_FAILED_INIT;

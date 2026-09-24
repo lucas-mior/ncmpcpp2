@@ -227,9 +227,9 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
             }
         }
 
-        SB_APPEND(&new_name, input.data, input.len);
+        STR_APPEND(&new_name, input.data, input.len);
         if (dot >= 0) {
-            SB_APPEND(&new_name,
+            STR_APPEND(&new_name,
                       &current_name.data[dot], current_name.len - dot);
         }
         mutable_song_set_new_name(&screen->edited, new_name.data, new_name.len);
@@ -598,9 +598,9 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     screen->has_edited = true;
 
     if (screen->edited.is_from_database) {
-        SB_APPEND(path, music_dir, music_dir_len);
+        STR_APPEND(path, music_dir, music_dir_len);
     }
-    SB_APPEND(path, screen->edited.uri, screen->edited.uri_len);
+    STR_APPEND(path, screen->edited.uri, screen->edited.uri_len);
 
     file = (TaglibFile){0};
     if (screen->hooks.taglib_open) {

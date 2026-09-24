@@ -275,8 +275,8 @@ visualizer_update_callback(NcScreen *screen) {
         if (status < 0) {
             String message = {0};
 
-            SB_APPEND(&message, "Could not disable visualizer output: ");
-            SB_APPEND(&message,
+            STR_APPEND(&message, "Could not disable visualizer output: ");
+            STR_APPEND(&message,
                       ncm_error.message, ncm_error.message_len);
             ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                                 message.data, message.len);
@@ -295,8 +295,8 @@ visualizer_update_callback(NcScreen *screen) {
         if (status < 0) {
             String message = {0};
 
-            SB_APPEND(&message, "Could not enable visualizer output: ");
-            SB_APPEND(&message, ncm_error.message, ncm_error.message_len);
+            STR_APPEND(&message, "Could not enable visualizer output: ");
+            STR_APPEND(&message, ncm_error.message, ncm_error.message_len);
             ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                                 message.data, message.len);
             sb_free(&message);
@@ -375,10 +375,10 @@ visualizer_system_open_fifo(void *user, char *location, int32 location_len) {
             error_code = EIO;
         }
         error_message = strerror(error_code);
-        SB_APPEND(&message, "Couldn't open \"");
-        SB_APPEND(&message, location, location_len);
-        SB_APPEND(&message, "\" for reading PCM data: ");
-        SB_APPEND(&message, error_message, optional_strlen32(error_message));
+        STR_APPEND(&message, "Couldn't open \"");
+        STR_APPEND(&message, location, location_len);
+        STR_APPEND(&message, "\" for reading PCM data: ");
+        STR_APPEND(&message, error_message, optional_strlen32(error_message));
         ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                             message.data, message.len);
         sb_free(&message);
@@ -407,12 +407,12 @@ visualizer_system_open_udp(void *user, char *location, int32 location_len,
         char *error_message;
 
         error_message = (char *)gai_strerror(error_code);
-        SB_APPEND(&message, "Couldn't resolve \"");
-        SB_APPEND(&message, location, location_len);
-        SB_APPEND(&message, ":");
-        SB_APPEND(&message, port, port_len);
-        SB_APPEND(&message, "\": ");
-        SB_APPEND(&message, error_message, optional_strlen32(error_message));
+        STR_APPEND(&message, "Couldn't resolve \"");
+        STR_APPEND(&message, location, location_len);
+        STR_APPEND(&message, ":");
+        STR_APPEND(&message, port, port_len);
+        STR_APPEND(&message, "\": ");
+        STR_APPEND(&message, error_message, optional_strlen32(error_message));
         ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                             message.data, message.len);
         sb_free(&message);
@@ -751,8 +751,8 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
     if (status < 0) {
         String message = {0};
 
-        SB_APPEND(&message, "Could not fetch outputs: ");
-        SB_APPEND(&message, ncm_error.message, ncm_error.message_len);
+        STR_APPEND(&message, "Could not fetch outputs: ");
+        STR_APPEND(&message, ncm_error.message, ncm_error.message_len);
         ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                             message.data, message.len);
         sb_free(&message);
@@ -775,9 +775,9 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
     if (!found) {
         String message = {0};
 
-        SB_APPEND(&message, "There is no output named \"");
-        SB_APPEND(&message, screen->output_name, screen->output_name_len);
-        SB_APPEND(&message, "\"");
+        STR_APPEND(&message, "There is no output named \"");
+        STR_APPEND(&message, screen->output_name, screen->output_name_len);
+        STR_APPEND(&message, "\"");
         ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                             message.data, message.len);
         sb_free(&message);

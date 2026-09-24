@@ -759,7 +759,7 @@ tag_edit_append_parser_legend_entry(String *legend, char tag_char,
                                     char *name, int32 name_len) {
     sb_append_byte(legend, '%');
     sb_append_byte(legend, tag_char);
-    SB_APPEND(legend, " - ");
+    STR_APPEND(legend, " - ");
     tag_edit_append_lowercase(legend, name, name_len);
     sb_append_byte(legend, '\n');
     return;
@@ -799,7 +799,7 @@ tag_edit_build_parser_legend(TagEditScreen *screen) {
     sb_clear(&screen->parser_legend);
 
     TAG_DEFS(TAG_EDIT_APPEND_PARSER_FIELD)
-    SB_APPEND(&screen->parser_legend, "\nFiles:\n");
+    STR_APPEND(&screen->parser_legend, "\nFiles:\n");
 
     tags = nc_tag_row_menu_base(&screen->tags);
     count = nc_menu_item_len(tags);
@@ -810,8 +810,8 @@ tag_edit_build_parser_legend(TagEditScreen *screen) {
         if (song->name == NULL) {
             continue;
         }
-        SB_APPEND(&screen->parser_legend, " * ");
-        SB_APPEND(&screen->parser_legend, song->name, song->name_len);
+        STR_APPEND(&screen->parser_legend, " * ");
+        STR_APPEND(&screen->parser_legend, song->name, song->name_len);
         sb_append_byte(&screen->parser_legend, '\n');
     }
     return;
@@ -869,8 +869,8 @@ tag_edit_save_recent_patterns(TagEditScreen *screen) {
         if (pattern->len <= 0) {
             continue;
         }
-        SB_APPEND(&content, pattern->data, pattern->len);
-        SB_APPEND(&content, "\n");
+        STR_APPEND(&content, pattern->data, pattern->len);
+        STR_APPEND(&content, "\n");
     }
 
     status = (int32)write_entire_file(path.data, content.data, content.len);
@@ -965,15 +965,15 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
         ASSERT(song != NULL);
         if (screen->parser_mode == TAG_EDIT_PARSER_MODE_TAGS_FROM_FILENAME) {
             if (!apply && song->name) {
-                SB_APPEND(&screen->parser_preview, song->name, song->name_len);
-                SB_APPEND(&screen->parser_preview, ":\n");
+                STR_APPEND(&screen->parser_preview, song->name, song->name_len);
+                STR_APPEND(&screen->parser_preview, ":\n");
             }
             status = tag_edit_parse_filename(song,
                                              screen->pattern,
                                              screen->pattern_len,
                                              !apply, &screen->parser_preview);
             if ((status < 0) && !apply) {
-                SB_APPEND(&screen->parser_preview,
+                STR_APPEND(&screen->parser_preview,
                           "Error while parsing filename!\n");
             }
             if (!apply) {
@@ -1001,17 +1001,17 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
                     }
                 }
             }
-            SB_APPEND(&new_name, stem.data, stem.len);
+            STR_APPEND(&new_name, stem.data, stem.len);
             if ((extension_start >= 0) && song->name) {
-                SB_APPEND(&new_name,
+                STR_APPEND(&new_name,
                           song->name + extension_start,
                           song->name_len - extension_start);
             }
             if (apply && (stem.len <= 0)) {
                 sb_clear(&screen->parser_preview);
-                SB_APPEND(&screen->parser_preview, "File \"");
-                SB_APPEND(&screen->parser_preview, song->name, song->name_len);
-                SB_APPEND(&screen->parser_preview, "\" would have an empty name");
+                STR_APPEND(&screen->parser_preview, "File \"");
+                STR_APPEND(&screen->parser_preview, song->name, song->name_len);
+                STR_APPEND(&screen->parser_preview, "\" would have an empty name");
                 tag_edit_status_message(screen, screen->parser_preview.data,
                                         screen->parser_preview.len);
                 screen->parser_preview_enabled = true;
@@ -1023,17 +1023,17 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
             if (apply) {
                 mutable_song_set_new_name(song, new_name.data, new_name.len);
             } else {
-                SB_APPEND(&screen->parser_preview, song->name, song->name_len);
-                SB_APPEND(&screen->parser_preview, " -> ");
+                STR_APPEND(&screen->parser_preview, song->name, song->name_len);
+                STR_APPEND(&screen->parser_preview, " -> ");
                 if (new_name.len > 0) {
-                    SB_APPEND(&screen->parser_preview,
+                    STR_APPEND(&screen->parser_preview,
                               new_name.data, new_name.len);
                 } else if (Config.empty_tag_marker) {
-                    SB_APPEND(&screen->parser_preview,
+                    STR_APPEND(&screen->parser_preview,
                               Config.empty_tag_marker,
                               Config.empty_tag_marker_len);
                 }
-                SB_APPEND(&screen->parser_preview, "\n\n");
+                STR_APPEND(&screen->parser_preview, "\n\n");
             }
             sb_free(&new_name);
             sb_free(&stem);
@@ -1163,9 +1163,9 @@ tag_edit_run_current(NcScreen *screen) {
                         stem_dot = i;
                     }
                 }
-                SB_APPEND(&new_name, input.data, input.len);
+                STR_APPEND(&new_name, input.data, input.len);
                 if (stem_dot >= 0) {
-                    SB_APPEND(&new_name,
+                    STR_APPEND(&new_name,
                               stem_name.data + stem_dot,
                               stem_name.len - stem_dot);
                 }
@@ -1657,10 +1657,10 @@ static void
 tag_edit_report_error(char *context, int32 context_len, NcmError *ncm_error) {
     String message = {0};
 
-    SB_APPEND(&message, context, context_len);
+    STR_APPEND(&message, context, context_len);
     if (ncm_error && (ncm_error->message[0] != 0)) {
-        SB_APPEND(&message, ": ");
-        SB_APPEND(&message, ncm_error->message, ncm_error->message_len);
+        STR_APPEND(&message, ": ");
+        STR_APPEND(&message, ncm_error->message, ncm_error->message_len);
     }
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
     sb_free(&message);
@@ -2203,7 +2203,7 @@ tag_edit_tag_matches_regex(TagEditScreen *screen,
 
     tag_edit_song_display_value(song, tag_type, &buffer);
     if (buffer.len <= 0) {
-        SB_APPEND(&buffer,
+        STR_APPEND(&buffer,
                   Config.empty_tag_marker, Config.empty_tag_marker_len);
     }
     found = ncm_regex_matches(regex, buffer.data, buffer.len);
@@ -3050,14 +3050,14 @@ tag_edit_screen_rename_current_directory(TagEditScreen *screen,
         String message = {0};
         int32 error_len;
 
-        SB_APPEND(&message, "Couldn't rename \"");
-        SB_APPEND(&message, pair->first.data, pair->first.len);
-        SB_APPEND(&message, "\": ");
+        STR_APPEND(&message, "Couldn't rename \"");
+        STR_APPEND(&message, pair->first.data, pair->first.len);
+        STR_APPEND(&message, "\": ");
         if (ncm_error_is_set(&ncm_error)) {
             error_len = ncm_error.message_len;
-            SB_APPEND(&message, ncm_error.message, error_len);
+            STR_APPEND(&message, ncm_error.message, error_len);
         } else {
-            SB_APPEND(&message, "unknown error");
+            STR_APPEND(&message, "unknown error");
         }
         tag_edit_status_message(screen, message.data, message.len);
         sb_free(&message);
@@ -3065,9 +3065,9 @@ tag_edit_screen_rename_current_directory(TagEditScreen *screen,
     if (status == 0) {
         String message = {0};
 
-        SB_APPEND(&message, "Directory renamed to \"");
-        SB_APPEND(&message, name.data, name.len);
-        SB_APPEND(&message, "\"");
+        STR_APPEND(&message, "Directory renamed to \"");
+        STR_APPEND(&message, name.data, name.len);
+        STR_APPEND(&message, "\"");
         tag_edit_status_message(screen, message.data, message.len);
         sb_free(&message);
         if (screen->hooks.update_directory) {
@@ -3452,7 +3452,7 @@ tag_edit_lower_song_callback(MutableSong *song, void *user) {
             if (!mutable_song_has_tag_view(song, tag_type, i, &view)) {
                 break;
             }
-            SB_APPEND(&buffer, view.data, view.len);
+            STR_APPEND(&buffer, view.data, view.len);
             if (buffer.data != NULL) {
                 ncm_string_lowercase_ascii(buffer.data, buffer.len);
             }
@@ -3525,11 +3525,11 @@ tag_edit_save_song_callback(MutableSong *song, void *user) {
     {
         String message = {0};
 
-        SB_APPEND(&message, "Writing tags in \"");
+        STR_APPEND(&message, "Writing tags in \"");
         if (song->name) {
-            SB_APPEND(&message, song->name, song->name_len);
+            STR_APPEND(&message, song->name, song->name_len);
         }
-        SB_APPEND(&message, "\"...");
+        STR_APPEND(&message, "\"...");
         tag_edit_status_message(context->screen, message.data, message.len);
         sb_free(&message);
     }
@@ -3545,12 +3545,12 @@ tag_edit_save_song_callback(MutableSong *song, void *user) {
         }
         system_error = strerror(error_code);
 
-        SB_APPEND(&message, "Error while writing tags to \"");
+        STR_APPEND(&message, "Error while writing tags to \"");
         if (song->name) {
-            SB_APPEND(&message, song->name, song->name_len);
+            STR_APPEND(&message, song->name, song->name_len);
         }
-        SB_APPEND(&message, "\": ");
-        SB_APPEND(&message, system_error, strlen32(system_error));
+        STR_APPEND(&message, "\": ");
+        STR_APPEND(&message, system_error, strlen32(system_error));
         tag_edit_status_message(context->screen, message.data, message.len);
 
         sb_free(&message);
@@ -3864,8 +3864,8 @@ tag_edit_screen_prepare_parser_menus(TagEditScreen *screen,
     {
         String row = {0};
 
-        SB_APPEND(&row, "Pattern: ");
-        SB_APPEND(&row, screen->pattern, screen->pattern_len);
+        STR_APPEND(&row, "Pattern: ");
+        STR_APPEND(&row, screen->pattern, screen->pattern_len);
         tag_edit_append_parser_action_label(screen, row.data, row.len);
         sb_free(&row);
     }
@@ -4047,7 +4047,7 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
             break;
         }
     }
-    SB_APPEND(&file, song->name, name_len);
+    STR_APPEND(&file, song->name, name_len);
 
     mask_pos = 0;
     file_pos = 0;
@@ -4126,8 +4126,8 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
         if (preview && preview_buffer && recognized) {
             sb_append_byte(preview_buffer, '%');
             sb_append_byte(preview_buffer, tag_char);
-            SB_APPEND(preview_buffer, ": ");
-            SB_APPEND(preview_buffer,
+            STR_APPEND(preview_buffer, ": ");
+            STR_APPEND(preview_buffer,
                       file.data + file_pos, value_end - file_pos);
             sb_append_byte(preview_buffer, '\n');
         }
@@ -4138,10 +4138,10 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
     if (!preview && has_track_number) {
         String track = {0};
 
-        SB_APPEND(&track, track_number.data, track_number.len);
+        STR_APPEND(&track, track_number.data, track_number.len);
         if (has_track_total && (track_total.len > 0)) {
             sb_append_byte(&track, '/');
-            SB_APPEND(&track, track_total.data, track_total.len);
+            STR_APPEND(&track, track_total.data, track_total.len);
         }
         mutable_song_set_tags(song, TAG_TRACK,
                               track.data, track.len, NULL, 0);
@@ -4160,9 +4160,9 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
             number_len = current.len;
         }
         if (number_len > 0) {
-            SB_APPEND(&track, current.data, number_len);
+            STR_APPEND(&track, current.data, number_len);
             sb_append_byte(&track, '/');
-            SB_APPEND(&track, track_total.data, track_total.len);
+            STR_APPEND(&track, track_total.data, track_total.len);
             mutable_song_set_tags(song, TAG_TRACK,
                                   track.data, track.len, NULL, 0);
         }
@@ -4202,13 +4202,13 @@ tag_edit_generate_filename(MutableSong *song,
         String uri = {0};
 
         if (song->uri && (song->uri_len >= 0)) {
-            SB_APPEND(&uri, song->uri, song->uri_len);
+            STR_APPEND(&uri, song->uri, song->uri_len);
         } else if (song->directory && (song->directory_len > 0)
                    && song->name && (song->name_len >= 0)) {
             ncm_fs_join(&uri, song->directory, song->directory_len,
                         song->name, song->name_len);
         } else if (song->name && (song->name_len >= 0)) {
-            SB_APPEND(&uri, song->name, song->name_len);
+            STR_APPEND(&uri, song->name, song->name_len);
         }
 
         if (uri.data == NULL) {
@@ -4244,7 +4244,7 @@ tag_edit_generate_filename(MutableSong *song,
         }
     }
     rendered = ncm_format_render_string(&ast, &format_song);
-    SB_APPEND(filename, rendered.data, rendered.len);
+    STR_APPEND(filename, rendered.data, rendered.len);
     sb_free(&rendered);
     {
         bool win32_compatible = Config.generate_win32_compatible_filenames;
@@ -4265,10 +4265,10 @@ tag_edit_song_display_value(MutableSong *song, enum TagType tag_type,
     String tag = {0};
 
     if (tag_type == TAG_COUNT) {
-        SB_APPEND(buffer, song->name, song->name_len);
+        STR_APPEND(buffer, song->name, song->name_len);
         if (song->new_name && (song->new_name_len > 0)) {
-            SB_APPEND(buffer, " -> ");
-            SB_APPEND(buffer, song->new_name, song->new_name_len);
+            STR_APPEND(buffer, " -> ");
+            STR_APPEND(buffer, song->new_name, song->new_name_len);
         }
         return 0;
     }
@@ -4277,7 +4277,7 @@ tag_edit_song_display_value(MutableSong *song, enum TagType tag_type,
     }
 
     mutable_song_get_tag_buffer(song, tag_type, 0, &tag);
-    SB_APPEND(buffer, tag.data, tag.len);
+    STR_APPEND(buffer, tag.data, tag.len);
     sb_free(&tag);
     return 0;
 }

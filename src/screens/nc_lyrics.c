@@ -104,7 +104,7 @@ lyrics_title_callback(NcScreen *screen) {
     LyricsScreen *lyrics = (LyricsScreen *)screen;
 
     sb_clear(&lyrics->title);
-    SB_APPEND(&lyrics->title, LYRICS_TITLE);
+    STR_APPEND(&lyrics->title, LYRICS_TITLE);
     if (!lyrics->has_song || ncm_song_is_empty(&lyrics->song)) {
         return lyrics->title.data;
     }
@@ -113,18 +113,18 @@ lyrics_title_callback(NcScreen *screen) {
     if (ncm_song_has_tag_view(&lyrics->song, TAG_ARTIST, 0, &artist_view)
         && ncm_song_has_tag_view(&lyrics->song, TAG_TITLE, 0,
                                  &title_view)) {
-        SB_APPEND(&song_title, artist_view.data, artist_view.len);
-        SB_APPEND(&song_title, " - ");
-        SB_APPEND(&song_title, title_view.data, title_view.len);
+        STR_APPEND(&song_title, artist_view.data, artist_view.len);
+        STR_APPEND(&song_title, " - ");
+        STR_APPEND(&song_title, title_view.data, title_view.len);
     } else if (ncm_song_has_filename_view(&lyrics->song, 0, &name_view)) {
-        SB_APPEND(&song_title, name_view.data, name_view.len);
+        STR_APPEND(&song_title, name_view.data, name_view.len);
     }
     if (song_title.len <= 0) {
         sb_free(&song_title);
         return lyrics->title.data;
     }
 
-    SB_APPEND(&lyrics->title, ": ");
+    STR_APPEND(&lyrics->title, ": ");
     scroll_begin = nc_lyrics_screen_scroll_begin(&lyrics->screen);
     scroll_width = COLS - utf8_width(lyrics->title.data, lyrics->title.len);
     if (Config.user_interface == NCM_DESIGN_ALTERNATIVE) {
@@ -136,7 +136,7 @@ lyrics_title_callback(NcScreen *screen) {
     nc_cyclic_text_write(&scroll_buffer, song_title.data, song_title.len,
                          &scroll_begin, scroll_width, separator,
                          SIZEOF(separator) - 1, Config.header_text_scrolling);
-    SB_APPEND(&lyrics->title, scroll_buffer.data, scroll_buffer.len);
+    STR_APPEND(&lyrics->title, scroll_buffer.data, scroll_buffer.len);
     nc_lyrics_screen_set_scroll_begin(&lyrics->screen, scroll_begin);
     sb_free(&scroll_buffer);
     sb_free(&song_title);
@@ -487,15 +487,15 @@ lyrics_song_artist_title(NcmSong *song, String *artist, String *title) {
 
     if (ncm_song_has_tag_view(song, TAG_ARTIST, 0, &artist_view)
         && ncm_song_has_tag_view(song, TAG_TITLE, 0, &title_view)) {
-        SB_APPEND(artist, artist_view.data, artist_view.len);
-        SB_APPEND(title, title_view.data, title_view.len);
+        STR_APPEND(artist, artist_view.data, artist_view.len);
+        STR_APPEND(title, title_view.data, title_view.len);
         return true;
     }
 
     if (ncm_song_has_filename_view(song, 0, &name_view)) {
-        SB_APPEND(&fallback, name_view.data, name_view.len);
+        STR_APPEND(&fallback, name_view.data, name_view.len);
     } else if (ncm_song_has_uri_view(song, 0, &name_view)) {
-        SB_APPEND(&fallback, name_view.data, name_view.len);
+        STR_APPEND(&fallback, name_view.data, name_view.len);
     }
 
     lyrics_remove_extension(&fallback);
@@ -520,26 +520,26 @@ lyrics_filename_from_song_with_extension(String *filename,
 
     if (store_in_song_dir && !ncm_song_is_stream(song)) {
         if (ncm_song_is_from_database(song) && (music_dir_len > 0)) {
-            SB_APPEND(filename, music_dir, music_dir_len);
+            STR_APPEND(filename, music_dir, music_dir_len);
             sb_append_byte_if_not(filename, '/');
         }
         if (ncm_song_has_uri_view(song, 0, &uri)) {
-            SB_APPEND(filename, uri.data, uri.len);
+            STR_APPEND(filename, uri.data, uri.len);
         }
         lyrics_remove_extension(filename);
     } else {
         lyrics_song_artist_title(song, &artist, &title);
         if (lyrics_dir_len > 0) {
-            SB_APPEND(filename, lyrics_dir, lyrics_dir_len);
+            STR_APPEND(filename, lyrics_dir, lyrics_dir_len);
             sb_append_byte_if_not(filename, '/');
         }
         basename_start = filename->len;
         if ((artist.len > 0) && (title.len > 0)) {
-            SB_APPEND(filename, artist.data, artist.len);
-            SB_APPEND(filename, " - ");
-            SB_APPEND(filename, title.data, title.len);
+            STR_APPEND(filename, artist.data, artist.len);
+            STR_APPEND(filename, " - ");
+            STR_APPEND(filename, title.data, title.len);
         } else {
-            SB_APPEND(filename, title.data, title.len);
+            STR_APPEND(filename, title.data, title.len);
         }
         basename_len = filename->len - basename_start;
         if (basename_len > 0) {
@@ -552,7 +552,7 @@ lyrics_filename_from_song_with_extension(String *filename,
         }
     }
 
-    SB_APPEND(filename, extension, extension_len);
+    STR_APPEND(filename, extension, extension_len);
     sb_free(&title);
     sb_free(&artist);
 
@@ -955,10 +955,10 @@ lyrics_job_complete(int32 status, NcmError *ncm_error, void *user) {
             if (save_error.code != 0) {
                 message = strerror(save_error.code);
             }
-            SB_APPEND(&output, "Couldn't save lyrics as \"");
-            SB_APPEND(&output, job->filename.data, job->filename.len);
-            SB_APPEND(&output, "\": ");
-            SB_APPEND(&output, message, optional_strlen32(message));
+            STR_APPEND(&output, "Couldn't save lyrics as \"");
+            STR_APPEND(&output, job->filename.data, job->filename.len);
+            STR_APPEND(&output, "\": ");
+            STR_APPEND(&output, message, optional_strlen32(message));
             ncm_statusbar_print(Config.message_delay_time,
                                 output.data, output.len);
             sb_free(&output);
@@ -1110,15 +1110,15 @@ lyrics_screen_fetch(LyricsScreen *screen, NcmSong *song,
                                               lrc_filename.len);
         txt_start = ncm_path_basename_start(txt_filename.data,
                                               txt_filename.len);
-        SB_APPEND(&message, lrc_filename.data + lrc_start,
+        STR_APPEND(&message, lrc_filename.data + lrc_start,
                   lrc_filename.len - lrc_start);
-        SB_APPEND(&message, " ");
-        SB_APPEND(&message, lrc_status, optional_strlen32(lrc_status));
-        SB_APPEND(&message, "; ");
-        SB_APPEND(&message, txt_filename.data + txt_start,
+        STR_APPEND(&message, " ");
+        STR_APPEND(&message, lrc_status, optional_strlen32(lrc_status));
+        STR_APPEND(&message, "; ");
+        STR_APPEND(&message, txt_filename.data + txt_start,
                   txt_filename.len - txt_start);
-        SB_APPEND(&message, " ");
-        SB_APPEND(&message, txt_status, optional_strlen32(txt_status));
+        STR_APPEND(&message, " ");
+        STR_APPEND(&message, txt_status, optional_strlen32(txt_status));
         ncm_statusbar_print(Config.message_delay_time,
                             message.data, message.len);
         sb_free(&message);
@@ -1275,9 +1275,9 @@ lyrics_start_next_background(LyricsScreen *screen, NcmError *ncm_error) {
                                      &queued->song);
 
         sb_clear(&screen->consumer_message);
-        SB_APPEND(&screen->consumer_message, "Fetching lyrics for \"");
-        SB_APPEND(&screen->consumer_message, formatted.data, formatted.len);
-        SB_APPEND(&screen->consumer_message, "\"...");
+        STR_APPEND(&screen->consumer_message, "Fetching lyrics for \"");
+        STR_APPEND(&screen->consumer_message, formatted.data, formatted.len);
+        STR_APPEND(&screen->consumer_message, "\"...");
         sb_free(&formatted);
     }
     job = lyrics_job_create(screen, &queued->song,
@@ -1420,10 +1420,10 @@ lyrics_screen_refetch_current(LyricsScreen *screen, NcmError *ncm_error) {
         if (ncm_error && (ncm_error->code != 0)) {
             message = strerror(ncm_error->code);
         }
-        SB_APPEND(&output, "Couldn't remove \"");
-        SB_APPEND(&output, filename.data, filename.len);
-        SB_APPEND(&output, "\": ");
-        SB_APPEND(&output, message, optional_strlen32(message));
+        STR_APPEND(&output, "Couldn't remove \"");
+        STR_APPEND(&output, filename.data, filename.len);
+        STR_APPEND(&output, "\": ");
+        STR_APPEND(&output, message, optional_strlen32(message));
         ncm_statusbar_print(Config.message_delay_time, output.data, output.len);
         sb_free(&output);
         sb_free(&filename);

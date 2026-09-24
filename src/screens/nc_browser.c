@@ -125,9 +125,9 @@ browser_add_parent_directory_item(BrowserScreen *screen) {
     }
 
     sb_clear(&screen->scratch_buffer);
-    SB_APPEND(&screen->scratch_buffer,
+    STR_APPEND(&screen->scratch_buffer,
               screen->current_directory.data, screen->current_directory.len);
-    SB_APPEND(&screen->scratch_buffer, "/..");
+    STR_APPEND(&screen->scratch_buffer, "/..");
 
     ncm_mpd_item_init(&item);
     ncm_directory_set(&directory,
@@ -697,7 +697,7 @@ browser_item_matches(BrowserScreen *screen, NcmMpdItem *item,
         ncm_directory_has_path_view(ncm_mpd_item_directory(item), &path);
         basename = ncm_path_basename_start(path.data, path.len);
         sb_append_byte(&screen->item_text_buffer, '[');
-        SB_APPEND(&screen->item_text_buffer,
+        STR_APPEND(&screen->item_text_buffer,
                   path.data + basename, path.len - basename);
         sb_append_byte(&screen->item_text_buffer, ']');
         break;
@@ -716,13 +716,13 @@ browser_item_matches(BrowserScreen *screen, NcmMpdItem *item,
     case NCM_MPD_ITEM_PLAYLIST:
         if (Config.browser_playlist_prefix.data
             && (Config.browser_playlist_prefix.len > 0)) {
-            SB_APPEND(&screen->item_text_buffer,
+            STR_APPEND(&screen->item_text_buffer,
                       Config.browser_playlist_prefix.data,
                       Config.browser_playlist_prefix.len);
         }
         ncm_playlist_has_path_view(ncm_mpd_item_playlist(item), &path);
         basename = ncm_path_basename_start(path.data, path.len);
-        SB_APPEND(&screen->item_text_buffer,
+        STR_APPEND(&screen->item_text_buffer,
                   path.data + basename, path.len - basename);
         break;
     case NCM_MPD_ITEM_COUNT:
@@ -1182,7 +1182,7 @@ browser_screen_update_title_text(BrowserScreen *screen) {
     }
 
     sb_clear(&screen->title_text);
-    SB_APPEND(&screen->title_text, "Browse: ");
+    STR_APPEND(&screen->title_text, "Browse: ");
 
     directory = browser_screen_current_directory(screen);
     if (directory.len <= 0) {
@@ -1210,7 +1210,7 @@ browser_screen_update_title_text(BrowserScreen *screen) {
                          &scroll_beginning, scroll_width,
                          separator, SIZEOF(separator) - 1,
                          Config.header_text_scrolling);
-    SB_APPEND(&screen->title_text, scroll_buffer.data, scroll_buffer.len);
+    STR_APPEND(&screen->title_text, scroll_buffer.data, scroll_buffer.len);
     screen->title_scroll_beginning = scroll_beginning;
     sb_free(&scroll_buffer);
     return;
@@ -1306,7 +1306,7 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
 
         if ((string->len <= 0) || (string->data[0] != '.')) {
             sb_set(&buffer, STRLIT("."));
-            SB_APPEND(&buffer, string->data, string->len);
+            STR_APPEND(&buffer, string->data, string->len);
         } else {
             sb_set(&buffer, string->data, string->len);
         }

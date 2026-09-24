@@ -101,7 +101,7 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
         }
         if ((value.len == 0) && column->display_empty_tag
             && Config.empty_tag_marker && (Config.empty_tag_marker_len > 0)) {
-            SB_APPEND(&value,
+            STR_APPEND(&value,
                       Config.empty_tag_marker, Config.empty_tag_marker_len);
         }
         cut_len = utf8_cut_width(value.data, value.len, width);
@@ -179,7 +179,7 @@ ncm_display_column_title(String *buffer, struct Column *columns,
 
         sb_clear(&name);
         if (column->name && (column->name_len > 0)) {
-            SB_APPEND(&name, column->name, column->name_len);
+            STR_APPEND(&name, column->name, column->name_len);
         } else {
             for (int32 j = 0; j < column->type_len; j += 1) {
                 enum SongGetter getter;
@@ -191,7 +191,7 @@ ncm_display_column_title(String *buffer, struct Column *columns,
                 }
                 getter = ncm_song_getter_from_char(column->type[j]);
                 title_len = ncm_song_getter_column_title_len(getter, &title);
-                SB_APPEND(&name, title, title_len);
+                STR_APPEND(&name, title, title_len);
             }
         }
         cut_len = utf8_cut_width(name.data, name.len, width);
@@ -202,9 +202,9 @@ ncm_display_column_title(String *buffer, struct Column *columns,
         }
         if (column->right_alignment) {
             ncm_display_append_spaces(buffer, padding);
-            SB_APPEND(buffer, name.data, cut_len);
+            STR_APPEND(buffer, name.data, cut_len);
         } else {
-            SB_APPEND(buffer, name.data, cut_len);
+            STR_APPEND(buffer, name.data, cut_len);
             ncm_display_append_spaces(buffer, padding);
         }
 

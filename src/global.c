@@ -45,7 +45,7 @@ global_timer_elapsed_seconds(int64 start) {
 void
 global_volume_state_set(char *string, int32 string_len) {
     sb_clear(&global_volume_state);
-    SB_APPEND(&global_volume_state, string, string_len);
+    STR_APPEND(&global_volume_state, string, string_len);
     return;
 }
 
