@@ -58,9 +58,9 @@ ncm_compare_parse_decimal(char *string, int32 string_len) {
 
 static void
 ncm_compare_copy_to_buffer(String *buffer, char *string, int32 string_len) {
-    sb_clear(buffer);
+    str_clear(buffer);
     if ((string == NULL) || (string_len <= 0)) {
-        sb_reserve(buffer, 1);
+        str_reserve(buffer, 1);
         buffer->data[0] = '\0';
         return;
     }
@@ -120,8 +120,8 @@ ncm_compare_locale_strings(char *left, int32 left_len,
                                right + right_offset, right_len - right_offset);
 
     result = strcoll(left_buffer.data, right_buffer.data);
-    sb_free(&left_buffer);
-    sb_free(&right_buffer);
+    str_free(&left_buffer);
+    str_free(&right_buffer);
 
     if (result < 0) {
         return -1;

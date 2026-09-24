@@ -43,7 +43,7 @@ ncm_system_command(char *command, int32 command_len,
     COMMAND_PUSH(&process, "/bin/sh", "-c", buffer.data);
 
     result = command_run_sync(&process, &rc);
-    sb_free(&buffer);
+    str_free(&buffer);
     if (result == 0) {
         if (status != NULL) {
             *status = rc;

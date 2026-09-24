@@ -78,7 +78,7 @@ tiny_editor_buffer_mutable_tag(NcBuffer *buffer, MutableSong *song,
                                      tag_separator, tag_separator_len,
                                      show_duplicate_tags);
     nc_buffer_append_data(buffer, value.data, value.len);
-    sb_free(&value);
+    str_free(&value);
     return;
 }
 
@@ -147,21 +147,21 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
                                                  field_name, field_name_len,
                                                  initial, &input);
         }
-        sb_free(&tag_value);
+        str_free(&tag_value);
         if (prompt_result == TINY_TAG_EDIT_PROMPT_ABORTED) {
             tiny_editor_status_message(screen, STRLIT("Action aborted"));
-            sb_free(&input);
+            str_free(&input);
             return -NCM_ERROR_CANCELLED;
         }
         if (prompt_result != TINY_TAG_EDIT_PROMPT_ACCEPTED) {
-            sb_free(&input);
+            str_free(&input);
             return -NCM_ERROR_UNAVAILABLE;
         }
 
         mutable_song_set_tags(&screen->edited, type,
-                              sb_opt_cstr(&input), input.len,
+                              str_opt_cstr(&input), input.len,
                               tag_separator, tag_separator_len);
-        sb_free(&input);
+        str_free(&input);
 
         tiny_editor_buffer_mutable_tag(&row_buffer, &screen->edited, type,
                                        tag_separator, tag_separator_len,
@@ -204,15 +204,15 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         }
         if (prompt_result == TINY_TAG_EDIT_PROMPT_ABORTED) {
             tiny_editor_status_message(screen, STRLIT("Action aborted"));
-            sb_free(&input);
+            str_free(&input);
             return -NCM_ERROR_CANCELLED;
         }
         if (prompt_result != TINY_TAG_EDIT_PROMPT_ACCEPTED) {
-            sb_free(&input);
+            str_free(&input);
             return -NCM_ERROR_UNAVAILABLE;
         }
         if (input.len <= 0) {
-            sb_free(&input);
+            str_free(&input);
             return 0;
         }
 
@@ -233,8 +233,8 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
                       &current_name.data[dot], current_name.len - dot);
         }
         mutable_song_set_new_name(&screen->edited, new_name.data, new_name.len);
-        sb_free(&new_name);
-        sb_free(&input);
+        str_free(&new_name);
+        str_free(&input);
 
         if (!mutable_song_has_new_name_view(&screen->edited, &name)) {
             name.data = screen->edited.name;
@@ -567,7 +567,7 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     int32 status;
 
     if (path) {
-        sb_clear(path);
+        str_clear(path);
     }
     if ((screen == NULL) || (song == NULL) || (path == NULL)
         || (music_dir_len < 0) || (tag_separator_len < 0)

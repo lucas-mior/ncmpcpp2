@@ -139,7 +139,7 @@ lastfm_append_escaped(String *buffer, char *string, int32 string_len) {
     if (status == 0) {
         STR_APPEND(buffer, escaped.data, escaped.len);
     }
-    sb_free(&escaped);
+    str_free(&escaped);
     return status;
 }
 
@@ -168,7 +168,7 @@ lastfm_extract_between(String *out, char *data, int32 data_len,
     int32 a;
     int32 b;
 
-    sb_clear(out);
+    str_clear(out);
     a = lastfm_find(data, data_len, start, start_len, 0);
     if (a < 0) {
         return -NCM_ERROR_NOT_FOUND;
@@ -190,7 +190,7 @@ lastfm_strip_unescape_trim(String *out, char *data, int32 data_len) {
     char *text;
     int32 text_len;
 
-    sb_clear(out);
+    str_clear(out);
     stripped = ncm_html_strip_tags(data, data_len);
     unescaped = ncm_html_unescape_utf8(stripped.data, stripped.len);
     STR_APPEND(out, unescaped.data, unescaped.len);
@@ -210,12 +210,12 @@ lastfm_strip_unescape_trim(String *out, char *data, int32 data_len) {
         text_len -= 1;
     }
     STR_APPEND(&tmp, text, text_len);
-    sb_clear(out);
+    str_clear(out);
     STR_APPEND(out, tmp.data, tmp.len);
 
-    sb_free(&tmp);
-    sb_free(&unescaped);
-    sb_free(&stripped);
+    str_free(&tmp);
+    str_free(&unescaped);
+    str_free(&stripped);
 
     return;
 }
@@ -272,12 +272,12 @@ lastfm_append_similars(String *out, char *data, int32 data_len,
             STR_APPEND(out, clean_name.data, clean_name.len);
             STR_APPEND(out, " (");
             STR_APPEND(out, clean_url.data, clean_url.len);
-            sb_append_byte(out, ')');
+            str_append_byte(out, ')');
         }
-        sb_free(&clean_url);
-        sb_free(&clean_name);
-        sb_free(&url);
-        sb_free(&name);
+        str_free(&clean_url);
+        str_free(&clean_name);
+        str_free(&url);
+        str_free(&name);
         pos = item_end + 1;
     }
     return;
@@ -380,17 +380,17 @@ ncm_lastfm_service_fetch(NcmLastfmService *service, NcmLastfmResult *result) {
             STR_APPEND(&output, "\n\n");
             STR_APPEND(&output, clean_url.data, clean_url.len);
         }
-        sb_free(&clean_url);
+        str_free(&clean_url);
     }
     lastfm_result_set_unchecked(result, true, output.data, output.len);
 
 cleanup:
-    sb_free(&output);
-    sb_free(&original_link);
-    sb_free(&desc);
-    sb_free(&content);
-    sb_free(&data);
-    sb_free(&url);
+    str_free(&output);
+    str_free(&original_link);
+    str_free(&desc);
+    str_free(&content);
+    str_free(&data);
+    str_free(&url);
     return status;
 }
 

@@ -26,7 +26,7 @@
 
 static void
 ncm_mpd_client_set_buffer(String *buffer, char *string, int32 string_len) {
-    sb_clear(buffer);
+    str_clear(buffer);
     STR_APPEND(buffer, string, string_len);
     return;
 }
@@ -213,8 +213,8 @@ ncm_mpd_client_destroy(MpdClient *client) {
     ncm_mpd_client_disconnect_ready(client);
     ncm_mpd_connection_destroy(&client->connection);
 
-    sb_free(&client->host);
-    sb_free(&client->password);
+    str_free(&client->host);
+    str_free(&client->password);
 
     client->port = 0;
     client->timeout_ms = 0;
@@ -233,7 +233,7 @@ ncm_mpd_client_hostname(MpdClient *client) {
         return "";
     }
 
-    return sb_opt_cstr(&client->host);
+    return str_opt_cstr(&client->host);
 }
 
 bool
@@ -368,7 +368,7 @@ ncm_mpd_client_connect(MpdClient *client, NcmError *ncm_error) {
 
     NCM_CLIENT_TRY_MPD(client,
                        ncm_mpd_connection_connect(&client->connection,
-                                                  sb_opt_cstr(&client->host),
+                                                  str_opt_cstr(&client->host),
                                                   client->port,
                                                   client->timeout_ms),
                        ncm_error);
@@ -377,7 +377,7 @@ ncm_mpd_client_connect(MpdClient *client, NcmError *ncm_error) {
     client->idle = false;
     client->command_list_active = false;
     if (client->password.len > 0) {
-        password = sb_opt_cstr(&client->password);
+        password = str_opt_cstr(&client->password);
         status = ncm_mpd_connection_send_password(&client->connection,
                                                   password);
         if (status < 0) {
@@ -405,7 +405,7 @@ ncm_mpd_client_send_password(MpdClient *client, NcmError *ncm_error) {
     char *password;
 
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, ncm_error));
-    password = sb_opt_cstr(&client->password);
+    password = str_opt_cstr(&client->password);
     NCM_CLIENT_TRY_MPD(client,
                        ncm_mpd_connection_send_password(&client->connection,
                                                         password),

@@ -112,7 +112,7 @@ ncm_format_expr_list_clear_unchecked(NcmFormatExprList *list) {
 
         switch (expr->type) {
         case NCM_FORMAT_EXPR_TEXT:
-            sb_free(&expr->text);
+            str_free(&expr->text);
             break;
         case NCM_FORMAT_EXPR_GROUP:
         case NCM_FORMAT_EXPR_FIRST_OF:
@@ -329,7 +329,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
             } else if (data[percent_i] == '%') {
                 expr = ncm_format_expr_list_append(out);
                 expr->type = NCM_FORMAT_EXPR_TEXT;
-                sb_append_byte(&expr->text, '%');
+                str_append_byte(&expr->text, '%');
                 i = percent_i;
             } else {
                 delimiter = 0;
@@ -388,7 +388,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
             } else if (data[dollar_i] == '$') {
                 expr = ncm_format_expr_list_append(out);
                 expr->type = NCM_FORMAT_EXPR_TEXT;
-                sb_append_byte(&expr->text, '$');
+                str_append_byte(&expr->text, '$');
                 i = dollar_i;
             } else {
                 expr = ncm_format_expr_list_append(out);
@@ -578,14 +578,14 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                 }
             }
         } else {
-            sb_append_byte(&token, data[i]);
+            str_append_byte(&token, data[i]);
         }
     }
 
     if (status == 0) {
         ncm_format_text_append(out, &token);
     }
-    sb_free(&token);
+    str_free(&token);
     return status;
 }
 
@@ -699,14 +699,14 @@ ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
         }
         tag = ncm_format_render_tag_unchecked(song, &expr->song_tag);
         if (tag.len <= 0) {
-            sb_free(&tag);
+            str_free(&tag);
             return NCM_FORMAT_RESULT_MISSING;
         }
         if (*no_output <= 0) {
             ncm_format_emit_text(cb, output, tag.data, tag.len,
                                  &expr->song_tag);
         }
-        sb_free(&tag);
+        str_free(&tag);
         return NCM_FORMAT_RESULT_OK;
     case NCM_FORMAT_EXPR_GROUP:
         *no_output += 1;

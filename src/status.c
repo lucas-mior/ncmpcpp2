@@ -142,7 +142,7 @@ status_print_value(char *prefix, int32 prefix_len,
     STR_APPEND(&message, prefix, prefix_len);
     STR_APPEND(&message, value, value_len);
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
-    sb_free(&message);
+    str_free(&message);
     return;
 }
 
@@ -455,7 +455,7 @@ status_draw_song_title(NcmSong *song) {
 
     title = ncm_format_render_string(&Config.song_window_title_format, song);
     ncm_window_title_set(title.data, title.len);
-    sb_free(&title);
+    str_free(&title);
     return;
 }
 
@@ -774,11 +774,11 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
                 String message = {0};
 
                 status_notify_statusbar();
-                sb_printf(&message,
+                str_printf(&message,
                           "Crossfade set to %d seconds", mpd_status->crossfade);
                 ncm_statusbar_print(Config.message_delay_time,
                                                     message.data, message.len);
-                sb_free(&message);
+                str_free(&message);
             }
         }
     }
@@ -1164,20 +1164,20 @@ status_tracklength_buffer(String *buffer) {
     char time_buffer[64];
     int32 time_len;
 
-    sb_clear(buffer);
+    str_clear(buffer);
     if ((Config.display_bitrate) && (status_kbps != 0)
         && (Config.user_interface == NCM_DESIGN_CLASSIC)) {
-        sb_append_byte(buffer, '(');
-        sb_itoa(buffer, status_kbps);
+        str_append_byte(buffer, '(');
+        str_itoa(buffer, status_kbps);
         STR_APPEND(buffer, " kbps) ");
     }
 
     if (Config.user_interface == NCM_DESIGN_CLASSIC) {
-        sb_append_byte(buffer, '[');
+        str_append_byte(buffer, '[');
     }
 
     if ((Config.display_remaining_time) && (status_total_time != 0)) {
-        sb_append_byte(buffer, '-');
+        str_append_byte(buffer, '-');
         if (status_elapsed_time < status_total_time) {
             int32 remaining_time;
 
@@ -1195,17 +1195,17 @@ status_tracklength_buffer(String *buffer) {
     STR_APPEND(buffer, time_buffer, time_len);
 
     if (status_total_time != 0) {
-        sb_append_byte(buffer, '/');
+        str_append_byte(buffer, '/');
         time_len = status_song_time_string(status_total_time, time_buffer,
                                            SIZEOF(time_buffer));
         STR_APPEND(buffer, time_buffer, time_len);
     }
 
     if (Config.user_interface == NCM_DESIGN_CLASSIC) {
-        sb_append_byte(buffer, ']');
+        str_append_byte(buffer, ']');
     } else if ((Config.display_bitrate) && (status_kbps != 0)) {
         STR_APPEND(buffer, " (");
-        sb_itoa(buffer, status_kbps);
+        str_itoa(buffer, status_kbps);
         STR_APPEND(buffer, " kbps)");
     }
     return;
@@ -1317,7 +1317,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
             nc_window_print_data(footer, tracklength.data, tracklength.len);
             status_apply_text_style_end(footer, time_color);
 
-            sb_free(&tracklength);
+            str_free(&tracklength);
             nc_buffer_destroy(&rendered_song);
         }
         break;
@@ -1417,7 +1417,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
             status_apply_text_style_end(header, &Config.volume_color);
 
             ncm_status_changes_flags();
-            sb_free(&tracklength);
+            str_free(&tracklength);
             nc_buffer_destroy(&second);
             nc_buffer_destroy(&first);
         }
@@ -1453,12 +1453,12 @@ ncm_status_changes_flags(void) {
 
     switch (Config.user_interface) {
     case NCM_DESIGN_CLASSIC:
-        sb_append_byte(&switch_state, status_repeat);
-        sb_append_byte(&switch_state, status_random);
-        sb_append_byte(&switch_state, status_single);
-        sb_append_byte(&switch_state, status_consume);
-        sb_append_byte(&switch_state, status_crossfade);
-        sb_append_byte(&switch_state, status_db_updating);
+        str_append_byte(&switch_state, status_repeat);
+        str_append_byte(&switch_state, status_random);
+        str_append_byte(&switch_state, status_single);
+        str_append_byte(&switch_state, status_consume);
+        str_append_byte(&switch_state, status_crossfade);
+        str_append_byte(&switch_state, status_db_updating);
 
         status_apply_text_style(header, &Config.state_line_color);
         mvwhline(nc_window_raw(header), 1, 0, 0, COLS);
@@ -1482,38 +1482,38 @@ ncm_status_changes_flags(void) {
         }
         break;
     case NCM_DESIGN_ALTERNATIVE:
-        sb_append_byte(&switch_state, '[');
+        str_append_byte(&switch_state, '[');
         if (status_repeat) {
-            sb_append_byte(&switch_state, status_repeat);
+            str_append_byte(&switch_state, status_repeat);
         } else {
-            sb_append_byte(&switch_state, '-');
+            str_append_byte(&switch_state, '-');
         }
         if (status_random) {
-            sb_append_byte(&switch_state, status_random);
+            str_append_byte(&switch_state, status_random);
         } else {
-            sb_append_byte(&switch_state, '-');
+            str_append_byte(&switch_state, '-');
         }
         if (status_single) {
-            sb_append_byte(&switch_state, status_single);
+            str_append_byte(&switch_state, status_single);
         } else {
-            sb_append_byte(&switch_state, '-');
+            str_append_byte(&switch_state, '-');
         }
         if (status_consume) {
-            sb_append_byte(&switch_state, status_consume);
+            str_append_byte(&switch_state, status_consume);
         } else {
-            sb_append_byte(&switch_state, '-');
+            str_append_byte(&switch_state, '-');
         }
         if (status_crossfade) {
-            sb_append_byte(&switch_state, status_crossfade);
+            str_append_byte(&switch_state, status_crossfade);
         } else {
-            sb_append_byte(&switch_state, '-');
+            str_append_byte(&switch_state, '-');
         }
         if (status_db_updating) {
-            sb_append_byte(&switch_state, status_db_updating);
+            str_append_byte(&switch_state, status_db_updating);
         } else {
-            sb_append_byte(&switch_state, '-');
+            str_append_byte(&switch_state, '-');
         }
-        sb_append_byte(&switch_state, ']');
+        str_append_byte(&switch_state, ']');
 
         flags_x = COLS - switch_state.len;
         if (flags_x < 0) {
@@ -1537,7 +1537,7 @@ ncm_status_changes_flags(void) {
     }
 
     nc_window_refresh(header);
-    sb_free(&switch_state);
+    str_free(&switch_state);
     return;
 }
 
@@ -1572,7 +1572,7 @@ ncm_status_changes_mixer(void) {
     if (status_volume < 0) {
         STR_APPEND(&volume_state, "n/a");
     } else {
-        sb_itoa(&volume_state, status_volume);
+        str_itoa(&volume_state, status_volume);
         STR_APPEND(&volume_state, "%");
     }
     global_volume_state_set(volume_state.data, volume_state.len);
@@ -1587,7 +1587,7 @@ ncm_status_changes_mixer(void) {
                          global_volume_state_len());
     status_apply_text_style_end(header, &Config.volume_color);
     nc_window_refresh(header);
-    sb_free(&volume_state);
+    str_free(&volume_state);
     return;
 }
 

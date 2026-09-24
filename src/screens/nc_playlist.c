@@ -200,10 +200,10 @@ static void
 playlist_refresh_stats(PlaylistScreen *screen) {
     int32 count;
 
-    sb_clear(&screen->title_cache);
+    str_clear(&screen->title_cache);
     STR_APPEND(&screen->title_cache, "Playlist (");
     count = playlist_screen_song_len(screen);
-    sb_itoa(&screen->title_cache, count);
+    str_itoa(&screen->title_cache, count);
     if (count == 1) {
         STR_APPEND(&screen->title_cache, " item)");
     } else {
@@ -261,10 +261,10 @@ playlist_toggle_display_mode(NcScreen *base) {
     playlist_screen_update_column_title((PlaylistScreen *)base);
     nc_screen_request_resize(base);
     nc_screen_refresh(base);
-    sb_printf(&message, "Playlist display mode: %s",
+    str_printf(&message, "Playlist display mode: %s",
               NCM_DISPLAY_MODE_alias(Config.playlist_display_mode));
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
-    sb_free(&message);
+    str_free(&message);
     return 0;
 }
 
@@ -490,8 +490,8 @@ playlist_screen_destroy(PlaylistScreen *screen) {
     nc_playlist_screen_set_menu(&screen->screen, NULL);
     nc_window_destroy(&screen->window);
     nc_song_menu_destroy(&screen->songs);
-    sb_free(&screen->title_cache);
-    sb_free(&screen->column_title);
+    str_free(&screen->title_cache);
+    str_free(&screen->column_title);
     stupid_string_free(&screen->filter_constraint,
                        &screen->filter_constraint_len);
     stupid_string_free(&screen->search_constraint,
@@ -559,7 +559,7 @@ playlist_screen_update_column_title(PlaylistScreen *screen) {
         return;
     }
 
-    sb_clear(&screen->column_title);
+    str_clear(&screen->column_title);
     if ((Config.playlist_display_mode != NCM_DISPLAY_MODE_COLUMNS)
         || !Config.titles_visibility || (columns->items == NULL)
         || (columns->len <= 0) || (screen->screen.main_height <= 2)) {
@@ -833,7 +833,7 @@ playlist_set_mutable_uri(NcmSong *song, MutableSong *edited) {
     }
     STR_APPEND(&uri, new_name.data, new_name.len);
     ncm_song_set_uri(song, uri.data, uri.len);
-    sb_free(&uri);
+    str_free(&uri);
     return;
 }
 
@@ -1145,7 +1145,7 @@ playlist_song_matches(PlaylistScreen *screen, NcmSong *song, NcmRegex *regex) {
         buffer = ncm_format_render_string(&Config.song_list_format, song);
     }
     result = ncm_regex_matches(regex, buffer.data, buffer.len);
-    sb_free(&buffer);
+    str_free(&buffer);
     return result;
 }
 

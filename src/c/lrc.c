@@ -14,7 +14,7 @@ lrc_document_clear(LrcDocument *document) {
         return;
     }
 
-    sb_clear(&document->text);
+    str_clear(&document->text);
     ARRAY_CLEAR(document->entries);
     document->offset_ms = 0;
     document->has_offset = false;
@@ -23,7 +23,7 @@ lrc_document_clear(LrcDocument *document) {
 
 static void
 lrc_document_destroy_unchecked(LrcDocument *document) {
-    sb_free(&document->text);
+    str_free(&document->text);
     ARRAY_FREE(document->entries);
     *document = (LrcDocument){0};
     return;

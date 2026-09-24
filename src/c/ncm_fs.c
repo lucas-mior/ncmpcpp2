@@ -313,7 +313,7 @@ ncm_fs_join(String *buffer,
 
     if ((left != NULL) && (left_len > 0)) {
         STR_APPEND(&result, left, left_len);
-        sb_append_byte_if_not(&result, '/');
+        str_append_byte_if_not(&result, '/');
     }
     while ((right_len > 0) && (right[0] == '/')) {
         right += 1;
@@ -321,9 +321,9 @@ ncm_fs_join(String *buffer,
     }
     STR_APPEND(&result, right, right_len);
 
-    sb_clear(buffer);
+    str_clear(buffer);
     STR_APPEND(buffer, result.data, result.len);
-    sb_free(&result);
+    str_free(&result);
 
     return 0;
 }

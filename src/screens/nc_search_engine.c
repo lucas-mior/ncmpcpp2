@@ -340,10 +340,10 @@ search_run_current(NcScreen *base_screen) {
                 search_set_buffer_row(screen, pos, &buffer);
                 nc_buffer_destroy(&buffer);
             }
-            sb_free(&value);
+            str_free(&value);
             return 0;
         }
-        sb_free(&value);
+        str_free(&value);
         if (prompt_status == SEARCH_ENGINE_PROMPT_ABORTED) {
             search_engine_screen_status_message(screen,
                                                 STRLIT("Action aborted"));
@@ -397,11 +397,11 @@ search_toggle_display_mode(NcScreen *base) {
     String message = {0};
     enum DisplayMode mode;
     mode = search_engine_screen_toggle_display_mode((SearchEngineScreen *)base);
-    sb_printf(&message, "Search engine display mode: %s",
+    str_printf(&message, "Search engine display mode: %s",
               NCM_DISPLAY_MODE_alias(mode));
     search_engine_screen_status_message((SearchEngineScreen *)base,
                                         message.data, message.len);
-    sb_free(&message);
+    str_free(&message);
     nc_screen_request_resize(base);
     nc_screen_refresh(base);
     return 0;
@@ -453,7 +453,7 @@ search_row_matches(SearchEngineScreen *screen,
     }
 
     if (screen->hooks.format_song) {
-        sb_clear(&screen->row_text);
+        str_clear(&screen->row_text);
         if (screen->hooks.format_song(screen->hooks.user, &row->song,
                                       &screen->row_text) < 0) {
             return false;
@@ -685,8 +685,8 @@ search_engine_screen_destroy(SearchEngineScreen *screen) {
     ncm_regex_destroy(&screen->filter_regex);
     stupid_string_free(&screen->filter_constraint,
                        &screen->filter_constraint_len);
-    sb_free(&screen->row_text);
-    sb_free(&screen->column_title);
+    str_free(&screen->row_text);
+    str_free(&screen->column_title);
     stupid_string_free(&screen->search_constraint,
                        &screen->search_constraint_len);
     for (uint32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {
@@ -745,7 +745,7 @@ search_engine_screen_format_song_text(SearchEngineScreen *screen,
         ncm_display_song_row(&formatted, &Config.song_list_format, song,
                              NCM_FORMAT_FLAG_ALL);
     }
-    sb_set(text, formatted.data, formatted.len);
+    str_set(text, formatted.data, formatted.len);
     nc_buffer_destroy(&formatted);
     return 0;
 }
@@ -761,7 +761,7 @@ search_engine_screen_update_column_title(SearchEngineScreen *screen) {
     }
 
     title = &screen->column_title;
-    sb_clear(title);
+    str_clear(title);
     if ((Config.search_engine_display_mode != NCM_DISPLAY_MODE_COLUMNS)
         || !Config.titles_visibility || (columns->items == NULL)
         || (columns->len <= 0) || (screen->main_height <= 2)) {

@@ -117,7 +117,7 @@ ncm_html_unescape_utf8(char *data, int32 data_len) {
         }
 
         if (!replaced) {
-            sb_append_byte(&out, data[i]);
+            str_append_byte(&out, data[i]);
             i += 1;
         }
     }
@@ -148,7 +148,7 @@ ncm_html_unescape_entities(char *data, int32 data_len) {
         }
 
         if (!replaced) {
-            sb_append_byte(&out, data[i]);
+            str_append_byte(&out, data[i]);
             i += 1;
         }
     }
@@ -177,7 +177,7 @@ ncm_html_strip_tags(char *data, int32 data_len) {
             if (tag_end >= data_len) {
                 while (i < data_len) {
                     if ((data[i] != '\n') && (data[i] != '\r')) {
-                        sb_append_byte(&stripped, data[i]);
+                        str_append_byte(&stripped, data[i]);
                     }
                     i += 1;
                 }
@@ -189,18 +189,18 @@ ncm_html_strip_tags(char *data, int32 data_len) {
                     || STREQUAL(data + i, tag_len, "<br>")
                     || STREQUAL(data + i, tag_len, "<br/>")
                     || BEGINS_WITH(data + i, tag_len, "<br ")) {
-                    sb_append_byte(&stripped, '\n');
+                    str_append_byte(&stripped, '\n');
                 }
                 i = tag_end + 1;
             }
         } else {
-            sb_append_byte(&stripped, data[i]);
+            str_append_byte(&stripped, data[i]);
             i += 1;
         }
     }
 
     result = ncm_html_unescape_entities(stripped.data, stripped.len);
-    sb_free(&stripped);
+    str_free(&stripped);
     return result;
 }
 

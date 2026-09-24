@@ -92,11 +92,11 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
                                          Config.show_duplicate_tags);
 
                 if (tag_value.len > 0) {
-                    sb_move(&value, &tag_value);
-                    sb_free(&tag_value);
+                    str_move(&value, &tag_value);
+                    str_free(&tag_value);
                     break;
                 }
-                sb_free(&tag_value);
+                str_free(&tag_value);
             }
         }
         if ((value.len == 0) && column->display_empty_tag
@@ -124,7 +124,7 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
         if (use_colors && !nc_color_is_default(column->color)) {
             nc_buffer_add_color(buffer, buffer->len, nc_color_end(), 0);
         }
-        sb_free(&value);
+        str_free(&value);
 
         if (column != last) {
             remained_width -= width + 1;
@@ -137,7 +137,7 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
 static void
 ncm_display_append_spaces(String *buffer, int32 count) {
     for (int32 i = 0; i < count; i += 1) {
-        sb_append_byte(buffer, ' ');
+        str_append_byte(buffer, ' ');
     }
     return;
 }
@@ -151,7 +151,7 @@ ncm_display_column_title(String *buffer, struct Column *columns,
 
     ASSERT(buffer != NULL);
 
-    sb_clear(buffer);
+    str_clear(buffer);
     ASSERT((columns != NULL) || (column_len <= 0));
     if ((column_len <= 0) || (list_width <= 0)) {
         return;
@@ -177,7 +177,7 @@ ncm_display_column_title(String *buffer, struct Column *columns,
             break;
         }
 
-        sb_clear(&name);
+        str_clear(&name);
         if (column->name && (column->name_len > 0)) {
             STR_APPEND(&name, column->name, column->name_len);
         } else {
@@ -187,7 +187,7 @@ ncm_display_column_title(String *buffer, struct Column *columns,
                 int32 title_len;
 
                 if (j > 0) {
-                    sb_append_byte(&name, '/');
+                    str_append_byte(&name, '/');
                 }
                 getter = ncm_song_getter_from_char(column->type[j]);
                 title_len = ncm_song_getter_column_title_len(getter, &title);
@@ -210,10 +210,10 @@ ncm_display_column_title(String *buffer, struct Column *columns,
 
         if (column != last) {
             remained_width -= width + 1;
-            sb_append_byte(buffer, ' ');
+            str_append_byte(buffer, ' ');
         }
     }
-    sb_free(&name);
+    str_free(&name);
     return;
 }
 

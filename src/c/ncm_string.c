@@ -155,14 +155,14 @@ ncm_string_get_enclosed(char *string, int32 string_len, char open, char close,
             && ((string[i + 1] == '\\') || (string[i + 1] == close))) {
             i += 1;
         }
-        sb_append_byte(&result, string[i]);
+        str_append_byte(&result, string[i]);
         i += 1;
     }
 
     if (i < string_len) {
         i += 1;
     } else {
-        sb_clear(&result);
+        str_clear(&result);
     }
     if (pos) {
         *pos = i;
@@ -224,7 +224,7 @@ ncm_string_append_shell_escaped_single_quotes(String *buffer, char *string,
         if (string[i] == '\'') {
             STR_APPEND(buffer, "'\\''");
         } else {
-            sb_append_byte(buffer, string[i]);
+            str_append_byte(buffer, string[i]);
         }
     }
     return;

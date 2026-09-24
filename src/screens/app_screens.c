@@ -616,7 +616,7 @@ search_prompt_constraint(void *user, char *label, int32 label_len,
     }
 
     input_len = optional_strlen32(input);
-    sb_set(result, input, input_len);
+    str_set(result, input, input_len);
     nc_window_prompt_result_destroy(input);
     return SEARCH_ENGINE_PROMPT_ACCEPTED;
 }
@@ -752,7 +752,7 @@ prompt_buffer(char *label, int32 label_len,
     }
 
     input_len = optional_strlen32(input);
-    sb_set(result, input, input_len);
+    str_set(result, input, input_len);
     nc_window_prompt_result_destroy(input);
     return PROMPT_RESULT_ACCEPTED;
 }
@@ -1304,7 +1304,7 @@ outputs_fetch(void *user, NcOutputsScreen *screen) {
         STR_APPEND(&message,
                   ncm_error.message, ncm_error.message_len);
         ncm_statusbar_print(5, message.data, message.len);
-        sb_free(&message);
+        str_free(&message);
         ncm_mpd_output_list_destroy(&outputs);
         return;
     }
@@ -1347,7 +1347,7 @@ outputs_toggle(void *user, int32 id, bool enabled, char *name, int32 name_len) {
         STR_APPEND(&message, ncm_error.message,
                   ncm_error.message_len);
         ncm_statusbar_print(5, message.data, message.len);
-        sb_free(&message);
+        str_free(&message);
         return status;
     }
 
@@ -1362,7 +1362,7 @@ outputs_toggle(void *user, int32 id, bool enabled, char *name, int32 name_len) {
             STR_APPEND(&message, " enabled");
         }
         ncm_statusbar_print(3, message.data, message.len);
-        sb_free(&message);
+        str_free(&message);
     }
     return 0;
 #else
@@ -1648,12 +1648,12 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
         value = ncm_song_getter_buffer(&owner->song, SONG_GETTER_URI, 0);
         name_len = SONG_GETTER_alias_len(SONG_GETTER_URI, &name);
         append_song_key_value(buffer, name, name_len, &value, false);
-        sb_free(&value);
+        str_free(&value);
 
         value = ncm_song_getter_buffer(&owner->song, SONG_GETTER_LENGTH, 0);
         name_len = SONG_GETTER_alias_len(SONG_GETTER_LENGTH, &name);
         append_song_key_value(buffer, name, name_len, &value, false);
-        sb_free(&value);
+        str_free(&value);
     }
 
     for (uint32 i = 0; i < TAG_COUNT; i += 1) {
@@ -1691,7 +1691,7 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
         }
         append_song_info_tag(buffer, ncm_song_info_tags[i].name,
                              ncm_song_info_tags[i].name_len, &value);
-        sb_free(&value);
+        str_free(&value);
     }
 
     for (int32 i = 0; i < owner->song.properties_len; ) {
@@ -1728,7 +1728,7 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
 
         append_song_info_tag(buffer, property->name, property->name_len,
                              &properties);
-        sb_free(&properties);
+        str_free(&properties);
         i = next;
     }
     return 1;
@@ -1761,7 +1761,7 @@ song_info_switch_to(void *user, NcSongInfoScreen *screen) {
         STR_APPEND(&message, ncm_error.message,
                   ncm_error.message_len);
         ncm_statusbar_print(5, message.data, message.len);
-        sb_free(&message);
+        str_free(&message);
         return;
     }
 

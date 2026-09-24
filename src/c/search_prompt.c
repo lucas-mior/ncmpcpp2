@@ -26,7 +26,7 @@ void
 search_prompt_state_destroy(SearchPromptState *state) {
     ASSERT(state != NULL);
 
-    sb_free(&state->last_text);
+    str_free(&state->last_text);
     return;
 }
 
@@ -78,7 +78,7 @@ search_prompt_state_finish_result(SearchPromptState *state,
     if (!search_ok) {
         return 0;
     }
-    status = sb_set(&state->last_text, text, text_len);
+    status = str_set(&state->last_text, text, text_len);
     if (status < 0) {
         return status;
     }

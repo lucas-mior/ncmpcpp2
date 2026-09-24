@@ -76,7 +76,7 @@ app_bridge_report_mpd_error(NcmError *ncm_error) {
     }
     STR_APPEND(&output, message, optional_strlen32(message));
     ncm_statusbar_print(Config.message_delay_time, output.data, output.len);
-    sb_free(&output);
+    str_free(&output);
     return;
 }
 
@@ -341,7 +341,7 @@ ncmpcpp_update_environment(bool update_timer, bool refresh_window,
         ncm_statusbar_print(Config.message_delay_time,
                             message.data, message.len);
     }
-    sb_free(&message);
+    str_free(&message);
 
     current_screen_uses_header_timer = app_screen_playlist_is_current()
                                        || app_screen_browser_is_current()

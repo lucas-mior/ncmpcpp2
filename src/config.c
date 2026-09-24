@@ -48,10 +48,10 @@ ncm_config_options_init(NcmConfigurationOptions *options) {
 
 void
 ncm_config_options_destroy(NcmConfigurationOptions *options) {
-    sb_free(&options->host);
-    sb_free(&options->current_song_format);
-    sb_free(&options->screen_name);
-    sb_free(&options->slave_screen_name);
+    str_free(&options->host);
+    str_free(&options->current_song_format);
+    str_free(&options->screen_name);
+    str_free(&options->slave_screen_name);
     string_array_destroy(&options->config_paths);
     string_array_destroy(&options->bindings_paths);
     return;
@@ -80,11 +80,11 @@ config_default_file_exists(String *path) {
     ncm_error_clear(&ncm_error);
     STR_APPEND(&expanded, path->data, path->len);
     if (ncm_path_expand_home(&expanded, &ncm_error) < 0) {
-        sb_free(&expanded);
+        str_free(&expanded);
         return false;
     }
     exists = ncm_fs_path_is_existing(expanded.data, expanded.len);
-    sb_free(&expanded);
+    str_free(&expanded);
     return exists;
 }
 
@@ -113,9 +113,9 @@ config_append_default_file(StringArray *paths,
     }
     config_append_buffer_path(paths, &path);
 
-    sb_free(&path);
-    sb_free(&directory);
-    sb_free(&base_directory);
+    str_free(&path);
+    str_free(&directory);
+    str_free(&base_directory);
     return;
 }
 
@@ -129,8 +129,8 @@ config_append_legacy_file(StringArray *paths,
     ncm_fs_join(&path, directory.data, directory.len, filename, filename_len);
     config_append_buffer_path(paths, &path);
 
-    sb_free(&path);
-    sb_free(&directory);
+    str_free(&path);
+    str_free(&directory);
     return;
 }
 
@@ -153,7 +153,7 @@ config_discover_default_paths(StringArray *config_paths,
 
 static void
 config_copy_string(String *buffer, char *string, int32 string_len) {
-    sb_clear(buffer);
+    str_clear(buffer);
     STR_APPEND(buffer, string, string_len);
     return;
 }
@@ -811,7 +811,7 @@ configure(int32 argc, char **argv) {
             }
         }
 
-        sb_free(&output);
+        str_free(&output);
         ncm_format_ast_destroy(&format);
         ncm_song_destroy(&song);
         ncm_mpd_client_disconnect(&global_mpd);

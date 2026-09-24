@@ -25,7 +25,7 @@ playlist_edit_update_titles(PlaylistEditScreen *screen, bool update_windows) {
             nc_menu_item_len(nc_song_menu_base(&screen->content));
     }
 
-    sb_clear(&screen->content_title);
+    str_clear(&screen->content_title);
     if (Config.titles_visibility) {
         playlists_title = "Playlists";
         playlists_title_len = STRLIT_LEN("Playlists");
@@ -38,7 +38,7 @@ playlist_edit_update_titles(PlaylistEditScreen *screen, bool update_windows) {
             STR_APPEND(&screen->content_title, " (");
 
             if (value == 0) {
-                sb_append_byte(&screen->content_title, '0');
+                str_append_byte(&screen->content_title, '0');
             } else {
                 while (value > 0) {
                     digits[len] = (char)('0' + (value % 10));
@@ -46,7 +46,7 @@ playlist_edit_update_titles(PlaylistEditScreen *screen, bool update_windows) {
                     len += 1;
                 }
                 for (int32 i = len - 1; i >= 0; i -= 1) {
-                    sb_append_byte(&screen->content_title, digits[i]);
+                    str_append_byte(&screen->content_title, digits[i]);
                 }
             }
 
@@ -442,7 +442,7 @@ playlist_edit_report_error(char *context, int32 context_len,
         STR_APPEND(&message, ncm_error->message, ncm_error->message_len);
     }
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
-    sb_free(&message);
+    str_free(&message);
     return;
 }
 
@@ -595,7 +595,7 @@ playlist_edit_mouse_callback(NcScreen *screen, MEVENT event) {
 
                         ncm_statusbar_print(Config.message_delay_time,
                                             message.data, message.len);
-                        sb_free(&message);
+                        str_free(&message);
                         ncm_status_update_full(&global_mpd, NULL, &ncm_error);
                     }
                 }
@@ -958,7 +958,7 @@ playlist_edit_screen_destroy(PlaylistEditScreen *screen) {
                        &screen->observed_playlist_path_len);
     stupid_string_free(&screen->displayed_playlist_path,
                        &screen->displayed_playlist_path_len);
-    sb_free(&screen->content_title);
+    str_free(&screen->content_title);
     stupid_string_free(&screen->content_search_constraint,
                        &screen->content_search_constraint_len);
     stupid_string_free(&screen->playlist_search_constraint,
@@ -1152,11 +1152,11 @@ playlist_edit_store_current_playlist_path(PlaylistEditScreen *screen,
     char *path;
     int32 path_len;
 
-    sb_clear(buffer);
+    str_clear(buffer);
     if (!playlist_edit_has_current_playlist_path(screen, &path, &path_len)) {
         return false;
     }
-    sb_set(buffer, path, path_len);
+    str_set(buffer, path, path_len);
     return true;
 }
 
@@ -1214,7 +1214,7 @@ playlist_edit_screen_load_playlists(PlaylistEditScreen *screen,
     }
     playlist_edit_observe_current_playlist(screen);
     screen->playlists_update_requested = false;
-    sb_free(&preserved);
+    str_free(&preserved);
     return 0;
 }
 
@@ -1374,7 +1374,7 @@ playlist_edit_clear_playlist_filter(PlaylistEditScreen *screen) {
     if (has_path) {
         playlist_edit_restore_playlist_path(screen, &path);
     }
-    sb_free(&path);
+    str_free(&path);
     playlist_edit_update_titles(screen, true);
     return;
 }

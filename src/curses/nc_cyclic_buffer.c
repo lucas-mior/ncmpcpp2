@@ -99,7 +99,7 @@ nc_cyclic_text_write(String *output, char *string, int32 string_len,
 
     ASSERT(output != NULL);
     ASSERT(start_pos != NULL);
-    sb_clear(output);
+    str_clear(output);
 
     if (string == NULL) {
         string_len = 0;

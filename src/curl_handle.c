@@ -49,7 +49,7 @@ ncm_curl_perform(String *data, char *url, int32 url_len, char *referer,
     String referer_string = {0};
     NcmCurlResponseWriter writer = {.buffer = data};
 
-    sb_clear(data);
+    str_clear(data);
 
     STR_APPEND(&url_string, url, url_len);
     STR_APPEND(&referer_string, referer, referer_len);
@@ -81,8 +81,8 @@ ncm_curl_perform(String *data, char *url, int32 url_len, char *referer,
 
 cleanup:
     writer.buffer = NULL;
-    sb_free(&referer_string);
-    sb_free(&url_string);
+    str_free(&referer_string);
+    str_free(&url_string);
 
     switch ((int32)result) {
     case CURLE_OK:
@@ -103,13 +103,13 @@ int32
 ncm_curl_escape(String *out, char *string, int32 string_len) {
     char *escaped;
 
-    sb_clear(out);
+    str_clear(out);
     if ((escaped = curl_easy_escape(NULL, string, string_len)) == NULL) {
         return -ENOMEM;
     }
 
     for (int32 i = 0; escaped[i] != '\0'; i += 1) {
-        sb_append_byte(out, escaped[i]);
+        str_append_byte(out, escaped[i]);
     }
     curl_free(escaped);
     return 0;

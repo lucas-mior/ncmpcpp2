@@ -437,7 +437,7 @@ adder_add_to_current_playlist(SelectedItemsAdderScreen *screen,
     suffix = ncm_helpers_with_errors(success);
     STR_APPEND(&message, suffix, optional_strlen32(suffix));
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
-    sb_free(&message);
+    str_free(&message);
     adder_finish(screen);
     return;
 }
@@ -682,7 +682,7 @@ adder_add_to_stored_playlist(SelectedItemsAdderScreen *screen, char *playlist,
     STR_APPEND(&message, playlist, playlist_len);
     STR_APPEND(&message, "\"");
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
-    sb_free(&message);
+    str_free(&message);
     adder_finish(screen);
     return;
 }
@@ -909,7 +909,7 @@ selected_items_add_screen_open(SelectedItemsAdderScreen *screen,
                       playlist_error.message_len);
             ncm_statusbar_print(Config.message_delay_time,
                                 message.data, message.len);
-            sb_free(&message);
+            str_free(&message);
         }
     }
     {

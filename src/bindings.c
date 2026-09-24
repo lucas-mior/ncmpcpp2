@@ -482,7 +482,7 @@ ncm_read_key(NcWindow *window) {
             break;
         }
 
-        sb_append_byte(&tmp, (char)input);
+        str_append_byte(&tmp, (char)input);
         result = nc_key_parse(tmp.data, tmp.len);
         if (result != NC_KEY_NONE) {
             break;
@@ -495,7 +495,7 @@ ncm_read_key(NcWindow *window) {
     if (alt_pressed && (result != NC_KEY_NONE)) {
         result |= NC_KEY_ALT;
     }
-    sb_free(&tmp);
+    str_free(&tmp);
     return result;
 }
 

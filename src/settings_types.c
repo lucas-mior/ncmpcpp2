@@ -172,7 +172,7 @@ config_destroy(Configuration *config) {
 #define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                           \
     nc_buffer_destroy(&config->NAME);
 #define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)          \
-    sb_free(&config->NAME);
+    str_free(&config->NAME);
 #define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                             \
     ncm_int32_array_destroy(&config->NAME);
 #define XX_TEXT_STYLE_LIST(NAME, DEFAULT)                                 \

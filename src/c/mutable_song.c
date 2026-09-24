@@ -325,7 +325,7 @@ mutable_song_get_tag_buffer_unchecked(MutableSong *song,
                                       String *buffer) {
     StrView view;
 
-    sb_clear(buffer);
+    str_clear(buffer);
     if (!mutable_song_has_tag_view_unchecked(song, type, idx, &view)) {
         return;
     }
@@ -341,15 +341,15 @@ mutable_song_get_tag_buffer(MutableSong *song,
         return;
     }
     if (song == NULL) {
-        sb_clear(buffer);
+        str_clear(buffer);
         return;
     }
     if (idx < 0) {
-        sb_clear(buffer);
+        str_clear(buffer);
         return;
     }
     if ((uint32)type >= TAG_COUNT) {
-        sb_clear(buffer);
+        str_clear(buffer);
         return;
     }
 
@@ -380,7 +380,7 @@ mutable_song_tags_buffer(MutableSong *song, enum TagType type,
 
         mutable_song_get_tag_buffer_unchecked(song, type, i, &tag);
         if (tag.len <= 0) {
-            sb_free(&tag);
+            str_free(&tag);
             break;
         }
 
@@ -394,7 +394,7 @@ mutable_song_tags_buffer(MutableSong *song, enum TagType type,
                     already_present = true;
                 }
 
-                sb_free(&prev);
+                str_free(&prev);
                 if (already_present) {
                     break;
                 }
@@ -407,7 +407,7 @@ mutable_song_tags_buffer(MutableSong *song, enum TagType type,
             }
             STR_APPEND(&result, tag.data, tag.len);
         }
-        sb_free(&tag);
+        str_free(&tag);
     }
 
     return result;

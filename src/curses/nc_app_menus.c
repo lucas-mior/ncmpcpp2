@@ -265,14 +265,14 @@ nc_media_library_album_menu_item_destroy(void *item, void *user) {
 static void
 str_builder_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    sb_copy(dest, source);
+    str_copy(dest, source);
     return;
 }
 
 static void
 str_builder_menu_item_destroy(void *item, void *user) {
     (void)user;
-    sb_free(item);
+    str_free(item);
     return;
 }
 
@@ -282,8 +282,8 @@ str_builder_pair_menu_item_copy(void *dest, void *source, void *user) {
     StrBuilderPair *source_pair = source;
 
     (void)user;
-    sb_copy(&dest_pair->first, &source_pair->first);
-    sb_copy(&dest_pair->second, &source_pair->second);
+    str_copy(&dest_pair->first, &source_pair->first);
+    str_copy(&dest_pair->second, &source_pair->second);
     return;
 }
 
@@ -292,8 +292,8 @@ str_builder_pair_menu_item_destroy(void *item, void *user) {
     StrBuilderPair *pair = item;
 
     (void)user;
-    sb_free(&pair->first);
-    sb_free(&pair->second);
+    str_free(&pair->first);
+    str_free(&pair->second);
     return;
 }
 

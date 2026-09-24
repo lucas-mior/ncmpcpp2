@@ -280,7 +280,7 @@ visualizer_update_callback(NcScreen *screen) {
                       ncm_error.message, ncm_error.message_len);
             ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                                 message.data, message.len);
-            sb_free(&message);
+            str_free(&message);
             return;
         }
         if (visualizer->data_source_hooks.sleep_microseconds) {
@@ -299,7 +299,7 @@ visualizer_update_callback(NcScreen *screen) {
             STR_APPEND(&message, ncm_error.message, ncm_error.message_len);
             ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                                 message.data, message.len);
-            sb_free(&message);
+            str_free(&message);
             return;
         }
         visualizer->reset_output = false;
@@ -381,7 +381,7 @@ visualizer_system_open_fifo(void *user, char *location, int32 location_len) {
         STR_APPEND(&message, error_message, optional_strlen32(error_message));
         ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                             message.data, message.len);
-        sb_free(&message);
+        str_free(&message);
         return -error_code;
     }
     return fd;
@@ -415,7 +415,7 @@ visualizer_system_open_udp(void *user, char *location, int32 location_len,
         STR_APPEND(&message, error_message, optional_strlen32(error_message));
         ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                             message.data, message.len);
-        sb_free(&message);
+        str_free(&message);
         return -NCM_ERROR_NETWORK;
     }
 
@@ -755,7 +755,7 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
         STR_APPEND(&message, ncm_error.message, ncm_error.message_len);
         ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                             message.data, message.len);
-        sb_free(&message);
+        str_free(&message);
         ncm_mpd_output_list_destroy(&outputs);
         return status;
     }
@@ -780,7 +780,7 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
         STR_APPEND(&message, "\"");
         ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                             message.data, message.len);
-        sb_free(&message);
+        str_free(&message);
     }
     if (!found) {
         return -NCM_ERROR_NOT_FOUND;

@@ -69,7 +69,7 @@ ncm_path_expand_home(String *path, NcmError *ncm_error) {
         return ncm_error_set_status(ncm_error, -ENAMETOOLONG,
                                     STRLIT("expanded path is too long"));
     }
-    sb_reserve(path, home_len - 1);
+    str_reserve(path, home_len - 1);
     memmove64(path->data + tilde + home_len,
               path->data + tilde + 1, old_len - tilde);
     memcpy64(path->data + tilde, home, home_len);

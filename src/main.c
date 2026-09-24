@@ -137,10 +137,10 @@ main(int32 argc, char **argv) {
 
         if ((app_saved_stderr_fd = dup(STDERR_FILENO)) < 0) {
             redirect_status = -errno;
-            sb_free(&path);
+            str_free(&path);
         } else {
             app_error_log = freopen(path.data, "a", stderr);
-            sb_free(&path);
+            str_free(&path);
             if (app_error_log == NULL) {
                 redirect_status = -errno;
             } else {

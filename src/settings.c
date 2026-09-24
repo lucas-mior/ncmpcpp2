@@ -104,7 +104,7 @@ settings_expand_home(String *buffer, char *value, int32 value_len) {
     char *home;
     int32 home_len;
 
-    sb_clear(buffer);
+    str_clear(buffer);
     if ((value_len <= 0) || (value[0] != '~')) {
         STR_APPEND(buffer, value, value_len);
         return;
@@ -119,7 +119,7 @@ settings_expand_home(String *buffer, char *value, int32 value_len) {
     if (value_len == 1) {
         return;
     }
-    sb_append_byte(buffer, '/');
+    str_append_byte(buffer, '/');
     if (value[1] == '/') {
         if (value_len > 2) {
             STR_APPEND(buffer, value + 2, value_len - 2);
@@ -150,16 +150,16 @@ settings_parse_path_common(char **result, int32 *result_len,
 
     settings_expand_home(&buffer, value, value_len);
     if (directory) {
-        sb_append_byte_if_not(&buffer, '/');
+        str_append_byte_if_not(&buffer, '/');
     }
 
     free2(*result, *result_len + 1);
     *result = NULL;
     *result_len = 0;
     if (buffer.len > 0) {
-        *result = sb_steal_exact(&buffer, result_len);
+        *result = str_steal_exact(&buffer, result_len);
     }
-    sb_free(&buffer);
+    str_free(&buffer);
     return;
 }
 
@@ -645,9 +645,9 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
 
         width = ncm_string_get_enclosed(value, value_len, '(', ')', pos, &next);
         if (width.len <= 0) {
-            sb_free(&width);
-            sb_free(&color);
-            sb_free(&tag);
+            str_free(&width);
+            str_free(&color);
+            str_free(&tag);
             break;
         }
         pos = next;
@@ -663,15 +663,15 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
         }
         status = parse_integer(width.data, width.len, &width_value);
         if (status < 0) {
-            sb_free(&width);
-            sb_free(&color);
-            sb_free(&tag);
+            str_free(&width);
+            str_free(&color);
+            str_free(&tag);
             return settings_invalid_value(ncm_error, value, value_len);
         }
         if ((width_value < 0) || (width_value > MAXOF(parsed_width))) {
-            sb_free(&width);
-            sb_free(&color);
-            sb_free(&tag);
+            str_free(&width);
+            str_free(&color);
+            str_free(&tag);
             return settings_invalid_value(ncm_error, value, value_len);
         }
         parsed_width = (int32)width_value;
@@ -680,9 +680,9 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
             status = settings_parse_color(color.data, color.len,
                                           &column->color, ncm_error);
             if (status < 0) {
-                sb_free(&width);
-                sb_free(&color);
-                sb_free(&tag);
+                str_free(&width);
+                str_free(&color);
+                str_free(&tag);
                 return status;
             }
         }
@@ -730,9 +730,9 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
         } else {
             column->display_empty_tag = false;
         }
-        sb_free(&width);
-        sb_free(&color);
-        sb_free(&tag);
+        str_free(&width);
+        str_free(&color);
+        str_free(&tag);
     }
 
     if (columns->len <= 0) {
@@ -771,13 +771,13 @@ settings_parse_look(String *look, char *value, int32 value_len,
     if ((characters < min_chars) || (characters > max_chars)) {
         return settings_invalid_value(ncm_error, value, value_len);
     }
-    sb_clear(look);
+    str_clear(look);
     STR_APPEND(look, value, value_len);
     if (pad_to_max) {
         char zero = '\0';
 
         for (int32 i = characters; i < max_chars; i += 1) {
-            sb_append(look, &zero, 1);
+            str_append(look, &zero, 1);
         }
     }
     return 0;

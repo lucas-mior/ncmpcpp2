@@ -12,10 +12,10 @@ ncm_regex_prepare_string(char *string, int32 string_len, String *buffer) {
     ASSERT(string != NULL);
     ASSERT_NON_NEGATIVE(string_len);
 
-    sb_clear(buffer);
+    str_clear(buffer);
     STR_APPEND(buffer, string, string_len);
     if (buffer->data == NULL) {
-        sb_reserve(buffer, 1);
+        str_reserve(buffer, 1);
         buffer->data[0] = '\0';
     }
     return;
@@ -78,12 +78,12 @@ ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
             case ']':
             case '{':
             case '}':
-                sb_append_byte(&escaped, '\\');
+                str_append_byte(&escaped, '\\');
                 break;
             default:
                 break;
             }
-            sb_append_byte(&escaped, c);
+            str_append_byte(&escaped, c);
         }
         STR_APPEND(&compiled_pattern, escaped.data, escaped.len);
     } else {
@@ -102,13 +102,13 @@ ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
     }
 
     if (compiled_pattern.data == NULL) {
-        sb_reserve(&compiled_pattern, 1);
+        str_reserve(&compiled_pattern, 1);
         compiled_pattern.data[0] = '\0';
     }
 
     code = regcomp(&regex->regex, compiled_pattern.data, reg_flags);
-    sb_free(&compiled_pattern);
-    sb_free(&escaped);
+    str_free(&compiled_pattern);
+    str_free(&escaped);
     if (code != 0) {
         char message[256];
         int32 message_len;
@@ -143,7 +143,7 @@ ncm_regex_matches(NcmRegex *regex, char *string, int32 string_len) {
 
     ncm_regex_prepare_string(string, string_len, &buffer);
     result = regexec(&regex->regex, buffer.data, 0, NULL, 0) == 0;
-    sb_free(&buffer);
+    str_free(&buffer);
     return result;
 }
 
@@ -199,7 +199,7 @@ ncm_regex_for_each_match(NcmRegex *regex, char *string, int32 string_len,
         }
     }
 
-    sb_free(&buffer);
+    str_free(&buffer);
     return matches;
 }
 

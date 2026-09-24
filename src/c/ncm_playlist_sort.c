@@ -65,8 +65,8 @@ ncm_playlist_sort_indices(NcmPlaylistSortContext *context,
                                                 right_data, right_buffer.len,
                                                 context->ignore_leading_the);
 
-            sb_free(&right_buffer);
-            sb_free(&left_buffer);
+            str_free(&right_buffer);
+            str_free(&left_buffer);
             if (result != 0) {
                 break;
             }

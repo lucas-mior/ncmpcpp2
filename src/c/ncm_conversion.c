@@ -27,7 +27,7 @@ ncm_conversion_copy_source(String *buffer, char *source, int32 source_len) {
     ASSERT(source != NULL);
     ASSERT_NON_NEGATIVE(source_len);
 
-    sb_clear(buffer);
+    str_clear(buffer);
     STR_APPEND(buffer, source, source_len);
     return;
 }
@@ -79,7 +79,7 @@ ncm_parse_double(char *source, int32 source_len, double *out,
 
     if (buffer.len <= 0) {
         status = ncm_conversion_set_parse_error(ncm_error, source, source_len);
-        sb_free(&buffer);
+        str_free(&buffer);
         return status;
     }
 
@@ -95,7 +95,7 @@ ncm_parse_double(char *source, int32 source_len, double *out,
         status = ncm_conversion_set_parse_error(ncm_error, source, source_len);
     }
 
-    sb_free(&buffer);
+    str_free(&buffer);
     return status;
 }
 

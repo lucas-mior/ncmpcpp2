@@ -720,7 +720,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
                 copy_len = view.len;
             }
             len = ncm_song_numeric_tag_len_unchecked(view.data, copy_len);
-            sb_reserve(&buffer, len);
+            str_reserve(&buffer, len);
             buffer.len =
                 ncm_song_format_numeric_tag_prefix(buffer.data, buffer.cap,
                                                    view.data, copy_len,
@@ -735,7 +735,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
                 int32 total_len = view.len - slash - 1;
 
                 len = ncm_song_numeric_tag_len_unchecked(total, total_len);
-                sb_reserve(&buffer, len);
+                str_reserve(&buffer, len);
                 buffer.len = ncm_song_format_numeric_tag_unchecked(
                     buffer.data, buffer.cap, total, total_len);
             }
@@ -744,7 +744,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
     case SONG_GETTER_DISC:
         if (ncm_song_has_tag_view_unchecked(song, TAG_DISC, idx, &view)) {
             len = ncm_song_numeric_tag_len_unchecked(view.data, view.len);
-            sb_reserve(&buffer, len);
+            str_reserve(&buffer, len);
             buffer.len =
                 ncm_song_format_numeric_tag_unchecked(buffer.data, buffer.cap,
                                                       view.data, view.len);
@@ -754,7 +754,7 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
         if (idx > 0) {
             return buffer;
         }
-        sb_itoa(&buffer, song->priority);
+        str_itoa(&buffer, song->priority);
         return buffer;
     case SONG_GETTER_ARTIST:
     case SONG_GETTER_ALBUM_ARTIST:
@@ -810,7 +810,7 @@ ncm_song_tags_buffer(NcmSong *song, enum SongGetter getter,
         bool already_present = false;
 
         if (tag.len <= 0) {
-            sb_free(&tag);
+            str_free(&tag);
             break;
         }
 
@@ -822,7 +822,7 @@ ncm_song_tags_buffer(NcmSong *song, enum SongGetter getter,
                 if (STREQUAL(previous.data, previous.len, tag.data, tag.len)) {
                     already_present = true;
                 }
-                sb_free(&previous);
+                str_free(&previous);
                 if (already_present) {
                     break;
                 }
@@ -835,7 +835,7 @@ ncm_song_tags_buffer(NcmSong *song, enum SongGetter getter,
             }
             STR_APPEND(&result, tag.data, tag.len);
         }
-        sb_free(&tag);
+        str_free(&tag);
     }
 
     return result;
