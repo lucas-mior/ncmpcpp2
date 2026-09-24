@@ -21,13 +21,13 @@ static bool config_quiet;
 
 void
 ncm_config_options_init(NcmConfigurationOptions *options) {
-    options->host = (StrBuilder){0};
-    options->current_song_format = (StrBuilder){0};
-    options->screen_name = (StrBuilder){0};
-    options->slave_screen_name = (StrBuilder){0};
+    options->host = (String){0};
+    options->current_song_format = (String){0};
+    options->screen_name = (String){0};
+    options->slave_screen_name = (String){0};
 
-    options->config_paths = (StrBuilderArray){0};
-    options->bindings_paths = (StrBuilderArray){0};
+    options->config_paths = (StringArray){0};
+    options->bindings_paths = (StringArray){0};
 
     SB_APPEND(&options->host, "localhost");
     SB_APPEND(&options->current_song_format, "{{{(%l) }{{%a - }%t}}|{%f}}");
@@ -52,29 +52,29 @@ ncm_config_options_destroy(NcmConfigurationOptions *options) {
     sb_free(&options->current_song_format);
     sb_free(&options->screen_name);
     sb_free(&options->slave_screen_name);
-    str_builder_array_destroy(&options->config_paths);
-    str_builder_array_destroy(&options->bindings_paths);
+    string_array_destroy(&options->config_paths);
+    string_array_destroy(&options->bindings_paths);
     return;
 }
 
 static void
-command_line_options_append_path(StrBuilderArray *paths,
+command_line_options_append_path(StringArray *paths,
                                  char *path, int32 path_len) {
-    StrBuilder *slot = str_builder_array_append(paths);
+    String *slot = string_array_append(paths);
     SB_APPEND(slot, path, path_len);
     return;
 }
 
 static void
-config_append_buffer_path(StrBuilderArray *paths, StrBuilder *path) {
+config_append_buffer_path(StringArray *paths, String *path) {
     command_line_options_append_path(paths, path->data, path->len);
     return;
 }
 
 static bool
-config_default_file_exists(StrBuilder *path) {
+config_default_file_exists(String *path) {
     NcmError ncm_error;
-    StrBuilder expanded = {0};
+    String expanded = {0};
     bool exists;
 
     ncm_error_clear(&ncm_error);
@@ -89,12 +89,12 @@ config_default_file_exists(StrBuilder *path) {
 }
 
 static void
-config_append_default_file(StrBuilderArray *paths,
+config_append_default_file(StringArray *paths,
                            char *filename, int32 filename_len) {
     char *xdg_config_home;
-    StrBuilder base_directory = {0};
-    StrBuilder directory = {0};
-    StrBuilder path = {0};
+    String base_directory = {0};
+    String directory = {0};
+    String path = {0};
 
     if ((xdg_config_home = getenv("XDG_CONFIG_HOME"))
         && (xdg_config_home[0] != '\0')) {
@@ -120,10 +120,10 @@ config_append_default_file(StrBuilderArray *paths,
 }
 
 static void
-config_append_legacy_file(StrBuilderArray *paths,
+config_append_legacy_file(StringArray *paths,
                           char *filename, int32 filename_len) {
-    StrBuilder directory = {0};
-    StrBuilder path = {0};
+    String directory = {0};
+    String path = {0};
 
     SB_APPEND(&directory, "~/.ncmpcpp");
     ncm_fs_join(&path, directory.data, directory.len, filename, filename_len);
@@ -135,8 +135,8 @@ config_append_legacy_file(StrBuilderArray *paths,
 }
 
 int32
-config_discover_default_paths(StrBuilderArray *config_paths,
-                              StrBuilderArray *bindings_paths,
+config_discover_default_paths(StringArray *config_paths,
+                              StringArray *bindings_paths,
                               NcmError *ncm_error) {
     if ((config_paths == NULL) || (bindings_paths == NULL)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
@@ -152,7 +152,7 @@ config_discover_default_paths(StrBuilderArray *config_paths,
 }
 
 static void
-config_copy_string(StrBuilder *buffer, char *string, int32 string_len) {
+config_copy_string(String *buffer, char *string, int32 string_len) {
     sb_clear(buffer);
     SB_APPEND(buffer, string, string_len);
     return;
@@ -438,28 +438,28 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
 
     if ((options->config_paths.len == 0)
         || (options->bindings_paths.len == 0)) {
-        StrBuilderArray default_config_paths = {0};
-        StrBuilderArray default_bindings_paths = {0};
+        StringArray default_config_paths = {0};
+        StringArray default_bindings_paths = {0};
 
         config_discover_default_paths(&default_config_paths,
                                       &default_bindings_paths,
                                       ncm_error);
         if (options->config_paths.len == 0) {
             for (int32 j = 0; j < default_config_paths.len; j += 1) {
-                StrBuilder *path = &default_config_paths.items[j];
+                String *path = &default_config_paths.items[j];
                 command_line_options_append_path(&options->config_paths,
                                                  path->data, path->len);
             }
         }
         if (options->bindings_paths.len == 0) {
             for (int32 j = 0; j < default_bindings_paths.len; j += 1) {
-                StrBuilder *path = &default_bindings_paths.items[j];
+                String *path = &default_bindings_paths.items[j];
                 command_line_options_append_path(&options->bindings_paths,
                                                  path->data, path->len);
             }
         }
-        str_builder_array_destroy(&default_config_paths);
-        str_builder_array_destroy(&default_bindings_paths);
+        string_array_destroy(&default_config_paths);
+        string_array_destroy(&default_bindings_paths);
     }
     return ncm_error_ok(ncm_error);
 }
@@ -480,7 +480,7 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
         }
     }
     for (int32 i = 0; i < options->config_paths.len; i += 1) {
-        StrBuilder *path = &options->config_paths.items[i];
+        String *path = &options->config_paths.items[i];
         strview_list_push(&config_paths, path->data, path->len);
     }
 
@@ -608,8 +608,8 @@ configure(int32 argc, char **argv) {
     config_quiet = options.quiet;
 
     if (options.help) {
-        StrBuilderArray config_paths = {0};
-        StrBuilderArray bindings_paths = {0};
+        StringArray config_paths = {0};
+        StringArray bindings_paths = {0};
 
         config_discover_default_paths(&config_paths, &bindings_paths,
                                       &ncm_error);
@@ -625,7 +625,7 @@ configure(int32 argc, char **argv) {
                "specify configuration file(s)\n");
         printf("                               default: ");
         for (int32 i = 0; i < config_paths.len; i += 1) {
-            StrBuilder *path = &config_paths.items[i];
+            String *path = &config_paths.items[i];
 
             if (i > 0) {
                 printf(" AND ");
@@ -640,7 +640,7 @@ configure(int32 argc, char **argv) {
         printf("  -b, --bindings PATH          specify bindings file(s)\n");
         printf("                               default: ");
         for (int32 i = 0; i < bindings_paths.len; i += 1) {
-            StrBuilder *path = &bindings_paths.items[i];
+            String *path = &bindings_paths.items[i];
 
             if (i > 0) {
                 printf(" AND ");
@@ -658,8 +658,8 @@ configure(int32 argc, char **argv) {
         printf("  -q, --quiet                  "
                "suppress logs and excess output\n");
         printf("\n");
-        str_builder_array_destroy(&bindings_paths);
-        str_builder_array_destroy(&config_paths);
+        string_array_destroy(&bindings_paths);
+        string_array_destroy(&config_paths);
         ncm_config_options_destroy(&options);
         return 0;
     }
@@ -772,7 +772,7 @@ configure(int32 argc, char **argv) {
     if ((status >= 0) && !options.current_song) {
         bindings_config_clear(&Bindings);
         for (int32 i = 0; i < options.bindings_paths.len; i += 1) {
-            StrBuilder *path;
+            String *path;
 
             path = &options.bindings_paths.items[i];
             if ((status = ncm_path_expand_home(path, &ncm_error)) < 0) {
@@ -791,7 +791,7 @@ configure(int32 argc, char **argv) {
     if ((status >= 0) && options.current_song) {
         NcmSong song = {0};
         NcmFormatAst format = {0};
-        StrBuilder output = {0};
+        String output = {0};
 
         status = ncm_mpd_client_connect(&global_mpd, &ncm_error);
         if (status >= 0) {

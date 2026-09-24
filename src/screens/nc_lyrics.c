@@ -26,7 +26,7 @@
 struct LyricsJob {
     LyricsScreen *screen;
     NcmSong song;
-    StrBuilder filename;
+    String filename;
     LyricsFetcherDef *fetcher;
     LyricsResult result;
     NcBuffer log;
@@ -93,8 +93,8 @@ lyrics_window_timeout_callback(NcScreen *screen) {
 
 static char *
 lyrics_title_callback(NcScreen *screen) {
-    StrBuilder song_title = {0};
-    StrBuilder scroll_buffer = {0};
+    String song_title = {0};
+    String scroll_buffer = {0};
     StrView artist_view = {0};
     StrView title_view = {0};
     StrView name_view = {0};
@@ -334,9 +334,9 @@ lyrics_screen_init(LyricsScreen *screen, int32 start_x, int32 width,
 
     screen->search_constraint = NULL;
     screen->search_constraint_len = 0;
-    screen->title = (StrBuilder){0};
+    screen->title = (String){0};
     screen->song = (NcmSong){0};
-    screen->filename = (StrBuilder){0};
+    screen->filename = (String){0};
 
     screen->lrc = (LrcDocument){0};
     screen->result = (LyricsResult){0};
@@ -347,7 +347,7 @@ lyrics_screen_init(LyricsScreen *screen, int32 start_x, int32 width,
     screen->queued_songs_cap = 0;
     screen->active_lrc_line = LYRICS_NO_ACTIVE_LINE;
 
-    screen->consumer_message = (StrBuilder){0};
+    screen->consumer_message = (String){0};
 
     screen->fetcher = NULL;
     screen->mode = LYRICS_MODE_PLAIN;
@@ -461,7 +461,7 @@ lyrics_screen_set_geometry(LyricsScreen *screen, int32 start_x, int32 width,
 }
 
 static void
-lyrics_remove_extension(StrBuilder *buffer) {
+lyrics_remove_extension(String *buffer) {
     for (int32 i = buffer->len - 1; i >= 0; i -= 1) {
         if (buffer->data[i] == '/') {
             break;
@@ -476,8 +476,8 @@ lyrics_remove_extension(StrBuilder *buffer) {
 }
 
 static bool
-lyrics_song_artist_title(NcmSong *song, StrBuilder *artist, StrBuilder *title) {
-    StrBuilder fallback = {0};
+lyrics_song_artist_title(NcmSong *song, String *artist, String *title) {
+    String fallback = {0};
     StrView artist_view = {0};
     StrView title_view = {0};
     StrView name_view = {0};
@@ -505,12 +505,12 @@ lyrics_song_artist_title(NcmSong *song, StrBuilder *artist, StrBuilder *title) {
 }
 
 static int32
-lyrics_filename_from_song_with_extension(StrBuilder *filename,
+lyrics_filename_from_song_with_extension(String *filename,
     NcmSong *song, char *music_dir, int32 music_dir_len,
     char *lyrics_dir, int32 lyrics_dir_len, bool store_in_song_dir,
     bool win32_filename, char *extension, int32 extension_len) {
-    StrBuilder artist = {0};
-    StrBuilder title = {0};
+    String artist = {0};
+    String title = {0};
     StrView uri;
     int32 basename_start;
     int32 basename_len;
@@ -564,7 +564,7 @@ lyrics_filename_from_song_with_extension(StrBuilder *filename,
 }
 
 static int32
-lyrics_filename_from_song(StrBuilder *filename, NcmSong *song,
+lyrics_filename_from_song(String *filename, NcmSong *song,
                           char *music_dir, int32 music_dir_len,
                           char *lyrics_dir, int32 lyrics_dir_len,
                           bool store_in_song_dir, bool win32_filename) {
@@ -577,12 +577,12 @@ lyrics_filename_from_song(StrBuilder *filename, NcmSong *song,
 }
 
 static int32
-lyrics_preferred_filename_from_song(StrBuilder *filename, NcmSong *song,
+lyrics_preferred_filename_from_song(String *filename, NcmSong *song,
                                     char *music_dir, int32 music_dir_len,
                                     char *lyrics_dir, int32 lyrics_dir_len,
                                     bool store_in_song_dir,
                                     bool win32_filename) {
-    StrBuilder lrc_filename = {0};
+    String lrc_filename = {0};
     int32 status;
 
     status = lyrics_filename_from_song_with_extension(&lrc_filename, song,
@@ -818,7 +818,7 @@ lyrics_job_append_fetch_error(LyricsJob *job, LyricsResult *result) {
 
 static int32
 lyrics_job_fetch_one(LyricsJob *job, LyricsFetcherDef *fetcher,
-                     StrBuilder *artist, StrBuilder *title) {
+                     String *artist, String *title) {
     int32 status;
 
     ASSERT(job != NULL);
@@ -844,8 +844,8 @@ lyrics_job_fetch_one(LyricsJob *job, LyricsFetcherDef *fetcher,
 
 static int32
 lyrics_job_run(void *user, NcmError *ncm_error) {
-    StrBuilder artist = {0};
-    StrBuilder title = {0};
+    String artist = {0};
+    String title = {0};
     int32 status;
     LyricsJob *job = user;
 
@@ -949,7 +949,7 @@ lyrics_job_complete(int32 status, NcmError *ncm_error, void *user) {
                                     job->filename.len, job->result.text,
                                     job->result.text_len,
                                     &save_error) < 0) {
-            StrBuilder output = {0};
+            String output = {0};
             char *message = "unknown error";
 
             if (save_error.code != 0) {
@@ -993,7 +993,7 @@ lyrics_job_destroy(void *user) {
 static int32
 lyrics_screen_start_foreground_fetch(LyricsScreen *screen,
     NcmSong *song, LyricsFetcherDef *fetcher,
-    StrBuilder *filename, NcmError *ncm_error) {
+    String *filename, NcmError *ncm_error) {
     LyricsJob *job;
     LyricsFetcherDef *active_fetcher;
     int32 status;
@@ -1047,9 +1047,9 @@ lyrics_screen_start_foreground_fetch(LyricsScreen *screen,
 int32
 lyrics_screen_fetch(LyricsScreen *screen, NcmSong *song,
                     LyricsFetcherDef *fetcher, NcmError *ncm_error) {
-    StrBuilder next_filename = {0};
-    StrBuilder lrc_filename = {0};
-    StrBuilder txt_filename = {0};
+    String next_filename = {0};
+    String lrc_filename = {0};
+    String txt_filename = {0};
     int32 status;
     bool changed_song;
     bool changed_filename;
@@ -1089,7 +1089,7 @@ lyrics_screen_fetch(LyricsScreen *screen, NcmSong *song,
     lrc_found = ncm_fs_path_is_existing(lrc_filename.data, lrc_filename.len);
     txt_found = ncm_fs_path_is_existing(txt_filename.data, txt_filename.len);
     if ((lrc_filename.len > 0) && (txt_filename.len > 0)) {
-        StrBuilder message = {0};
+        String message = {0};
         char *lrc_status;
         char *txt_status;
         int32 lrc_start;
@@ -1196,7 +1196,7 @@ static int32
 lyrics_start_next_background(LyricsScreen *screen, NcmError *ncm_error) {
     LyricsQueuedSong *queued;
     LyricsJob *job;
-    StrBuilder filename = {0};
+    String filename = {0};
     int32 status;
     bool win32_filename;
     bool found_job;
@@ -1270,7 +1270,7 @@ lyrics_start_next_background(LyricsScreen *screen, NcmError *ncm_error) {
     }
 
     if (queued->notify) {
-        StrBuilder formatted =
+        String formatted =
             ncm_format_render_string(&Config.song_status_format,
                                      &queued->song);
 
@@ -1390,7 +1390,7 @@ lyrics_screen_update(LyricsScreen *screen) {
 
 void
 lyrics_screen_refetch_current(LyricsScreen *screen, NcmError *ncm_error) {
-    StrBuilder filename = {0};
+    String filename = {0};
     int32 status;
     bool win32_filename;
 
@@ -1414,7 +1414,7 @@ lyrics_screen_refetch_current(LyricsScreen *screen, NcmError *ncm_error) {
         return;
     }
     if (ncm_fs_unlink(filename.data, filename.len, ncm_error) < 0) {
-        StrBuilder output = {0};
+        String output = {0};
         char *message = "unknown error";
 
         if (ncm_error && (ncm_error->code != 0)) {
@@ -1475,7 +1475,7 @@ lyrics_screen_toggle_fetcher(LyricsScreen *screen,
 
 int32
 lyrics_screen_try_take_consumer_message(LyricsScreen *screen,
-                                        StrBuilder *message) {
+                                        String *message) {
     if ((screen == NULL) || (message == NULL)) {
         return -EINVAL;
     }
@@ -1495,7 +1495,7 @@ lyrics_screen_song(LyricsScreen *screen) {
     return &screen->song;
 }
 
-StrBuilder *
+String *
 lyrics_screen_filename(LyricsScreen *screen) {
     return &screen->filename;
 }

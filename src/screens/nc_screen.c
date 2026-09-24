@@ -440,7 +440,7 @@ nc_screen_menu_item_as_song(void *item) {
 
 static int32
 nc_screen_song_tags_buffer(NcmSong *song, enum SongGetter getter,
-                           StrBuilder *tag) {
+                           String *tag) {
     if ((song == NULL) || (tag == NULL)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
@@ -452,7 +452,7 @@ nc_screen_song_tags_buffer(NcmSong *song, enum SongGetter getter,
 
 int32
 nc_screen_menu_song_tag_at(NcMenu *menu, int32 pos,
-                          enum SongGetter getter, StrBuilder *tag,
+                          enum SongGetter getter, String *tag,
                           NcScreenMenuSongCallback *song_callback) {
     NcmSong *song;
 
@@ -503,7 +503,7 @@ nc_screen_collect_selected_menu_songs(NcMenu *menu, NcmSongArray *songs,
 
 int32
 nc_screen_menu_mutable_song_tag_at(NcMenu *menu, int32 pos,
-                                  enum SongGetter getter, StrBuilder *tag) {
+                                  enum SongGetter getter, String *tag) {
     MutableSong *song;
     enum TagType type;
 
@@ -589,7 +589,7 @@ nc_screen_tag_menu(NcScreen *screen) {
 
 int32
 nc_screen_song_tag_at(NcScreen *screen, int32 pos, enum SongGetter getter,
-                      StrBuilder *tag) {
+                      String *tag) {
     if (!nc_screen_has_capability(screen, NC_SCREEN_CAPABILITY_TAGS)
         || (screen->ops->song_tag_at == NULL)) {
         return -NCM_ERROR_UNAVAILABLE;

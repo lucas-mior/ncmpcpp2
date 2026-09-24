@@ -311,7 +311,7 @@ browser_reload_from_local(BrowserScreen *screen, NcmError *ncm_error) {
     status = 0;
     ncm_fs_entry_init(&entry);
     while (status == 0) {
-        StrBuilder path = {0};
+        String path = {0};
         NcmFsStat stat = {0};
         int32 read_status;
 
@@ -683,7 +683,7 @@ static bool
 browser_item_matches(BrowserScreen *screen, NcmMpdItem *item,
                      NcmRegex *regex, bool filter) {
     StrView path = {0};
-    StrBuilder rendered = {0};
+    String rendered = {0};
     int32 basename;
 
     if (browser_screen_item_is_parent(item)) {
@@ -783,17 +783,17 @@ browser_screen_init(BrowserScreen *screen, int32 start_x, int32 width,
                    start_x, main_start_y, width, main_height,
                    NULL, 0, color, border);
 
-    screen->current_directory = (StrBuilder){0};
+    screen->current_directory = (String){0};
     screen->last_highlighted_directory = NULL;
-    screen->title_text = (StrBuilder){0};
-    screen->column_title_text = (StrBuilder){0};
+    screen->title_text = (String){0};
+    screen->column_title_text = (String){0};
     screen->filter_constraint = NULL;
     screen->search_constraint = NULL;
     screen->last_highlighted_directory_len = 0;
     screen->filter_constraint_len = 0;
     screen->search_constraint_len = 0;
-    screen->item_text_buffer = (StrBuilder){0};
-    screen->scratch_buffer = (StrBuilder){0};
+    screen->item_text_buffer = (String){0};
+    screen->scratch_buffer = (String){0};
 
     screen->supported_extensions = (StrFlexList){0};
     screen->filter_regex = (NcmRegex){0};
@@ -968,8 +968,8 @@ browser_compare_song_names(NcmMpdItem *right, NcmMpdItem *left) {
 
 static int32
 browser_compare_song_sort_format(NcmMpdItem *right, NcmMpdItem *left) {
-    StrBuilder right_buffer;
-    StrBuilder left_buffer;
+    String right_buffer;
+    String left_buffer;
     StrView right_view;
     StrView left_view;
     int32 comp;
@@ -1170,7 +1170,7 @@ browser_screen_current_directory(BrowserScreen *screen) {
 
 void
 browser_screen_update_title_text(BrowserScreen *screen) {
-    StrBuilder scroll_buffer = {0};
+    String scroll_buffer = {0};
     StrView directory;
     int32 scroll_beginning;
     int32 scroll_width;
@@ -1302,7 +1302,7 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
     for (int32 i = 0; i < strflex_list_len(&strings);
          i += 1) {
         StrFlex *string = strings.items[i];
-        StrBuilder buffer = {0};
+        String buffer = {0};
 
         if ((string->len <= 0) || (string->data[0] != '.')) {
             sb_set(&buffer, STRLIT("."));
@@ -1364,7 +1364,7 @@ browser_screen_is_local(BrowserScreen *screen) {
 int32
 browser_screen_change_browse_mode(BrowserScreen *screen,
                                   MpdClient *client, NcmError *ncm_error) {
-    StrBuilder directory = {0};
+    String directory = {0};
     char *hostname;
     bool local_browser;
     int32 status;
@@ -1447,7 +1447,7 @@ browser_collect_local_directory_songs(BrowserScreen *screen,
 
     ncm_fs_entry_init(&entry);
     while (true) {
-        StrBuilder entry_path = {0};
+        String entry_path = {0};
         NcmFsStat stat = {0};
         int32 read_status;
 
@@ -1580,7 +1580,7 @@ browser_screen_selected_songs(BrowserScreen *screen, NcmSongArray *songs) {
 
 static int32
 browser_real_path(BrowserScreen *screen, StrView path,
-                  StrBuilder *real_path, NcmError *ncm_error) {
+                  String *real_path, NcmError *ncm_error) {
     sb_clear(real_path);
     if (screen->local_browser) {
         sb_set(real_path, path.data, path.len);
@@ -1622,7 +1622,7 @@ browser_delete_path_recursive(char *path, int32 path_len, NcmError *ncm_error) {
 
     ncm_fs_entry_init(&entry);
     while (true) {
-        StrBuilder child = {0};
+        String child = {0};
         int32 read_status;
 
         read_status = ncm_fs_directory_read(&directory, &entry, ncm_error);
@@ -1727,7 +1727,7 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
         switch (ncm_mpd_item_kind(item)) {
         case NCM_MPD_ITEM_DIRECTORY: {
             StrView path = {0};
-            StrBuilder real_path = {0};
+            String real_path = {0};
 
             ncm_directory_has_path_view(ncm_mpd_item_directory(item), &path);
             status = browser_real_path(screen, path, &real_path, ncm_error);
@@ -1741,7 +1741,7 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
         }
         case NCM_MPD_ITEM_SONG: {
             StrView path = {0};
-            StrBuilder real_path = {0};
+            String real_path = {0};
 
             ncm_song_has_uri_view(ncm_mpd_item_song(item), 0, &path);
             status = browser_real_path(screen, path, &real_path, ncm_error);
@@ -1754,7 +1754,7 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
         }
         case NCM_MPD_ITEM_PLAYLIST: {
             StrView path = {0};
-            StrBuilder real_path = {0};
+            String real_path = {0};
 
             if (client == NULL) {
                 return ncm_error_set_status(ncm_error, -EINVAL,
@@ -1926,8 +1926,8 @@ browser_screen_rename_current_directory(BrowserScreen *screen,
 
     new_path_view = ncm_string_view(new_path, new_path_len);
     {
-        StrBuilder old_real_path = {0};
-        StrBuilder new_real_path = {0};
+        String old_real_path = {0};
+        String new_real_path = {0};
 
         status = browser_real_path(screen, old_path, &old_real_path, ncm_error);
         if (status == 0) {
@@ -1947,7 +1947,7 @@ browser_screen_rename_current_directory(BrowserScreen *screen,
     }
 
     if (!screen->local_browser) {
-        StrBuilder shared;
+        String shared;
         char *directory;
 
         if (client == NULL) {
@@ -2039,7 +2039,7 @@ browser_screen_locate_song(BrowserScreen *screen,
         status = browser_reload_from_local(screen, ncm_error);
     } else {
         NcmMpdItemArray items = {0};
-        StrBuilder path = {0};
+        String path = {0};
 
         if (client == NULL) {
             return ncm_error_set_status(ncm_error, -EINVAL,

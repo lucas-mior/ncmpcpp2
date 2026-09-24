@@ -322,7 +322,7 @@ mutable_song_has_tag_view(MutableSong *song, enum TagType type, int32 idx,
 static void
 mutable_song_get_tag_buffer_unchecked(MutableSong *song,
                                       enum TagType type, int32 idx,
-                                      StrBuilder *buffer) {
+                                      String *buffer) {
     StrView view;
 
     sb_clear(buffer);
@@ -336,7 +336,7 @@ mutable_song_get_tag_buffer_unchecked(MutableSong *song,
 
 void
 mutable_song_get_tag_buffer(MutableSong *song,
-                            enum TagType type, int32 idx, StrBuilder *buffer) {
+                            enum TagType type, int32 idx, String *buffer) {
     if (buffer == NULL) {
         return;
     }
@@ -357,11 +357,11 @@ mutable_song_get_tag_buffer(MutableSong *song,
     return;
 }
 
-StrBuilder
+String
 mutable_song_tags_buffer(MutableSong *song, enum TagType type,
                          char *separator, int32 separator_len,
                          bool show_duplicates) {
-    StrBuilder result = {0};
+    String result = {0};
 
     if (song == NULL) {
         return result;
@@ -375,7 +375,7 @@ mutable_song_tags_buffer(MutableSong *song, enum TagType type,
     }
 
     for (int32 i = 0; ; i += 1) {
-        StrBuilder tag = {0};
+        String tag = {0};
         bool already_present;
 
         mutable_song_get_tag_buffer_unchecked(song, type, i, &tag);
@@ -387,7 +387,7 @@ mutable_song_tags_buffer(MutableSong *song, enum TagType type,
         already_present = false;
         if (!show_duplicates) {
             for (int32 j = 0; j < i; j += 1) {
-                StrBuilder prev = {0};
+                String prev = {0};
 
                 mutable_song_get_tag_buffer_unchecked(song, type, j, &prev);
                 if (optional_strequal(prev.data, prev.len, tag.data, tag.len)) {

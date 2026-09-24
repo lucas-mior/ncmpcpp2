@@ -145,7 +145,7 @@ Reorder them and delete the standalone declaration on the top of the .c file.
 
 ## Style: checking return value after the call (call should be inside if().
 
-## Strings unecessary conversion to and from StrBuilder
+## Strings unecessary conversion to and from String
 Investigate:
 - ncm_conversion_copy_source()
 - there are multiple confusing string types

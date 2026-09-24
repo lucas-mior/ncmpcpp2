@@ -90,7 +90,7 @@ ncm_format_parse_color_component(char *data, int32 data_len,
 }
 
 static void
-ncm_format_text_append(NcmFormatExprList *list, StrBuilder *token) {
+ncm_format_text_append(NcmFormatExprList *list, String *token) {
     NcmFormatExpr *expr;
 
     if (token->len <= 0) {
@@ -100,7 +100,7 @@ ncm_format_text_append(NcmFormatExprList *list, StrBuilder *token) {
     expr = ncm_format_expr_list_append(list);
     expr->type = NCM_FORMAT_EXPR_TEXT;
     expr->text = *token;
-    *token = (StrBuilder){0};
+    *token = (String){0};
 
     return;
 }
@@ -241,7 +241,7 @@ static int32
 ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                          int32 start, int32 end, uint32 flags,
                          NcmError *ncm_error) {
-    StrBuilder token = {0};
+    String token = {0};
     int32 status = 0;
 
     for (int32 i = start; (status == 0) && (i < end); i += 1) {
@@ -288,7 +288,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                     if (inner.len == 1) {
                         *expr = inner.items[0];
                         inner.items[0].type = NCM_FORMAT_EXPR_TEXT;
-                        inner.items[0].text = (StrBuilder){0};
+                        inner.items[0].text = (String){0};
                         inner.len = 0;
                     } else {
                         expr->type = NCM_FORMAT_EXPR_GROUP;
@@ -617,9 +617,9 @@ ncm_format_parse(NcmFormatAst *ast, char *data, int32 data_len,
     return 0;
 }
 
-static StrBuilder
+static String
 ncm_format_render_tag_unchecked(NcmSong *song, NcmFormatSongTag *tag) {
-    StrBuilder result;
+    String result;
 
     result = ncm_song_tags_buffer(song, tag->getter, STRLIT(" | "), true);
     if ((tag->delimiter > 0) && (result.len > 0)) {
@@ -659,7 +659,7 @@ ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
                        NcmFormatCallbacks *cb, void *left, void *right,
                        uint32 flags, int32 *no_output, bool *switched) {
     void *output = left;
-    StrBuilder tag;
+    String tag;
     enum NcmFormatResult result;
 
     if (*switched && right) {
@@ -860,14 +860,14 @@ static void
 ncm_format_string_text(void *user, char *data, int32 data_len,
                        NcmFormatSongTag *tag) {
     (void)tag;
-    SB_APPEND((StrBuilder *)user, data, data_len);
+    SB_APPEND((String *)user, data, data_len);
     return;
 }
 
-StrBuilder
+String
 ncm_format_render_string(NcmFormatAst *ast, NcmSong *song) {
     NcmFormatCallbacks callbacks;
-    StrBuilder result = {0};
+    String result = {0};
 
     callbacks.text = ncm_format_string_text;
     callbacks.color = NULL;

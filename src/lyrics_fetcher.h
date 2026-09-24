@@ -54,7 +54,7 @@ typedef struct LyricsFetcherRegistry {
     LyricsFetcherArray fetchers;
 } LyricsFetcherRegistry;
 
-typedef int32 LyricsCurlPerformFn(StrBuilder *data,
+typedef int32 LyricsCurlPerformFn(String *data,
                                   char *url, int32 url_len,
                                   char *referer, int32 referer_len,
                                   bool follow_redirect, int32 timeout_seconds,
@@ -78,9 +78,9 @@ int32 ncm_lyrics_fetcher_registry_append_name(LyricsFetcherRegistry *,
 int32 ncm_lyrics_fetcher_fetch(LyricsFetcherDef *, LyricsResult *,
                                char *artist, int32 artist_len,
                                char *title, int32 title_len);
-int32 ncm_lyrics_fetcher_build_url(LyricsFetcherDef *, StrBuilder *,
+int32 ncm_lyrics_fetcher_build_url(LyricsFetcherDef *, String *,
                                    char *artist, int32 artist_len,
                                    char *title, int32 title_len);
-void ncm_lyrics_cleanup_html(StrBuilder *, char *, int32);
+void ncm_lyrics_cleanup_html(String *, char *, int32);
 
 #endif /* LYRICS_FETCHER_H */

@@ -8,7 +8,7 @@
 
 extern bool global_show_messages;
 extern bool global_seeking_in_progress;
-extern StrBuilder global_volume_state;
+extern String global_volume_state;
 extern int64 global_timer;
 extern MpdClient global_mpd;
 

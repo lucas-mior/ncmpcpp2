@@ -9,7 +9,7 @@
 static int32
 ncm_system_command(char *command, int32 command_len,
                    bool block, int32 *status, NcmError *ncm_error) {
-    StrBuilder buffer = {0};
+    String buffer = {0};
     Command process = {0};
     int32 rc;
     int32 result;

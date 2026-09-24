@@ -8,13 +8,13 @@
 
 bool global_show_messages;
 bool global_seeking_in_progress;
-StrBuilder global_volume_state;
+String global_volume_state;
 int64 global_timer;
 MpdClient global_mpd;
 
 void
 global_state_init(void) {
-    global_volume_state = (StrBuilder){0};
+    global_volume_state = (String){0};
     ncm_mpd_client_init(&global_mpd);
     return;
 }

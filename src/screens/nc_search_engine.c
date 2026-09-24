@@ -300,7 +300,7 @@ search_run_current(NcScreen *base_screen) {
     SearchEngineScreen *screen = (SearchEngineScreen *)base_screen;
     enum SearchEnginePromptResult prompt_status;
     enum SearchEngineSearchMode mode;
-    StrBuilder value = {0};
+    String value = {0};
     NcmError ncm_error;
     NcMenu *menu;
     int32 pos;
@@ -394,7 +394,7 @@ search_run_current(NcScreen *base_screen) {
 
 static int32
 search_toggle_display_mode(NcScreen *base) {
-    StrBuilder message = {0};
+    String message = {0};
     enum DisplayMode mode;
     mode = search_engine_screen_toggle_display_mode((SearchEngineScreen *)base);
     sb_printf(&message, "Search engine display mode: %s",
@@ -637,8 +637,8 @@ search_engine_screen_init(SearchEngineScreen *screen,
     screen->search_constraint = NULL;
     screen->filter_constraint_len = 0;
     screen->search_constraint_len = 0;
-    screen->row_text = (StrBuilder){0};
-    screen->column_title = (StrBuilder){0};
+    screen->row_text = (String){0};
+    screen->column_title = (String){0};
 
     screen->filter_regex = (NcmRegex){0};
 
@@ -732,7 +732,7 @@ search_engine_screen_has_locked_constraints(SearchEngineScreen *screen) {
 
 int32
 search_engine_screen_format_song_text(SearchEngineScreen *screen,
-                                      NcmSong *song, StrBuilder *text) {
+                                      NcmSong *song, String *text) {
     NcBuffer formatted = {0};
 
     if ((screen == NULL) || (song == NULL) || (text == NULL)) {
@@ -753,7 +753,7 @@ search_engine_screen_format_song_text(SearchEngineScreen *screen,
 void
 search_engine_screen_update_column_title(SearchEngineScreen *screen) {
     ColumnArray *columns = &Config.song_columns_list_format;
-    StrBuilder *title;
+    String *title;
     int32 list_width;
 
     if (screen == NULL) {

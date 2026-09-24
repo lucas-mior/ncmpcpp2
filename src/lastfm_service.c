@@ -126,8 +126,8 @@ ncm_lastfm_service_type(NcmLastfmService *service) {
 }
 
 static int32
-lastfm_append_escaped(StrBuilder *buffer, char *string, int32 string_len) {
-    StrBuilder escaped = {0};
+lastfm_append_escaped(String *buffer, char *string, int32 string_len) {
+    String escaped = {0};
     int32 status;
 
     if (lastfm_test_escape) {
@@ -163,7 +163,7 @@ lastfm_find(char *data, int32 data_len, char *needle, int32 needle_len,
 }
 
 static int32
-lastfm_extract_between(StrBuilder *out, char *data, int32 data_len,
+lastfm_extract_between(String *out, char *data, int32 data_len,
                        char *start, int32 start_len, char *end, int32 end_len) {
     int32 a;
     int32 b;
@@ -183,10 +183,10 @@ lastfm_extract_between(StrBuilder *out, char *data, int32 data_len,
 }
 
 static void
-lastfm_strip_unescape_trim(StrBuilder *out, char *data, int32 data_len) {
-    StrBuilder stripped;
-    StrBuilder unescaped;
-    StrBuilder tmp = {0};
+lastfm_strip_unescape_trim(String *out, char *data, int32 data_len) {
+    String stripped;
+    String unescaped;
+    String tmp = {0};
     char *text;
     int32 text_len;
 
@@ -221,7 +221,7 @@ lastfm_strip_unescape_trim(StrBuilder *out, char *data, int32 data_len) {
 }
 
 static void
-lastfm_append_similars(StrBuilder *out, char *data, int32 data_len,
+lastfm_append_similars(String *out, char *data, int32 data_len,
                        char *section_start, int32 section_start_len,
                        char *section_end, int32 section_end_len, char *heading,
                        int32 heading_len) {
@@ -239,10 +239,10 @@ lastfm_append_similars(StrBuilder *out, char *data, int32 data_len,
     pos = a;
     wrote_heading = false;
     while (pos < b) {
-        StrBuilder name = {0};
-        StrBuilder url = {0};
-        StrBuilder clean_name = {0};
-        StrBuilder clean_url = {0};
+        String name = {0};
+        String url = {0};
+        String clean_name = {0};
+        String clean_url = {0};
         int32 item_end;
         bool have_name;
         bool have_url;
@@ -285,12 +285,12 @@ lastfm_append_similars(StrBuilder *out, char *data, int32 data_len,
 
 int32
 ncm_lastfm_service_fetch(NcmLastfmService *service, NcmLastfmResult *result) {
-    StrBuilder url = {0};
-    StrBuilder data = {0};
-    StrBuilder content = {0};
-    StrBuilder desc = {0};
-    StrBuilder original_link = {0};
-    StrBuilder output = {0};
+    String url = {0};
+    String data = {0};
+    String content = {0};
+    String desc = {0};
+    String original_link = {0};
+    String output = {0};
     char *message;
     int32 status;
 
@@ -372,7 +372,7 @@ ncm_lastfm_service_fetch(NcmLastfmService *service, NcmLastfmResult *result) {
                            STRLIT("</tags>"), STRLIT("\n\nSimilar tags:\n"));
     if (lastfm_extract_between(&original_link, data.data, data.len,
                                STRLIT("<url>"), STRLIT("</url>")) == 0) {
-        StrBuilder clean_url = {0};
+        String clean_url = {0};
 
         lastfm_strip_unescape_trim(&clean_url, original_link.data,
                                    original_link.len);

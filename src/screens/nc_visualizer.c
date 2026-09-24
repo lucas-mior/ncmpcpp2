@@ -273,7 +273,7 @@ visualizer_update_callback(NcScreen *screen) {
             visualizer->data_source_hooks.user,
             visualizer->output_id, &ncm_error);
         if (status < 0) {
-            StrBuilder message = {0};
+            String message = {0};
 
             SB_APPEND(&message, "Could not disable visualizer output: ");
             SB_APPEND(&message,
@@ -293,7 +293,7 @@ visualizer_update_callback(NcScreen *screen) {
             visualizer->data_source_hooks.user,
             visualizer->output_id, &ncm_error);
         if (status < 0) {
-            StrBuilder message = {0};
+            String message = {0};
 
             SB_APPEND(&message, "Could not enable visualizer output: ");
             SB_APPEND(&message, ncm_error.message, ncm_error.message_len);
@@ -367,7 +367,7 @@ visualizer_system_open_fifo(void *user, char *location, int32 location_len) {
 
     (void)user;
     if ((fd = open(location, O_RDONLY | O_NONBLOCK)) < 0) {
-        StrBuilder message = {0};
+        String message = {0};
         char *error_message;
 
         error_code = errno;
@@ -403,7 +403,7 @@ visualizer_system_open_udp(void *user, char *location, int32 location_len,
 
     addresses = NULL;
     if ((error_code = getaddrinfo(location, port, &hints, &addresses)) != 0) {
-        StrBuilder message = {0};
+        String message = {0};
         char *error_message;
 
         error_message = (char *)gai_strerror(error_code);
@@ -749,7 +749,7 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
     status = screen->data_source_hooks.get_outputs(
         screen->data_source_hooks.user, &outputs, &ncm_error);
     if (status < 0) {
-        StrBuilder message = {0};
+        String message = {0};
 
         SB_APPEND(&message, "Could not fetch outputs: ");
         SB_APPEND(&message, ncm_error.message, ncm_error.message_len);
@@ -773,7 +773,7 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
     ncm_mpd_output_list_destroy(&outputs);
 
     if (!found) {
-        StrBuilder message = {0};
+        String message = {0};
 
         SB_APPEND(&message, "There is no output named \"");
         SB_APPEND(&message, screen->output_name, screen->output_name_len);

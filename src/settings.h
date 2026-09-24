@@ -106,7 +106,7 @@ typedef struct Configuration {
 #define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                           \
     NcBuffer NAME;
 #define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)          \
-    StrBuilder NAME;
+    String NAME;
 #define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                             \
     NcmInt32Array NAME;
 #define XX_TEXT_STYLE_LIST(NAME, DEFAULT)                                 \

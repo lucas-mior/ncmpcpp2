@@ -366,7 +366,7 @@ typedef struct NcScreenOps {
     int32 (*previous_column)(NcScreen *);
     int32 (*next_column)(NcScreen *);
     NcMenu *(*tag_menu)(NcScreen *);
-    int32 (*song_tag_at)(NcScreen *, int32, enum SongGetter, StrBuilder *);
+    int32 (*song_tag_at)(NcScreen *, int32, enum SongGetter, String *);
     int32 (*toggle_display_mode)(NcScreen *);
 
     int32 window_timeout;
@@ -482,12 +482,12 @@ typedef NcmSong *NcScreenMenuSongCallback(void *);
 int32 nc_screen_optional_song_status(int32);
 NcmSong *nc_screen_menu_item_as_song(void *);
 int32 nc_screen_menu_song_tag_at(NcMenu *, int32, enum SongGetter,
-                                 StrBuilder *,
+                                 String *,
                                  NcScreenMenuSongCallback *);
 int32 nc_screen_collect_selected_menu_songs(NcMenu *, NcmSongArray *,
                                            NcScreenMenuSongCallback *);
 int32 nc_screen_menu_mutable_song_tag_at(NcMenu *, int32, enum SongGetter,
-                                         StrBuilder *);
+                                         String *);
 int32 nc_screen_current_song(NcScreen *, NcmSong *);
 int32 nc_screen_selected_songs(NcScreen *, NcmSongArray *);
 bool nc_screen_previous_column_available(NcScreen *);
@@ -495,7 +495,7 @@ bool nc_screen_next_column_available(NcScreen *);
 int32 nc_screen_previous_column(NcScreen *);
 int32 nc_screen_next_column(NcScreen *);
 NcMenu *nc_screen_tag_menu(NcScreen *);
-int32 nc_screen_song_tag_at(NcScreen *, int32, enum SongGetter, StrBuilder *);
+int32 nc_screen_song_tag_at(NcScreen *, int32, enum SongGetter, String *);
 int32 nc_screen_toggle_display_mode(NcScreen *);
 enum DisplayMode nc_screen_next_display_mode(enum DisplayMode);
 void nc_screen_clear_resize_request(NcScreen *);
@@ -697,15 +697,15 @@ typedef struct LyricsScreen {
     NcScrollpad scrollpad;
     NcBuffer display;
 
-    StrBuilder title;
+    String title;
     NcmSong song;
-    StrBuilder filename;
+    String filename;
     LrcDocument lrc;
     LyricsResult result;
     NcmJobQueue jobs;
     LyricsJob *foreground_job;
     LyricsQueuedSong *queued_songs;
-    StrBuilder consumer_message;
+    String consumer_message;
 
     LyricsFetcherDef *fetcher;
     char *search_constraint;
@@ -765,9 +765,9 @@ void lyrics_screen_update(LyricsScreen *);
 void lyrics_screen_refetch_current(LyricsScreen *, NcmError *);
 LyricsFetcherDef *lyrics_screen_toggle_fetcher(LyricsScreen *,
                                                   LyricsFetcherRegistry *);
-int32 lyrics_screen_try_take_consumer_message(LyricsScreen *, StrBuilder *);
+int32 lyrics_screen_try_take_consumer_message(LyricsScreen *, String *);
 NcmSong *lyrics_screen_song(LyricsScreen *);
-StrBuilder *lyrics_screen_filename(LyricsScreen *);
+String *lyrics_screen_filename(LyricsScreen *);
 LrcDocument *lyrics_screen_lrc(LyricsScreen *);
 int32 lyrics_buffer_find(NcBuffer *, char *, int32, NcmError *);
 void lyrics_buffer_clear_sync_highlight(NcBuffer *);
@@ -1161,8 +1161,8 @@ typedef struct MediaLibraryScreen {
 
     MediaLibraryColumnState column_state[
         MEDIA_LIBRARY_COLUMN_COUNT];
-    StrBuilder tags_title;
-    StrBuilder albums_title;
+    String tags_title;
+    String albums_title;
     int64 update_timer;
     NcMediaLibraryTagRow observed_tag;
     NcMediaLibraryAlbumRow observed_album;
@@ -1225,10 +1225,10 @@ bool media_library_screen_has_current_grouping_tag_value(MediaLibraryScreen *,
 bool media_library_screen_has_current_album_value(MediaLibraryScreen *,
                                                   char **, int32 *);
 void media_library_screen_format_tag_row(MediaLibraryScreen *,
-                                         NcMediaLibraryTagRow *, StrBuilder *);
+                                         NcMediaLibraryTagRow *, String *);
 void media_library_screen_format_album_row(MediaLibraryScreen *,
                                            NcMediaLibraryAlbumRow *,
-                                           StrBuilder *);
+                                           String *);
 void media_library_screen_format_song_row(MediaLibraryScreen *, NcmSong *,
                                           NcBuffer *);
 
@@ -1328,7 +1328,7 @@ typedef struct PlaylistEditScreen {
     char *content_search_constraint;
     char *displayed_playlist_path;
     char *observed_playlist_path;
-    StrBuilder content_title;
+    String content_title;
 
     NcmRegex playlist_filter_regex;
     NcmRegex content_filter_regex;
@@ -1434,8 +1434,8 @@ typedef struct PlaylistScreen {
     NcPlaylistScreen screen;
     NcSongMenu songs;
     NcWindow window;
-    StrBuilder title_cache;
-    StrBuilder column_title;
+    String title_cache;
+    String column_title;
     char *filter_constraint;
     char *search_constraint;
     NcmRegex filter_regex;
@@ -1553,10 +1553,10 @@ typedef struct SearchEngineHooks {
     int32 (*list_database_songs)(void *, NcmSongArray *, NcmError *);
     int32 (*snapshot_playlist)(void *, NcmSongArray *, NcmError *);
     enum SearchEnginePromptResult (*prompt_constraint)(void *, char *, int32,
-                                                       StrView, StrBuilder *);
+                                                       StrView, String *);
     void (*status_message)(void *, char *, int32);
     int32 (*add_song)(void *, NcmSong *, bool, NcmError *);
-    int32 (*format_song)(void *, NcmSong *, StrBuilder *);
+    int32 (*format_song)(void *, NcmSong *, String *);
     void *user;
 } SearchEngineHooks;
 
@@ -1568,8 +1568,8 @@ typedef struct SearchEngineScreen {
     char *constraints[SEARCH_ENGINE_CONSTRAINT_COUNT];
     char *filter_constraint;
     char *search_constraint;
-    StrBuilder row_text;
-    StrBuilder column_title;
+    String row_text;
+    String column_title;
     NcmRegex filter_regex;
 
     int32 start_x;
@@ -1603,7 +1603,7 @@ NcWindow *search_engine_screen_window(SearchEngineScreen *);
 void search_engine_screen_set_mouse_config(SearchEngineScreen *, int32, bool);
 bool search_engine_screen_has_locked_constraints(SearchEngineScreen *);
 int32 search_engine_screen_format_song_text(SearchEngineScreen *, NcmSong *,
-                                            StrBuilder *);
+                                            String *);
 void search_engine_screen_update_column_title(SearchEngineScreen *);
 void search_engine_screen_prepare_static_rows(SearchEngineScreen *);
 int32 search_engine_screen_update_search_source_row(SearchEngineScreen *);
@@ -1760,7 +1760,7 @@ int32 sort_playlist_dialog_move_current_down(SortPlaylistDialog *);
 
 typedef struct TagEditHooks {
     enum TagEditPromptResult (*prompt)(void *, char *, int32, StrView,
-                                         StrBuilder *);
+                                         String *);
     bool (*confirm)(void *, char *, int32);
     void (*status_message)(void *, char *, int32);
     void (*update_directory)(void *, char *, int32);
@@ -1790,8 +1790,8 @@ typedef struct TagEditScreen {
     char *directory_search_constraint;
     char *tag_search_constraint;
     char *pattern;
-    StrBuilder parser_legend;
-    StrBuilder parser_preview;
+    String parser_legend;
+    String parser_preview;
     StrFlexList recent_patterns;
 
     NcmRegex directory_filter_regex;
@@ -1906,10 +1906,10 @@ void tag_edit_screen_show_parser_legend(TagEditScreen *);
 void tag_edit_screen_show_parser_preview(TagEditScreen *);
 void tag_edit_screen_close_parser(TagEditScreen *);
 int32 tag_edit_parse_filename(MutableSong *, char *, int32, bool,
-                              StrBuilder *);
-int32 tag_edit_generate_filename(MutableSong *, char *, int32, StrBuilder *);
+                              String *);
+int32 tag_edit_generate_filename(MutableSong *, char *, int32, String *);
 int32 tag_edit_song_display_value(MutableSong *, enum TagType,
-                                  StrBuilder *);
+                                  String *);
 
 enum TinyTagEditRow {
     TINY_TAG_EDIT_FILE_NAME_INFO_ROW,
@@ -1954,7 +1954,7 @@ enum TinyTagEditRow {
 
 typedef struct TinyTagEditHooks {
     enum TinyTagEditPromptResult (*prompt)(void *, char *, int32,
-                                             StrView, StrBuilder *);
+                                             StrView, String *);
     void (*status_message)(void *, char *, int32);
     int32 (*taglib_open)(void *, TaglibFile *, char *, int32);
     int32 (*taglib_audio_properties)(void *, TaglibFile *,
@@ -2003,21 +2003,21 @@ enum TinyTagEditOpenResult
 tiny_tag_edit_screen_open_song(TinyTagEditScreen *, NcmSong *,
                                char *music_dir, int32 music_dir_len,
                                char *tag_separator, int32 tag_separator_len,
-                               bool, StrBuilder *);
+                               bool, String *);
 int32 tiny_tag_edit_screen_run_row(TinyTagEditScreen *, int32);
 
 typedef struct BrowserScreen {
     NcScreen screen;
     NcBrowserEntryMenu entries;
     NcWindow window;
-    StrBuilder current_directory;
+    String current_directory;
     char *last_highlighted_directory;
     char *filter_constraint;
     char *search_constraint;
-    StrBuilder title_text;
-    StrBuilder column_title_text;
-    StrBuilder item_text_buffer;
-    StrBuilder scratch_buffer;
+    String title_text;
+    String column_title_text;
+    String item_text_buffer;
+    String scratch_buffer;
     StrFlexList supported_extensions;
     NcmRegex filter_regex;
 

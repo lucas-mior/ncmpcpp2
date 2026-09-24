@@ -33,9 +33,9 @@ static HtmlEntity html_entities[] = {
 
 #undef HTML_ENTITY
 
-StrBuilder
+String
 ncm_html_unescape_utf8(char *data, int32 data_len) {
-    StrBuilder out = {0};
+    String out = {0};
     int32 i = 0;
 
     while (i < data_len) {
@@ -125,9 +125,9 @@ ncm_html_unescape_utf8(char *data, int32 data_len) {
     return out;
 }
 
-StrBuilder
+String
 ncm_html_unescape_entities(char *data, int32 data_len) {
-    StrBuilder out = {0};
+    String out = {0};
     int32 i = 0;
 
     while (i < data_len) {
@@ -156,10 +156,10 @@ ncm_html_unescape_entities(char *data, int32 data_len) {
     return out;
 }
 
-StrBuilder
+String
 ncm_html_strip_tags(char *data, int32 data_len) {
-    StrBuilder stripped = {0};
-    StrBuilder result;
+    String stripped = {0};
+    String result;
     int32 i = 0;
 
     while (i < data_len) {

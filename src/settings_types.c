@@ -116,7 +116,7 @@ config_init_unchecked(Configuration *config) {
 #define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                           \
     config->NAME = (NcBuffer){0};
 #define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)          \
-    config->NAME = (StrBuilder){0};
+    config->NAME = (String){0};
 #define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                             \
     config->NAME = (NcmInt32Array){0};
 #define XX_TEXT_STYLE_LIST(NAME, DEFAULT)                                 \

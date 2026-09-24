@@ -7,12 +7,12 @@
 #include "c/ncm_c.h"
 
 typedef struct NcmConfigurationOptions {
-    StrBuilder host;
-    StrBuilder current_song_format;
-    StrBuilder screen_name;
-    StrBuilder slave_screen_name;
-    StrBuilderArray config_paths;
-    StrBuilderArray bindings_paths;
+    String host;
+    String current_song_format;
+    String screen_name;
+    String slave_screen_name;
+    StringArray config_paths;
+    StringArray bindings_paths;
 
     int32 port;
 
@@ -34,8 +34,8 @@ int32 ncm_config_options_parse(NcmConfigurationOptions *, int32, char **,
                                NcmError *);
 int32 ncm_config_options_apply(NcmConfigurationOptions *, NcmError *);
 
-int32 config_discover_default_paths(StrBuilderArray *config_paths,
-                                    StrBuilderArray *bindings_paths,
+int32 config_discover_default_paths(StringArray *config_paths,
+                                    StringArray *bindings_paths,
                                     NcmError *);
 int32 configure(int32, char **);
 

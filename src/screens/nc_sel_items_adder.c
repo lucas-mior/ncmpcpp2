@@ -382,7 +382,7 @@ adder_finish(SelectedItemsAdderScreen *screen) {
 static void
 adder_add_to_current_playlist(SelectedItemsAdderScreen *screen,
                               int32 position) {
-    StrBuilder message = {0};
+    String message = {0};
     char *suffix;
     bool added;
     bool success;
@@ -651,7 +651,7 @@ selected_items_add_screen_init(SelectedItemsAdderScreen *screen,
 static void
 adder_add_to_stored_playlist(SelectedItemsAdderScreen *screen, char *playlist,
                              int32 playlist_len) {
-    StrBuilder message = {0};
+    String message = {0};
     NcmError ncm_error;
     int32 status;
 
@@ -901,7 +901,7 @@ selected_items_add_screen_open(SelectedItemsAdderScreen *screen,
         ncm_error_clear(&playlist_error);
         if (ncm_mpd_client_get_playlists(client, &playlists,
                                          &playlist_error) < 0) {
-            StrBuilder message = {0};
+            String message = {0};
 
             ncm_playlist_array_clear(&playlists);
             SB_APPEND(&message, "Could not fetch playlists: ");

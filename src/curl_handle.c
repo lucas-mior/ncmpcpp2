@@ -8,7 +8,7 @@
 #include "curl_handle.h"
 
 typedef struct NcmCurlResponseWriter {
-    StrBuilder *buffer;
+    String *buffer;
 } NcmCurlResponseWriter;
 
 // Note: write_data is a callback used from curl lib,
@@ -40,13 +40,13 @@ write_data(char *buffer, size_t size, size_t nmemb, void *data) {
 }
 
 int32
-ncm_curl_perform(StrBuilder *data, char *url, int32 url_len, char *referer,
+ncm_curl_perform(String *data, char *url, int32 url_len, char *referer,
                  int32 referer_len, bool follow_redirect,
                  int32 timeout_seconds) {
     CURLcode result;
     CURL *curl;
-    StrBuilder url_string = {0};
-    StrBuilder referer_string = {0};
+    String url_string = {0};
+    String referer_string = {0};
     NcmCurlResponseWriter writer = {.buffer = data};
 
     sb_clear(data);
@@ -100,7 +100,7 @@ cleanup:
 }
 
 int32
-ncm_curl_escape(StrBuilder *out, char *string, int32 string_len) {
+ncm_curl_escape(String *out, char *string, int32 string_len) {
     char *escaped;
 
     sb_clear(out);

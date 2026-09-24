@@ -577,7 +577,7 @@ search_prompt_should_continue(char *text, void *user) {
 
 static enum SearchEnginePromptResult
 search_prompt_constraint(void *user, char *label, int32 label_len,
-                         StrView initial, StrBuilder *result) {
+                         StrView initial, String *result) {
     NcmStatusbarScopedLock scoped_lock;
     enum NcPromptStatus status;
     NcPrompt prompt = {0};
@@ -636,7 +636,7 @@ search_add_song(void *user, NcmSong *song, bool play, NcmError *ncm_error) {
 }
 
 static int32
-search_format_song(void *user, NcmSong *song, StrBuilder *text) {
+search_format_song(void *user, NcmSong *song, String *text) {
     SearchEngineScreen *screen;
 
     screen = user;
@@ -708,7 +708,7 @@ statusbar_prompt_should_continue(char *text, void *user) {
 
 static enum PromptResult
 prompt_buffer(char *label, int32 label_len,
-              StrView initial, StrBuilder *result, bool bold_label) {
+              StrView initial, String *result, bool bold_label) {
     NcmStatusbarScopedLock scoped_lock;
     enum NcPromptStatus status;
     NcPrompt prompt = {0};
@@ -759,7 +759,7 @@ prompt_buffer(char *label, int32 label_len,
 
 static enum TagEditPromptResult
 tag_edit_hook_prompt(void *user, char *label, int32 label_len,
-                     StrView initial, StrBuilder *result) {
+                     StrView initial, String *result) {
     enum PromptResult prompt_result;
 
     (void)user;
@@ -847,7 +847,7 @@ app_screen_tag_edit_init(void) {
 
 static enum TinyTagEditPromptResult
 tiny_tag_edit_prompt(void *user, char *label, int32 label_len,
-                     StrView initial, StrBuilder *result) {
+                     StrView initial, String *result) {
     enum PromptResult prompt_result;
 
     (void)user;
@@ -1095,7 +1095,7 @@ append_bold_label(NcBuffer *buffer, char *label) {
 }
 
 static void
-append_song_tag(NcBuffer *buffer, StrBuilder *tag) {
+append_song_tag(NcBuffer *buffer, String *tag) {
     if (tag->len <= 0) {
         append_text_style(buffer, &Config.empty_tag_color);
         append_data(buffer,
@@ -1109,7 +1109,7 @@ append_song_tag(NcBuffer *buffer, StrBuilder *tag) {
 
 static void
 append_song_info_tag(NcBuffer *buffer, char *name, int32 name_len,
-                     StrBuilder *value) {
+                     String *value) {
     append_format(buffer, NC_FORMAT_BOLD);
     nc_buffer_append_data(buffer, STRLIT("\n"));
     nc_buffer_append_data(buffer, name, name_len);
@@ -1122,7 +1122,7 @@ append_song_info_tag(NcBuffer *buffer, char *name, int32 name_len,
 
 static void
 append_song_key_value(NcBuffer *buffer, char *key, int32 key_len,
-                      StrBuilder *value, bool empty_as_missing) {
+                      String *value, bool empty_as_missing) {
     append_format(buffer, NC_FORMAT_BOLD);
     append_text_style(buffer, &Config.color1);
     nc_buffer_append_data(buffer, key, key_len);
@@ -1298,7 +1298,7 @@ outputs_fetch(void *user, NcOutputsScreen *screen) {
     ncm_error_clear(&ncm_error);
 
     if (ncm_mpd_client_get_outputs(&global_mpd, &outputs, &ncm_error) < 0) {
-        StrBuilder message = {0};
+        String message = {0};
 
         SB_APPEND(&message, "Could not fetch outputs: ");
         SB_APPEND(&message,
@@ -1339,7 +1339,7 @@ outputs_toggle(void *user, int32 id, bool enabled, char *name, int32 name_len) {
         status = ncm_mpd_client_enable_output(&global_mpd, id, &ncm_error);
     }
     if (status < 0) {
-        StrBuilder message = {0};
+        String message = {0};
 
         SB_APPEND(&message, "Could not toggle output ");
         SB_APPEND(&message, name, name_len);
@@ -1352,7 +1352,7 @@ outputs_toggle(void *user, int32 id, bool enabled, char *name, int32 name_len) {
     }
 
     {
-        StrBuilder message = {0};
+        String message = {0};
 
         SB_APPEND(&message, "Output ");
         SB_APPEND(&message, name, name_len);
@@ -1634,7 +1634,7 @@ app_screen_server_info_init(void) {
 static int32
 song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
     SongInfoScreen *owner = user;
-    StrBuilder value;
+    String value;
 
     (void)screen;
     if (!owner->has_song) {
@@ -1659,7 +1659,7 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
     for (uint32 i = 0; i < TAG_COUNT; i += 1) {
         enum TagType tag = ncm_song_info_tags[i].tag;
 
-        value = (StrBuilder){0};
+        value = (String){0};
         for (int32 j = 0; ; j += 1) {
             StrView view;
             bool duplicate = false;
@@ -1696,7 +1696,7 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
 
     for (int32 i = 0; i < owner->song.properties_len; ) {
         NcmSongProperty *property = &owner->song.properties[i];
-        StrBuilder properties = {0};
+        String properties = {0};
         int32 next = i;
 
         while ((next < owner->song.properties_len)
@@ -1755,7 +1755,7 @@ song_info_switch_to(void *user, NcSongInfoScreen *screen) {
     owner->has_song = ncm_mpd_client_get_current_song(&global_mpd, &owner->song,
                                                       &ncm_error) == 0;
     if (!owner->has_song) {
-        StrBuilder message = {0};
+        String message = {0};
 
         SB_APPEND(&message, "Could not fetch current song: ");
         SB_APPEND(&message, ncm_error.message,

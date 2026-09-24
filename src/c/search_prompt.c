@@ -11,7 +11,7 @@ search_prompt_state_init(SearchPromptState *state,
                              enum SearchDirection direction) {
     ASSERT(state != NULL);
 
-    state->last_text = (StrBuilder){0};
+    state->last_text = (String){0};
 
     state->direction = direction;
     state->start_position = 0;

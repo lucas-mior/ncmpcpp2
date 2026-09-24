@@ -57,7 +57,7 @@ ncm_compare_parse_decimal(char *string, int32 string_len) {
 }
 
 static void
-ncm_compare_copy_to_buffer(StrBuilder *buffer, char *string, int32 string_len) {
+ncm_compare_copy_to_buffer(String *buffer, char *string, int32 string_len) {
     sb_clear(buffer);
     if ((string == NULL) || (string_len <= 0)) {
         sb_reserve(buffer, 1);
@@ -71,8 +71,8 @@ ncm_compare_copy_to_buffer(StrBuilder *buffer, char *string, int32 string_len) {
 int32
 ncm_compare_locale_strings(char *left, int32 left_len,
                            char *right, int32 right_len, bool ignore_the) {
-    StrBuilder left_buffer = {0};
-    StrBuilder right_buffer = {0};
+    String left_buffer = {0};
+    String right_buffer = {0};
     int32 left_number;
     int32 right_number;
     int32 left_offset;

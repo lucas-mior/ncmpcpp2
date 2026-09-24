@@ -255,7 +255,7 @@ playlist_action_change_finished(NcScreen *screen) {
 
 static int32
 playlist_toggle_display_mode(NcScreen *base) {
-    StrBuilder message = {0};
+    String message = {0};
     Config.playlist_display_mode =
         nc_screen_next_display_mode(Config.playlist_display_mode);
     playlist_screen_update_column_title((PlaylistScreen *)base);
@@ -436,8 +436,8 @@ playlist_screen_init(PlaylistScreen *screen, int32 start_x,
     nc_window_init(&screen->window, start_x, main_start_y, width,
                    main_height, "", 0, color, border);
 
-    screen->title_cache = (StrBuilder){0};
-    screen->column_title = (StrBuilder){0};
+    screen->title_cache = (String){0};
+    screen->column_title = (String){0};
     screen->filter_constraint = NULL;
     screen->search_constraint = NULL;
     screen->filter_constraint_len = 0;
@@ -818,7 +818,7 @@ playlist_screen_current_song(PlaylistScreen *screen, NcmSong *song) {
 static void
 playlist_set_mutable_uri(NcmSong *song, MutableSong *edited) {
     StrView new_name;
-    StrBuilder uri = {0};
+    String uri = {0};
 
     if (!mutable_song_has_new_name_view(edited, &new_name)) {
         ncm_song_set_uri(song, edited->uri, edited->uri_len);
@@ -1132,7 +1132,7 @@ playlist_screen_copy_sort_range(PlaylistScreen *screen, NcmSongArray *songs,
 
 static bool
 playlist_song_matches(PlaylistScreen *screen, NcmSong *song, NcmRegex *regex) {
-    StrBuilder buffer;
+    String buffer;
     bool result;
 
     (void)screen;

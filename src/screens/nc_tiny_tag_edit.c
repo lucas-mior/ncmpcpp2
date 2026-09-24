@@ -68,7 +68,7 @@ tiny_editor_buffer_mutable_tag(NcBuffer *buffer, MutableSong *song,
                                enum TagType type,
                                char *tag_separator, int32 tag_separator_len,
                                bool show_duplicate_tags) {
-    StrBuilder value;
+    String value;
     char *name;
     int32 name_len;
 
@@ -111,8 +111,8 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
     enum TinyTagEditPromptResult prompt_result;
     StrView initial;
     StrView current_name;
-    StrBuilder input = {0};
-    StrBuilder tag_value;
+    String input = {0};
+    String tag_value;
     NcMenu *menu;
     char error_buffer[256];
     int32 error_len;
@@ -174,7 +174,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
     if (row == TINY_TAG_EDIT_FILE_NAME_EDIT_ROW) {
         StrView name;
         NcBuffer row_buffer = {0};
-        StrBuilder new_name = {0};
+        String new_name = {0};
         char *label;
         int32 label_len;
         int32 dot;
@@ -554,7 +554,7 @@ enum TinyTagEditOpenResult
 tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
                                char *music_dir, int32 music_dir_len,
                                char *tag_separator, int32 tag_separator_len,
-                               bool show_duplicate_tags, StrBuilder *path) {
+                               bool show_duplicate_tags, String *path) {
     MutableSong edited = {0};
     TaglibAudioProperties properties = {0};
     TaglibFile file;

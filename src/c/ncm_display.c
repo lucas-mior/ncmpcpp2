@@ -62,7 +62,7 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
     remained_width = list_width;
     last = &columns[column_len - 1];
     for (int32 i = 0; i < column_len; i += 1) {
-        StrBuilder value = {0};
+        String value = {0};
         Column *column;
         int32 cut_len;
         int32 padding;
@@ -85,7 +85,7 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
             enum SongGetter getter = ncm_song_getter_from_char(column->type[j]);
 
             if (getter != SONG_GETTER_COUNT) {
-                StrBuilder tag_value =
+                String tag_value =
                     ncm_song_tags_buffer(song, getter,
                                          Config.tags_separator,
                                          Config.tags_separator_len,
@@ -135,7 +135,7 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
 }
 
 static void
-ncm_display_append_spaces(StrBuilder *buffer, int32 count) {
+ncm_display_append_spaces(String *buffer, int32 count) {
     for (int32 i = 0; i < count; i += 1) {
         sb_append_byte(buffer, ' ');
     }
@@ -143,9 +143,9 @@ ncm_display_append_spaces(StrBuilder *buffer, int32 count) {
 }
 
 void
-ncm_display_column_title(StrBuilder *buffer, struct Column *columns,
+ncm_display_column_title(String *buffer, struct Column *columns,
                          int32 column_len, int32 list_width) {
-    StrBuilder name = {0};
+    String name = {0};
     Column *last;
     int32 remained_width;
 

@@ -464,7 +464,7 @@ bindings_config_clear(BindingsConfiguration *bindings) {
 NcKey
 ncm_read_key(NcWindow *window) {
     NcKey result = NC_KEY_NONE;
-    StrBuilder tmp = {0};
+    String tmp = {0};
     bool alt_pressed = false;
 
     while (true) {

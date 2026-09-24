@@ -88,10 +88,10 @@ ncm_string_contains_char(char *string, int32 string_len, char needle) {
     return ncm_string_find_char(string, string_len, needle) >= 0;
 }
 
-StrBuilder
+String
 ncm_string_shared_directory(char *left, int32 left_len,
                             char *right, int32 right_len) {
-    StrBuilder result = {0};
+    String result = {0};
     int32 min_len;
     int32 common;
     int32 slash;
@@ -127,10 +127,10 @@ ncm_string_shared_directory(char *left, int32 left_len,
     return result;
 }
 
-StrBuilder
+String
 ncm_string_get_enclosed(char *string, int32 string_len, char open, char close,
                         int32 start, int32 *pos) {
-    StrBuilder result = {0};
+    String result = {0};
     int32 i;
 
     if (pos) {
@@ -218,7 +218,7 @@ ncm_string_remove_invalid_filename_chars(char *filename, int32 *filename_len,
 }
 
 void
-ncm_string_append_shell_escaped_single_quotes(StrBuilder *buffer, char *string,
+ncm_string_append_shell_escaped_single_quotes(String *buffer, char *string,
                                               int32 string_len) {
     for (int32 i = 0; i < string_len; i += 1) {
         if (string[i] == '\'') {

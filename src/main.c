@@ -129,7 +129,7 @@ main(int32 argc, char **argv) {
     atexit(app_at_exit);
 #endif
     {
-        StrBuilder path = {0};
+        String path = {0};
 
         SB_APPEND(&path,
                   Config.ncmpcpp_directory, Config.ncmpcpp_directory_len);

@@ -495,7 +495,7 @@ void nc_scrollpad_center_on_buffer_position(NcScrollpad *, NcWindow *,
                                             NcBuffer *, int32);
 void nc_scrollpad_reset(NcScrollpad *);
 
-void nc_cyclic_text_write(StrBuilder *, char *string, int32 string_len,
+void nc_cyclic_text_write(String *, char *string, int32 string_len,
                           int32 *, int32 width, char *separator,
                           int32 separator_len, bool);
 void nc_cyclic_buffer_write(NcBuffer *, NcWindow *, int32 *, int32 width,
@@ -504,8 +504,8 @@ void nc_cyclic_buffer_write(NcBuffer *, NcWindow *, int32 *, int32 width,
 #include "c/ncm_c.h"
 
 typedef struct StrBuilderPair {
-    StrBuilder first;
-    StrBuilder second;
+    String first;
+    String second;
 } StrBuilderPair;
 
 typedef struct NcSearchRow {
@@ -648,7 +648,7 @@ NC_TYPED_MENU_DECLARE_CURRENT(NcMediaLibrarySongMenu,
 
 NC_TYPED_MENU_DECLARE_COMMON(NcEditorStringMenu, nc_editor_string_menu);
 NC_TYPED_MENU_DECLARE_ADD_WITH_FLAGS(NcEditorStringMenu,
-                                     nc_editor_string_menu, StrBuilder);
+                                     nc_editor_string_menu, String);
 NC_TYPED_MENU_DECLARE_ADD_SEPARATOR(NcEditorStringMenu, nc_editor_string_menu);
 
 NC_TYPED_MENU_DECLARE_COMMON(NcEditorPairMenu, nc_editor_pair_menu);

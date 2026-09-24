@@ -213,7 +213,7 @@ playlist_edit_tag_menu_capability(NcScreen *base) {
 
 static int32
 playlist_edit_tag_at_capability(NcScreen *base, int32 pos,
-                                enum SongGetter getter, StrBuilder *tag) {
+                                enum SongGetter getter, String *tag) {
     PlaylistEditScreen *screen = (PlaylistEditScreen *)base;
 
     if (screen->active_column != PLAYLIST_EDIT_COLUMN_CONTENT) {
@@ -432,7 +432,7 @@ playlist_edit_title_callback(NcScreen *screen) {
 static void
 playlist_edit_report_error(char *context, int32 context_len,
                            NcmError *ncm_error) {
-    StrBuilder message = {0};
+    String message = {0};
 
     ASSERT(ncm_error != NULL);
 
@@ -587,7 +587,7 @@ playlist_edit_mouse_callback(NcScreen *screen, MEVENT event) {
                         playlist_edit_report_error(context, strlen32(context),
                                                    &ncm_error);
                     } else if (loaded) {
-                        StrBuilder message = {0};
+                        String message = {0};
 
                         SB_APPEND(&message, "Playlist \"");
                         SB_APPEND(&message, playlist->path, playlist->path_len);
@@ -848,7 +848,7 @@ playlist_edit_screen_init(PlaylistEditScreen *screen,
     screen->content_search_constraint = NULL;
     screen->displayed_playlist_path = NULL;
     screen->observed_playlist_path = NULL;
-    screen->content_title = (StrBuilder){0};
+    screen->content_title = (String){0};
     screen->playlist_filter_constraint_len = 0;
     screen->content_filter_constraint_len = 0;
     screen->playlist_search_constraint_len = 0;
@@ -1148,7 +1148,7 @@ playlist_edit_screen_next_column(PlaylistEditScreen *screen) {
 
 static bool
 playlist_edit_store_current_playlist_path(PlaylistEditScreen *screen,
-                                            StrBuilder *buffer) {
+                                            String *buffer) {
     char *path;
     int32 path_len;
 
@@ -1162,7 +1162,7 @@ playlist_edit_store_current_playlist_path(PlaylistEditScreen *screen,
 
 static void
 playlist_edit_restore_playlist_path(PlaylistEditScreen *screen,
-                                      StrBuilder *buffer) {
+                                      String *buffer) {
     NcMenu *menu;
 
     if (buffer->len <= 0) {
@@ -1184,7 +1184,7 @@ playlist_edit_restore_playlist_path(PlaylistEditScreen *screen,
 int32
 playlist_edit_screen_load_playlists(PlaylistEditScreen *screen,
                                       NcmPlaylistArray *playlists) {
-    StrBuilder preserved = {0};
+    String preserved = {0};
     NcMenu *menu;
     bool had_preserved;
 
@@ -1364,7 +1364,7 @@ playlist_edit_screen_reload_content_from_mpd(PlaylistEditScreen *screen,
 
 static void
 playlist_edit_clear_playlist_filter(PlaylistEditScreen *screen) {
-    StrBuilder path = {0};
+    String path = {0};
     bool has_path = playlist_edit_store_current_playlist_path(screen, &path);
 
     screen->playlist_filter_enabled = false;

@@ -25,7 +25,7 @@
     } while (0)
 
 static void
-ncm_mpd_client_set_buffer(StrBuilder *buffer, char *string, int32 string_len) {
+ncm_mpd_client_set_buffer(String *buffer, char *string, int32 string_len) {
     sb_clear(buffer);
     SB_APPEND(buffer, string, string_len);
     return;
@@ -187,8 +187,8 @@ ncm_mpd_client_init(MpdClient *client) {
     }
 
     client->connection = (MpdConnection){0};
-    client->host = (StrBuilder){0};
-    client->password = (StrBuilder){0};
+    client->host = (String){0};
+    client->password = (String){0};
 
     ncm_mpd_client_set_buffer(&client->host, STRLIT("localhost"));
     ncm_mpd_client_set_buffer(&client->password, NULL, 0);

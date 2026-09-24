@@ -40,8 +40,8 @@ ncm_playlist_sort_indices(NcmPlaylistSortContext *context,
 
         for (int32 i = 0; i < context->getters_len; i += 1) {
             enum SongGetter getter = context->getters[i];
-            StrBuilder left_buffer;
-            StrBuilder right_buffer;
+            String left_buffer;
+            String right_buffer;
             char *left_data;
             char *right_data;
 

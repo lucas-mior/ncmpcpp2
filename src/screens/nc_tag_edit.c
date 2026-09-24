@@ -86,7 +86,7 @@ tag_edit_draw_tag(NcMenu *menu, NcWindow *window, void *item,
     tag_types = nc_editor_string_menu_base(&screen->tag_types);
     choice = nc_menu_highlight(tag_types);
     if (choice < (int32)TAG_COUNT) {
-        StrBuilder tag;
+        String tag;
         enum TagType tag_type = ncm_song_info_tags[choice].tag;
 
         tag = mutable_song_tags_buffer(song, tag_type,
@@ -281,7 +281,7 @@ tag_edit_tag_menu_capability(NcScreen *base) {
 
 static int32
 tag_edit_tag_at_capability(NcScreen *base, int32 pos,
-                           enum SongGetter getter, StrBuilder *tag) {
+                           enum SongGetter getter, String *tag) {
     TagEditScreen *screen = tag_edit_from_screen(base);
     NcMenu *menu;
 
@@ -439,7 +439,7 @@ tag_edit_refresh_menu(NcWindow *window, NcMenu *menu) {
 static void
 tag_edit_refresh_active_helper(TagEditScreen *screen) {
     NcBuffer display = {0};
-    StrBuilder *source;
+    String *source;
 
     if (screen->active_focus == TAG_EDIT_FOCUS_PARSER_PREVIEW) {
         source = &screen->parser_preview;
@@ -570,7 +570,7 @@ static enum TagEditTagTypeAction
 tag_edit_current_tag_type_action(TagEditScreen *screen,
                                  enum TagType *tag_type) {
     NcMenu *menu;
-    StrBuilder *row;
+    String *row;
     enum TagEditTagTypeAction action;
     int32 choice;
 
@@ -747,7 +747,7 @@ tag_edit_ascii_lower(char c) {
 }
 
 static void
-tag_edit_append_lowercase(StrBuilder *buffer, char *data, int32 len) {
+tag_edit_append_lowercase(String *buffer, char *data, int32 len) {
     for (int32 i = 0; i < len; i += 1) {
         sb_append_byte(buffer, tag_edit_ascii_lower(data[i]));
     }
@@ -755,7 +755,7 @@ tag_edit_append_lowercase(StrBuilder *buffer, char *data, int32 len) {
 }
 
 static void
-tag_edit_append_parser_legend_entry(StrBuilder *legend, char tag_char,
+tag_edit_append_parser_legend_entry(String *legend, char tag_char,
                                     char *name, int32 name_len) {
     sb_append_byte(legend, '%');
     sb_append_byte(legend, tag_char);
@@ -766,7 +766,7 @@ tag_edit_append_parser_legend_entry(StrBuilder *legend, char tag_char,
 }
 
 static void
-tag_edit_append_parser_legend_field(StrBuilder *legend,
+tag_edit_append_parser_legend_field(String *legend,
                                     enum TagType tag_type) {
     char *name;
     int32 name_len;
@@ -837,7 +837,7 @@ tag_edit_find_recent_pattern(TagEditScreen *screen,
 }
 
 static void
-tag_edit_history_path(StrBuilder *path) {
+tag_edit_history_path(String *path) {
     ASSERT(path != NULL);
     if (Config.ncmpcpp_directory && (Config.ncmpcpp_directory_len > 0)) {
         ncm_fs_join(path,
@@ -852,8 +852,8 @@ tag_edit_history_path(StrBuilder *path) {
 
 static int32
 tag_edit_save_recent_patterns(TagEditScreen *screen) {
-    StrBuilder content = {0};
-    StrBuilder path = {0};
+    String content = {0};
+    String path = {0};
     int32 limit;
     int32 status;
 
@@ -889,8 +889,8 @@ static bool
 tag_edit_prompt_tag_value(TagEditScreen *screen,
                           enum TagType tag_type, bool all_targets) {
     MutableSong *song;
-    StrBuilder initial;
-    StrBuilder input = {0};
+    String initial;
+    String input = {0};
     char *label;
     int32 label_len;
     enum TagEditPromptResult prompt_result;
@@ -980,8 +980,8 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
                 sb_append_byte(&screen->parser_preview, '\n');
             }
         } else if (screen->parser_mode == TAG_EDIT_PARSER_MODE_RENAME_FILES) {
-            StrBuilder stem = {0};
-            StrBuilder new_name = {0};
+            String stem = {0};
+            String new_name = {0};
             int32 extension_start;
 
             status = tag_edit_generate_filename(song,
@@ -1114,7 +1114,7 @@ tag_edit_run_current(NcScreen *screen) {
             MutableSong *song;
             StrView current_name;
             StrView initial;
-            StrBuilder input = {0};
+            String input = {0};
             enum TagEditPromptResult prompt_result;
             int32 dot = -1;
 
@@ -1151,7 +1151,7 @@ tag_edit_run_current(NcScreen *screen) {
                 result = true;
             } else {
                 StrView stem_name;
-                StrBuilder new_name = {0};
+                String new_name = {0};
                 int32 stem_dot = -1;
 
                 if (!mutable_song_has_new_name_view(song, &stem_name)) {
@@ -1228,7 +1228,7 @@ tag_edit_run_current(NcScreen *screen) {
             bool result = false;
 
             if (editor->hooks.prompt != NULL) {
-                StrBuilder input = {0};
+                String input = {0};
                 StrView initial;
                 enum TagEditPromptResult prompt_result;
 
@@ -1316,7 +1316,7 @@ tag_edit_run_current(NcScreen *screen) {
             return 0;
         }
         if (choice >= (int32)TAG_EDIT_PARSER_ACTION_RECENT_START) {
-            StrBuilder *row;
+            String *row;
 
             if ((row = nc_menu_active_item_at(menu, choice))) {
                 tag_edit_set_pattern(editor, row->data, row->len);
@@ -1409,7 +1409,7 @@ tag_edit_observe_current_directory(TagEditScreen *screen) {
 }
 
 static void
-tag_edit_restore_current_directory(TagEditScreen *screen, StrBuilder *path) {
+tag_edit_restore_current_directory(TagEditScreen *screen, String *path) {
     NcMenu *menu;
 
     ASSERT(screen != NULL);
@@ -1438,7 +1438,7 @@ tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
                                        MpdClient *client,
                                        NcmError *ncm_error) {
     NcmDirectoryArray directories = {0};
-    StrBuilder preserved = {0};
+    String preserved = {0};
     char *dir;
     int32 status;
 
@@ -1564,7 +1564,7 @@ static int32
 tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
                                  MpdClient *client, NcmError *ncm_error) {
     NcmSongArray songs = {0};
-    StrBuilder preserved_uri = {0};
+    String preserved_uri = {0};
     char *path;
     int32 path_len;
     int32 status;
@@ -1655,7 +1655,7 @@ tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
 
 static void
 tag_edit_report_error(char *context, int32 context_len, NcmError *ncm_error) {
-    StrBuilder message = {0};
+    String message = {0};
 
     SB_APPEND(&message, context, context_len);
     if (ncm_error && (ncm_error->message[0] != 0)) {
@@ -2067,7 +2067,7 @@ typedef struct TrackNumberer {
 
 struct SaveContext {
     TagEditScreen *screen;
-    StrBuilder shared_directory;
+    String shared_directory;
     char *music_dir;
     int32 target_count;
     int32 modified_count;
@@ -2078,7 +2078,7 @@ struct SaveContext {
 static void
 tag_edit_append_string_row(NcEditorStringMenu *menu,
                              char *data, int32 data_len, uint32 flags) {
-    StrBuilder string = {0};
+    String string = {0};
 
     sb_set(&string, data, data_len);
     nc_editor_string_menu_add_with_flags(menu, &string, flags);
@@ -2155,7 +2155,7 @@ tag_edit_directory_display_callbacks(TagEditScreen *screen) {
 static void
 tag_edit_draw_string(NcMenu *menu, NcWindow *window, void *item,
                        int32 pos, void *user) {
-    StrBuilder *string = item;
+    String *string = item;
 
     (void)menu;
     (void)pos;
@@ -2181,7 +2181,7 @@ tag_edit_tag_type_display_callbacks(TagEditScreen *screen) {
 static bool
 tag_edit_tag_matches_regex(TagEditScreen *screen,
                              MutableSong *song, NcmRegex *regex) {
-    StrBuilder buffer = {0};
+    String buffer = {0};
     NcMenu *tag_types;
     enum TagType tag_type;
     int32 choice;
@@ -2422,8 +2422,8 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
     screen->directory_search_constraint = NULL;
     screen->tag_search_constraint = NULL;
     screen->pattern = NULL;
-    screen->parser_legend = (StrBuilder){0};
-    screen->parser_preview = (StrBuilder){0};
+    screen->parser_legend = (String){0};
+    screen->parser_preview = (String){0};
 
     screen->recent_patterns = (StrFlexList){0};
 
@@ -2828,7 +2828,7 @@ tag_edit_screen_enter_directory(TagEditScreen *screen) {
 
 int32
 tag_edit_screen_go_to_parent(TagEditScreen *screen) {
-    StrBuilder parent = {0};
+    String parent = {0};
     int32 parent_len;
 
     if (screen == NULL) {
@@ -2866,7 +2866,7 @@ int32
 tag_edit_screen_locate_song(TagEditScreen *screen, NcmSong *song) {
     StrView directory;
     StrView uri;
-    StrBuilder parent = {0};
+    String parent = {0};
     NcmError ncm_error;
     int32 parent_len;
     int32 status;
@@ -3001,10 +3001,10 @@ tag_edit_screen_rename_current_directory(TagEditScreen *screen,
                                          int32 music_dir_len) {
     StrBuilderPair *pair;
     StrView initial;
-    StrBuilder name = {0};
-    StrBuilder old_path = {0};
-    StrBuilder new_path = {0};
-    StrBuilder new_relative = {0};
+    String name = {0};
+    String old_path = {0};
+    String new_path = {0};
+    String new_relative = {0};
     NcmError ncm_error;
     enum TagEditPromptResult result;
     int32 status;
@@ -3047,7 +3047,7 @@ tag_edit_screen_rename_current_directory(TagEditScreen *screen,
     status = ncm_fs_rename(old_path.data, old_path.len,
                            new_path.data, new_path.len, &ncm_error);
     if (status < 0) {
-        StrBuilder message = {0};
+        String message = {0};
         int32 error_len;
 
         SB_APPEND(&message, "Couldn't rename \"");
@@ -3063,7 +3063,7 @@ tag_edit_screen_rename_current_directory(TagEditScreen *screen,
         sb_free(&message);
     }
     if (status == 0) {
-        StrBuilder message = {0};
+        String message = {0};
 
         SB_APPEND(&message, "Directory renamed to \"");
         SB_APPEND(&message, name.data, name.len);
@@ -3408,7 +3408,7 @@ tag_edit_capitalize_song_callback(MutableSong *song, void *user) {
 
         for (int32 i = 0; ; i += 1) {
             StrView view;
-            StrBuilder converted = {0};
+            String converted = {0};
             int32 converted_len;
 
             if (!mutable_song_has_tag_view(song, tag_type, i, &view)) {
@@ -3447,7 +3447,7 @@ tag_edit_lower_song_callback(MutableSong *song, void *user) {
 
         for (int32 i = 0; ; i += 1) {
             StrView view;
-            StrBuilder buffer = {0};
+            String buffer = {0};
 
             if (!mutable_song_has_tag_view(song, tag_type, i, &view)) {
                 break;
@@ -3508,7 +3508,7 @@ tag_edit_save_song_callback(MutableSong *song, void *user) {
         } else if (!STREQUAL(context->shared_directory.data,
                              context->shared_directory.len,
                              directory, directory_len)) {
-            StrBuilder shared = {0};
+            String shared = {0};
 
             shared = ncm_string_shared_directory(context->shared_directory.data,
                                                  context->shared_directory.len,
@@ -3523,7 +3523,7 @@ tag_edit_save_song_callback(MutableSong *song, void *user) {
 
     context->modified_count += 1;
     {
-        StrBuilder message = {0};
+        String message = {0};
 
         SB_APPEND(&message, "Writing tags in \"");
         if (song->name) {
@@ -3536,7 +3536,7 @@ tag_edit_save_song_callback(MutableSong *song, void *user) {
 
     status = mutable_song_write(song, context->music_dir);
     if (status < 0) {
-        StrBuilder message = {0};
+        String message = {0};
         char *system_error;
 
         error_code = -status;
@@ -3801,7 +3801,7 @@ tag_edit_append_parser_separator(TagEditScreen *screen) {
 static void
 tag_edit_append_parser_row(NcEditorStringMenu *menu,
                            char *data, int32 data_len, uint32 flags) {
-    StrBuilder string = {0};
+    String string = {0};
 
     sb_set(&string, data, data_len);
     nc_editor_string_menu_add_with_flags(menu, &string, flags);
@@ -3862,7 +3862,7 @@ tag_edit_screen_prepare_parser_menus(TagEditScreen *screen,
     }
 
     {
-        StrBuilder row = {0};
+        String row = {0};
 
         SB_APPEND(&row, "Pattern: ");
         SB_APPEND(&row, screen->pattern, screen->pattern_len);
@@ -3920,7 +3920,7 @@ tag_edit_screen_show_parser_actions(TagEditScreen *screen,
         return;
     }
     if (!screen->recent_patterns_loaded) {
-        StrBuilder path = {0};
+        String path = {0};
         char *content = NULL;
         int32 content_len = 0;
         int32 status = 0;
@@ -4021,10 +4021,10 @@ tag_edit_next_mask_tag(char *mask, int32 mask_len, int32 start,
 
 int32
 tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
-                        bool preview, StrBuilder *preview_buffer) {
-    StrBuilder file = {0};
-    StrBuilder track_number = {0};
-    StrBuilder track_total = {0};
+                        bool preview, String *preview_buffer) {
+    String file = {0};
+    String track_number = {0};
+    String track_total = {0};
     int32 mask_pos;
     int32 file_pos;
     int32 percent_pos;
@@ -4136,7 +4136,7 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
     }
 
     if (!preview && has_track_number) {
-        StrBuilder track = {0};
+        String track = {0};
 
         SB_APPEND(&track, track_number.data, track_number.len);
         if (has_track_total && (track_total.len > 0)) {
@@ -4147,8 +4147,8 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
                               track.data, track.len, NULL, 0);
         sb_free(&track);
     } else if (!preview && has_track_total && (track_total.len > 0)) {
-        StrBuilder current = {0};
-        StrBuilder track = {0};
+        String current = {0};
+        String track = {0};
         int32 slash;
         int32 number_len;
 
@@ -4179,10 +4179,10 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
 int32
 tag_edit_generate_filename(MutableSong *song,
                            char *pattern, int32 pattern_len,
-                           StrBuilder *filename) {
+                           String *filename) {
     NcmFormatAst ast = {0};
     NcmSong format_song = {0};
-    StrBuilder rendered = {0};
+    String rendered = {0};
     NcmError ncm_error;
     int32 status;
 
@@ -4199,7 +4199,7 @@ tag_edit_generate_filename(MutableSong *song,
         return status;
     }
     {
-        StrBuilder uri = {0};
+        String uri = {0};
 
         if (song->uri && (song->uri_len >= 0)) {
             SB_APPEND(&uri, song->uri, song->uri_len);
@@ -4261,8 +4261,8 @@ tag_edit_generate_filename(MutableSong *song,
 
 int32
 tag_edit_song_display_value(MutableSong *song, enum TagType tag_type,
-                              StrBuilder *buffer) {
-    StrBuilder tag = {0};
+                              String *buffer) {
+    String tag = {0};
 
     if (tag_type == TAG_COUNT) {
         SB_APPEND(buffer, song->name, song->name_len);

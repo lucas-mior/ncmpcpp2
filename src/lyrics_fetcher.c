@@ -368,7 +368,7 @@ ncm_lyrics_fetcher_registry_append_name(LyricsFetcherRegistry *registry,
 }
 
 static bool
-lyrics_url_is_collected(StrBuilderArray *urls, char *url, int32 url_len) {
+lyrics_url_is_collected(StringArray *urls, char *url, int32 url_len) {
     for (int32 i = 0; i < urls->len; i += 1) {
         if (STREQUAL(urls->items[i].data, urls->items[i].len, url, url_len)) {
             return true;
@@ -401,7 +401,7 @@ lyrics_hex_digit(uint8 value) {
 }
 
 static void
-lyrics_append_percent_byte(StrBuilder *buffer, uint8 value) {
+lyrics_append_percent_byte(String *buffer, uint8 value) {
     sb_append_byte(buffer, '%');
     sb_append_byte(buffer, lyrics_hex_digit(value >> 4));
     sb_append_byte(buffer, lyrics_hex_digit(value & 0x0f));
@@ -409,7 +409,7 @@ lyrics_append_percent_byte(StrBuilder *buffer, uint8 value) {
 }
 
 static void
-lyrics_append_query(StrBuilder *buffer, char *string, int32 string_len) {
+lyrics_append_query(String *buffer, char *string, int32 string_len) {
     for (int32 i = 0; i < string_len; i += 1) {
         uint8 byte = (uint8)string[i];
 
@@ -426,7 +426,7 @@ lyrics_append_query(StrBuilder *buffer, char *string, int32 string_len) {
 }
 
 static void
-lyrics_fetcher_build_url(LyricsFetcherDef *fetcher, StrBuilder *url,
+lyrics_fetcher_build_url(LyricsFetcherDef *fetcher, String *url,
                          char *artist, int32 artist_len,
                          char *title, int32 title_len) {
     char *domain;
@@ -453,7 +453,7 @@ lyrics_fetcher_build_url(LyricsFetcherDef *fetcher, StrBuilder *url,
 }
 
 int32
-ncm_lyrics_fetcher_build_url(LyricsFetcherDef *fetcher, StrBuilder *url,
+ncm_lyrics_fetcher_build_url(LyricsFetcherDef *fetcher, String *url,
                              char *artist, int32 artist_len,
                              char *title, int32 title_len) {
     if ((fetcher == NULL) || (url == NULL) || (artist == NULL)
@@ -496,7 +496,7 @@ lyrics_trim_view(char **data, int32 *len) {
 }
 
 static void
-lyrics_append_clean_lines(StrBuilder *out, char *data, int32 data_len) {
+lyrics_append_clean_lines(String *out, char *data, int32 data_len) {
     int32 line_start;
     bool previous_empty;
 
@@ -529,7 +529,7 @@ lyrics_append_clean_lines(StrBuilder *out, char *data, int32 data_len) {
     {
         char *text = out->data;
         int32 text_len = out->len;
-        StrBuilder tmp = {0};
+        String tmp = {0};
 
         lyrics_trim_view(&text, &text_len);
         SB_APPEND(&tmp, text, text_len);
@@ -541,9 +541,9 @@ lyrics_append_clean_lines(StrBuilder *out, char *data, int32 data_len) {
 }
 
 void
-ncm_lyrics_cleanup_html(StrBuilder *out, char *data, int32 data_len) {
-    StrBuilder unescaped = {0};
-    StrBuilder stripped = {0};
+ncm_lyrics_cleanup_html(String *out, char *data, int32 data_len) {
+    String unescaped = {0};
+    String stripped = {0};
 
     sb_clear(out);
     unescaped = ncm_html_unescape_utf8(data, data_len);
@@ -583,7 +583,7 @@ lyrics_slug_rune_should_be_skipped(uint32 rune) {
 }
 
 static int32
-lyrics_append_slug_profile(StrBuilder *buffer, LyricsSlugProfile profile,
+lyrics_append_slug_profile(String *buffer, LyricsSlugProfile profile,
                            char *string, int32 string_len) {
     bool compact;
     bool folded_profile;
@@ -984,7 +984,7 @@ lyrics_append_slug_profile(StrBuilder *buffer, LyricsSlugProfile profile,
 }
 
 static int32
-lyrics_append_slug(StrBuilder *buffer, enum LyricsFetcherType type,
+lyrics_append_slug(String *buffer, enum LyricsFetcherType type,
                    char *string, int32 string_len) {
     return lyrics_append_slug_profile(buffer, lyrics_slug_profile(type),
                                       string, string_len);
@@ -1037,7 +1037,7 @@ lyrics_hex_value(char ch) {
 }
 
 static void
-lyrics_percent_decode(StrBuilder *out, char *data, int32 data_len) {
+lyrics_percent_decode(String *out, char *data, int32 data_len) {
     sb_clear(out);
     for (int32 i = 0; i < data_len; i += 1) {
         if ((data[i] == '%') && (i + 2 < data_len)) {
@@ -1074,7 +1074,7 @@ lyrics_find_tag_end(char *data, int32 data_len, int32 start) {
 }
 
 static int32
-lyrics_extract_divs(StrBuilder *out, char *data, int32 data_len,
+lyrics_extract_divs(String *out, char *data, int32 data_len,
                     char *marker, int32 marker_len, bool append_all) {
     int32 pos;
     int32 status;
@@ -1307,7 +1307,7 @@ lyrics_trim_url_segment_suffix(char **segment, int32 *segment_len,
 
 static int32
 lyrics_url_best_slug_score(LyricsFetcherDef *fetcher,
-                           char *url, int32 url_len, StrBuilder *wanted) {
+                           char *url, int32 url_len, String *wanted) {
     int32 path_start;
     int32 path_end;
     int32 segment_start;
@@ -1322,8 +1322,8 @@ lyrics_url_best_slug_score(LyricsFetcherDef *fetcher,
     segment_start = -1;
     best = 0;
     for (int32 i = path_start; i <= path_end; i += 1) {
-        StrBuilder decoded = {0};
-        StrBuilder slug = {0};
+        String decoded = {0};
+        String slug = {0};
         char *segment;
         int32 segment_len;
         int32 score;
@@ -1439,7 +1439,7 @@ lyrics_parse_hex4(char *data, int32 data_len, int32 start, uint32 *value) {
 }
 
 static int32
-lyrics_decode_quoted(StrBuilder *out, char *data, int32 data_len,
+lyrics_decode_quoted(String *out, char *data, int32 data_len,
                      int32 start, char quote, int32 *end) {
     int32 i;
 
@@ -1531,7 +1531,7 @@ static int32
 lyrics_json_value_start(char *data, int32 data_len,
                         char *key, int32 key_len, int32 start,
                         int32 *value_start) {
-    StrBuilder pattern = {0};
+    String pattern = {0};
     char *match;
     int32 key_pos;
     int32 pos;
@@ -1585,7 +1585,7 @@ lyrics_update_first_match(char *data, int32 data_len, int32 start,
 }
 
 static int32
-lyrics_curl_perform(StrBuilder *data, char *url, int32 url_len,
+lyrics_curl_perform(String *data, char *url, int32 url_len,
                     char *referer, int32 referer_len,
                     bool follow_redirect, int32 timeout_seconds) {
     if (lyrics_test_perform) {
@@ -1609,11 +1609,11 @@ lyrics_status_error(int32 status, int32 *message_len) {
 
 static int32
 lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
-                  StrBuilder *url, char *referer, int32 referer_len,
+                  String *url, char *referer, int32 referer_len,
                   bool *retry) {
-    StrBuilder data = {0};
-    StrBuilder lyrics = {0};
-    StrBuilder cleaned = {0};
+    String data = {0};
+    String lyrics = {0};
+    String cleaned = {0};
     char *message;
     int32 message_len;
     int32 status;
@@ -1637,7 +1637,7 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
     }
 
     {
-        StrBuilder *out = &lyrics;
+        String *out = &lyrics;
         char *content_data = data.data;
         bool *plain_text_out = &plain_text;
         int32 content_len = data.len;
@@ -1756,8 +1756,8 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
             break;
         }
         case LYRICS_FETCHER_GENIUS: {
-            StrBuilder json = {0};
-            StrBuilder html = {0};
+            String json = {0};
+            String html = {0};
             char *match;
             int32 marker;
             int32 json_end;
@@ -2127,7 +2127,7 @@ lyrics_direct_legacy_slug_profile(LyricsSlugProfile profile) {
 }
 
 static int32
-lyrics_append_direct_url(LyricsFetcherDef *fetcher, StrBuilder *candidate,
+lyrics_append_direct_url(LyricsFetcherDef *fetcher, String *candidate,
                          LyricsDirectSlugPair pair,
                          char *artist, int32 artist_len,
                          char *title, int32 title_len) {
@@ -2136,8 +2136,8 @@ lyrics_append_direct_url(LyricsFetcherDef *fetcher, StrBuilder *candidate,
     sb_clear(candidate);
     switch (fetcher->type) {
     case LYRICS_FETCHER_AMALGAMA: {
-        StrBuilder artist_slug = {0};
-        StrBuilder title_slug = {0};
+        String artist_slug = {0};
+        String title_slug = {0};
 
         status = lyrics_append_slug_profile(&artist_slug, pair.artist,
                                             artist, artist_len);
@@ -2261,16 +2261,16 @@ lyrics_append_direct_url(LyricsFetcherDef *fetcher, StrBuilder *candidate,
 }
 
 static int32
-lyrics_collect_direct_urls(LyricsFetcherDef *fetcher, StrBuilderArray *urls,
+lyrics_collect_direct_urls(LyricsFetcherDef *fetcher, StringArray *urls,
                            char *artist, int32 artist_len,
                            char *title, int32 title_len) {
     LyricsSlugProfile profile;
     LyricsSlugProfile legacy_profile;
     LyricsDirectSlugPair pairs[4] = {0};
-    StrBuilder candidate = {0};
+    String candidate = {0};
     int32 status;
 
-    str_builder_array_clear(urls);
+    string_array_clear(urls);
     if (!lyrics_provider_has_flag(fetcher->type, LYRICS_PROVIDER_DIRECT_URLS)) {
         return 0;
     }
@@ -2286,7 +2286,7 @@ lyrics_collect_direct_urls(LyricsFetcherDef *fetcher, StrBuilderArray *urls,
 
     status = 0;
     for (int32 i = 0; i < LENGTH(pairs); i += 1) {
-        StrBuilder *item;
+        String *item;
 
         status = lyrics_append_direct_url(fetcher, &candidate, pairs[i],
                                           artist, artist_len,
@@ -2297,7 +2297,7 @@ lyrics_collect_direct_urls(LyricsFetcherDef *fetcher, StrBuilderArray *urls,
         if (lyrics_url_is_collected(urls, candidate.data, candidate.len)) {
             continue;
         }
-        item = str_builder_array_append(urls);
+        item = string_array_append(urls);
         SB_APPEND(item, candidate.data, candidate.len);
     }
 
@@ -2356,7 +2356,7 @@ lyrics_url_query_value(char *url, int32 url_len, int32 query,
 }
 
 static bool
-lyrics_unwrap_search_url(StrBuilder *candidate, char *url, int32 url_len) {
+lyrics_unwrap_search_url(String *candidate, char *url, int32 url_len) {
     char *match;
     bool is_wrapper;
 
@@ -2615,8 +2615,8 @@ lyrics_search_candidate_score(LyricsFetcherDef *fetcher,
                               char *url, int32 url_len,
                               char *artist, int32 artist_len,
                               char *title, int32 title_len) {
-    StrBuilder wanted_artist = {0};
-    StrBuilder wanted_title = {0};
+    String wanted_artist = {0};
+    String wanted_title = {0};
     int32 artist_score;
     int32 title_score;
     int32 score;
@@ -2659,9 +2659,9 @@ lyrics_search_candidate_score(LyricsFetcherDef *fetcher,
 }
 
 static void
-lyrics_insert_search_candidate(StrBuilderArray *out, int32 *scores,
+lyrics_insert_search_candidate(StringArray *out, int32 *scores,
                                char *url, int32 url_len, int32 score) {
-    StrBuilder *item;
+    String *item;
     int32 insert_pos;
 
     if ((out->len >= LYRICS_SEARCH_MAX_CANDIDATES)
@@ -2674,14 +2674,14 @@ lyrics_insert_search_candidate(StrBuilderArray *out, int32 *scores,
         item = &out->items[insert_pos];
         sb_clear(item);
     } else {
-        item = str_builder_array_append(out);
+        item = string_array_append(out);
         insert_pos = out->len - 1;
     }
 
     SB_APPEND(item, url, url_len);
     scores[insert_pos] = score;
     while ((insert_pos > 0) && (scores[insert_pos] > scores[insert_pos - 1])) {
-        StrBuilder temp_url = {0};
+        String temp_url = {0};
         int32 temp_score;
 
         temp_url = out->items[insert_pos - 1];
@@ -2696,13 +2696,13 @@ lyrics_insert_search_candidate(StrBuilderArray *out, int32 *scores,
 }
 
 static int32
-lyrics_collect_search_urls(LyricsFetcherDef *fetcher, StrBuilderArray *out,
+lyrics_collect_search_urls(LyricsFetcherDef *fetcher, StringArray *out,
                            char *data, int32 data_len,
                            char *artist, int32 artist_len,
                            char *title, int32 title_len) {
-    StrBuilder numeric_unescaped = {0};
-    StrBuilder unescaped = {0};
-    StrBuilder candidate = {0};
+    String numeric_unescaped = {0};
+    String unescaped = {0};
+    String candidate = {0};
     int32 scores[LYRICS_SEARCH_MAX_CANDIDATES] = {0};
     int32 status;
     int32 pos;
@@ -2712,7 +2712,7 @@ lyrics_collect_search_urls(LyricsFetcherDef *fetcher, StrBuilderArray *out,
                                            numeric_unescaped.len);
     sb_free(&numeric_unescaped);
 
-    str_builder_array_clear(out);
+    string_array_clear(out);
     pos = 0;
     while (pos < unescaped.len) {
         char *candidate_url;
@@ -2769,7 +2769,7 @@ cleanup:
 
 static int32
 lyrics_fetch_direct_urls(LyricsFetcherDef *fetcher, LyricsResult *result,
-                         StrBuilderArray *direct_urls, bool *retry) {
+                         StringArray *direct_urls, bool *retry) {
     int32 status;
 
     if (direct_urls->len == 0) {
@@ -2792,9 +2792,9 @@ static int32
 lyrics_fetch_search_urls(LyricsFetcherDef *fetcher, LyricsResult *result,
                          char *artist, int32 artist_len,
                          char *title, int32 title_len) {
-    StrBuilder search_url = {0};
-    StrBuilder data = {0};
-    StrBuilderArray page_urls = {0};
+    String search_url = {0};
+    String data = {0};
+    StringArray page_urls = {0};
     char *message;
     int32 message_len;
     int32 status;
@@ -2829,7 +2829,7 @@ lyrics_fetch_search_urls(LyricsFetcherDef *fetcher, LyricsResult *result,
     }
 
 cleanup:
-    str_builder_array_destroy(&page_urls);
+    string_array_destroy(&page_urls);
     sb_free(&data);
     sb_free(&search_url);
     return status;
@@ -2840,8 +2840,8 @@ lyrics_set_internet_result(LyricsFetcherDef *fetcher,
                            LyricsResult *result,
                            char *artist, int32 artist_len,
                            char *title, int32 title_len) {
-    StrBuilder url = {0};
-    StrBuilder msg = {0};
+    String url = {0};
+    String msg = {0};
 
     lyrics_fetcher_build_url(fetcher, &url,
                              artist, artist_len, title, title_len);
@@ -2857,7 +2857,7 @@ int32
 ncm_lyrics_fetcher_fetch(LyricsFetcherDef *fetcher, LyricsResult *result,
                          char *artist, int32 artist_len,
                          char *title, int32 title_len) {
-    StrBuilderArray direct_urls = {0};
+    StringArray direct_urls = {0};
     int32 status;
     bool retry;
 
@@ -2887,7 +2887,7 @@ ncm_lyrics_fetcher_fetch(LyricsFetcherDef *fetcher, LyricsResult *result,
     } else {
         retry = true;
     }
-    str_builder_array_destroy(&direct_urls);
+    string_array_destroy(&direct_urls);
 
     if (!result->success && retry
         && lyrics_provider_has_flag(fetcher->type,

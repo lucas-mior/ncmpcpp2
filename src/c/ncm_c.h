@@ -144,8 +144,8 @@ int32 ncm_song_numeric_tag_len(char *, int32);
 int32 ncm_song_format_numeric_tag(char *buffer, int32 buffer_cap,
                                   char *tag, int32 tag_len);
 int32 ncm_song_show_time(int32 length, char *, int32 buffer_cap);
-StrBuilder ncm_song_getter_buffer(NcmSong *, enum SongGetter, int32);
-StrBuilder ncm_song_tags_buffer(NcmSong *, enum SongGetter, char *, int32,
+String ncm_song_getter_buffer(NcmSong *, enum SongGetter, int32);
+String ncm_song_tags_buffer(NcmSong *, enum SongGetter, char *, int32,
                                 bool);
 bool ncm_song_is_equal(NcmSong *a, NcmSong *b);
 
@@ -192,8 +192,8 @@ int32 mutable_song_set_tags(MutableSong *, enum TagType,
                             char *separator, int32 separator_len);
 bool mutable_song_has_tag_view(MutableSong *, enum TagType, int32, StrView *);
 void mutable_song_get_tag_buffer(MutableSong *, enum TagType,
-                                 int32, StrBuilder *);
-StrBuilder mutable_song_tags_buffer(MutableSong *, enum TagType,
+                                 int32, String *);
+String mutable_song_tags_buffer(MutableSong *, enum TagType,
                                     char *, int32, bool);
 int32 mutable_song_load_originals_from_song(MutableSong *, NcmSong *);
 
@@ -557,8 +557,8 @@ typedef void NcmMpdNoidleCallback(uint32, void *);
 
 typedef struct MpdClient {
     MpdConnection connection;
-    StrBuilder host;
-    StrBuilder password;
+    String host;
+    String password;
     uint16 port;
     int32 timeout_ms;
     bool command_list_active;
@@ -803,12 +803,12 @@ int32 ncm_fs_mkdir_all(char *, int32, NcmError *);
 int32 ncm_fs_directory_open(NcmFsDirectory *, char *, int32, NcmError *);
 int32 ncm_fs_directory_read(NcmFsDirectory *, NcmFsEntry *, NcmError *);
 void ncm_fs_directory_close(NcmFsDirectory *);
-int32 ncm_fs_join(StrBuilder *, char *left, int32 left_len, char *right,
+int32 ncm_fs_join(String *, char *left, int32 left_len, char *right,
                   int32 right_len);
 
-StrBuilder ncm_html_unescape_utf8(char *, int32);
-StrBuilder ncm_html_unescape_entities(char *, int32);
-StrBuilder ncm_html_strip_tags(char *, int32);
+String ncm_html_unescape_utf8(char *, int32);
+String ncm_html_unescape_entities(char *, int32);
+String ncm_html_strip_tags(char *, int32);
 
 typedef int32 NcmJobRunCallback(void *, NcmError *);
 typedef void NcmJobCompleteCallback(int32, NcmError *, void *);
@@ -861,7 +861,7 @@ typedef struct LrcEntry {
 } LrcEntry;
 
 typedef struct LrcDocument {
-    StrBuilder text;
+    String text;
     LrcEntry *entries;
 
     int32 offset_ms;
@@ -894,7 +894,7 @@ typedef struct NcmOptionLine {
 int32 ncm_option_parser_parse_line(char *, int32, NcmOptionLine *, bool *);
 int32 ncm_option_parser_yes_no(char *, int32, bool *);
 
-int32 ncm_path_expand_home(StrBuilder *, NcmError *);
+int32 ncm_path_expand_home(String *, NcmError *);
 int32 ncm_path_basename_start(char *, int32);
 int32 ncm_path_parent_directory_len(char *, int32);
 int32 ncm_path_extension_start(char *, int32);
@@ -918,7 +918,7 @@ int32 ncm_playlist_sort_range(NcmSongArray *, int32 start_position,
 
 typedef struct SearchPromptState {
     enum SearchDirection direction;
-    StrBuilder last_text;
+    String last_text;
     int32 start_position;
 
     bool has_start_position;
@@ -941,13 +941,13 @@ void ncm_string_view_set(StrView *, char *, int32);
 void ncm_string_lowercase_ascii(char *, int32);
 int32 ncm_string_find_char(char *, int32, char);
 bool ncm_string_contains_char(char *, int32, char);
-StrBuilder ncm_string_shared_directory(char *left, int32 left_len, char *right,
+String ncm_string_shared_directory(char *left, int32 left_len, char *right,
                                        int32 right_len);
-StrBuilder ncm_string_get_enclosed(char *, int32 string_len, char open,
+String ncm_string_get_enclosed(char *, int32 string_len, char open,
                                    char close, int32 start, int32 *);
 void ncm_string_remove_chars(char *string, int32 *, char *chars, int32);
 void ncm_string_remove_invalid_filename_chars(char *, int32 *, bool);
-void ncm_string_append_shell_escaped_single_quotes(StrBuilder *, char *, int32);
+void ncm_string_append_shell_escaped_single_quotes(String *, char *, int32);
 int32 ncm_path_basename_start(char *, int32);
 int32 ncm_string_parent_directory_len(char *, int32);
 
@@ -1031,7 +1031,7 @@ typedef struct NcmFormatExprList {
 struct NcmFormatExpr {
     enum NcmFormatExprType type;
     union {
-        StrBuilder text;
+        String text;
         NcColor color;
         enum NcFormat format;
         NcmFormatSongTag song_tag;
@@ -1064,14 +1064,14 @@ void ncm_format_render(NcmFormatAst *, NcmSong *, NcmFormatCallbacks *,
                        void *output, void *second_output, uint32);
 void ncm_format_render_buffer(NcmFormatAst *, NcmSong *, NcBuffer *buffer,
                               NcBuffer *right_aligned, uint32);
-StrBuilder ncm_format_render_string(NcmFormatAst *, NcmSong *);
+String ncm_format_render_string(NcmFormatAst *, NcmSong *);
 
 struct Column;
 
 void ncm_display_song_row(NcBuffer *, NcmFormatAst *, NcmSong *, uint32);
 void ncm_display_song_columns(NcBuffer *, NcmSong *, struct Column *,
                               int32 column_len, int32 list_width, bool);
-void ncm_display_column_title(StrBuilder *, struct Column *,
+void ncm_display_column_title(String *, struct Column *,
                               int32 column_len, int32 list_width);
 void ncm_display_directory_row(NcBuffer *, NcmDirectory *);
 void ncm_display_playlist_row(NcBuffer *, NcmPlaylist *, char *, int32);

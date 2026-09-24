@@ -343,7 +343,7 @@ NC_SCREEN_IMPL_TAG_MENU_CALLBACK(NcScreen *screen) {
 
 static int32
 NC_SCREEN_IMPL_SONG_TAG_AT(NcScreen *screen, int32 pos,
-                           enum SongGetter getter, StrBuilder *tag) {
+                           enum SongGetter getter, String *tag) {
     return nc_screen_menu_song_tag_at(
         NC_SCREEN_IMPL_TAG_MENU(NC_SCREEN_IMPL_FROM_SCREEN(screen)),
         pos, getter, tag, NC_SCREEN_IMPL_TAG_ITEM_SONG_CALLBACK);

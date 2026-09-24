@@ -45,7 +45,7 @@ static ActionRuntime action_global_runtime;
 static bool action_global_runtime_initialized;
 
 typedef struct ActionRuntimeCommandPrompt {
-    StrBuilder previous;
+    String previous;
 } ActionRuntimeCommandPrompt;
 
 typedef SearchPromptState ActionRuntimeSearchPrompt;
@@ -393,8 +393,8 @@ ncm_action_add_song_to_playlist_with_mode(NcmSong *song, bool play,
                                           enum SpaceAddMode space_add_mode) {
     NcmSong *match;
     NcmError ncm_error;
-    StrBuilder formatted;
-    StrBuilder message = {0};
+    String formatted;
+    String message = {0};
     int32 id;
     bool ok;
 
@@ -586,7 +586,7 @@ static void
 action_runtime_print_message(char *prefix, int32 prefix_len,
                              char *text, int32 text_len,
                              char *suffix, int32 suffix_len) {
-    StrBuilder message = {0};
+    String message = {0};
 
     SB_APPEND(&message, prefix, prefix_len);
     if ((text != NULL) && (text_len > 0)) {
@@ -599,7 +599,7 @@ action_runtime_print_message(char *prefix, int32 prefix_len,
 }
 
 bool
-ncm_action_immediate_command_prompt_should_stop(StrBuilder *previous,
+ncm_action_immediate_command_prompt_should_stop(String *previous,
                                                 char *text, int32 text_len) {
     NcmCommand *command;
 
@@ -782,7 +782,7 @@ action_runtime_search_prompt_should_continue(char *text, void *user) {
 }
 
 static bool
-action_runtime_prompt_result(StrBuilder *result, NcPrompt *prompt,
+action_runtime_prompt_result(String *result, NcPrompt *prompt,
                              NcWindow *window) {
     enum NcPromptStatus status;
     char *text = NULL;
@@ -805,7 +805,7 @@ static bool
 action_runtime_prompt_string(char *prefix, int32 prefix_len, char *initial_text,
                              bool remember,
                              NcPromptShouldContinueFunc *should_continue,
-                             void *should_continue_user, StrBuilder *result) {
+                             void *should_continue_user, String *result) {
     NcmStatusbarScopedLock scoped_lock;
     NcPrompt prompt;
     NcWindow *window;
@@ -861,7 +861,7 @@ action_runtime_confirm(char *message, int32 message_len) {
 
 static int32
 action_runtime_set_crossfade(void) {
-    StrBuilder input = {0};
+    String input = {0};
     NcmError ncm_error;
     int64 parsed;
     int32 seconds;
@@ -898,8 +898,8 @@ action_runtime_set_crossfade(void) {
 
 static int32
 action_runtime_set_volume(void) {
-    StrBuilder input = {0};
-    StrBuilder message = {0};
+    String input = {0};
+    String message = {0};
     NcmError ncm_error;
     int64 parsed;
     int32 volume;
@@ -940,9 +940,9 @@ action_runtime_set_volume(void) {
 static int32
 action_runtime_add_random_items(void) {
     NcmStatusbarScopedLock scoped_lock;
-    StrBuilder input = {0};
-    StrBuilder message = {0};
-    StrBuilder prompt = {0};
+    String input = {0};
+    String message = {0};
+    String prompt = {0};
     NcmError ncm_error;
     NcWindow *window;
     char values[] = {
@@ -1273,7 +1273,7 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
 static int32
 action_runtime_execute_command(void) {
     ActionRuntimeCommandPrompt state = {0};
-    StrBuilder command_name = {0};
+    String command_name = {0};
     NcmCommand *command;
     bool prompted;
     NcPromptShouldContinueFunc *should_continue;
@@ -1330,7 +1330,7 @@ action_runtime_execute_command(void) {
 
 static int32
 action_runtime_save_playlist(void) {
-    StrBuilder name = {0};
+    String name = {0};
     NcmError ncm_error;
     bool prompted;
     bool success;
@@ -1351,7 +1351,7 @@ action_runtime_save_playlist(void) {
                                             &ncm_error) == 0;
     if (!success && (ncm_mpd_client_server_error_code(&global_mpd)
             == NCM_MPD_SERVER_ERROR_EXIST)) {
-        StrBuilder question = {0};
+        String question = {0};
 
         SB_APPEND(&question, "Playlist \"");
         SB_APPEND(&question, name.data, name.len);
@@ -1389,8 +1389,8 @@ action_runtime_save_playlist(void) {
 static int32
 action_runtime_apply_filter(void) {
     StrView current_filter;
-    StrBuilder filter = {0};
-    StrBuilder previous_filter = {0};
+    String filter = {0};
+    String previous_filter = {0};
     NcmError ncm_error;
     int32 status;
     bool old_autocenter_mode;
@@ -1452,7 +1452,7 @@ action_runtime_apply_filter(void) {
 
 static int32
 action_runtime_find(void) {
-    StrBuilder token = {0};
+    String token = {0};
     NcmError ncm_error;
     int32 status;
     bool found;
@@ -1498,8 +1498,8 @@ static int32
 action_runtime_find_item(enum SearchDirection direction) {
     ActionRuntimeSearchPrompt state;
     StrView current_constraint;
-    StrBuilder constraint = {0};
-    StrBuilder previous_constraint = {0};
+    String constraint = {0};
+    String previous_constraint = {0};
     NcmError ncm_error;
     bool old_autocenter_mode;
     bool prompted;
@@ -1674,14 +1674,14 @@ action_runtime_current_tag_scroll_menu(void) {
 
 static int32
 action_runtime_song_tag_at(int32 pos, enum SongGetter getter,
-                           StrBuilder *tag) {
+                           String *tag) {
     return nc_screen_song_tag_at(app_controller_current_screen(), pos, getter,
                                  tag);
 }
 
 static bool
 action_runtime_tag_scroll_available(enum SongGetter getter) {
-    StrBuilder tag = {0};
+    String tag = {0};
     NcMenu *menu;
     bool available;
 
@@ -1698,8 +1698,8 @@ action_runtime_tag_scroll_available(enum SongGetter getter) {
 
 static int32
 action_runtime_scroll_by_tag(enum SongGetter getter, bool down) {
-    StrBuilder current_tag;
-    StrBuilder other_tag;
+    String current_tag;
+    String other_tag;
     NcMenu *menu;
     int32 current;
     int32 target;
@@ -1827,8 +1827,8 @@ action_runtime_song_positions(NcmSongArray *songs,
 
 static int32
 action_runtime_add_prompt(void) {
-    StrBuilder path = {0};
-    StrBuilder message = {0};
+    String path = {0};
+    String message = {0};
     NcmError ncm_error;
     enum NcmMpdServerError server_error;
     bool prompted;
@@ -1897,7 +1897,7 @@ action_runtime_add_prompt(void) {
 
 static int32
 action_runtime_load_prompt(void) {
-    StrBuilder name = {0};
+    String name = {0};
     NcmError ncm_error;
     bool prompted = action_runtime_prompt_string(STRLIT("Load playlist: "), "",
                                                  false, NULL, NULL, &name);
@@ -2038,7 +2038,7 @@ action_runtime_add_item_to_playlist(bool play) {
 }
 
 static int32
-action_runtime_browser_item_name(NcmMpdItem *item, StrBuilder *name) {
+action_runtime_browser_item_name(NcmMpdItem *item, String *name) {
     StrView view;
     int32 basename;
 
@@ -2077,8 +2077,8 @@ action_runtime_delete_browser_items(void) {
     BrowserScreen *screen = app_screen_browser();
     NcMenu *menu;
     NcmMpdItem *item;
-    StrBuilder question = {0};
-    StrBuilder name = {0};
+    String question = {0};
+    String name = {0};
     NcmError ncm_error;
     bool success;
     bool has_selected;
@@ -2143,8 +2143,8 @@ action_runtime_delete_browser_items(void) {
 }
 
 static void
-action_runtime_print_renamed(char *prefix, int32 prefix_len, StrBuilder *name) {
-    StrBuilder message = {0};
+action_runtime_print_renamed(char *prefix, int32 prefix_len, String *name) {
+    String message = {0};
 
     SB_APPEND(&message, prefix, prefix_len);
     SB_APPEND(&message, name->data, name->len);
@@ -2271,7 +2271,7 @@ action_runtime_delete_stored_playlists(void) {
     PlaylistEditScreen *screen = app_screen_playlist_edit();
     NcMenu *menu;
     NcmPlaylist *playlist;
-    StrBuilder question = {0};
+    String question = {0};
     NcmError ncm_error;
     enum NcMenuItemSource source;
     int32 count;
@@ -2347,7 +2347,7 @@ static int32
 action_runtime_clear_playlist(bool main_playlist) {
     PlaylistEditScreen *screen = app_screen_playlist_edit();
     NcmPlaylist playlist;
-    StrBuilder message = {0};
+    String message = {0};
     NcmError ncm_error;
     bool success = false;
 
@@ -2390,7 +2390,7 @@ action_runtime_clear_playlist(bool main_playlist) {
     }
 
     if (Config.ask_before_clearing_playlists) {
-        StrBuilder question = {0};
+        String question = {0};
         SB_APPEND(&question, "Do you really want to clear playlist \"");
         SB_APPEND(&question, playlist.path, playlist.path_len);
         SB_APPEND(&question, "\"?");
@@ -2426,7 +2426,7 @@ action_runtime_crop_playlist(bool main_playlist) {
     PlaylistEditScreen *editor = app_screen_playlist_edit();
     NcmPlaylist playlist;
     NcmSongArray songs;
-    StrBuilder message = {0};
+    String message = {0};
     NcmError ncm_error;
     bool success = false;
 
@@ -2496,7 +2496,7 @@ action_runtime_crop_playlist(bool main_playlist) {
     playlist = (NcmPlaylist){0};
     success = playlist_edit_screen_current_playlist(editor, &playlist) > 0;
     if (success && Config.ask_before_clearing_playlists) {
-        StrBuilder question = {0};
+        String question = {0};
         SB_APPEND(&question, "Do you really want to crop playlist \"");
         SB_APPEND(&question, playlist.path, playlist.path_len);
         SB_APPEND(&question, "\"?");
@@ -3034,7 +3034,7 @@ action_runtime_shuffle_playlist(void) {
 static int32
 action_runtime_set_selected_items_priority(void) {
     PlaylistScreen *screen = app_screen_playlist();
-    StrBuilder input = {0};
+    String input = {0};
     NcmError ncm_error;
     int64 parsed;
     int32 priority;
@@ -3082,7 +3082,7 @@ action_runtime_set_selected_items_priority(void) {
 
 static int32
 action_runtime_jump_to_position_in_song(void) {
-    StrBuilder input = {0};
+    String input = {0};
     NcmError ncm_error;
     char *prompt;
     int32 prompt_len;
@@ -3132,8 +3132,8 @@ action_runtime_jump_to_position_in_song(void) {
 
 static int32
 action_runtime_select_album(void) {
-    StrBuilder album;
-    StrBuilder candidate;
+    String album;
+    String candidate;
     NcMenu *menu;
     int32 current;
     int32 count;
@@ -3520,7 +3520,7 @@ action_runtime_jump_to_tag_edit(void) {
 static int32
 action_runtime_edit_directory_name(void) {
     StrView path;
-    StrBuilder name = {0};
+    String name = {0};
     NcmError ncm_error;
     bool prompted;
     bool success;
@@ -3579,7 +3579,7 @@ action_runtime_edit_playlist_name(void) {
     PlaylistEditScreen *screen = app_screen_playlist_edit();
     NcmPlaylist playlist;
     StrView path;
-    StrBuilder name = {0};
+    String name = {0};
     NcmError ncm_error;
     bool prompted;
     bool success;
@@ -3875,7 +3875,7 @@ int32
 ncm_action_edit_song(NcmSong *song) {
 #if defined(HAVE_TAGLIB_H)
     enum TinyTagEditOpenResult open_result;
-    StrBuilder path = {0};
+    String path = {0};
     char *dir;
     char *sep;
     int32 dir_len;
@@ -3975,8 +3975,8 @@ action_runtime_media_library_current_artist_tag(char **tag, int32 *tag_len) {
 
 static int32
 action_runtime_toggle_screen_lock(void) {
-    StrBuilder input = {0};
-    StrBuilder message = {0};
+    String input = {0};
+    String message = {0};
     NcScreen *current;
     char initial[16];
     char *prompt;
@@ -4127,12 +4127,12 @@ action_runtime_song_filename_or_uri_view(NcmSong *song, StrView *view) {
 }
 
 static int32
-action_runtime_shared_directory_update(StrBuilder *shared_directory,
+action_runtime_shared_directory_update(String *shared_directory,
                                        bool *valid,
                                        char *directory, int32 directory_len) {
     char *data;
     int32 len;
-    StrBuilder shared;
+    String shared;
 
     ASSERT(shared_directory != NULL);
     ASSERT(valid != NULL);
@@ -4156,7 +4156,7 @@ action_runtime_shared_directory_update(StrBuilder *shared_directory,
 static void
 action_runtime_print_updating_song(NcmSong *song) {
     StrView name;
-    StrBuilder message = {0};
+    String message = {0};
 
     if (!action_runtime_song_filename_or_uri_view(song, &name)) {
         return;
@@ -4192,7 +4192,7 @@ action_runtime_print_album_file_error(char *prefix, int32 prefix_len,
 }
 
 static int32
-action_runtime_update_tag_directory(StrBuilder *shared_directory, bool valid) {
+action_runtime_update_tag_directory(String *shared_directory, bool valid) {
     NcmError ncm_error;
 
     if (!valid) {
@@ -4221,10 +4221,10 @@ static int32
 action_runtime_edit_library_tag(void) {
     enum TagType tag_type;
     NcmSongArray songs = {0};
-    StrBuilder current_tag = {0};
-    StrBuilder prompt = {0};
-    StrBuilder new_tag = {0};
-    StrBuilder shared_directory = {0};
+    String current_tag = {0};
+    String prompt = {0};
+    String new_tag = {0};
+    String shared_directory = {0};
     NcmError ncm_error;
     char *tag;
     char *sep;
@@ -4306,7 +4306,7 @@ action_runtime_edit_library_tag(void) {
             StrView name;
 
             if (action_runtime_song_filename_or_uri_view(song, &name)) {
-                StrBuilder message = {0};
+                String message = {0};
                 char *error_message = strerror(errno);
 
                 SB_APPEND(&message, "Error while writing tags to \"");
@@ -4349,10 +4349,10 @@ cleanup:
 static int32
 action_runtime_edit_library_album(void) {
     NcmSongArray songs = {0};
-    StrBuilder current_album = {0};
-    StrBuilder new_album = {0};
-    StrBuilder path = {0};
-    StrBuilder shared_directory = {0};
+    String current_album = {0};
+    String new_album = {0};
+    String path = {0};
+    String shared_directory = {0};
     NcmError ncm_error;
     char *album;
     int32 album_len;
@@ -4532,9 +4532,9 @@ static int32
 action_runtime_edit_lyrics(void) {
     LyricsScreen *lyrics = app_screen_lyrics();
     NcmSong *song;
-    StrBuilder *filename;
-    StrBuilder escaped = {0};
-    StrBuilder command = {0};
+    String *filename;
+    String escaped = {0};
+    String command = {0};
     NcmError ncm_error;
     char *music;
     char *lyric_dir;

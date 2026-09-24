@@ -7,7 +7,7 @@
 #include "c/ncm_c.h"
 
 static void
-ncm_regex_prepare_string(char *string, int32 string_len, StrBuilder *buffer) {
+ncm_regex_prepare_string(char *string, int32 string_len, String *buffer) {
     ASSERT(buffer != NULL);
     ASSERT(string != NULL);
     ASSERT_NON_NEGATIVE(string_len);
@@ -36,8 +36,8 @@ ncm_regex_destroy(NcmRegex *regex) {
 int32
 ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
                   uint32 flags, NcmError *ncm_error) {
-    StrBuilder escaped = {0};
-    StrBuilder compiled_pattern = {0};
+    String escaped = {0};
+    String compiled_pattern = {0};
     int32 reg_flags;
     int32 code;
 
@@ -129,7 +129,7 @@ ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
 
 bool
 ncm_regex_matches(NcmRegex *regex, char *string, int32 string_len) {
-    StrBuilder buffer = {0};
+    String buffer = {0};
     bool result;
 
     ASSERT(regex != NULL);
@@ -150,7 +150,7 @@ ncm_regex_matches(NcmRegex *regex, char *string, int32 string_len) {
 int32
 ncm_regex_for_each_match(NcmRegex *regex, char *string, int32 string_len,
                          NcmRegexMatchCallback *callback, void *user) {
-    StrBuilder buffer = {0};
+    String buffer = {0};
     regmatch_t match[1];
     char *cursor;
     int32 offset;

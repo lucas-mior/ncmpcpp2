@@ -672,10 +672,10 @@ ncm_song_show_time(int32 length, char *buffer, int32 buffer_cap) {
     return ncm_song_show_time_unchecked(length, buffer, buffer_cap);
 }
 
-static StrBuilder
+static String
 ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
                                  int32 idx) {
-    StrBuilder buffer = {0};
+    String buffer = {0};
     StrView view;
     char number_buffer[32];
     int32 copy_len;
@@ -776,9 +776,9 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
     }
 }
 
-StrBuilder
+String
 ncm_song_getter_buffer(NcmSong *song, enum SongGetter getter, int32 idx) {
-    StrBuilder buffer = {0};
+    String buffer = {0};
 
     if ((song == NULL) || (idx < 0)
         || ((uint32)getter >= (uint32)SONG_GETTER_COUNT)) {
@@ -788,11 +788,11 @@ ncm_song_getter_buffer(NcmSong *song, enum SongGetter getter, int32 idx) {
     return ncm_song_getter_buffer_unchecked(song, getter, idx);
 }
 
-StrBuilder
+String
 ncm_song_tags_buffer(NcmSong *song, enum SongGetter getter,
                      char *separator, int32 separator_len,
                      bool show_duplicates) {
-    StrBuilder result = {0};
+    String result = {0};
 
     if (song == NULL) {
         return result;
@@ -806,7 +806,7 @@ ncm_song_tags_buffer(NcmSong *song, enum SongGetter getter,
     }
 
     for (int32 i = 0; ; i += 1) {
-        StrBuilder tag = ncm_song_getter_buffer_unchecked(song, getter, i);
+        String tag = ncm_song_getter_buffer_unchecked(song, getter, i);
         bool already_present = false;
 
         if (tag.len <= 0) {
@@ -816,7 +816,7 @@ ncm_song_tags_buffer(NcmSong *song, enum SongGetter getter,
 
         if (!show_duplicates) {
             for (int32 j = 0; j < i; j += 1) {
-                StrBuilder previous
+                String previous
                     = ncm_song_getter_buffer_unchecked(song, getter, j);
 
                 if (STREQUAL(previous.data, previous.len, tag.data, tag.len)) {

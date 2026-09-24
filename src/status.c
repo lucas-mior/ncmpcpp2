@@ -133,7 +133,7 @@ status_refresh_footer(NcmStatusHooks *hooks) {
 static void
 status_print_value(char *prefix, int32 prefix_len,
                    char *value, int32 value_len) {
-    StrBuilder message = {0};
+    String message = {0};
 
     if (value_len < 0) {
         value_len = optional_strlen32(value);
@@ -451,7 +451,7 @@ status_rebase_elapsed_time(int32 elapsed_time, int64 elapsed_time_ms) {
 
 static void
 status_draw_song_title(NcmSong *song) {
-    StrBuilder title;
+    String title;
 
     title = ncm_format_render_string(&Config.song_window_title_format, song);
     ncm_window_title_set(title.data, title.len);
@@ -771,7 +771,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
         if (new_crossfade != status_crossfade) {
             status_crossfade = new_crossfade;
             if (status_initialized) {
-                StrBuilder message = {0};
+                String message = {0};
 
                 status_notify_statusbar();
                 sb_printf(&message,
@@ -1160,7 +1160,7 @@ status_song_time_string(int32 length, char *buffer, int32 buffer_cap) {
 }
 
 static void
-status_tracklength_buffer(StrBuilder *buffer) {
+status_tracklength_buffer(String *buffer) {
     char time_buffer[64];
     int32 time_len;
 
@@ -1279,7 +1279,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
             && ncm_statusbar_is_unlocked()) {
             NcBuffer rendered_song = {0};
             NcTextStyle *time_color;
-            StrBuilder tracklength = {0};
+            String tracklength = {0};
             int32 text_width;
             int32 track_x;
             char separator[] = " ** ";
@@ -1329,7 +1329,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
             NcTextStyle *time_color;
             NcmFormatAst *first_format;
             NcmFormatAst *second_format;
-            StrBuilder tracklength = {0};
+            String tracklength = {0};
             int32 first_len;
             int32 first_margin;
             int32 first_start;
@@ -1439,7 +1439,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
 void
 ncm_status_changes_flags(void) {
     NcWindow *header;
-    StrBuilder switch_state = {0};
+    String switch_state = {0};
     int32 flags_x;
 
     if (!Config.header_visibility
@@ -1544,7 +1544,7 @@ ncm_status_changes_flags(void) {
 void
 ncm_status_changes_mixer(void) {
     NcWindow *header;
-    StrBuilder volume_state = {0};
+    String volume_state = {0};
     int32 volume_x;
 
     if (!Config.display_volume_level || (!Config.header_visibility

@@ -22,7 +22,7 @@ ncm_conversion_validate_source(char *source, int32 source_len,
 }
 
 static void
-ncm_conversion_copy_source(StrBuilder *buffer, char *source, int32 source_len) {
+ncm_conversion_copy_source(String *buffer, char *source, int32 source_len) {
     ASSERT(buffer != NULL);
     ASSERT(source != NULL);
     ASSERT_NON_NEGATIVE(source_len);
@@ -60,7 +60,7 @@ ncm_conversion_set_parse_error(NcmError *ncm_error,
 int32
 ncm_parse_double(char *source, int32 source_len, double *out,
                  NcmError *ncm_error) {
-    StrBuilder buffer = {0};
+    String buffer = {0};
     char *end;
     double value;
     bool ok;

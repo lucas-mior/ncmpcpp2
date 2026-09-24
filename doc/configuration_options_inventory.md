@@ -135,7 +135,7 @@ buffer instead of replacing it.
 
 `XX_LOOK(NAME, DEFAULT_VALUE, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)`
 
-Stores a `StrBuilder` containing a constrained UTF-8 glyph/look string.
+Stores a `String` containing a constrained UTF-8 glyph/look string.
 `PAD_TO_MAX` preserves the progress-bar compatibility behavior where a shorter
 accepted value is NUL-padded to the maximum length.
 

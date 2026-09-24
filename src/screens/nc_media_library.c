@@ -132,7 +132,7 @@ media_library_tag_menu_capability(NcScreen *base) {
 
 static int32
 media_library_tag_at_capability(NcScreen *base, int32 pos,
-                                enum SongGetter getter, StrBuilder *tag) {
+                                enum SongGetter getter, String *tag) {
     MediaLibraryScreen *screen = (MediaLibraryScreen *)base;
 
     if (media_library_screen_active_column(screen)
@@ -284,7 +284,7 @@ library_layout(MediaLibraryScreen *screen) {
 static bool
 library_album_matches(MediaLibraryScreen *screen, NcMediaLibraryAlbumRow *row,
                       NcmRegex *regex) {
-    StrBuilder text = {0};
+    String text = {0};
     bool result;
 
     ASSERT(row != NULL);
@@ -297,7 +297,7 @@ library_album_matches(MediaLibraryScreen *screen, NcMediaLibraryAlbumRow *row,
 static bool
 library_song_matches(MediaLibraryScreen *screen,
                      NcmSong *song, NcmRegex *regex) {
-    StrBuilder text;
+    String text;
     bool result;
 
     (void)screen;
@@ -311,7 +311,7 @@ library_song_matches(MediaLibraryScreen *screen,
 static bool
 library_tag_matches(MediaLibraryScreen *screen,
                     NcMediaLibraryTagRow *row, NcmRegex *regex) {
-    StrBuilder text = {0};
+    String text = {0};
     bool result;
 
     ASSERT(row != NULL);
@@ -847,7 +847,7 @@ media_library_mpd_hooks(MpdClient *client) {
 static void
 library_draw_album(NcMenu *menu, NcWindow *window,
                    void *item, int32 pos, void *user) {
-    StrBuilder text = {0};
+    String text = {0};
 
     (void)menu;
     (void)pos;
@@ -892,7 +892,7 @@ library_draw_song(NcMenu *menu, NcWindow *window,
 static void
 library_draw_tag(NcMenu *menu, NcWindow *window,
                  void *item, int32 pos, void *user) {
-    StrBuilder text = {0};
+    String text = {0};
 
     (void)menu;
     (void)pos;
@@ -1010,8 +1010,8 @@ media_library_screen_init(MediaLibraryScreen *screen, MediaLibraryHooks hooks,
         screen->column_state[i].filter_enabled = false;
         screen->column_state[i].search_enabled = false;
     }
-    screen->tags_title = (StrBuilder){0};
-    screen->albums_title = (StrBuilder){0};
+    screen->tags_title = (String){0};
+    screen->albums_title = (String){0};
     screen->observed_tag = (NcMediaLibraryTagRow){0};
     screen->observed_album = (NcMediaLibraryAlbumRow){0};
 
@@ -1421,7 +1421,7 @@ media_library_screen_has_current_album_value(MediaLibraryScreen *screen,
 void
 media_library_screen_format_tag_row(MediaLibraryScreen *screen,
                                     NcMediaLibraryTagRow *row,
-                                    StrBuilder *output) {
+                                    String *output) {
     (void)screen;
 
     if (output == NULL) {
@@ -1446,8 +1446,8 @@ media_library_screen_format_tag_row(MediaLibraryScreen *screen,
 void
 media_library_screen_format_album_row(MediaLibraryScreen *screen,
                                       NcMediaLibraryAlbumRow *row,
-                                      StrBuilder *output) {
-    StrBuilder raw = {0};
+                                      String *output) {
+    String raw = {0};
 
     if (output == NULL) {
         return;
@@ -1898,8 +1898,8 @@ media_library_copy_sorted_songs(NcmSongArray *songs, NcmSongArray *source) {
             int32 result = 0;
 
             for (int32 k = 0; k < LENGTH(getters); k += 1) {
-                StrBuilder left_tags;
-                StrBuilder right_tags;
+                String left_tags;
+                String right_tags;
                 char *left_data;
                 char *right_data;
                 char *separator = Config.tags_separator;
@@ -1935,8 +1935,8 @@ media_library_copy_sorted_songs(NcmSongArray *songs, NcmSongArray *source) {
 
             if (result == 0) {
                 NcmFormatAst *format = &Config.song_library_format;
-                StrBuilder left_text = ncm_format_render_string(format, left);
-                StrBuilder right_text = ncm_format_render_string(format, right);
+                String left_text = ncm_format_render_string(format, left);
+                String right_text = ncm_format_render_string(format, right);
                 int32 common_len = left_text.len;
 
                 if (right_text.len < common_len) {
@@ -3231,7 +3231,7 @@ media_library_screen_add_item_to_playlist(MediaLibraryScreen *screen,
 
     if ((status == 0) || (songs.len > 0)) {
         NcMediaLibraryAlbumRow *album;
-        StrBuilder message = {0};
+        String message = {0};
         char *tag_name;
         int32 tag_name_len;
         bool result = status == 0;
@@ -3288,7 +3288,7 @@ media_library_screen_add_item_to_playlist(MediaLibraryScreen *screen,
                       optional_strlen32(ncm_helpers_with_errors(result)));
         } else if (result && (songs.len == 1)) {
             NcmFormatAst *format = &Config.song_status_format;
-            StrBuilder rendered = ncm_format_render_string(format,
+            String rendered = ncm_format_render_string(format,
                                                            &songs.items[0]);
 
             SB_APPEND(&message, "Added to playlist: ");

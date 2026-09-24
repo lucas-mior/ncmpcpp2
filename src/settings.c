@@ -67,7 +67,7 @@ typedef struct SettingsOption {
 #define XX_BUFFER(NAME, DEFAULT, KEEP_EXISTING)                          \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcBuffer);
 #define XX_LOOK(NAME, DEFAULT, MIN_CHARS, MAX_CHARS, PAD_TO_MAX)         \
-    SETTINGS_ASSERT_FIELD_TYPE(NAME, StrBuilder);
+    SETTINGS_ASSERT_FIELD_TYPE(NAME, String);
 #define XX_RATIO(NAME, DEFAULT, EXPECTED_LEN)                            \
     SETTINGS_ASSERT_FIELD_TYPE(NAME, NcmInt32Array);
 #define XX_TEXT_STYLE_LIST(NAME, DEFAULT)                                \
@@ -100,7 +100,7 @@ settings_invalid_value(NcmError *ncm_error, char *value, int32 value_len) {
 }
 
 static void
-settings_expand_home(StrBuilder *buffer, char *value, int32 value_len) {
+settings_expand_home(String *buffer, char *value, int32 value_len) {
     char *home;
     int32 home_len;
 
@@ -146,7 +146,7 @@ settings_parse_string(char **result, int32 *result_len,
 static void
 settings_parse_path_common(char **result, int32 *result_len,
                            char *value, int32 value_len, bool directory) {
-    StrBuilder buffer = {0};
+    String buffer = {0};
 
     settings_expand_home(&buffer, value, value_len);
     if (directory) {
@@ -635,9 +635,9 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
     ncm_format_ast_clear(format);
     pos = 0;
     while (pos < value_len) {
-        StrBuilder width = {0};
-        StrBuilder color = {0};
-        StrBuilder tag = {0};
+        String width = {0};
+        String color = {0};
+        String tag = {0};
         Column *column;
         int64 width_value;
         int32 next;
@@ -763,7 +763,7 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
 }
 
 static int32
-settings_parse_look(StrBuilder *look, char *value, int32 value_len,
+settings_parse_look(String *look, char *value, int32 value_len,
                     int32 min_chars, int32 max_chars, bool pad_to_max,
                     NcmError *ncm_error) {
     int32 characters = utf8_characters(value, value_len);

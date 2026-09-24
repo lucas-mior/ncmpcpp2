@@ -376,7 +376,7 @@ static const NcMenuItemCallbacks nc_media_library_album_menu_callbacks = {
     .destroy = nc_media_library_album_menu_item_destroy,
 };
 static const NcMenuItemCallbacks str_builder_menu_callbacks = {
-    .item_size = SIZEOF(StrBuilder),
+    .item_size = SIZEOF(String),
     .copy = str_builder_menu_item_copy,
     .destroy = str_builder_menu_item_destroy,
 };
@@ -541,7 +541,7 @@ NC_TYPED_MENU_DEFINE_CURRENT(NcMediaLibrarySongMenu,
 NC_TYPED_MENU_DEFINE_COMMON(NcEditorStringMenu,
                             nc_editor_string_menu, str_builder_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD_WITH_FLAGS(NcEditorStringMenu,
-                                    nc_editor_string_menu, StrBuilder)
+                                    nc_editor_string_menu, String)
 NC_TYPED_MENU_DEFINE_ADD_SEPARATOR(NcEditorStringMenu, nc_editor_string_menu)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcEditorPairMenu,

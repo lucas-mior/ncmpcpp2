@@ -54,7 +54,7 @@ app_bridge_set_status_observers(void) {
 
 static void
 app_bridge_report_mpd_error(NcmError *ncm_error) {
-    StrBuilder output = {0};
+    String output = {0};
     char *message;
 
     ASSERT(ncm_error != NULL);
@@ -327,7 +327,7 @@ int32
 ncmpcpp_update_environment(bool update_timer, bool refresh_window,
                            bool mpd_sync) {
     NcmError ncm_error;
-    StrBuilder message = {0};
+    String message = {0};
     bool current_screen_uses_header_timer;
     int32 status;
 

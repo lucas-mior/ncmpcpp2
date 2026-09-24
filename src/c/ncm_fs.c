@@ -297,9 +297,9 @@ ncm_fs_directory_close(NcmFsDirectory *directory) {
 }
 
 int32
-ncm_fs_join(StrBuilder *buffer,
+ncm_fs_join(String *buffer,
             char *left, int32 left_len, char *right, int32 right_len) {
-    StrBuilder result = {0};
+    String result = {0};
 
     if (buffer == NULL) {
         return -EINVAL;

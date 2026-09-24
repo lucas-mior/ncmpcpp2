@@ -55,7 +55,7 @@ nc_cyclic_next_position(char *string, int32 string_len, int32 byte,
 }
 
 static void
-nc_cyclic_text_append(StrBuilder *output, char *string, int32 string_len,
+nc_cyclic_text_append(String *output, char *string, int32 string_len,
                       int32 start_byte, int32 *written_width, int32 width) {
     int32 byte;
 
@@ -87,7 +87,7 @@ nc_cyclic_text_append(StrBuilder *output, char *string, int32 string_len,
 }
 
 void
-nc_cyclic_text_write(StrBuilder *output, char *string, int32 string_len,
+nc_cyclic_text_write(String *output, char *string, int32 string_len,
                      int32 *start_pos, int32 width, char *separator,
                      int32 separator_len, bool scrolling_enabled) {
     int32 string_width;

@@ -22,7 +22,7 @@ ncm_path_last_index_of(char *path, int32 path_len, char needle) {
 }
 
 int32
-ncm_path_expand_home(StrBuilder *path, NcmError *ncm_error) {
+ncm_path_expand_home(String *path, NcmError *ncm_error) {
     char *home;
     int32 home_len;
     int32 tilde;
