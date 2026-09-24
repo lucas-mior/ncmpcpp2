@@ -157,7 +157,7 @@ settings_parse_path_common(char **result, int32 *result_len,
     *result = NULL;
     *result_len = 0;
     if (buffer.len > 0) {
-        *result = str_steal_exact(&buffer, result_len);
+        *result = str_steal(&buffer, result_len);
     }
     str_free(&buffer);
     return;
