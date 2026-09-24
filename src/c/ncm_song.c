@@ -656,11 +656,11 @@ ncm_song_show_time_unchecked(int32 length, char *buffer, int32 buffer_cap) {
     seconds = length;
 
     if (hours > 0) {
-        return snprintf2(buffer, buffer_cap,
+        return fmt_sprintf(buffer, buffer_cap,
                          "%d:%02d:%02d", hours, minutes, seconds);
     }
 
-    return snprintf2(buffer, buffer_cap, "%d:%02d", minutes, seconds);
+    return fmt_sprintf(buffer, buffer_cap, "%d:%02d", minutes, seconds);
 }
 
 int32

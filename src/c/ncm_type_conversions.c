@@ -16,13 +16,13 @@ ncm_channels_to_string(int32 channels, char *buffer, int32 buffer_cap) {
 
     switch (channels) {
     case 1:
-        result = snprintf2(buffer, buffer_cap, "Mono");
+        result = fmt_sprintf(buffer, buffer_cap, "Mono");
         break;
     case 2:
-        result = snprintf2(buffer, buffer_cap, "Stereo");
+        result = fmt_sprintf(buffer, buffer_cap, "Stereo");
         break;
     default:
-        result = snprintf2(buffer, buffer_cap, "%d", channels);
+        result = fmt_sprintf(buffer, buffer_cap, "%d", channels);
         break;
     }
 

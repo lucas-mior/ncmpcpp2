@@ -80,7 +80,7 @@ static int32
 nc_named_key_name(NcKey key, char *buffer, int32 buffer_len) {
     for (int32 i = 0; i < LENGTH(nc_named_keys); i += 1) {
         if (key == nc_named_keys[i].key) {
-            return snprintf2(buffer, buffer_len, "%.*s",
+            return fmt_sprintf(buffer, buffer_len, "%.*s",
                              nc_named_keys[i].display_name_len,
                              nc_named_keys[i].display_name);
         }
@@ -293,35 +293,35 @@ nc_key_name(NcKey key, char *buffer, int32 buffer_len) {
         return result;
     }
     if ((key >= NC_KEY_CTRL_A) && (key <= NC_KEY_CTRL_Z)) {
-        result = snprintf2(buffer, buffer_len, "Ctrl-%c",
+        result = fmt_sprintf(buffer, buffer_len, "Ctrl-%c",
                            (char)('A' + key - NC_KEY_CTRL_A));
     } else if (key == NC_KEY_CTRL_LEFT_BRACKET) {
-        result = snprintf2(buffer, buffer_len, "Ctrl-[");
+        result = fmt_sprintf(buffer, buffer_len, "Ctrl-[");
     } else if (key == NC_KEY_CTRL_BACKSLASH) {
-        result = snprintf2(buffer, buffer_len, "Ctrl-\\");
+        result = fmt_sprintf(buffer, buffer_len, "Ctrl-\\");
     } else if (key == NC_KEY_CTRL_RIGHT_BRACKET) {
-        result = snprintf2(buffer, buffer_len, "Ctrl-]");
+        result = fmt_sprintf(buffer, buffer_len, "Ctrl-]");
     } else if (key == NC_KEY_CTRL_CARET) {
-        result = snprintf2(buffer, buffer_len, "Ctrl-^");
+        result = fmt_sprintf(buffer, buffer_len, "Ctrl-^");
     } else if (key == NC_KEY_CTRL_UNDERSCORE) {
-        result = snprintf2(buffer, buffer_len, "Ctrl-_");
+        result = fmt_sprintf(buffer, buffer_len, "Ctrl-_");
     } else if ((key & NC_KEY_ALT) != 0) {
         nc_key_name(key & ~NC_KEY_ALT, rest, LENGTH(rest));
-        result = snprintf2(buffer, buffer_len, "Alt-%s", rest);
+        result = fmt_sprintf(buffer, buffer_len, "Alt-%s", rest);
     } else if ((key & NC_KEY_CTRL) != 0) {
         nc_key_name(key & ~NC_KEY_CTRL, rest, LENGTH(rest));
-        result = snprintf2(buffer, buffer_len, "Ctrl-%s", rest);
+        result = fmt_sprintf(buffer, buffer_len, "Ctrl-%s", rest);
     } else if ((key & NC_KEY_SHIFT) != 0) {
         nc_key_name(key & ~NC_KEY_SHIFT, rest, LENGTH(rest));
-        result = snprintf2(buffer, buffer_len, "Shift-%s", rest);
+        result = fmt_sprintf(buffer, buffer_len, "Shift-%s", rest);
     } else if ((key >= NC_KEY_F1) && (key <= NC_KEY_F9)) {
-        result = snprintf2(buffer, buffer_len, "F%c",
+        result = fmt_sprintf(buffer, buffer_len, "F%c",
                            (char)('1' + key - NC_KEY_F1));
     } else if ((key >= NC_KEY_F10) && (key <= NC_KEY_F12)) {
-        result = snprintf2(buffer, buffer_len, "F1%c",
+        result = fmt_sprintf(buffer, buffer_len, "F1%c",
                            (char)('0' + key - NC_KEY_F10));
     } else {
-        result = snprintf2(buffer, buffer_len, "%c", (char)key);
+        result = fmt_sprintf(buffer, buffer_len, "%c", (char)key);
     }
 
     if (result >= buffer_len) {
