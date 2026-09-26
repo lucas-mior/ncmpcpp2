@@ -30,7 +30,7 @@ nc_scrollpad_refresh(NcScrollpad *scrollpad, NcWindow *window) {
     int32 end_y;
     int32 end_x;
 
-    ASSERT_MORE_EQUAL(scrollpad->real_height, window->height);
+    ASSERT_MORE_EQUAL_VAR(scrollpad->real_height, window->height);
 
     if (scrollpad->beginning > nc_scrollpad_max_beginning(scrollpad, window)) {
         scrollpad->beginning = nc_scrollpad_max_beginning(scrollpad, window);
@@ -60,7 +60,7 @@ nc_scrollpad_scroll(NcScrollpad *scrollpad, NcWindow *window,
                     enum NcScroll where) {
     int32 max_beginning;
 
-    ASSERT_MORE_EQUAL(scrollpad->real_height, window->height);
+    ASSERT_MORE_EQUAL_VAR(scrollpad->real_height, window->height);
 
     max_beginning = nc_scrollpad_max_beginning(scrollpad, window);
     switch (where) {
@@ -256,7 +256,7 @@ nc_scrollpad_buffer_position_row(NcBuffer *buffer, int32 width,
     int32 i;
 
     ASSERT(buffer != NULL);
-    ASSERT_MORE(width, 0);
+    ASSERT_POSITIVE(width);
 
     data = nc_buffer_data(buffer);
     len = buffer->len;
@@ -337,8 +337,8 @@ nc_scrollpad_center_on_buffer_position(NcScrollpad *scrollpad,
     ASSERT(scrollpad != NULL);
     ASSERT(window != NULL);
     ASSERT(buffer != NULL);
-    ASSERT_MORE(window->width, 0);
-    ASSERT_MORE(window->height, 0);
+    ASSERT_POSITIVE(window->width);
+    ASSERT_POSITIVE(window->height);
 
     row = nc_scrollpad_buffer_position_row(buffer, window->width, position);
     height = nc_scrollpad_buffer_position_row(buffer, window->width,
