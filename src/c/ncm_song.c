@@ -31,7 +31,7 @@ ncm_song_format_numeric_tag_prefix(char *buffer, int32 buffer_cap,
     ASSERT(tag != NULL);
     ASSERT_NON_NEGATIVE(tag_len);
     ASSERT_NON_NEGATIVE(copy_len);
-    ASSERT_LESS_EQUAL_VAR(copy_len, tag_len);
+    ASSERT_LE_VAR(copy_len, tag_len);
 
     out = 0;
     if (ncm_song_needs_numeric_zero(tag, tag_len)) {

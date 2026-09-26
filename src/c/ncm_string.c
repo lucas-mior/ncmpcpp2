@@ -139,7 +139,7 @@ ncm_string_get_enclosed(char *string, int32 string_len, char open, char close,
     ASSERT(string != NULL);
     ASSERT_NON_NEGATIVE(string_len);
     ASSERT_NON_NEGATIVE(start);
-    ASSERT_LESS_EQUAL_VAR(start, string_len);
+    ASSERT_LE_VAR(start, string_len);
 
     i = start;
     while ((i < string_len) && (string[i] != open)) {
