@@ -106,7 +106,7 @@ lrc_find_tag_close(char *line, int32 line_len, int32 cursor) {
     ASSERT(line != NULL);
     ASSERT_NON_NEGATIVE(line_len);
     ASSERT_NON_NEGATIVE(cursor);
-    ASSERT_LESS_VAR(cursor, line_len);
+    ASSERT_LT_VAR(cursor, line_len);
     ASSERT_EQ(line[cursor], '[');
 
     close = cursor + 1;

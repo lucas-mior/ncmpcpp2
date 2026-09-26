@@ -790,7 +790,7 @@ nc_menu_highlight_position(NcMenu *menu, int32 pos, int32 height) {
 
     nc_menu_sync_item_len(menu);
     ASSERT_NON_NEGATIVE(pos);
-    ASSERT_LESS_VAR(pos, menu->item_len);
+    ASSERT_LT_VAR(pos, menu->item_len);
 
     menu->highlight = pos;
     if (height <= 0) {
@@ -1101,7 +1101,7 @@ nc_menu_item_flags_at(NcMenu *menu, enum NcMenuItemSource source, int32 pos) {
     int32 count = menu_array_len(menu, source);
 
     ASSERT_NON_NEGATIVE(pos);
-    ASSERT_LESS_VAR(pos, count);
+    ASSERT_LT_VAR(pos, count);
 
     return flags[pos];
 }
@@ -1125,7 +1125,7 @@ nc_menu_item_at(NcMenu *menu, enum NcMenuItemSource source, int32 pos) {
     int32 count = menu_array_len(menu, source);
 
     ASSERT_NON_NEGATIVE(pos);
-    ASSERT_LESS_VAR(pos, count);
+    ASSERT_LT_VAR(pos, count);
 
     return items[pos];
 }
@@ -1158,8 +1158,8 @@ nc_menu_swap_item_slots(NcMenu *menu, enum NcMenuItemSource source,
 
     ASSERT_NON_NEGATIVE(left);
     ASSERT_NON_NEGATIVE(right);
-    ASSERT_LESS_VAR(left, count);
-    ASSERT_LESS_VAR(right, count);
+    ASSERT_LT_VAR(left, count);
+    ASSERT_LT_VAR(right, count);
 
     temp = items[left];
     items[left] = items[right];

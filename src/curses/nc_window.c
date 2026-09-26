@@ -350,7 +350,7 @@ nc_color_pair_number(NcColor color) {
         result *= NC_COLOR_COMPONENT_COUNT;
         result += color.foreground % nc_color_len();
 
-        ASSERT_LESS_VAR(result, ARRAY_LEN(color_pair_map));
+        ASSERT_LT_VAR(result, ARRAY_LEN(color_pair_map));
 
         if (color_pair_map[result] == 0) {
             if (color_pair_counter >= COLOR_PAIRS) {
