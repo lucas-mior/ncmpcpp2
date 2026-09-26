@@ -30,7 +30,7 @@ nc_scrollpad_refresh(NcScrollpad *scrollpad, NcWindow *window) {
     int32 end_y;
     int32 end_x;
 
-    ASSERT_MORE_EQUAL_VAR(scrollpad->real_height, window->height);
+    ASSERT_GE_VAR(scrollpad->real_height, window->height);
 
     if (scrollpad->beginning > nc_scrollpad_max_beginning(scrollpad, window)) {
         scrollpad->beginning = nc_scrollpad_max_beginning(scrollpad, window);
@@ -60,7 +60,7 @@ nc_scrollpad_scroll(NcScrollpad *scrollpad, NcWindow *window,
                     enum NcScroll where) {
     int32 max_beginning;
 
-    ASSERT_MORE_EQUAL_VAR(scrollpad->real_height, window->height);
+    ASSERT_GE_VAR(scrollpad->real_height, window->height);
 
     max_beginning = nc_scrollpad_max_beginning(scrollpad, window);
     switch (where) {
