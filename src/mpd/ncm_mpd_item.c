@@ -310,7 +310,7 @@ ncm_mpd_item_playlist_from_mpd_playlist(NcmPlaylist *dest, void *mpd_playlist) {
         return -NCM_ERROR_NOT_FOUND;
     }
 
-    path_len = optional_strlen32(path);
+    path_len = opt_strlen32(path);
     last_modified = mpd_playlist_get_last_modified(source);
     return ncm_playlist_set(dest, path, path_len, last_modified);
 }
@@ -427,7 +427,7 @@ ncm_mpd_item_from_entity_copy(NcmMpdItem *item, void *mpd_entity) {
             status = -NCM_ERROR_NOT_FOUND;
         } else {
             status = ncm_directory_set(&replacement.directory,
-                                       path, optional_strlen32(path),
+                                       path, opt_strlen32(path),
                                        mpd_directory_get_last_modified(source));
         }
         if (status < 0) {

@@ -99,7 +99,7 @@ ncm_window_title_set(char *title, int32 title_len) {
 
 void
 ncm_window_title_set_cstring(char *title) {
-    ncm_window_title_set(title, optional_strlen32(title));
+    ncm_window_title_set(title, opt_strlen32(title));
     return;
 }
 
@@ -195,7 +195,7 @@ ncm_title_draw_current_header(void) {
         title = "";
     }
 
-    ncm_title_draw_header(title, optional_strlen32(title));
+    ncm_title_draw_header(title, opt_strlen32(title));
     return;
 }
 

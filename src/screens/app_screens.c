@@ -572,7 +572,7 @@ search_snapshot_playlist(void *user, NcmSongArray *songs, NcmError *ncm_error) {
 static bool
 search_prompt_should_continue(char *text, void *user) {
     (void)user;
-    return ncm_statusbar_prompt_should_continue(text, optional_strlen32(text));
+    return ncm_statusbar_prompt_should_continue(text, opt_strlen32(text));
 }
 
 static enum SearchEnginePromptResult
@@ -615,7 +615,7 @@ search_prompt_constraint(void *user, char *label, int32 label_len,
         return SEARCH_ENGINE_PROMPT_ERROR;
     }
 
-    input_len = optional_strlen32(input);
+    input_len = opt_strlen32(input);
     str_set(result, input, input_len);
     nc_window_prompt_result_destroy(input);
     return SEARCH_ENGINE_PROMPT_ACCEPTED;
@@ -703,7 +703,7 @@ app_screen_media_library_init(void) {
 static bool
 statusbar_prompt_should_continue(char *text, void *user) {
     (void)user;
-    return ncm_statusbar_prompt_should_continue(text, optional_strlen32(text));
+    return ncm_statusbar_prompt_should_continue(text, opt_strlen32(text));
 }
 
 static enum PromptResult
@@ -751,7 +751,7 @@ prompt_buffer(char *label, int32 label_len,
         return PROMPT_RESULT_ERROR;
     }
 
-    input_len = optional_strlen32(input);
+    input_len = opt_strlen32(input);
     str_set(result, input, input_len);
     nc_window_prompt_result_destroy(input);
     return PROMPT_RESULT_ACCEPTED;
@@ -1050,7 +1050,7 @@ app_screens_current_type(void) {
 static void
 draw_screen_header(NcScreen *screen) {
     char *title = nc_screen_title(screen);
-    ncm_title_draw_header(title, optional_strlen32(title));
+    ncm_title_draw_header(title, opt_strlen32(title));
     return;
 }
 

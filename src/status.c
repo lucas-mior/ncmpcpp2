@@ -136,7 +136,7 @@ status_print_value(char *prefix, int32 prefix_len,
     String message = {0};
 
     if (value_len < 0) {
-        value_len = optional_strlen32(value);
+        value_len = opt_strlen32(value);
     }
 
     STR_APPEND(&message, prefix, prefix_len);
@@ -1005,7 +1005,7 @@ status_player_state_string(char *buffer, int32 buffer_cap) {
         break;
     }
 
-    len = optional_strlen32(string);
+    len = opt_strlen32(string);
     if (len >= buffer_cap) {
         len = buffer_cap - 1;
     }

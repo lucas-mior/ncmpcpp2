@@ -40,7 +40,7 @@ ncm_mpd_client_copy_connection_error(MpdClient *client, NcmError *ncm_error) {
     ASSERT(client != NULL);
 
     message = ncm_mpd_connection_error(&client->connection);
-    message_len = optional_strlen32(message);
+    message_len = opt_strlen32(message);
     code = ncm_mpd_connection_error_code(&client->connection);
     ncm_error_set(ncm_error, (int32)code, message, message_len);
     return;
@@ -289,7 +289,7 @@ ncm_mpd_client_set_hostname(MpdClient *client, char *host, int32 host_len,
         host_len = 0;
     }
     if (host_len < 0) {
-        host_len = optional_strlen32(host);
+        host_len = opt_strlen32(host);
     }
 
     at = -1;
@@ -330,7 +330,7 @@ ncm_mpd_client_set_password(MpdClient *client,
                                     STRLIT("missing MPD client"));
     }
     if (password_len < 0) {
-        password_len = optional_strlen32(password);
+        password_len = opt_strlen32(password);
     }
 
     ncm_mpd_client_set_buffer(&client->password, password, password_len);
@@ -1281,7 +1281,7 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
                                     STRLIT("negative random count"));
     }
     if (exclude_pattern_len < 0) {
-        exclude_pattern_len = optional_strlen32(exclude_pattern);
+        exclude_pattern_len = opt_strlen32(exclude_pattern);
     }
     if ((status = ncm_mpd_client_prechecks_no_commands(client,
                                                        ncm_error)) < 0) {

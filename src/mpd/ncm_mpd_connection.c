@@ -84,7 +84,7 @@ ncm_mpd_connection_set_error(MpdConnection *connection,
     }
     connection->error_clearable = clearable;
 
-    message_len = optional_strlen32(message);
+    message_len = opt_strlen32(message);
     ncm_error_set(&connection->ncm_error, (int32)connection->error_code,
                   message, message_len);
     return;
@@ -200,7 +200,7 @@ ncm_mpd_connection_recv_pair_list(MpdConnection *connection, char *name,
         }
 
         value = (char *)pair->value;
-        strflex_list_push(strings, value, optional_strlen32(value));
+        strflex_list_push(strings, value, opt_strlen32(value));
         mpd_return_pair(connection->mpd, pair);
     }
 
@@ -653,7 +653,7 @@ ncm_mpd_connection_get_status(MpdConnection *connection,
     out_status->update_id = (int32)mpd_status_get_update_id(mpd_status);
 
     error = (char *)mpd_status_get_error(mpd_status);
-    error_len = optional_strlen32(error);
+    error_len = opt_strlen32(error);
     memset64(out_status->error, 0, LENGTH(out_status->error));
     if (error) {
         memcpy64(out_status->error, error,
@@ -759,7 +759,7 @@ ncm_mpd_connection_get_replay_gain_mode(MpdConnection *connection,
     }
 
     name = (char *)pair->value;
-    parsed_mode = NCM_MPD_REPLAY_GAIN_parse(name, optional_strlen32(name));
+    parsed_mode = NCM_MPD_REPLAY_GAIN_parse(name, opt_strlen32(name));
     if (parsed_mode == NCM_MPD_REPLAY_GAIN_COUNT) {
         status = -NCM_ERROR_PARSE;
     } else {
@@ -1181,7 +1181,7 @@ ncm_mpd_connection_list_tag_values(MpdConnection *connection,
         }
 
         value = (char *)pair->value;
-        strflex_list_push(strings, value, optional_strlen32(value));
+        strflex_list_push(strings, value, opt_strlen32(value));
         mpd_return_pair(connection->mpd, pair);
     }
 
@@ -1256,7 +1256,7 @@ ncm_mpd_connection_get_outputs(MpdConnection *connection,
 
         index = outputs->len;
         name = (char *)mpd_output_get_name(output);
-        name_len = optional_strlen32(name);
+        name_len = opt_strlen32(name);
 
         item = &outputs->items[index];
         item->id = (int32)mpd_output_get_id(output);

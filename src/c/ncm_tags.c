@@ -27,10 +27,10 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
 
     {
         int32 music_dir_len = 0;
-        int32 uri_len = optional_strlen32(uri);
+        int32 uri_len = opt_strlen32(uri);
 
         if (is_from_database) {
-            music_dir_len = optional_strlen32(music_dir);
+            music_dir_len = opt_strlen32(music_dir);
         }
         old_path_len = music_dir_len + uri_len;
         old_path = malloc2(old_path_len + 1);
@@ -110,12 +110,12 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
 
     if ((new_name != NULL) && (new_name[0] != '\0')) {
         int32 music_dir_len = 0;
-        int32 directory_len = optional_strlen32(directory);
-        int32 new_name_len = optional_strlen32(new_name);
+        int32 directory_len = opt_strlen32(directory);
+        int32 new_name_len = opt_strlen32(new_name);
         int32 offset = 0;
 
         if (is_from_database) {
-            music_dir_len = optional_strlen32(music_dir);
+            music_dir_len = opt_strlen32(music_dir);
         }
         new_path_len = music_dir_len + directory_len + 1 + new_name_len;
         new_path = malloc2(new_path_len + 1);

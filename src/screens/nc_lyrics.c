@@ -958,7 +958,7 @@ lyrics_job_complete(int32 status, NcmError *ncm_error, void *user) {
             STR_APPEND(&output, "Couldn't save lyrics as \"");
             STR_APPEND(&output, job->filename.data, job->filename.len);
             STR_APPEND(&output, "\": ");
-            STR_APPEND(&output, message, optional_strlen32(message));
+            STR_APPEND(&output, message, opt_strlen32(message));
             ncm_statusbar_print(Config.message_delay_time,
                                 output.data, output.len);
             str_free(&output);
@@ -1113,12 +1113,12 @@ lyrics_screen_fetch(LyricsScreen *screen, NcmSong *song,
         STR_APPEND(&message, lrc_filename.data + lrc_start,
                   lrc_filename.len - lrc_start);
         STR_APPEND(&message, " ");
-        STR_APPEND(&message, lrc_status, optional_strlen32(lrc_status));
+        STR_APPEND(&message, lrc_status, opt_strlen32(lrc_status));
         STR_APPEND(&message, "; ");
         STR_APPEND(&message, txt_filename.data + txt_start,
                   txt_filename.len - txt_start);
         STR_APPEND(&message, " ");
-        STR_APPEND(&message, txt_status, optional_strlen32(txt_status));
+        STR_APPEND(&message, txt_status, opt_strlen32(txt_status));
         ncm_statusbar_print(Config.message_delay_time,
                             message.data, message.len);
         str_free(&message);
@@ -1423,7 +1423,7 @@ lyrics_screen_refetch_current(LyricsScreen *screen, NcmError *ncm_error) {
         STR_APPEND(&output, "Couldn't remove \"");
         STR_APPEND(&output, filename.data, filename.len);
         STR_APPEND(&output, "\": ");
-        STR_APPEND(&output, message, optional_strlen32(message));
+        STR_APPEND(&output, message, opt_strlen32(message));
         ncm_statusbar_print(Config.message_delay_time, output.data, output.len);
         str_free(&output);
         str_free(&filename);

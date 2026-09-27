@@ -630,7 +630,7 @@ ncm_action_immediate_command_prompt_should_stop(String *previous,
 static bool
 action_runtime_command_prompt_should_continue(char *text, void *user) {
     ActionRuntimeCommandPrompt *state = user;
-    int32 text_len = optional_strlen32(text);
+    int32 text_len = opt_strlen32(text);
 
     if (!ncm_statusbar_prompt_should_continue(text, text_len)) {
         return false;
@@ -645,7 +645,7 @@ action_runtime_command_prompt_should_continue(char *text, void *user) {
 static bool
 action_runtime_filter_prompt_should_continue(char *text, void *user) {
     NcmError ncm_error;
-    int32 text_len = optional_strlen32(text);
+    int32 text_len = opt_strlen32(text);
 
     (void)user;
     if (!ncm_statusbar_prompt_should_continue(text, text_len)) {
@@ -769,7 +769,7 @@ static bool
 action_runtime_search_prompt_should_continue(char *text, void *user) {
     ActionRuntimeSearchPrompt *state = user;
     NcmError ncm_error;
-    int32 text_len = optional_strlen32(text);
+    int32 text_len = opt_strlen32(text);
 
     if (!ncm_statusbar_prompt_should_continue(text, text_len)) {
         return false;
@@ -795,7 +795,7 @@ action_runtime_prompt_result(String *result, NcPrompt *prompt,
         return false;
     }
 
-    text_len = optional_strlen32(text);
+    text_len = opt_strlen32(text);
     ok = str_set(result, text, text_len) >= 0;
     nc_window_prompt_result_destroy(text);
     return ok;
@@ -1052,7 +1052,7 @@ action_runtime_add_random_items(void) {
 static void
 action_runtime_print_toggle(char *prefix, int32 prefix_len, char *value) {
     action_runtime_print_message(prefix, prefix_len, value,
-                                 optional_strlen32(value), STRLIT(""));
+                                 opt_strlen32(value), STRLIT(""));
     return;
 }
 
@@ -4313,7 +4313,7 @@ action_runtime_edit_library_tag(void) {
                 STR_APPEND(&message, name.data, name.len);
                 STR_APPEND(&message, "\": ");
                 STR_APPEND(&message, error_message,
-                          optional_strlen32(error_message));
+                          opt_strlen32(error_message));
                 ncm_statusbar_print(Config.message_delay_time,
                                                     message.data, message.len);
                 str_free(&message);

@@ -378,7 +378,7 @@ visualizer_system_open_fifo(void *user, char *location, int32 location_len) {
         STR_APPEND(&message, "Couldn't open \"");
         STR_APPEND(&message, location, location_len);
         STR_APPEND(&message, "\" for reading PCM data: ");
-        STR_APPEND(&message, error_message, optional_strlen32(error_message));
+        STR_APPEND(&message, error_message, opt_strlen32(error_message));
         ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                             message.data, message.len);
         str_free(&message);
@@ -412,7 +412,7 @@ visualizer_system_open_udp(void *user, char *location, int32 location_len,
         STR_APPEND(&message, ":");
         STR_APPEND(&message, port, port_len);
         STR_APPEND(&message, "\": ");
-        STR_APPEND(&message, error_message, optional_strlen32(error_message));
+        STR_APPEND(&message, error_message, opt_strlen32(error_message));
         ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                             message.data, message.len);
         str_free(&message);

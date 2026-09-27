@@ -435,7 +435,7 @@ adder_add_to_current_playlist(SelectedItemsAdderScreen *screen,
 
     STR_APPEND(&message, "Selected items added");
     suffix = ncm_helpers_with_errors(success);
-    STR_APPEND(&message, suffix, optional_strlen32(suffix));
+    STR_APPEND(&message, suffix, opt_strlen32(suffix));
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
     str_free(&message);
     adder_finish(screen);
@@ -775,7 +775,7 @@ adder_action_current_playlist(void *user) {
 static bool
 adder_statusbar_prompt_can_continue(char *text, void *user) {
     (void)user;
-    return ncm_statusbar_prompt_should_continue(text, optional_strlen32(text));
+    return ncm_statusbar_prompt_should_continue(text, opt_strlen32(text));
 }
 
 static void
@@ -817,7 +817,7 @@ adder_action_new_playlist(void *user) {
     if (playlist == NULL) {
         playlist = "";
     }
-    playlist_len = optional_strlen32(playlist);
+    playlist_len = opt_strlen32(playlist);
     adder_add_to_stored_playlist(screen, playlist, playlist_len);
     nc_window_prompt_result_destroy(input);
     return;

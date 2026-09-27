@@ -3285,7 +3285,7 @@ media_library_screen_add_item_to_playlist(MediaLibraryScreen *screen,
                 STR_APPEND(&message, "\" added");
             }
             STR_APPEND(&message, ncm_helpers_with_errors(result),
-                      optional_strlen32(ncm_helpers_with_errors(result)));
+                      opt_strlen32(ncm_helpers_with_errors(result)));
         } else if (result && (songs.len == 1)) {
             NcmFormatAst *format = &Config.song_status_format;
             String rendered = ncm_format_render_string(format,
@@ -3297,7 +3297,7 @@ media_library_screen_add_item_to_playlist(MediaLibraryScreen *screen,
         } else if (result) {
             STR_APPEND(&message, "Songs added");
             STR_APPEND(&message, ncm_helpers_with_errors(result),
-                      optional_strlen32(ncm_helpers_with_errors(result)));
+                      opt_strlen32(ncm_helpers_with_errors(result)));
         }
 
         if (message.len > 0) {

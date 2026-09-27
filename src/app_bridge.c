@@ -74,7 +74,7 @@ app_bridge_report_mpd_error(NcmError *ncm_error) {
     } else {
         STR_APPEND(&output, "ncmpcpp: ");
     }
-    STR_APPEND(&output, message, optional_strlen32(message));
+    STR_APPEND(&output, message, opt_strlen32(message));
     ncm_statusbar_print(Config.message_delay_time, output.data, output.len);
     str_free(&output);
     return;
