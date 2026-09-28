@@ -447,17 +447,13 @@ settings_next_list_item(char *value, int32 value_len, int32 *pos, char **item,
     }
 
     while (start < end) {
-        uint8 c = (uint8)value[start];
-
-        if (!isspace(c)) {
+        if (!is_space(value[start])) {
             break;
         }
         start += 1;
     }
     while (end > start) {
-        uint8 c = (uint8)value[end - 1];
-
-        if (!isspace(c)) {
+        if (!is_space(value[end - 1])) {
             break;
         }
         end -= 1;
