@@ -233,7 +233,7 @@ mutable_song_set_tag(MutableSong *song, enum TagType type,
     if (idx < 0) {
         return -EINVAL;
     }
-    if ((uint32)type >= TAG_COUNT) {
+    if ((type == 0) || ((uint32)type >= TAG_COUNT)) {
         return -EINVAL;
     }
     if (value_len < 0) {
@@ -263,7 +263,7 @@ mutable_song_set_tags(MutableSong *song, enum TagType type,
     if (value_len < 0) {
         return -EINVAL;
     }
-    if ((uint32)type >= TAG_COUNT) {
+    if ((type == 0) || ((uint32)type >= TAG_COUNT)) {
         return -EINVAL;
     }
 
@@ -312,7 +312,7 @@ mutable_song_has_tag_view(MutableSong *song, enum TagType type, int32 idx,
     if (idx < 0) {
         return false;
     }
-    if ((uint32)type >= TAG_COUNT) {
+    if ((type == 0) || ((uint32)type >= TAG_COUNT)) {
         return false;
     }
 
@@ -348,7 +348,7 @@ mutable_song_get_tag_buffer(MutableSong *song,
         str_clear(buffer);
         return;
     }
-    if ((uint32)type >= TAG_COUNT) {
+    if ((type == 0) || ((uint32)type >= TAG_COUNT)) {
         str_clear(buffer);
         return;
     }
@@ -366,7 +366,7 @@ mutable_song_tags_buffer(MutableSong *song, enum TagType type,
     if (song == NULL) {
         return result;
     }
-    if ((uint32)type >= TAG_COUNT) {
+    if ((type == 0) || ((uint32)type >= TAG_COUNT)) {
         return result;
     }
     if ((separator == NULL) || (separator_len < 0)) {
@@ -440,7 +440,7 @@ mutable_song_load_originals_from_song(MutableSong *dest, NcmSong *source) {
     }
     dest->is_from_database = ncm_song_is_from_database(source);
 
-    for (uint32 type_i = 0; type_i < TAG_COUNT; type_i += 1) {
+    for (uint32 type_i = TAG_ARTIST; type_i < TAG_COUNT; type_i += 1) {
         enum TagType type = (enum TagType)type_i;
 
         for (int32 i = 0; ; i += 1) {

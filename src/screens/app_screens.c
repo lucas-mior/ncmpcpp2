@@ -1656,7 +1656,7 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
         str_free(&value);
     }
 
-    for (uint32 i = 0; i < TAG_COUNT; i += 1) {
+    for (uint32 i = 0; i < TAG_COUNT - 1; i += 1) {
         enum TagType tag = ncm_song_info_tags[i].tag;
 
         value = (String){0};

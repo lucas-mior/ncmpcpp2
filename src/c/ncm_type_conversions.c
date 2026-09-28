@@ -67,7 +67,7 @@ ncm_color_index_from_char(char c) {
 
 int32
 ncm_tag_type_name_len(enum TagType tag, char **out) {
-    if ((uint32)tag >= (uint32)TAG_COUNT) {
+    if ((tag == 0) || ((uint32)tag >= (uint32)TAG_COUNT)) {
         *out = "";
         return 0;
     }

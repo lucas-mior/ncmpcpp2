@@ -881,7 +881,8 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
     if (fps <= 0) {
         fps = VISUALIZER_DEFAULT_FPS;
     }
-    if (visualization_type >= VISUALIZER_TYPE_COUNT) {
+    if ((visualization_type == 0)
+        || (visualization_type >= VISUALIZER_TYPE_COUNT)) {
         visualization_type = VISUALIZER_WAVE;
     }
 #if defined(HAVE_FFTW3_H)

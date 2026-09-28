@@ -849,14 +849,14 @@ playlist_build_mutable_song(NcmSong *replacement,
     for (int32 i = 0; i < current->tags_len; i += 1) {
         enum TagType type = current->tags[i].type;
 
-        if ((type == TAG_COUNT) || ((uint32)type < TAG_COUNT)) {
+        if ((type == 0) || ((uint32)type <= TAG_COUNT)) {
             continue;
         }
         ncm_song_add_tag(replacement, type,
                          current->tags[i].value, current->tags[i].value_len);
     }
 
-    for (uint32 i = 0; i < TAG_COUNT; i += 1) {
+    for (uint32 i = TAG_ARTIST; i < TAG_COUNT; i += 1) {
         enum TagType type = (enum TagType)i;
 
         for (int32 j = 0; ; j += 1) {

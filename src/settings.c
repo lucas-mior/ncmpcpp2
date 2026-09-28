@@ -562,7 +562,7 @@ settings_parse_startup_screen(char *value, int32 value_len,
     SCREEN_TYPE_ parsed;
 
     parsed = SCREEN_TYPE_parse(value, value_len);
-    if (parsed == SCREEN_TYPE_COUNT) {
+    if (!parsed) {
         return settings_invalid_value(ncm_error, value, value_len);
     }
     if (!screen_type_is_startup(parsed)) {
@@ -1015,7 +1015,7 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
     ENUM_PREFIX_ parsed;                                                       \
     parsed = CAT(ENUM_PREFIX_, parse)(value, value_len);                       \
-    if (parsed == CAT(ENUM_PREFIX_, COUNT)) {                                  \
+    if (!parsed) {                                                             \
         return settings_invalid_value(ncm_error, value, value_len);            \
     }                                                                          \
     config->NAME = parsed;                                                     \

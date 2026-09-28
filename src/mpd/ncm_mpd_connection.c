@@ -760,7 +760,7 @@ ncm_mpd_connection_get_replay_gain_mode(MpdConnection *connection,
 
     name = (char *)pair->value;
     parsed_mode = NCM_MPD_REPLAY_GAIN_parse(name, opt_strlen32(name));
-    if (parsed_mode == NCM_MPD_REPLAY_GAIN_COUNT) {
+    if (!parsed_mode) {
         status = -NCM_ERROR_PARSE;
     } else {
         *mode = parsed_mode;

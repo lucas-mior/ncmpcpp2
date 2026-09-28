@@ -67,10 +67,10 @@ enum {
 
 static inline enum TagType
 ncm_writable_tag_at(int32 idx) {
-    if ((idx < 0) || (idx >= (int32)TAG_COUNT)) {
+    if ((idx < 0) || (idx >= (int32)TAG_COUNT - 1)) {
         return TAG_COUNT;
     }
-    return (enum TagType)idx;
+    return (enum TagType)(idx + 1);
 }
 
 static inline int32
@@ -144,7 +144,7 @@ ncm_tag_type_taglib_property_len(enum TagType tag, char *out, int32 cap) {
     ASSERT(out != NULL);
     ASSERT_POSITIVE(cap);
 
-    if ((uint32)tag >= TAG_COUNT) {
+    if ((tag == 0) || ((uint32)tag >= TAG_COUNT)) {
         out[0] = '\0';
         return -1;
     }
@@ -175,7 +175,7 @@ ncm_tag_type_taglib_name_len(enum TagType tag, char *out, int32 cap) {
     ASSERT(out != NULL);
     ASSERT_POSITIVE(cap);
 
-    if ((uint32)tag >= TAG_COUNT) {
+    if ((tag == 0) || ((uint32)tag >= TAG_COUNT)) {
         out[0] = '\0';
         return -1;
     }
@@ -210,7 +210,7 @@ ncm_tag_type_parser_name_len(enum TagType tag, char **out) {
     if (tag == TAG_TRACK) {
         return SONG_GETTER_alias_len(SONG_GETTER_TRACK_NUMBER, out);
     }
-    if ((uint32)tag >= TAG_COUNT) {
+    if ((tag == 0) || ((uint32)tag >= TAG_COUNT)) {
         *out = "";
         return 0;
     }

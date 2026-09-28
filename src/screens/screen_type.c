@@ -76,8 +76,7 @@ screen_type_parse_checked(char *string, int32 string_len, bool startup_only,
     ASSERT(screen_type != NULL);
 
     parsed = SCREEN_TYPE_parse(string, string_len);
-    if ((parsed != SCREEN_TYPE_COUNT)
-        && (!startup_only || screen_type_is_startup(parsed))) {
+    if (parsed && (!startup_only || screen_type_is_startup(parsed))) {
         *screen_type = parsed;
         return 0;
     }

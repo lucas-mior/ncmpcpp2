@@ -140,7 +140,7 @@ ncm_taglib_read_mapped_properties(TaglibFile *file,
     ASSERT(callback != NULL);
 
     count = 0;
-    for (uint32 i = 0; i < TAG_COUNT; i += 1) {
+    for (uint32 i = TAG_ARTIST; i < TAG_COUNT; i += 1) {
         char property[TAGLIB_PROPERTY_CAP];
         char name[TAGLIB_NAME_CAP];
         char **values;

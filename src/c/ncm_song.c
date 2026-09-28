@@ -309,7 +309,7 @@ ncm_song_add_tag(NcmSong *song, enum TagType type,
     if (value_len < 0) {
         return -EINVAL;
     }
-    if (type == TAG_COUNT) {
+    if ((type == 0) || ((uint32)type >= TAG_COUNT)) {
         return -EINVAL;
     }
 
@@ -781,6 +781,7 @@ ncm_song_getter_buffer(NcmSong *song, enum SongGetter getter, int32 idx) {
     String buffer = {0};
 
     if ((song == NULL) || (idx < 0)
+        || (getter == 0)
         || ((uint32)getter >= (uint32)SONG_GETTER_COUNT)) {
         return buffer;
     }
@@ -797,7 +798,7 @@ ncm_song_tags_buffer(NcmSong *song, enum SongGetter getter,
     if (song == NULL) {
         return result;
     }
-    if (getter >= SONG_GETTER_COUNT) {
+    if ((getter == 0) || (getter >= SONG_GETTER_COUNT)) {
         return result;
     }
     if ((separator == NULL) || (separator_len < 0)) {

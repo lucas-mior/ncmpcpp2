@@ -28,7 +28,7 @@ ncm_action_type_parse(char *name, int32 name_len, enum ActionType *type) {
     }
 
     action_type = ACTION_parse(name, name_len);
-    if (action_type == ACTION_COUNT) {
+    if (!action_type) {
         return -NCM_ERROR_PARSE;
     }
 
@@ -4266,7 +4266,7 @@ action_runtime_edit_library_tag(void) {
     sep = Config.tags_separator;
     sep_len = Config.tags_separator_len;
     tag_type = Config.media_library_primary_tag;
-    if ((uint32)tag_type >= TAG_COUNT) {
+    if ((tag_type == 0) || ((uint32)tag_type >= TAG_COUNT)) {
         status = -NCM_ERROR_UNAVAILABLE;
         goto cleanup;
     }
@@ -5304,7 +5304,7 @@ static bool
 action_availability_can_run(enum ActionType type) {
     ActionAvailability availability;
 
-    if ((uint32)type >= ACTION_COUNT) {
+    if ((type == 0) || ((uint32)type >= ACTION_COUNT)) {
         return false;
     }
 
@@ -5790,7 +5790,7 @@ action_run_execute(ActionRuntime *runtime, enum ActionType type,
 
 static int32
 action_runtime_builtin_run(ActionRuntime *runtime, enum ActionType type) {
-    if ((uint32)type >= ACTION_COUNT) {
+    if ((type == 0) || ((uint32)type >= ACTION_COUNT)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     return action_run_execute(runtime, type, action_run_table[type]);

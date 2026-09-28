@@ -24,7 +24,7 @@ enum TagEditParserActionRow {
 
 #define TAG_EDIT_PATTERN_HISTORY_MAX 30
 
-#define TAG_EDIT_FILENAME_ROW (TAG_COUNT + 1)
+#define TAG_EDIT_FILENAME_ROW TAG_COUNT
 
 static bool
 tag_edit_choice_is_filename(int32 choice) {
@@ -85,7 +85,7 @@ tag_edit_draw_tag(NcMenu *menu, NcWindow *window, void *item,
 
     tag_types = nc_editor_string_menu_base(&screen->tag_types);
     choice = nc_menu_highlight(tag_types);
-    if (choice < (int32)TAG_COUNT) {
+    if (choice < (int32)TAG_COUNT - 1) {
         String tag;
         enum TagType tag_type = ncm_song_info_tags[choice].tag;
 
@@ -585,7 +585,7 @@ tag_edit_current_tag_type_action(TagEditScreen *screen,
         return TAG_EDIT_TAG_TYPE_ACTION_NONE;
     }
 
-    if (choice < (int32)TAG_COUNT) {
+    if (choice < (int32)TAG_COUNT - 1) {
         *tag_type = ncm_song_info_tags[choice].tag;
         if ((ncm_song_info_tags[choice].tag == TAG_TRACK)
             && (screen->active_focus == TAG_EDIT_FOCUS_TAG_TYPES)) {
@@ -598,7 +598,7 @@ tag_edit_current_tag_type_action(TagEditScreen *screen,
     }
 
     action = TAG_EDIT_TAG_TYPE_ACTION_parse(row->data, row->len);
-    if (action != TAG_EDIT_TAG_TYPE_ACTION_COUNT) {
+    if (action) {
         return action;
     }
     return TAG_EDIT_TAG_TYPE_ACTION_NONE;
@@ -897,7 +897,7 @@ tag_edit_prompt_tag_value(TagEditScreen *screen,
     bool result;
 
     ASSERT(screen != NULL);
-    if ((uint32)tag_type >= TAG_COUNT) {
+    if ((tag_type == 0) || ((uint32)tag_type >= TAG_COUNT)) {
         return false;
     }
     song = nc_tag_row_menu_current(&screen->tags);
@@ -2193,7 +2193,7 @@ tag_edit_tag_matches_regex(TagEditScreen *screen,
 
     tag_types = nc_editor_string_menu_base(&screen->tag_types);
     choice = nc_menu_highlight(tag_types);
-    if (choice < (int32)TAG_COUNT) {
+    if (choice < (int32)TAG_COUNT - 1) {
         tag_type = ncm_song_info_tags[choice].tag;
     } else if (tag_edit_choice_is_filename(choice)) {
         tag_type = TAG_COUNT;
@@ -2508,7 +2508,7 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
         int32 label_len;
 
         nc_menu_clear_items(nc_editor_string_menu_base(menu));
-        for (uint32 i = 0; i < TAG_COUNT; i += 1) {
+        for (uint32 i = 0; i < TAG_COUNT - 1; i += 1) {
             tag_edit_append_string_row(menu,
                                        ncm_song_info_tags[i].name,
                                        ncm_song_info_tags[i].name_len,
@@ -3152,7 +3152,8 @@ tag_edit_copy_selected_song_at(TagEditScreen *screen,
         char *value = tag->original;
         int32 value_len = tag->original_len;
 
-        if ((type == TAG_COUNT) || (value == NULL) || (value_len <= 0)) {
+        if ((type == 0) || (type == TAG_COUNT)
+            || (value == NULL) || (value_len <= 0)) {
             continue;
         }
         ncm_song_add_tag(&song, type, value, value_len);
@@ -3236,7 +3237,7 @@ tag_edit_screen_next_column_available(TagEditScreen *screen) {
         tags = nc_tag_row_menu_base(&screen->tags);
         choice = nc_menu_highlight(tag_types);
         return (nc_menu_item_len(tags) > 0)
-               && ((choice < (int32)TAG_COUNT)
+               && ((choice < (int32)TAG_COUNT - 1)
                    || tag_edit_choice_is_filename(choice));
     }
     if (screen->active_focus == TAG_EDIT_FOCUS_PARSER_ACTIONS) {
@@ -3344,7 +3345,7 @@ tag_edit_screen_apply_tag_to_selection(TagEditScreen *screen,
     if ((screen == NULL) || (value == NULL)) {
         return -EINVAL;
     }
-    if ((uint32)tag_type >= TAG_COUNT) {
+    if ((tag_type == 0) || ((uint32)tag_type >= TAG_COUNT)) {
         return -EINVAL;
     }
     if ((value_len < 0) || (separator_len < 0)) {
@@ -3403,7 +3404,7 @@ static int32
 tag_edit_capitalize_song_callback(MutableSong *song, void *user) {
     (void)user;
 
-    for (uint32 fi = 0; fi < TAG_COUNT; fi += 1) {
+    for (uint32 fi = 0; fi < TAG_COUNT - 1; fi += 1) {
         enum TagType tag_type = ncm_song_info_tags[fi].tag;
 
         for (int32 i = 0; ; i += 1) {
@@ -3442,7 +3443,7 @@ tag_edit_screen_capitalize_first_letters(TagEditScreen *screen) {
 static int32
 tag_edit_lower_song_callback(MutableSong *song, void *user) {
     (void)user;
-    for (uint32 j = 0; j < TAG_COUNT; j += 1) {
+    for (uint32 j = 0; j < TAG_COUNT - 1; j += 1) {
         enum TagType tag_type = ncm_song_info_tags[j].tag;
 
         for (int32 i = 0; ; i += 1) {
@@ -4226,7 +4227,7 @@ tag_edit_generate_filename(MutableSong *song,
             char *value;
             int32 value_len;
 
-            if (type == TAG_COUNT) {
+            if ((type == 0) || (type == TAG_COUNT)) {
                 continue;
             }
 
@@ -4272,7 +4273,7 @@ tag_edit_song_display_value(MutableSong *song, enum TagType tag_type,
         }
         return 0;
     }
-    if ((uint32)tag_type >= TAG_COUNT) {
+    if ((tag_type == 0) || ((uint32)tag_type >= TAG_COUNT)) {
         return -EINVAL;
     }
 

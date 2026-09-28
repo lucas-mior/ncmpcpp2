@@ -1725,7 +1725,8 @@ media_library_tags_from_songs(MediaLibraryTagArray *tags, NcmSongArray *songs,
                               enum TagType grouping_tag) {
     MediaLibraryTagArray replacement = {0};
 
-    if ((tags == NULL) || (songs == NULL) || (grouping_tag == TAG_COUNT)) {
+    if ((tags == NULL) || (songs == NULL)
+        || (grouping_tag == 0) || (grouping_tag == TAG_COUNT)) {
         return -EINVAL;
     }
 
@@ -1768,7 +1769,8 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
     if ((albums == NULL) || (songs == NULL)
         || (mode < MEDIA_LIBRARY_MODE_THREE_COLUMNS)
         || (mode >= MEDIA_LIBRARY_MODE_COUNT)
-        || (grouping_tag == TAG_COUNT) || (selected_tag_len < 0)
+        || (grouping_tag == 0) || (grouping_tag == TAG_COUNT)
+        || (selected_tag_len < 0)
         || ((selected_tag == NULL) && (selected_tag_len > 0))) {
         return -EINVAL;
     }
