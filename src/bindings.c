@@ -49,9 +49,7 @@ ncm_trim_start(char *string, int32 string_len) {
     int32 result = 0;
 
     while (result < string_len) {
-        uint8 c = (uint8)string[result];
-
-        if (!isspace(c)) {
+        if (!is_space(string[result])) {
             break;
         }
         result += 1;
@@ -63,9 +61,7 @@ ncm_trim_start(char *string, int32 string_len) {
 static int32
 ncm_trim_end(char *string, int32 string_len) {
     while (string_len > 0) {
-        uint8 c = (uint8)string[string_len - 1];
-
-        if (!isspace(c)) {
+        if (!is_space(string[string_len - 1])) {
             break;
         }
         string_len -= 1;
@@ -954,7 +950,7 @@ binding_parse_action_line(BindingAction *action, char *line, int32 line_len,
     int32 name_len;
 
     name_len = 0;
-    while ((name_len < line_len) && !isspace((uint8)line[name_len])) {
+    while ((name_len < line_len) && !is_space(line[name_len])) {
         name_len += 1;
     }
 
@@ -1236,7 +1232,7 @@ bindings_config_read(BindingsConfiguration *bindings,
                                        &key_name_cap);
             key_name_len = enclosed.len;
             in_progress = IN_PROGRESS_KEY;
-        } else if (isspace((uint8)current_line[0])) {
+        } else if (is_space(current_line[0])) {
             BindingAction action;
             int32 action_start;
             int32 action_len;

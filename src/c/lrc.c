@@ -237,7 +237,7 @@ lrc_parse_time_tag(char *tag, int32 tag_len, int32 offset_ms, int32 *time_ms,
     llong value;
     int32 status;
 
-    if ((tag_len <= 0) || !isdigit((uint8)tag[0])) {
+    if ((tag_len <= 0) || !is_digit(tag[0])) {
         return 0;
     }
     if (tag_len < STRLIT_LEN("0:00")) {

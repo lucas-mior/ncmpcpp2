@@ -68,7 +68,7 @@ ncm_format_parse_color_component(char *data, int32 data_len,
     for (int32 i = 0; i < data_len; i += 1) {
         int32 digit;
 
-        if (!isdigit((uint8)data[i])) {
+        if (!isdigit(data[i])) {
             return -NCM_ERROR_PARSE;
         }
         digit = data[i] - '0';
@@ -333,11 +333,11 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                 i = percent_i;
             } else {
                 delimiter = 0;
-                if (isdigit((uint8)data[percent_i])) {
+                if (isdigit(data[percent_i])) {
                     int32 delimiter_start = percent_i;
 
                     while ((percent_i < end)
-                           && isdigit((uint8)data[percent_i])) {
+                           && isdigit(data[percent_i])) {
                         percent_i += 1;
                     }
                     if (percent_i >= end) {
@@ -393,7 +393,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
             } else {
                 expr = ncm_format_expr_list_append(out);
                 if ((flags & NCM_FORMAT_FLAG_COLOR)
-                    && isdigit((uint8)data[dollar_i])) {
+                    && isdigit(data[dollar_i])) {
                     int32 color_index;
 
                     color_index = ncm_color_index_from_char(data[dollar_i]);

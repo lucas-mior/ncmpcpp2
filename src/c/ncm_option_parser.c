@@ -80,7 +80,7 @@ ncm_option_parser_parse_line(char *line, int32 line_len,
     while (option_start + option_len < line_len) {
         char c = line[option_start + option_len];
 
-        if (!isalnum((uint8)c) && (c != '_')) {
+        if (!is_alnum(c) && (c != '_')) {
             break;
         }
         option_len += 1;
