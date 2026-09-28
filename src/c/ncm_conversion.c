@@ -36,8 +36,7 @@ static bool
 ncm_conversion_has_only_trailing_space(char *cursor) {
 
     while (*cursor != '\0') {
-        uint8 c = (uint8)*cursor;
-        if (!isspace(c)) {
+        if (!is_space(*cursor)) {
             return false;
         }
         cursor += 1;
