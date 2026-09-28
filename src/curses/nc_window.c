@@ -1024,7 +1024,7 @@ nc_window_parse_number(NcWindow *window, int32 *result) {
 
     while (true) {
         x = wgetch(window->window);
-        if (!isdigit(x)) {
+        if (!is_digit(x)) {
             return x;
         }
         *result = *result*10 + x - '0';
