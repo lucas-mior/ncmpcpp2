@@ -333,11 +333,11 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                 i = percent_i;
             } else {
                 delimiter = 0;
-                if (isdigit(data[percent_i])) {
+                if (is_digit(data[percent_i])) {
                     int32 delimiter_start = percent_i;
 
                     while ((percent_i < end)
-                           && isdigit(data[percent_i])) {
+                           && is_digit(data[percent_i])) {
                         percent_i += 1;
                     }
                     if (percent_i >= end) {
@@ -393,7 +393,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
             } else {
                 expr = ncm_format_expr_list_append(out);
                 if ((flags & NCM_FORMAT_FLAG_COLOR)
-                    && isdigit(data[dollar_i])) {
+                    && is_digit(data[dollar_i])) {
                     int32 color_index;
 
                     color_index = ncm_color_index_from_char(data[dollar_i]);
