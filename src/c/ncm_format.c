@@ -68,7 +68,7 @@ ncm_format_parse_color_component(char *data, int32 data_len,
     for (int32 i = 0; i < data_len; i += 1) {
         int32 digit;
 
-        if (!isdigit(data[i])) {
+        if (!is_digit(data[i])) {
             return -NCM_ERROR_PARSE;
         }
         digit = data[i] - '0';
