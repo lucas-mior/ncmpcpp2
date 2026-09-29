@@ -306,14 +306,13 @@ lastfm_job_complete(int32 status, NcmError *ncm_error, void *user) {
             char *data;
             int32 len;
 
-            lastfm_apply_literal_format(&screen->buffer,
+            lastfm_apply_literal_format(buffer,
                                         STRLIT("\n\nSimilar artists:\n"),
                                         NC_FORMAT_BOLD, NC_FORMAT_NO_BOLD);
-            lastfm_apply_literal_format(&screen->buffer,
+            lastfm_apply_literal_format(buffer,
                                         STRLIT("\n\nSimilar tags:\n"),
                                         NC_FORMAT_BOLD, NC_FORMAT_NO_BOLD);
 
-            buffer = &screen->buffer;
             data = buffer->data;
             len = buffer->len;
 
