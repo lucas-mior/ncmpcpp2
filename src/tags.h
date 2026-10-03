@@ -78,10 +78,10 @@ ncm_song_getter_column_title_len(enum SongGetter getter, char **out) {
     switch (getter) {
     case SONG_GETTER_LENGTH:
         *out = "Time";
-        return STRLIT_LEN("Time");
+        return strlen32(*out);
     case SONG_GETTER_TRACK_NUMBER:
         *out = "Track";
-        return STRLIT_LEN("Track");
+        return strlen32(*out);
     case SONG_GETTER_DIRECTORY:
     case SONG_GETTER_NAME:
     case SONG_GETTER_URI:
@@ -101,7 +101,7 @@ ncm_song_getter_column_title_len(enum SongGetter getter, char **out) {
     case SONG_GETTER_COUNT:
     default:
         *out = "?";
-        return STRLIT_LEN("?");
+        return strlen32(*out);
     }
 }
 
@@ -138,7 +138,9 @@ ncm_song_getter_sort_label_len(enum SongGetter getter, char **out) {
 static inline int32
 ncm_tag_type_taglib_property_len(enum TagType tag, char *out, int32 cap) {
     char *alias;
+    char *number = "NUMBER";
     int32 alias_len;
+    int32 number_len;
     int32 result;
 
     ASSERT(out != NULL);
@@ -158,13 +160,14 @@ ncm_tag_type_taglib_property_len(enum TagType tag, char *out, int32 cap) {
     if ((tag != TAG_TRACK) && (tag != TAG_DISC)) {
         return result;
     }
-    if (result + STRLIT_LEN("NUMBER") >= cap) {
+    number_len = strlen32(number);
+    if (result + number_len >= cap) {
         out[0] = '\0';
         return -1;
     }
 
-    memcpy64(out + result, STRLIT("NUMBER") + 1);
-    return result + STRLIT_LEN("NUMBER");
+    memcpy64(out + result, number, number_len + 1);
+    return result + number_len;
 }
 
 static inline int32

@@ -1283,6 +1283,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
             int32 text_width;
             int32 track_x;
             char separator[] = " ** ";
+            int32 separator_len = strlen32(separator);
 
             time_color = &Config.statusbar_time_color;
             status_tracklength_buffer(&tracklength);
@@ -1306,7 +1307,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
             }
             nc_cyclic_buffer_write(&rendered_song, footer,
                                    &status_playing_song_scroll_begin,
-                                   text_width, separator, STRLIT_LEN(" ** "));
+                                   text_width, separator, separator_len);
 
             track_x = nc_window_width(footer) - tracklength.len;
             if (track_x < 0) {
@@ -1339,6 +1340,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
             int32 text_width;
             int32 volume_x;
             char separator[] = " ** ";
+            int32 separator_len = strlen32(separator);
 
             first_format = &Config.alternative_header_first_line_format;
             second_format = &Config.alternative_header_second_line_format;
@@ -1388,7 +1390,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
             }
             nc_cyclic_buffer_write(&first, header,
                                    &status_first_line_scroll_begin, text_width,
-                                   separator, STRLIT_LEN(" ** "));
+                                   separator, separator_len);
 
             nc_window_go_to_xy(header, 0, 1);
             nc_window_apply_term_manip(header, NC_TERM_CLEAR_TO_EOL);
@@ -1404,7 +1406,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
             }
             nc_cyclic_buffer_write(&second, header,
                                    &status_second_line_scroll_begin, text_width,
-                                   separator, STRLIT_LEN(" ** "));
+                                   separator, separator_len);
 
             volume_x = nc_window_width(header) - global_volume_state_len();
             if (volume_x < 0) {

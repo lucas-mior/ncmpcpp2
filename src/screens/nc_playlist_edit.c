@@ -28,7 +28,7 @@ playlist_edit_update_titles(PlaylistEditScreen *screen, bool update_windows) {
     str_clear(&screen->content_title);
     if (Config.titles_visibility) {
         playlists_title = "Playlists";
-        playlists_title_len = STRLIT_LEN("Playlists");
+        playlists_title_len = strlen32(playlists_title);
         STR_APPEND(&screen->content_title, "Content");
 
         if (screen->last_known_content_len >= 0) {
@@ -888,7 +888,7 @@ playlist_edit_screen_init(PlaylistEditScreen *screen,
     playlist_edit_update_titles(screen, false);
     if (Config.titles_visibility) {
         playlists_title = "Playlists";
-        playlists_title_len = STRLIT_LEN("Playlists");
+        playlists_title_len = strlen32(playlists_title);
     }
     nc_window_init(&screen->playlists_window, start_x, main_start_y,
                    initial_left_width, main_height,

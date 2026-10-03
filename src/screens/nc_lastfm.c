@@ -302,7 +302,8 @@ lastfm_job_complete(int32 status, NcmError *ncm_error, void *user) {
         if (ncm_lastfm_service_type(&screen->service)
             == NCM_LASTFM_SERVICE_ARTIST_INFO) {
             NcBuffer *buffer = &screen->buffer;
-            int32 needle_len = STRLIT_LEN("\n * ");
+            char *needle = "\n * ";
+            int32 needle_len = strlen32(needle);
             char *data;
             int32 len;
 
@@ -317,7 +318,7 @@ lastfm_job_complete(int32 status, NcmError *ncm_error, void *user) {
             len = buffer->len;
 
             for (int32 i = 0; i + needle_len <= len; i += 1) {
-                if (BEGINS_WITH(data + i, len - i, STRLIT("\n * "))) {
+                if (BEGINS_WITH(data + i, len - i, needle, needle_len)) {
                     nc_buffer_add_text_style(buffer, i, &Config.color2,
                                                   LASTFM_PROPERTY_ID);
                     nc_buffer_add_text_style_end(buffer,

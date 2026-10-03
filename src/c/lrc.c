@@ -125,6 +125,8 @@ lrc_parse_offset_tag(LrcDocument *document, char *tag, int32 tag_len,
     char *value;
     int32 value_len;
     llong signed_value;
+    char *offset = "offset:";
+    int32 offset_len;
     int32 offset_ms;
     int32 status;
 
@@ -132,21 +134,22 @@ lrc_parse_offset_tag(LrcDocument *document, char *tag, int32 tag_len,
     ASSERT(tag != NULL);
     ASSERT_NON_NEGATIVE(tag_len);
 
-    if (tag_len < STRLIT_LEN("offset:")) {
+    offset_len = strlen32(offset);
+    if (tag_len < offset_len) {
         return 0;
     }
 
-    for (int32 i = 0; i < STRLIT_LEN("offset:"); i += 1) {
+    for (int32 i = 0; i < offset_len; i += 1) {
         uint8 left = (uint8)tag[i];
-        uint8 right = (uint8)"offset:"[i];
+        uint8 right = (uint8)offset[i];
 
         if (tolower(left) != tolower(right)) {
             return 0;
         }
     }
 
-    value = tag + STRLIT_LEN("offset:");
-    value_len = tag_len - STRLIT_LEN("offset:");
+    value = tag + offset_len;
+    value_len = tag_len - offset_len;
     status = parse_integer(value, value_len, &signed_value);
     if (status < 0) {
         return lrc_malformed_offset(ncm_error);
@@ -235,12 +238,13 @@ lrc_parse_time_tag(char *tag, int32 tag_len, int32 offset_ms, int32 *time_ms,
     llong seconds;
     llong milliseconds;
     llong value;
+    char *shortest_timestamp = "0:00";
     int32 status;
 
     if ((tag_len <= 0) || !is_digit(tag[0])) {
         return 0;
     }
-    if (tag_len < STRLIT_LEN("0:00")) {
+    if (tag_len < strlen32(shortest_timestamp)) {
         return lrc_malformed_line(ncm_error);
     }
 
@@ -506,6 +510,7 @@ lrc_document_clear_buffer_positions(LrcDocument *document) {
 int32
 lrc_document_render_plain(LrcDocument *document, LrcRenderTarget *target) {
     char line_break[] = "\n";
+    int32 line_break_len = strlen32(line_break);
 
     if ((document == NULL) || (target == NULL)) {
         return -EINVAL;
@@ -520,9 +525,9 @@ lrc_document_render_plain(LrcDocument *document, LrcRenderTarget *target) {
         StrView text;
 
         if (i > 0) {
-            target->append(target->user, line_break, STRLIT_LEN("\n"));
+            target->append(target->user, line_break, line_break_len);
             for (int32 j = 0; j < entry->blank_lines_before; j += 1) {
-                target->append(target->user, line_break, STRLIT_LEN("\n"));
+                target->append(target->user, line_break, line_break_len);
             }
         }
 

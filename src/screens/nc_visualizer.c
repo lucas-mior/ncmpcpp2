@@ -31,50 +31,32 @@
 #if defined(HAVE_FFTW3_H)
 #define VISUALIZER_SMOOTH_CHAR_COUNT 8
 
-static char *visualizer_smooth_chars[VISUALIZER_SMOOTH_CHAR_COUNT] = {
-    "▁",
-    "▂",
-    "▃",
-    "▄",
-    "▅",
-    "▆",
-    "▇",
-    "█",
+#define VISUALIZER_STR_VIEW(s) {.data = s, .len = STRLIT_LEN(s)}
+
+static StrView visualizer_smooth_chars[VISUALIZER_SMOOTH_CHAR_COUNT] = {
+    VISUALIZER_STR_VIEW("▁"),
+    VISUALIZER_STR_VIEW("▂"),
+    VISUALIZER_STR_VIEW("▃"),
+    VISUALIZER_STR_VIEW("▄"),
+    VISUALIZER_STR_VIEW("▅"),
+    VISUALIZER_STR_VIEW("▆"),
+    VISUALIZER_STR_VIEW("▇"),
+    VISUALIZER_STR_VIEW("█"),
 };
 
-static int32 visualizer_smooth_char_lens[VISUALIZER_SMOOTH_CHAR_COUNT] = {
-    STRLIT_LEN("▁"),
-    STRLIT_LEN("▂"),
-    STRLIT_LEN("▃"),
-    STRLIT_LEN("▄"),
-    STRLIT_LEN("▅"),
-    STRLIT_LEN("▆"),
-    STRLIT_LEN("▇"),
-    STRLIT_LEN("█"),
-};
-
-static char *visualizer_smooth_flipped_chars[VISUALIZER_SMOOTH_CHAR_COUNT] = {
-    "▔",
-    "🮂",
-    "🮃",
-    "🮄",
-    "🬎",
-    "🮅",
-    "🮆",
-    "█",
-};
-
-static int32 visualizer_smooth_flipped_char_lens[
+static StrView visualizer_smooth_flipped_chars[
     VISUALIZER_SMOOTH_CHAR_COUNT] = {
-    STRLIT_LEN("▔"),
-    STRLIT_LEN("🮂"),
-    STRLIT_LEN("🮃"),
-    STRLIT_LEN("🮄"),
-    STRLIT_LEN("🬎"),
-    STRLIT_LEN("🮅"),
-    STRLIT_LEN("🮆"),
-    STRLIT_LEN("█"),
+    VISUALIZER_STR_VIEW("▔"),
+    VISUALIZER_STR_VIEW("🮂"),
+    VISUALIZER_STR_VIEW("🮃"),
+    VISUALIZER_STR_VIEW("🮄"),
+    VISUALIZER_STR_VIEW("🬎"),
+    VISUALIZER_STR_VIEW("🮅"),
+    VISUALIZER_STR_VIEW("🮆"),
+    VISUALIZER_STR_VIEW("█"),
 };
+
+#undef VISUALIZER_STR_VIEW
 #endif
 
 #if defined(HAVE_FFTW3_H)
@@ -1696,22 +1678,23 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                     if (((double)j < h - 1.0)
                         || (index == VISUALIZER_SMOOTH_CHAR_COUNT - 1)) {
                         index = VISUALIZER_SMOOTH_CHAR_COUNT - 1;
-                        character = visualizer_smooth_chars[index];
-                        character_len = visualizer_smooth_char_lens[index];
+                        character = visualizer_smooth_chars[index].data;
+                        character_len = visualizer_smooth_chars[index].len;
                     } else if (flipped) {
                         if (screen->spectrum_smooth_look_legacy_chars) {
-                            character = visualizer_smooth_flipped_chars[index];
+                            character =
+                                visualizer_smooth_flipped_chars[index].data;
                             character_len =
-                                visualizer_smooth_flipped_char_lens[index];
+                                visualizer_smooth_flipped_chars[index].len;
                         } else {
                             index = VISUALIZER_SMOOTH_CHAR_COUNT - index - 2;
-                            character = visualizer_smooth_chars[index];
-                            character_len = visualizer_smooth_char_lens[index];
+                            character = visualizer_smooth_chars[index].data;
+                            character_len = visualizer_smooth_chars[index].len;
                             reverse = true;
                         }
                     } else {
-                        character = visualizer_smooth_chars[index];
-                        character_len = visualizer_smooth_char_lens[index];
+                        character = visualizer_smooth_chars[index].data;
+                        character_len = visualizer_smooth_chars[index].len;
                     }
                 }
                 visualizer_draw_character(screen, x, y, style, reverse,

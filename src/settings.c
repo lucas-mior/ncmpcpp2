@@ -882,7 +882,7 @@ settings_apply_option(Configuration *config, SettingsOption option,
             phase = "processing";
         }
         detail = "invalid value";
-        detail_len = STRLIT_LEN("invalid value");
+        detail_len = strlen32(detail);
         if (ncm_error_is_set(&cause)) {
             detail = cause.message;
             detail_len = cause.message_len;

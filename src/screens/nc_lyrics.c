@@ -655,6 +655,8 @@ lyrics_screen_load_file(LyricsScreen *screen,
     char *content;
     int32 content_len;
     int32 status;
+    char *lrc_suffix = ".lrc";
+    int32 lrc_suffix_len;
     bool lrc_file;
 
     if ((screen == NULL) || (filename == NULL) || (filename_len <= 0)) {
@@ -662,8 +664,10 @@ lyrics_screen_load_file(LyricsScreen *screen,
                                     STRLIT("missing lyrics file"));
     }
 
-    lrc_file = (filename_len > STRLIT_LEN(".lrc"))
-               && ENDS_WITH(filename, filename_len, ".lrc");
+    lrc_suffix_len = strlen32(lrc_suffix);
+    lrc_file = (filename_len > lrc_suffix_len)
+               && ENDS_WITH(filename, filename_len,
+                            lrc_suffix, lrc_suffix_len);
     if ((content_len = read_entire_file(filename, &content)) < 0) {
         lyrics_screen_clear_lyrics_state(screen, LYRICS_MODE_FETCH_LOG);
         return ncm_error_set_status(ncm_error, content_len,

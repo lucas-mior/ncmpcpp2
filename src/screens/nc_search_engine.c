@@ -39,23 +39,20 @@ typedef struct SearchConstraintMetadata {
 
 #define SEARCH_CONSTRAINT_TAG_ENTRY(suffix, display, tag_char) \
     {                                                          \
-        .name = #display,                                      \
-        .name_len = STRLIT_LEN(#display),                      \
+        STRPASS(name, #display),                               \
         .kind = SEARCH_CONSTRAINT_TAG,                         \
         .tag = CAT(TAG_, suffix),                              \
     },
 
 static SearchConstraintMetadata search_constraints[] = {
     {
-        .name = "Any",
-        .name_len = STRLIT_LEN("Any"),
+        STRPASS(name, "Any"),
         .kind = SEARCH_CONSTRAINT_ANY,
         .tag = TAG_COUNT,
     },
     TAG_DEFS(SEARCH_CONSTRAINT_TAG_ENTRY)
     {
-        .name = "Filename",
-        .name_len = STRLIT_LEN("Filename"),
+        STRPASS(name, "Filename"),
         .kind = SEARCH_CONSTRAINT_FILENAME,
         .tag = TAG_COUNT,
     },

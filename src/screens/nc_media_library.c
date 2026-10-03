@@ -348,7 +348,7 @@ library_update_titles(MediaLibraryScreen *screen, bool update_windows) {
         str_append_byte(&screen->tags_title, 's');
         STR_APPEND(&screen->albums_title, "Albums");
         songs_title = "Songs";
-        songs_title_len = STRLIT_LEN("Songs");
+        songs_title_len = strlen32(songs_title);
 
         if (screen->mode == MEDIA_LIBRARY_MODE_TWO_COLUMNS) {
             STR_APPEND(&screen->albums_title, " (sorted by ");
@@ -1041,7 +1041,7 @@ media_library_screen_init(MediaLibraryScreen *screen, MediaLibraryHooks hooks,
     library_update_titles(screen, false);
     if (Config.titles_visibility) {
         songs_title = "Songs";
-        songs_title_len = STRLIT_LEN("Songs");
+        songs_title_len = strlen32(songs_title);
     }
     nc_window_init(&screen->tags_window,
                    start_x, main_start_y, width, main_height,

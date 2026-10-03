@@ -984,7 +984,7 @@ action_runtime_add_random_items(void) {
 
     if (random_type == 's') {
         source_name = "song";
-        source_name_len = STRLIT_LEN("song");
+        source_name_len = strlen32(source_name);
     } else {
         tag_type = ncm_char_to_tag_type(random_type);
         source_name_len = ncm_tag_type_name_len(tag_type, &source_name);
@@ -3916,15 +3916,21 @@ ncm_action_edit_song(NcmSong *song) {
                             STRLIT("Proper mpd_music_dir variable has to be "
                                     "set in configuration file"));
         break;
-    case TINY_TAG_EDIT_OPEN_UNREADABLE_FILE:
-        path_width = COLS - STRLIT_LEN("Couldn't read file \"\"");
+    case TINY_TAG_EDIT_OPEN_UNREADABLE_FILE: {
+        char *prefix = "Couldn't read file \"";
+        char *suffix = "\"";
+        int32 prefix_len = strlen32(prefix);
+        int32 suffix_len = strlen32(suffix);
+
+        path_width = COLS - prefix_len - suffix_len;
         if (path_width < 0) {
             path_width = 0;
         }
         path_len = utf8_cut_width(path.data, path.len, path_width);
-        action_runtime_print_message(STRLIT("Couldn't read file \""),
-                                     path.data, path_len, STRLIT("\""));
+        action_runtime_print_message(prefix, prefix_len,
+                                     path.data, path_len, suffix, suffix_len);
         break;
+    }
     case TINY_TAG_EDIT_OPEN_INVALID_ARGUMENT:
     case TINY_TAG_EDIT_OPEN_PREPARE_FAILED:
         ncm_statusbar_print(Config.message_delay_time,
@@ -4174,20 +4180,23 @@ static void
 action_runtime_print_album_file_error(char *prefix, int32 prefix_len,
                                       NcmSong *song) {
     StrView uri;
+    char *suffix = "\"";
     int32 width;
     int32 uri_len;
+    int32 suffix_len;
 
     if (!action_runtime_song_uri_view(song, &uri)) {
         return;
     }
 
-    width = COLS - prefix_len - STRLIT_LEN("\"");
+    suffix_len = strlen32(suffix);
+    width = COLS - prefix_len - suffix_len;
     if (width < 0) {
         width = 0;
     }
     uri_len = utf8_cut_width(uri.data, uri.len, width);
     action_runtime_print_message(prefix, prefix_len, uri.data, uri_len,
-                                 STRLIT("\""));
+                                 suffix, suffix_len);
     return;
 }
 

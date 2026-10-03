@@ -701,7 +701,7 @@ int32
 ncm_mpd_connection_start_cmd_list(MpdConnection *connection) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
-    if (!mpd_cmd_list_begin(connection->mpd, true)) {
+    if (!mpd_command_list_begin(connection->mpd, true)) {
         return ncm_mpd_connection_check_error(connection);
     }
 
@@ -712,7 +712,7 @@ int32
 ncm_mpd_connection_commit_cmd_list(MpdConnection *connection) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
-    if (!mpd_cmd_list_end(connection->mpd)) {
+    if (!mpd_command_list_end(connection->mpd)) {
         return ncm_mpd_connection_check_error(connection);
     }
     mpd_response_finish(connection->mpd);
