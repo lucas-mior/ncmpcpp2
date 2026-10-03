@@ -58,7 +58,7 @@ ncm_config_options_destroy(NcmConfigurationOptions *options) {
 }
 
 static void
-command_line_options_append_path(StringArray *paths,
+cmd_line_options_append_path(StringArray *paths,
                                  char *path, int32 path_len) {
     String *slot = string_array_append(paths);
     STR_APPEND(slot, path, path_len);
@@ -67,7 +67,7 @@ command_line_options_append_path(StringArray *paths,
 
 static void
 config_append_buffer_path(StringArray *paths, String *path) {
-    command_line_options_append_path(paths, path->data, path->len);
+    cmd_line_options_append_path(paths, path->data, path->len);
     return;
 }
 
@@ -295,7 +295,7 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
                 }
             } else if (STREQUAL(name, name_len, "config")) {
                 REQUIRE_LONG(value, value_len);
-                command_line_options_append_path(&options->config_paths,
+                cmd_line_options_append_path(&options->config_paths,
                                                  value, value_len);
             } else if (STREQUAL(name, name_len, "ignore-config-errors")) {
                 REJECT_LONG(value);
@@ -305,7 +305,7 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
                 options->test_lyrics_fetchers = true;
             } else if (STREQUAL(name, name_len, "bindings")) {
                 REQUIRE_LONG(value, value_len);
-                command_line_options_append_path(&options->bindings_paths,
+                cmd_line_options_append_path(&options->bindings_paths,
                                                  value, value_len);
             } else if (STREQUAL(name, name_len, "screen")) {
                 REQUIRE_LONG(value, value_len);
@@ -406,11 +406,11 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
                 options->port_provided = true;
                 break;
             case 'c':
-                command_line_options_append_path(&options->config_paths,
+                cmd_line_options_append_path(&options->config_paths,
                                                  value, value_len);
                 break;
             case 'b':
-                command_line_options_append_path(&options->bindings_paths,
+                cmd_line_options_append_path(&options->bindings_paths,
                                                  value, value_len);
                 break;
             case 's':
@@ -447,14 +447,14 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
         if (options->config_paths.len == 0) {
             for (int32 j = 0; j < default_config_paths.len; j += 1) {
                 String *path = &default_config_paths.items[j];
-                command_line_options_append_path(&options->config_paths,
+                cmd_line_options_append_path(&options->config_paths,
                                                  path->data, path->len);
             }
         }
         if (options->bindings_paths.len == 0) {
             for (int32 j = 0; j < default_bindings_paths.len; j += 1) {
                 String *path = &default_bindings_paths.items[j];
-                command_line_options_append_path(&options->bindings_paths,
+                cmd_line_options_append_path(&options->bindings_paths,
                                                  path->data, path->len);
             }
         }

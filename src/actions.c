@@ -346,7 +346,7 @@ action_runtime_playlist_remove_song(NcmSong *song, NcmError *ncm_error) {
     menu = nc_song_menu_base(song_menu);
     count = nc_menu_all_item_len(menu);
 
-    ok = ncm_mpd_client_start_command_list(&global_mpd, ncm_error) == 0;
+    ok = ncm_mpd_client_start_cmd_list(&global_mpd, ncm_error) == 0;
     for (int32 i = count; ok && (i > 0); i -= 1) {
         NcmSong *item;
 
@@ -363,10 +363,10 @@ action_runtime_playlist_remove_song(NcmSong *song, NcmError *ncm_error) {
         ok = ncm_mpd_client_delete(&global_mpd, position, ncm_error) == 0;
     }
     if (ok) {
-        ok = ncm_mpd_client_commit_command_list(&global_mpd, ncm_error) == 0;
+        ok = ncm_mpd_client_commit_cmd_list(&global_mpd, ncm_error) == 0;
     }
-    if (!ok && global_mpd.command_list_active) {
-        global_mpd.command_list_active = false;
+    if (!ok && global_mpd.cmd_list_active) {
+        global_mpd.cmd_list_active = false;
     }
     if (!ok) {
         return action_runtime_mpd_error_status(ncm_error);
@@ -599,7 +599,7 @@ action_runtime_print_message(char *prefix, int32 prefix_len,
 }
 
 bool
-ncm_action_immediate_command_prompt_should_stop(String *previous,
+ncm_action_immediate_cmd_prompt_should_stop(String *previous,
                                                 char *text, int32 text_len) {
     NcmCommand *command;
 
@@ -628,14 +628,14 @@ ncm_action_immediate_command_prompt_should_stop(String *previous,
 }
 
 static bool
-action_runtime_command_prompt_should_continue(char *text, void *user) {
+action_runtime_cmd_prompt_should_continue(char *text, void *user) {
     ActionRuntimeCommandPrompt *state = user;
     int32 text_len = opt_strlen32(text);
 
     if (!ncm_statusbar_prompt_should_continue(text, text_len)) {
         return false;
     }
-    if (ncm_action_immediate_command_prompt_should_stop(&state->previous, text,
+    if (ncm_action_immediate_cmd_prompt_should_stop(&state->previous, text,
                                                         text_len)) {
         return false;
     }
@@ -1273,52 +1273,52 @@ action_runtime_parse_seek_position(char *text, int32 text_len, int32 total,
 static int32
 action_runtime_execute_command(void) {
     ActionRuntimeCommandPrompt state = {0};
-    String command_name = {0};
+    String cmd_name = {0};
     NcmCommand *command;
     bool prompted;
     NcPromptShouldContinueFunc *should_continue;
     int32 status;
 
-    should_continue = action_runtime_command_prompt_should_continue;
+    should_continue = action_runtime_cmd_prompt_should_continue;
     prompted = action_runtime_prompt_string(STRLIT(":"), "", true,
                                             should_continue, &state,
-                                            &command_name);
+                                            &cmd_name);
     if (!prompted && (state.previous.len > 0)) {
-        str_copy(&command_name, &state.previous);
+        str_copy(&cmd_name, &state.previous);
         prompted = true;
     }
     str_free(&state.previous);
 
     if (!prompted) {
-        str_free(&command_name);
+        str_free(&cmd_name);
         return 0;
     }
 
     command = bindings_config_find_command(&Bindings,
-                                           command_name.data, command_name.len);
+                                           cmd_name.data, cmd_name.len);
     if (command == NULL) {
         action_runtime_print_message(STRLIT("No command named \""),
-                                     command_name.data, command_name.len,
+                                     cmd_name.data, cmd_name.len,
                                      STRLIT("\""));
-        str_free(&command_name);
+        str_free(&cmd_name);
         return 0;
     }
 
     action_runtime_print_message(STRLIT("Executing "),
-                                 command_name.data, command_name.len,
+                                 cmd_name.data, cmd_name.len,
                                  STRLIT("..."));
     status = ncmpcpp_execute_binding(&command->binding);
     if (status == 0) {
         action_runtime_print_message(STRLIT("Execution of command \""),
-                                     command_name.data, command_name.len,
+                                     cmd_name.data, cmd_name.len,
                                      STRLIT("\" successful."));
     } else {
         action_runtime_print_message(STRLIT("Execution of command \""),
-                                     command_name.data, command_name.len,
+                                     cmd_name.data, cmd_name.len,
                                      STRLIT("\" unsuccessful."));
     }
 
-    str_free(&command_name);
+    str_free(&cmd_name);
     if (status == 0) {
         return 0;
     }
@@ -2555,7 +2555,7 @@ action_runtime_move_main_playlist_items(NcmSongArray *songs, bool down) {
 
     action_runtime_sort_positions(positions, count, down);
     ncm_error_clear(&ncm_error);
-    success = ncm_mpd_client_start_command_list(&global_mpd, &ncm_error) == 0;
+    success = ncm_mpd_client_start_cmd_list(&global_mpd, &ncm_error) == 0;
     for (int32 i = 0; success && (i < count); i += 1) {
         if (down) {
             if (positions[i] + 1 >= ncm_status_state_playlist_length()) {
@@ -2572,11 +2572,11 @@ action_runtime_move_main_playlist_items(NcmSongArray *songs, bool down) {
         }
     }
     if (success) {
-        success = ncm_mpd_client_commit_command_list(&global_mpd,
+        success = ncm_mpd_client_commit_cmd_list(&global_mpd,
                                                       &ncm_error) == 0;
     }
-    if (!success && global_mpd.command_list_active) {
-        global_mpd.command_list_active = false;
+    if (!success && global_mpd.cmd_list_active) {
+        global_mpd.cmd_list_active = false;
     }
 
     free2(positions, count*SIZEOF(*positions));
@@ -2614,7 +2614,7 @@ action_runtime_move_stored_playlist_items(NcmSongArray *songs, bool down) {
     active_menu = playlist_edit_screen_active_menu(screen);
     item_len = nc_menu_all_item_len(active_menu);
     ncm_error_clear(&ncm_error);
-    success = ncm_mpd_client_start_command_list(&global_mpd, &ncm_error) == 0;
+    success = ncm_mpd_client_start_cmd_list(&global_mpd, &ncm_error) == 0;
     for (int32 i = 0; success && (i < count); i += 1) {
         if (down) {
             if (positions[i] + 1 >= item_len) {
@@ -2632,11 +2632,11 @@ action_runtime_move_stored_playlist_items(NcmSongArray *songs, bool down) {
         }
     }
     if (success) {
-        success = ncm_mpd_client_commit_command_list(&global_mpd,
+        success = ncm_mpd_client_commit_cmd_list(&global_mpd,
                                                       &ncm_error) == 0;
     }
-    if (!success && global_mpd.command_list_active) {
-        global_mpd.command_list_active = false;
+    if (!success && global_mpd.cmd_list_active) {
+        global_mpd.cmd_list_active = false;
     }
 
     free2(positions, count*SIZEOF(*positions));
@@ -2750,7 +2750,7 @@ action_runtime_move_main_playlist_items_to(void) {
     }
 
     ncm_error_clear(&ncm_error);
-    if ((success = ncm_mpd_client_start_command_list(&global_mpd,
+    if ((success = ncm_mpd_client_start_cmd_list(&global_mpd,
                                                      &ncm_error) == 0)
         && (target > positions[0])) {
         destination = target - count;
@@ -2766,11 +2766,11 @@ action_runtime_move_main_playlist_items_to(void) {
         }
     }
     if (success) {
-        success = ncm_mpd_client_commit_command_list(&global_mpd,
+        success = ncm_mpd_client_commit_cmd_list(&global_mpd,
                                                       &ncm_error) == 0;
     }
-    if (!success && global_mpd.command_list_active) {
-        global_mpd.command_list_active = false;
+    if (!success && global_mpd.cmd_list_active) {
+        global_mpd.cmd_list_active = false;
     }
     free2(positions, item_len*SIZEOF(*positions));
     if (!success) {
@@ -2856,7 +2856,7 @@ action_runtime_move_playlist_edit_items_to(void) {
     }
 
     ncm_error_clear(&ncm_error);
-    if ((success = ncm_mpd_client_start_command_list(&global_mpd,
+    if ((success = ncm_mpd_client_start_cmd_list(&global_mpd,
                                                      &ncm_error) == 0)
         && (target > positions[0])) {
         destination = target - count;
@@ -2876,11 +2876,11 @@ action_runtime_move_playlist_edit_items_to(void) {
         }
     }
     if (success) {
-        success = ncm_mpd_client_commit_command_list(&global_mpd,
+        success = ncm_mpd_client_commit_cmd_list(&global_mpd,
                                                       &ncm_error) == 0;
     }
-    if (!success && global_mpd.command_list_active) {
-        global_mpd.command_list_active = false;
+    if (!success && global_mpd.cmd_list_active) {
+        global_mpd.cmd_list_active = false;
     }
 
     ncm_playlist_destroy(&playlist);
@@ -2964,7 +2964,7 @@ action_runtime_reverse_playlist(void) {
     ncm_statusbar_print(Config.message_delay_time,
                         STRLIT("Reversing range..."));
     ncm_error_clear(&ncm_error);
-    success = ncm_mpd_client_start_command_list(&global_mpd, &ncm_error) == 0;
+    success = ncm_mpd_client_start_cmd_list(&global_mpd, &ncm_error) == 0;
     while (success && (first < last)) {
         if (((left = nc_menu_active_item_at(menu, first)) == NULL)
             || ((right = nc_menu_active_item_at(menu, last)) == NULL)) {
@@ -2978,11 +2978,11 @@ action_runtime_reverse_playlist(void) {
         last -= 1;
     }
     if (success) {
-        success = ncm_mpd_client_commit_command_list(&global_mpd,
+        success = ncm_mpd_client_commit_cmd_list(&global_mpd,
                                                       &ncm_error) == 0;
     }
-    if (!success && global_mpd.command_list_active) {
-        global_mpd.command_list_active = false;
+    if (!success && global_mpd.cmd_list_active) {
+        global_mpd.cmd_list_active = false;
     }
     if (!success) {
         return action_runtime_mpd_error_status(&ncm_error);

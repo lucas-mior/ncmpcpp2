@@ -284,20 +284,20 @@ binding_runtime_push_key(NcKey key, void *user) {
 }
 
 int32
-binding_runtime_run_external_command(char *command, int32 command_len,
+binding_runtime_run_external_command(char *command, int32 cmd_len,
                                      void *user) {
     (void)user;
-    return ncm_run_external_command(command, command_len, true, NULL);
+    return ncm_run_external_command(command, cmd_len, true, NULL);
 }
 
 int32
-binding_runtime_run_external_console_command(char *command, int32 command_len,
+binding_runtime_run_external_console_command(char *command, int32 cmd_len,
                                              void *user) {
     int32 status;
 
     (void)user;
     nc_pause_screen();
-    status = ncm_run_external_console_command(command, command_len, NULL);
+    status = ncm_run_external_console_command(command, cmd_len, NULL);
     nc_unpause_screen();
     return status;
 }
@@ -411,7 +411,7 @@ binding_is_single_action_type(Binding *binding, enum ActionType type) {
 }
 
 void
-ncm_command_destroy(NcmCommand *command) {
+ncm_cmd_destroy(NcmCommand *command) {
     free2(command->name, command->name_cap);
     binding_destroy(&command->binding);
     *command = (NcmCommand){0};
@@ -440,7 +440,7 @@ bindings_config_destroy(BindingsConfiguration *bindings) {
 void
 bindings_config_clear(BindingsConfiguration *bindings) {
     for (int32 i = 0; i < bindings->commands_len; i += 1) {
-        ncm_command_destroy(bindings->commands + i);
+        ncm_cmd_destroy(bindings->commands + i);
     }
     for (int32 i = 0; i < bindings->keys_len; i += 1) {
         NcmKeyBindings *key_bindings = &bindings->keys[i];
@@ -514,7 +514,7 @@ binding_append_normal(Binding *binding, enum ActionType type) {
 }
 
 static int32
-bindings_command_lower_bound(BindingsConfiguration *bindings,
+bindings_cmd_lower_bound(BindingsConfiguration *bindings,
                              char *name, int32 name_len) {
     int32 first = 0;
     int32 count = bindings->commands_len;
@@ -566,11 +566,11 @@ bindings_key_lower_bound(BindingsConfiguration *bindings, NcKey key) {
 }
 
 static int32
-bindings_command_index(BindingsConfiguration *bindings,
+bindings_cmd_index(BindingsConfiguration *bindings,
                        char *name, int32 name_len) {
     int32 at;
 
-    at = bindings_command_lower_bound(bindings, name, name_len);
+    at = bindings_cmd_lower_bound(bindings, name, name_len);
     if ((at >= bindings->commands_len)
         || !STREQUAL(bindings->commands[at].name,
                      bindings->commands[at].name_len, name, name_len)) {
@@ -997,8 +997,8 @@ static int32
 bindings_finalize_definition(BindingsConfiguration *bindings,
                              int32 in_progress, Binding *actions, NcKey key,
                              char *key_name, int32 key_name_len,
-                             char *command_name, int32 command_name_len,
-                             bool command_immediate, NcmError *ncm_error) {
+                             char *cmd_name, int32 cmd_name_len,
+                             bool cmd_immediate, NcmError *ncm_error) {
     if (in_progress == 0) {
         return 0;
     }
@@ -1006,7 +1006,7 @@ bindings_finalize_definition(BindingsConfiguration *bindings,
         if (in_progress == 1) {
             bindings_error(ncm_error,
                            "definition of command '%.*s' cannot be empty",
-                           command_name_len, command_name);
+                           cmd_name_len, cmd_name);
         } else {
             bindings_error(ncm_error,
                            "definition of key '%.*s' cannot be empty",
@@ -1019,14 +1019,14 @@ bindings_finalize_definition(BindingsConfiguration *bindings,
         NcmCommand command = {0};
         int32 status;
 
-        command.name = command_name;
-        command.name_len = command_name_len;
-        command.name_cap = command_name_len + 1;
-        command.immediate = command_immediate;
+        command.name = cmd_name;
+        command.name_len = cmd_name_len;
+        command.name_cap = cmd_name_len + 1;
+        command.immediate = cmd_immediate;
 
         binding_copy(&command.binding, actions);
 
-        if (bindings_command_index(bindings,
+        if (bindings_cmd_index(bindings,
                                    command.name, command.name_len) >= 0) {
             bindings_error(ncm_error,
                            "redefinition of command '%.*s'",
@@ -1055,7 +1055,7 @@ bindings_finalize_definition(BindingsConfiguration *bindings,
             copy.name_len = command.name_len;
             copy.immediate = command.immediate;
             binding_copy(&copy.binding, &command.binding);
-            at = bindings_command_lower_bound(bindings, command.name,
+            at = bindings_cmd_lower_bound(bindings, command.name,
                                                   command.name_len);
             if (at < bindings->commands_len) {
                 memmove64(bindings->commands + at + 1, bindings->commands + at,
@@ -1093,14 +1093,14 @@ bindings_config_read(BindingsConfiguration *bindings,
     int32 line_no = 0;
     int32 status = 0;
     Binding actions = {0};
-    char *command_name = NULL;
+    char *cmd_name = NULL;
     char *key_name = NULL;
-    int32 command_name_len = 0;
+    int32 cmd_name_len = 0;
     int32 key_name_len = 0;
-    int32 command_name_cap = 0;
+    int32 cmd_name_cap = 0;
     int32 key_name_cap = 0;
     NcKey key = NC_KEY_NONE;
-    bool command_immediate = false;
+    bool cmd_immediate = false;
 
     path_copy = ncm_string_copy(path, path_len, &path_cap);
     if (!ncm_fs_path_is_existing(path, path_len)) {
@@ -1148,9 +1148,9 @@ bindings_config_read(BindingsConfiguration *bindings,
             status = bindings_finalize_definition(bindings, in_progress,
                                                   &actions, key,
                                                   key_name, key_name_len,
-                                                  command_name,
-                                                  command_name_len,
-                                                  command_immediate,
+                                                  cmd_name,
+                                                  cmd_name_len,
+                                                  cmd_immediate,
                                                   ncm_error);
             binding_clear(&actions);
             in_progress = IN_PROGRESS_NONE;
@@ -1172,10 +1172,10 @@ bindings_config_read(BindingsConfiguration *bindings,
                 status = -NCM_ERROR_PARSE;
                 break;
             }
-            free2(command_name, command_name_cap);
-            command_name = ncm_string_copy(enclosed.data, enclosed.len,
-                                           &command_name_cap);
-            command_name_len = enclosed.len;
+            free2(cmd_name, cmd_name_cap);
+            cmd_name = ncm_string_copy(enclosed.data, enclosed.len,
+                                           &cmd_name_cap);
+            cmd_name_len = enclosed.len;
             if (ncm_extract_enclosed(current_line + start, len - start,
                                      '[', ']', &enclosed) < 0) {
                 bindings_error(ncm_error,
@@ -1185,9 +1185,9 @@ bindings_config_read(BindingsConfiguration *bindings,
                 break;
             }
             if (STREQUAL(enclosed.data, enclosed.len, "immediate")) {
-                command_immediate = true;
+                cmd_immediate = true;
             } else if (STREQUAL(enclosed.data, enclosed.len, "deferred")) {
-                command_immediate = false;
+                cmd_immediate = false;
             } else {
                 bindings_error(ncm_error,
                                "%.*s:%d: invalid command type '%.*s'",
@@ -1202,9 +1202,9 @@ bindings_config_read(BindingsConfiguration *bindings,
             status = bindings_finalize_definition(bindings, in_progress,
                                                   &actions, key,
                                                   key_name, key_name_len,
-                                                  command_name,
-                                                  command_name_len,
-                                                  command_immediate,
+                                                  cmd_name,
+                                                  cmd_name_len,
+                                                  cmd_immediate,
                                                   ncm_error);
             binding_clear(&actions);
             in_progress = IN_PROGRESS_NONE;
@@ -1261,13 +1261,13 @@ bindings_config_read(BindingsConfiguration *bindings,
         status = bindings_finalize_definition(bindings, in_progress,
                                               &actions, key,
                                               key_name, key_name_len,
-                                              command_name, command_name_len,
-                                              command_immediate,
+                                              cmd_name, cmd_name_len,
+                                              cmd_immediate,
                                               ncm_error);
     }
 
     binding_destroy(&actions);
-    free2(command_name, command_name_cap);
+    free2(cmd_name, cmd_name_cap);
     free2(key_name, key_name_cap);
     free2(content, content_len + 1);
     free2(path_copy, path_cap);
@@ -1303,7 +1303,7 @@ bindings_config_find_command(BindingsConfiguration *bindings,
                              char *name, int32 name_len) {
     int32 at;
 
-    at = bindings_command_index(bindings, name, name_len);
+    at = bindings_cmd_index(bindings, name, name_len);
     if (at < 0) {
         return NULL;
     }

@@ -657,7 +657,7 @@ adder_add_to_stored_playlist(SelectedItemsAdderScreen *screen, char *playlist,
 
     ASSERT(screen->ready);
     ncm_error_clear(&ncm_error);
-    status = ncm_mpd_client_start_command_list(screen->client, &ncm_error);
+    status = ncm_mpd_client_start_cmd_list(screen->client, &ncm_error);
     if (status == 0) {
         for (int32 i = 0; i < screen->selected_songs.len; i += 1) {
             NcmSong *song = &screen->selected_songs.items[i];
@@ -665,7 +665,7 @@ adder_add_to_stored_playlist(SelectedItemsAdderScreen *screen, char *playlist,
             ncm_mpd_client_add_song_to_playlist(screen->client, playlist, song,
                                                 &ncm_error);
         }
-        status = ncm_mpd_client_commit_command_list(screen->client, &ncm_error);
+        status = ncm_mpd_client_commit_cmd_list(screen->client, &ncm_error);
     }
     if (status < 0) {
         if (ncm_error.message[0] != '\0') {

@@ -219,7 +219,7 @@ ncm_playlist_sort_range(NcmSongArray *songs, int32 start_position,
     }
 
     started = false;
-    status = ncm_mpd_client_start_command_list(client, ncm_error);
+    status = ncm_mpd_client_start_cmd_list(client, ncm_error);
     if (status == 0) {
         started = true;
     }
@@ -229,10 +229,10 @@ ncm_playlist_sort_range(NcmSongArray *songs, int32 start_position,
                                      ncm_error);
     }
     if (status == 0) {
-        status = ncm_mpd_client_commit_command_list(client, ncm_error);
+        status = ncm_mpd_client_commit_cmd_list(client, ncm_error);
     }
-    if ((status < 0) && started && client->command_list_active) {
-        client->command_list_active = false;
+    if ((status < 0) && started && client->cmd_list_active) {
+        client->cmd_list_active = false;
     }
 
     free2(plan.items, plan_items_len*SIZEOF(*plan.items));

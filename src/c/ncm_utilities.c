@@ -7,23 +7,23 @@
 #include "c/ncm_c.h"
 
 static int32
-ncm_system_command(char *command, int32 command_len,
+ncm_system_command(char *command, int32 cmd_len,
                    bool block, int32 *status, NcmError *ncm_error) {
     String buffer = {0};
     Command process = {0};
     int32 rc;
     int32 result;
 
-    if ((command == NULL) || (command_len < 0)) {
+    if ((command == NULL) || (cmd_len < 0)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("invalid shell command"));
     }
 
     if (block) {
-        COMMAND_PUSH(&process, "/bin/sh", "-c");
-        command_push_length(&process, command, command_len);
+        CMD_PUSH(&process, "/bin/sh", "-c");
+        cmd_push_length(&process, command, cmd_len);
 
-        result = command_run_sync(&process, &rc);
+        result = cmd_run_sync(&process, &rc);
         if (result == 0) {
             if (status != NULL) {
                 *status = rc;
@@ -33,16 +33,16 @@ ncm_system_command(char *command, int32 command_len,
             result = ncm_error_set_status(ncm_error, process.error_status,
                                           STRLIT("command failed"));
         }
-        command_free(&process);
+        cmd_free(&process);
         return result;
     }
 
-    STR_APPEND(&buffer, command, command_len);
+    STR_APPEND(&buffer, command, cmd_len);
     STR_APPEND(&buffer, " >/dev/null 2>&1 &");
 
-    COMMAND_PUSH(&process, "/bin/sh", "-c", buffer.data);
+    CMD_PUSH(&process, "/bin/sh", "-c", buffer.data);
 
-    result = command_run_sync(&process, &rc);
+    result = cmd_run_sync(&process, &rc);
     str_free(&buffer);
     if (result == 0) {
         if (status != NULL) {
@@ -53,24 +53,24 @@ ncm_system_command(char *command, int32 command_len,
         result = ncm_error_set_status(ncm_error, process.error_status,
                                       STRLIT("command failed"));
     }
-    command_free(&process);
+    cmd_free(&process);
     return result;
 }
 
 int32
-ncm_run_external_command(char *command, int32 command_len,
+ncm_run_external_command(char *command, int32 cmd_len,
                          bool block, NcmError *ncm_error) {
     int32 status;
 
-    return ncm_system_command(command, command_len, block, &status, ncm_error);
+    return ncm_system_command(command, cmd_len, block, &status, ncm_error);
 }
 
 int32
-ncm_run_external_console_command(char *command, int32 command_len,
+ncm_run_external_console_command(char *command, int32 cmd_len,
                                  NcmError *ncm_error) {
     int32 status;
 
-    return ncm_system_command(command, command_len, true, &status, ncm_error);
+    return ncm_system_command(command, cmd_len, true, &status, ncm_error);
 }
 
 #endif /* NCM_UTILITIES_C */

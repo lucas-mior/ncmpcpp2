@@ -1296,14 +1296,14 @@ int32 media_library_screen_locate_song(MediaLibraryScreen *, NcmSong *,
 #define PLAYLIST_EDIT_FETCH_DELAY_MS 250
 
 #define ENUM_NAME PlaylistEditCommandType
-#define ENUM_PREFIX_ PLAYLIST_EDIT_COMMAND_
+#define ENUM_PREFIX_ PLAYLIST_EDIT_CMD_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(PLAYLIST_EDIT_COMMAND_NONE, none)                                       \
-    XX(PLAYLIST_EDIT_COMMAND_LOAD, Load)                                       \
-    XX(PLAYLIST_EDIT_COMMAND_SAVE, Save)                                       \
-    XX(PLAYLIST_EDIT_COMMAND_RENAME, Rename)                                   \
-    XX(PLAYLIST_EDIT_COMMAND_DELETE, Delete)
+    XX(PLAYLIST_EDIT_CMD_NONE, none)                                       \
+    XX(PLAYLIST_EDIT_CMD_LOAD, Load)                                       \
+    XX(PLAYLIST_EDIT_CMD_SAVE, Save)                                       \
+    XX(PLAYLIST_EDIT_CMD_RENAME, Rename)                                   \
+    XX(PLAYLIST_EDIT_CMD_DELETE, Delete)
 #include "cbase/xenums.c"
 
 typedef struct PlaylistEditCommand {

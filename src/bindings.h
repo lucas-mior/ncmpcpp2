@@ -112,7 +112,7 @@ bool binding_can_execute_default(Binding *);
 int32 binding_execute_default(Binding *);
 bool binding_is_single_action_type(Binding *, enum ActionType);
 
-void ncm_command_destroy(NcmCommand *);
+void ncm_cmd_destroy(NcmCommand *);
 
 void ncm_key_bindings_init(NcmKeyBindings *);
 

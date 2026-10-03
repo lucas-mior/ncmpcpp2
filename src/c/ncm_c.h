@@ -463,8 +463,8 @@ int32 ncm_mpd_connection_get_status(MpdConnection *, NcmMpdStatus *);
 
 int32 ncm_mpd_connection_version(MpdConnection *);
 int32 ncm_mpd_connection_send_password(MpdConnection *, char *);
-int32 ncm_mpd_connection_start_command_list(MpdConnection *);
-int32 ncm_mpd_connection_commit_command_list(MpdConnection *);
+int32 ncm_mpd_connection_start_cmd_list(MpdConnection *);
+int32 ncm_mpd_connection_commit_cmd_list(MpdConnection *);
 int32 ncm_mpd_connection_get_supported_extensions(MpdConnection *,
                                                   StrFlexList *);
 int32 ncm_mpd_connection_get_replay_gain_mode(MpdConnection *,
@@ -561,7 +561,7 @@ typedef struct MpdClient {
     String password;
     uint16 port;
     int32 timeout_ms;
-    bool command_list_active;
+    bool cmd_list_active;
     bool idle;
     int32 fd;
     NcmMpdNoidleCallback *noidle_callback;
@@ -649,8 +649,8 @@ int32 ncm_mpd_client_add_random_tag(MpdClient *, enum TagType, int32,
 int32 ncm_mpd_client_add_random_songs(MpdClient *, int32 number, char *,
                                       int32 exclude_pattern_len, NcmError *);
 int32 ncm_mpd_client_delete(MpdClient *, int32, NcmError *);
-int32 ncm_mpd_client_start_command_list(MpdClient *, NcmError *);
-int32 ncm_mpd_client_commit_command_list(MpdClient *, NcmError *);
+int32 ncm_mpd_client_start_cmd_list(MpdClient *, NcmError *);
+int32 ncm_mpd_client_commit_cmd_list(MpdClient *, NcmError *);
 
 int32 ncm_mpd_client_delete_playlist(MpdClient *, char *, NcmError *);
 int32 ncm_mpd_client_load_playlist(MpdClient *, char *, bool *, NcmError *);
