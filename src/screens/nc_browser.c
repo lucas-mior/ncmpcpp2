@@ -100,6 +100,8 @@ static int32
 browser_set_normalized_directory(BrowserScreen *screen,
                                  char *directory, int32 directory_len) {
     if (browser_path_is_parent_directory(directory, directory_len)) {
+        char *parent_suffix = "/..";
+
         if (STREQUAL(directory, directory_len, "..")) {
             char *current = screen->current_directory.data;
             int32 current_len = screen->current_directory.len;
@@ -107,7 +109,6 @@ browser_set_normalized_directory(BrowserScreen *screen,
             return browser_set_parent_of_directory(screen,
                                                    current, current_len);
         }
-        char *parent_suffix = "/..";
 
         directory_len -= strlen32(parent_suffix);
         return browser_set_parent_of_directory(screen,
