@@ -3241,6 +3241,7 @@ media_library_screen_add_item_to_playlist(MediaLibraryScreen *screen,
         if (screen->active_column == MEDIA_LIBRARY_COLUMN_TAGS) {
             NcMediaLibraryTagRow *tag =
                 media_library_screen_current_tag(screen);
+            char *with_errors = ncm_helpers_with_errors(result);
 
             tag_name_len = ncm_tag_type_name_len(
                 Config.media_library_primary_tag, &tag_name);
@@ -3259,7 +3260,7 @@ media_library_screen_add_item_to_playlist(MediaLibraryScreen *screen,
                 STR_APPEND(&message, tag->tag, tag->tag_len);
             }
             STR_APPEND(&message, "\" added");
-            str_printf(&message, "%s", ncm_helpers_with_errors(result));
+            str_printf(&message, with_errors, strlen32(with_errors));
         } else if (screen->active_column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
             if ((album = media_library_screen_current_album(screen))
                 && album->all_tracks_entry) {
