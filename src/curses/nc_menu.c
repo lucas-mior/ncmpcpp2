@@ -414,8 +414,8 @@ nc_menu_swap(NcMenu *left, NcMenu *right) {
 
 void
 nc_menu_set_item_callbacks(NcMenu *menu, NcMenuItemCallbacks callbacks) {
-    ASSERT_LE(menu_array_len(menu, NC_MENU_ITEMS_ALL, 0));
-    ASSERT_LE(menu_array_len(menu, NC_MENU_ITEMS_FILTERED, 0));
+    ASSERT_LE(menu_array_len(menu, NC_MENU_ITEMS_ALL), 0);
+    ASSERT_LE(menu_array_len(menu, NC_MENU_ITEMS_FILTERED), 0);
     menu->item_callbacks = callbacks;
     return;
 }
