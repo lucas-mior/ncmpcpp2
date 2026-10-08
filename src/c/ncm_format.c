@@ -15,8 +15,8 @@ ncm_format_set_error(NcmError *ncm_error, char *message, int32 position) {
 }
 
 static int32
-ncm_format_parse_color_component(char *data, int32 data_len,
-                                 bool background, int16 *result) {
+parse_color_component(char *data, int32 data_len,
+                      bool background, int16 *result) {
     int32 value;
     int32 lower_bound;
 
@@ -485,24 +485,27 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                         }
 
                         if (underscore < 0) {
-                            color_status = ncm_format_parse_color_component(
-                                color_data, color_len, false, &foreground);
+                            color_status = parse_color_component(color_data,
+                                color_len, false, &foreground);
                             if (color_status == 0) {
                                 expr->color = nc_color_make(foreground,
                                     -2, false, false);
                             }
-                        } else if (ncm_format_parse_color_component(color_data,
-                                       underscore,
-                                       false, &foreground) < 0) {
-                            color_status = -NCM_ERROR_PARSE;
-                        } else if (ncm_format_parse_color_component(
-                                       color_data + underscore + 1,
-                                       color_len - underscore - 1,
-                                       true, &background) < 0) {
-                            color_status = -NCM_ERROR_PARSE;
                         } else {
-                            expr->color = nc_color_make(foreground,
-                                background, false, false);
+                            char *background_data = color_data + underscore + 1;
+                            int32 background_len = color_len - underscore - 1;
+
+                            if (parse_color_component(color_data,
+                                underscore, false, &foreground) < 0) {
+                                color_status = -NCM_ERROR_PARSE;
+                            } else if (parse_color_component(background_data,
+                                           background_len, true,
+                                           &background) < 0) {
+                                color_status = -NCM_ERROR_PARSE;
+                            } else {
+                                expr->color = nc_color_make(foreground,
+                                    background, false, false);
+                            }
                         }
                     }
 

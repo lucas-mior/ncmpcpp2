@@ -713,7 +713,7 @@ playlist_apply_changed_song_to_storage(PlaylistScreen *screen, NcmSong *song) {
     NcMenu *menu = playlist_storage_menu(screen);
     int32 position = ncm_song_position(song);
 
-    ASSERT_NON_NEGATIVE(position);
+    ASSERT_GE(position, 0);
 
     if (position < nc_menu_all_item_len(menu)) {
         nc_menu_replace_item(menu, NC_MENU_ITEMS_ALL, position, song);

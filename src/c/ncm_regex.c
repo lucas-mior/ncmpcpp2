@@ -10,7 +10,7 @@ static void
 ncm_regex_prepare_string(char *string, int32 string_len, String *buffer) {
     ASSERT(buffer != NULL);
     ASSERT(string != NULL);
-    ASSERT_NON_NEGATIVE(string_len);
+    ASSERT_GE(string_len, 0);
 
     str_clear(buffer);
     STR_APPEND(buffer, string, string_len);

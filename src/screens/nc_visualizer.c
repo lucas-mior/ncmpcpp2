@@ -236,6 +236,7 @@ visualizer_window_timeout_callback(NcScreen *screen) {
 static void
 visualizer_update_callback(NcScreen *screen) {
     VisualizerScreen *visualizer = (VisualizerScreen *)screen;
+    VisualizerDataSourceHooks *hooks = &visualizer->data_source_hooks;
     int32 new_samples;
 
     if (visualizer->source_fd < 0) {
@@ -245,15 +246,13 @@ visualizer_update_callback(NcScreen *screen) {
         NcmError ncm_error;
         int32 status;
 
-        if ((visualizer->data_source_hooks.disable_output == NULL)
-            || (visualizer->data_source_hooks.enable_output == NULL)) {
+        if ((hooks->disable_output == NULL) || (hooks->enable_output == NULL)) {
             return;
         }
 
         ncm_error_clear(&ncm_error);
-        status = visualizer->data_source_hooks.disable_output(
-            visualizer->data_source_hooks.user,
-            visualizer->output_id, &ncm_error);
+        status = hooks->disable_output(hooks->user, visualizer->output_id,
+                                         &ncm_error);
         if (status < 0) {
             String message = {0};
 
@@ -265,15 +264,13 @@ visualizer_update_callback(NcScreen *screen) {
             str_free(&message);
             return;
         }
-        if (visualizer->data_source_hooks.sleep_microseconds) {
-            visualizer->data_source_hooks.sleep_microseconds(
-                visualizer->data_source_hooks.user, 50000);
+        if (hooks->sleep_microseconds) {
+            hooks->sleep_microseconds(hooks->user, 50000);
         }
 
         ncm_error_clear(&ncm_error);
-        status = visualizer->data_source_hooks.enable_output(
-            visualizer->data_source_hooks.user,
-            visualizer->output_id, &ncm_error);
+        status = hooks->enable_output(hooks->user, visualizer->output_id,
+                                        &ncm_error);
         if (status < 0) {
             String message = {0};
 
@@ -287,16 +284,16 @@ visualizer_update_callback(NcScreen *screen) {
         visualizer->reset_output = false;
     }
 
-    if (visualizer->data_source_hooks.read_source != NULL) {
+    if (hooks->read_source != NULL) {
         int32 buffer_size;
         int32 bytes_read;
         int32 samples_read;
 
         buffer_size = visualizer->samples_in.cap
                       *SIZEOF(*visualizer->samples_in.data);
-        bytes_read = visualizer->data_source_hooks.read_source(
-            visualizer->data_source_hooks.user, visualizer->source_fd,
-            visualizer->samples_in.data, buffer_size);
+        bytes_read = hooks->read_source(hooks->user, visualizer->source_fd,
+                                          visualizer->samples_in.data,
+                                          buffer_size);
         if (bytes_read > 0) {
             samples_read = (int32)(bytes_read
                                    /SIZEOF(*visualizer->samples_in.data));
@@ -640,25 +637,24 @@ visualizer_screen_open_data_source(VisualizerScreen *screen) {
     }
 
     {
+        VisualizerDataSourceHooks *hooks = &screen->data_source_hooks;
         char *location = screen->source_location ? screen->source_location : "";
         char *port = screen->source_port ? screen->source_port : "";
         int32 fd;
 
         if (screen->source_port_len > 0) {
-            if (screen->data_source_hooks.open_udp == NULL) {
+            if (hooks->open_udp == NULL) {
                 return -NCM_ERROR_UNAVAILABLE;
             }
-            fd = screen->data_source_hooks.open_udp(
-                screen->data_source_hooks.user,
-                location, screen->source_location_len,
-                port, screen->source_port_len);
+            fd = hooks->open_udp(hooks->user, location,
+                                   screen->source_location_len, port,
+                                   screen->source_port_len);
         } else {
-            if (screen->data_source_hooks.open_fifo == NULL) {
+            if (hooks->open_fifo == NULL) {
                 return -NCM_ERROR_UNAVAILABLE;
             }
-            fd = screen->data_source_hooks.open_fifo(
-                screen->data_source_hooks.user,
-                location, screen->source_location_len);
+            fd = hooks->open_fifo(hooks->user, location,
+                                    screen->source_location_len);
         }
 
         if (fd < 0) {
@@ -680,8 +676,9 @@ visualizer_screen_close_data_source(VisualizerScreen *screen) {
 
         screen->source_fd = -1;
         if (screen->data_source_hooks.close_source) {
-            screen->data_source_hooks.close_source(
-                screen->data_source_hooks.user, fd);
+            VisualizerDataSourceHooks *hooks = &screen->data_source_hooks;
+
+            hooks->close_source(hooks->user, fd);
         }
     }
     return;
@@ -689,21 +686,21 @@ visualizer_screen_close_data_source(VisualizerScreen *screen) {
 
 int32
 visualizer_screen_drain_data_source(VisualizerScreen *screen) {
+    VisualizerDataSourceHooks *hooks = &screen->data_source_hooks;
     int32 buffer_size;
     int32 bytes_read;
     int32 total_read;
 
-    if ((screen->source_fd < 0)
-        || (screen->data_source_hooks.read_source == NULL)) {
+    if ((screen->source_fd < 0) || (hooks->read_source == NULL)) {
         return 0;
     }
     buffer_size = screen->samples_in.cap
                   *SIZEOF(*screen->samples_in.data);
     total_read = 0;
     do {
-        bytes_read = screen->data_source_hooks.read_source(
-            screen->data_source_hooks.user, screen->source_fd,
-            screen->samples_in.data, buffer_size);
+        bytes_read = hooks->read_source(hooks->user, screen->source_fd,
+                                          screen->samples_in.data,
+                                          buffer_size);
         if (bytes_read > 0) {
             total_read += bytes_read;
         }
@@ -713,6 +710,7 @@ visualizer_screen_drain_data_source(VisualizerScreen *screen) {
 
 int32
 visualizer_screen_find_output_id(VisualizerScreen *screen) {
+    VisualizerDataSourceHooks *hooks = &screen->data_source_hooks;
     NcmMpdOutputList outputs;
     NcmError ncm_error;
     int32 status;
@@ -722,14 +720,13 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
     if ((screen->output_name_len <= 0) || (screen->source_port_len > 0)) {
         return 0;
     }
-    if (screen->data_source_hooks.get_outputs == NULL) {
+    if (hooks->get_outputs == NULL) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
     ncm_error_clear(&ncm_error);
     outputs = (NcmMpdOutputList){0};
-    status = screen->data_source_hooks.get_outputs(
-        screen->data_source_hooks.user, &outputs, &ncm_error);
+    status = hooks->get_outputs(hooks->user, &outputs, &ncm_error);
     if (status < 0) {
         String message = {0};
 
@@ -900,9 +897,8 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
         stupid_string_set(&screen->visualizer_chars,
                           &screen->visualizer_chars_len, visualizer_chars,
                           visualizer_chars_len);
-        next = utf8_next_position(
-            screen->visualizer_chars, screen->visualizer_chars_len,
-            0);
+        next = utf8_next_position(screen->visualizer_chars,
+                                  screen->visualizer_chars_len, 0);
         screen->point_char_offset = 0;
         screen->point_char_len = next;
         screen->bar_char_offset = next;

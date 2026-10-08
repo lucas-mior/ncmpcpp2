@@ -306,6 +306,7 @@ tag_edit_update_menu_highlights(TagEditScreen *screen) {
     NcMenu *parser_dialog;
     NcMenu *parser_actions;
     NcMenu *active;
+    bool parser_helper_active;
 
     directories = nc_editor_pair_menu_base(&screen->directories);
     tag_types = nc_editor_string_menu_base(&screen->tag_types);
@@ -333,8 +334,9 @@ tag_edit_update_menu_highlights(TagEditScreen *screen) {
                                  &Config.current_item_inactive_column_prefix);
     nc_menu_set_highlight_suffix(parser_actions,
                                  &Config.current_item_inactive_column_suffix);
-    nc_menu_set_highlighting(
-        parser_actions, !tag_edit_focus_is_parser_helper(screen->active_focus));
+    parser_helper_active =
+        tag_edit_focus_is_parser_helper(screen->active_focus);
+    nc_menu_set_highlighting(parser_actions, !parser_helper_active);
 
     if ((active = tag_edit_screen_active_menu(screen))) {
         nc_menu_set_highlight_prefix(active, &Config.current_item_prefix);
@@ -387,20 +389,22 @@ tag_edit_update_titles(TagEditScreen *screen, bool update_windows) {
     }
 
     if (Config.titles_visibility) {
-        directories_title_len = TAG_EDIT_COLUMN_alias_len(
-            TAG_EDIT_COLUMN_DIRECTORIES, &directories_title);
-        tag_types_title_len = TAG_EDIT_COLUMN_alias_len(
-            TAG_EDIT_COLUMN_TAG_TYPES, &tag_types_title);
-        tags_title_len = TAG_EDIT_COLUMN_alias_len(
-            TAG_EDIT_COLUMN_TAGS, &tags_title);
+        directories_title_len =
+            TAG_EDIT_COLUMN_alias_len(TAG_EDIT_COLUMN_DIRECTORIES,
+                                      &directories_title);
+        tag_types_title_len =
+            TAG_EDIT_COLUMN_alias_len(TAG_EDIT_COLUMN_TAG_TYPES,
+                                      &tag_types_title);
+        tags_title_len = TAG_EDIT_COLUMN_alias_len(TAG_EDIT_COLUMN_TAGS,
+                                                   &tags_title);
 
         parser_mode = screen->parser_mode;
         if ((parser_mode < TAG_EDIT_PARSER_MODE_NONE)
             || (parser_mode >= TAG_EDIT_PARSER_MODE_COUNT)) {
             parser_mode = TAG_EDIT_PARSER_MODE_NONE;
         }
-        parser_title_len = TAG_EDIT_PARSER_MODE_alias_len(
-            parser_mode, &parser_title);
+        parser_title_len = TAG_EDIT_PARSER_MODE_alias_len(parser_mode,
+                                                            &parser_title);
 
         if ((screen->active_focus == TAG_EDIT_FOCUS_PARSER_LEGEND)
             || !screen->parser_preview_enabled) {
@@ -408,8 +412,8 @@ tag_edit_update_titles(TagEditScreen *screen, bool update_windows) {
         } else {
             helper_focus = TAG_EDIT_FOCUS_PARSER_PREVIEW;
         }
-        parser_helper_title_len = TAG_EDIT_FOCUS_alias_len(
-            helper_focus, &parser_helper_title);
+        parser_helper_title_len =
+            TAG_EDIT_FOCUS_alias_len(helper_focus, &parser_helper_title);
     }
 
     nc_window_set_title(&screen->directories_window,
@@ -1320,9 +1324,8 @@ tag_edit_run_current(NcScreen *screen) {
 
             if ((row = nc_menu_active_item_at(menu, choice))) {
                 tag_edit_set_pattern(editor, row->data, row->len);
-                tag_edit_screen_prepare_parser_menus(
-                    editor, editor->parser_mode,
-                    editor->pattern, editor->pattern_len);
+                tag_edit_screen_prepare_parser_menus(editor,
+                    editor->parser_mode, editor->pattern, editor->pattern_len);
                 tag_edit_set_focus(editor, TAG_EDIT_FOCUS_PARSER_ACTIONS);
                 nc_menu_goto_selectable(menu, TAG_EDIT_PARSER_ACTION_PATTERN);
                 return 0;
@@ -2442,16 +2445,20 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
 
     tag_edit_update_titles(screen, false);
     if (Config.titles_visibility) {
-        directories_title_len = TAG_EDIT_COLUMN_alias_len(
-            TAG_EDIT_COLUMN_DIRECTORIES, &directories_title);
-        tag_types_title_len = TAG_EDIT_COLUMN_alias_len(
-            TAG_EDIT_COLUMN_TAG_TYPES, &tag_types_title);
-        tags_title_len = TAG_EDIT_COLUMN_alias_len(
-            TAG_EDIT_COLUMN_TAGS, &tags_title);
-        parser_title_len = TAG_EDIT_PARSER_MODE_alias_len(
-            TAG_EDIT_PARSER_MODE_NONE, &parser_title);
-        parser_helper_title_len = TAG_EDIT_FOCUS_alias_len(
-            TAG_EDIT_FOCUS_PARSER_LEGEND, &parser_helper_title);
+        directories_title_len =
+            TAG_EDIT_COLUMN_alias_len(TAG_EDIT_COLUMN_DIRECTORIES,
+                                      &directories_title);
+        tag_types_title_len =
+            TAG_EDIT_COLUMN_alias_len(TAG_EDIT_COLUMN_TAG_TYPES,
+                                      &tag_types_title);
+        tags_title_len = TAG_EDIT_COLUMN_alias_len(TAG_EDIT_COLUMN_TAGS,
+                                                   &tags_title);
+        parser_title_len =
+            TAG_EDIT_PARSER_MODE_alias_len(TAG_EDIT_PARSER_MODE_NONE,
+                                           &parser_title);
+        parser_helper_title_len =
+            TAG_EDIT_FOCUS_alias_len(TAG_EDIT_FOCUS_PARSER_LEGEND,
+                                     &parser_helper_title);
     }
 
     nc_window_init(&screen->directories_window,
@@ -2506,6 +2513,7 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
         NcEditorStringMenu *menu = &screen->tag_types;
         char *label;
         int32 label_len;
+        enum TagEditTagTypeAction action;
 
         nc_menu_clear_items(nc_editor_string_menu_base(menu));
         for (uint32 i = 0; i < TAG_COUNT - 1; i += 1) {
@@ -2528,23 +2536,23 @@ tag_edit_screen_init(TagEditScreen *screen, int32 start_x, int32 width,
             nc_editor_string_menu_add_separator(menu);
         }
 
-        label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(
-            TAG_EDIT_TAG_TYPE_ACTION_CAPITALIZE, &label);
+        action = TAG_EDIT_TAG_TYPE_ACTION_CAPITALIZE;
+        label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(action, &label);
         tag_edit_append_string_row(menu, label, label_len,
                                    NC_MENU_ITEM_SELECTABLE);
-        label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(
-            TAG_EDIT_TAG_TYPE_ACTION_LOWER, &label);
+        action = TAG_EDIT_TAG_TYPE_ACTION_LOWER;
+        label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(action, &label);
         tag_edit_append_string_row(menu, label, label_len,
                                    NC_MENU_ITEM_SELECTABLE);
 
         nc_editor_string_menu_add_separator(menu);
 
-        label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(
-            TAG_EDIT_TAG_TYPE_ACTION_RESET, &label);
+        action = TAG_EDIT_TAG_TYPE_ACTION_RESET;
+        label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(action, &label);
         tag_edit_append_string_row(menu, label, label_len,
                                    NC_MENU_ITEM_SELECTABLE);
-        label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(
-            TAG_EDIT_TAG_TYPE_ACTION_SAVE, &label);
+        action = TAG_EDIT_TAG_TYPE_ACTION_SAVE;
+        label_len = TAG_EDIT_TAG_TYPE_ACTION_alias_len(action, &label);
         tag_edit_append_string_row(menu, label, label_len,
                                    NC_MENU_ITEM_SELECTABLE);
     }
@@ -3141,7 +3149,7 @@ tag_edit_copy_selected_song_at(TagEditScreen *screen,
     source = nc_menu_active_item_at(nc_tag_row_menu_base(&screen->tags), pos);
     ASSERT(source != NULL);
     ASSERT(source->uri != NULL);
-    ASSERT_POSITIVE(source->uri_len);
+    ASSERT_GT(source->uri_len, 0);
 
     ncm_song_set_uri(&song, source->uri, source->uri_len);
     ncm_song_set_duration(&song, source->duration);
@@ -3844,12 +3852,14 @@ tag_edit_screen_prepare_parser_menus(TagEditScreen *screen,
     nc_menu_clear_items(nc_editor_string_menu_base(&screen->parser_dialog));
     nc_menu_clear_items(nc_editor_string_menu_base(&screen->parser_actions));
 
-    label_len = TAG_EDIT_PARSER_MODE_alias_len(
-        TAG_EDIT_PARSER_MODE_TAGS_FROM_FILENAME, &label);
+    label_len =
+        TAG_EDIT_PARSER_MODE_alias_len(TAG_EDIT_PARSER_MODE_TAGS_FROM_FILENAME,
+                                       &label);
     tag_edit_append_parser_row(&screen->parser_dialog, label, label_len,
                                NC_MENU_ITEM_SELECTABLE);
-    label_len = TAG_EDIT_PARSER_MODE_alias_len(
-        TAG_EDIT_PARSER_MODE_RENAME_FILES, &label);
+    label_len =
+        TAG_EDIT_PARSER_MODE_alias_len(TAG_EDIT_PARSER_MODE_RENAME_FILES,
+                                       &label);
     tag_edit_append_parser_row(&screen->parser_dialog, label, label_len,
                                NC_MENU_ITEM_SELECTABLE);
 
@@ -4108,13 +4118,13 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
 
         tag_type = ncm_char_to_tag_type(tag_char);
         recognized = tag_type != TAG_COUNT;
-        if (tag_char == ncm_song_getter_format_char(
-                SONG_GETTER_TRACK_NUMBER)) {
+        if (tag_char
+            == ncm_song_getter_format_char(SONG_GETTER_TRACK_NUMBER)) {
             str_set(&track_number, file.data + file_pos, value_end - file_pos);
             has_track_number = true;
             recognized = true;
-        } else if (tag_char == ncm_song_getter_format_char(
-                       SONG_GETTER_TRACK_TOTAL)) {
+        } else if (tag_char
+                   == ncm_song_getter_format_char(SONG_GETTER_TRACK_TOTAL)) {
             str_set(&track_total, file.data + file_pos, value_end - file_pos);
             has_track_total = true;
             recognized = true;

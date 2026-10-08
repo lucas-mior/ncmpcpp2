@@ -104,8 +104,8 @@ lrc_find_tag_close(char *line, int32 line_len, int32 cursor) {
     int32 close;
 
     ASSERT(line != NULL);
-    ASSERT_NON_NEGATIVE(line_len);
-    ASSERT_NON_NEGATIVE(cursor);
+    ASSERT_GE(line_len, 0);
+    ASSERT_GE(cursor, 0);
     ASSERT_LT_VAR(cursor, line_len);
     ASSERT_EQ(line[cursor], '[');
 
@@ -132,7 +132,7 @@ lrc_parse_offset_tag(LrcDocument *document, char *tag, int32 tag_len,
 
     ASSERT(document != NULL);
     ASSERT(tag != NULL);
-    ASSERT_NON_NEGATIVE(tag_len);
+    ASSERT_GE(tag_len, 0);
 
     offset_len = strlen32(offset);
     if (tag_len < offset_len) {
@@ -336,7 +336,7 @@ lrc_append_line_entries(LrcDocument *document, int32 *source_order,
     ASSERT(document != NULL);
     ASSERT(source_order != NULL);
     ASSERT(times != NULL);
-    ASSERT_NON_NEGATIVE(times_len);
+    ASSERT_GE(times_len, 0);
 
     for (int32 i = 0; i < times_len; i += 1) {
         LrcEntry entry;

@@ -3049,7 +3049,7 @@ library_move_to_tag(MediaLibraryScreen *screen, char *tag, int32 tag_len) {
     NcMenu *menu;
 
     ASSERT(screen != NULL);
-    ASSERT_NON_NEGATIVE(tag_len);
+    ASSERT_GE(tag_len, 0);
     ASSERT((tag != NULL) || (tag_len == 0));
 
     menu = nc_media_library_tag_menu_base(&screen->tags);
@@ -3073,9 +3073,9 @@ library_move_to_album(MediaLibraryScreen *screen, char *tag, int32 tag_len,
     NcMenu *menu;
 
     ASSERT(screen != NULL);
-    ASSERT_NON_NEGATIVE(tag_len);
-    ASSERT_NON_NEGATIVE(album_len);
-    ASSERT_NON_NEGATIVE(date_len);
+    ASSERT_GE(tag_len, 0);
+    ASSERT_GE(album_len, 0);
+    ASSERT_GE(date_len, 0);
     ASSERT((tag != NULL) || (tag_len == 0));
     ASSERT((album != NULL) || (album_len == 0));
     ASSERT((date != NULL) || (date_len == 0));
@@ -3243,8 +3243,9 @@ media_library_screen_add_item_to_playlist(MediaLibraryScreen *screen,
                 media_library_screen_current_tag(screen);
             char *with_errors = ncm_helpers_with_errors(result);
 
-            tag_name_len = ncm_tag_type_name_len(
-                Config.media_library_primary_tag, &tag_name);
+            tag_name_len =
+                ncm_tag_type_name_len(Config.media_library_primary_tag,
+                                      &tag_name);
 
             STR_APPEND(&message, "Songs with ");
             for (int32 i = 0; i < tag_name_len; i += 1) {
@@ -3264,8 +3265,9 @@ media_library_screen_add_item_to_playlist(MediaLibraryScreen *screen,
         } else if (screen->active_column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
             if ((album = media_library_screen_current_album(screen))
                 && album->all_tracks_entry) {
-                tag_name_len = ncm_tag_type_name_len(
-                    Config.media_library_primary_tag, &tag_name);
+                tag_name_len =
+                    ncm_tag_type_name_len(Config.media_library_primary_tag,
+                                          &tag_name);
                 STR_APPEND(&message, "Songs with ");
                 for (int32 i = 0; i < tag_name_len; i += 1) {
                     char ch = tag_name[i];

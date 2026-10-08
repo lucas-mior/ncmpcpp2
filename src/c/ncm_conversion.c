@@ -25,7 +25,7 @@ static void
 ncm_conversion_copy_source(String *buffer, char *source, int32 source_len) {
     ASSERT(buffer != NULL);
     ASSERT(source != NULL);
-    ASSERT_NON_NEGATIVE(source_len);
+    ASSERT_GE(source_len, 0);
 
     str_clear(buffer);
     STR_APPEND(buffer, source, source_len);

@@ -145,8 +145,9 @@ ncm_mpd_connection_recv_song(MpdConnection *connection, NcmSong *song,
     }
 
     if (include_properties) {
-        status = ncm_mpd_item_song_from_mpd_song_copy_with_properties(
-            song, mpd_song);
+        status =
+            ncm_mpd_item_song_from_mpd_song_copy_with_properties(song,
+                mpd_song);
     } else {
         status = ncm_mpd_item_song_from_mpd_song_copy(song, mpd_song);
     }

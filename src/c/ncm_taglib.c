@@ -147,12 +147,13 @@ ncm_taglib_read_mapped_properties(TaglibFile *file,
         int32 property_len;
         int32 name_len;
 
-        property_len = ncm_tag_type_taglib_property_len(
-            (enum TagType)i, property, LENGTH(property));
+        property_len = ncm_tag_type_taglib_property_len((enum TagType)i,
+                                                          property,
+                                                          LENGTH(property));
         name_len = ncm_tag_type_taglib_name_len((enum TagType)i,
                                                 name, LENGTH(name));
-        ASSERT_POSITIVE(property_len);
-        ASSERT_POSITIVE(name_len);
+        ASSERT_GT(property_len, 0);
+        ASSERT_GT(name_len, 0);
 
         if ((values = taglib_property_get(handle, property)) == NULL) {
             continue;

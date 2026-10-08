@@ -290,7 +290,7 @@ sort_dialog_add_sort_getter_row(SortPlaylistDialog *dialog,
     int32 label_len;
 
     label_len = ncm_song_getter_sort_label_len(getter, &label);
-    ASSERT_POSITIVE(label_len);
+    ASSERT_GT(label_len, 0);
     sort_dialog_add_row(dialog, label, label_len, getter,
                         sort_dialog_show_move_hint, dialog);
     return;

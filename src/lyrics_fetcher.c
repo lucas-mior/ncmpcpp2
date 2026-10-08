@@ -161,7 +161,7 @@ static void
 lyrics_result_set(LyricsResult *result, bool success,
                   char *text, int32 text_len) {
     ASSERT(result != NULL);
-    ASSERT_NON_NEGATIVE(text_len);
+    ASSERT_GE(text_len, 0);
     ASSERT((text != NULL) || (text_len == 0));
 
     lyrics_result_clear(result);
@@ -417,7 +417,7 @@ lyrics_fetcher_build_url(LyricsFetcherDef *fetcher, String *url,
         STR_APPEND(url, "lyrics+");
     } else {
         domain = lyrics_type_domain(fetcher->type, &domain_len);
-        ASSERT_POSITIVE(domain_len);
+        ASSERT_GT(domain_len, 0);
         lyrics_append_query(url, STRLIT("site:"));
         lyrics_append_query(url, domain, domain_len);
         str_append_byte(url, '+');

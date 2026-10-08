@@ -3760,8 +3760,8 @@ action_runtime_toggle_library_tag_type(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    tag_type = media_library_next_grouping_tag(
-        Config.media_library_primary_tag);
+    tag_type =
+        media_library_next_grouping_tag(Config.media_library_primary_tag);
     return media_library_screen_set_grouping_tag_type(screen, tag_type);
 }
 

@@ -1130,17 +1130,17 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                 metadata = search_constraint_metadata(i);
                 switch (metadata->kind) {
                 case SEARCH_CONSTRAINT_TAG:
-                    constraint_status = ncm_mpd_client_add_search_tag(
-                        client, metadata->tag, constraint, ncm_error);
+                    constraint_status = ncm_mpd_client_add_search_tag(client,
+                        metadata->tag, constraint, ncm_error);
                     break;
                 case SEARCH_CONSTRAINT_FILENAME:
-                    constraint_status = ncm_mpd_client_add_search_uri(
-                        client, constraint, ncm_error);
+                    constraint_status = ncm_mpd_client_add_search_uri(client,
+                        constraint, ncm_error);
                     break;
                 case SEARCH_CONSTRAINT_ANY:
                 default:
-                    constraint_status = ncm_error_set_status(
-                        ncm_error, -EINVAL, STRLIT("invalid search field"));
+                    constraint_status = ncm_error_set_status(ncm_error,
+                        -EINVAL, STRLIT("invalid search field"));
                     break;
                 }
             }

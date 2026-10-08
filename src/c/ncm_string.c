@@ -20,7 +20,7 @@ stupid_string_set(char **dst, int32 *dst_len, char *src, int32 src_len) {
 
     ASSERT(dst != NULL);
     ASSERT(dst_len != NULL);
-    ASSERT_NON_NEGATIVE(src_len);
+    ASSERT_GE(src_len, 0);
     ASSERT((src != NULL) || (src_len == 0));
 
     if (src_len > 0) {
@@ -98,8 +98,8 @@ ncm_string_shared_directory(char *left, int32 left_len,
 
     ASSERT((left != NULL) || (left_len == 0));
     ASSERT((right != NULL) || (right_len == 0));
-    ASSERT_NON_NEGATIVE(left_len);
-    ASSERT_NON_NEGATIVE(right_len);
+    ASSERT_GE(left_len, 0);
+    ASSERT_GE(right_len, 0);
 
     min_len = left_len;
     if (right_len < min_len) {
@@ -137,8 +137,8 @@ ncm_string_get_enclosed(char *string, int32 string_len, char open, char close,
         *pos = -1;
     }
     ASSERT(string != NULL);
-    ASSERT_NON_NEGATIVE(string_len);
-    ASSERT_NON_NEGATIVE(start);
+    ASSERT_GE(string_len, 0);
+    ASSERT_GE(start, 0);
     ASSERT_LE_VAR(start, string_len);
 
     i = start;
@@ -180,8 +180,8 @@ ncm_string_remove_chars(char *string, int32 *string_len,
     ASSERT(string != NULL);
     ASSERT(string_len != NULL);
     ASSERT(chars != NULL);
-    ASSERT_NON_NEGATIVE(*string_len);
-    ASSERT_NON_NEGATIVE(chars_len);
+    ASSERT_GE(*string_len, 0);
+    ASSERT_GE(chars_len, 0);
 
     len = *string_len;
     out = 0;

@@ -9,7 +9,7 @@
 static bool
 ncm_song_needs_numeric_zero(char *tag, int32 tag_len) {
     ASSERT(tag != NULL);
-    ASSERT_NON_NEGATIVE(tag_len);
+    ASSERT_GE(tag_len, 0);
 
     if ((tag_len == 1) && (tag[0] != '0')) {
         return true;
@@ -27,10 +27,10 @@ ncm_song_format_numeric_tag_prefix(char *buffer, int32 buffer_cap,
     int32 out;
 
     ASSERT(buffer != NULL);
-    ASSERT_POSITIVE(buffer_cap);
+    ASSERT_GT(buffer_cap, 0);
     ASSERT(tag != NULL);
-    ASSERT_NON_NEGATIVE(tag_len);
-    ASSERT_NON_NEGATIVE(copy_len);
+    ASSERT_GE(tag_len, 0);
+    ASSERT_GE(copy_len, 0);
     ASSERT_LE_VAR(copy_len, tag_len);
 
     out = 0;
@@ -736,8 +736,8 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
 
                 len = ncm_song_numeric_tag_len_unchecked(total, total_len);
                 str_reserve(&buffer, len);
-                buffer.len = ncm_song_format_numeric_tag_unchecked(
-                    buffer.data, buffer.cap, total, total_len);
+                buffer.len = ncm_song_format_numeric_tag_unchecked(buffer.data,
+                    buffer.cap, total, total_len);
             }
         }
         return buffer;

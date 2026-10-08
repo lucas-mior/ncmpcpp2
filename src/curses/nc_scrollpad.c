@@ -256,7 +256,7 @@ nc_scrollpad_buffer_position_row(NcBuffer *buffer, int32 width,
     int32 i;
 
     ASSERT(buffer != NULL);
-    ASSERT_POSITIVE(width);
+    ASSERT_GT(width, 0);
 
     data = nc_buffer_data(buffer);
     len = buffer->len;
@@ -337,8 +337,8 @@ nc_scrollpad_center_on_buffer_position(NcScrollpad *scrollpad,
     ASSERT(scrollpad != NULL);
     ASSERT(window != NULL);
     ASSERT(buffer != NULL);
-    ASSERT_POSITIVE(window->width);
-    ASSERT_POSITIVE(window->height);
+    ASSERT_GT(window->width, 0);
+    ASSERT_GT(window->height, 0);
 
     row = nc_scrollpad_buffer_position_row(buffer, window->width, position);
     height = nc_scrollpad_buffer_position_row(buffer, window->width,

@@ -144,7 +144,7 @@ ncm_tag_type_taglib_property_len(enum TagType tag, char *out, int32 cap) {
     int32 result;
 
     ASSERT(out != NULL);
-    ASSERT_POSITIVE(cap);
+    ASSERT_GT(cap, 0);
 
     if ((tag == 0) || ((uint32)tag >= TAG_COUNT)) {
         out[0] = '\0';
@@ -176,7 +176,7 @@ ncm_tag_type_taglib_name_len(enum TagType tag, char *out, int32 cap) {
     int32 alias_len;
 
     ASSERT(out != NULL);
-    ASSERT_POSITIVE(cap);
+    ASSERT_GT(cap, 0);
 
     if ((tag == 0) || ((uint32)tag >= TAG_COUNT)) {
         out[0] = '\0';

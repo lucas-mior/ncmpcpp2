@@ -162,26 +162,30 @@ NC_SCREEN_IMPL_BASE(NC_SCREEN_IMPL_TYPE *screen) {
     && !defined(NC_SCREEN_IMPL_NO_GEOMETRY_ACCESSORS)
 int32
 NC_SCREEN_IMPL_START_X(NC_SCREEN_IMPL_TYPE *screen) {
-    return nc_scrollpad_screen_start_x(
-        NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen));
+    NcScrollpadScreen *base = NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen);
+
+    return nc_scrollpad_screen_start_x(base);
 }
 
 int32
 NC_SCREEN_IMPL_START_Y(NC_SCREEN_IMPL_TYPE *screen) {
-    return nc_scrollpad_screen_start_y(
-        NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen));
+    NcScrollpadScreen *base = NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen);
+
+    return nc_scrollpad_screen_start_y(base);
 }
 
 int32
 NC_SCREEN_IMPL_WIDTH(NC_SCREEN_IMPL_TYPE *screen) {
-    return nc_scrollpad_screen_width(
-        NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen));
+    NcScrollpadScreen *base = NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen);
+
+    return nc_scrollpad_screen_width(base);
 }
 
 int32
 NC_SCREEN_IMPL_HEIGHT(NC_SCREEN_IMPL_TYPE *screen) {
-    return nc_scrollpad_screen_height(
-        NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen));
+    NcScrollpadScreen *base = NC_SCREEN_IMPL_SCROLLPAD_BASE_EXPR(screen);
+
+    return nc_scrollpad_screen_height(base);
 }
 #endif
 
@@ -319,8 +323,9 @@ NC_SCREEN_IMPL_CURRENT_SONG(NcScreen *screen, NcmSong *song) {
     NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
 
 #if defined(NC_SCREEN_IMPL_CURRENT_SONG_OPTIONAL_STATUS)
-    return nc_screen_optional_song_status(
-        NC_SCREEN_IMPL_CURRENT_SONG_CALLBACK(impl, song));
+    int32 status = NC_SCREEN_IMPL_CURRENT_SONG_CALLBACK(impl, song);
+
+    return nc_screen_optional_song_status(status);
 #else
     return NC_SCREEN_IMPL_CURRENT_SONG_CALLBACK(impl, song);
 #endif
@@ -330,8 +335,9 @@ NC_SCREEN_IMPL_CURRENT_SONG(NcScreen *screen, NcmSong *song) {
 #if defined(NC_SCREEN_IMPL_SELECTED_SONGS_CALLBACK)
 static int32
 NC_SCREEN_IMPL_SELECTED_SONGS(NcScreen *screen, NcmSongArray *songs) {
-    return NC_SCREEN_IMPL_SELECTED_SONGS_CALLBACK(
-        NC_SCREEN_IMPL_FROM_SCREEN(screen), songs);
+    NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
+
+    return NC_SCREEN_IMPL_SELECTED_SONGS_CALLBACK(impl, songs);
 }
 #endif
 
@@ -344,9 +350,10 @@ NC_SCREEN_IMPL_TAG_MENU_CALLBACK(NcScreen *screen) {
 static int32
 NC_SCREEN_IMPL_SONG_TAG_AT(NcScreen *screen, int32 pos,
                            enum SongGetter getter, String *tag) {
-    return nc_screen_menu_song_tag_at(
-        NC_SCREEN_IMPL_TAG_MENU(NC_SCREEN_IMPL_FROM_SCREEN(screen)),
-        pos, getter, tag, NC_SCREEN_IMPL_TAG_ITEM_SONG_CALLBACK);
+    NcMenu *menu = NC_SCREEN_IMPL_TAG_MENU(NC_SCREEN_IMPL_FROM_SCREEN(screen));
+
+    return nc_screen_menu_song_tag_at(menu, pos, getter, tag,
+                                      NC_SCREEN_IMPL_TAG_ITEM_SONG_CALLBACK);
 }
 #endif
 
