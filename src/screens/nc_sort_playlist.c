@@ -260,8 +260,7 @@ sort_dialog_run_sort(void *user) {
     }
 
     if (status == 0) {
-        ncm_statusbar_print(Config.message_delay_time,
-                            STRLIT("Range sorted"));
+        ncm_statusbar_print(Config.message_delay_time, STRLIT("Range sorted"));
     } else if (ncm_error_is_set(&ncm_error)) {
         ncm_statusbar_print(Config.message_delay_time,
                             ncm_error.message, ncm_error.message_len);

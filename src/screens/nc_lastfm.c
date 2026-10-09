@@ -320,11 +320,11 @@ lastfm_job_complete(int32 status, NcmError *ncm_error, void *user) {
             for (int32 i = 0; i + needle_len <= len; i += 1) {
                 if (BEGINS_WITH(data + i, len - i, needle, needle_len)) {
                     nc_buffer_add_text_style(buffer, i, &Config.color2,
-                                                  LASTFM_PROPERTY_ID);
+                                             LASTFM_PROPERTY_ID);
                     nc_buffer_add_text_style_end(buffer,
-                                                      i + needle_len,
-                                                      &Config.color2,
-                                                      LASTFM_PROPERTY_ID);
+                                                 i + needle_len,
+                                                 &Config.color2,
+                                                 LASTFM_PROPERTY_ID);
                 }
             }
         }

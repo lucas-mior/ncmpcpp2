@@ -296,7 +296,7 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
             } else if (STREQUAL(name, name_len, "config")) {
                 REQUIRE_LONG(value, value_len);
                 cmd_line_options_append_path(&options->config_paths,
-                                                 value, value_len);
+                                             value, value_len);
             } else if (STREQUAL(name, name_len, "ignore-config-errors")) {
                 REJECT_LONG(value);
                 options->ignore_config_errors = true;
@@ -306,7 +306,7 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
             } else if (STREQUAL(name, name_len, "bindings")) {
                 REQUIRE_LONG(value, value_len);
                 cmd_line_options_append_path(&options->bindings_paths,
-                                                 value, value_len);
+                                             value, value_len);
             } else if (STREQUAL(name, name_len, "screen")) {
                 REQUIRE_LONG(value, value_len);
                 options->screen = true;
@@ -407,11 +407,11 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
                 break;
             case 'c':
                 cmd_line_options_append_path(&options->config_paths,
-                                                 value, value_len);
+                                             value, value_len);
                 break;
             case 'b':
                 cmd_line_options_append_path(&options->bindings_paths,
-                                                 value, value_len);
+                                             value, value_len);
                 break;
             case 's':
                 options->screen = true;
@@ -448,14 +448,14 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
             for (int32 j = 0; j < default_config_paths.len; j += 1) {
                 String *path = &default_config_paths.items[j];
                 cmd_line_options_append_path(&options->config_paths,
-                                                 path->data, path->len);
+                                             path->data, path->len);
             }
         }
         if (options->bindings_paths.len == 0) {
             for (int32 j = 0; j < default_bindings_paths.len; j += 1) {
                 String *path = &default_bindings_paths.items[j];
                 cmd_line_options_append_path(&options->bindings_paths,
-                                                 path->data, path->len);
+                                             path->data, path->len);
             }
         }
         string_array_destroy(&default_config_paths);
@@ -761,8 +761,8 @@ configure(int32 argc, char **argv) {
                 break;
             }
             if ((status = bindings_config_read(&Bindings,
-                                                   path->data, path->len,
-                                                   &ncm_error)) < 0) {
+                                               path->data, path->len,
+                                               &ncm_error)) < 0) {
                 break;
             }
         }

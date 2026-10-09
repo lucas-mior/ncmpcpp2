@@ -230,7 +230,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         STR_APPEND(&new_name, input.data, input.len);
         if (dot >= 0) {
             STR_APPEND(&new_name,
-                      &current_name.data[dot], current_name.len - dot);
+                       &current_name.data[dot], current_name.len - dot);
         }
         mutable_song_set_new_name(&screen->edited, new_name.data, new_name.len);
         str_free(&new_name);
@@ -261,7 +261,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         }
         if (status < 0) {
             error_len = SNPRINTF(error_buffer, "Error while writing tags: %s",
-                                 strerror(errno));
+                                               strerror(errno));
             tiny_editor_status_message(screen, error_buffer, error_len);
             tiny_editor_finish(screen);
             return status;

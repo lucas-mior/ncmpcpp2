@@ -187,8 +187,8 @@ mutable_song_copy(MutableSong *dest, MutableSong *source) {
     for (int32 i = 0; i < source->tags_len; i += 1) {
         MutableSongTag *source_tag = &source->tags[i];
         MutableSongTag *tag = mutable_song_add_tag(&copy,
-                                                       source_tag->type,
-                                                       source_tag->idx);
+                                                   source_tag->type,
+                                                   source_tag->idx);
         mutable_song_tag_destroy(tag);
         tag->type = source_tag->type;
         tag->idx = source_tag->idx;

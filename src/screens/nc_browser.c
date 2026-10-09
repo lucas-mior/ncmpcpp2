@@ -129,7 +129,7 @@ browser_add_parent_directory_item(BrowserScreen *screen) {
 
     str_clear(&screen->scratch_buffer);
     STR_APPEND(&screen->scratch_buffer,
-              screen->current_directory.data, screen->current_directory.len);
+               screen->current_directory.data, screen->current_directory.len);
     STR_APPEND(&screen->scratch_buffer, "/..");
 
     ncm_mpd_item_init(&item);
@@ -701,7 +701,7 @@ browser_item_matches(BrowserScreen *screen, NcmMpdItem *item,
         basename = ncm_path_basename_start(path.data, path.len);
         str_append_byte(&screen->item_text_buffer, '[');
         STR_APPEND(&screen->item_text_buffer,
-                  path.data + basename, path.len - basename);
+                   path.data + basename, path.len - basename);
         str_append_byte(&screen->item_text_buffer, ']');
         break;
     case NCM_MPD_ITEM_SONG:
@@ -720,13 +720,13 @@ browser_item_matches(BrowserScreen *screen, NcmMpdItem *item,
         if (Config.browser_playlist_prefix.data
             && (Config.browser_playlist_prefix.len > 0)) {
             STR_APPEND(&screen->item_text_buffer,
-                      Config.browser_playlist_prefix.data,
-                      Config.browser_playlist_prefix.len);
+                       Config.browser_playlist_prefix.data,
+                       Config.browser_playlist_prefix.len);
         }
         ncm_playlist_has_path_view(ncm_mpd_item_playlist(item), &path);
         basename = ncm_path_basename_start(path.data, path.len);
         STR_APPEND(&screen->item_text_buffer,
-                  path.data + basename, path.len - basename);
+                   path.data + basename, path.len - basename);
         break;
     case NCM_MPD_ITEM_COUNT:
         break;
@@ -1380,7 +1380,8 @@ browser_screen_change_browse_mode(BrowserScreen *screen,
     if (((hostname = ncm_mpd_client_hostname(client)) == NULL)
         || (hostname[0] != '/')) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-            STRLIT("local browsing requires an MPD UNIX socket"));
+                                    STRLIT("local browsing requires an MPD "
+                                           "UNIX socket"));
     }
 
     local_browser = !screen->local_browser;
@@ -1480,15 +1481,17 @@ browser_collect_local_directory_songs(BrowserScreen *screen,
                                                            entry_path.len,
                                                            ncm_error);
         } else if ((status == 0) && stat.exists
-                   && (stat.type == NCM_FS_ENTRY_FILE)
-                   && browser_local_path_has_supported_extension(screen,
-                       entry_path.data, entry_path.len)) {
-            NcmSong song = {0};
+                   && (stat.type == NCM_FS_ENTRY_FILE)) {
+            if (browser_local_path_has_supported_extension(screen,
+                                                           entry_path.data,
+                                                           entry_path.len)) {
+                NcmSong song = {0};
 
-            browser_make_local_song(&song, entry_path.data, entry_path.len,
-                                    (time_t)stat.mtime);
-            ncm_song_array_append_copy(songs, &song);
-            ncm_song_destroy(&song);
+                browser_make_local_song(&song, entry_path.data, entry_path.len,
+                                        (time_t)stat.mtime);
+                ncm_song_array_append_copy(songs, &song);
+                ncm_song_destroy(&song);
+            }
         }
         str_free(&entry_path);
         if (status < 0) {
@@ -1801,7 +1804,7 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
             directory = "/";
         }
         status = ncm_mpd_client_update_directory(client, directory, NULL,
-                                                ncm_error);
+                                                 ncm_error);
         if (status < 0) {
             return status;
         }
@@ -1966,7 +1969,7 @@ browser_screen_rename_current_directory(BrowserScreen *screen,
             directory = "/";
         }
         status = ncm_mpd_client_update_directory(client, directory, NULL,
-                                                ncm_error);
+                                                 ncm_error);
         str_free(&shared);
         if (status < 0) {
             return status;

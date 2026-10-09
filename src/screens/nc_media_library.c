@@ -95,8 +95,9 @@ media_library_search_capability(NcScreen *base, enum SearchDirection direction,
 
     (void)regex_flags;
     forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
-    return media_library_screen_search((MediaLibraryScreen *)base, pattern,
-                                       pattern_len, forward, wrap,
+    return media_library_screen_search((MediaLibraryScreen *)base,
+                                       pattern, pattern_len,
+                                       forward, wrap,
                                        skip_current, ncm_error);
 }
 
@@ -1434,7 +1435,7 @@ media_library_screen_format_tag_row(MediaLibraryScreen *screen,
     if ((row->tag == NULL) || (row->tag_len <= 0)) {
         if (Config.empty_tag_marker && (Config.empty_tag_marker_len > 0)) {
             STR_APPEND(output,
-                      Config.empty_tag_marker, Config.empty_tag_marker_len);
+                       Config.empty_tag_marker, Config.empty_tag_marker_len);
         }
         return;
     }
@@ -1464,8 +1465,8 @@ media_library_screen_format_album_row(MediaLibraryScreen *screen,
     if (screen && (screen->mode == MEDIA_LIBRARY_MODE_TWO_COLUMNS)) {
         if ((row->tag == NULL) || (row->tag_len <= 0)) {
             if (Config.empty_tag_marker && (Config.empty_tag_marker_len > 0)) {
-                STR_APPEND(&raw,
-                          Config.empty_tag_marker, Config.empty_tag_marker_len);
+                STR_APPEND(&raw, Config.empty_tag_marker,
+                           Config.empty_tag_marker_len);
             }
         } else {
             STR_APPEND(&raw, row->tag, row->tag_len);
@@ -1565,7 +1566,8 @@ library_compare_album_items(MediaLibraryAlbumItem *left,
         right_data = "";
     }
     result = ncm_compare_locale_strings(left_data, left_row->tag_len,
-        right_data, right_row->tag_len, Config.ignore_leading_the);
+                                        right_data, right_row->tag_len,
+                                        Config.ignore_leading_the);
     if (result != 0) {
         return result;
     }
@@ -1579,7 +1581,8 @@ library_compare_album_items(MediaLibraryAlbumItem *left,
         right_data = "";
     }
     result = ncm_compare_locale_strings(left_data, left_row->date_len,
-        right_data, right_row->date_len, Config.ignore_leading_the);
+                                        right_data, right_row->date_len,
+                                        Config.ignore_leading_the);
     if (result != 0) {
         return result;
     }
@@ -1911,11 +1914,11 @@ media_library_copy_sorted_songs(NcmSongArray *songs, NcmSongArray *source) {
                     separator = "";
                     separator_len = 0;
                 }
-                left_tags = ncm_song_tags_buffer(left, getters[k], separator,
-                                                 separator_len,
+                left_tags = ncm_song_tags_buffer(left, getters[k],
+                                                 separator, separator_len,
                                                  Config.show_duplicate_tags);
-                right_tags = ncm_song_tags_buffer(right, getters[k], separator,
-                                                  separator_len,
+                right_tags = ncm_song_tags_buffer(right, getters[k],
+                                                  separator, separator_len,
                                                   Config.show_duplicate_tags);
                 left_data = left_tags.data;
                 right_data = right_tags.data;
@@ -3290,11 +3293,10 @@ media_library_screen_add_item_to_playlist(MediaLibraryScreen *screen,
                 STR_APPEND(&message, "\" added");
             }
             STR_APPEND(&message, ncm_helpers_with_errors(result),
-                      opt_strlen32(ncm_helpers_with_errors(result)));
+                       opt_strlen32(ncm_helpers_with_errors(result)));
         } else if (result && (songs.len == 1)) {
             NcmFormatAst *format = &Config.song_status_format;
-            String rendered = ncm_format_render_string(format,
-                                                           &songs.items[0]);
+            String rendered = ncm_format_render_string(format, &songs.items[0]);
 
             STR_APPEND(&message, "Added to playlist: ");
             STR_APPEND(&message, rendered.data, rendered.len);
@@ -3302,12 +3304,12 @@ media_library_screen_add_item_to_playlist(MediaLibraryScreen *screen,
         } else if (result) {
             STR_APPEND(&message, "Songs added");
             STR_APPEND(&message, ncm_helpers_with_errors(result),
-                      opt_strlen32(ncm_helpers_with_errors(result)));
+                       opt_strlen32(ncm_helpers_with_errors(result)));
         }
 
         if (message.len > 0) {
             ncm_statusbar_print(Config.message_delay_time,
-                                            message.data, message.len);
+                                message.data, message.len);
         }
         str_free(&message);
     }

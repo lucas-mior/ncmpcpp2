@@ -102,7 +102,7 @@ ncm_display_song_columns(NcBuffer *buffer, NcmSong *song,
         if ((value.len == 0) && column->display_empty_tag
             && Config.empty_tag_marker && (Config.empty_tag_marker_len > 0)) {
             STR_APPEND(&value,
-                      Config.empty_tag_marker, Config.empty_tag_marker_len);
+                       Config.empty_tag_marker, Config.empty_tag_marker_len);
         }
         cut_len = utf8_cut_width(value.data, value.len, width);
         value_width = utf8_width(value.data, cut_len);

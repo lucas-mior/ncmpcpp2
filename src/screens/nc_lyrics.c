@@ -79,8 +79,7 @@ lyrics_window_timeout_callback(NcScreen *screen) {
     }
 
     elapsed_ms = ncm_status_state_elapsed_time_ms();
-    next_line = lrc_document_next_entry_after_time(&lyrics->lrc,
-                                                       elapsed_ms);
+    next_line = lrc_document_next_entry_after_time(&lyrics->lrc, elapsed_ms);
     if (next_line < 0) {
         return LYRICS_DEFAULT_TIMEOUT_MS;
     }
@@ -415,7 +414,7 @@ lyrics_screen_update_sync_line_force(LyricsScreen *screen, bool force) {
 
     active_line =
         lrc_document_entry_at_time(&screen->lrc,
-                                       ncm_status_state_elapsed_time_ms());
+                                   ncm_status_state_elapsed_time_ms());
     if (!force && (active_line == screen->active_lrc_line)) {
         return false;
     }
@@ -1067,11 +1066,16 @@ lyrics_screen_fetch(LyricsScreen *screen, NcmSong *song,
     }
 
     win32_filename = Config.generate_win32_compatible_filenames;
+    int32 dir_len = Config.lyrics_directory_len;
+    bool in_song_dir = Config.store_lyrics_in_song_dir;
     status = lyrics_filename_from_song_with_extension(&lrc_filename,
-        song, Config.mpd_music_dir,
-        Config.mpd_music_dir_len, Config.lyrics_directory,
-        Config.lyrics_directory_len, Config.store_lyrics_in_song_dir,
-        win32_filename, STRLIT(".lrc"));
+                                                      song,
+                                                      Config.mpd_music_dir,
+                                                      Config.mpd_music_dir_len,
+                                                      Config.lyrics_directory,
+                                                      dir_len, in_song_dir,
+                                                      win32_filename,
+                                                      STRLIT(".lrc"));
     if (status < 0) {
         str_free(&lrc_filename);
         return ncm_error_set_status(ncm_error, status,
@@ -1111,16 +1115,16 @@ lyrics_screen_fetch(LyricsScreen *screen, NcmSong *song,
         }
 
         lrc_start = ncm_path_basename_start(lrc_filename.data,
-                                              lrc_filename.len);
+                                            lrc_filename.len);
         txt_start = ncm_path_basename_start(txt_filename.data,
-                                              txt_filename.len);
+                                            txt_filename.len);
         STR_APPEND(&message, lrc_filename.data + lrc_start,
-                  lrc_filename.len - lrc_start);
+                   lrc_filename.len - lrc_start);
         STR_APPEND(&message, " ");
         STR_APPEND(&message, lrc_status, opt_strlen32(lrc_status));
         STR_APPEND(&message, "; ");
         STR_APPEND(&message, txt_filename.data + txt_start,
-                  txt_filename.len - txt_start);
+                   txt_filename.len - txt_start);
         STR_APPEND(&message, " ");
         STR_APPEND(&message, txt_status, opt_strlen32(txt_status));
         ncm_statusbar_print(Config.message_delay_time,
@@ -1243,11 +1247,15 @@ lyrics_start_next_background(LyricsScreen *screen, NcmError *ncm_error) {
             continue;
         }
 
+        int32 dir_len = Config.lyrics_directory_len;
+        bool in_song_dir = Config.store_lyrics_in_song_dir;
         status = lyrics_preferred_filename_from_song(&filename,
-            &queued->song, Config.mpd_music_dir,
-            Config.mpd_music_dir_len, Config.lyrics_directory,
-            Config.lyrics_directory_len, Config.store_lyrics_in_song_dir,
-            win32_filename);
+                                                     &queued->song,
+                                                     Config.mpd_music_dir,
+                                                     Config.mpd_music_dir_len,
+                                                     Config.lyrics_directory,
+                                                     dir_len, in_song_dir,
+                                                     win32_filename);
         if (status < 0) {
             lyrics_queued_song_destroy(queued);
             free2(queued, SIZEOF(*queued));
@@ -1573,8 +1581,9 @@ lyrics_screen_find(LyricsScreen *screen, char *pattern, int32 pattern_len,
                                     STRLIT("missing lyrics screen"));
     }
 
-    result = lyrics_buffer_find(&screen->display, pattern,
-                                pattern_len, ncm_error);
+    result = lyrics_buffer_find(&screen->display,
+                                pattern, pattern_len,
+                                ncm_error);
     if (result < 0) {
         nc_scrollpad_flush(&screen->scrollpad, &screen->window,
                            &screen->display);
@@ -1624,9 +1633,9 @@ lyrics_buffer_highlight_sync_line(NcBuffer *buffer, int32 start, int32 end) {
     nc_text_style_init_color(&highlight, color);
     nc_text_style_add_format(&highlight, NC_FORMAT_BOLD);
     nc_buffer_add_text_style(buffer, start, &highlight,
-                                  LYRICS_SYNC_PROPERTY_ID);
+                             LYRICS_SYNC_PROPERTY_ID);
     nc_buffer_add_text_style_end(buffer, end, &highlight,
-                                      LYRICS_SYNC_PROPERTY_ID);
+                                 LYRICS_SYNC_PROPERTY_ID);
     nc_text_style_destroy(&highlight);
     return;
 }

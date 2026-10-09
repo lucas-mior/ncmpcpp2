@@ -273,8 +273,8 @@ app_screen_browser_fetch_supported_extensions(void) {
 
     ncm_error_clear(&ncm_error);
     if ((browser_screen_fetch_supported_extensions(app_screen_browser(),
-                                                  &global_mpd,
-                                                  &ncm_error) < 0)
+                                                   &global_mpd,
+                                                   &ncm_error) < 0)
         && ncm_error_is_set(&ncm_error)) {
         ncm_statusbar_print(Config.message_delay_time,
                             ncm_error.message, ncm_error.message_len);
@@ -662,7 +662,7 @@ app_screen_search_engine_init(void) {
     mode = config_search_engine_default_mode(&Config);
     search_engine_screen_set_search_mode(&search_engine_screen, mode);
     search_engine_screen_set_search_source(&search_engine_screen,
-                                        Config.default_place_to_search_in
+                                           Config.default_place_to_search_in
                                         == NCM_DEFAULT_SEARCH_SOURCE_DATABASE);
 
     hooks.client = &global_mpd;
@@ -834,8 +834,8 @@ app_screen_tag_edit_init(void) {
     }
 
     tag_edit_screen_init(&tag_edit_screen, 0, ui_state_screen_width(),
-                           ui_state_main_start_y(), ui_state_main_height(),
-                           Config.main_window_color, no_border());
+                         ui_state_main_start_y(), ui_state_main_height(),
+                         Config.main_window_color, no_border());
     hooks.prompt = tag_edit_hook_prompt;
     hooks.confirm = tag_edit_hook_confirm;
     hooks.status_message = tag_edit_hook_status_message;
@@ -1161,7 +1161,7 @@ append_help(NcBuffer *buffer, enum ActionType type, char *description) {
                 continue;
             }
             key_len = bindings_key_name(key_bindings->key, key_name,
-                                            SIZEOF(key_name));
+                                        SIZEOF(key_name));
             if (key_len <= 0) {
                 continue;
             }
@@ -1202,8 +1202,7 @@ help_render(void *user, NcBuffer *buffer) {
     append_help(buffer, ACTION_SHOW_BROWSER, "Show browser");
     append_help(buffer, ACTION_SHOW_SEARCH_ENGINE, "Show search engine");
     append_help(buffer, ACTION_SHOW_MEDIA_LIBRARY, "Show media library");
-    append_help(buffer, ACTION_SHOW_PLAYLIST_EDIT,
-                "Show playlist editor");
+    append_help(buffer, ACTION_SHOW_PLAYLIST_EDIT, "Show playlist editor");
     append_help(buffer, ACTION_SHOW_SERVER_INFO, "Show server info");
 #if defined(ENABLE_OUTPUTS)
     append_help(buffer, ACTION_SHOW_OUTPUTS, "Show outputs");
@@ -1301,8 +1300,7 @@ outputs_fetch(void *user, NcOutputsScreen *screen) {
         String message = {0};
 
         STR_APPEND(&message, "Could not fetch outputs: ");
-        STR_APPEND(&message,
-                  ncm_error.message, ncm_error.message_len);
+        STR_APPEND(&message, ncm_error.message, ncm_error.message_len);
         ncm_statusbar_print(5, message.data, message.len);
         str_free(&message);
         ncm_mpd_output_list_destroy(&outputs);
@@ -1344,8 +1342,7 @@ outputs_toggle(void *user, int32 id, bool enabled, char *name, int32 name_len) {
         STR_APPEND(&message, "Could not toggle output ");
         STR_APPEND(&message, name, name_len);
         STR_APPEND(&message, ": ");
-        STR_APPEND(&message, ncm_error.message,
-                  ncm_error.message_len);
+        STR_APPEND(&message, ncm_error.message, ncm_error.message_len);
         ncm_statusbar_print(5, message.data, message.len);
         str_free(&message);
         return status;
@@ -1685,7 +1682,7 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
             }
             if (value.len > 0) {
                 STR_APPEND(&value, Config.tags_separator,
-                          Config.tags_separator_len);
+                           Config.tags_separator_len);
             }
             STR_APPEND(&value, view.data, view.len);
         }
@@ -1719,7 +1716,7 @@ song_info_render(void *user, NcSongInfoScreen *screen, NcBuffer *buffer) {
             if (!duplicate) {
                 if (properties.len > 0) {
                     STR_APPEND(&properties, Config.tags_separator,
-                              Config.tags_separator_len);
+                               Config.tags_separator_len);
                 }
                 STR_APPEND(&properties, candidate->value, candidate->value_len);
             }
@@ -1758,8 +1755,7 @@ song_info_switch_to(void *user, NcSongInfoScreen *screen) {
         String message = {0};
 
         STR_APPEND(&message, "Could not fetch current song: ");
-        STR_APPEND(&message, ncm_error.message,
-                  ncm_error.message_len);
+        STR_APPEND(&message, ncm_error.message, ncm_error.message_len);
         ncm_statusbar_print(5, message.data, message.len);
         str_free(&message);
         return;

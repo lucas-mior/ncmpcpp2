@@ -888,8 +888,10 @@ settings_apply_option(Configuration *config, SettingsOption option,
             detail_len = cause.message_len;
         }
 
-        len = SNPRINTF(message, "error while %s option \"%.*s\": %.*s",
-                       phase, option.name_len, option.name, detail_len, detail);
+        len = SNPRINTF(message,
+                       "error while %s option \"%.*s\": %.*s",
+                       phase, option.name_len, option.name, detail_len,
+                       detail);
         if (ncm_error_is_set(&cause)) {
             ncm_error_set(ncm_error, cause.code, message, len);
         } else {
@@ -944,8 +946,8 @@ config_apply_runtime(Configuration *config, MpdClient *client, bool quiet,
         }
     }
     status = ncm_mpd_client_set_timeout_ms(client,
-                                          config->mpd_connection_timeout*1000,
-                                          ncm_error);
+                                           config->mpd_connection_timeout*1000,
+                                           ncm_error);
     if (status < 0) {
         return status;
     }
@@ -1025,7 +1027,7 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
     enum TagType parsed;                                                       \
     int32 status;                                                              \
     status = settings_parse_media_library_grouping_tag(value, value_len,       \
-                                                        &parsed);              \
+                                                       &parsed);               \
     if (status < 0) {                                                          \
         return settings_invalid_value(ncm_error, value, value_len);            \
     }                                                                          \
@@ -1229,8 +1231,7 @@ config_read(Configuration *config, StrViewList *config_paths,
         }
 
         if (!quiet) {
-            error2("Reading configuration from %.*s...\n",
-                   path.len, path.data);
+            error2("Reading configuration from %.*s...\n", path.len, path.data);
         }
         content_end = content + content_len;
         line = content;
@@ -1258,7 +1259,7 @@ config_read(Configuration *config, StrViewList *config_paths,
                 line_len -= 1;
             }
             status = ncm_option_parser_parse_line(current_line, line_len,
-                                                   &parsed, &has_option);
+                                                  &parsed, &has_option);
             if (status < 0) {
                 settings_invalid_value(ncm_error, current_line, line_len);
                 status = settings_report_or_ignore(ncm_error, ignore_errors);
@@ -1285,7 +1286,7 @@ config_read(Configuration *config, StrViewList *config_paths,
                 int32 len;
 
                 len = SNPRINTF(message, "unknown option: %.*s",
-                               parsed.option_len, parsed.option);
+                                        parsed.option_len, parsed.option);
                 ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
                                      message, len);
                 status = settings_report_or_ignore(ncm_error, ignore_errors);

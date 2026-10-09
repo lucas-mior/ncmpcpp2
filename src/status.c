@@ -615,7 +615,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
                         has_song = true;
                     } else if (ncm_mpd_client_is_connected(&global_mpd)) {
                         if (ncm_mpd_client_get_current_song(&global_mpd, &song,
-                                                           NULL) >= 0) {
+                                                            NULL) >= 0) {
                             has_song = !ncm_song_is_empty(&song);
                         }
                     }
@@ -777,7 +777,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
                 str_printf(&message,
                           "Crossfade set to %d seconds", mpd_status->crossfade);
                 ncm_statusbar_print(Config.message_delay_time,
-                                                    message.data, message.len);
+                                    message.data, message.len);
                 str_free(&message);
             }
         }
@@ -1109,8 +1109,8 @@ ncm_status_changes_player_state(void) {
                 nc_window_apply_term_manip(state_window, NC_TERM_CLEAR_TO_EOL);
             } else {
                 nc_window_apply_format(state_window, NC_FORMAT_BOLD);
-                nc_window_print_data(state_window, player_state,
-                                     player_state_len);
+                nc_window_print_data(state_window,
+                                     player_state, player_state_len);
                 nc_window_apply_format(state_window, NC_FORMAT_NO_BOLD);
             }
         }
@@ -1295,8 +1295,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
             nc_window_apply_term_manip(footer, NC_TERM_CLEAR_TO_EOL);
             status_apply_text_style(footer, &Config.player_state_color);
             nc_window_print_data(footer, player_state, player_state_len);
-            status_apply_text_style_end(footer,
-                                        &Config.player_state_color);
+            status_apply_text_style_end(footer, &Config.player_state_color);
             nc_window_print_char(footer, ' ');
 
             text_width = nc_window_width(footer) - player_state_len;
@@ -1396,8 +1395,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
             nc_window_apply_term_manip(header, NC_TERM_CLEAR_TO_EOL);
             status_apply_text_style(header, &Config.player_state_color);
             nc_window_print_data(header, player_state, player_state_len);
-            status_apply_text_style_end(header,
-                                        &Config.player_state_color);
+            status_apply_text_style_end(header, &Config.player_state_color);
             nc_window_go_to_xy(header, second_start, 1);
 
             text_width = COLS - player_state_len - 10;

@@ -23,7 +23,8 @@ ncm_fs_set_errno_error(NcmError *ncm_error, int32 code, char *operation,
     if (path == NULL) {
         message_len = SNPRINTF(message, "%s: %s", operation, strerror(code));
     } else {
-        message_len = SNPRINTF(message, "%s '%.*s': %s",
+        message_len = SNPRINTF(message,
+                               "%s '%.*s': %s",
                                operation, path_len, path, strerror(code));
     }
     return ncm_error_set_status(ncm_error, -code, message, message_len);

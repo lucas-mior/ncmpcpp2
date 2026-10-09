@@ -710,22 +710,22 @@ bindings_bind_group(BindingsConfiguration *bindings,
   XX_SEQ("end", ACTION_MOVE_END)                                               \
   XX_SEQ("insert", ACTION_SELECT_ITEM)                                         \
   XX_GROUP("enter", ACTION_ENTER_DIRECTORY,                                    \
-                    ACTION_TOGGLE_OUTPUT,                                      \
-                    ACTION_RUN_ACTION,                                         \
-                    ACTION_PLAY_ITEM)                                          \
+           ACTION_TOGGLE_OUTPUT,                                               \
+           ACTION_RUN_ACTION,                                                  \
+           ACTION_PLAY_ITEM)                                                   \
   XX_GROUP("space", ACTION_ADD_ITEM_TO_PLAYLIST,                               \
-                    ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE,                \
-                    ACTION_TOGGLE_VISUALIZATION_TYPE)                          \
+           ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE,                         \
+           ACTION_TOGGLE_VISUALIZATION_TYPE)                                   \
   XX_GROUP("delete", ACTION_DELETE_PLAYLIST_ITEMS,                             \
-                     ACTION_DELETE_BROWSER_ITEMS,                              \
-                     ACTION_DELETE_STORED_PLAYLIST)                            \
+           ACTION_DELETE_BROWSER_ITEMS,                                        \
+           ACTION_DELETE_STORED_PLAYLIST)                                      \
   XX_GROUP("right", ACTION_NEXT_COLUMN,                                        \
-                    ACTION_SLAVE_SCREEN,                                       \
-                    ACTION_VOLUME_UP)                                          \
+           ACTION_SLAVE_SCREEN,                                                \
+           ACTION_VOLUME_UP)                                                   \
   XX_SEQ("+", ACTION_VOLUME_UP)                                                \
   XX_GROUP("left", ACTION_PREVIOUS_COLUMN,                                     \
-                   ACTION_MASTER_SCREEN,                                       \
-                   ACTION_VOLUME_DOWN)                                         \
+           ACTION_MASTER_SCREEN,                                               \
+           ACTION_VOLUME_DOWN)                                                 \
   XX_SEQ("-", ACTION_VOLUME_DOWN)                                              \
   XX_SEQ(":", ACTION_EXECUTE_COMMAND)                                          \
   XX_SEQ("tab", ACTION_NEXT_SCREEN)                                            \
@@ -735,7 +735,7 @@ bindings_bind_group(BindingsConfiguration *bindings,
   XX_GROUP("2", ACTION_SHOW_BROWSER, ACTION_CHANGE_BROWSE_MODE)                \
   XX_GROUP("3", ACTION_SHOW_SEARCH_ENGINE, ACTION_RESET_SEARCH_ENGINE)         \
   XX_GROUP("4", ACTION_SHOW_MEDIA_LIBRARY,                                     \
-                ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE)                      \
+           ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE)                           \
   XX_SEQ("5", ACTION_SHOW_PLAYLIST_EDIT)                                       \
   XX_SEQ("6", ACTION_SHOW_TAG_EDIT)                                            \
   XX_SEQ("7", ACTION_SHOW_OUTPUTS)                                             \
@@ -747,15 +747,15 @@ bindings_bind_group(BindingsConfiguration *bindings,
   XX_SEQ("<", ACTION_PREVIOUS)                                                 \
   XX_GROUP("ctrl-h", ACTION_JUMP_TO_PARENT_DIRECTORY, ACTION_REPLAY_SONG)      \
   XX_GROUP("backspace", ACTION_JUMP_TO_PARENT_DIRECTORY,                       \
-                        ACTION_REPLAY_SONG,                                    \
-                        ACTION_PLAY)                                           \
+           ACTION_REPLAY_SONG,                                                 \
+           ACTION_PLAY)                                                        \
   XX_SEQ("f", ACTION_SEEK_FORWARD)                                             \
   XX_SEQ("b", ACTION_SEEK_BACKWARD)                                            \
   XX_SEQ("r", ACTION_TOGGLE_REPEAT)                                            \
   XX_SEQ("z", ACTION_TOGGLE_RANDOM)                                            \
   XX_GROUP("y", ACTION_SAVE_TAG_CHANGES,                                       \
-                ACTION_START_SEARCHING,                                        \
-                ACTION_TOGGLE_SINGLE)                                          \
+           ACTION_START_SEARCHING,                                             \
+           ACTION_TOGGLE_SINGLE)                                               \
   XX_SEQ("R", ACTION_TOGGLE_CONSUME)                                           \
   XX_SEQ("Y", ACTION_TOGGLE_REPLAY_GAIN_MODE)                                  \
   XX_SEQ("T", ACTION_TOGGLE_ADD_MODE)                                          \
@@ -766,8 +766,8 @@ bindings_bind_group(BindingsConfiguration *bindings,
   XX_SEQ("X", ACTION_SET_CROSSFADE)                                            \
   XX_SEQ("u", ACTION_UPDATE_DATABASE)                                          \
   XX_GROUP("ctrl-s", ACTION_SORT_PLAYLIST,                                     \
-                     ACTION_TOGGLE_BROWSER_SORT_MODE,                          \
-                     ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE)                    \
+           ACTION_TOGGLE_BROWSER_SORT_MODE,                                    \
+           ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE)                              \
   XX_SEQ("ctrl-r", ACTION_REVERSE_PLAYLIST)                                    \
   XX_SEQ("ctrl-f", ACTION_APPLY_FILTER)                                        \
   XX_SEQ("ctrl-_", ACTION_SELECT_FOUND_ITEMS)                                  \
@@ -777,11 +777,11 @@ bindings_bind_group(BindingsConfiguration *bindings,
   XX_SEQ(",", ACTION_PREVIOUS_FOUND_ITEM)                                      \
   XX_SEQ("w", ACTION_TOGGLE_FIND_MODE)                                         \
   XX_GROUP("e", ACTION_EDIT_SONG,                                              \
-                ACTION_EDIT_LIBRARY_TAG,                                       \
-                ACTION_EDIT_LIBRARY_ALBUM,                                     \
-                ACTION_EDIT_DIRECTORY_NAME,                                    \
-                ACTION_EDIT_PLAYLIST_NAME,                                     \
-                ACTION_EDIT_LYRICS)                                            \
+           ACTION_EDIT_LIBRARY_TAG,                                            \
+           ACTION_EDIT_LIBRARY_ALBUM,                                          \
+           ACTION_EDIT_DIRECTORY_NAME,                                         \
+           ACTION_EDIT_PLAYLIST_NAME,                                          \
+           ACTION_EDIT_LYRICS)                                                 \
   XX_SEQ("i", ACTION_SHOW_SONG_INFO)                                           \
   XX_SEQ("I", ACTION_SHOW_ARTIST_INFO)                                         \
   XX_SEQ("g", ACTION_JUMP_TO_POSITION_IN_SONG)                                 \
@@ -811,8 +811,8 @@ bindings_bind_group(BindingsConfiguration *bindings,
   XX_SEQ("alt-l", ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND)                 \
   XX_SEQ("ctrl-l", ACTION_TOGGLE_SCREEN_LOCK)                                  \
   XX_GROUP("`", ACTION_TOGGLE_LIBRARY_TAG_TYPE,                                \
-                ACTION_REFETCH_LYRICS,                                         \
-                ACTION_ADD_RANDOM_ITEMS)                                       \
+           ACTION_REFETCH_LYRICS,                                              \
+           ACTION_ADD_RANDOM_ITEMS)                                            \
   XX_SEQ("ctrl-p", ACTION_SET_SELECTED_ITEMS_PRIORITY)                         \
   XX_SEQ("q", ACTION_QUIT)
 
@@ -967,8 +967,7 @@ binding_parse_action_line(BindingAction *action, char *line, int32 line_len,
                 return -NCM_ERROR_PARSE;
             }
         }
-        return binding_parse_directive(action, directive, argument,
-                                           ncm_error);
+        return binding_parse_directive(action, directive, argument, ncm_error);
     }
 
     if (name_len == line_len) {
@@ -1027,7 +1026,7 @@ bindings_finalize_definition(BindingsConfiguration *bindings,
         binding_copy(&command.binding, actions);
 
         if (bindings_cmd_index(bindings,
-                                   command.name, command.name_len) >= 0) {
+                               command.name, command.name_len) >= 0) {
             bindings_error(ncm_error,
                            "redefinition of command '%.*s'",
                            command.name_len, command.name);
@@ -1056,7 +1055,7 @@ bindings_finalize_definition(BindingsConfiguration *bindings,
             copy.immediate = command.immediate;
             binding_copy(&copy.binding, &command.binding);
             at = bindings_cmd_lower_bound(bindings, command.name,
-                                                  command.name_len);
+                                          command.name_len);
             if (at < bindings->commands_len) {
                 memmove64(bindings->commands + at + 1, bindings->commands + at,
                           (bindings->commands_len - at)
@@ -1174,7 +1173,7 @@ bindings_config_read(BindingsConfiguration *bindings,
             }
             free2(cmd_name, cmd_name_cap);
             cmd_name = ncm_string_copy(enclosed.data, enclosed.len,
-                                           &cmd_name_cap);
+                                       &cmd_name_cap);
             cmd_name_len = enclosed.len;
             if (ncm_extract_enclosed(current_line + start, len - start,
                                      '[', ']', &enclosed) < 0) {

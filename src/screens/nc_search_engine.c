@@ -284,11 +284,11 @@ search_build_constraint_row(SearchEngineScreen *screen, uint32 idx,
         return;
     }
     nc_buffer_add_text_style(buffer, buffer->len,
-                                  &Config.empty_tag_color, 0);
+                             &Config.empty_tag_color, 0);
     nc_buffer_append_data(buffer, Config.empty_tag_marker,
                           Config.empty_tag_marker_len);
     nc_buffer_add_text_style_end(buffer, buffer->len,
-                                      &Config.empty_tag_color, 0);
+                                 &Config.empty_tag_color, 0);
     return;
 }
 
@@ -395,7 +395,7 @@ search_toggle_display_mode(NcScreen *base) {
     enum DisplayMode mode;
     mode = search_engine_screen_toggle_display_mode((SearchEngineScreen *)base);
     str_printf(&message, "Search engine display mode: %s",
-              NCM_DISPLAY_MODE_alias(mode));
+                         NCM_DISPLAY_MODE_alias(mode));
     search_engine_screen_status_message((SearchEngineScreen *)base,
                                         message.data, message.len);
     str_free(&message);
@@ -1130,17 +1130,20 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                 metadata = search_constraint_metadata(i);
                 switch (metadata->kind) {
                 case SEARCH_CONSTRAINT_TAG:
-                    constraint_status = ncm_mpd_client_add_search_tag(client,
-                        metadata->tag, constraint, ncm_error);
+                    constraint_status =
+                        ncm_mpd_client_add_search_tag(client, metadata->tag,
+                                                      constraint, ncm_error);
                     break;
                 case SEARCH_CONSTRAINT_FILENAME:
-                    constraint_status = ncm_mpd_client_add_search_uri(client,
-                        constraint, ncm_error);
+                    constraint_status =
+                        ncm_mpd_client_add_search_uri(client, constraint,
+                                                      ncm_error);
                     break;
                 case SEARCH_CONSTRAINT_ANY:
                 default:
-                    constraint_status = ncm_error_set_status(ncm_error,
-                        -EINVAL, STRLIT("invalid search field"));
+                    constraint_status =
+                        ncm_error_set_status(ncm_error, -EINVAL,
+                                             STRLIT("invalid search field"));
                     break;
                 }
             }
@@ -1148,7 +1151,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
         }
         if (status == 0) {
             status = ncm_mpd_client_commit_search_songs(client, &songs,
-                                                         ncm_error);
+                                                        ncm_error);
         }
     } else {
         if (screen->search_in_database) {
@@ -1158,7 +1161,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                                                      " unavailable"));
             } else {
                 status = screen->hooks.list_database_songs(screen->hooks.user,
-                                                            &source, ncm_error);
+                                                           &source, ncm_error);
             }
         } else {
             if (screen->hooks.snapshot_playlist == NULL) {
@@ -1167,7 +1170,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                                                      " unavailable"));
             } else {
                 status = screen->hooks.snapshot_playlist(screen->hooks.user,
-                                                          &source, ncm_error);
+                                                         &source, ncm_error);
             }
         }
 
@@ -1192,7 +1195,8 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                     if (constraint_len <= 0) {
                         continue;
                     }
-                    if ((status = search_compile_regex(&regexes[i], constraint,
+                    if ((status = search_compile_regex(&regexes[i],
+                                                       constraint,
                                                        constraint_len,
                                                        regex_flags,
                                                        ncm_error)) < 0) {
@@ -1222,18 +1226,19 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                                 StrView value;
 
                                 if (!search_song_has_field_view(song, field,
-                                                                 &value)) {
+                                                                &value)) {
                                     value = (StrView){0, search_empty_string};
                                 }
                                 if (screen->search_mode
                                     == SEARCH_ENGINE_SEARCH_MODE_EXACT) {
-                                    if (search_view_exact(value, constraint,
+                                    if (search_view_exact(value,
+                                                          constraint,
                                                           constraint_len)) {
                                         matches = true;
                                         break;
                                     }
                                 } else if (search_view_regex(&regexes[0],
-                                                              value)) {
+                                                             value)) {
                                     matches = true;
                                     break;
                                 }
@@ -1262,7 +1267,8 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
                         }
                         if (screen->search_mode
                             == SEARCH_ENGINE_SEARCH_MODE_EXACT) {
-                            if (!search_view_exact(value, constraint,
+                            if (!search_view_exact(value,
+                                                   constraint,
                                                    constraint_len)) {
                                 matches = false;
                                 break;
@@ -1453,8 +1459,8 @@ search_engine_screen_apply_filter(SearchEngineScreen *screen,
                                     STRLIT("missing filter pattern"));
     }
     if ((status = ncm_regex_compile(&screen->filter_regex, pattern, pattern_len,
-                                     NCM_REGEX_LITERAL_CASE_INSENSITIVE,
-                                     ncm_error)) < 0) {
+                                    NCM_REGEX_LITERAL_CASE_INSENSITIVE,
+                                    ncm_error)) < 0) {
         return status;
     }
     stupid_string_set(&screen->filter_constraint,
@@ -1515,8 +1521,8 @@ search_engine_screen_search(SearchEngineScreen *screen,
 
     regex = (NcmRegex){0};
     if ((status = ncm_regex_compile(&regex, pattern, pattern_len,
-                                     NCM_REGEX_LITERAL_CASE_INSENSITIVE,
-                                     ncm_error)) < 0) {
+                                    NCM_REGEX_LITERAL_CASE_INSENSITIVE,
+                                    ncm_error)) < 0) {
         ncm_regex_destroy(&regex);
         return status;
     }

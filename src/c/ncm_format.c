@@ -117,8 +117,7 @@ ncm_format_expr_list_clear_unchecked(NcmFormatExprList *list) {
         case NCM_FORMAT_EXPR_GROUP:
         case NCM_FORMAT_EXPR_FIRST_OF:
             ncm_format_expr_list_clear_unchecked(&expr->list);
-            free2(expr->list.items,
-                  expr->list.cap*SIZEOF(*expr->list.items));
+            free2(expr->list.items, expr->list.cap*SIZEOF(*expr->list.items));
             expr->list = (NcmFormatExprList){0};
             break;
         case NCM_FORMAT_EXPR_COLOR:
@@ -350,9 +349,10 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                             uint32 digit = (uint32)(data[j] - '0');
 
                             if (delimiter > (MAXOF(delimiter) - digit)/10) {
-                                status = ncm_error_set_status(ncm_error,
-                                    -EOVERFLOW,
-                                    STRLIT("tag delimiter too large"));
+                                status =
+                                    ncm_error_set_status(ncm_error, -EOVERFLOW,
+                                                         STRLIT("tag delimiter "
+                                                                "too large"));
                             } else {
                                 delimiter = delimiter*10 + digit;
                             }
@@ -403,35 +403,35 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                         break;
                     case 1:
                         expr->color = nc_color_make(COLOR_BLACK, -1,
-                                                          false, false);
+                                                    false, false);
                         break;
                     case 2:
                         expr->color = nc_color_make(COLOR_RED, -1,
-                                                          false, false);
+                                                    false, false);
                         break;
                     case 3:
                         expr->color = nc_color_make(COLOR_GREEN, -1,
-                                                          false, false);
+                                                    false, false);
                         break;
                     case 4:
                         expr->color = nc_color_make(COLOR_YELLOW, -1,
-                                                          false, false);
+                                                    false, false);
                         break;
                     case 5:
                         expr->color = nc_color_make(COLOR_BLUE, -1,
-                                                          false, false);
+                                                    false, false);
                         break;
                     case 6:
                         expr->color = nc_color_make(COLOR_MAGENTA, -1,
-                                                          false, false);
+                                                    false, false);
                         break;
                     case 7:
                         expr->color = nc_color_make(COLOR_CYAN, -1,
-                                                          false, false);
+                                                    false, false);
                         break;
                     case 8:
                         expr->color = nc_color_make(COLOR_WHITE, -1,
-                                                          false, false);
+                                                    false, false);
                         break;
                     case 9:
                         expr->color = nc_color_end();
@@ -485,26 +485,30 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                         }
 
                         if (underscore < 0) {
-                            color_status = parse_color_component(color_data,
-                                color_len, false, &foreground);
+                            color_status =
+                                parse_color_component(color_data, color_len,
+                                                      false, &foreground);
                             if (color_status == 0) {
                                 expr->color = nc_color_make(foreground,
-                                    -2, false, false);
+                                                            -2, false, false);
                             }
                         } else {
                             char *background_data = color_data + underscore + 1;
                             int32 background_len = color_len - underscore - 1;
 
-                            if (parse_color_component(color_data,
-                                underscore, false, &foreground) < 0) {
+                            if (parse_color_component(color_data, underscore,
+                                                      false,
+                                                      &foreground) < 0) {
                                 color_status = -NCM_ERROR_PARSE;
                             } else if (parse_color_component(background_data,
-                                           background_len, true,
-                                           &background) < 0) {
+                                                             background_len,
+                                                             true,
+                                                             &background) < 0) {
                                 color_status = -NCM_ERROR_PARSE;
                             } else {
                                 expr->color = nc_color_make(foreground,
-                                    background, false, false);
+                                                            background,
+                                                            false, false);
                             }
                         }
                     }

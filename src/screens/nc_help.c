@@ -69,8 +69,7 @@ static void
 nc_help_destroy_callback(NcScreen *screen) {
     NcHelpScreen *help = (NcHelpScreen *)screen;
 
-    stupid_string_free(&help->search_constraint,
-                       &help->search_constraint_len);
+    stupid_string_free(&help->search_constraint, &help->search_constraint_len);
     if (help->hooks.destroy) {
         help->hooks.destroy(help->hooks.user);
     }

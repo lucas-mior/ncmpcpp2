@@ -424,7 +424,7 @@ ncm_action_add_song_to_playlist_with_mode(NcmSong *song, bool play,
 
     id = -1;
     if (ncm_mpd_client_add_song_value(&global_mpd, song, position, &id,
-                                       &ncm_error) < 0) {
+                                      &ncm_error) < 0) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
 
@@ -635,8 +635,8 @@ action_runtime_cmd_prompt_should_continue(char *text, void *user) {
     if (!ncm_statusbar_prompt_should_continue(text, text_len)) {
         return false;
     }
-    if (ncm_action_immediate_cmd_prompt_should_stop(&state->previous, text,
-                                                        text_len)) {
+    if (ncm_action_immediate_cmd_prompt_should_stop(&state->previous,
+                                                    text, text_len)) {
         return false;
     }
     return true;
@@ -742,7 +742,7 @@ action_runtime_search_prompt_apply(ActionRuntimeSearchPrompt *state,
         text_len = 0;
     }
     if (search_prompt_state_has_cached_result(state, text, text_len,
-                                                   &last_found)) {
+                                              &last_found)) {
         if (found) {
             *found = last_found;
         }
@@ -754,8 +754,8 @@ action_runtime_search_prompt_apply(ActionRuntimeSearchPrompt *state,
     status = action_runtime_search_from_prompt_start(state, text, text_len,
                                                      &last_found, ncm_error);
     finish_status = search_prompt_state_finish_result(state, text, text_len,
-                                                          status == 0,
-                                                          last_found);
+                                                      status == 0,
+                                                      last_found);
     if (finish_status < 0) {
         return finish_status;
     }
@@ -1348,7 +1348,7 @@ action_runtime_save_playlist(void) {
 
     ncm_error_clear(&ncm_error);
     success = ncm_mpd_client_save_playlist(&global_mpd, name.data,
-                                            &ncm_error) == 0;
+                                           &ncm_error) == 0;
     if (!success && (ncm_mpd_client_server_error_code(&global_mpd)
             == NCM_MPD_SERVER_ERROR_EXIST)) {
         String question = {0};
@@ -1483,8 +1483,7 @@ action_runtime_find(void) {
     found = status > 0;
 
     if ((token.len == 0) || found) {
-        ncm_statusbar_print(Config.message_delay_time,
-                            STRLIT("Done"));
+        ncm_statusbar_print(Config.message_delay_time, STRLIT("Done"));
     } else {
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("No matching patterns found"));
@@ -1522,7 +1521,7 @@ action_runtime_find_item(enum SearchDirection direction) {
     }
 
     prompt_len = SNPRINTF(prompt, "Find %s: ",
-                          NCM_SEARCH_DIRECTION_alias(direction));
+                                  NCM_SEARCH_DIRECTION_alias(direction));
 
     old_autocenter_mode = Config.autocenter_mode;
     Config.autocenter_mode = false;
@@ -1561,7 +1560,7 @@ action_runtime_find_item(enum SearchDirection direction) {
         int32 len = constraint.len;
 
         if (!search_prompt_state_has_cached_result(&state, data, len,
-                                                       NULL)) {
+                                                   NULL)) {
             ncm_error_clear(&ncm_error);
             if (action_runtime_search_prompt_apply(&state, data, len, NULL,
                                                    &ncm_error) < 0) {
@@ -1858,8 +1857,7 @@ action_runtime_add_prompt(void) {
             path_text = "";
         }
 
-        ncm_statusbar_print(0,
-                            STRLIT("Adding..."));
+        ncm_statusbar_print(0, STRLIT("Adding..."));
         ncm_error_clear(&ncm_error);
         success = ncm_mpd_client_add(&global_mpd, path_text, &added,
                                      &ncm_error) == 0;
@@ -1915,11 +1913,10 @@ action_runtime_load_prompt(void) {
             name_text = "";
         }
 
-        ncm_statusbar_print(0,
-                            STRLIT("Loading..."));
+        ncm_statusbar_print(0, STRLIT("Loading..."));
         ncm_error_clear(&ncm_error);
         if (ncm_mpd_client_load_playlist(&global_mpd, name_text, &loaded,
-                                          &ncm_error) < 0) {
+                                         &ncm_error) < 0) {
             str_free(&name);
             return action_runtime_mpd_error_status(&ncm_error);
         }
@@ -2131,14 +2128,12 @@ action_runtime_delete_browser_items(void) {
         return 0;
     }
 
-    ncm_statusbar_print(Config.message_delay_time,
-                        STRLIT("Deleting items..."));
+    ncm_statusbar_print(Config.message_delay_time, STRLIT("Deleting items..."));
     ncm_error_clear(&ncm_error);
     if (browser_screen_delete_items(screen, &global_mpd, &ncm_error) < 0) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
-    ncm_statusbar_print(Config.message_delay_time,
-                        STRLIT("Item(s) deleted"));
+    ncm_statusbar_print(Config.message_delay_time, STRLIT("Item(s) deleted"));
     return 0;
 }
 
@@ -2178,8 +2173,7 @@ action_runtime_delete_main_playlist_items(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    ncm_statusbar_print(Config.message_delay_time,
-                        STRLIT("Deleting items..."));
+    ncm_statusbar_print(Config.message_delay_time, STRLIT("Deleting items..."));
     action_runtime_sort_positions(positions, count, true);
     ncm_error_clear(&ncm_error);
     for (int32 i = 0; i < count; i += 1) {
@@ -2193,8 +2187,7 @@ action_runtime_delete_main_playlist_items(void) {
     free2(positions, count*SIZEOF(*positions));
     ncm_song_array_destroy(&songs);
     (void)ncm_status_update_full(&global_mpd, NULL, &ncm_error);
-    ncm_statusbar_print(Config.message_delay_time,
-                        STRLIT("Item(s) deleted"));
+    ncm_statusbar_print(Config.message_delay_time, STRLIT("Item(s) deleted"));
     return 0;
 }
 
@@ -2232,13 +2225,12 @@ action_runtime_delete_playlist_edit_items(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    ncm_statusbar_print(Config.message_delay_time,
-                        STRLIT("Deleting items..."));
+    ncm_statusbar_print(Config.message_delay_time, STRLIT("Deleting items..."));
     action_runtime_sort_positions(positions, count, true);
     ncm_error_clear(&ncm_error);
     for (int32 i = 0; i < count; i += 1) {
         if (ncm_mpd_client_playlist_delete(&global_mpd, playlist.path,
-                                            positions[i], &ncm_error) < 0) {
+                                           positions[i], &ncm_error) < 0) {
             free2(positions, count*SIZEOF(*positions));
             ncm_playlist_destroy(&playlist);
             ncm_song_array_destroy(&songs);
@@ -2250,8 +2242,7 @@ action_runtime_delete_playlist_edit_items(void) {
     ncm_playlist_destroy(&playlist);
     ncm_song_array_destroy(&songs);
     playlist_edit_screen_request_content_update(screen);
-    ncm_statusbar_print(Config.message_delay_time,
-                        STRLIT("Item(s) deleted"));
+    ncm_statusbar_print(Config.message_delay_time, STRLIT("Item(s) deleted"));
     return 0;
 }
 
@@ -2481,7 +2472,7 @@ action_runtime_crop_playlist(bool main_playlist) {
         }
         for (int32 i = 0; i < songs.len; i += 1) {
             if (ncm_mpd_client_add_song_value(&global_mpd, &songs.items[i], -1,
-                                               NULL, &ncm_error) < 0) {
+                                              NULL, &ncm_error) < 0) {
                 ncm_song_array_destroy(&songs);
                 return action_runtime_mpd_error_status(&ncm_error);
             }
@@ -2573,7 +2564,7 @@ action_runtime_move_main_playlist_items(NcmSongArray *songs, bool down) {
     }
     if (success) {
         success = ncm_mpd_client_commit_cmd_list(&global_mpd,
-                                                      &ncm_error) == 0;
+                                                 &ncm_error) == 0;
     }
     if (!success && global_mpd.cmd_list_active) {
         global_mpd.cmd_list_active = false;
@@ -2633,7 +2624,7 @@ action_runtime_move_stored_playlist_items(NcmSongArray *songs, bool down) {
     }
     if (success) {
         success = ncm_mpd_client_commit_cmd_list(&global_mpd,
-                                                      &ncm_error) == 0;
+                                                 &ncm_error) == 0;
     }
     if (!success && global_mpd.cmd_list_active) {
         global_mpd.cmd_list_active = false;
@@ -2717,7 +2708,7 @@ action_runtime_move_main_playlist_items_to(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     if ((song = nc_menu_active_item_at(menu,
-                                        nc_menu_highlight(menu))) == NULL) {
+                                       nc_menu_highlight(menu))) == NULL) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     target = ncm_song_position(song);
@@ -2751,7 +2742,7 @@ action_runtime_move_main_playlist_items_to(void) {
 
     ncm_error_clear(&ncm_error);
     if ((success = ncm_mpd_client_start_cmd_list(&global_mpd,
-                                                     &ncm_error) == 0)
+                                                 &ncm_error) == 0)
         && (target > positions[0])) {
         destination = target - count;
         for (int32 i = count; success && (i > 0); i -= 1) {
@@ -2767,7 +2758,7 @@ action_runtime_move_main_playlist_items_to(void) {
     }
     if (success) {
         success = ncm_mpd_client_commit_cmd_list(&global_mpd,
-                                                      &ncm_error) == 0;
+                                                 &ncm_error) == 0;
     }
     if (!success && global_mpd.cmd_list_active) {
         global_mpd.cmd_list_active = false;
@@ -2814,7 +2805,7 @@ action_runtime_move_playlist_edit_items_to(void) {
     }
 
     if ((song = nc_menu_active_item_at(menu,
-                                        nc_menu_highlight(menu))) == NULL) {
+                                       nc_menu_highlight(menu))) == NULL) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     target = ncm_song_position(song);
@@ -2857,7 +2848,7 @@ action_runtime_move_playlist_edit_items_to(void) {
 
     ncm_error_clear(&ncm_error);
     if ((success = ncm_mpd_client_start_cmd_list(&global_mpd,
-                                                     &ncm_error) == 0)
+                                                 &ncm_error) == 0)
         && (target > positions[0])) {
         destination = target - count;
         for (int32 i = count; success && (i > 0); i -= 1) {
@@ -2877,7 +2868,7 @@ action_runtime_move_playlist_edit_items_to(void) {
     }
     if (success) {
         success = ncm_mpd_client_commit_cmd_list(&global_mpd,
-                                                      &ncm_error) == 0;
+                                                 &ncm_error) == 0;
     }
     if (!success && global_mpd.cmd_list_active) {
         global_mpd.cmd_list_active = false;
@@ -2979,7 +2970,7 @@ action_runtime_reverse_playlist(void) {
     }
     if (success) {
         success = ncm_mpd_client_commit_cmd_list(&global_mpd,
-                                                      &ncm_error) == 0;
+                                                 &ncm_error) == 0;
     }
     if (!success && global_mpd.cmd_list_active) {
         global_mpd.cmd_list_active = false;
@@ -2989,8 +2980,7 @@ action_runtime_reverse_playlist(void) {
     }
 
     (void)ncm_status_update_full(&global_mpd, NULL, &ncm_error);
-    ncm_statusbar_print(Config.message_delay_time,
-                        STRLIT("Range reversed"));
+    ncm_statusbar_print(Config.message_delay_time, STRLIT("Range reversed"));
     return 0;
 }
 
@@ -3022,12 +3012,11 @@ action_runtime_shuffle_playlist(void) {
 
     ncm_error_clear(&ncm_error);
     if (ncm_mpd_client_shuffle_range(&global_mpd, first, last,
-                                      &ncm_error) < 0) {
+                                     &ncm_error) < 0) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
     (void)ncm_status_update_full(&global_mpd, NULL, &ncm_error);
-    ncm_statusbar_print(Config.message_delay_time,
-                        STRLIT("Range shuffled"));
+    ncm_statusbar_print(Config.message_delay_time, STRLIT("Range shuffled"));
     return 0;
 }
 
@@ -3075,8 +3064,7 @@ action_runtime_set_selected_items_priority(void) {
                                               priority, &ncm_error) < 0) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
-    ncm_statusbar_print(Config.message_delay_time,
-                        STRLIT("Priority set"));
+    ncm_statusbar_print(Config.message_delay_time, STRLIT("Priority set"));
     return 0;
 }
 
@@ -3123,7 +3111,7 @@ action_runtime_jump_to_position_in_song(void) {
 
     ncm_error_clear(&ncm_error);
     if (ncm_mpd_client_seek_pos(&global_mpd, song_position, target,
-                                 &ncm_error) < 0) {
+                                &ncm_error) < 0) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
     (void)ncm_status_update_full(&global_mpd, NULL, &ncm_error);
@@ -3146,13 +3134,13 @@ action_runtime_select_album(void) {
 
     current = nc_menu_highlight(menu);
     if (action_runtime_song_tag_at(current, SONG_GETTER_ALBUM,
-                                    &album) < 0) {
+                                   &album) < 0) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
     for (int32 position = current; position >= 0; position -= 1) {
         if (action_runtime_song_tag_at(position, SONG_GETTER_ALBUM,
-                                        &candidate) < 0) {
+                                       &candidate) < 0) {
             break;
         }
         equal = STREQUAL(album.data, album.len, candidate.data, candidate.len);
@@ -3166,7 +3154,7 @@ action_runtime_select_album(void) {
     count = nc_menu_item_len(menu);
     for (int32 position = current + 1; position < count; position += 1) {
         if (action_runtime_song_tag_at(position, SONG_GETTER_ALBUM,
-                                        &candidate) < 0) {
+                                       &candidate) < 0) {
             break;
         }
         equal = STREQUAL(album.data, album.len, candidate.data, candidate.len);
@@ -3696,8 +3684,7 @@ action_runtime_change_browse_mode(void) {
     } else {
         message = "Browse mode: MPD database";
     }
-    ncm_statusbar_print(Config.message_delay_time,
-                        message, strlen32(message));
+    ncm_statusbar_print(Config.message_delay_time, message, strlen32(message));
     return 0;
 }
 
@@ -3737,8 +3724,7 @@ action_runtime_toggle_browser_sort_mode(void) {
         message = "Sort songs by: type";
         break;
     }
-    ncm_statusbar_print(Config.message_delay_time,
-                        message, strlen32(message));
+    ncm_statusbar_print(Config.message_delay_time, message, strlen32(message));
     (void)browser_screen_sort(app_screen_browser());
     app_controller_request_current_screen_update();
     return 0;
@@ -3966,7 +3952,7 @@ action_runtime_media_library_current_artist_tag(char **tag, int32 *tag_len) {
         return false;
     }
     if (!media_library_screen_has_current_grouping_tag_value(library, &value,
-                                                            &value_len)) {
+                                                             &value_len)) {
         return false;
     }
 
@@ -4036,7 +4022,7 @@ action_runtime_toggle_screen_lock(void) {
                   "Error: value is out of bounds ([20, 80] expected, %d given)",
                   part);
         ncm_statusbar_print(Config.message_delay_time,
-                                    message.data, message.len);
+                            message.data, message.len);
         str_free(&message);
         return 0;
     }
@@ -4080,7 +4066,7 @@ action_runtime_media_library_current_tag(char **tag, int32 *tag_len) {
         return false;
     }
     return media_library_screen_has_current_grouping_tag_value(library,
-                                                             tag, tag_len);
+                                                               tag, tag_len);
 }
 
 static bool
@@ -4217,7 +4203,7 @@ action_runtime_update_tag_directory(String *shared_directory, bool valid) {
 
         ncm_error_clear(&ncm_error);
         if (ncm_mpd_client_update_directory(&global_mpd, directory, NULL,
-                                             &ncm_error) < 0) {
+                                            &ncm_error) < 0) {
             return action_runtime_mpd_error_status(&ncm_error);
         }
     }
@@ -4287,7 +4273,7 @@ action_runtime_edit_library_tag(void) {
                                          Config.media_library_primary_tag,
                                          current_tag.data, &ncm_error) < 0
         || ncm_mpd_client_commit_search_songs(&global_mpd, &songs,
-                                               &ncm_error) < 0) {
+                                              &ncm_error) < 0) {
         status = action_runtime_mpd_error_status(&ncm_error);
         goto cleanup;
     }
@@ -4322,9 +4308,9 @@ action_runtime_edit_library_tag(void) {
                 STR_APPEND(&message, name.data, name.len);
                 STR_APPEND(&message, "\": ");
                 STR_APPEND(&message, error_message,
-                          opt_strlen32(error_message));
+                           opt_strlen32(error_message));
                 ncm_statusbar_print(Config.message_delay_time,
-                                                    message.data, message.len);
+                                    message.data, message.len);
                 str_free(&message);
             }
             mutable_song_destroy(&mutable_song);
@@ -4407,8 +4393,7 @@ action_runtime_edit_library_album(void) {
         goto cleanup;
     }
 
-    ncm_statusbar_print(0,
-                        STRLIT("Updating tags..."));
+    ncm_statusbar_print(0, STRLIT("Updating tags..."));
     for (int32 i = 0; (status == 0) && (i < songs.len); i += 1) {
         NcmSong *song = &songs.items[i];
         StrView directory;
@@ -4600,7 +4585,7 @@ action_runtime_edit_lyrics(void) {
     if (Config.use_console_editor) {
         nc_pause_screen();
         success = ncm_run_external_console_command(command.data, command.len,
-                                                         &ncm_error) == 0;
+                                                   &ncm_error) == 0;
         nc_unpause_screen();
         if (!success) {
             str_free(&command);
@@ -4617,7 +4602,7 @@ action_runtime_edit_lyrics(void) {
         }
     } else {
         success = ncm_run_external_command(command.data, command.len,
-                                                 false, &ncm_error) == 0;
+                                           false, &ncm_error) == 0;
     }
 
     str_free(&command);
@@ -4790,7 +4775,7 @@ action_runtime_mouse_event(void) {
         seconds = (ncm_status_state_total_time()*event->x / COLS);
         ncm_error_clear(&ncm_error);
         if (ncm_mpd_client_seek_pos(&global_mpd, position, seconds,
-                                     &ncm_error) < 0) {
+                                    &ncm_error) < 0) {
             return action_runtime_mpd_error_status(&ncm_error);
         }
     } else if ((event->bstate & BUTTON1_PRESSED)
@@ -4950,9 +4935,9 @@ static const ActionAvailability action_availability_table[ACTION_COUNT] = {
     [ACTION_REPLAY_SONG] = A(AR_MPD|AR_POS),
     [ACTION_PAUSE] = A(AR_ACTIVE),
     [ACTION_MOVE_SORT_ORDER_UP] = AS(AR0, ACTION_SCREEN_IS_TARGET,
-                                    SCREEN_TYPE_SORT_PLAYLIST_DIALOG),
+                                     SCREEN_TYPE_SORT_PLAYLIST_DIALOG),
     [ACTION_MOVE_SORT_ORDER_DOWN] = AS(AR0, ACTION_SCREEN_IS_TARGET,
-                                      SCREEN_TYPE_SORT_PLAYLIST_DIALOG),
+                                       SCREEN_TYPE_SORT_PLAYLIST_DIALOG),
     [ACTION_MOVE_SELECTED_ITEMS_UP] = C(AR_MPD),
     [ACTION_MOVE_SELECTED_ITEMS_DOWN] = C(AR_MPD),
     [ACTION_MOVE_SELECTED_ITEMS_TO] = C(AR_MPD),
@@ -4970,13 +4955,13 @@ static const ActionAvailability action_availability_table[ACTION_COUNT] = {
     [ACTION_SET_VOLUME] = A(AR_MPD|AR_VOL),
     [ACTION_ENTER_DIRECTORY] = C(AR0),
     [ACTION_EDIT_SONG] = AS(AR_TAGLIB|AR_MUSIC_DIR|AR_SONG,
-                           ACTION_SCREEN_IS_NOT_TARGET, SCREEN_TYPE_LYRICS),
+                            ACTION_SCREEN_IS_NOT_TARGET, SCREEN_TYPE_LYRICS),
     [ACTION_EDIT_LIBRARY_TAG] = C(AR_TAGLIB),
     [ACTION_EDIT_LIBRARY_ALBUM] = C(AR_TAGLIB),
     [ACTION_EDIT_DIRECTORY_NAME] = C(AR0),
     [ACTION_EDIT_PLAYLIST_NAME] = C(AR_MPD),
     [ACTION_EDIT_LYRICS] = AS(AR0, ACTION_SCREEN_IS_TARGET,
-                             SCREEN_TYPE_LYRICS),
+                              SCREEN_TYPE_LYRICS),
     [ACTION_JUMP_TO_BROWSER] = A(AR_SONG),
     [ACTION_JUMP_TO_MEDIA_LIBRARY] = A(AR_SONG),
     [ACTION_JUMP_TO_PLAYLIST_EDIT] = C(AR0),
@@ -5003,7 +4988,7 @@ static const ActionAvailability action_availability_table[ACTION_COUNT] = {
     [ACTION_FIND] = A(AR_FIND),
     [ACTION_FETCH_LYRICS_IN_BACKGROUND] = A(AR_SONGS),
     [ACTION_REFETCH_LYRICS] = AS(AR0, ACTION_SCREEN_IS_TARGET,
-                                SCREEN_TYPE_LYRICS),
+                                 SCREEN_TYPE_LYRICS),
     [ACTION_SET_SELECTED_ITEMS_PRIORITY] = SC(AR_MPD|AR_SONGS,
                                               ACTION_SCREEN_IS_TARGET,
                                               SCREEN_TYPE_PLAYLIST),
@@ -5012,29 +4997,29 @@ static const ActionAvailability action_availability_table[ACTION_COUNT] = {
     [ACTION_SHOW_ARTIST_INFO] = C(AR0),
     [ACTION_SHOW_LYRICS] = C(AR0),
     [ACTION_SHOW_HELP] = AS(AR_NOT_TINY, ACTION_SCREEN_IS_NOT_TARGET,
-                           SCREEN_TYPE_HELP),
+                            SCREEN_TYPE_HELP),
     [ACTION_SHOW_PLAYLIST] = AS(AR_NOT_TINY, ACTION_SCREEN_IS_NOT_TARGET,
-                               SCREEN_TYPE_PLAYLIST),
+                                SCREEN_TYPE_PLAYLIST),
     [ACTION_SHOW_BROWSER] = AS(AR0, ACTION_SCREEN_IS_NOT_TARGET,
-                              SCREEN_TYPE_BROWSER),
+                               SCREEN_TYPE_BROWSER),
     [ACTION_CHANGE_BROWSE_MODE] = AS(AR0, ACTION_SCREEN_IS_TARGET,
-                                    SCREEN_TYPE_BROWSER),
+                                     SCREEN_TYPE_BROWSER),
     [ACTION_RESET_SEARCH_ENGINE] = AS(AR0, ACTION_SCREEN_IS_TARGET,
-                                     SCREEN_TYPE_SEARCH_ENGINE),
+                                      SCREEN_TYPE_SEARCH_ENGINE),
     [ACTION_SHOW_MEDIA_LIBRARY] = AS(AR_NOT_TINY, ACTION_SCREEN_IS_NOT_TARGET,
-                                    SCREEN_TYPE_MEDIA_LIBRARY),
+                                     SCREEN_TYPE_MEDIA_LIBRARY),
     [ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE] =
         AS(AR0, ACTION_SCREEN_IS_TARGET, SCREEN_TYPE_MEDIA_LIBRARY),
     [ACTION_SHOW_PLAYLIST_EDIT] = AS(AR_NOT_TINY,
-                                      ACTION_SCREEN_IS_NOT_TARGET,
-                                      SCREEN_TYPE_PLAYLIST_EDIT),
+                                     ACTION_SCREEN_IS_NOT_TARGET,
+                                     SCREEN_TYPE_PLAYLIST_EDIT),
     [ACTION_SHOW_TAG_EDIT] = A(AR_TAGLIB),
     [ACTION_SHOW_OUTPUTS] = C(AR_NOT_TINY),
     [ACTION_SHOW_VISUALIZER] = C(AR_NOT_TINY),
     [ACTION_SHOW_SERVER_INFO] = A(AR_NOT_TINY),
     [ACTION_TOGGLE_LIBRARY_TAG_TYPE] = C(AR0),
     [ACTION_TOGGLE_BROWSER_SORT_MODE] = AS(AR0, ACTION_SCREEN_IS_TARGET,
-                                          SCREEN_TYPE_BROWSER),
+                                           SCREEN_TYPE_BROWSER),
     [ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE] =
         AS(AR0, ACTION_SCREEN_IS_TARGET, SCREEN_TYPE_MEDIA_LIBRARY),
 };
@@ -5437,27 +5422,27 @@ static const ActionRun action_run_table[ACTION_COUNT] = {
     R1(ACTION_SEEK_BACKWARD, ACTION_RUN_SEEK, false)
     [ACTION_TOGGLE_DISPLAY_MODE] = {.runner = ACTION_RUN_DISPLAY_MODE},
     RF(ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS,
-                            action_runtime_toggle_separators_between_albums)
+       action_runtime_toggle_separators_between_albums)
     RF(ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE,
-                            action_runtime_toggle_lyrics_update_on_song_change)
+       action_runtime_toggle_lyrics_update_on_song_change)
     RF(ACTION_TOGGLE_LYRICS_FETCHER, action_runtime_toggle_lyrics_fetcher)
     RF(ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND,
-                            action_runtime_toggle_fetch_lyrics_in_background)
+       action_runtime_toggle_fetch_lyrics_in_background)
     RF(ACTION_UPDATE_DATABASE, action_runtime_update_database)
     RF(ACTION_JUMP_TO_PLAYING_SONG, action_runtime_jump_to_playing_song)
     RT(ACTION_TOGGLE_REPEAT,
-                                ncm_mpd_client_set_repeat,
-                                ncm_status_state_repeat_is_enabled)
+       ncm_mpd_client_set_repeat,
+       ncm_status_state_repeat_is_enabled)
     RT(ACTION_TOGGLE_RANDOM,
-                                ncm_mpd_client_set_random,
-                                ncm_status_state_random_is_enabled)
+       ncm_mpd_client_set_random,
+       ncm_status_state_random_is_enabled)
     RF(ACTION_SAVE_TAG_CHANGES, action_runtime_save_tag_changes)
     RT(ACTION_TOGGLE_SINGLE,
-                                ncm_mpd_client_set_single,
-                                ncm_status_state_single_is_enabled)
+       ncm_mpd_client_set_single,
+       ncm_status_state_single_is_enabled)
     RT(ACTION_TOGGLE_CONSUME,
-                                ncm_mpd_client_set_consume,
-                                ncm_status_state_consume_is_enabled)
+       ncm_mpd_client_set_consume,
+       ncm_status_state_consume_is_enabled)
     RF(ACTION_TOGGLE_CROSSFADE, action_runtime_toggle_crossfade)
     RF(ACTION_SET_CROSSFADE, action_runtime_set_crossfade)
     RF(ACTION_SET_VOLUME, action_runtime_set_volume)
@@ -5494,17 +5479,17 @@ static const ActionRun action_run_table[ACTION_COUNT] = {
     RF(ACTION_TOGGLE_ADD_MODE, action_runtime_toggle_add_mode)
     RF(ACTION_TOGGLE_MOUSE, action_runtime_toggle_mouse)
     RF(ACTION_TOGGLE_BITRATE_VISIBILITY,
-                            action_runtime_toggle_bitrate_visibility)
+       action_runtime_toggle_bitrate_visibility)
     RF(ACTION_ADD_RANDOM_ITEMS, action_runtime_add_random_items)
     RF(ACTION_TOGGLE_BROWSER_SORT_MODE, action_runtime_toggle_browser_sort_mode)
     RF(ACTION_TOGGLE_LIBRARY_TAG_TYPE, action_runtime_toggle_library_tag_type)
     RF(ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE,
-                            action_runtime_toggle_media_library_sort_mode)
+       action_runtime_toggle_media_library_sort_mode)
     RF(ACTION_FETCH_LYRICS_IN_BACKGROUND,
-                            action_runtime_fetch_lyrics_background)
+       action_runtime_fetch_lyrics_background)
     RF(ACTION_REFETCH_LYRICS, action_runtime_refetch_lyrics)
     RF(ACTION_SET_SELECTED_ITEMS_PRIORITY,
-                            action_runtime_set_selected_items_priority)
+       action_runtime_set_selected_items_priority)
     RF(ACTION_TOGGLE_VISUALIZATION_TYPE, ncm_action_toggle_visualization_type)
     R1(ACTION_SHOW_SONG_INFO, ACTION_RUN_SWITCH_SCREEN, SCREEN_TYPE_SONG_INFO)
     RF(ACTION_SHOW_ARTIST_INFO, action_runtime_show_artist_info)
@@ -5521,7 +5506,7 @@ static const ActionRun action_run_table[ACTION_COUNT] = {
     R1(ACTION_SHOW_MEDIA_LIBRARY, ACTION_RUN_SWITCH_SCREEN,
        SCREEN_TYPE_MEDIA_LIBRARY)
     RF(ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE,
-                            action_runtime_toggle_media_library_columns)
+       action_runtime_toggle_media_library_columns)
     R1(ACTION_SHOW_PLAYLIST_EDIT, ACTION_RUN_SWITCH_SCREEN,
        SCREEN_TYPE_PLAYLIST_EDIT)
     R1(ACTION_SHOW_SERVER_INFO, ACTION_RUN_SWITCH_SCREEN,

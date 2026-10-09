@@ -252,13 +252,13 @@ visualizer_update_callback(NcScreen *screen) {
 
         ncm_error_clear(&ncm_error);
         status = hooks->disable_output(hooks->user, visualizer->output_id,
-                                         &ncm_error);
+                                       &ncm_error);
         if (status < 0) {
             String message = {0};
 
             STR_APPEND(&message, "Could not disable visualizer output: ");
             STR_APPEND(&message,
-                      ncm_error.message, ncm_error.message_len);
+                       ncm_error.message, ncm_error.message_len);
             ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                                 message.data, message.len);
             str_free(&message);
@@ -270,7 +270,7 @@ visualizer_update_callback(NcScreen *screen) {
 
         ncm_error_clear(&ncm_error);
         status = hooks->enable_output(hooks->user, visualizer->output_id,
-                                        &ncm_error);
+                                      &ncm_error);
         if (status < 0) {
             String message = {0};
 
@@ -292,8 +292,8 @@ visualizer_update_callback(NcScreen *screen) {
         buffer_size = visualizer->samples_in.cap
                       *SIZEOF(*visualizer->samples_in.data);
         bytes_read = hooks->read_source(hooks->user, visualizer->source_fd,
-                                          visualizer->samples_in.data,
-                                          buffer_size);
+                                        visualizer->samples_in.data,
+                                        buffer_size);
         if (bytes_read > 0) {
             samples_read = (int32)(bytes_read
                                    /SIZEOF(*visualizer->samples_in.data));
@@ -624,8 +624,8 @@ visualizer_screen_init_data_source(VisualizerScreen *screen,
                           source_location_len - colon - 1);
     } else {
         stupid_string_set(&screen->source_location,
-                          &screen->source_location_len, source_location,
-                          source_location_len);
+                          &screen->source_location_len,
+                          source_location, source_location_len);
     }
     return;
 }
@@ -647,14 +647,14 @@ visualizer_screen_open_data_source(VisualizerScreen *screen) {
                 return -NCM_ERROR_UNAVAILABLE;
             }
             fd = hooks->open_udp(hooks->user, location,
-                                   screen->source_location_len, port,
-                                   screen->source_port_len);
+                                 screen->source_location_len, port,
+                                 screen->source_port_len);
         } else {
             if (hooks->open_fifo == NULL) {
                 return -NCM_ERROR_UNAVAILABLE;
             }
             fd = hooks->open_fifo(hooks->user, location,
-                                    screen->source_location_len);
+                                  screen->source_location_len);
         }
 
         if (fd < 0) {
@@ -699,8 +699,8 @@ visualizer_screen_drain_data_source(VisualizerScreen *screen) {
     total_read = 0;
     do {
         bytes_read = hooks->read_source(hooks->user, screen->source_fd,
-                                          screen->samples_in.data,
-                                          buffer_size);
+                                        screen->samples_in.data,
+                                        buffer_size);
         if (bytes_read > 0) {
             total_read += bytes_read;
         }
@@ -895,8 +895,8 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
         int32 next;
 
         stupid_string_set(&screen->visualizer_chars,
-                          &screen->visualizer_chars_len, visualizer_chars,
-                          visualizer_chars_len);
+                          &screen->visualizer_chars_len,
+                          visualizer_chars, visualizer_chars_len);
         next = utf8_next_position(screen->visualizer_chars,
                                   screen->visualizer_chars_len, 0);
         screen->point_char_offset = 0;
@@ -917,7 +917,7 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
                         *SIZEOF(*screen->visualizer_colors));
             for (int32 i = 0; i < visualizer_colors_len; i += 1) {
                 nc_text_style_copy(&screen->visualizer_colors[i],
-                                        &visualizer_colors[i]);
+                                   &visualizer_colors[i]);
             }
             screen->visualizer_colors_len = visualizer_colors_len;
         }

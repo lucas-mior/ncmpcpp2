@@ -62,8 +62,8 @@ selected_items_add_search_capability(NcScreen *base,
 
     forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
     status = selected_items_add_screen_search(screen, pattern, pattern_len,
-                                                regex_flags, forward, wrap,
-                                                skip_current, ncm_error);
+                                              regex_flags, forward, wrap,
+                                              skip_current, ncm_error);
     if (status >= 0) {
         stupid_string_set(&screen->search_constraint,
                           &screen->search_constraint_len, pattern, pattern_len);
@@ -170,12 +170,12 @@ adder_apply_geometry(SelectedItemsAdderScreen *screen) {
                        + (main_height - screen->position_height)/2;
     nc_window_resize(&screen->playlist_window, screen->playlist_width,
                      screen->playlist_height);
-    nc_window_move_to(&screen->playlist_window, playlist_start_x,
-                      playlist_start_y);
+    nc_window_move_to(&screen->playlist_window,
+                      playlist_start_x, playlist_start_y);
     nc_window_resize(&screen->position_window, screen->position_width,
                      screen->position_height);
-    nc_window_move_to(&screen->position_window, position_start_x,
-                      position_start_y);
+    nc_window_move_to(&screen->position_window,
+                      position_start_x, position_start_y);
     return;
 }
 
@@ -906,7 +906,7 @@ selected_items_add_screen_open(SelectedItemsAdderScreen *screen,
             ncm_playlist_array_clear(&playlists);
             STR_APPEND(&message, "Could not fetch playlists: ");
             STR_APPEND(&message, playlist_error.message,
-                      playlist_error.message_len);
+                       playlist_error.message_len);
             ncm_statusbar_print(Config.message_delay_time,
                                 message.data, message.len);
             str_free(&message);

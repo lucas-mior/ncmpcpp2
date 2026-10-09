@@ -131,8 +131,8 @@ playlist_edit_filter_apply_capability(NcScreen *base, char *pattern,
                                       int32 pattern_len, uint32 regex_flags,
                                       NcmError *ncm_error) {
     return playlist_edit_screen_apply_active_filter((PlaylistEditScreen *)base,
-                                                   pattern, pattern_len,
-                                                   regex_flags, ncm_error);
+                                                    pattern, pattern_len,
+                                                    regex_flags, ncm_error);
 }
 
 static StrView
@@ -590,7 +590,8 @@ playlist_edit_mouse_callback(NcScreen *screen, MEVENT event) {
                         String message = {0};
 
                         STR_APPEND(&message, "Playlist \"");
-                        STR_APPEND(&message, playlist->path, playlist->path_len);
+                        STR_APPEND(&message, playlist->path,
+                                   playlist->path_len);
                         STR_APPEND(&message, "\" loaded");
 
                         ncm_statusbar_print(Config.message_delay_time,
@@ -663,7 +664,7 @@ playlist_edit_search_text_matches(NcmRegex *regex, char *data, int32 len) {
 static bool
 playlist_edit_playlist_matches_regex(NcmRegex *regex, NcmPlaylist *playlist) {
     return playlist_edit_search_text_matches(regex, playlist->path,
-                                               playlist->path_len);
+                                             playlist->path_len);
 }
 
 static bool
@@ -899,7 +900,7 @@ playlist_edit_screen_init(PlaylistEditScreen *screen,
                    screen->content_title.data, screen->content_title.len,
                    color, border);
     playlist_edit_screen_set_geometry(screen, start_x, width,
-                                        main_start_y, main_height);
+                                      main_start_y, main_height);
     nc_screen_init_ops(&screen->screen, callbacks, screen,
                        NC_SCREEN_TYPE_PLAYLIST_EDIT);
     {
@@ -1425,7 +1426,7 @@ playlist_edit_screen_locate_playlist(PlaylistEditScreen *screen,
                                     STRLIT("missing playlist"));
     }
     status = playlist_edit_screen_reload_playlists_from_mpd(screen, client,
-                                                              ncm_error);
+                                                            ncm_error);
     if (status < 0) {
         return status;
     }
@@ -1582,7 +1583,7 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
     if ((nc_menu_all_item_len(playlists) <= 0)
         || screen->playlists_update_requested) {
         status = playlist_edit_screen_reload_playlists_from_mpd(screen, client,
-                                                               ncm_error);
+                                                                ncm_error);
         if (status < 0) {
             return status;
         }

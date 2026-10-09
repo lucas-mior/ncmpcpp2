@@ -80,9 +80,10 @@ static int32
 nc_named_key_name(NcKey key, char *buffer, int32 buffer_len) {
     for (int32 i = 0; i < LENGTH(nc_named_keys); i += 1) {
         if (key == nc_named_keys[i].key) {
-            return fmt_sprintf(buffer, buffer_len, "%.*s",
-                             nc_named_keys[i].display_name_len,
-                             nc_named_keys[i].display_name);
+            return fmt_sprintf(buffer, buffer_len,
+                               "%.*s",
+                               nc_named_keys[i].display_name_len,
+                               nc_named_keys[i].display_name);
         }
     }
     return -1;
@@ -293,8 +294,8 @@ nc_key_name(NcKey key, char *buffer, int32 buffer_len) {
         return result;
     }
     if ((key >= NC_KEY_CTRL_A) && (key <= NC_KEY_CTRL_Z)) {
-        result = fmt_sprintf(buffer, buffer_len, "Ctrl-%c",
-                           (char)('A' + key - NC_KEY_CTRL_A));
+        result = fmt_sprintf(buffer, buffer_len,
+                             "Ctrl-%c", (char)('A' + key - NC_KEY_CTRL_A));
     } else if (key == NC_KEY_CTRL_LEFT_BRACKET) {
         result = fmt_sprintf(buffer, buffer_len, "Ctrl-[");
     } else if (key == NC_KEY_CTRL_BACKSLASH) {
@@ -316,10 +317,10 @@ nc_key_name(NcKey key, char *buffer, int32 buffer_len) {
         result = fmt_sprintf(buffer, buffer_len, "Shift-%s", rest);
     } else if ((key >= NC_KEY_F1) && (key <= NC_KEY_F9)) {
         result = fmt_sprintf(buffer, buffer_len, "F%c",
-                           (char)('1' + key - NC_KEY_F1));
+                                                 (char)('1' + key - NC_KEY_F1));
     } else if ((key >= NC_KEY_F10) && (key <= NC_KEY_F12)) {
-        result = fmt_sprintf(buffer, buffer_len, "F1%c",
-                           (char)('0' + key - NC_KEY_F10));
+        result = fmt_sprintf(buffer, buffer_len,
+                             "F1%c", (char)('0' + key - NC_KEY_F10));
     } else {
         result = fmt_sprintf(buffer, buffer_len, "%c", (char)key);
     }
