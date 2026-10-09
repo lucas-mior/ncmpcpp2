@@ -1060,14 +1060,16 @@ lyrics_screen_fetch(LyricsScreen *screen, NcmSong *song,
     bool lrc_found;
     bool txt_found;
     bool win32_filename;
+    int32 dir_len;
+    bool in_song_dir;
 
     if ((screen == NULL) || (song == NULL) || ncm_song_is_empty(song)) {
         return ncm_error_set_status(ncm_error, -EINVAL, STRLIT("missing song"));
     }
 
     win32_filename = Config.generate_win32_compatible_filenames;
-    int32 dir_len = Config.lyrics_directory_len;
-    bool in_song_dir = Config.store_lyrics_in_song_dir;
+    dir_len = Config.lyrics_directory_len;
+    in_song_dir = Config.store_lyrics_in_song_dir;
     status = lyrics_filename_from_song_with_extension(&lrc_filename,
                                                       song,
                                                       Config.mpd_music_dir,
@@ -1222,6 +1224,9 @@ lyrics_start_next_background(LyricsScreen *screen, NcmError *ncm_error) {
     queued = NULL;
     win32_filename = Config.generate_win32_compatible_filenames;
     while (!found_job) {
+        int32 dir_len;
+        bool in_song_dir;
+
         if (screen->queued_songs_len <= 0) {
             queued = NULL;
         } else {
@@ -1247,8 +1252,8 @@ lyrics_start_next_background(LyricsScreen *screen, NcmError *ncm_error) {
             continue;
         }
 
-        int32 dir_len = Config.lyrics_directory_len;
-        bool in_song_dir = Config.store_lyrics_in_song_dir;
+        dir_len = Config.lyrics_directory_len;
+        in_song_dir = Config.store_lyrics_in_song_dir;
         status = lyrics_preferred_filename_from_song(&filename,
                                                      &queued->song,
                                                      Config.mpd_music_dir,
