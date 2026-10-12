@@ -211,7 +211,7 @@ ncm_mpd_connection_recv_pair_list(MpdConnection *connection, char *name,
 
 int32
 ncm_mpd_item_array_to_directory_array(NcmMpdItemArray *items,
-                                        NcmDirectoryArray *directories) {
+                                      NcmDirectoryArray *directories) {
     NcmDirectoryArray replacement = {0};
 
     if (directories == NULL) {
@@ -953,7 +953,8 @@ ncm_mpd_connection_get_playlist_content(MpdConnection *connection,
 
 int32
 ncm_mpd_connection_get_playlist_content_no_info(MpdConnection *connection,
-    char *path, NcmSongArray *songs) {
+                                                char *path,
+                                                NcmSongArray *songs) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
     if (songs == NULL) {
         return -EINVAL;

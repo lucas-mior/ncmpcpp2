@@ -505,9 +505,12 @@ lyrics_song_artist_title(NcmSong *song, String *artist, String *title) {
 
 static int32
 lyrics_filename_from_song_with_extension(String *filename,
-    NcmSong *song, char *music_dir, int32 music_dir_len,
-    char *lyrics_dir, int32 lyrics_dir_len, bool store_in_song_dir,
-    bool win32_filename, char *extension, int32 extension_len) {
+                                         NcmSong *song,
+                                         char *music_dir, int32 music_dir_len,
+                                         char *lyrics_dir, int32 lyrics_dir_len,
+                                         bool store_in_song_dir,
+                                         bool win32_filename,
+                                         char *extension, int32 extension_len) {
     String artist = {0};
     String title = {0};
     StrView uri;
@@ -995,8 +998,8 @@ lyrics_job_destroy(void *user) {
 
 static int32
 lyrics_screen_start_foreground_fetch(LyricsScreen *screen,
-    NcmSong *song, LyricsFetcherDef *fetcher,
-    String *filename, NcmError *ncm_error) {
+                                     NcmSong *song, LyricsFetcherDef *fetcher,
+                                     String *filename, NcmError *ncm_error) {
     LyricsJob *job;
     LyricsFetcherDef *active_fetcher;
     int32 status;
