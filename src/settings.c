@@ -597,7 +597,7 @@ settings_parse_media_library_grouping_tag(char *value, int32 value_len,
 
 static int32
 settings_append_text_style(void *context, char *item, int32 item_len,
-                                NcmError *ncm_error) {
+                           NcmError *ncm_error) {
     NcmTextStyleArray *array = context;
     NcTextStyle *dest = ncm_text_style_array_append(array);
     return settings_parse_text_style(item, item_len, dest, ncm_error);
@@ -605,8 +605,8 @@ settings_append_text_style(void *context, char *item, int32 item_len,
 
 static int32
 settings_parse_text_style_list(NcmTextStyleArray *array,
-                                    char *value, int32 value_len,
-                                    NcmError *ncm_error) {
+                               char *value, int32 value_len,
+                               NcmError *ncm_error) {
     ncm_text_style_array_clear(array);
     return settings_parse_list(value, value_len, array,
                                settings_append_text_style, ncm_error);

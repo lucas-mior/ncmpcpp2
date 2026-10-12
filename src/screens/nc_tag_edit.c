@@ -951,7 +951,7 @@ tag_edit_prompt_tag_value(TagEditScreen *screen,
 
 static int32
 tag_edit_build_parser_preview(TagEditScreen *screen,
-                                bool apply, bool *success) {
+                              bool apply, bool *success) {
     NcMenu *tags;
     int32 count;
     int32 status;
@@ -1376,7 +1376,7 @@ tag_edit_title(NcScreen *screen) {
 
 static bool
 tag_edit_current_directory_path(TagEditScreen *screen,
-                                  char **path, int32 *path_len) {
+                                char **path, int32 *path_len) {
     StrBuilderPair *pair;
 
     ASSERT(screen != NULL);
@@ -1442,8 +1442,8 @@ tag_edit_restore_current_directory(TagEditScreen *screen, String *path) {
 
 static int32
 tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
-                                       MpdClient *client,
-                                       NcmError *ncm_error) {
+                                     MpdClient *client,
+                                     NcmError *ncm_error) {
     NcmDirectoryArray directories = {0};
     String preserved = {0};
     char *dir;
@@ -1568,7 +1568,7 @@ tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
 
 static int32
 tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
-                                 MpdClient *client, NcmError *ncm_error) {
+                               MpdClient *client, NcmError *ncm_error) {
     NcmSongArray songs = {0};
     String preserved_uri = {0};
     char *path;
@@ -1742,7 +1742,7 @@ tag_edit_current_helper_focus(TagEditScreen *screen) {
 
 static bool
 tag_edit_mouse_move_to_parser_focus(TagEditScreen *screen,
-                                      enum TagEditFocus focus) {
+                                    enum TagEditFocus focus) {
     ASSERT(screen != NULL);
     if (focus == TAG_EDIT_FOCUS_PARSER_CHOICE) {
         tag_edit_set_focus(screen, focus);
@@ -1768,7 +1768,7 @@ tag_edit_focus_is_main(enum TagEditFocus focus) {
 
 static bool
 tag_edit_mouse_move_to_column(TagEditScreen *screen,
-                                enum TagEditColumn column) {
+                              enum TagEditColumn column) {
     ASSERT(screen != NULL);
     if (!tag_edit_focus_is_main(screen->active_focus)) {
         return false;
@@ -2083,7 +2083,7 @@ struct SaveContext {
 
 static void
 tag_edit_append_string_row(NcEditorStringMenu *menu,
-                             char *data, int32 data_len, uint32 flags) {
+                           char *data, int32 data_len, uint32 flags) {
     String string = {0};
 
     str_set(&string, data, data_len);
@@ -2104,7 +2104,7 @@ tag_edit_configure_menu(NcMenu *menu) {
 
 static void
 tag_edit_draw_directory(NcMenu *menu, NcWindow *window, void *item,
-                          int32 pos, void *user) {
+                        int32 pos, void *user) {
     StrBuilderPair *pair = item;
 
     (void)menu;
@@ -2121,7 +2121,7 @@ tag_edit_draw_directory(NcMenu *menu, NcWindow *window, void *item,
 
 static bool
 tag_edit_directory_matches_regex(StrBuilderPair *pair,
-                                   NcmRegex *regex, bool filter) {
+                                 NcmRegex *regex, bool filter) {
     ASSERT(pair != NULL);
     ASSERT(pair->first.data != NULL);
     if (STREQUAL(pair->first.data, pair->first.len, ".")) {
@@ -2160,7 +2160,7 @@ tag_edit_directory_display_callbacks(TagEditScreen *screen) {
 
 static void
 tag_edit_draw_string(NcMenu *menu, NcWindow *window, void *item,
-                       int32 pos, void *user) {
+                     int32 pos, void *user) {
     String *string = item;
 
     (void)menu;
@@ -2186,7 +2186,7 @@ tag_edit_tag_type_display_callbacks(TagEditScreen *screen) {
 
 static bool
 tag_edit_tag_matches_regex(TagEditScreen *screen,
-                             MutableSong *song, NcmRegex *regex) {
+                           MutableSong *song, NcmRegex *regex) {
     String buffer = {0};
     NcMenu *tag_types;
     enum TagType tag_type;
@@ -2983,8 +2983,8 @@ tag_edit_current_directory_pair(TagEditScreen *screen, StrBuilderPair **pair) {
 
 bool
 tag_edit_screen_rename_directory_available(TagEditScreen *screen,
-                                             char *music_dir,
-                                             int32 music_dir_len) {
+                                           char *music_dir,
+                                           int32 music_dir_len) {
     StrBuilderPair *pair;
 
     if ((screen == NULL) || (music_dir == NULL) || (music_dir_len <= 0)) {
@@ -3142,7 +3142,7 @@ tag_edit_screen_add_mutable_song(TagEditScreen *screen, MutableSong *song) {
 
 static void
 tag_edit_copy_selected_song_at(TagEditScreen *screen,
-                                 NcmSongArray *songs, int32 pos) {
+                               NcmSongArray *songs, int32 pos) {
     MutableSong *source;
     NcmSong song = {0};
 
@@ -3835,8 +3835,8 @@ tag_edit_append_parser_action_label(TagEditScreen *screen,
 
 void
 tag_edit_screen_prepare_parser_menus(TagEditScreen *screen,
-                                    enum TagEditParserMode mode,
-                                    char *pattern, int32 pattern_len) {
+                                     enum TagEditParserMode mode,
+                                     char *pattern, int32 pattern_len) {
     char *label;
     int32 label_len;
 
@@ -4269,7 +4269,7 @@ tag_edit_generate_filename(MutableSong *song,
 
 int32
 tag_edit_song_display_value(MutableSong *song, enum TagType tag_type,
-                              String *buffer) {
+                            String *buffer) {
     String tag = {0};
 
     if (tag_type == TAG_COUNT) {

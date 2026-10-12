@@ -543,7 +543,7 @@ tiny_editor_add_row(TinyTagEditScreen *screen, NcBuffer *buffer, uint32 flags) {
 
 static void
 tiny_editor_buffer_key_int(NcBuffer *buffer, char *key, int32 key_len,
-                            int32 value, char *suffix, int32 suffix_len) {
+                           int32 value, char *suffix, int32 suffix_len) {
     tiny_editor_buffer_key_value(buffer, key, key_len, NULL, 0);
     nc_buffer_append_int64(buffer, value);
     nc_buffer_append_data(buffer, suffix, suffix_len);
