@@ -8,7 +8,7 @@
 
 void
 search_prompt_state_init(SearchPromptState *state,
-                             enum SearchDirection direction) {
+                         enum SearchDirection direction) {
     ASSERT(state != NULL);
 
     state->last_text = (String){0};
@@ -32,7 +32,7 @@ search_prompt_state_destroy(SearchPromptState *state) {
 
 void
 search_prompt_state_set_start_position(SearchPromptState *state,
-                                           int32 position) {
+                                       int32 position) {
     ASSERT(state != NULL);
 
     state->start_position = position;
@@ -42,8 +42,8 @@ search_prompt_state_set_start_position(SearchPromptState *state,
 
 bool
 search_prompt_state_has_cached_result(SearchPromptState *state,
-                                          char *text, int32 text_len,
-                                          bool *found) {
+                                      char *text, int32 text_len,
+                                      bool *found) {
     ASSERT(state != NULL);
     ASSERT(text != NULL);
     ASSERT_GE(text_len, 0);
@@ -67,8 +67,8 @@ search_prompt_state_has_cached_result(SearchPromptState *state,
 
 int32
 search_prompt_state_finish_result(SearchPromptState *state,
-                                      char *text, int32 text_len,
-                                      bool search_ok, bool found) {
+                                  char *text, int32 text_len,
+                                  bool search_ok, bool found) {
     int32 status;
 
     ASSERT(state != NULL);

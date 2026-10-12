@@ -515,7 +515,7 @@ binding_append_normal(Binding *binding, enum ActionType type) {
 
 static int32
 bindings_cmd_lower_bound(BindingsConfiguration *bindings,
-                             char *name, int32 name_len) {
+                         char *name, int32 name_len) {
     int32 first = 0;
     int32 count = bindings->commands_len;
 
@@ -567,7 +567,7 @@ bindings_key_lower_bound(BindingsConfiguration *bindings, NcKey key) {
 
 static int32
 bindings_cmd_index(BindingsConfiguration *bindings,
-                       char *name, int32 name_len) {
+                   char *name, int32 name_len) {
     int32 at;
 
     at = bindings_cmd_lower_bound(bindings, name, name_len);

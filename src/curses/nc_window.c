@@ -1553,7 +1553,7 @@ nc_window_bold(NcWindow *window, bool state) {
 
 static void
 nc_window_decr_format(NcWindow *window, int32 *counter,
-                          void (*set)(NcWindow *, bool)) {
+                      void (*set)(NcWindow *, bool)) {
     if (*counter > 0) {
         *counter -= 1;
         if (*counter <= 0) {

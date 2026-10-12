@@ -59,7 +59,7 @@ ncm_config_options_destroy(NcmConfigurationOptions *options) {
 
 static void
 cmd_line_options_append_path(StringArray *paths,
-                                 char *path, int32 path_len) {
+                             char *path, int32 path_len) {
     String *slot = string_array_append(paths);
     STR_APPEND(slot, path, path_len);
     return;

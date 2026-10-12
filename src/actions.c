@@ -600,7 +600,7 @@ action_runtime_print_message(char *prefix, int32 prefix_len,
 
 bool
 ncm_action_immediate_cmd_prompt_should_stop(String *previous,
-                                                char *text, int32 text_len) {
+                                            char *text, int32 text_len) {
     NcmCommand *command;
 
     if (previous == NULL) {
