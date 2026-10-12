@@ -452,8 +452,8 @@ nc_screen_song_tags_buffer(NcmSong *song, enum SongGetter getter,
 
 int32
 nc_screen_menu_song_tag_at(NcMenu *menu, int32 pos,
-                          enum SongGetter getter, String *tag,
-                          NcScreenMenuSongCallback *song_callback) {
+                           enum SongGetter getter, String *tag,
+                           NcScreenMenuSongCallback *song_callback) {
     NcmSong *song;
 
     if ((menu == NULL) || (song_callback == NULL)) {
@@ -503,7 +503,7 @@ nc_screen_collect_selected_menu_songs(NcMenu *menu, NcmSongArray *songs,
 
 int32
 nc_screen_menu_mutable_song_tag_at(NcMenu *menu, int32 pos,
-                                  enum SongGetter getter, String *tag) {
+                                   enum SongGetter getter, String *tag) {
     MutableSong *song;
     enum TagType type;
 

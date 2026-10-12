@@ -51,11 +51,11 @@ selected_items_add_search_clear_capability(NcScreen *base) {
 
 static int32
 selected_items_add_search_capability(NcScreen *base,
-                                       enum SearchDirection direction,
-                                       char *pattern, int32 pattern_len,
-                                       uint32 regex_flags, bool wrap,
-                                       bool skip_current,
-                                       NcmError *ncm_error) {
+                                     enum SearchDirection direction,
+                                     char *pattern, int32 pattern_len,
+                                     uint32 regex_flags, bool wrap,
+                                     bool skip_current,
+                                     NcmError *ncm_error) {
     SelectedItemsAdderScreen *screen = (SelectedItemsAdderScreen *)base;
     bool forward;
     int32 status;
@@ -834,9 +834,9 @@ adder_action_cancel_target(void *user) {
 
 int32
 selected_items_add_screen_open(SelectedItemsAdderScreen *screen,
-                                 NcmSongArray *songs,
-                                 PlaylistScreen *playlist, MpdClient *client,
-                                 NcmError *ncm_error) {
+                               NcmSongArray *songs,
+                               PlaylistScreen *playlist, MpdClient *client,
+                               NcmError *ncm_error) {
     NcmPlaylistArray playlists = {0};
     NcmSongArray selected_songs = {0};
     NcmError playlist_error;
@@ -1046,10 +1046,10 @@ adder_position_matches(NcMenu *menu, int32 pos, void *user) {
 
 int32
 selected_items_add_screen_search(SelectedItemsAdderScreen *screen,
-                                   char *pattern, int32 pattern_len,
-                                   uint32 regex_flags, bool forward,
-                                   bool wrap, bool skip_current,
-                                   NcmError *ncm_error) {
+                                 char *pattern, int32 pattern_len,
+                                 uint32 regex_flags, bool forward,
+                                 bool wrap, bool skip_current,
+                                 NcmError *ncm_error) {
     NcmRegex regex;
     NcMenu *menu;
     NcWindow *window;

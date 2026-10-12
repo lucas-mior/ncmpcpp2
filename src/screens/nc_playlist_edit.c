@@ -286,7 +286,7 @@ playlist_edit_scroll_callback(NcScreen *screen, enum NcScroll where) {
 
 static bool
 playlist_edit_has_current_playlist_path(PlaylistEditScreen *screen,
-                                          char **path, int32 *path_len) {
+                                        char **path, int32 *path_len) {
     NcmPlaylist *playlist;
 
     if ((playlist
@@ -780,9 +780,9 @@ content_draw_callback(NcMenu *menu, NcWindow *window, void *item,
 
 void
 playlist_edit_screen_init(PlaylistEditScreen *screen,
-                            int32 start_x, int32 width,
-                            int32 main_start_y, int32 main_height,
-                            NcColor color, NcBorder border) {
+                          int32 start_x, int32 width,
+                          int32 main_start_y, int32 main_height,
+                          NcColor color, NcBorder border) {
     NcScreenOps callbacks = {0};
     int32 initial_left_width;
     int32 initial_right_width;
@@ -1089,7 +1089,7 @@ playlist_edit_screen_set_geometry(PlaylistEditScreen *screen,
 
 void
 playlist_edit_screen_set_column_ratio(PlaylistEditScreen *screen,
-                                        int32 left, int32 right) {
+                                      int32 left, int32 right) {
     if (screen == NULL) {
         return;
     }
@@ -1149,7 +1149,7 @@ playlist_edit_screen_next_column(PlaylistEditScreen *screen) {
 
 static bool
 playlist_edit_store_current_playlist_path(PlaylistEditScreen *screen,
-                                            String *buffer) {
+                                          String *buffer) {
     char *path;
     int32 path_len;
 
@@ -1163,7 +1163,7 @@ playlist_edit_store_current_playlist_path(PlaylistEditScreen *screen,
 
 static void
 playlist_edit_restore_playlist_path(PlaylistEditScreen *screen,
-                                      String *buffer) {
+                                    String *buffer) {
     NcMenu *menu;
 
     if (buffer->len <= 0) {
@@ -1184,7 +1184,7 @@ playlist_edit_restore_playlist_path(PlaylistEditScreen *screen,
 
 int32
 playlist_edit_screen_load_playlists(PlaylistEditScreen *screen,
-                                      NcmPlaylistArray *playlists) {
+                                    NcmPlaylistArray *playlists) {
     String preserved = {0};
     NcMenu *menu;
     bool had_preserved;
@@ -1221,8 +1221,8 @@ playlist_edit_screen_load_playlists(PlaylistEditScreen *screen,
 
 int32
 playlist_edit_screen_reload_playlists_from_mpd(PlaylistEditScreen *screen,
-                                                 MpdClient *client,
-                                                 NcmError *ncm_error) {
+                                               MpdClient *client,
+                                               NcmError *ncm_error) {
     NcmPlaylistArray playlists = {0};
     int32 status;
 
@@ -1287,7 +1287,7 @@ playlist_edit_store_current_song(PlaylistEditScreen *screen, NcmSong *song) {
 
 int32
 playlist_edit_screen_load_content(PlaylistEditScreen *screen,
-                                    NcmSongArray *songs) {
+                                  NcmSongArray *songs) {
     NcMenu *menu;
     NcmSong preserved_song = {0};
     bool had_preserved_song;
@@ -1337,8 +1337,8 @@ playlist_edit_screen_load_content(PlaylistEditScreen *screen,
 
 int32
 playlist_edit_screen_reload_content_from_mpd(PlaylistEditScreen *screen,
-                                               MpdClient *client,
-                                               NcmError *ncm_error) {
+                                             MpdClient *client,
+                                             NcmError *ncm_error) {
     NcmSongArray songs;
     NcmPlaylist *playlist;
     int32 status;
@@ -1486,7 +1486,7 @@ playlist_edit_find_song_in_content_range(PlaylistEditScreen *screen,
 
 static int32
 playlist_edit_highlight_content_position(PlaylistEditScreen *screen,
-                                           int32 pos) {
+                                         int32 pos) {
     NcMenu *menu = nc_song_menu_base(&screen->content);
 
     if ((pos < 0) || (pos >= nc_menu_item_len(menu))) {
