@@ -1224,7 +1224,6 @@ tag_edit_run_current(NcScreen *screen) {
         NcMenu *menu;
         int32 choice;
         bool success;
-        int32 status;
 
         menu = nc_editor_string_menu_base(&editor->parser_actions);
         if (!nc_menu_current_is_selectable(menu)) {
@@ -1264,8 +1263,7 @@ tag_edit_run_current(NcScreen *screen) {
             return -NCM_ERROR_UNAVAILABLE;
         }
         if (choice == TAG_EDIT_PARSER_ACTION_PREVIEW) {
-            status = tag_edit_build_parser_preview(editor, false, &success);
-            if (status < 0) {
+            if (tag_edit_build_parser_preview(editor, false, &success) < 0) {
                 return -NCM_ERROR_UNAVAILABLE;
             }
             tag_edit_screen_show_parser_preview(editor);
@@ -1278,8 +1276,7 @@ tag_edit_run_current(NcScreen *screen) {
             return 0;
         }
         if (choice == TAG_EDIT_PARSER_ACTION_PROCEED) {
-            status = tag_edit_build_parser_preview(editor, true, &success);
-            if (status < 0) {
+            if (tag_edit_build_parser_preview(editor, true, &success) < 0) {
                 return -NCM_ERROR_UNAVAILABLE;
             }
             if (success) {

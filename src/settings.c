@@ -195,10 +195,7 @@ settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
 static int32
 settings_parse_bool(char *value, int32 value_len, bool *result,
                     NcmError *ncm_error) {
-    int32 status;
-
-    status = ncm_option_parser_yes_no(value, value_len, result);
-    if (status < 0) {
+    if (ncm_option_parser_yes_no(value, value_len, result) < 0) {
         return settings_invalid_value(ncm_error, value, value_len);
     }
     return 0;
@@ -254,7 +251,6 @@ static int32
 settings_parse_single_color(char *value, int32 value_len, bool background,
                             int16 *result, NcmError *ncm_error) {
     int64 parsed;
-    int32 status;
 
     if (STREQUAL(value, value_len, "black")) {
         *result = COLOR_BLACK;
@@ -297,8 +293,7 @@ settings_parse_single_color(char *value, int32 value_len, bool background,
         return 0;
     }
 
-    status = parse_integer(value, value_len, &parsed);
-    if (status < 0) {
+    if (parse_integer(value, value_len, &parsed) < 0) {
         return settings_invalid_value(ncm_error, value, value_len);
     }
     if (background) {
@@ -524,15 +519,13 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
     while (start <= value_len) {
         int32 end;
         int64 parsed;
-        int32 status;
         int32 *slot;
 
         end = start;
         while ((end < value_len) && (value[end] != ':')) {
             end += 1;
         }
-        status = parse_integer(value + start, end - start, &parsed);
-        if (status < 0) {
+        if (parse_integer(value + start, end - start, &parsed) < 0) {
             return settings_invalid_value(ncm_error, value, value_len);
         }
         if ((parsed < 0) || (parsed > MAXOF((int32)0))) {
@@ -783,10 +776,8 @@ static int32
 settings_append_lyrics_fetcher(void *context, char *item, int32 item_len,
                                NcmError *ncm_error) {
     LyricsFetcherRegistry *registry = context;
-    int32 status;
 
-    status = ncm_lyrics_fetcher_registry_append_name(registry, item, item_len);
-    if (status < 0) {
+    if (ncm_lyrics_fetcher_registry_append_name(registry, item, item_len) < 0) {
         return settings_error(ncm_error, STRLIT("unknown lyrics fetcher"));
     }
     return 0;
@@ -871,11 +862,9 @@ settings_apply_option(Configuration *config, SettingsOption option,
     char *detail;
     int32 detail_len;
     int32 len;
-    int32 status;
 
     ncm_error_clear(&cause);
-    status = option.apply(config, value, value_len, &cause);
-    if (status < 0) {
+    if (option.apply(config, value, value_len, &cause) < 0) {
         if (default_value) {
             phase = "initializing";
         } else {

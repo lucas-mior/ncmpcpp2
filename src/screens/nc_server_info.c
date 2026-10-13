@@ -55,14 +55,12 @@ static void
 nc_server_info_update(NcScreen *screen) {
     NcServerInfoScreen *server_info = (NcServerInfoScreen *)screen;
     NcBuffer next_buffer;
-    int32 status;
 
     if (server_info->hooks.render == NULL) {
         return;
     }
     next_buffer = (NcBuffer){0};
-    status = server_info->hooks.render(server_info->hooks.user, &next_buffer);
-    if (status <= 0) {
+    if (server_info->hooks.render(server_info->hooks.user, &next_buffer) <= 0) {
         nc_buffer_destroy(&next_buffer);
         return;
     }

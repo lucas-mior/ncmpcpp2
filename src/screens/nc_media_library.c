@@ -719,7 +719,6 @@ library_update(NcScreen *screen) {
     MediaLibraryScreen *library = library_from_screen(screen);
     NcmError ncm_error;
     bool update_due = false;
-    int32 status;
 
     if (library_has_pending_tags(library)) {
         update_due = true;
@@ -736,8 +735,7 @@ library_update(NcScreen *screen) {
 
     ncm_error_clear(&ncm_error);
 
-    status = media_library_screen_update(library, &ncm_error);
-    if (status < 0) {
+    if (media_library_screen_update(library, &ncm_error) < 0) {
         if (ncm_error_is_set(&ncm_error)) {
             ncm_statusbar_print(Config.message_delay_time,
                                 ncm_error.message, ncm_error.message_len);

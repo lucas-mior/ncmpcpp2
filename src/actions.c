@@ -1392,7 +1392,6 @@ action_runtime_apply_filter(void) {
     String filter = {0};
     String previous_filter = {0};
     NcmError ncm_error;
-    int32 status;
     bool old_autocenter_mode;
     bool prompted;
     NcPromptShouldContinueFunc *should_continue;
@@ -1431,8 +1430,7 @@ action_runtime_apply_filter(void) {
     }
 
     ncm_error_clear(&ncm_error);
-    status = current_screen_apply_filter(filter.data, filter.len, &ncm_error);
-    if (status < 0) {
+    if (current_screen_apply_filter(filter.data, filter.len, &ncm_error) < 0) {
         str_free(&previous_filter);
         str_free(&filter);
         return action_runtime_mpd_error_status(&ncm_error);

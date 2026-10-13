@@ -128,7 +128,6 @@ lrc_parse_offset_tag(LrcDocument *document, char *tag, int32 tag_len,
     char *offset = "offset:";
     int32 offset_len;
     int32 offset_ms;
-    int32 status;
 
     ASSERT(document != NULL);
     ASSERT(tag != NULL);
@@ -150,8 +149,7 @@ lrc_parse_offset_tag(LrcDocument *document, char *tag, int32 tag_len,
 
     value = tag + offset_len;
     value_len = tag_len - offset_len;
-    status = parse_integer(value, value_len, &signed_value);
-    if (status < 0) {
+    if (parse_integer(value, value_len, &signed_value) < 0) {
         return lrc_malformed_offset(ncm_error);
     }
 
@@ -219,10 +217,7 @@ lrc_parse_offsets(LrcDocument *document, char *data, int32 data_len,
 static int32
 lrc_parse_time_integer(char *data, int32 data_len, llong *value,
                        NcmError *ncm_error) {
-    int32 status;
-
-    status = parse_integer(data, data_len, value);
-    if ((status < 0) || (*value < 0)) {
+    if ((parse_integer(data, data_len, value) < 0) || (*value < 0)) {
         return lrc_malformed_line(ncm_error);
     }
     return 0;
