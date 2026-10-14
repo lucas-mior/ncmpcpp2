@@ -252,6 +252,7 @@ ncm_status_trace(MpdClient *client, bool update_timer,
 
                     if (position >= 0) {
                         PlaylistScreen *playlist = app_screen_playlist();
+                        NcScreen *screen;
                         int32 n = playlist_screen_locate_position(playlist,
                                                                   position);
                         bool highlighted = n > 0;
@@ -264,13 +265,10 @@ ncm_status_trace(MpdClient *client, bool update_timer,
                                                 message, strlen32(message));
                         }
 
-                        {
-                            NcScreen *screen = app_screen_playlist_base();
-
-                            if (highlighted
-                                && app_controller_is_screen_visible(screen)) {
-                                nc_screen_refresh(screen);
-                            }
+                        screen = app_screen_playlist_base();
+                        if (highlighted
+                            && app_controller_is_screen_visible(screen)) {
+                            nc_screen_refresh(screen);
                         }
                     }
                 }
@@ -589,16 +587,17 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
                                               active_hooks->user);
             } else {
                 NcmSong song = {0};
+#if defined(ENABLE_VISUALIZER)
+                VisualizerScreen *visualizer;
+#endif
 
                 playlist_screen_reload_remaining(app_screen_playlist());
                 status_playing_song_scroll_begin = 0;
                 status_first_line_scroll_begin = 0;
                 status_second_line_scroll_begin = 0;
 #if defined(ENABLE_VISUALIZER)
-                {
-                    VisualizerScreen *visualizer = app_screen_visualizer();
-                    visualizer_screen_reset_auto_scale_multiplier(visualizer);
-                }
+                visualizer = app_screen_visualizer();
+                visualizer_screen_reset_auto_scale_multiplier(visualizer);
 #endif
                 if (status_ui_hooks_set && status_ui_hooks.song_id_changed) {
                     void *user = status_ui_hooks.user;

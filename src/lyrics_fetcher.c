@@ -1467,8 +1467,10 @@ lyrics_decode_quoted(String *out, char *data, int32 data_len,
             str_append_byte(out, '\t');
             break;
         case 'u': {
+            char encoded[4];
             uint32 first;
             uint32 rune;
+            int32 encoded_len;
 
             if (lyrics_parse_hex4(data, data_len, i, &first) < 0) {
                 return -NCM_ERROR_PARSE;
@@ -1487,14 +1489,9 @@ lyrics_decode_quoted(String *out, char *data, int32 data_len,
                     i += 6;
                 }
             }
-            {
-                char encoded[4];
-                int32 encoded_len;
-
-                encoded_len = utf8_encode(rune, encoded, SIZEOF(encoded));
-                if (encoded_len > 0) {
-                    STR_APPEND(out, encoded, encoded_len);
-                }
+            encoded_len = utf8_encode(rune, encoded, SIZEOF(encoded));
+            if (encoded_len > 0) {
+                STR_APPEND(out, encoded, encoded_len);
             }
             break;
         }
@@ -1834,7 +1831,7 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
         case LYRICS_FETCHER_LETRASMUS:
             extract_status = lyrics_extract_divs(out, content_data, content_len,
                                                  STRLIT("class="
-                                                          "\"lyric-original\""),
+                                                        "\"lyric-original\""),
                                                  false);
             break;
         case LYRICS_FETCHER_LACOCCINELLE: {

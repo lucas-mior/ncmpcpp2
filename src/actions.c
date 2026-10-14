@@ -969,7 +969,7 @@ action_runtime_add_random_items(void) {
     ncm_statusbar_scoped_lock_init(&scoped_lock);
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window, STRLIT("Add random? [s]ongs/[a]rtists/"
-                                         "album [A]rtists/al[b]ums "));
+                                            "album [A]rtists/al[b]ums "));
         status = ncm_statusbar_prompt_return_one_of(window, values,
                                                     LENGTH(values),
                                                     &random_type);
@@ -1013,7 +1013,7 @@ action_runtime_add_random_items(void) {
         str_free(&input);
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("Random item count must be a non-negative "
-                                    "number"));
+                                   "number"));
         return 0;
     }
     str_free(&input);
@@ -1123,11 +1123,11 @@ action_runtime_toggle_fetch_lyrics_in_background(void) {
 
     if (Config.fetch_lyrics_for_current_song_in_background) {
         action_runtime_print_toggle(STRLIT("Fetching lyrics for playing "
-                                            "songs in background: "),
+                                           "songs in background: "),
                                     "on");
     } else {
         action_runtime_print_toggle(STRLIT("Fetching lyrics for playing "
-                                            "songs in background: "),
+                                           "songs in background: "),
                                     "off");
     }
     return 0;
@@ -2088,14 +2088,14 @@ action_runtime_delete_browser_items(void) {
     if (!Config.allow_for_physical_item_deletion) {
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("Flag \"allow_for_physical_item_deletion\" "
-                                    "needs to be enabled in configuration "
-                                    "file"));
+                                   "needs to be enabled in configuration "
+                                   "file"));
         return -NCM_ERROR_UNAVAILABLE;
     }
     if (!browser_screen_is_local(screen) && (Config.mpd_music_dir_len <= 0)) {
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("Proper mpd_music_dir variable has to be "
-                                    "set in configuration file"));
+                                   "set in configuration file"));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -2655,7 +2655,7 @@ action_runtime_move_selected_items(bool down) {
     if ((menu = action_runtime_current_menu()) && nc_menu_is_filtered(menu)) {
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("Moving items is disabled in filtered "
-                                    "playlist"));
+                                   "playlist"));
         return 0;
     }
 
@@ -2798,7 +2798,7 @@ action_runtime_move_playlist_edit_items_to(void) {
     if (nc_menu_is_filtered(menu)) {
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("Moving items is disabled in filtered "
-                                    "playlist"));
+                                   "playlist"));
         return 0;
     }
 
@@ -3036,7 +3036,7 @@ action_runtime_set_selected_items_priority(void) {
     if (ncm_mpd_client_version(&global_mpd) < 17) {
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("Priorities are supported in MPD >= "
-                                    "0.17.0"));
+                                   "0.17.0"));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -3102,7 +3102,7 @@ action_runtime_jump_to_position_in_song(void) {
         str_free(&input);
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("Invalid format ([h]:[mm]:[ss], [m]:[ss], "
-                                    "[s]s, [%]%, [%] accepted)"));
+                                   "[s]s, [%]%, [%] accepted)"));
         return 0;
     }
     str_free(&input);
@@ -3480,7 +3480,7 @@ action_runtime_jump_to_tag_edit(void) {
     if (Config.mpd_music_dir_len <= 0) {
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("Proper mpd_music_dir variable has to be "
-                                    "set in configuration file"));
+                                   "set in configuration file"));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -3668,8 +3668,8 @@ action_runtime_change_browse_mode(void) {
         if (ncm_error.code == EINVAL) {
             ncm_statusbar_print(Config.message_delay_time,
                                 STRLIT("For browsing local filesystem "
-                                        "connection to MPD via UNIX Socket "
-                                        "is required"));
+                                       "connection to MPD via UNIX Socket "
+                                       "is required"));
         } else if (ncm_error_is_set(&ncm_error)) {
             ncm_statusbar_print(Config.message_delay_time,
                                 ncm_error.message, ncm_error.message_len);
@@ -3874,7 +3874,7 @@ ncm_action_edit_song(NcmSong *song) {
     if (Config.mpd_music_dir_len <= 0) {
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("Proper mpd_music_dir variable has to be "
-                                    "set in configuration file"));
+                                   "set in configuration file"));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -3898,7 +3898,7 @@ ncm_action_edit_song(NcmSong *song) {
     case TINY_TAG_EDIT_OPEN_MISSING_MUSIC_DIRECTORY:
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("Proper mpd_music_dir variable has to be "
-                                    "set in configuration file"));
+                                   "set in configuration file"));
         break;
     case TINY_TAG_EDIT_OPEN_UNREADABLE_FILE: {
         char *prefix = "Couldn't read file \"";
@@ -4047,7 +4047,7 @@ action_runtime_mpd_music_dir_is_set(void) {
 
     ncm_statusbar_print(Config.message_delay_time,
                         STRLIT("Proper mpd_music_dir variable"
-                                " has to be set in configuration file"));
+                               " has to be set in configuration file"));
     return false;
 }
 
@@ -4542,7 +4542,7 @@ action_runtime_edit_lyrics(void) {
     if (Config.external_editor_len <= 0) {
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("external_editor variable has to be set in "
-                                    "configuration file"));
+                                   "configuration file"));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -4562,13 +4562,13 @@ action_runtime_edit_lyrics(void) {
     if (status < 0) {
         ncm_statusbar_print(Config.message_delay_time,
                             STRLIT("failed to build lyrics "
-                                    "filename"));
+                                   "filename"));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
     ncm_statusbar_print(Config.message_delay_time,
                         STRLIT("Opening lyrics in external "
-                                "editor..."));
+                               "editor..."));
     filename = lyrics_screen_filename(lyrics);
     filename_data = filename->data;
     filename_len = filename->len;

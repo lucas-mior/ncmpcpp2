@@ -193,7 +193,7 @@ sort_dialog_show_move_hint(void *user) {
     (void)user;
     ncm_statusbar_print(Config.message_delay_time,
                         STRLIT("Move tag types up and down to adjust sort "
-                                "order"));
+                               "order"));
     return;
 }
 
