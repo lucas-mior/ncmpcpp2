@@ -818,8 +818,8 @@ ncm_song_tags_buffer(NcmSong *song, enum SongGetter getter,
 
         if (!show_duplicates) {
             for (int32 j = 0; j < i; j += 1) {
-                String previous
-                    = ncm_song_getter_buffer_unchecked(song, getter, j);
+                String previous = ncm_song_getter_buffer_unchecked(song,
+                                                                   getter, j);
 
                 if (STREQUAL(previous.data, previous.len, tag.data, tag.len)) {
                     already_present = true;

@@ -292,8 +292,8 @@ ncm_status_trace(MpdClient *client, bool update_timer,
                     && init_hooks->load_browser_supported_extensions) {
                     void (*load_extensions)(void *);
 
-                    load_extensions
-                        = init_hooks->load_browser_supported_extensions;
+                    load_extensions =
+                        init_hooks->load_browser_supported_extensions;
                     load_extensions(init_hooks->user);
                 } else {
                     app_screen_browser_fetch_supported_extensions();
@@ -1267,8 +1267,8 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
         return;
     }
 
-    player_state_len
-        = status_player_state_string(player_state, SIZEOF(player_state));
+    player_state_len = status_player_state_string(player_state,
+                                                  SIZEOF(player_state));
     status_draw_song_title(&song);
 
     switch (Config.user_interface) {

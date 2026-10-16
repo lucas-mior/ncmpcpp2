@@ -45,12 +45,12 @@ ncm_playlist_sort_indices(NcmPlaylistSortContext *context,
             char *left_data;
             char *right_data;
 
-            left_buffer
-                = ncm_song_getter_buffer(&context->songs->items[left_idx],
-                                         getter, 0);
-            right_buffer
-                = ncm_song_getter_buffer(&context->songs->items[right_idx],
-                                         getter, 0);
+            left_buffer =
+                ncm_song_getter_buffer(&context->songs->items[left_idx],
+                                       getter, 0);
+            right_buffer =
+                ncm_song_getter_buffer(&context->songs->items[right_idx],
+                                       getter, 0);
 
             left_data = left_buffer.data;
             right_data = right_buffer.data;
