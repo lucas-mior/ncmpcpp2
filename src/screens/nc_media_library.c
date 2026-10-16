@@ -1743,8 +1743,7 @@ media_library_tags_from_songs(MediaLibraryTagArray *tags, NcmSongArray *songs,
                                               grouping_value.len);
             if (existing >= 0) {
                 if (song->last_modified > replacement.items[existing].mtime) {
-                    replacement.items[existing].mtime =
-                        song->last_modified;
+                    replacement.items[existing].mtime = song->last_modified;
                 }
                 continue;
             }
@@ -1797,8 +1796,7 @@ media_library_albums_from_songs(MediaLibraryAlbumArray *albums,
             if (existing >= 0) {
                 if (song->last_modified
                     > replacement.items[existing].row.mtime) {
-                    replacement.items[existing].row.mtime =
-                        song->last_modified;
+                    replacement.items[existing].row.mtime = song->last_modified;
                 }
             } else {
                 library_append_album(&replacement,
@@ -2866,8 +2864,7 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
             }
 
             nc_media_library_album_menu_init(&replacement);
-            replacement_menu =
-                nc_media_library_album_menu_base(&replacement);
+            replacement_menu = nc_media_library_album_menu_base(&replacement);
             nc_menu_copy(replacement_menu, menu);
             for (int32 i = 0; i < albums.len; i += 1) {
                 MediaLibraryAlbumItem *album_item = &albums.items[i];
@@ -2969,8 +2966,7 @@ media_library_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
             }
 
             nc_media_library_song_menu_init(&replacement);
-            replacement_menu =
-                nc_media_library_song_menu_base(&replacement);
+            replacement_menu = nc_media_library_song_menu_base(&replacement);
             nc_menu_copy(replacement_menu, menu);
             for (int32 i = 0; i < songs.len; i += 1) {
                 nc_media_library_song_menu_add(&replacement, &songs.items[i]);

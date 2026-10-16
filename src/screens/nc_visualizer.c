@@ -168,8 +168,7 @@ visualizer_generate_frequency_space(VisualizerScreen *screen) {
         }
         scale = fft->hz_max/denominator;
         for (int32 i = 0; i < width; i += 1) {
-            fft->dft_frequency_space[i] =
-                (double)(left_bins + i)*scale;
+            fft->dft_frequency_space[i] = (double)(left_bins + i)*scale;
         }
     }
     fft->dft_frequency_space_len = width;
