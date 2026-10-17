@@ -265,11 +265,11 @@ sub check_multiplication_spacing {
                                      |uchar|llong|ullong|bool32|uint|ulong
                                      |const|restrict|volatile
                                      |size_t|ptrdiff_t|ssize_t|FILE|DIR
-                                     |fftwf_complex)$/x
+                                     |fftw_complex|fftwf_complex|type)$/x
                         || $word =~ /^[A-Z][A-Za-z0-9_]*[a-z][A-Za-z0-9_]*$/
-                        || ($word =~ /^(?:[A-Z][A-Z0-9_]*_TYPE
-                                         |CONDITION_VARIABLE|FILETIME
-                                         |FTS|FTSENT)$/x
+                        || $word =~ /^[A-Z][A-Z0-9_]*_TYPE_?$/
+                        || ($word =~ /^(?:CONDITION_VARIABLE|CURL|FILETIME
+                                         |FTS|FTSENT|MEVENT|TYPE_NAME|WINDOW)$/x
                             && $right_char =~ /[a-z_]/)
                         || $word =~ /^[A-Za-z_][A-Za-z0-9_]*_t$/
                         || $prefix =~ /\b(?:struct|union|enum)\s+$/
