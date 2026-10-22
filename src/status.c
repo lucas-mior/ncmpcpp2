@@ -811,7 +811,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
 static void
 status_reset_visualizer_for_player_event(uint32 event) {
 #if defined(ENABLE_VISUALIZER)
-    if ((event& NCM_MPD_IDLE_PLAYER) != 0) {
+    if (event & NCM_MPD_IDLE_PLAYER) {
         visualizer_screen_reset_audio_state(app_screen_visualizer());
     }
 #else
