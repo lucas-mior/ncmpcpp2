@@ -5360,152 +5360,152 @@ typedef struct ActionRun {
     int32 argument;
 } ActionRun;
 
-#define R0(action) [action] = {.runner = ACTION_RUN_NOOP},
+#define R0(action) [action] = {.runner = ACTION_RUN_NOOP}
 #define RF(action, func) \
     [action] = {.runner = ACTION_RUN_NO_ARG, .no_arg = (func)},
 #define R1(action, run_, arg_) \
-    [action] = {.runner = (run_), .argument = (arg_)},
+    [action] = {.runner = (run_), .argument = (arg_)}
 #define RM(action, func) \
-    [action] = {.runner = ACTION_RUN_MPD_SIMPLE, .mpd_simple = (func)},
+    [action] = {.runner = ACTION_RUN_MPD_SIMPLE, .mpd_simple = (func)}
 #define RT(action, func, state) \
     [action] = {.runner = ACTION_RUN_MPD_TOGGLE, \
                 .mpd_toggle = (func), \
-                .current_toggle_state = (state)},
+                .current_toggle_state = (state)}
 
 static const ActionRun action_run_table[ACTION_COUNT] = {
-    R0(ACTION_DUMMY)
-    RF(ACTION_MOUSE_EVENT, action_runtime_mouse_event)
-    R1(ACTION_SCROLL_UP, ACTION_RUN_SCROLL, NC_SCROLL_UP)
-    R1(ACTION_SCROLL_DOWN, ACTION_RUN_SCROLL, NC_SCROLL_DOWN)
-    R1(ACTION_SCROLL_UP_ARTIST, ACTION_RUN_SCROLL_TAG, SONG_GETTER_ARTIST)
-    R1(ACTION_SCROLL_UP_ALBUM, ACTION_RUN_SCROLL_TAG, SONG_GETTER_ALBUM)
+    R0(ACTION_DUMMY),
+    RF(ACTION_MOUSE_EVENT, action_runtime_mouse_event),
+    R1(ACTION_SCROLL_UP, ACTION_RUN_SCROLL, NC_SCROLL_UP),
+    R1(ACTION_SCROLL_DOWN, ACTION_RUN_SCROLL, NC_SCROLL_DOWN),
+    R1(ACTION_SCROLL_UP_ARTIST, ACTION_RUN_SCROLL_TAG, SONG_GETTER_ARTIST),
+    R1(ACTION_SCROLL_UP_ALBUM, ACTION_RUN_SCROLL_TAG, SONG_GETTER_ALBUM),
     R1(ACTION_SCROLL_DOWN_ARTIST, ACTION_RUN_SCROLL_TAG,
-       SONG_GETTER_ARTIST + 1000)
+       SONG_GETTER_ARTIST + 1000),
     R1(ACTION_SCROLL_DOWN_ALBUM, ACTION_RUN_SCROLL_TAG,
-       SONG_GETTER_ALBUM + 1000)
-    R1(ACTION_PAGE_UP, ACTION_RUN_SCROLL, NC_SCROLL_PAGE_UP)
-    R1(ACTION_PAGE_DOWN, ACTION_RUN_SCROLL, NC_SCROLL_PAGE_DOWN)
-    R1(ACTION_MOVE_HOME, ACTION_RUN_SCROLL, NC_SCROLL_HOME)
-    R1(ACTION_MOVE_END, ACTION_RUN_SCROLL, NC_SCROLL_END)
-    RF(ACTION_TOGGLE_INTERFACE, action_runtime_toggle_interface)
-    RF(ACTION_JUMP_TO_PARENT_DIRECTORY, action_runtime_jump_to_parent_directory)
+       SONG_GETTER_ALBUM + 1000),
+    R1(ACTION_PAGE_UP, ACTION_RUN_SCROLL, NC_SCROLL_PAGE_UP),
+    R1(ACTION_PAGE_DOWN, ACTION_RUN_SCROLL, NC_SCROLL_PAGE_DOWN),
+    R1(ACTION_MOVE_HOME, ACTION_RUN_SCROLL, NC_SCROLL_HOME),
+    R1(ACTION_MOVE_END, ACTION_RUN_SCROLL, NC_SCROLL_END),
+    RF(ACTION_TOGGLE_INTERFACE, action_runtime_toggle_interface),
+    RF(ACTION_JUMP_TO_PARENT_DIRECTORY, action_runtime_jump_to_parent_directory),
     [ACTION_RUN_ACTION] = {.runner = ACTION_RUN_CURRENT_SCREEN_ACTION},
-    R1(ACTION_PREVIOUS_COLUMN, ACTION_RUN_COLUMN, false)
-    R1(ACTION_NEXT_COLUMN, ACTION_RUN_COLUMN, true)
-    R1(ACTION_MASTER_SCREEN, ACTION_RUN_CONTROLLER_SCREEN, true)
-    R1(ACTION_SLAVE_SCREEN, ACTION_RUN_CONTROLLER_SCREEN, false)
-    RM(ACTION_PLAY, ncm_mpd_client_play)
-    RM(ACTION_PAUSE, ncm_mpd_client_toggle_pause)
-    RM(ACTION_STOP, ncm_mpd_client_stop)
-    RM(ACTION_NEXT, ncm_mpd_client_next)
-    RM(ACTION_PREVIOUS, ncm_mpd_client_previous)
-    RF(ACTION_REPLAY_SONG, action_runtime_replay_song)
-    R1(ACTION_VOLUME_UP, ACTION_RUN_VOLUME, 1)
-    R1(ACTION_VOLUME_DOWN, ACTION_RUN_VOLUME, -1)
-    RF(ACTION_DELETE_PLAYLIST_ITEMS, action_runtime_delete_playlist_items)
-    RF(ACTION_DELETE_STORED_PLAYLIST, action_runtime_delete_stored_playlists)
-    RF(ACTION_DELETE_BROWSER_ITEMS, action_runtime_delete_browser_items)
-    RF(ACTION_EXECUTE_COMMAND, action_runtime_execute_command)
-    RF(ACTION_SAVE_PLAYLIST, action_runtime_save_playlist)
-    R1(ACTION_MOVE_SORT_ORDER_UP, ACTION_RUN_SORT_ORDER, false)
-    R1(ACTION_MOVE_SORT_ORDER_DOWN, ACTION_RUN_SORT_ORDER, true)
-    R1(ACTION_MOVE_SELECTED_ITEMS_UP, ACTION_RUN_MOVE_SELECTED_ITEMS, false)
-    R1(ACTION_MOVE_SELECTED_ITEMS_DOWN, ACTION_RUN_MOVE_SELECTED_ITEMS, true)
-    RF(ACTION_MOVE_SELECTED_ITEMS_TO, action_runtime_move_selected_items_to)
-    RF(ACTION_LOAD, action_runtime_load_prompt)
-    R1(ACTION_SEEK_FORWARD, ACTION_RUN_SEEK, true)
-    R1(ACTION_SEEK_BACKWARD, ACTION_RUN_SEEK, false)
+    R1(ACTION_PREVIOUS_COLUMN, ACTION_RUN_COLUMN, false),
+    R1(ACTION_NEXT_COLUMN, ACTION_RUN_COLUMN, true),
+    R1(ACTION_MASTER_SCREEN, ACTION_RUN_CONTROLLER_SCREEN, true),
+    R1(ACTION_SLAVE_SCREEN, ACTION_RUN_CONTROLLER_SCREEN, false),
+    RM(ACTION_PLAY, ncm_mpd_client_play),
+    RM(ACTION_PAUSE, ncm_mpd_client_toggle_pause),
+    RM(ACTION_STOP, ncm_mpd_client_stop),
+    RM(ACTION_NEXT, ncm_mpd_client_next),
+    RM(ACTION_PREVIOUS, ncm_mpd_client_previous),
+    RF(ACTION_REPLAY_SONG, action_runtime_replay_song),
+    R1(ACTION_VOLUME_UP, ACTION_RUN_VOLUME, 1),
+    R1(ACTION_VOLUME_DOWN, ACTION_RUN_VOLUME, -1),
+    RF(ACTION_DELETE_PLAYLIST_ITEMS, action_runtime_delete_playlist_items),
+    RF(ACTION_DELETE_STORED_PLAYLIST, action_runtime_delete_stored_playlists),
+    RF(ACTION_DELETE_BROWSER_ITEMS, action_runtime_delete_browser_items),
+    RF(ACTION_EXECUTE_COMMAND, action_runtime_execute_command),
+    RF(ACTION_SAVE_PLAYLIST, action_runtime_save_playlist),
+    R1(ACTION_MOVE_SORT_ORDER_UP, ACTION_RUN_SORT_ORDER, false),
+    R1(ACTION_MOVE_SORT_ORDER_DOWN, ACTION_RUN_SORT_ORDER, true),
+    R1(ACTION_MOVE_SELECTED_ITEMS_UP, ACTION_RUN_MOVE_SELECTED_ITEMS, false),
+    R1(ACTION_MOVE_SELECTED_ITEMS_DOWN, ACTION_RUN_MOVE_SELECTED_ITEMS, true),
+    RF(ACTION_MOVE_SELECTED_ITEMS_TO, action_runtime_move_selected_items_to),
+    RF(ACTION_LOAD, action_runtime_load_prompt),
+    R1(ACTION_SEEK_FORWARD, ACTION_RUN_SEEK, true),
+    R1(ACTION_SEEK_BACKWARD, ACTION_RUN_SEEK, false),
     [ACTION_TOGGLE_DISPLAY_MODE] = {.runner = ACTION_RUN_DISPLAY_MODE},
     RF(ACTION_TOGGLE_SEPARATORS_BETWEEN_ALBUMS,
-       action_runtime_toggle_separators_between_albums)
+       action_runtime_toggle_separators_between_albums),
     RF(ACTION_TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE,
-       action_runtime_toggle_lyrics_update_on_song_change)
-    RF(ACTION_TOGGLE_LYRICS_FETCHER, action_runtime_toggle_lyrics_fetcher)
+       action_runtime_toggle_lyrics_update_on_song_change),
+    RF(ACTION_TOGGLE_LYRICS_FETCHER, action_runtime_toggle_lyrics_fetcher),
     RF(ACTION_TOGGLE_FETCHING_LYRICS_IN_BACKGROUND,
-       action_runtime_toggle_fetch_lyrics_in_background)
-    RF(ACTION_UPDATE_DATABASE, action_runtime_update_database)
-    RF(ACTION_JUMP_TO_PLAYING_SONG, action_runtime_jump_to_playing_song)
+       action_runtime_toggle_fetch_lyrics_in_background),
+    RF(ACTION_UPDATE_DATABASE, action_runtime_update_database),
+    RF(ACTION_JUMP_TO_PLAYING_SONG, action_runtime_jump_to_playing_song),
     RT(ACTION_TOGGLE_REPEAT,
        ncm_mpd_client_set_repeat,
-       ncm_status_state_repeat_is_enabled)
+       ncm_status_state_repeat_is_enabled),
     RT(ACTION_TOGGLE_RANDOM,
        ncm_mpd_client_set_random,
-       ncm_status_state_random_is_enabled)
-    RF(ACTION_SAVE_TAG_CHANGES, action_runtime_save_tag_changes)
+       ncm_status_state_random_is_enabled),
+    RF(ACTION_SAVE_TAG_CHANGES, action_runtime_save_tag_changes),
     RT(ACTION_TOGGLE_SINGLE,
        ncm_mpd_client_set_single,
-       ncm_status_state_single_is_enabled)
+       ncm_status_state_single_is_enabled),
     RT(ACTION_TOGGLE_CONSUME,
        ncm_mpd_client_set_consume,
-       ncm_status_state_consume_is_enabled)
-    RF(ACTION_TOGGLE_CROSSFADE, action_runtime_toggle_crossfade)
-    RF(ACTION_SET_CROSSFADE, action_runtime_set_crossfade)
-    RF(ACTION_SET_VOLUME, action_runtime_set_volume)
-    RF(ACTION_ENTER_DIRECTORY, action_runtime_enter_directory)
-    RF(ACTION_EDIT_SONG, action_runtime_edit_current_song)
-    RF(ACTION_EDIT_LIBRARY_TAG, action_runtime_edit_library_tag)
-    RF(ACTION_EDIT_LIBRARY_ALBUM, action_runtime_edit_library_album)
-    RF(ACTION_EDIT_DIRECTORY_NAME, action_runtime_edit_directory_name)
-    RF(ACTION_EDIT_PLAYLIST_NAME, action_runtime_edit_playlist_name)
-    RF(ACTION_EDIT_LYRICS, action_runtime_edit_lyrics)
-    RF(ACTION_JUMP_TO_BROWSER, action_runtime_jump_to_browser)
-    RF(ACTION_JUMP_TO_MEDIA_LIBRARY, action_runtime_jump_to_media_lib)
-    RF(ACTION_JUMP_TO_PLAYLIST_EDIT, action_runtime_jump_to_playlist_edit)
-    RF(ACTION_TOGGLE_SCREEN_LOCK, action_runtime_toggle_screen_lock)
-    RF(ACTION_JUMP_TO_TAG_EDIT, action_runtime_jump_to_tag_edit)
-    RF(ACTION_JUMP_TO_POSITION_IN_SONG, action_runtime_jump_to_position_in_song)
+       ncm_status_state_consume_is_enabled),
+    RF(ACTION_TOGGLE_CROSSFADE, action_runtime_toggle_crossfade),
+    RF(ACTION_SET_CROSSFADE, action_runtime_set_crossfade),
+    RF(ACTION_SET_VOLUME, action_runtime_set_volume),
+    RF(ACTION_ENTER_DIRECTORY, action_runtime_enter_directory),
+    RF(ACTION_EDIT_SONG, action_runtime_edit_current_song),
+    RF(ACTION_EDIT_LIBRARY_TAG, action_runtime_edit_library_tag),
+    RF(ACTION_EDIT_LIBRARY_ALBUM, action_runtime_edit_library_album),
+    RF(ACTION_EDIT_DIRECTORY_NAME, action_runtime_edit_directory_name),
+    RF(ACTION_EDIT_PLAYLIST_NAME, action_runtime_edit_playlist_name),
+    RF(ACTION_EDIT_LYRICS, action_runtime_edit_lyrics),
+    RF(ACTION_JUMP_TO_BROWSER, action_runtime_jump_to_browser),
+    RF(ACTION_JUMP_TO_MEDIA_LIBRARY, action_runtime_jump_to_media_lib),
+    RF(ACTION_JUMP_TO_PLAYLIST_EDIT, action_runtime_jump_to_playlist_edit),
+    RF(ACTION_TOGGLE_SCREEN_LOCK, action_runtime_toggle_screen_lock),
+    RF(ACTION_JUMP_TO_TAG_EDIT, action_runtime_jump_to_tag_edit),
+    RF(ACTION_JUMP_TO_POSITION_IN_SONG, action_runtime_jump_to_position_in_song),
     [ACTION_SELECT_ITEM] = {.runner = ACTION_RUN_MENU_SELECT_CURRENT},
-    RF(ACTION_SELECT_ALBUM, action_runtime_select_album)
-    RF(ACTION_SELECT_FOUND_ITEMS, action_runtime_select_found_items)
+    RF(ACTION_SELECT_ALBUM, action_runtime_select_album),
+    RF(ACTION_SELECT_FOUND_ITEMS, action_runtime_select_found_items),
     R1(ACTION_SORT_PLAYLIST, ACTION_RUN_SWITCH_SCREEN,
-       SCREEN_TYPE_SORT_PLAYLIST_DIALOG)
-    RF(ACTION_REVERSE_PLAYLIST, action_runtime_reverse_playlist)
-    RF(ACTION_APPLY_FILTER, action_runtime_apply_filter)
-    RF(ACTION_FIND, action_runtime_find)
+       SCREEN_TYPE_SORT_PLAYLIST_DIALOG),
+    RF(ACTION_REVERSE_PLAYLIST, action_runtime_reverse_playlist),
+    RF(ACTION_APPLY_FILTER, action_runtime_apply_filter),
+    RF(ACTION_FIND, action_runtime_find),
     R1(ACTION_FIND_ITEM_FORWARD, ACTION_RUN_FIND_ITEM,
-       NCM_SEARCH_DIRECTION_FORWARD)
+       NCM_SEARCH_DIRECTION_FORWARD),
     R1(ACTION_FIND_ITEM_BACKWARD, ACTION_RUN_FIND_ITEM,
-       NCM_SEARCH_DIRECTION_BACKWARD)
+       NCM_SEARCH_DIRECTION_BACKWARD),
     R1(ACTION_NEXT_FOUND_ITEM, ACTION_RUN_REPEAT_SEARCH,
-       NCM_SEARCH_DIRECTION_FORWARD)
+       NCM_SEARCH_DIRECTION_FORWARD),
     R1(ACTION_PREVIOUS_FOUND_ITEM, ACTION_RUN_REPEAT_SEARCH,
-       NCM_SEARCH_DIRECTION_BACKWARD)
-    RF(ACTION_TOGGLE_REPLAY_GAIN_MODE, action_runtime_toggle_replay_gain_mode)
-    RF(ACTION_TOGGLE_ADD_MODE, action_runtime_toggle_add_mode)
-    RF(ACTION_TOGGLE_MOUSE, action_runtime_toggle_mouse)
+       NCM_SEARCH_DIRECTION_BACKWARD),
+    RF(ACTION_TOGGLE_REPLAY_GAIN_MODE, action_runtime_toggle_replay_gain_mode),
+    RF(ACTION_TOGGLE_ADD_MODE, action_runtime_toggle_add_mode),
+    RF(ACTION_TOGGLE_MOUSE, action_runtime_toggle_mouse),
     RF(ACTION_TOGGLE_BITRATE_VISIBILITY,
-       action_runtime_toggle_bitrate_visibility)
-    RF(ACTION_ADD_RANDOM_ITEMS, action_runtime_add_random_items)
-    RF(ACTION_TOGGLE_BROWSER_SORT_MODE, action_runtime_toggle_browser_sort_mode)
-    RF(ACTION_TOGGLE_LIBRARY_TAG_TYPE, action_runtime_toggle_library_tag_type)
+       action_runtime_toggle_bitrate_visibility),
+    RF(ACTION_ADD_RANDOM_ITEMS, action_runtime_add_random_items),
+    RF(ACTION_TOGGLE_BROWSER_SORT_MODE, action_runtime_toggle_browser_sort_mode),
+    RF(ACTION_TOGGLE_LIBRARY_TAG_TYPE, action_runtime_toggle_library_tag_type),
     RF(ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE,
-       action_runtime_toggle_media_lib_sort_mode)
+       action_runtime_toggle_media_lib_sort_mode),
     RF(ACTION_FETCH_LYRICS_IN_BACKGROUND,
-       action_runtime_fetch_lyrics_background)
-    RF(ACTION_REFETCH_LYRICS, action_runtime_refetch_lyrics)
+       action_runtime_fetch_lyrics_background),
+    RF(ACTION_REFETCH_LYRICS, action_runtime_refetch_lyrics),
     RF(ACTION_SET_SELECTED_ITEMS_PRIORITY,
-       action_runtime_set_selected_items_priority)
-    RF(ACTION_TOGGLE_VISUALIZATION_TYPE, ncm_action_toggle_visualization_type)
-    R1(ACTION_SHOW_SONG_INFO, ACTION_RUN_SWITCH_SCREEN, SCREEN_TYPE_SONG_INFO)
-    RF(ACTION_SHOW_ARTIST_INFO, action_runtime_show_artist_info)
-    RF(ACTION_SHOW_LYRICS, action_runtime_show_lyrics)
+       action_runtime_set_selected_items_priority),
+    RF(ACTION_TOGGLE_VISUALIZATION_TYPE, ncm_action_toggle_visualization_type),
+    R1(ACTION_SHOW_SONG_INFO, ACTION_RUN_SWITCH_SCREEN, SCREEN_TYPE_SONG_INFO),
+    RF(ACTION_SHOW_ARTIST_INFO, action_runtime_show_artist_info),
+    RF(ACTION_SHOW_LYRICS, action_runtime_show_lyrics),
     [ACTION_QUIT] = {.runner = ACTION_RUN_REQUEST_EXIT},
-    R1(ACTION_NEXT_SCREEN, ACTION_RUN_SWITCH_NEXT_SCREEN, false)
-    R1(ACTION_PREVIOUS_SCREEN, ACTION_RUN_SWITCH_NEXT_SCREEN, true)
-    R1(ACTION_SHOW_HELP, ACTION_RUN_SWITCH_SCREEN, SCREEN_TYPE_HELP)
-    R1(ACTION_SHOW_PLAYLIST, ACTION_RUN_SWITCH_SCREEN, SCREEN_TYPE_PLAYLIST)
-    R1(ACTION_SHOW_BROWSER, ACTION_RUN_SWITCH_SCREEN, SCREEN_TYPE_BROWSER)
-    RF(ACTION_CHANGE_BROWSE_MODE, action_runtime_change_browse_mode)
+    R1(ACTION_NEXT_SCREEN, ACTION_RUN_SWITCH_NEXT_SCREEN, false),
+    R1(ACTION_PREVIOUS_SCREEN, ACTION_RUN_SWITCH_NEXT_SCREEN, true),
+    R1(ACTION_SHOW_HELP, ACTION_RUN_SWITCH_SCREEN, SCREEN_TYPE_HELP),
+    R1(ACTION_SHOW_PLAYLIST, ACTION_RUN_SWITCH_SCREEN, SCREEN_TYPE_PLAYLIST),
+    R1(ACTION_SHOW_BROWSER, ACTION_RUN_SWITCH_SCREEN, SCREEN_TYPE_BROWSER),
+    RF(ACTION_CHANGE_BROWSE_MODE, action_runtime_change_browse_mode),
     R1(ACTION_SHOW_SEARCH_ENGINE, ACTION_RUN_SWITCH_SCREEN,
-       SCREEN_TYPE_SEARCH_ENGINE)
+       SCREEN_TYPE_SEARCH_ENGINE),
     R1(ACTION_SHOW_MEDIA_LIBRARY, ACTION_RUN_SWITCH_SCREEN,
-       SCREEN_TYPE_MEDIA_LIBRARY)
+       SCREEN_TYPE_MEDIA_LIBRARY),
     RF(ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE,
-       action_runtime_toggle_media_lib_columns)
+       action_runtime_toggle_media_lib_columns),
     R1(ACTION_SHOW_PLAYLIST_EDIT, ACTION_RUN_SWITCH_SCREEN,
-       SCREEN_TYPE_PLAYLIST_EDIT)
+       SCREEN_TYPE_PLAYLIST_EDIT),
     R1(ACTION_SHOW_SERVER_INFO, ACTION_RUN_SWITCH_SCREEN,
-       SCREEN_TYPE_SERVER_INFO)
+       SCREEN_TYPE_SERVER_INFO),
 };
 
 #undef R0
