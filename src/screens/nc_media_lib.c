@@ -113,10 +113,12 @@ media_lib_selected_songs_capability(NcScreen *base, NcmSongArray *songs) {
     return media_lib_screen_selected_songs((MediaLibraryScreen *)base, songs);
 }
 
-NC_SCREEN_COLUMN_CAPABILITY_CALLBACKS(media_lib, MediaLibraryScreen,
+NC_SCREEN_COLUMN_CAPABILITY_CALLBACKS(
+    media_lib, MediaLibraryScreen,
     media_lib_screen_can_move_to_previous_column,
     media_lib_screen_can_move_to_next_column,
-    media_lib_screen_previous_column, media_lib_screen_next_column)
+    media_lib_screen_previous_column, media_lib_screen_next_column
+)
 
 static NcMenu *
 media_lib_tag_menu_capability(NcScreen *base) {
