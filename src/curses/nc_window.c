@@ -1644,12 +1644,10 @@ nc_window_apply_format(NcWindow *window, enum NcFormat format) {
                               &window->alt_chars_count, nc_window_alt_chars);
         break;
     case NC_FORMAT_ITALIC:
-        nc_window_incr_format(window,
-                              &window->italic_count, nc_window_italic);
+        nc_window_incr_format(window, &window->italic_count, nc_window_italic);
         break;
     case NC_FORMAT_NO_ITALIC:
-        nc_window_decr_format(window,
-                              &window->italic_count, nc_window_italic);
+        nc_window_decr_format(window, &window->italic_count, nc_window_italic);
         break;
     case NC_FORMAT_COUNT:
     default:
