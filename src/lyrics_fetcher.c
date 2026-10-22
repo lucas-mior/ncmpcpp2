@@ -19,7 +19,7 @@
 static LyricsCurlPerformFn *lyrics_test_perform;
 static void *lyrics_test_user;
 
-typedef enum LyricsSlugProfile {
+enum LyricsSlugProfile {
     LYRICS_SLUG_PROFILE_NONE,
     LYRICS_SLUG_PROFILE_COMPACT_FOLDED,
     LYRICS_SLUG_PROFILE_HYPHEN_FOLDED,
@@ -27,7 +27,7 @@ typedef enum LyricsSlugProfile {
     LYRICS_SLUG_PROFILE_COMPACT_PERCENT,
     LYRICS_SLUG_PROFILE_HYPHEN_PERCENT,
     LYRICS_SLUG_PROFILE_UNDERSCORE_PERCENT,
-} LyricsSlugProfile;
+};
 
 enum LyricsProviderFlags {
     LYRICS_PROVIDER_DIRECT_URLS = 1u << 0,
@@ -42,13 +42,13 @@ typedef struct LyricsProviderProfile {
 
     int32 name_len;
     int32 domain_len;
-    LyricsSlugProfile slug_profile;
+    enum LyricsSlugProfile slug_profile;
     uint32 flags;
 } LyricsProviderProfile;
 
 typedef struct LyricsDirectSlugPair {
-    LyricsSlugProfile artist;
-    LyricsSlugProfile title;
+    enum LyricsSlugProfile artist;
+    enum LyricsSlugProfile title;
 } LyricsDirectSlugPair;
 
 static void
@@ -539,7 +539,7 @@ lyrics_provider_has_flag(enum LyricsFetcherType type, uint32 flag) {
     return (profile->flags & flag) != 0;
 }
 
-static LyricsSlugProfile
+static enum LyricsSlugProfile
 lyrics_slug_profile(enum LyricsFetcherType type) {
     LyricsProviderProfile *profile = lyrics_provider_profile(type);
 
@@ -561,7 +561,7 @@ lyrics_slug_rune_should_be_skipped(uint32 rune) {
 }
 
 static int32
-lyrics_append_slug_profile(String *buffer, LyricsSlugProfile profile,
+lyrics_append_slug_profile(String *buffer, enum LyricsSlugProfile profile,
                            char *string, int32 string_len) {
     bool compact;
     bool folded_profile;
@@ -2093,9 +2093,9 @@ cleanup:
     return status;
 }
 
-static LyricsSlugProfile
-lyrics_direct_legacy_slug_profile(LyricsSlugProfile profile) {
-    LyricsSlugProfile legacy_profile = profile;
+static enum LyricsSlugProfile
+lyrics_direct_legacy_slug_profile(enum LyricsSlugProfile profile) {
+    enum LyricsSlugProfile legacy_profile = profile;
 
     switch (profile) {
     case LYRICS_SLUG_PROFILE_COMPACT_FOLDED:
@@ -2256,8 +2256,8 @@ static int32
 lyrics_collect_direct_urls(LyricsFetcherDef *fetcher, StringArray *urls,
                            char *artist, int32 artist_len,
                            char *title, int32 title_len) {
-    LyricsSlugProfile profile;
-    LyricsSlugProfile legacy_profile;
+    enum LyricsSlugProfile profile;
+    enum LyricsSlugProfile legacy_profile;
     LyricsDirectSlugPair pairs[4] = {0};
     String candidate = {0};
     int32 status;
