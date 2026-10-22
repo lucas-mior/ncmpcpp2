@@ -374,9 +374,11 @@ action_runtime_playlist_remove_song(NcmSong *song, NcmError *ncm_error) {
     return 0;
 }
 
+typedef int32 ActionRunMpdSimpleFunction(MpdClient *, NcmError *);
+typedef int32 ActionRunMpdToggleFunction(MpdClient *, bool, NcmError *);
+
 static int32
-action_runtime_mpd_simple(int32 (*func)(MpdClient *client,
-                                        NcmError *ncm_error)) {
+action_runtime_mpd_simple(ActionRunMpdSimpleFunction *func) {
     NcmError ncm_error;
 
     ncm_error_clear(&ncm_error);
@@ -452,8 +454,7 @@ ncm_action_add_song_to_playlist(NcmSong *song, bool play, int32 position) {
 }
 
 static int32
-action_runtime_mpd_toggle(int32 (*func)(MpdClient *client, bool mode,
-                                        NcmError *ncm_error), bool current) {
+action_runtime_mpd_toggle(ActionRunMpdToggleFunction *func, bool current) {
     NcmError ncm_error;
 
     ncm_error_clear(&ncm_error);
@@ -5349,8 +5350,6 @@ enum ActionRunner {
 };
 
 typedef int32 ActionRunNoArgFunction(void);
-typedef int32 ActionRunMpdSimpleFunction(MpdClient *, NcmError *);
-typedef int32 ActionRunMpdToggleFunction(MpdClient *, bool, NcmError *);
 typedef bool ActionRunBoolFunction(void);
 
 typedef struct ActionRun {
