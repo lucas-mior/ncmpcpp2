@@ -1532,9 +1532,9 @@ void playlist_screen_reload_remaining(PlaylistScreen *);
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
     XX(SEARCH_ENGINE_SEARCH_MODE_LITERAL,                                      \
-       Match if tag contains searched phrase (no regexes))                     \
+       Match if tag contains searched phrase [no regexes])                     \
     XX(SEARCH_ENGINE_SEARCH_MODE_REGEX,                                        \
-       Match if tag contains searched phrase (regexes supported))              \
+       Match if tag contains searched phrase [regexes supported])              \
     XX(SEARCH_ENGINE_SEARCH_MODE_EXACT,                                        \
        Match only if both values are the same)
 #include "cbase/xenums.c"
