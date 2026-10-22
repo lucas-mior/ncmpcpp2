@@ -693,9 +693,9 @@ app_screen_media_lib_init(void) {
 
     hooks = media_lib_mpd_hooks(&global_mpd);
     media_lib_screen_init(&media_lib_screen, hooks, 0,
-                              ui_state_screen_width(), ui_state_main_start_y(),
-                              ui_state_main_height(), Config.main_window_color,
-                              no_border());
+                          ui_state_screen_width(), ui_state_main_start_y(),
+                          ui_state_main_height(), Config.main_window_color,
+                          no_border());
     media_lib_screen_initialized = true;
     return;
 }

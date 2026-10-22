@@ -1213,7 +1213,7 @@ bool media_lib_screen_column_is_visible(MediaLibraryScreen *,
                                             enum MediaLibraryColumn);
 MediaLibraryColumnState *
 media_lib_screen_column_state(MediaLibraryScreen *,
-                                  enum MediaLibraryColumn);
+                              enum MediaLibraryColumn);
 StrView media_lib_screen_active_filter_constraint(MediaLibraryScreen *);
 StrView media_lib_screen_active_search_constraint(MediaLibraryScreen *);
 NcMediaLibraryTagRow *media_lib_screen_current_tag(MediaLibraryScreen *);

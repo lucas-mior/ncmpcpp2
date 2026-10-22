@@ -2019,7 +2019,7 @@ action_runtime_add_item_to_playlist(bool play) {
         MediaLibraryScreen *library = app_screen_media_lib();
         ncm_error_clear(&ncm_error);
         status = media_lib_screen_add_item_to_playlist(library, play,
-                                                           &ncm_error);
+                                                       &ncm_error);
         if (status < 0) {
             return action_runtime_mpd_error_status(&ncm_error);
         }
@@ -3381,7 +3381,7 @@ action_runtime_jump_to_playing_song(void) {
             MediaLibraryScreen *library = app_screen_media_lib();
 
             success = media_lib_screen_locate_song(library, &song,
-                                                       &ncm_error) == 0;
+                                                   &ncm_error) == 0;
         }
         ncm_song_destroy(&song);
         if (!success) {
@@ -3462,7 +3462,7 @@ action_runtime_jump_to_media_lib(void) {
                             STRLIT("Jumping to song..."));
         ncm_error_clear(&ncm_error);
         status = media_lib_screen_locate_song(app_screen_media_lib(),
-                                                  &song, &ncm_error);
+                                              &song, &ncm_error);
         if (status < 0) {
             status = action_runtime_mpd_error_status(&ncm_error);
         }
@@ -3745,8 +3745,7 @@ action_runtime_toggle_library_tag_type(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    tag_type =
-        media_lib_next_grouping_tag(Config.media_lib_primary_tag);
+    tag_type = media_lib_next_grouping_tag(Config.media_lib_primary_tag);
     return media_lib_screen_set_grouping_tag_type(screen, tag_type);
 }
 
@@ -3759,7 +3758,7 @@ action_runtime_toggle_media_lib_sort_mode(void) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     status = media_lib_screen_toggle_sort_mode(app_screen_media_lib(),
-                                                   &sort_by_mtime);
+                                               &sort_by_mtime);
     if (status < 0) {
         return status;
     }
@@ -3951,7 +3950,7 @@ action_runtime_media_lib_current_artist_tag(char **tag, int32 *tag_len) {
         return false;
     }
     if (!media_lib_screen_has_current_grouping_tag_value(library, &value,
-                                                             &value_len)) {
+                                                         &value_len)) {
         return false;
     }
 
@@ -4065,7 +4064,7 @@ action_runtime_media_lib_current_tag(char **tag, int32 *tag_len) {
         return false;
     }
     return media_lib_screen_has_current_grouping_tag_value(library,
-                                                               tag, tag_len);
+                                                           tag, tag_len);
 }
 
 static bool
@@ -4080,8 +4079,7 @@ action_runtime_media_lib_current_album(char **album, int32 *album_len) {
         != MEDIA_LIBRARY_COLUMN_ALBUMS) {
         return false;
     }
-    return media_lib_screen_has_current_album_value(library,
-                                                        album, album_len);
+    return media_lib_screen_has_current_album_value(library, album, album_len);
 }
 
 static bool
@@ -4383,7 +4381,7 @@ action_runtime_edit_library_album(void) {
     }
 
     status = media_lib_screen_copy_visible_songs(app_screen_media_lib(),
-                                                     &songs, &ncm_error);
+                                                 &songs, &ncm_error);
     if (status < 0) {
         if (ncm_error_is_set(&ncm_error)) {
             ncm_statusbar_print(Config.message_delay_time,
@@ -4700,7 +4698,7 @@ action_runtime_show_artist_info(void) {
     }
 
     if (action_runtime_media_lib_current_artist_tag(&library_artist,
-                                                        &library_artist_len)) {
+                                                    &library_artist_len)) {
         artist.data = library_artist;
         artist.len = library_artist_len;
         has_artist = true;
@@ -5507,7 +5505,7 @@ static const ActionRun action_run_table[ACTION_COUNT] = {
     R1(ACTION_SHOW_PLAYLIST_EDIT, ACTION_RUN_SWITCH_SCREEN,
        SCREEN_TYPE_PLAYLIST_EDIT)
     R1(ACTION_SHOW_SERVER_INFO, ACTION_RUN_SWITCH_SCREEN,
-       SCREEN_TYPE_SERVER_INFO),
+       SCREEN_TYPE_SERVER_INFO)
 };
 
 #undef R0

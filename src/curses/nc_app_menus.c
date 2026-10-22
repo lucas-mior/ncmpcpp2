@@ -46,7 +46,7 @@ nc_media_lib_tag_row_destroy(NcMediaLibraryTagRow *row) {
 
 int32
 nc_media_lib_tag_row_copy(NcMediaLibraryTagRow *dest,
-                              NcMediaLibraryTagRow *source) {
+                          NcMediaLibraryTagRow *source) {
     NcMediaLibraryTagRow tmp = {0};
 
     if ((dest == NULL) || (source == NULL)) {
@@ -74,7 +74,7 @@ nc_media_lib_album_row_destroy(NcMediaLibraryAlbumRow *row) {
 
 int32
 nc_media_lib_album_row_copy(NcMediaLibraryAlbumRow *dest,
-                                NcMediaLibraryAlbumRow *source) {
+                            NcMediaLibraryAlbumRow *source) {
     NcMediaLibraryAlbumRow tmp = {0};
 
     if ((dest == NULL) || (source == NULL)) {
