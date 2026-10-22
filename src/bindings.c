@@ -109,8 +109,7 @@ void
 binding_action_destroy(BindingAction *action) {
     switch (action->kind) {
     case BINDING_ACTION_PUSH_CHARACTERS:
-        free2(action->keys.data,
-              action->keys.len*SIZEOF(*action->keys.data));
+        free2(action->keys.data, action->keys.len*SIZEOF(*action->keys.data));
         break;
     case BINDING_ACTION_RUN_EXTERNAL_COMMAND:
     case BINDING_ACTION_RUN_EXTERNAL_CONSOLE_COMMAND:
