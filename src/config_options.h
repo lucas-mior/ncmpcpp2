@@ -137,7 +137,8 @@ XX_BORDER(active_window_border, "red")
 /* Format-AST-backed settings. */
 XX_FORMAT(song_list_format,
           "{%a - }{%t}|{$8%f$9}$R{$3%l$9}", NCM_FORMAT_FLAG_ALL)
-XX_FORMAT(song_status_format, "{{%a{ \"%b\"{ (%y)}} - }{%t}}|{%f}",
+XX_FORMAT(song_status_format,
+          "{{%a{ \"%b\"{ (%y)}} - }{%t}}|{%f}",
           NCM_FORMAT_FLAG_ALL ^ NCM_FORMAT_FLAG_OUTPUT_SWITCH)
 XX_FORMAT(song_library_format, "{%n - }{%t}|{%f}", NCM_FORMAT_FLAG_ALL)
 XX_FORMAT(alternative_header_first_line_format,
