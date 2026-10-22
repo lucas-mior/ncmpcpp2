@@ -169,9 +169,14 @@ XX_LOOK(progressbar_look, "=>", 2, 3, true)
 /* Collection/list-backed settings. */
 XX_TEXT_STYLE_LIST(visualizer_color,
                    "blue, cyan, green, yellow, magenta, red")
-XX_LYRICS_FETCHERS(
-    lyrics_fetchers,
-    "azlyrics, genius, letras, musixmatch, tekstowo, vagalume, internet")
+XX_LYRICS_FETCHERS(lyrics_fetchers,
+                   "azlyrics"
+                   ", genius"
+                   ", letras"
+                   ", musixmatch"
+                   ", tekstowo"
+                   ", vagalume"
+                   ", internet")
 XX_SCREEN_LIST(screen_switcher_mode, "playlist, browser",
                screen_switcher_previous)
 XX_RATIO(media_library_column_width_ratio_two, "1:1", 2)
