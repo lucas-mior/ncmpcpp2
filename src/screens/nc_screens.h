@@ -673,11 +673,11 @@ int32 lastfm_screen_find(LastfmScreen *, char *, int32, NcmError *);
 
 typedef struct LyricsJob LyricsJob;
 
-typedef enum LyricsMode {
+enum LyricsMode {
     LYRICS_MODE_PLAIN,
     LYRICS_MODE_SYNCHRONIZED,
     LYRICS_MODE_FETCH_LOG,
-} LyricsMode;
+};
 
 typedef struct NcLyricsScreen {
     NcScrollpadScreen scrollpad_screen;
@@ -714,7 +714,7 @@ typedef struct LyricsScreen {
     int32 queued_songs_cap;
     int32 active_lrc_line;
     int32 search_constraint_len;
-    LyricsMode mode;
+    enum LyricsMode mode;
 
     bool has_song;
     bool initialized;

@@ -642,7 +642,7 @@ lyrics_lrc_buffer_append(void *user, char *data, int32 data_len) {
 }
 
 static void
-lyrics_screen_clear_lyrics_state(LyricsScreen *screen, LyricsMode mode) {
+lyrics_screen_clear_lyrics_state(LyricsScreen *screen, enum LyricsMode mode) {
     nc_buffer_clear(&screen->display);
     lrc_document_clear(&screen->lrc);
     screen->active_lrc_line = LYRICS_NO_ACTIVE_LINE;
