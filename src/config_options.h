@@ -114,7 +114,7 @@ XX_STARTUP_SCREEN(startup_screen, "playlist")
 
 /* Optional enum-backed settings. */
 XX_OPT_STARTUP_SCREEN(startup_slave_screen, "",
-                           has_startup_slave_screen_type, SCREEN_TYPE_COUNT)
+                      has_startup_slave_screen_type, SCREEN_TYPE_COUNT)
 
 /* Color-backed settings. */
 XX_TEXT_STYLE(empty_tag_color, "cyan")
@@ -135,8 +135,8 @@ XX_BORDER(window_border_color, "green")
 XX_BORDER(active_window_border, "red")
 
 /* Format-AST-backed settings. */
-XX_FORMAT(song_list_format, "{%a - }{%t}|{$8%f$9}$R{$3%l$9}",
-          NCM_FORMAT_FLAG_ALL)
+XX_FORMAT(song_list_format,
+          "{%a - }{%t}|{$8%f$9}$R{$3%l$9}", NCM_FORMAT_FLAG_ALL)
 XX_FORMAT(song_status_format, "{{%a{ \"%b\"{ (%y)}} - }{%t}}|{%f}",
           NCM_FORMAT_FLAG_ALL ^ NCM_FORMAT_FLAG_OUTPUT_SWITCH)
 XX_FORMAT(song_library_format, "{%n - }{%t}|{%f}", NCM_FORMAT_FLAG_ALL)
