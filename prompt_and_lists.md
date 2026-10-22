@@ -102,7 +102,7 @@ nc_window_init(NcWindow *window,
 - src/app_controller.c
 - src/screens/nc_playlist_edit.c
 - src/statusbar.h
-- src/screens/nc_media_library.c
+- src/screens/nc_media_lib.c
 - src/lastfm_service.h
 - src/c/mutable_song.c
 - src/lyrics_fetcher.h

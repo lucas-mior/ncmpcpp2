@@ -8,7 +8,7 @@
 #include "screens/nc_help.c"
 #include "screens/nc_lastfm.c"
 #include "screens/nc_lyrics.c"
-#include "screens/nc_media_library.c"
+#include "screens/nc_media_lib.c"
 #include "screens/nc_outputs.c"
 #include "screens/nc_playlist.c"
 #include "screens/nc_playlist_edit.c"

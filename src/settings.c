@@ -562,7 +562,7 @@ settings_parse_startup_screen(char *value, int32 value_len,
 }
 
 static int32
-settings_parse_media_library_grouping_tag(char *value, int32 value_len,
+settings_parse_media_lib_grouping_tag(char *value, int32 value_len,
                                           enum TagType *result) {
     char normalized[TAG_DERIVED_NAME_CAP];
     enum TagType parsed;
@@ -580,7 +580,7 @@ settings_parse_media_library_grouping_tag(char *value, int32 value_len,
     }
 
     parsed = TAG_parse(value, value_len);
-    if (!media_library_is_grouping_tag(parsed)) {
+    if (!media_lib_is_grouping_tag(parsed)) {
         return -NCM_ERROR_PARSE;
     }
 
@@ -1015,7 +1015,7 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
              NcmError *ncm_error) {                                            \
     enum TagType parsed;                                                       \
     int32 status;                                                              \
-    status = settings_parse_media_library_grouping_tag(value, value_len,       \
+    status = settings_parse_media_lib_grouping_tag(value, value_len,       \
                                                        &parsed);               \
     if (status < 0) {                                                          \
         return settings_invalid_value(ncm_error, value, value_len);            \

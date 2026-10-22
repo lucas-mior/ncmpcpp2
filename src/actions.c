@@ -2016,9 +2016,9 @@ action_runtime_add_item_to_playlist(bool play) {
     }
 
     if (action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
-        MediaLibraryScreen *library = app_screen_media_library();
+        MediaLibraryScreen *library = app_screen_media_lib();
         ncm_error_clear(&ncm_error);
-        status = media_library_screen_add_item_to_playlist(library, play,
+        status = media_lib_screen_add_item_to_playlist(library, play,
                                                            &ncm_error);
         if (status < 0) {
             return action_runtime_mpd_error_status(&ncm_error);
@@ -3378,9 +3378,9 @@ action_runtime_jump_to_playing_song(void) {
         success = ncm_mpd_client_get_current_song(&global_mpd, &song,
                                                   &ncm_error) == 0;
         if (success) {
-            MediaLibraryScreen *library = app_screen_media_library();
+            MediaLibraryScreen *library = app_screen_media_lib();
 
-            success = media_library_screen_locate_song(library, &song,
+            success = media_lib_screen_locate_song(library, &song,
                                                        &ncm_error) == 0;
         }
         ncm_song_destroy(&song);
@@ -3444,7 +3444,7 @@ action_runtime_jump_to_playlist_edit(void) {
 }
 
 static int32
-action_runtime_jump_to_media_library(void) {
+action_runtime_jump_to_media_lib(void) {
     NcmSong song;
     NcmError ncm_error;
     int32 status;
@@ -3461,7 +3461,7 @@ action_runtime_jump_to_media_library(void) {
         ncm_statusbar_print(0,
                             STRLIT("Jumping to song..."));
         ncm_error_clear(&ncm_error);
-        status = media_library_screen_locate_song(app_screen_media_library(),
+        status = media_lib_screen_locate_song(app_screen_media_lib(),
                                                   &song, &ncm_error);
         if (status < 0) {
             status = action_runtime_mpd_error_status(&ncm_error);
@@ -3731,34 +3731,34 @@ action_runtime_toggle_browser_sort_mode(void) {
 
 static int32
 action_runtime_toggle_library_tag_type(void) {
-    MediaLibraryScreen *screen = app_screen_media_library();
+    MediaLibraryScreen *screen = app_screen_media_lib();
     enum TagType tag_type;
     enum MediaLibraryColumn column;
 
     if (!action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    column = media_library_screen_active_column(screen);
+    column = media_lib_screen_active_column(screen);
     if ((column != MEDIA_LIBRARY_COLUMN_TAGS)
-        && ((media_library_screen_column_len(screen) != 2)
+        && ((media_lib_screen_column_len(screen) != 2)
             || (column != MEDIA_LIBRARY_COLUMN_ALBUMS))) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
     tag_type =
-        media_library_next_grouping_tag(Config.media_library_primary_tag);
-    return media_library_screen_set_grouping_tag_type(screen, tag_type);
+        media_lib_next_grouping_tag(Config.media_lib_primary_tag);
+    return media_lib_screen_set_grouping_tag_type(screen, tag_type);
 }
 
 static int32
-action_runtime_toggle_media_library_sort_mode(void) {
+action_runtime_toggle_media_lib_sort_mode(void) {
     int32 status;
     bool sort_by_mtime;
 
     if (!action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    status = media_library_screen_toggle_sort_mode(app_screen_media_library(),
+    status = media_lib_screen_toggle_sort_mode(app_screen_media_lib(),
                                                    &sort_by_mtime);
     if (status < 0) {
         return status;
@@ -3774,14 +3774,14 @@ action_runtime_toggle_media_library_sort_mode(void) {
 }
 
 static int32
-action_runtime_toggle_media_library_columns(void) {
-    MediaLibraryScreen *screen = app_screen_media_library();
+action_runtime_toggle_media_lib_columns(void) {
+    MediaLibraryScreen *screen = app_screen_media_lib();
     int32 status;
 
     if (!action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    status = media_library_screen_toggle_mode(screen, NULL);
+    status = media_lib_screen_toggle_mode(screen, NULL);
     if (status < 0) {
         return status;
     }
@@ -3934,23 +3934,23 @@ ncm_action_edit_song(NcmSong *song) {
 }
 
 static bool
-action_runtime_media_library_current_artist_tag(char **tag, int32 *tag_len) {
-    MediaLibraryScreen *library = app_screen_media_library();
+action_runtime_media_lib_current_artist_tag(char **tag, int32 *tag_len) {
+    MediaLibraryScreen *library = app_screen_media_lib();
     char *value;
     int32 value_len;
 
     if (!action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
         return false;
     }
-    if (Config.media_library_primary_tag != TAG_ARTIST) {
+    if (Config.media_lib_primary_tag != TAG_ARTIST) {
         return false;
     }
 
-    if (media_library_screen_active_column(library)
+    if (media_lib_screen_active_column(library)
         != MEDIA_LIBRARY_COLUMN_TAGS) {
         return false;
     }
-    if (!media_library_screen_has_current_grouping_tag_value(library, &value,
+    if (!media_lib_screen_has_current_grouping_tag_value(library, &value,
                                                              &value_len)) {
         return false;
     }
@@ -4053,34 +4053,34 @@ action_runtime_mpd_music_dir_is_set(void) {
 }
 
 static bool
-action_runtime_media_library_current_tag(char **tag, int32 *tag_len) {
-    MediaLibraryScreen *library = app_screen_media_library();
+action_runtime_media_lib_current_tag(char **tag, int32 *tag_len) {
+    MediaLibraryScreen *library = app_screen_media_lib();
 
     if (!action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
         return false;
     }
 
-    if (media_library_screen_active_column(library)
+    if (media_lib_screen_active_column(library)
         != MEDIA_LIBRARY_COLUMN_TAGS) {
         return false;
     }
-    return media_library_screen_has_current_grouping_tag_value(library,
+    return media_lib_screen_has_current_grouping_tag_value(library,
                                                                tag, tag_len);
 }
 
 static bool
-action_runtime_media_library_current_album(char **album, int32 *album_len) {
-    MediaLibraryScreen *library = app_screen_media_library();
+action_runtime_media_lib_current_album(char **album, int32 *album_len) {
+    MediaLibraryScreen *library = app_screen_media_lib();
 
     if (!action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
         return false;
     }
 
-    if (media_library_screen_active_column(library)
+    if (media_lib_screen_active_column(library)
         != MEDIA_LIBRARY_COLUMN_ALBUMS) {
         return false;
     }
-    return media_library_screen_has_current_album_value(library,
+    return media_lib_screen_has_current_album_value(library,
                                                         album, album_len);
 }
 
@@ -4090,7 +4090,7 @@ action_runtime_can_edit_library_tag(void) {
     int32 tag_len;
 
     return (Config.mpd_music_dir_len > 0)
-           && action_runtime_media_library_current_tag(&tag, &tag_len);
+           && action_runtime_media_lib_current_tag(&tag, &tag_len);
 }
 
 static bool
@@ -4099,7 +4099,7 @@ action_runtime_can_edit_library_album(void) {
     int32 album_len;
 
     return (Config.mpd_music_dir_len > 0)
-           && action_runtime_media_library_current_album(&album, &album_len);
+           && action_runtime_media_lib_current_album(&album, &album_len);
 }
 
 static bool
@@ -4232,7 +4232,7 @@ action_runtime_edit_library_tag(void) {
     if (!action_runtime_mpd_music_dir_is_set()) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    if (!action_runtime_media_library_current_tag(&tag, &tag_len)) {
+    if (!action_runtime_media_lib_current_tag(&tag, &tag_len)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -4240,7 +4240,7 @@ action_runtime_edit_library_tag(void) {
     if (status < 0) {
         goto cleanup;
     }
-    tag_len = ncm_tag_type_name_len(Config.media_library_primary_tag, &tag);
+    tag_len = ncm_tag_type_name_len(Config.media_lib_primary_tag, &tag);
     STR_APPEND(&prompt, tag, tag_len);
     STR_APPEND(&prompt, ": ");
     prompted = action_runtime_prompt_string(prompt.data, prompt.len,
@@ -4259,7 +4259,7 @@ action_runtime_edit_library_tag(void) {
 
     sep = Config.tags_separator;
     sep_len = Config.tags_separator_len;
-    tag_type = Config.media_library_primary_tag;
+    tag_type = Config.media_lib_primary_tag;
     if ((tag_type == 0) || ((uint32)tag_type >= TAG_COUNT)) {
         status = -NCM_ERROR_UNAVAILABLE;
         goto cleanup;
@@ -4269,7 +4269,7 @@ action_runtime_edit_library_tag(void) {
     ncm_error_clear(&ncm_error);
     if (ncm_mpd_client_start_search(&global_mpd, true, &ncm_error) < 0
         || ncm_mpd_client_add_search_tag(&global_mpd,
-                                         Config.media_library_primary_tag,
+                                         Config.media_lib_primary_tag,
                                          current_tag.data, &ncm_error) < 0
         || ncm_mpd_client_commit_search_songs(&global_mpd, &songs,
                                               &ncm_error) < 0) {
@@ -4358,7 +4358,7 @@ action_runtime_edit_library_album(void) {
     if (!action_runtime_mpd_music_dir_is_set()) {
         return -NCM_ERROR_UNAVAILABLE;
     }
-    if (!action_runtime_media_library_current_album(&album, &album_len)) {
+    if (!action_runtime_media_lib_current_album(&album, &album_len)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -4382,7 +4382,7 @@ action_runtime_edit_library_album(void) {
         goto cleanup;
     }
 
-    status = media_library_screen_copy_visible_songs(app_screen_media_library(),
+    status = media_lib_screen_copy_visible_songs(app_screen_media_lib(),
                                                      &songs, &ncm_error);
     if (status < 0) {
         if (ncm_error_is_set(&ncm_error)) {
@@ -4699,7 +4699,7 @@ action_runtime_show_artist_info(void) {
         return action_runtime_switch_to_screen(SCREEN_TYPE_LASTFM);
     }
 
-    if (action_runtime_media_library_current_artist_tag(&library_artist,
+    if (action_runtime_media_lib_current_artist_tag(&library_artist,
                                                         &library_artist_len)) {
         artist.data = library_artist;
         artist.len = library_artist_len;
@@ -5048,9 +5048,9 @@ action_availability_custom_can_run(enum ActionType type, int32 argument) {
         return nc_screen_can_run_current(app_controller_current_screen());
     case ACTION_ADD_ITEM_TO_PLAYLIST:
         if (action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
-            MediaLibraryScreen *library = app_screen_media_library();
+            MediaLibraryScreen *library = app_screen_media_lib();
 
-            return media_library_screen_has_available_item(library);
+            return media_lib_screen_has_available_item(library);
         }
         if (action_runtime_current_screen_is(SCREEN_TYPE_PLAYLIST_EDIT)) {
             return action_runtime_playlist_edit_has_playlists();
@@ -5061,9 +5061,9 @@ action_availability_custom_can_run(enum ActionType type, int32 argument) {
             return action_runtime_has_current_song();
         }
         if (action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
-            MediaLibraryScreen *library = app_screen_media_library();
+            MediaLibraryScreen *library = app_screen_media_lib();
 
-            return media_library_screen_has_available_item(library);
+            return media_lib_screen_has_available_item(library);
         }
         if (action_runtime_current_screen_is(SCREEN_TYPE_PLAYLIST_EDIT)) {
             return action_runtime_playlist_edit_has_playlists();
@@ -5156,17 +5156,17 @@ action_availability_custom_can_run(enum ActionType type, int32 argument) {
         if (!action_runtime_current_screen_is(SCREEN_TYPE_MEDIA_LIBRARY)) {
             return false;
         }
-        library = app_screen_media_library();
-        column = media_library_screen_active_column(library);
+        library = app_screen_media_lib();
+        column = media_lib_screen_active_column(library);
         return (column == MEDIA_LIBRARY_COLUMN_TAGS)
-               || ((media_library_screen_column_len(library) == 2)
+               || ((media_lib_screen_column_len(library) == 2)
                    && (column == MEDIA_LIBRARY_COLUMN_ALBUMS));
     }
     case ACTION_SHOW_ARTIST_INFO:
         if (action_runtime_current_screen_is(SCREEN_TYPE_LASTFM)) {
             return true;
         }
-        if (action_runtime_media_library_current_artist_tag(NULL, NULL)) {
+        if (action_runtime_media_lib_current_artist_tag(NULL, NULL)) {
             return true;
         }
         return action_runtime_has_current_song();
@@ -5451,7 +5451,7 @@ static const ActionRun action_run_table[ACTION_COUNT] = {
     RF(ACTION_EDIT_PLAYLIST_NAME, action_runtime_edit_playlist_name)
     RF(ACTION_EDIT_LYRICS, action_runtime_edit_lyrics)
     RF(ACTION_JUMP_TO_BROWSER, action_runtime_jump_to_browser)
-    RF(ACTION_JUMP_TO_MEDIA_LIBRARY, action_runtime_jump_to_media_library)
+    RF(ACTION_JUMP_TO_MEDIA_LIBRARY, action_runtime_jump_to_media_lib)
     RF(ACTION_JUMP_TO_PLAYLIST_EDIT, action_runtime_jump_to_playlist_edit)
     RF(ACTION_TOGGLE_SCREEN_LOCK, action_runtime_toggle_screen_lock)
     RF(ACTION_JUMP_TO_TAG_EDIT, action_runtime_jump_to_tag_edit)
@@ -5481,7 +5481,7 @@ static const ActionRun action_run_table[ACTION_COUNT] = {
     RF(ACTION_TOGGLE_BROWSER_SORT_MODE, action_runtime_toggle_browser_sort_mode)
     RF(ACTION_TOGGLE_LIBRARY_TAG_TYPE, action_runtime_toggle_library_tag_type)
     RF(ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE,
-       action_runtime_toggle_media_library_sort_mode)
+       action_runtime_toggle_media_lib_sort_mode)
     RF(ACTION_FETCH_LYRICS_IN_BACKGROUND,
        action_runtime_fetch_lyrics_background)
     RF(ACTION_REFETCH_LYRICS, action_runtime_refetch_lyrics)
@@ -5503,7 +5503,7 @@ static const ActionRun action_run_table[ACTION_COUNT] = {
     R1(ACTION_SHOW_MEDIA_LIBRARY, ACTION_RUN_SWITCH_SCREEN,
        SCREEN_TYPE_MEDIA_LIBRARY)
     RF(ACTION_TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE,
-       action_runtime_toggle_media_library_columns)
+       action_runtime_toggle_media_lib_columns)
     R1(ACTION_SHOW_PLAYLIST_EDIT, ACTION_RUN_SWITCH_SCREEN,
        SCREEN_TYPE_PLAYLIST_EDIT)
     R1(ACTION_SHOW_SERVER_INFO, ACTION_RUN_SWITCH_SCREEN,

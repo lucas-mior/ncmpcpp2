@@ -502,15 +502,15 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
         if (active_hooks && active_hooks->database_changed) {
             active_hooks->database_changed(active_hooks->user);
         } else {
-            MediaLibraryScreen *library = app_screen_media_library();
+            MediaLibraryScreen *library = app_screen_media_lib();
 
             browser_screen_request_update(app_screen_browser());
 #if defined(HAVE_TAGLIB_H)
             tag_edit_screen_clear_directories(app_screen_tag_edit());
 #endif
-            media_library_screen_request_tags_update(library);
-            media_library_screen_request_albums_update(library);
-            media_library_screen_request_songs_update(library);
+            media_lib_screen_request_tags_update(library);
+            media_lib_screen_request_albums_update(library);
+            media_lib_screen_request_songs_update(library);
             if (status_database_update_observer) {
                 void *user = status_database_update_observer_user;
 

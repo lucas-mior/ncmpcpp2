@@ -35,7 +35,7 @@ nc_search_row_copy(NcSearchRow *dest, NcSearchRow *source) {
 }
 
 void
-nc_media_library_tag_row_destroy(NcMediaLibraryTagRow *row) {
+nc_media_lib_tag_row_destroy(NcMediaLibraryTagRow *row) {
     if (row == NULL) {
         return;
     }
@@ -45,7 +45,7 @@ nc_media_library_tag_row_destroy(NcMediaLibraryTagRow *row) {
 }
 
 int32
-nc_media_library_tag_row_copy(NcMediaLibraryTagRow *dest,
+nc_media_lib_tag_row_copy(NcMediaLibraryTagRow *dest,
                               NcMediaLibraryTagRow *source) {
     NcMediaLibraryTagRow tmp = {0};
 
@@ -55,13 +55,13 @@ nc_media_library_tag_row_copy(NcMediaLibraryTagRow *dest,
     stupid_string_set(&tmp.tag, &tmp.tag_len, source->tag, source->tag_len);
     tmp.mtime = source->mtime;
 
-    nc_media_library_tag_row_destroy(dest);
+    nc_media_lib_tag_row_destroy(dest);
     *dest = tmp;
     return 0;
 }
 
 void
-nc_media_library_album_row_destroy(NcMediaLibraryAlbumRow *row) {
+nc_media_lib_album_row_destroy(NcMediaLibraryAlbumRow *row) {
     if (row == NULL) {
         return;
     }
@@ -73,7 +73,7 @@ nc_media_library_album_row_destroy(NcMediaLibraryAlbumRow *row) {
 }
 
 int32
-nc_media_library_album_row_copy(NcMediaLibraryAlbumRow *dest,
+nc_media_lib_album_row_copy(NcMediaLibraryAlbumRow *dest,
                                 NcMediaLibraryAlbumRow *source) {
     NcMediaLibraryAlbumRow tmp = {0};
 
@@ -99,7 +99,7 @@ nc_media_library_album_row_copy(NcMediaLibraryAlbumRow *dest,
     tmp.mtime = source->mtime;
     tmp.all_tracks_entry = source->all_tracks_entry;
 
-    nc_media_library_album_row_destroy(dest);
+    nc_media_lib_album_row_destroy(dest);
     *dest = tmp;
     return 0;
 }
@@ -235,30 +235,30 @@ nc_search_row_menu_item_destroy(void *item, void *user) {
 }
 
 static void
-nc_media_library_tag_menu_item_copy(void *dest, void *source, void *user) {
+nc_media_lib_tag_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    nc_media_library_tag_row_copy(dest, source);
+    nc_media_lib_tag_row_copy(dest, source);
     return;
 }
 
 static void
-nc_media_library_tag_menu_item_destroy(void *item, void *user) {
+nc_media_lib_tag_menu_item_destroy(void *item, void *user) {
     (void)user;
-    nc_media_library_tag_row_destroy(item);
+    nc_media_lib_tag_row_destroy(item);
     return;
 }
 
 static void
-nc_media_library_album_menu_item_copy(void *dest, void *source, void *user) {
+nc_media_lib_album_menu_item_copy(void *dest, void *source, void *user) {
     (void)user;
-    nc_media_library_album_row_copy(dest, source);
+    nc_media_lib_album_row_copy(dest, source);
     return;
 }
 
 static void
-nc_media_library_album_menu_item_destroy(void *item, void *user) {
+nc_media_lib_album_menu_item_destroy(void *item, void *user) {
     (void)user;
-    nc_media_library_album_row_destroy(item);
+    nc_media_lib_album_row_destroy(item);
     return;
 }
 
@@ -365,15 +365,15 @@ static const NcMenuItemCallbacks nc_search_row_menu_callbacks = {
     .copy = nc_search_row_menu_item_copy,
     .destroy = nc_search_row_menu_item_destroy,
 };
-static const NcMenuItemCallbacks nc_media_library_tag_menu_callbacks = {
+static const NcMenuItemCallbacks nc_media_lib_tag_menu_callbacks = {
     .item_size = SIZEOF(NcMediaLibraryTagRow),
-    .copy = nc_media_library_tag_menu_item_copy,
-    .destroy = nc_media_library_tag_menu_item_destroy,
+    .copy = nc_media_lib_tag_menu_item_copy,
+    .destroy = nc_media_lib_tag_menu_item_destroy,
 };
-static const NcMenuItemCallbacks nc_media_library_album_menu_callbacks = {
+static const NcMenuItemCallbacks nc_media_lib_album_menu_callbacks = {
     .item_size = SIZEOF(NcMediaLibraryAlbumRow),
-    .copy = nc_media_library_album_menu_item_copy,
-    .destroy = nc_media_library_album_menu_item_destroy,
+    .copy = nc_media_lib_album_menu_item_copy,
+    .destroy = nc_media_lib_album_menu_item_destroy,
 };
 static const NcMenuItemCallbacks str_builder_menu_callbacks = {
     .item_size = SIZEOF(String),
@@ -505,38 +505,38 @@ NC_TYPED_MENU_DEFINE_ITEM_AT(NcSearchRowMenu, nc_search_row_menu, NcSearchRow)
 NC_TYPED_MENU_DEFINE_CURRENT(NcSearchRowMenu, nc_search_row_menu, NcSearchRow)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcMediaLibraryTagMenu,
-                            nc_media_library_tag_menu,
-                            nc_media_library_tag_menu_callbacks)
+                            nc_media_lib_tag_menu,
+                            nc_media_lib_tag_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD(NcMediaLibraryTagMenu,
-                         nc_media_library_tag_menu, NcMediaLibraryTagRow)
+                         nc_media_lib_tag_menu, NcMediaLibraryTagRow)
 NC_TYPED_MENU_DEFINE_ITEM_AT(NcMediaLibraryTagMenu,
-                             nc_media_library_tag_menu, NcMediaLibraryTagRow)
+                             nc_media_lib_tag_menu, NcMediaLibraryTagRow)
 NC_TYPED_MENU_DEFINE_CURRENT(NcMediaLibraryTagMenu,
-                             nc_media_library_tag_menu, NcMediaLibraryTagRow)
+                             nc_media_lib_tag_menu, NcMediaLibraryTagRow)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcMediaLibraryAlbumMenu,
-                            nc_media_library_album_menu,
-                            nc_media_library_album_menu_callbacks)
+                            nc_media_lib_album_menu,
+                            nc_media_lib_album_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD(NcMediaLibraryAlbumMenu,
-                         nc_media_library_album_menu, NcMediaLibraryAlbumRow)
+                         nc_media_lib_album_menu, NcMediaLibraryAlbumRow)
 NC_TYPED_MENU_DEFINE_ADD_WITH_FLAGS(NcMediaLibraryAlbumMenu,
-                                    nc_media_library_album_menu,
+                                    nc_media_lib_album_menu,
                                     NcMediaLibraryAlbumRow)
 NC_TYPED_MENU_DEFINE_ITEM_AT(NcMediaLibraryAlbumMenu,
-                             nc_media_library_album_menu,
+                             nc_media_lib_album_menu,
                              NcMediaLibraryAlbumRow)
 NC_TYPED_MENU_DEFINE_CURRENT(NcMediaLibraryAlbumMenu,
-                             nc_media_library_album_menu,
+                             nc_media_lib_album_menu,
                              NcMediaLibraryAlbumRow)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcMediaLibrarySongMenu,
-                            nc_media_library_song_menu, ncm_song_menu_callbacks)
+                            nc_media_lib_song_menu, ncm_song_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD(NcMediaLibrarySongMenu,
-                         nc_media_library_song_menu, NcmSong)
+                         nc_media_lib_song_menu, NcmSong)
 NC_TYPED_MENU_DEFINE_ITEM_AT(NcMediaLibrarySongMenu,
-                             nc_media_library_song_menu, NcmSong)
+                             nc_media_lib_song_menu, NcmSong)
 NC_TYPED_MENU_DEFINE_CURRENT(NcMediaLibrarySongMenu,
-                             nc_media_library_song_menu, NcmSong)
+                             nc_media_lib_song_menu, NcmSong)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcEditorStringMenu,
                             nc_editor_string_menu, str_builder_menu_callbacks)

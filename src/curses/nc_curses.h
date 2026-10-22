@@ -615,36 +615,36 @@ NC_TYPED_MENU_DECLARE_INSERT_WITH_FLAGS(NcSearchRowMenu,
 NC_TYPED_MENU_DECLARE_ITEM_AT(NcSearchRowMenu, nc_search_row_menu, NcSearchRow);
 NC_TYPED_MENU_DECLARE_CURRENT(NcSearchRowMenu, nc_search_row_menu, NcSearchRow);
 
-NC_TYPED_MENU_DECLARE_COMMON(NcMediaLibraryTagMenu, nc_media_library_tag_menu);
+NC_TYPED_MENU_DECLARE_COMMON(NcMediaLibraryTagMenu, nc_media_lib_tag_menu);
 NC_TYPED_MENU_DECLARE_ADD(NcMediaLibraryTagMenu,
-                          nc_media_library_tag_menu, NcMediaLibraryTagRow);
+                          nc_media_lib_tag_menu, NcMediaLibraryTagRow);
 NC_TYPED_MENU_DECLARE_ITEM_AT(NcMediaLibraryTagMenu,
-                              nc_media_library_tag_menu, NcMediaLibraryTagRow);
+                              nc_media_lib_tag_menu, NcMediaLibraryTagRow);
 NC_TYPED_MENU_DECLARE_CURRENT(NcMediaLibraryTagMenu,
-                              nc_media_library_tag_menu, NcMediaLibraryTagRow);
+                              nc_media_lib_tag_menu, NcMediaLibraryTagRow);
 
 NC_TYPED_MENU_DECLARE_COMMON(NcMediaLibraryAlbumMenu,
-                             nc_media_library_album_menu);
+                             nc_media_lib_album_menu);
 NC_TYPED_MENU_DECLARE_ADD(NcMediaLibraryAlbumMenu,
-                          nc_media_library_album_menu, NcMediaLibraryAlbumRow);
+                          nc_media_lib_album_menu, NcMediaLibraryAlbumRow);
 NC_TYPED_MENU_DECLARE_ADD_WITH_FLAGS(NcMediaLibraryAlbumMenu,
-                                     nc_media_library_album_menu,
+                                     nc_media_lib_album_menu,
                                      NcMediaLibraryAlbumRow);
 NC_TYPED_MENU_DECLARE_ITEM_AT(NcMediaLibraryAlbumMenu,
-                              nc_media_library_album_menu,
+                              nc_media_lib_album_menu,
                               NcMediaLibraryAlbumRow);
 NC_TYPED_MENU_DECLARE_CURRENT(NcMediaLibraryAlbumMenu,
-                              nc_media_library_album_menu,
+                              nc_media_lib_album_menu,
                               NcMediaLibraryAlbumRow);
 
 NC_TYPED_MENU_DECLARE_COMMON(NcMediaLibrarySongMenu,
-                             nc_media_library_song_menu);
+                             nc_media_lib_song_menu);
 NC_TYPED_MENU_DECLARE_ADD(NcMediaLibrarySongMenu,
-                          nc_media_library_song_menu, NcmSong);
+                          nc_media_lib_song_menu, NcmSong);
 NC_TYPED_MENU_DECLARE_ITEM_AT(NcMediaLibrarySongMenu,
-                              nc_media_library_song_menu, NcmSong);
+                              nc_media_lib_song_menu, NcmSong);
 NC_TYPED_MENU_DECLARE_CURRENT(NcMediaLibrarySongMenu,
-                              nc_media_library_song_menu, NcmSong);
+                              nc_media_lib_song_menu, NcmSong);
 
 NC_TYPED_MENU_DECLARE_COMMON(NcEditorStringMenu, nc_editor_string_menu);
 NC_TYPED_MENU_DECLARE_ADD_WITH_FLAGS(NcEditorStringMenu,
@@ -695,12 +695,12 @@ NC_TYPED_MENU_DECLARE_ITEM_AT(NcEditorBufferMenu,
 void nc_search_row_destroy(NcSearchRow *);
 int32 nc_search_row_copy(NcSearchRow *dest, NcSearchRow *source);
 
-void nc_media_library_tag_row_destroy(NcMediaLibraryTagRow *);
-int32 nc_media_library_tag_row_copy(NcMediaLibraryTagRow *dest,
+void nc_media_lib_tag_row_destroy(NcMediaLibraryTagRow *);
+int32 nc_media_lib_tag_row_copy(NcMediaLibraryTagRow *dest,
                                     NcMediaLibraryTagRow *source);
 
-void nc_media_library_album_row_destroy(NcMediaLibraryAlbumRow *);
-int32 nc_media_library_album_row_copy(NcMediaLibraryAlbumRow *dest,
+void nc_media_lib_album_row_destroy(NcMediaLibraryAlbumRow *);
+int32 nc_media_lib_album_row_copy(NcMediaLibraryAlbumRow *dest,
                                       NcMediaLibraryAlbumRow *source);
 
 void nc_editor_action_row_destroy(NcEditorActionRow *);

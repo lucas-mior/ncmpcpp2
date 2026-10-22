@@ -28,7 +28,7 @@
 #define SCREEN_TYPE_LYRICS_ENTRY(XX)                                           \
   XX(LYRICS,               lyrics,               STARTUP, lyrics)
 #define SCREEN_TYPE_MEDIA_LIBRARY_ENTRY(XX)                                    \
-  XX(MEDIA_LIBRARY,        media_library,        STARTUP, media_library)
+  XX(MEDIA_LIBRARY,        media_lib,        STARTUP, media_lib)
 #define SCREEN_TYPE_OUTPUTS_ENTRY(XX)                                          \
   XX(OUTPUTS,              outputs,              STARTUP, outputs)
 #define SCREEN_TYPE_PLAYLIST_ENTRY(XX)                                         \
@@ -129,7 +129,7 @@
   XX(SelectedItemsAdderScreen, selected_items_add_screen)                      \
   XX(SortPlaylistDialog, sort_playlist_dialog)                                 \
   XX(SearchEngineScreen, search_engine_screen)                                 \
-  XX(MediaLibraryScreen, media_library_screen)                                 \
+  XX(MediaLibraryScreen, media_lib_screen)                                 \
   XX(TagEditScreen, tag_edit_screen)                                           \
   XX(TinyTagEditScreen, tiny_tag_edit_screen)
 
@@ -148,7 +148,7 @@
   XX(selected_items_add, SelectedItemsAdderScreen, selected_items_add_screen)  \
   XX(sort_playlist_dialog, SortPlaylistDialog, sort_playlist_dialog)           \
   XX(search_engine, SearchEngineScreen, search_engine_screen)                  \
-  XX(media_library, MediaLibraryScreen, media_library_screen)                  \
+  XX(media_lib, MediaLibraryScreen, media_lib_screen)                  \
   XX(tag_edit, TagEditScreen, tag_edit_screen)                                 \
   XX(tiny_tag_edit, TinyTagEditScreen, tiny_tag_edit_screen)
 
@@ -169,7 +169,7 @@
   XX(playlist)                                                                 \
   XX(playlist_edit)                                                            \
   XX(search_engine)                                                            \
-  XX(media_library)                                                            \
+  XX(media_lib)                                                            \
   XX(tag_edit)                                                                 \
   XX(tiny_tag_edit)                                                            \
   XX(song_info)                                                                \
@@ -187,7 +187,7 @@
   XX(playlist_edit)                                                            \
   XX(selected_items_add)                                                       \
   XX(search_engine)                                                            \
-  XX(media_library)                                                            \
+  XX(media_lib)                                                            \
   XX(tag_edit)                                                                 \
   XX(song_info)                                                                \
   XX(server_info)                                                              \
@@ -207,7 +207,7 @@
   XX(selected_items_add)                                                       \
   XX(sort_playlist_dialog)                                                     \
   XX(search_engine)                                                            \
-  XX(media_library)                                                            \
+  XX(media_lib)                                                            \
   XX(tag_edit)                                                                 \
   XX(tiny_tag_edit)                                                            \
   XX(song_info)                                                                \
@@ -249,7 +249,7 @@
   XX(help)                                                                     \
   XX(lastfm)                                                                   \
   XX(lyrics)                                                                   \
-  XX(media_library)                                                            \
+  XX(media_lib)                                                            \
   XX(playlist)                                                                 \
   XX(playlist_edit)                                                            \
   XX(search_engine)                                                            \
@@ -265,7 +265,7 @@
   XX(browser)                                                                  \
   XX(help)                                                                     \
   XX(lastfm)                                                                   \
-  XX(media_library)                                                            \
+  XX(media_lib)                                                            \
   XX(search_engine)                                                            \
   XX(selected_items_add)                                                       \
   XX(song_info)                                                                \
@@ -281,7 +281,7 @@
   XX(help, NC_SCREEN_TYPE_HELP)                                                \
   XX(lastfm, NC_SCREEN_TYPE_LASTFM)                                            \
   XX(lyrics, NC_SCREEN_TYPE_LYRICS)                                            \
-  XX(media_library, NC_SCREEN_TYPE_MEDIA_LIBRARY)                              \
+  XX(media_lib, NC_SCREEN_TYPE_MEDIA_LIBRARY)                              \
   XX(playlist, NC_SCREEN_TYPE_PLAYLIST)                                        \
   XX(playlist_edit, NC_SCREEN_TYPE_PLAYLIST_EDIT)                              \
   XX(search_engine, NC_SCREEN_TYPE_SEARCH_ENGINE)                              \
@@ -1090,8 +1090,8 @@ int16 visualizer_clamp_sample(int32);
     XX(MEDIA_LIBRARY_COLUMN_SONGS, Songs)
 #include "cbase/xenums.c"
 
-bool media_library_is_grouping_tag(enum TagType);
-enum TagType media_library_next_grouping_tag(enum TagType);
+bool media_lib_is_grouping_tag(enum TagType);
+enum TagType media_lib_next_grouping_tag(enum TagType);
 
 typedef struct MediaLibraryAlbumItem {
     NcMediaLibraryAlbumRow row;
@@ -1100,14 +1100,14 @@ typedef struct MediaLibraryAlbumItem {
 
 #define NCM_ARRAY_TYPE MediaLibraryTagArray
 #define NCM_ARRAY_ITEM_TYPE NcMediaLibraryTagRow
-#define NCM_ARRAY_PREFIX media_library_tag_array
+#define NCM_ARRAY_PREFIX media_lib_tag_array
 #define NCM_ARRAY_MOVE
 #define NCM_ARRAY_REMOVE_ORDERED
 #include "c/ncm_array_decl_template.h"
 
 #define NCM_ARRAY_TYPE MediaLibraryAlbumArray
 #define NCM_ARRAY_ITEM_TYPE MediaLibraryAlbumItem
-#define NCM_ARRAY_PREFIX media_library_album_array
+#define NCM_ARRAY_PREFIX media_lib_album_array
 #define NCM_ARRAY_MOVE
 #define NCM_ARRAY_REMOVE_ORDERED
 #include "c/ncm_array_decl_template.h"
@@ -1186,103 +1186,103 @@ typedef struct MediaLibraryScreen {
     bool registered;
 } MediaLibraryScreen;
 
-MediaLibraryHooks media_library_mpd_hooks(MpdClient *);
-void media_library_screen_init(MediaLibraryScreen *, MediaLibraryHooks,
+MediaLibraryHooks media_lib_mpd_hooks(MpdClient *);
+void media_lib_screen_init(MediaLibraryScreen *, MediaLibraryHooks,
                                int32 start_x, int32 width, int32 main_start_y,
                                int32 main_height, NcColor, NcBorder);
-void media_library_screen_destroy(MediaLibraryScreen *);
-NcScreen *media_library_screen_base(MediaLibraryScreen *);
-NcMenu *media_library_screen_active_menu(MediaLibraryScreen *);
-NcWindow *media_library_screen_active_window(MediaLibraryScreen *);
-void media_library_screen_set_geometry(MediaLibraryScreen *, int32 start_x,
+void media_lib_screen_destroy(MediaLibraryScreen *);
+NcScreen *media_lib_screen_base(MediaLibraryScreen *);
+NcMenu *media_lib_screen_active_menu(MediaLibraryScreen *);
+NcWindow *media_lib_screen_active_window(MediaLibraryScreen *);
+void media_lib_screen_set_geometry(MediaLibraryScreen *, int32 start_x,
                                        int32 width, int32 main_start_y,
                                        int32 main_height);
 
-int32 media_library_screen_column_len(MediaLibraryScreen *);
-int32 media_library_screen_set_mode(MediaLibraryScreen *,
+int32 media_lib_screen_column_len(MediaLibraryScreen *);
+int32 media_lib_screen_set_mode(MediaLibraryScreen *,
                                     enum MediaLibraryMode);
 
-int32 media_library_screen_toggle_mode(MediaLibraryScreen *,
+int32 media_lib_screen_toggle_mode(MediaLibraryScreen *,
                                        enum MediaLibraryMode *);
 enum MediaLibraryColumn
-media_library_screen_active_column(MediaLibraryScreen *);
-bool media_library_screen_has_available_item(MediaLibraryScreen *);
-int32 media_library_screen_set_active_column(MediaLibraryScreen *,
+media_lib_screen_active_column(MediaLibraryScreen *);
+bool media_lib_screen_has_available_item(MediaLibraryScreen *);
+int32 media_lib_screen_set_active_column(MediaLibraryScreen *,
                                              enum MediaLibraryColumn);
-bool media_library_screen_column_is_visible(MediaLibraryScreen *,
+bool media_lib_screen_column_is_visible(MediaLibraryScreen *,
                                             enum MediaLibraryColumn);
 MediaLibraryColumnState *
-media_library_screen_column_state(MediaLibraryScreen *,
+media_lib_screen_column_state(MediaLibraryScreen *,
                                   enum MediaLibraryColumn);
-StrView media_library_screen_active_filter_constraint(MediaLibraryScreen *);
-StrView media_library_screen_active_search_constraint(MediaLibraryScreen *);
-NcMediaLibraryTagRow *media_library_screen_current_tag(MediaLibraryScreen *);
+StrView media_lib_screen_active_filter_constraint(MediaLibraryScreen *);
+StrView media_lib_screen_active_search_constraint(MediaLibraryScreen *);
+NcMediaLibraryTagRow *media_lib_screen_current_tag(MediaLibraryScreen *);
 NcMediaLibraryAlbumRow *
-media_library_screen_current_album(MediaLibraryScreen *);
+media_lib_screen_current_album(MediaLibraryScreen *);
 
-bool media_library_screen_has_current_grouping_tag_value(MediaLibraryScreen *,
+bool media_lib_screen_has_current_grouping_tag_value(MediaLibraryScreen *,
                                                         char **, int32 *);
-bool media_library_screen_has_current_album_value(MediaLibraryScreen *,
+bool media_lib_screen_has_current_album_value(MediaLibraryScreen *,
                                                   char **, int32 *);
-void media_library_screen_format_tag_row(MediaLibraryScreen *,
+void media_lib_screen_format_tag_row(MediaLibraryScreen *,
                                          NcMediaLibraryTagRow *, String *);
-void media_library_screen_format_album_row(MediaLibraryScreen *,
+void media_lib_screen_format_album_row(MediaLibraryScreen *,
                                            NcMediaLibraryAlbumRow *,
                                            String *);
-void media_library_screen_format_song_row(MediaLibraryScreen *, NcmSong *,
+void media_lib_screen_format_song_row(MediaLibraryScreen *, NcmSong *,
                                           NcBuffer *);
 
-int32 media_library_tags_from_strings(MediaLibraryTagArray *,
+int32 media_lib_tags_from_strings(MediaLibraryTagArray *,
                                       StrFlexList *);
-int32 media_library_tags_from_songs(MediaLibraryTagArray *, NcmSongArray *,
+int32 media_lib_tags_from_songs(MediaLibraryTagArray *, NcmSongArray *,
                                     enum TagType);
-int32 media_library_albums_from_songs(MediaLibraryAlbumArray *,
+int32 media_lib_albums_from_songs(MediaLibraryAlbumArray *,
                                       NcmSongArray *, enum MediaLibraryMode,
                                       enum TagType, char *, int32);
-int32 media_library_copy_sorted_songs(NcmSongArray *, NcmSongArray *);
+int32 media_lib_copy_sorted_songs(NcmSongArray *, NcmSongArray *);
 
-int32 media_library_screen_toggle_sort_mode(MediaLibraryScreen *, bool *);
-int32 media_library_screen_set_grouping_tag_type(MediaLibraryScreen *,
+int32 media_lib_screen_toggle_sort_mode(MediaLibraryScreen *, bool *);
+int32 media_lib_screen_set_grouping_tag_type(MediaLibraryScreen *,
                                                 enum TagType);
-void media_library_screen_request_database_update(MediaLibraryScreen *);
-int32 media_library_screen_refresh_inactive_songs(MediaLibraryScreen *);
+void media_lib_screen_request_database_update(MediaLibraryScreen *);
+int32 media_lib_screen_refresh_inactive_songs(MediaLibraryScreen *);
 
-bool media_library_screen_can_move_to_previous_column(MediaLibraryScreen *);
-bool media_library_screen_can_move_to_next_column(MediaLibraryScreen *);
-void media_library_screen_previous_column(MediaLibraryScreen *);
-void media_library_screen_next_column(MediaLibraryScreen *);
-void media_library_screen_clear(MediaLibraryScreen *);
-int32 media_library_screen_current_song(MediaLibraryScreen *, NcmSong *);
-int32 media_library_screen_selected_songs(MediaLibraryScreen *, NcmSongArray *);
-int32 media_library_screen_selected_songs_checked(MediaLibraryScreen *,
+bool media_lib_screen_can_move_to_previous_column(MediaLibraryScreen *);
+bool media_lib_screen_can_move_to_next_column(MediaLibraryScreen *);
+void media_lib_screen_previous_column(MediaLibraryScreen *);
+void media_lib_screen_next_column(MediaLibraryScreen *);
+void media_lib_screen_clear(MediaLibraryScreen *);
+int32 media_lib_screen_current_song(MediaLibraryScreen *, NcmSong *);
+int32 media_lib_screen_selected_songs(MediaLibraryScreen *, NcmSongArray *);
+int32 media_lib_screen_selected_songs_checked(MediaLibraryScreen *,
                                                   NcmSongArray *, NcmError *);
-int32 media_library_screen_copy_visible_songs(MediaLibraryScreen *,
+int32 media_lib_screen_copy_visible_songs(MediaLibraryScreen *,
                                               NcmSongArray *, NcmError *);
-int32 media_library_screen_apply_filter(MediaLibraryScreen *, char *, int32,
+int32 media_lib_screen_apply_filter(MediaLibraryScreen *, char *, int32,
                                         NcmError *);
-void media_library_screen_clear_filter(MediaLibraryScreen *);
-int32 media_library_screen_search(MediaLibraryScreen *, char *, int32,
+void media_lib_screen_clear_filter(MediaLibraryScreen *);
+int32 media_lib_screen_search(MediaLibraryScreen *, char *, int32,
                                   bool forward, bool wrap, bool skip_current,
                                   NcmError *);
-void media_library_screen_clear_search(MediaLibraryScreen *);
-void media_library_screen_request_tags_update(MediaLibraryScreen *);
-void media_library_screen_request_albums_update(MediaLibraryScreen *);
-void media_library_screen_request_songs_update(MediaLibraryScreen *);
-void media_library_screen_finish_list_change(MediaLibraryScreen *);
-int32 media_library_screen_update(MediaLibraryScreen *, NcmError *);
+void media_lib_screen_clear_search(MediaLibraryScreen *);
+void media_lib_screen_request_tags_update(MediaLibraryScreen *);
+void media_lib_screen_request_albums_update(MediaLibraryScreen *);
+void media_lib_screen_request_songs_update(MediaLibraryScreen *);
+void media_lib_screen_finish_list_change(MediaLibraryScreen *);
+int32 media_lib_screen_update(MediaLibraryScreen *, NcmError *);
 
-int32 media_library_screen_list_tags(MediaLibraryScreen *, enum TagType,
+int32 media_lib_screen_list_tags(MediaLibraryScreen *, enum TagType,
                                      StrFlexList *, NcmError *);
-int32 media_library_screen_list_all_songs(MediaLibraryScreen *,
+int32 media_lib_screen_list_all_songs(MediaLibraryScreen *,
                                           NcmSongArray *, NcmError *);
-int32 media_library_screen_search_songs(MediaLibraryScreen *,
+int32 media_lib_screen_search_songs(MediaLibraryScreen *,
                                         MediaLibrarySongQuery *,
                                         NcmSongArray *, NcmError *);
-int32 media_library_screen_add_songs(MediaLibraryScreen *, NcmSongArray *,
+int32 media_lib_screen_add_songs(MediaLibraryScreen *, NcmSongArray *,
                                      bool, NcmError *);
-int32 media_library_screen_add_item_to_playlist(MediaLibraryScreen *, bool,
+int32 media_lib_screen_add_item_to_playlist(MediaLibraryScreen *, bool,
                                                 NcmError *);
-int32 media_library_screen_locate_song(MediaLibraryScreen *, NcmSong *,
+int32 media_lib_screen_locate_song(MediaLibraryScreen *, NcmSong *,
                                        NcmError *);
 
 #define ENUM_NAME PlaylistEditColumn

@@ -683,20 +683,20 @@ app_screen_search_engine_init(void) {
 }
 
 void
-app_screen_media_library_init(void) {
+app_screen_media_lib_init(void) {
     MediaLibraryHooks hooks;
-    static bool media_library_screen_initialized = false;
+    static bool media_lib_screen_initialized = false;
 
-    if (media_library_screen_initialized) {
+    if (media_lib_screen_initialized) {
         return;
     }
 
-    hooks = media_library_mpd_hooks(&global_mpd);
-    media_library_screen_init(&media_library_screen, hooks, 0,
+    hooks = media_lib_mpd_hooks(&global_mpd);
+    media_lib_screen_init(&media_lib_screen, hooks, 0,
                               ui_state_screen_width(), ui_state_main_start_y(),
                               ui_state_main_height(), Config.main_window_color,
                               no_border());
-    media_library_screen_initialized = true;
+    media_lib_screen_initialized = true;
     return;
 }
 

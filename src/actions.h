@@ -34,7 +34,7 @@
   XX(FIND_ITEM_BACKWARD, find_item_backward)                                   \
   XX(FIND_ITEM_FORWARD, find_item_forward)                                     \
   XX(JUMP_TO_BROWSER, jump_to_browser)                                         \
-  XX(JUMP_TO_MEDIA_LIBRARY, jump_to_media_library)                             \
+  XX(JUMP_TO_MEDIA_LIBRARY, jump_to_media_lib)                             \
   XX(JUMP_TO_PARENT_DIRECTORY, jump_to_parent_directory)                       \
   XX(JUMP_TO_PLAYING_SONG, jump_to_playing_song)                               \
   XX(JUMP_TO_PLAYLIST_EDIT, jump_to_playlist_edit)                             \
@@ -92,7 +92,7 @@
   XX(SHOW_BROWSER, show_browser)                                               \
   XX(SHOW_HELP, show_help)                                                     \
   XX(SHOW_LYRICS, show_lyrics)                                                 \
-  XX(SHOW_MEDIA_LIBRARY, show_media_library)                                   \
+  XX(SHOW_MEDIA_LIBRARY, show_media_lib)                                   \
   XX(SHOW_OUTPUTS, show_outputs)                                               \
   XX(SHOW_PLAYLIST, show_playlist)                                             \
   XX(SHOW_PLAYLIST_EDIT, show_playlist_edit)                                   \
@@ -118,8 +118,8 @@
   XX(TOGGLE_LIBRARY_TAG_TYPE, toggle_library_tag_type)                         \
   XX(TOGGLE_LYRICS_FETCHER, toggle_lyrics_fetcher)                             \
   XX(TOGGLE_LYRICS_UPDATE_ON_SONG_CHANGE, toggle_lyrics_update_on_song_change) \
-  XX(TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE, toggle_media_library_columns_mode)     \
-  XX(TOGGLE_MEDIA_LIBRARY_SORT_MODE, toggle_media_library_sort_mode)           \
+  XX(TOGGLE_MEDIA_LIBRARY_COLUMNS_MODE, toggle_media_lib_columns_mode)     \
+  XX(TOGGLE_MEDIA_LIBRARY_SORT_MODE, toggle_media_lib_sort_mode)           \
   XX(TOGGLE_MOUSE, toggle_mouse)                                               \
   XX(TOGGLE_OUTPUT, toggle_output)                                             \
   XX(TOGGLE_PLAYING_SONG_CENTERING, toggle_playing_song_centering)             \
