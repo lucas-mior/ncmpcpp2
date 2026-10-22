@@ -5362,7 +5362,7 @@ typedef struct ActionRun {
 
 #define R0(action) [action] = {.runner = ACTION_RUN_NOOP}
 #define RF(action, func) \
-    [action] = {.runner = ACTION_RUN_NO_ARG, .no_arg = (func)},
+    [action] = {.runner = ACTION_RUN_NO_ARG, .no_arg = (func)}
 #define R1(action, run_, arg_) \
     [action] = {.runner = (run_), .argument = (arg_)}
 #define RM(action, func) \
@@ -5388,7 +5388,8 @@ static const ActionRun action_run_table[ACTION_COUNT] = {
     R1(ACTION_MOVE_HOME, ACTION_RUN_SCROLL, NC_SCROLL_HOME),
     R1(ACTION_MOVE_END, ACTION_RUN_SCROLL, NC_SCROLL_END),
     RF(ACTION_TOGGLE_INTERFACE, action_runtime_toggle_interface),
-    RF(ACTION_JUMP_TO_PARENT_DIRECTORY, action_runtime_jump_to_parent_directory),
+    RF(ACTION_JUMP_TO_PARENT_DIRECTORY,
+       action_runtime_jump_to_parent_directory),
     [ACTION_RUN_ACTION] = {.runner = ACTION_RUN_CURRENT_SCREEN_ACTION},
     R1(ACTION_PREVIOUS_COLUMN, ACTION_RUN_COLUMN, false),
     R1(ACTION_NEXT_COLUMN, ACTION_RUN_COLUMN, true),
@@ -5453,7 +5454,8 @@ static const ActionRun action_run_table[ACTION_COUNT] = {
     RF(ACTION_JUMP_TO_PLAYLIST_EDIT, action_runtime_jump_to_playlist_edit),
     RF(ACTION_TOGGLE_SCREEN_LOCK, action_runtime_toggle_screen_lock),
     RF(ACTION_JUMP_TO_TAG_EDIT, action_runtime_jump_to_tag_edit),
-    RF(ACTION_JUMP_TO_POSITION_IN_SONG, action_runtime_jump_to_position_in_song),
+    RF(ACTION_JUMP_TO_POSITION_IN_SONG,
+       action_runtime_jump_to_position_in_song),
     [ACTION_SELECT_ITEM] = {.runner = ACTION_RUN_MENU_SELECT_CURRENT},
     RF(ACTION_SELECT_ALBUM, action_runtime_select_album),
     RF(ACTION_SELECT_FOUND_ITEMS, action_runtime_select_found_items),
@@ -5476,7 +5478,8 @@ static const ActionRun action_run_table[ACTION_COUNT] = {
     RF(ACTION_TOGGLE_BITRATE_VISIBILITY,
        action_runtime_toggle_bitrate_visibility),
     RF(ACTION_ADD_RANDOM_ITEMS, action_runtime_add_random_items),
-    RF(ACTION_TOGGLE_BROWSER_SORT_MODE, action_runtime_toggle_browser_sort_mode),
+    RF(ACTION_TOGGLE_BROWSER_SORT_MODE,
+       action_runtime_toggle_browser_sort_mode),
     RF(ACTION_TOGGLE_LIBRARY_TAG_TYPE, action_runtime_toggle_library_tag_type),
     RF(ACTION_TOGGLE_MEDIA_LIBRARY_SORT_MODE,
        action_runtime_toggle_media_lib_sort_mode),
