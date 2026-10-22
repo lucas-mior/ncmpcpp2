@@ -1614,12 +1614,10 @@ void
 nc_window_apply_format(NcWindow *window, enum NcFormat format) {
     switch (format) {
     case NC_FORMAT_BOLD:
-        nc_window_incr_format(window,
-                              &window->bold_count, nc_window_bold);
+        nc_window_incr_format(window, &window->bold_count, nc_window_bold);
         break;
     case NC_FORMAT_NO_BOLD:
-        nc_window_decr_format(window,
-                              &window->bold_count, nc_window_bold);
+        nc_window_decr_format(window, &window->bold_count, nc_window_bold);
         break;
     case NC_FORMAT_UNDERLINE:
         nc_window_incr_format(window,
