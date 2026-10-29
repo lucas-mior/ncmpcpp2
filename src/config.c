@@ -583,9 +583,9 @@ typedef struct ConfigurationLyricsFetcherTest {
 static void
 config_print_error(char *context, NcmError *ncm_error) {
     if (ncm_error->message[0] != '\0') {
-        fprintf(stderr, "%s: %s\n", context, ncm_error->message);
+        fmt_fprintf(stderr, "%s: %s\n", context, ncm_error->message);
     } else {
-        fprintf(stderr, "%s\n", context);
+        fmt_fprintf(stderr, "%s\n", context);
     }
     return;
 }
@@ -613,79 +613,80 @@ configure(int32 argc, char **argv) {
 
         config_discover_default_paths(&config_paths, &bindings_paths,
                                       &ncm_error);
-        printf("Usage: %s [options]...\n", argv[0]);
-        printf("Options:\n");
-        printf("  -h, --host HOST              "
-               "connect to server at host\n");
-        printf("  -p, --port PORT              "
-               "connect to server at port\n");
-        printf("      --current-song[=FORMAT]  print current song using ");
-        printf("given format and exit\n");
-        printf("  -c, --config PATH            "
-               "specify configuration file(s)\n");
-        printf("                               default: ");
+        fmt_printf("Usage: %s [options]...\n", argv[0]);
+        fmt_printf("Options:\n");
+        fmt_printf("  -h, --host HOST              "
+                   "connect to server at host\n");
+        fmt_printf("  -p, --port PORT              "
+                   "connect to server at port\n");
+        fmt_printf("      --current-song[=FORMAT]  print current song using ");
+        fmt_printf("given format and exit\n");
+        fmt_printf("  -c, --config PATH            "
+                   "specify configuration file(s)\n");
+        fmt_printf("                               default: ");
         for (int32 i = 0; i < config_paths.len; i += 1) {
             String *path = &config_paths.items[i];
 
             if (i > 0) {
-                printf(" AND ");
+                fmt_printf(" AND ");
             }
-            printf("%.*s", path->len, path->data);
+            fmt_printf("%.*s", path->len, path->data);
         }
-        printf("\n");
-        printf("      --ignore-config-errors   " "ignore unknown and invalid ");
-        printf("options in configuration files\n");
-        printf("      --test-lyrics-fetchers   "
-               "check if lyrics fetchers work\n");
-        printf("  -b, --bindings PATH          specify bindings file(s)\n");
-        printf("                               default: ");
+        fmt_printf("\n");
+        fmt_printf("      --ignore-config-errors   "
+                   "ignore unknown and invalid ");
+        fmt_printf("options in configuration files\n");
+        fmt_printf("      --test-lyrics-fetchers   "
+                   "check if lyrics fetchers work\n");
+        fmt_printf("  -b, --bindings PATH          specify bindings file(s)\n");
+        fmt_printf("                               default: ");
         for (int32 i = 0; i < bindings_paths.len; i += 1) {
             String *path = &bindings_paths.items[i];
 
             if (i > 0) {
-                printf(" AND ");
+                fmt_printf(" AND ");
             }
-            printf("%.*s", path->len, path->data);
+            fmt_printf("%.*s", path->len, path->data);
         }
-        printf("\n");
-        printf("  -s, --screen SCREEN          "
-               "specify the startup screen\n");
-        printf("  -S, --slave-screen SCREEN    "
-               "specify startup slave screen\n");
-        printf("  -?, --help                   show help message\n");
-        printf("  -v, --version                "
-               "display version information\n");
-        printf("  -q, --quiet                  "
-               "suppress logs and excess output\n");
-        printf("\n");
+        fmt_printf("\n");
+        fmt_printf("  -s, --screen SCREEN          "
+                   "specify the startup screen\n");
+        fmt_printf("  -S, --slave-screen SCREEN    "
+                   "specify startup slave screen\n");
+        fmt_printf("  -?, --help                   show help message\n");
+        fmt_printf("  -v, --version                "
+                   "display version information\n");
+        fmt_printf("  -q, --quiet                  "
+                   "suppress logs and excess output\n");
+        fmt_printf("\n");
         string_array_destroy(&bindings_paths);
         string_array_destroy(&config_paths);
         ncm_config_options_destroy(&options);
         return 0;
     }
     if (options.version) {
-        printf("ncmpcpp %s\n\n", VERSION);
-        printf("optional screens compiled-in:\n");
+        fmt_printf("ncmpcpp %s\n\n", VERSION);
+        fmt_printf("optional screens compiled-in:\n");
 #if defined(HAVE_TAGLIB_H)
-        printf(" - tag editor\n");
-        printf(" - tiny tag editor\n");
+        fmt_printf(" - tag editor\n");
+        fmt_printf(" - tiny tag editor\n");
 #endif
 #if defined(ENABLE_OUTPUTS)
-        printf(" - outputs\n");
+        fmt_printf(" - outputs\n");
 #endif
 #if defined(ENABLE_VISUALIZER)
-        printf(" - visualizer\n");
+        fmt_printf(" - visualizer\n");
 #endif
-        printf("\nencoding: UTF-8\n");
-        printf("built with support for:");
+        fmt_printf("\nencoding: UTF-8\n");
+        fmt_printf("built with support for:");
 #if defined(HAVE_FFTW3_H)
-        printf(" fftw");
+        fmt_printf(" fftw");
 #endif
-        printf(" ncurses");
+        fmt_printf(" ncurses");
 #if defined(HAVE_TAGLIB_H)
-        printf(" taglib");
+        fmt_printf(" taglib");
 #endif
-        printf("\n");
+        fmt_printf("\n");
         ncm_config_options_destroy(&options);
         return 0;
     }
@@ -730,17 +731,17 @@ configure(int32 argc, char **argv) {
             ncm_lyrics_fetcher_def_set_name(&fetcher,
                                             tests[i].name, tests[i].name_len);
 
-            printf("%-20.*s : ",
-                   ncm_lyrics_fetcher_name_len(&fetcher),
-                   ncm_lyrics_fetcher_name(&fetcher));
+            fmt_printf("%-20.*s : ",
+                       ncm_lyrics_fetcher_name_len(&fetcher),
+                       ncm_lyrics_fetcher_name(&fetcher));
             fflush(stdout);
             ncm_lyrics_fetcher_fetch(&fetcher, &result,
                                      tests[i].artist, tests[i].artist_len,
                                      tests[i].title, tests[i].title_len);
             if (result.success) {
-                printf("ok\n");
+                fmt_printf("ok\n");
             } else {
-                printf("failed\n");
+                fmt_printf("failed\n");
             }
             ncm_lyrics_result_destroy(&result);
             ncm_lyrics_fetcher_def_destroy(&fetcher);

@@ -375,9 +375,9 @@ nc_mouse_enable(void) {
         return;
     }
 
-    printf("\033[?1001s");
-    printf("\033[?1000h");
-    printf("\033[?1015h");
+    fmt_printf("\033[?1001s");
+    fmt_printf("\033[?1000h");
+    fmt_printf("\033[?1015h");
     fflush(stdout);
     return;
 }
@@ -388,9 +388,9 @@ nc_mouse_disable(void) {
         return;
     }
 
-    printf("\033[?1015l");
-    printf("\033[?1000l");
-    printf("\033[?1001r");
+    fmt_printf("\033[?1015l");
+    fmt_printf("\033[?1000l");
+    fmt_printf("\033[?1001r");
     fflush(stdout);
     return;
 }

@@ -78,11 +78,11 @@ ncm_window_title_configure(bool enabled, bool quiet) {
 
 void
 ncm_window_title_write(char *title, int32 title_len) {
-    printf("\033]0;");
+    fmt_printf("\033]0;");
     if (title && (title_len > 0)) {
         fwrite64(title, 1, title_len, stdout);
     }
-    printf("\7");
+    fmt_printf("\7");
     fflush(stdout);
     return;
 }

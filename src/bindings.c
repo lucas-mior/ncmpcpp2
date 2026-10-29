@@ -19,7 +19,7 @@ bindings_error(NcmError *ncm_error, char *format, ...) {
     int32 len;
 
     va_start(args, format);
-    len = vsnprintf(buffer, (size_t)SIZEOF(buffer), format, args);
+    len = fmt_vsnprintf(buffer, SIZEOF(buffer), format, args);
     va_end(args);
 
     ASSERT_GE(len, 0);
