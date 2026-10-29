@@ -528,7 +528,7 @@ settings_parse_ratio(NcmInt32Array *array, char *value, int32 value_len,
         if (parse_integer(value + start, end - start, &parsed) < 0) {
             return settings_invalid_value(ncm_error, value, value_len);
         }
-        if ((parsed < 0) || (parsed > MAXOF((int32)0))) {
+        if ((parsed < 0) || (parsed > INT32_MAX)) {
             return settings_invalid_value(ncm_error, value, value_len);
         }
         slot = ncm_int32_array_append(array);
