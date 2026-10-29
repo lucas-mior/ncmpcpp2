@@ -6,6 +6,8 @@
 
 #include "c/ncm_c.h"
 
+#define NCM_FORMAT_PROPERTY_ID INT64_MAX
+
 static int32
 ncm_format_set_error(NcmError *ncm_error, char *message, int32 position) {
     char buffer[256];
@@ -838,14 +840,14 @@ ncm_format_buffer_text(void *user, char *data, int32 data_len,
 static void
 ncm_format_buffer_color(void *user, NcColor color) {
     NcBuffer *buffer = user;
-    nc_buffer_add_color(buffer, buffer->len, color, MAXOF((int64)0));
+    nc_buffer_add_color(buffer, buffer->len, color, NCM_FORMAT_PROPERTY_ID);
     return;
 }
 
 static void
 ncm_format_buffer_format(void *user, enum NcFormat format) {
     NcBuffer *buffer = user;
-    nc_buffer_add_format(buffer, buffer->len, format, MAXOF((int64)0));
+    nc_buffer_add_format(buffer, buffer->len, format, NCM_FORMAT_PROPERTY_ID);
     return;
 }
 
