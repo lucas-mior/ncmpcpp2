@@ -771,8 +771,7 @@ tag_edit_append_parser_legend_entry(String *legend, char tag_char,
 }
 
 static void
-tag_edit_append_parser_legend_field(String *legend,
-                                    enum TagType tag_type) {
+tag_edit_append_parser_legend_field(String *legend, enum TagType tag_type) {
     char *name;
     int32 name_len;
     char tag_char;

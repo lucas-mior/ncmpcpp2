@@ -879,8 +879,7 @@ settings_apply_option(Configuration *config, SettingsOption option,
 
         len = SNPRINTF(message,
                        "error while %s option \"%.*s\": %.*s",
-                       phase, option.name_len, option.name, detail_len,
-                       detail);
+                       phase, option.name_len, option.name, detail_len, detail);
         if (ncm_error_is_set(&cause)) {
             ncm_error_set(ncm_error, cause.code, message, len);
         } else {

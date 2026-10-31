@@ -578,8 +578,7 @@ lrc_document_entry_at_time(LrcDocument *document, int64 elapsed_ms) {
 }
 
 int32
-lrc_document_next_entry_after_time(LrcDocument *document,
-                                   int64 elapsed_ms) {
+lrc_document_next_entry_after_time(LrcDocument *document, int64 elapsed_ms) {
     if ((document == NULL) || (ARRAY_LEN(document->entries) <= 0)) {
         return -1;
     }

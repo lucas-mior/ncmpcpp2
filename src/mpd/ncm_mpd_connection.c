@@ -1550,8 +1550,7 @@ ncm_mpd_connection_delete(MpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_clear_playlist(MpdConnection *connection,
-                                  char *playlist) {
+ncm_mpd_connection_clear_playlist(MpdConnection *connection, char *playlist) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_playlist_clear(connection->mpd, playlist);
@@ -1612,8 +1611,7 @@ ncm_mpd_connection_rename_playlist(MpdConnection *connection,
 }
 
 int32
-ncm_mpd_connection_delete_playlist(MpdConnection *connection,
-                                   char *playlist) {
+ncm_mpd_connection_delete_playlist(MpdConnection *connection, char *playlist) {
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
 
     mpd_run_rm(connection->mpd, playlist);

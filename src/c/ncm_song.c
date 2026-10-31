@@ -471,8 +471,7 @@ ncm_song_is_stream_unchecked(NcmSong *song) {
 }
 
 static bool
-ncm_song_has_filename_view_unchecked(NcmSong *song, int32 idx,
-                                     StrView *view) {
+ncm_song_has_filename_view_unchecked(NcmSong *song, int32 idx, StrView *view) {
     StrView uri;
     int32 basename;
 
@@ -495,8 +494,7 @@ ncm_song_has_filename_view_unchecked(NcmSong *song, int32 idx,
 }
 
 static bool
-ncm_song_has_directory_view_unchecked(NcmSong *song, int32 idx,
-                                      StrView *view) {
+ncm_song_has_directory_view_unchecked(NcmSong *song, int32 idx, StrView *view) {
     StrView uri;
     int32 basename;
 

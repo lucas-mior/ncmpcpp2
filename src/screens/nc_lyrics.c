@@ -1494,8 +1494,7 @@ lyrics_screen_toggle_fetcher(LyricsScreen *screen,
 }
 
 int32
-lyrics_screen_try_take_consumer_message(LyricsScreen *screen,
-                                        String *message) {
+lyrics_screen_try_take_consumer_message(LyricsScreen *screen, String *message) {
     if ((screen == NULL) || (message == NULL)) {
         return -EINVAL;
     }

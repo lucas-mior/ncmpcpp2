@@ -1869,8 +1869,7 @@ browser_current_playlist_item_path(BrowserScreen *screen, StrView *path,
 }
 
 bool
-browser_screen_has_current_playlist_path(BrowserScreen *screen,
-                                         StrView *path) {
+browser_screen_has_current_playlist_path(BrowserScreen *screen, StrView *path) {
     NcmError ncm_error;
 
     if ((screen == NULL) || (path == NULL)) {

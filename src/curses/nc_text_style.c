@@ -14,8 +14,7 @@ nc_text_style_init(NcTextStyle *text_style) {
 }
 
 void
-nc_text_style_init_color(NcTextStyle *text_style,
-                         NcColor color) {
+nc_text_style_init_color(NcTextStyle *text_style, NcColor color) {
     nc_text_style_init(text_style);
     text_style->color = color;
     return;
@@ -45,8 +44,7 @@ nc_text_style_destroy(NcTextStyle *text_style) {
 }
 
 void
-nc_text_style_add_format(NcTextStyle *text_style,
-                         enum NcFormat format) {
+nc_text_style_add_format(NcTextStyle *text_style, enum NcFormat format) {
     ARRAY_PUSH(text_style->formats, format);
     return;
 }

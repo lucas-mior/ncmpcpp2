@@ -1671,8 +1671,7 @@ action_runtime_current_tag_scroll_menu(void) {
 
 
 static int32
-action_runtime_song_tag_at(int32 pos, enum SongGetter getter,
-                           String *tag) {
+action_runtime_song_tag_at(int32 pos, enum SongGetter getter, String *tag) {
     return nc_screen_song_tag_at(app_controller_current_screen(), pos, getter,
                                  tag);
 }

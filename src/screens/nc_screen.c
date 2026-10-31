@@ -439,8 +439,7 @@ nc_screen_menu_item_as_song(void *item) {
 }
 
 static int32
-nc_screen_song_tags_buffer(NcmSong *song, enum SongGetter getter,
-                           String *tag) {
+nc_screen_song_tags_buffer(NcmSong *song, enum SongGetter getter, String *tag) {
     if ((song == NULL) || (tag == NULL)) {
         return -NCM_ERROR_UNAVAILABLE;
     }

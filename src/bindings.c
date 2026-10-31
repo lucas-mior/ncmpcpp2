@@ -283,8 +283,7 @@ binding_runtime_push_key(NcKey key, void *user) {
 }
 
 int32
-binding_runtime_run_external_command(char *command, int32 cmd_len,
-                                     void *user) {
+binding_runtime_run_external_command(char *command, int32 cmd_len, void *user) {
     (void)user;
     return ncm_run_external_command(command, cmd_len, true, NULL);
 }

@@ -113,8 +113,7 @@ ncm_mpd_client_prechecks(MpdClient *client, NcmError *ncm_error) {
 }
 
 static int32
-ncm_mpd_client_prechecks_no_commands(MpdClient *client,
-                                     NcmError *ncm_error) {
+ncm_mpd_client_prechecks_no_commands(MpdClient *client, NcmError *ncm_error) {
     int32 status;
 
     if ((status = ncm_mpd_client_require_connected(client, ncm_error)) < 0) {
@@ -143,8 +142,7 @@ ncm_mpd_client_add_song_ready(MpdClient *client, char *path, int32 pos,
 }
 
 static int32
-ncm_mpd_client_start_cmd_list_ready(MpdClient *client,
-                                    NcmError *ncm_error) {
+ncm_mpd_client_start_cmd_list_ready(MpdClient *client, NcmError *ncm_error) {
     ASSERT(!client->cmd_list_active);
 
     NCM_CLIENT_TRY_MPD(client,
@@ -155,8 +153,7 @@ ncm_mpd_client_start_cmd_list_ready(MpdClient *client,
 }
 
 static int32
-ncm_mpd_client_commit_cmd_list_ready(MpdClient *client,
-                                     NcmError *ncm_error) {
+ncm_mpd_client_commit_cmd_list_ready(MpdClient *client, NcmError *ncm_error) {
     int32 status;
 
     ASSERT(client->cmd_list_active);

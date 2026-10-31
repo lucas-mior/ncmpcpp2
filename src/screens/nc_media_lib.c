@@ -1699,8 +1699,7 @@ library_song_has_first_tag(NcmSong *song, enum TagType tag, StrView *view) {
 }
 
 int32
-media_lib_tags_from_strings(MediaLibraryTagArray *tags,
-                            StrFlexList *strings) {
+media_lib_tags_from_strings(MediaLibraryTagArray *tags, StrFlexList *strings) {
     MediaLibraryTagArray replacement = {0};
 
     if ((tags == NULL) || (strings == NULL)) {
@@ -1981,8 +1980,7 @@ media_lib_copy_sorted_songs(NcmSongArray *songs, NcmSongArray *source) {
 }
 
 int32
-media_lib_screen_toggle_sort_mode(MediaLibraryScreen *screen,
-                                  bool *enabled) {
+media_lib_screen_toggle_sort_mode(MediaLibraryScreen *screen, bool *enabled) {
     if (screen == NULL) {
         return -EINVAL;
     }
