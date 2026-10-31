@@ -417,9 +417,9 @@ sort_playlist_dialog_open(SortPlaylistDialog *dialog, PlaylistScreen *playlist,
     }
 
     songs = (NcmSongArray){0};
-    status = playlist_screen_copy_sort_range(playlist, &songs, &start_position,
-                                             ncm_error);
-    if (status < 0) {
+    if ((status = playlist_screen_copy_sort_range(playlist, &songs,
+                                                  &start_position,
+                                                  ncm_error)) < 0) {
         ncm_song_array_destroy(&songs);
         return status;
     }
@@ -438,8 +438,7 @@ sort_playlist_dialog_open(SortPlaylistDialog *dialog, PlaylistScreen *playlist,
     dialog->ignore_leading_the = ignore_leading_the;
     dialog->ready = true;
 
-    status = nc_screen_switcher_switch_to(&dialog->screen, false);
-    if (status < 0) {
+    if ((status = nc_screen_switcher_switch_to(&dialog->screen, false)) < 0) {
         ncm_song_array_clear(&dialog->songs);
         dialog->playlist = NULL;
         dialog->previous_screen = NULL;

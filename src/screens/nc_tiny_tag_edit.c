@@ -587,8 +587,7 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
                       tag_separator, tag_separator_len);
     screen->show_duplicate_tags = show_duplicate_tags;
 
-    status = mutable_song_load_originals_from_song(&edited, song);
-    if (status < 0) {
+    if ((status = mutable_song_load_originals_from_song(&edited, song)) < 0) {
         mutable_song_destroy(&edited);
         return TINY_TAG_EDIT_OPEN_PREPARE_FAILED;
     }
