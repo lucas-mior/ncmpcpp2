@@ -120,8 +120,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
 
     menu = nc_editor_buffer_menu_base(&screen->rows);
 
-    if (BETWEEN(row,
-                TINY_TAG_EDIT_FIRST_TAG_ROW, TINY_TAG_EDIT_LAST_TAG_ROW)) {
+    if (BETWEEN(row, TINY_TAG_EDIT_FIRST_TAG_ROW, TINY_TAG_EDIT_LAST_TAG_ROW)) {
         char *field_name;
         char *tag_separator;
         int32 field_name_len;

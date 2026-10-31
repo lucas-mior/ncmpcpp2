@@ -1335,8 +1335,7 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
     }
 
     rand_shuffle(files.items, strflex_list_len(&files), SIZEOF(*files.items));
-    if ((status = ncm_mpd_client_start_cmd_list_ready(client,
-                                                      ncm_error)) < 0) {
+    if ((status = ncm_mpd_client_start_cmd_list_ready(client, ncm_error)) < 0) {
         goto cleanup;
     }
 

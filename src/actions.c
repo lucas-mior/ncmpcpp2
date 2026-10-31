@@ -1554,8 +1554,7 @@ action_runtime_find_item(enum SearchDirection direction) {
         char *data = constraint.data;
         int32 len = constraint.len;
 
-        if (!search_prompt_state_has_cached_result(&state, data, len,
-                                                   NULL)) {
+        if (!search_prompt_state_has_cached_result(&state, data, len, NULL)) {
             ncm_error_clear(&ncm_error);
             if (action_runtime_search_prompt_apply(&state, data, len, NULL,
                                                    &ncm_error) < 0) {
@@ -3125,8 +3124,7 @@ action_runtime_select_album(void) {
     }
 
     current = nc_menu_highlight(menu);
-    if (action_runtime_song_tag_at(current, SONG_GETTER_ALBUM,
-                                   &album) < 0) {
+    if (action_runtime_song_tag_at(current, SONG_GETTER_ALBUM, &album) < 0) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 

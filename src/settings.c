@@ -226,8 +226,7 @@ settings_parse_double_range(char *value, int32 value_len, double *result,
     double parsed;
     int32 status;
 
-    if ((status = ncm_parse_double(value, value_len, &parsed,
-                                   ncm_error)) < 0) {
+    if ((status = ncm_parse_double(value, value_len, &parsed, ncm_error)) < 0) {
         return status;
     }
     if ((minimum == -HUGE_VAL) && (maximum == HUGE_VAL)) {
