@@ -830,8 +830,8 @@ ncm_status_update(MpdClient *client, uint32 event, NcmError *ncm_error) {
                                     STRLIT("MPD client is NULL"));
     }
 
-    status = ncm_mpd_client_get_status(client, &mpd_status, ncm_error);
-    if (status < 0) {
+    if ((status = ncm_mpd_client_get_status(client, &mpd_status,
+                                            ncm_error)) < 0) {
         return status;
     }
     status_reset_visualizer_for_player_event(event);
@@ -850,8 +850,8 @@ ncm_status_update_full(MpdClient *client, NcmStatusHooks *hooks,
                                     STRLIT("MPD client is NULL"));
     }
 
-    status = ncm_mpd_client_get_status(client, &mpd_status, ncm_error);
-    if (status < 0) {
+    if ((status = ncm_mpd_client_get_status(client, &mpd_status,
+                                            ncm_error)) < 0) {
         return status;
     }
 
@@ -872,13 +872,12 @@ ncm_status_update_from_noidle(MpdClient *client, NcmStatusHooks *hooks,
     }
 
     flags = 0;
-    status = ncm_mpd_client_noidle(client, &flags, ncm_error);
-    if (status < 0) {
+    if ((status = ncm_mpd_client_noidle(client, &flags, ncm_error)) < 0) {
         return status;
     }
 
-    status = ncm_mpd_client_get_status(client, &mpd_status, ncm_error);
-    if (status < 0) {
+    if ((status = ncm_mpd_client_get_status(client, &mpd_status,
+                                            ncm_error)) < 0) {
         return status;
     }
     status_reset_visualizer_for_player_event(flags);

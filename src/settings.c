@@ -174,10 +174,10 @@ settings_copy_nc_buffer(NcBuffer *buffer, char *value, int32 value_len,
         return 0;
     }
 
-    status = ncm_format_parse(&ast, value, value_len,
-                              NCM_FORMAT_FLAG_COLOR | NCM_FORMAT_FLAG_FORMAT,
-                              ncm_error);
-    if (status < 0) {
+    if ((status = ncm_format_parse(&ast, value, value_len,
+                                   NCM_FORMAT_FLAG_COLOR
+                                       |NCM_FORMAT_FLAG_FORMAT,
+                                   ncm_error)) < 0) {
         nc_buffer_destroy(&tmp);
         ncm_format_ast_destroy(&ast);
         return status;
@@ -207,13 +207,12 @@ settings_parse_int_range(char *value, int32 value_len, int32 *result,
     int64 parsed;
     int32 status;
 
-    status = parse_integer(value, value_len, &parsed);
-    if (status < 0) {
+    if ((status = parse_integer(value, value_len, &parsed)) < 0) {
         return ncm_error_set_status(ncm_error, status,
                                     STRLIT("invalid integer"));
     }
-    status = ncm_bounds_check_i64(parsed, minimum, maximum, ncm_error);
-    if (status < 0) {
+    if ((status = ncm_bounds_check_i64(parsed, minimum, maximum,
+                                       ncm_error)) < 0) {
         return status;
     }
     *result = (int32)parsed;
@@ -227,8 +226,8 @@ settings_parse_double_range(char *value, int32 value_len, double *result,
     double parsed;
     int32 status;
 
-    status = ncm_parse_double(value, value_len, &parsed, ncm_error);
-    if (status < 0) {
+    if ((status = ncm_parse_double(value, value_len, &parsed,
+                                   ncm_error)) < 0) {
         return status;
     }
     if ((minimum == -HUGE_VAL) && (maximum == HUGE_VAL)) {
@@ -330,24 +329,23 @@ settings_parse_color(char *value, int32 value_len, NcColor *color,
 
     underscore = ncm_string_find_char(value, value_len, '_');
     if (underscore < 0) {
-        status = settings_parse_single_color(value, value_len, false,
-                                             &foreground, ncm_error);
-        if (status < 0) {
+        if ((status = settings_parse_single_color(value, value_len, false,
+                                                  &foreground,
+                                                  ncm_error)) < 0) {
             return status;
         }
         *color = nc_color_make(foreground, NC_COLOR_CURRENT, false, false);
         return 0;
     }
 
-    status = settings_parse_single_color(value, underscore, false, &foreground,
-                                         ncm_error);
-    if (status < 0) {
+    if ((status = settings_parse_single_color(value, underscore, false,
+                                              &foreground, ncm_error)) < 0) {
         return status;
     }
-    status = settings_parse_single_color(value + underscore + 1,
-                                         value_len - underscore - 1,
-                                         true, &background, ncm_error);
-    if (status < 0) {
+    if ((status = settings_parse_single_color(value + underscore + 1,
+                                              value_len - underscore - 1,
+                                              true, &background,
+                                              ncm_error)) < 0) {
         return status;
     }
     *color = nc_color_make(foreground, background, false, false);
@@ -366,8 +364,7 @@ settings_parse_text_style(char *value, int32 value_len,
     if (colon < 0) {
         colon = value_len;
     }
-    status = settings_parse_color(value, colon, &base, ncm_error);
-    if (status < 0) {
+    if ((status = settings_parse_color(value, colon, &base, ncm_error)) < 0) {
         return status;
     }
     if (nc_color_is_end(base)) {
@@ -409,8 +406,8 @@ settings_parse_border(char *value, int32 value_len, NcBorder *border,
     NcColor color;
     int32 status;
 
-    status = settings_parse_color(value, value_len, &color, ncm_error);
-    if (status < 0) {
+    if ((status = settings_parse_color(value, value_len, &color,
+                                       ncm_error)) < 0) {
         return status;
     }
     *border = nc_border_make(color);
@@ -495,8 +492,7 @@ settings_parse_list(char *value, int32 value_len, void *context,
         if (item_len <= 0) {
             continue;
         }
-        status = append_item(context, item, item_len, ncm_error);
-        if (status < 0) {
+        if ((status = append_item(context, item, item_len, ncm_error)) < 0) {
             return status;
         }
         added = true;
@@ -650,8 +646,7 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
             width.len -= 1;
             width.data[width.len] = '\0';
         }
-        status = parse_integer(width.data, width.len, &width_value);
-        if (status < 0) {
+        if ((status = parse_integer(width.data, width.len, &width_value)) < 0) {
             str_free(&width);
             str_free(&color);
             str_free(&tag);
@@ -666,9 +661,9 @@ settings_parse_columns(ColumnArray *columns, NcmFormatAst *format,
         parsed_width = (int32)width_value;
         column->width = parsed_width;
         if (color.len > 0) {
-            status = settings_parse_color(color.data, color.len,
-                                          &column->color, ncm_error);
-            if (status < 0) {
+            if ((status = settings_parse_color(color.data, color.len,
+                                               &column->color,
+                                               ncm_error)) < 0) {
                 str_free(&width);
                 str_free(&color);
                 str_free(&tag);
@@ -800,8 +795,8 @@ settings_append_screen(void *context, char *item, int32 item_len,
     enum ScreenType screen;
     int32 status;
 
-    status = settings_parse_startup_screen(item, item_len, &screen, ncm_error);
-    if (status < 0) {
+    if ((status = settings_parse_startup_screen(item, item_len, &screen,
+                                                ncm_error)) < 0) {
         return status;
     }
     slot = screen_type_array_append(array);
@@ -917,26 +912,23 @@ config_apply_runtime(Configuration *config, MpdClient *client, bool quiet,
                                     STRLIT("missing runtime configuration"));
     }
 
-    status = ncm_mpd_client_set_hostname(client,
-                                         config->mpd_host, config->mpd_host_len,
-                                         ncm_error);
-    if (status < 0) {
+    if ((status = ncm_mpd_client_set_hostname(client, config->mpd_host,
+                                              config->mpd_host_len,
+                                              ncm_error)) < 0) {
         return status;
     }
     ncm_mpd_client_set_port(client, (uint16)config->mpd_port);
     if (config->mpd_password_len > 0) {
-        status = ncm_mpd_client_set_password(client,
-                                             config->mpd_password,
-                                             config->mpd_password_len,
-                                             ncm_error);
-        if (status < 0) {
+        if ((status = ncm_mpd_client_set_password(client, config->mpd_password,
+                                                  config->mpd_password_len,
+                                                  ncm_error)) < 0) {
             return status;
         }
     }
-    status = ncm_mpd_client_set_timeout_ms(client,
-                                           config->mpd_connection_timeout*1000,
-                                           ncm_error);
-    if (status < 0) {
+    if ((status = ncm_mpd_client_set_timeout_ms(client,
+                                                config->mpd_connection_timeout
+                                                    *1000,
+                                                ncm_error)) < 0) {
         return status;
     }
 
@@ -1211,8 +1203,8 @@ config_read(Configuration *config, StrViewList *config_paths,
                            "failed to read configuration file '%.*s': %s",
                            path.len, path.data, strerror(error_code));
             ncm_error_set_status(ncm_error, content_len, message, len);
-            status = settings_report_or_ignore(ncm_error, ignore_errors);
-            if (status < 0) {
+            if ((status = settings_report_or_ignore(ncm_error,
+                                                    ignore_errors)) < 0) {
                 return status;
             }
             continue;
@@ -1246,12 +1238,12 @@ config_read(Configuration *config, StrViewList *config_paths,
                        || (current_line[line_len - 1] == '\r'))) {
                 line_len -= 1;
             }
-            status = ncm_option_parser_parse_line(current_line, line_len,
-                                                  &parsed, &has_option);
-            if (status < 0) {
+            if ((status = ncm_option_parser_parse_line(current_line, line_len,
+                                                       &parsed,
+                                                       &has_option)) < 0) {
                 settings_invalid_value(ncm_error, current_line, line_len);
-                status = settings_report_or_ignore(ncm_error, ignore_errors);
-                if (status < 0) {
+                if ((status = settings_report_or_ignore(ncm_error,
+                                                        ignore_errors)) < 0) {
                     free2(content, content_len + 1);
                     return status;
                 }
@@ -1276,8 +1268,8 @@ config_read(Configuration *config, StrViewList *config_paths,
                 len = SNPRINTF(message, "unknown option: %.*s",
                                         parsed.option_len, parsed.option);
                 ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE, message, len);
-                status = settings_report_or_ignore(ncm_error, ignore_errors);
-                if (status < 0) {
+                if ((status = settings_report_or_ignore(ncm_error,
+                                                        ignore_errors)) < 0) {
                     free2(content, content_len + 1);
                     return status;
                 }
@@ -1293,19 +1285,19 @@ config_read(Configuration *config, StrViewList *config_paths,
                                ncmpcpp_options[option_index].name_len,
                                ncmpcpp_options[option_index].name);
                 ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE, message, len);
-                status = settings_report_or_ignore(ncm_error, ignore_errors);
-                if (status < 0) {
+                if ((status = settings_report_or_ignore(ncm_error,
+                                                        ignore_errors)) < 0) {
                     free2(content, content_len + 1);
                     return status;
                 }
                 continue;
             }
             used[option_index] = true;
-            status = settings_apply_option(config,
-                                           ncmpcpp_options[option_index],
-                                           parsed.value, parsed.value_len,
-                                           false, ignore_errors, ncm_error);
-            if (status < 0) {
+            if ((status = settings_apply_option(config,
+                                                ncmpcpp_options[option_index],
+                                                parsed.value, parsed.value_len,
+                                                false, ignore_errors,
+                                                ncm_error)) < 0) {
                 free2(content, content_len + 1);
                 return status;
             }
@@ -1317,17 +1309,16 @@ config_read(Configuration *config, StrViewList *config_paths,
         if (used[i]) {
             continue;
         }
-        status = settings_apply_option(config, ncmpcpp_options[i],
+        if ((status =
+                 settings_apply_option(config, ncmpcpp_options[i],
                                        ncmpcpp_options[i].default_value,
                                        ncmpcpp_options[i].default_value_len,
-                                       true, ignore_errors, ncm_error);
-        if (status < 0) {
+                                       true, ignore_errors, ncm_error)) < 0) {
             return status;
         }
     }
 
-    status = config_validate(config, ncm_error);
-    if (status < 0) {
+    if ((status = config_validate(config, ncm_error)) < 0) {
         return settings_report_or_ignore(ncm_error, ignore_errors);
     }
     return 0;
