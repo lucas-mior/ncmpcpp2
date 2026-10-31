@@ -306,14 +306,16 @@ ncm_lastfm_service_fetch(NcmLastfmService *service, NcmLastfmResult *result) {
 
     STR_APPEND(&url, LASTFM_API_URL);
     STR_APPEND(&url, "artist.getinfo&artist=");
-    status = lastfm_append_escaped(&url, service->artist, service->artist_len);
-    if (status < 0) {
+    if ((status =
+             lastfm_append_escaped(&url, service->artist, service->artist_len))
+        < 0) {
         goto cleanup;
     }
     if (service->lang_len > 0) {
         STR_APPEND(&url, "&lang=");
-        status = lastfm_append_escaped(&url, service->lang, service->lang_len);
-        if (status < 0) {
+        if ((status =
+                 lastfm_append_escaped(&url, service->lang, service->lang_len))
+            < 0) {
             goto cleanup;
         }
     }

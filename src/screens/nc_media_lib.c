@@ -2308,9 +2308,8 @@ media_lib_screen_selected_songs_checked(MediaLibraryScreen *screen,
             }
             row = nc_menu_active_item_at(menu, i);
             library_query_from_tag(screen, row, &query);
-            status = library_append_query_songs(screen, &query, songs,
-                                                ncm_error);
-            if (status < 0) {
+            if ((status = library_append_query_songs(screen, &query, songs,
+                                                     ncm_error)) < 0) {
                 return status;
             }
         }
@@ -2338,9 +2337,8 @@ media_lib_screen_selected_songs_checked(MediaLibraryScreen *screen,
 
             row = nc_menu_active_item_at(menu, i);
             library_query_from_album(screen, row, &query);
-            status = library_append_query_songs(screen, &query, songs,
-                                                ncm_error);
-            if (status < 0) {
+            if ((status = library_append_query_songs(screen, &query, songs,
+                                                     ncm_error)) < 0) {
                 return status;
             }
         }
@@ -2693,8 +2691,9 @@ media_lib_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
 
         grouping_tag = Config.media_lib_primary_tag;
         if (screen->sort_by_mtime) {
-            status = media_lib_screen_list_all_songs(screen, &songs, ncm_error);
-            if (status < 0) {
+            if ((status =
+                     media_lib_screen_list_all_songs(screen, &songs, ncm_error))
+                < 0) {
                 bool ignored;
 
                 screen->tags_update_request = true;
@@ -2708,9 +2707,9 @@ media_lib_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
             }
             media_lib_tags_from_songs(&tags, &songs, grouping_tag);
         } else {
-            status = media_lib_screen_list_tags(screen, grouping_tag,
-                                                &strings, ncm_error);
-            if (status < 0) {
+            if ((status =
+                     media_lib_screen_list_tags(screen, grouping_tag,
+                                                &strings, ncm_error)) < 0) {
                 screen->tags_update_request = true;
                 ncm_song_array_destroy(&songs);
                 strflex_list_destroy(&strings);
@@ -2810,8 +2809,9 @@ media_lib_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
             status = media_lib_screen_search_songs(screen, &query, &songs,
                                                    ncm_error);
         } else {
-            status = media_lib_screen_list_all_songs(screen, &songs, ncm_error);
-            if (status < 0) {
+            if ((status =
+                     media_lib_screen_list_all_songs(screen, &songs, ncm_error))
+                < 0) {
                 media_lib_screen_toggle_mode(screen, NULL);
                 library_request_all_updates(screen);
             }
@@ -2923,9 +2923,8 @@ media_lib_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
             }
         }
 
-        status = media_lib_screen_search_songs(screen, &query, &source,
-                                               ncm_error);
-        if (status < 0) {
+        if ((status = media_lib_screen_search_songs(screen, &query, &source,
+                                                    ncm_error)) < 0) {
             screen->songs_update_request = true;
             ncm_song_array_destroy(&songs);
             ncm_song_array_destroy(&source);
@@ -3336,8 +3335,7 @@ media_lib_screen_locate_song(MediaLibraryScreen *screen,
         library_clear_column_filter(screen, MEDIA_LIBRARY_COLUMN_TAGS);
         if (nc_menu_item_len(tags_menu) <= 0) {
             media_lib_screen_request_tags_update(screen);
-            status = media_lib_screen_update(screen, ncm_error);
-            if (status < 0) {
+            if ((status = media_lib_screen_update(screen, ncm_error)) < 0) {
                 return status;
             }
         }
@@ -3389,8 +3387,7 @@ media_lib_screen_locate_song(MediaLibraryScreen *screen,
     library_clear_column_filter(screen, MEDIA_LIBRARY_COLUMN_ALBUMS);
     if (nc_menu_item_len(albums_menu) <= 0) {
         media_lib_screen_request_albums_update(screen);
-        status = media_lib_screen_update(screen, ncm_error);
-        if (status < 0) {
+        if ((status = media_lib_screen_update(screen, ncm_error)) < 0) {
             return status;
         }
     }
@@ -3508,8 +3505,7 @@ media_lib_screen_locate_song(MediaLibraryScreen *screen,
 
     library_clear_column_filter(screen, MEDIA_LIBRARY_COLUMN_SONGS);
     media_lib_screen_request_songs_update(screen);
-    status = media_lib_screen_update(screen, ncm_error);
-    if (status < 0) {
+    if ((status = media_lib_screen_update(screen, ncm_error)) < 0) {
         return status;
     }
     if (nc_menu_item_len(songs_menu) <= 0) {

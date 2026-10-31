@@ -509,8 +509,9 @@ playlist_screen_unregister(PlaylistScreen *screen) {
     if (!screen->registered) {
         return 0;
     }
-    status = app_controller_unregister_screen(playlist_screen_base(screen));
-    if (status < 0) {
+    if ((status =
+             app_controller_unregister_screen(playlist_screen_base(screen)))
+        < 0) {
         return status;
     }
     screen->registered = false;
@@ -1110,10 +1111,9 @@ playlist_screen_copy_sort_range(PlaylistScreen *screen, NcmSongArray *songs,
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing playlist range position"));
     }
-    status = playlist_screen_find_sort_range(screen,
-                                             &first, &last, &range_start,
-                                             ncm_error);
-    if (status < 0) {
+    if ((status = playlist_screen_find_sort_range(screen,
+                                                  &first, &last, &range_start,
+                                                  ncm_error)) < 0) {
         return status;
     }
 
@@ -1250,9 +1250,9 @@ playlist_screen_search(PlaylistScreen *screen, char *pattern, int32 pattern_len,
     }
 
     regex = (NcmRegex){0};
-    status = ncm_regex_compile(&regex, pattern, pattern_len,
-                               Config.regular_expressions, ncm_error);
-    if (status < 0) {
+    if ((status =
+             ncm_regex_compile(&regex, pattern, pattern_len,
+                               Config.regular_expressions, ncm_error)) < 0) {
         ncm_regex_destroy(&regex);
         return status;
     }
@@ -1300,8 +1300,8 @@ playlist_screen_set_selected_priority(PlaylistScreen *screen,
     context.priority = priority;
     status = 0;
     for (int32 i = 0; i < songs.len; i += 1) {
-        status = playlist_set_one_priority(&songs.items[i], i, &context);
-        if (status < 0) {
+        if ((status =
+                 playlist_set_one_priority(&songs.items[i], i, &context)) < 0) {
             break;
         }
     }

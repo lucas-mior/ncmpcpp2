@@ -358,8 +358,9 @@ ncmpcpp_update_environment(bool update_timer, bool refresh_window,
 
     if (mpd_sync) {
         ncm_error_clear(&ncm_error);
-        status = ncm_status_update_from_noidle(&global_mpd, NULL, &ncm_error);
-        if (status < 0) {
+        if ((status =
+                 ncm_status_update_from_noidle(&global_mpd, NULL, &ncm_error))
+            < 0) {
             return status;
         }
     }

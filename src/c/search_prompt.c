@@ -78,8 +78,7 @@ search_prompt_state_finish_result(SearchPromptState *state,
     if (!search_ok) {
         return 0;
     }
-    status = str_set(&state->last_text, text, text_len);
-    if (status < 0) {
+    if ((status = str_set(&state->last_text, text, text_len)) < 0) {
         return status;
     }
 

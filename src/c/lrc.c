@@ -182,8 +182,8 @@ lrc_parse_line_offset_tags(LrcDocument *document, char *line, int32 line_len,
 
         tag = line + cursor + 1;
         tag_len = close - cursor - 1;
-        status = lrc_parse_offset_tag(document, tag, tag_len, ncm_error);
-        if (status < 0) {
+        if ((status =
+                 lrc_parse_offset_tag(document, tag, tag_len, ncm_error)) < 0) {
             return status;
         }
 
@@ -203,9 +203,8 @@ lrc_parse_offsets(LrcDocument *document, char *data, int32 data_len,
         char *line = data + pos;
         int32 status;
 
-        status = lrc_parse_line_offset_tags(document, line, line_len,
-                                            ncm_error);
-        if (status < 0) {
+        if ((status = lrc_parse_line_offset_tags(document, line, line_len,
+                                                 ncm_error)) < 0) {
             return status;
         }
 
@@ -269,12 +268,13 @@ lrc_parse_time_tag(char *tag, int32 tag_len, int32 offset_ms, int32 *time_ms,
         return lrc_malformed_line(ncm_error);
     }
 
-    status = lrc_parse_time_integer(tag, colon, &minutes, ncm_error);
-    if (status < 0) {
+    if ((status =
+             lrc_parse_time_integer(tag, colon, &minutes, ncm_error)) < 0) {
         return status;
     }
-    status = lrc_parse_time_integer(tag + colon + 1, 2, &seconds, ncm_error);
-    if (status < 0) {
+    if ((status =
+             lrc_parse_time_integer(tag + colon + 1, 2, &seconds, ncm_error))
+        < 0) {
         return status;
     }
     if (seconds >= 60) {
@@ -288,9 +288,8 @@ lrc_parse_time_tag(char *tag, int32 tag_len, int32 offset_ms, int32 *time_ms,
             return lrc_malformed_line(ncm_error);
         }
 
-        status = lrc_parse_time_integer(tag + dot + 1, frac_len,
-                                        &milliseconds, ncm_error);
-        if (status < 0) {
+        if ((status = lrc_parse_time_integer(tag + dot + 1, frac_len,
+                                             &milliseconds, ncm_error)) < 0) {
             return status;
         }
         if (frac_len == 1) {
@@ -381,9 +380,8 @@ lrc_parse_line_entries(LrcDocument *document, char *line, int32 line_len,
 
         tag = line + cursor + 1;
         tag_len = close - cursor - 1;
-        status = lrc_parse_time_tag(tag, tag_len, document->offset_ms,
-                                    &time_ms, ncm_error);
-        if (status < 0) {
+        if ((status = lrc_parse_time_tag(tag, tag_len, document->offset_ms,
+                                         &time_ms, ncm_error)) < 0) {
             return status;
         }
         if ((status > 0) && (times_len < LENGTH(times))) {
@@ -420,10 +418,10 @@ lrc_parse_entries(LrcDocument *document, char *data, int32 data_len,
                 blank_lines_before += 1;
             }
         } else {
-            status = lrc_parse_line_entries(document, line, line_len,
+            if ((status =
+                     lrc_parse_line_entries(document, line, line_len,
                                             &source_order, blank_lines_before,
-                                            ncm_error);
-            if (status < 0) {
+                                            ncm_error)) < 0) {
                 return status;
             }
             blank_lines_before = 0;
@@ -449,14 +447,12 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
                                     STRLIT("missing LRC data"));
     }
 
-    status = lrc_parse_offsets(&parsed, data, data_len, ncm_error);
-    if (status < 0) {
+    if ((status = lrc_parse_offsets(&parsed, data, data_len, ncm_error)) < 0) {
         lrc_document_destroy_unchecked(&parsed);
         return status;
     }
 
-    status = lrc_parse_entries(&parsed, data, data_len, ncm_error);
-    if (status < 0) {
+    if ((status = lrc_parse_entries(&parsed, data, data_len, ncm_error)) < 0) {
         lrc_document_destroy_unchecked(&parsed);
         return status;
     }

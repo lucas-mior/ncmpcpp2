@@ -336,8 +336,7 @@ ncm_lyrics_fetcher_registry_append_name(LyricsFetcherRegistry *registry,
     }
 
     fetcher = ncm_lyrics_fetcher_registry_append(registry);
-    status = lyrics_fetcher_def_set_name(fetcher, name, name_len);
-    if (status < 0) {
+    if ((status = lyrics_fetcher_def_set_name(fetcher, name, name_len)) < 0) {
         registry->fetchers.len -= 1;
         lyrics_fetcher_def_destroy(fetcher);
         return status;
@@ -1603,9 +1602,8 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
     bool plain_text;
 
     *retry = false;
-    status = lyrics_curl_perform(&data, url->data, url->len,
-                                 referer, referer_len, true, 15);
-    if (status < 0) {
+    if ((status = lyrics_curl_perform(&data, url->data, url->len,
+                                      referer, referer_len, true, 15)) < 0) {
         message = lyrics_status_error(status, &message_len);
         lyrics_result_set(result, false, message, message_len);
         *retry = status != -ETIMEDOUT;
@@ -2280,10 +2278,9 @@ lyrics_collect_direct_urls(LyricsFetcherDef *fetcher, StringArray *urls,
     for (int32 i = 0; i < LENGTH(pairs); i += 1) {
         String *item;
 
-        status = lyrics_append_direct_url(fetcher, &candidate, pairs[i],
-                                          artist, artist_len,
-                                          title, title_len);
-        if (status < 0) {
+        if ((status = lyrics_append_direct_url(fetcher, &candidate, pairs[i],
+                                               artist, artist_len,
+                                               title, title_len)) < 0) {
             break;
         }
         if (lyrics_url_is_collected(urls, candidate.data, candidate.len)) {
@@ -2802,19 +2799,19 @@ lyrics_fetch_search_urls(LyricsFetcherDef *fetcher, LyricsResult *result,
 
     lyrics_fetcher_build_url(fetcher, &search_url,
                              artist, artist_len, title, title_len);
-    status = lyrics_curl_perform(&data,
-                                 search_url.data, search_url.len,
-                                 NULL, 0, true, 15);
-    if (status < 0) {
+    if ((status = lyrics_curl_perform(&data,
+                                      search_url.data, search_url.len,
+                                      NULL, 0, true, 15)) < 0) {
         message = lyrics_status_error(status, &message_len);
         lyrics_result_set(result, false, message, message_len);
         goto cleanup;
     }
 
-    status = lyrics_collect_search_urls(fetcher, &page_urls,
+    if ((status =
+             lyrics_collect_search_urls(fetcher, &page_urls,
                                         data.data, data.len,
-                                        artist, artist_len, title, title_len);
-    if (status < 0) {
+                                        artist, artist_len, title, title_len))
+        < 0) {
         lyrics_result_set(result, false, STRLIT(LYRICS_MSG_NOT_FOUND));
         goto cleanup;
     }

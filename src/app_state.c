@@ -50,8 +50,7 @@ app_state_switch_to_screen(NcScreen *screen) {
     int32 status;
 
     changed_screen = screen_registry.current_screen != screen;
-    status = nc_screen_registry_switch_to(&screen_registry, screen);
-    if (status < 0) {
+    if ((status = nc_screen_registry_switch_to(&screen_registry, screen)) < 0) {
         return status;
     }
     last_switch_has_changed_screen = changed_screen;

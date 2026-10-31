@@ -221,9 +221,8 @@ ncm_mpd_item_song_from_mpd_song_copy_internal(NcmSong *dest, void *mpd_song,
             if (value == NULL) {
                 break;
             }
-            status = ncm_song_add_tag(&replacement, tags[i].ncm, value,
-                                      strlen32(value));
-            if (status < 0) {
+            if ((status = ncm_song_add_tag(&replacement, tags[i].ncm, value,
+                                           strlen32(value))) < 0) {
                 ncm_song_destroy(&replacement);
                 return status;
             }
@@ -257,10 +256,10 @@ ncm_mpd_item_song_from_mpd_song_copy_internal(NcmSong *dest, void *mpd_song,
                 if (value == NULL) {
                     break;
                 }
-                status = ncm_song_add_property(&replacement,
+                if ((status =
+                         ncm_song_add_property(&replacement,
                                                name, strlen32(name),
-                                               value, strlen32(value));
-                if (status < 0) {
+                                               value, strlen32(value))) < 0) {
                     ncm_song_destroy(&replacement);
                     return status;
                 }
@@ -450,8 +449,8 @@ ncm_mpd_item_from_entity_copy(NcmMpdItem *item, void *mpd_entity) {
         replacement.kind = NCM_MPD_ITEM_PLAYLIST;
         replacement.playlist = (NcmPlaylist){0};
         playlist = &replacement.playlist;
-        status = ncm_mpd_item_playlist_from_mpd_playlist(playlist, source);
-        if (status < 0) {
+        if ((status = ncm_mpd_item_playlist_from_mpd_playlist(playlist, source))
+            < 0) {
             ncm_mpd_item_destroy(&replacement);
             return status;
         }

@@ -990,8 +990,8 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
             int32 extension_start;
 
             if ((status = tag_edit_generate_filename(song, screen->pattern,
-                                                      screen->pattern_len,
-                                                      &stem)) < 0) {
+                                                     screen->pattern_len,
+                                                     &stem)) < 0) {
                 str_free(&new_name);
                 str_free(&stem);
                 return status;
@@ -1681,7 +1681,7 @@ tag_edit_update(NcScreen *screen) {
         || (nc_menu_item_len(nc_editor_pair_menu_base(&editor->directories))
             <= 0)) {
         if ((status = tag_edit_reload_directories_from_mpd(editor, &global_mpd,
-                                                          &ncm_error)) < 0) {
+                                                           &ncm_error)) < 0) {
             editor->directories_update_requested = false;
             tag_edit_report_error(STRLIT("Could not fetch directories"),
                                   &ncm_error);
@@ -1705,7 +1705,7 @@ tag_edit_update(NcScreen *screen) {
     if (continue_update) {
         ncm_error_clear(&ncm_error);
         if ((status = tag_edit_reload_songs_from_mpd(editor, &global_mpd,
-                                                    &ncm_error)) < 0) {
+                                                     &ncm_error)) < 0) {
             editor->tags_update_requested = false;
             tag_edit_report_error(STRLIT("Could not fetch songs"), &ncm_error);
             ncm_error_clear(&ncm_error);

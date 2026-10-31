@@ -1498,8 +1498,8 @@ server_info_render(void *user, NcBuffer *buffer) {
     owner->timer = global_timer;
 
     ncm_error_clear(&ncm_error);
-    status = ncm_mpd_client_get_stats(&global_mpd, &stats, &ncm_error);
-    if (status < 0) {
+    if ((status =
+             ncm_mpd_client_get_stats(&global_mpd, &stats, &ncm_error)) < 0) {
         return status;
     }
 

@@ -463,10 +463,11 @@ playlist_edit_update_callback(NcScreen *screen) {
     playlists = nc_playlist_entry_menu_base(&editor->playlists);
     if (editor->playlists_update_requested
         || (nc_menu_item_len(playlists) <= 0)) {
-        status = playlist_edit_screen_reload_playlists_from_mpd(editor,
+        if ((status =
+                 playlist_edit_screen_reload_playlists_from_mpd(editor,
                                                                 &global_mpd,
-                                                                &ncm_error);
-        if (status < 0) {
+                                                                &ncm_error))
+            < 0) {
             editor->playlists_update_requested = false;
             playlist_edit_report_error(STRLIT("Could not fetch playlists"),
                                        &ncm_error);
@@ -503,9 +504,9 @@ playlist_edit_update_callback(NcScreen *screen) {
     }
 
     ncm_error_clear(&ncm_error);
-    status = playlist_edit_screen_reload_content_from_mpd(editor, &global_mpd,
-                                                          &ncm_error);
-    if (status < 0) {
+    if ((status =
+             playlist_edit_screen_reload_content_from_mpd(editor, &global_mpd,
+                                                          &ncm_error)) < 0) {
         editor->content_update_requested = false;
         playlist_edit_report_error(STRLIT("Could not fetch playlist content"),
                                    &ncm_error);
@@ -577,11 +578,11 @@ playlist_edit_mouse_callback(NcScreen *screen, MEVENT event) {
                         nc_playlist_entry_menu_current(&editor->playlists);
                     loaded = false;
                     ncm_error_clear(&ncm_error);
-                    status = ncm_mpd_client_load_playlist(&global_mpd,
+                    if ((status =
+                             ncm_mpd_client_load_playlist(&global_mpd,
                                                           playlist->path,
                                                           &loaded,
-                                                          &ncm_error);
-                    if (status < 0) {
+                                                          &ncm_error)) < 0) {
                         char *context = "Could not load playlist";
 
                         playlist_edit_report_error(context, strlen32(context),
@@ -1425,9 +1426,9 @@ playlist_edit_screen_locate_playlist(PlaylistEditScreen *screen,
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing playlist"));
     }
-    status = playlist_edit_screen_reload_playlists_from_mpd(screen, client,
-                                                            ncm_error);
-    if (status < 0) {
+    if ((status =
+             playlist_edit_screen_reload_playlists_from_mpd(screen, client,
+                                                            ncm_error)) < 0) {
         return status;
     }
 
@@ -1454,9 +1455,9 @@ playlist_edit_screen_locate_playlist(PlaylistEditScreen *screen,
     playlist_edit_update_menu_highlights(screen);
     playlist_edit_clear_content_filter(screen);
     playlist_edit_clear_stale_content(screen);
-    status = playlist_edit_screen_reload_content_from_mpd(screen, client,
-                                                          ncm_error);
-    if (status < 0) {
+    if ((status =
+             playlist_edit_screen_reload_content_from_mpd(screen, client,
+                                                          ncm_error)) < 0) {
         return status;
     }
     return playlist_edit_show_screen(screen);
@@ -1585,7 +1586,8 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
         || screen->playlists_update_requested) {
         if ((status =
                  playlist_edit_screen_reload_playlists_from_mpd(screen, client,
-                                                                ncm_error)) < 0) {
+                                                                ncm_error))
+            < 0) {
             return status;
         }
     }
@@ -1777,7 +1779,8 @@ playlist_edit_screen_selected_songs(PlaylistEditScreen *screen,
             if ((status = ncm_mpd_client_get_playlist_content(&global_mpd,
                                                               playlist->path,
                                                               &list,
-                                                              &ncm_error)) < 0) {
+                                                              &ncm_error))
+                < 0) {
                 char *context = "Could not fetch playlist content";
 
                 playlist_edit_report_error(context, strlen32(context),

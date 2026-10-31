@@ -511,9 +511,8 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
         return status;
     }
 
-    status = config_apply_runtime(&Config, &global_mpd, options->quiet,
-                                  ncm_error);
-    if (status < 0) {
+    if ((status = config_apply_runtime(&Config, &global_mpd, options->quiet,
+                                       ncm_error)) < 0) {
         return status;
     }
 
@@ -527,8 +526,8 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
     if (env_port != NULL) {
         int64 parsed_port;
 
-        status = parse_integer(env_port, strlen32(env_port), &parsed_port);
-        if (status < 0) {
+        if ((status = parse_integer(env_port, strlen32(env_port), &parsed_port))
+            < 0) {
             return ncm_error_set_status(ncm_error, status,
                                         STRLIT("invalid MPD_PORT"));
         }
@@ -549,19 +548,18 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
         ncm_mpd_client_set_port(&global_mpd, (uint16)options->port);
     }
     if (options->screen) {
-        status = screen_type_parse_startup(options->screen_name.data,
-                                           options->screen_name.len,
-                                           &Config.startup_screen);
-        if (status < 0) {
+        if ((status = screen_type_parse_startup(options->screen_name.data,
+                                                options->screen_name.len,
+                                                &Config.startup_screen)) < 0) {
             return ncm_error_set_status(ncm_error, -EINVAL,
                                         STRLIT("unknown screen"));
         }
     }
     if (options->slave_screen) {
-        status = screen_type_parse_startup(options->slave_screen_name.data,
+        if ((status =
+                 screen_type_parse_startup(options->slave_screen_name.data,
                                            options->slave_screen_name.len,
-                                           &Config.startup_slave_screen);
-        if (status < 0) {
+                                           &Config.startup_slave_screen)) < 0) {
             return ncm_error_set_status(ncm_error, -EINVAL,
                                         STRLIT("unknown slave screen"));
         }

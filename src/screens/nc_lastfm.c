@@ -253,8 +253,7 @@ lastfm_job_run(void *user, NcmError *ncm_error) {
     LastfmJob *job = user;
     int32 status;
 
-    status = ncm_lastfm_service_fetch(&job->service, &job->result);
-    if (status < 0) {
+    if ((status = ncm_lastfm_service_fetch(&job->service, &job->result)) < 0) {
         ncm_error_set_status(ncm_error, status, STRLIT("Last.fm fetch failed"));
         return status;
     }
@@ -376,8 +375,7 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
         return ncm_error_ok(ncm_error);
     }
 
-    status = ncm_job_queue_start(&screen->jobs, ncm_error);
-    if (status < 0) {
+    if ((status = ncm_job_queue_start(&screen->jobs, ncm_error)) < 0) {
         ncm_lastfm_service_destroy(&candidate);
         return status;
     }
@@ -391,14 +389,13 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
                                 candidate.lang, candidate.lang_len);
     ncm_lastfm_service_destroy(&candidate);
 
-    status = ncm_job_queue_push(&screen->jobs,
-                                (NcmJob){
-                                    .run = lastfm_job_run,
-                                    .complete = lastfm_job_complete,
-                                    .destroy = lastfm_job_destroy,
-                                    .user = job,
-                                }, ncm_error);
-    if (status < 0) {
+    if ((status = ncm_job_queue_push(&screen->jobs,
+                                     (NcmJob){
+                                         .run = lastfm_job_run,
+                                         .complete = lastfm_job_complete,
+                                         .destroy = lastfm_job_destroy,
+                                         .user = job,
+                                     }, ncm_error)) < 0) {
         lastfm_job_destroy(job);
         return status;
     }

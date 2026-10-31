@@ -70,8 +70,8 @@ ncm_parse_double(char *source, int32 source_len, double *out,
                                     STRLIT("missing conversion output"));
     }
 
-    status = ncm_conversion_validate_source(source, source_len, ncm_error);
-    if (status < 0) {
+    if ((status = ncm_conversion_validate_source(source, source_len, ncm_error))
+        < 0) {
         return status;
     }
     ncm_conversion_copy_source(&buffer, source, source_len);

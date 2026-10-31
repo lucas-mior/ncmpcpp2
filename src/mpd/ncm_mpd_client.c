@@ -375,9 +375,8 @@ ncm_mpd_client_connect(MpdClient *client, NcmError *ncm_error) {
     client->cmd_list_active = false;
     if (client->password.len > 0) {
         password = str_opt_cstr(&client->password);
-        status = ncm_mpd_connection_send_password(&client->connection,
-                                                  password);
-        if (status < 0) {
+        if ((status = ncm_mpd_connection_send_password(&client->connection,
+                                                       password)) < 0) {
             ncm_mpd_client_copy_connection_error(client, ncm_error);
             ncm_mpd_client_disconnect_ready(client);
             return status;
@@ -1155,9 +1154,8 @@ ncm_mpd_client_get_directory_entries(MpdClient *client, char *path,
         return status;
     }
 
-    status = ncm_mpd_connection_get_directory(&client->connection, path,
-                                              &replacement);
-    if (status < 0) {
+    if ((status = ncm_mpd_connection_get_directory(&client->connection, path,
+                                                   &replacement)) < 0) {
         ncm_mpd_client_copy_connection_error(client, ncm_error);
     } else {
         ncm_mpd_item_array_move(items, &replacement);
@@ -1183,9 +1181,8 @@ ncm_mpd_client_get_directory_list(MpdClient *client, char *path,
         return status;
     }
 
-    status = ncm_mpd_connection_get_directory(&client->connection, path,
-                                              &items);
-    if (status < 0) {
+    if ((status = ncm_mpd_connection_get_directory(&client->connection, path,
+                                                   &items)) < 0) {
         ncm_mpd_client_copy_connection_error(client, ncm_error);
     } else {
         ncm_mpd_item_array_to_directory_array(&items, directories);
@@ -1236,9 +1233,8 @@ ncm_mpd_client_add_random_tag(MpdClient *client, enum TagType tag,
 
     tags = (StrFlexList){0};
     songs = (NcmSongArray){0};
-    status = ncm_mpd_connection_list_tag_values(&client->connection, tag,
-                                                &tags);
-    if (status < 0) {
+    if ((status = ncm_mpd_connection_list_tag_values(&client->connection, tag,
+                                                     &tags)) < 0) {
         ncm_mpd_client_copy_connection_error(client, ncm_error);
         goto cleanup;
     }
@@ -1250,22 +1246,21 @@ ncm_mpd_client_add_random_tag(MpdClient *client, enum TagType tag,
 
     rand_shuffle(tags.items, strflex_list_len(&tags), SIZEOF(*tags.items));
     for (int32 i = 0; i < number; i += 1) {
-        status = ncm_mpd_connection_start_search_songs(&client->connection,
-                                                       true);
-        if (status < 0) {
+        if ((status = ncm_mpd_connection_start_search_songs(&client->connection,
+                                                            true)) < 0) {
             ncm_mpd_client_copy_connection_error(client, ncm_error);
             goto cleanup;
         }
-        status = ncm_mpd_connection_add_search_tag(&client->connection,
+        if ((status =
+                 ncm_mpd_connection_add_search_tag(&client->connection,
                                                    tag,
-                                                   tags.items[i]->data);
-        if (status < 0) {
+                                                   tags.items[i]->data)) < 0) {
             ncm_mpd_client_copy_connection_error(client, ncm_error);
             goto cleanup;
         }
-        status = ncm_mpd_connection_commit_search_songs(&client->connection,
-                                                        &songs);
-        if (status < 0) {
+        if ((status =
+                 ncm_mpd_connection_commit_search_songs(&client->connection,
+                                                        &songs)) < 0) {
             ncm_mpd_client_copy_connection_error(client, ncm_error);
             goto cleanup;
         }
@@ -1318,9 +1313,8 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
         return status;
     }
 
-    status = ncm_mpd_connection_list_all_song_uris(&client->connection,
-                                                   "/", &files);
-    if (status < 0) {
+    if ((status = ncm_mpd_connection_list_all_song_uris(&client->connection,
+                                                        "/", &files)) < 0) {
         ncm_mpd_client_copy_connection_error(client, ncm_error);
         goto cleanup;
     }
@@ -1331,10 +1325,10 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
     }
 
     if ((exclude_pattern != NULL) && (exclude_pattern_len > 0)) {
-        status = ncm_regex_compile(&regex, exclude_pattern, exclude_pattern_len,
+        if ((status =
+                 ncm_regex_compile(&regex, exclude_pattern, exclude_pattern_len,
                                    NCM_REGEX_EXTENDED | NCM_REGEX_NOSUB,
-                                   ncm_error);
-        if (status < 0) {
+                                   ncm_error)) < 0) {
             goto cleanup;
         }
         have_regex = true;

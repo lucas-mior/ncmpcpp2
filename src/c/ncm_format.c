@@ -614,9 +614,8 @@ ncm_format_parse(NcmFormatAst *ast, char *data, int32 data_len,
     }
 
     tmp = (NcmFormatAst){0};
-    status = ncm_format_parse_bracket(&tmp.root, data, 0, data_len,
-                                      flags, ncm_error);
-    if (status < 0) {
+    if ((status = ncm_format_parse_bracket(&tmp.root, data, 0, data_len,
+                                           flags, ncm_error)) < 0) {
         ncm_format_expr_list_destroy_unchecked(&tmp.root);
         return status;
     }
