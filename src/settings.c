@@ -1275,8 +1275,7 @@ config_read(Configuration *config, StrViewList *config_paths,
 
                 len = SNPRINTF(message, "unknown option: %.*s",
                                         parsed.option_len, parsed.option);
-                ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
-                                     message, len);
+                ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE, message, len);
                 status = settings_report_or_ignore(ncm_error, ignore_errors);
                 if (status < 0) {
                     free2(content, content_len + 1);

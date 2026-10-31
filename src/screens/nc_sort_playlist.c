@@ -248,8 +248,7 @@ sort_dialog_run_sort(void *user) {
 
     dialog = user;
     getters_len = sort_dialog_get_order(dialog, getters, LENGTH(getters));
-    ncm_statusbar_print(Config.message_delay_time,
-                        STRLIT("Sorting..."));
+    ncm_statusbar_print(Config.message_delay_time, STRLIT("Sorting..."));
     ncm_error_clear(&ncm_error);
     status = ncm_playlist_sort_range(&dialog->songs, dialog->start_position,
                                      getters, getters_len,

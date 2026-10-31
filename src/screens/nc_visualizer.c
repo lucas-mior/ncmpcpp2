@@ -256,8 +256,7 @@ visualizer_update_callback(NcScreen *screen) {
             String message = {0};
 
             STR_APPEND(&message, "Could not disable visualizer output: ");
-            STR_APPEND(&message,
-                       ncm_error.message, ncm_error.message_len);
+            STR_APPEND(&message, ncm_error.message, ncm_error.message_len);
             ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                                 message.data, message.len);
             str_free(&message);

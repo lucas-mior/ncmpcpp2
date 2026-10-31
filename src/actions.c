@@ -1469,8 +1469,7 @@ action_runtime_find(void) {
         return 0;
     }
 
-    ncm_statusbar_print(Config.message_delay_time,
-                        STRLIT("Searching..."));
+    ncm_statusbar_print(Config.message_delay_time, STRLIT("Searching..."));
     ncm_error_clear(&ncm_error);
     status = current_screen_search(NCM_SEARCH_DIRECTION_FORWARD,
                                    token.data, token.len, false, false,
@@ -3457,8 +3456,7 @@ action_runtime_jump_to_media_lib(void) {
 
     status = action_runtime_switch_to_screen(SCREEN_TYPE_MEDIA_LIBRARY);
     if (status == 0) {
-        ncm_statusbar_print(0,
-                            STRLIT("Jumping to song..."));
+        ncm_statusbar_print(0, STRLIT("Jumping to song..."));
         ncm_error_clear(&ncm_error);
         status = media_lib_screen_locate_song(app_screen_media_lib(),
                                               &song, &ncm_error);
