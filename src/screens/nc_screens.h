@@ -1085,9 +1085,9 @@ int16 visualizer_clamp_sample(int32);
 #define ENUM_PREFIX_ MEDIA_LIBRARY_COLUMN_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(MEDIA_LIBRARY_COLUMN_TAGS, Tags)                                        \
-    XX(MEDIA_LIBRARY_COLUMN_ALBUMS, Albums)                                    \
-    XX(MEDIA_LIBRARY_COLUMN_SONGS, Songs)
+    XX(MEDIA_LIBRARY_COLUMN_TAGS, "Tags")                                      \
+    XX(MEDIA_LIBRARY_COLUMN_ALBUMS, "Albums")                                  \
+    XX(MEDIA_LIBRARY_COLUMN_SONGS, "Songs")
 #include "cbase/xenums.c"
 
 bool media_lib_is_grouping_tag(enum TagType);
