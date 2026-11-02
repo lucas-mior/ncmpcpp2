@@ -20,37 +20,37 @@
 #define SCREEN_TYPE_FLAG(flag)           CAT(SCREEN_FLAG_, flag)
 
 #define SCREEN_TYPE_BROWSER_ENTRY(XX)                                          \
-  XX(BROWSER, browser,                           STARTUP, browser)
+  XX(BROWSER, "browser",                         STARTUP, browser)
 #define SCREEN_TYPE_HELP_ENTRY(XX)                                             \
-  XX(HELP,                 help,                 STARTUP, help)
+  XX(HELP,                 "help",               STARTUP, help)
 #define SCREEN_TYPE_LASTFM_ENTRY(XX)                                           \
-  XX(LASTFM,               last_fm,              STARTUP, lastfm)
+  XX(LASTFM,               "last_fm",            STARTUP, lastfm)
 #define SCREEN_TYPE_LYRICS_ENTRY(XX)                                           \
-  XX(LYRICS,               lyrics,               STARTUP, lyrics)
+  XX(LYRICS,               "lyrics",             STARTUP, lyrics)
 #define SCREEN_TYPE_MEDIA_LIBRARY_ENTRY(XX)                                    \
-  XX(MEDIA_LIBRARY,        media_lib,        STARTUP, media_lib)
+  XX(MEDIA_LIBRARY,        "media_lib",           STARTUP, media_lib)
 #define SCREEN_TYPE_OUTPUTS_ENTRY(XX)                                          \
-  XX(OUTPUTS,              outputs,              STARTUP, outputs)
+  XX(OUTPUTS,              "outputs",            STARTUP, outputs)
 #define SCREEN_TYPE_PLAYLIST_ENTRY(XX)                                         \
-  XX(PLAYLIST,             playlist,             STARTUP, playlist)
+  XX(PLAYLIST,             "playlist",           STARTUP, playlist)
 #define SCREEN_TYPE_PLAYLIST_EDIT_ENTRY(XX)                                    \
-  XX(PLAYLIST_EDIT,        playlist_edit,        STARTUP, playlist_edit)
+  XX(PLAYLIST_EDIT,        "playlist_edit",      STARTUP, playlist_edit)
 #define SCREEN_TYPE_SEARCH_ENGINE_ENTRY(XX)                                    \
-  XX(SEARCH_ENGINE,        search_engine,        STARTUP, search_engine)
+  XX(SEARCH_ENGINE,        "search_engine",      STARTUP, search_engine)
 #define SCREEN_TYPE_SELECTED_ITEMS_ADD_ENTRY(XX)                               \
-  XX(SELECTED_ITEMS_ADD,   selected_items_add,   NONE,    selected_items_add)
+  XX(SELECTED_ITEMS_ADD,   "selected_items_add", NONE,    selected_items_add)
 #define SCREEN_TYPE_SERVER_INFO_ENTRY(XX)                                      \
-  XX(SERVER_INFO,          server_info,          NONE,    server_info)
+  XX(SERVER_INFO,          "server_info",        NONE,    server_info)
 #define SCREEN_TYPE_SONG_INFO_ENTRY(XX)                                        \
-  XX(SONG_INFO,            song_info,            NONE,    song_info)
+  XX(SONG_INFO,            "song_info",          NONE,    song_info)
 #define SCREEN_TYPE_SORT_PLAYLIST_DIALOG_ENTRY(XX)                             \
-  XX(SORT_PLAYLIST_DIALOG, sort_playlist_dialog, NONE,    sort_playlist_dialog)
+  XX(SORT_PLAYLIST_DIALOG, "sort_playlist_dialog", NONE,  sort_playlist_dialog)
 #define SCREEN_TYPE_TAG_EDIT_ENTRY(XX)                                         \
-  XX(TAG_EDIT,             tag_edit,             STARTUP, tag_edit)
+  XX(TAG_EDIT,             "tag_edit",           STARTUP, tag_edit)
 #define SCREEN_TYPE_TINY_TAG_EDIT_ENTRY(XX)                                    \
-  XX(TINY_TAG_EDIT,        tiny_tag_edit,        NONE,    tiny_tag_edit)
+  XX(TINY_TAG_EDIT,        "tiny_tag_edit",      NONE,    tiny_tag_edit)
 #define SCREEN_TYPE_VISUALIZER_ENTRY(XX)                                       \
-  XX(VISUALIZER,           visualizer,           STARTUP, visualizer)
+  XX(VISUALIZER,           "visualizer",         STARTUP, visualizer)
 
 #define SCREEN_ALL_TYPES(XX)                                                   \
   SCREEN_TYPE_BROWSER_ENTRY(XX)                                                \
@@ -897,7 +897,7 @@ int32 nc_server_info_screen_start_y(NcServerInfoScreen *);
 
 #if defined(HAVE_FFTW3_H)
 #define VISUALIZER_FREQUENCY_FIELD                                             \
-    XX(VISUALIZER_FREQUENCY, spectrum)
+    XX(VISUALIZER_FREQUENCY, "spectrum")
 #else
 #define VISUALIZER_FREQUENCY_FIELD
 #endif
@@ -906,10 +906,10 @@ int32 nc_server_info_screen_start_y(NcServerInfoScreen *);
 #define ENUM_PREFIX_ VISUALIZER_TYPE_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(VISUALIZER_WAVE, wave)                                                  \
-    XX(VISUALIZER_WAVE_FILLED, wave_filled)                                    \
+    XX(VISUALIZER_WAVE, "wave")                                                \
+    XX(VISUALIZER_WAVE_FILLED, "wave_filled")                                  \
     VISUALIZER_FREQUENCY_FIELD                                                 \
-    XX(VISUALIZER_ELLIPSE, ellipse)
+    XX(VISUALIZER_ELLIPSE, "ellipse")
 #include "cbase/xenums.c"
 #undef VISUALIZER_FREQUENCY_FIELD
 
@@ -1288,8 +1288,8 @@ int32 media_lib_screen_locate_song(MediaLibraryScreen *, NcmSong *,
 #define ENUM_PREFIX_ PLAYLIST_EDIT_COLUMN_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(PLAYLIST_EDIT_COLUMN_PLAYLISTS, Playlists)                              \
-    XX(PLAYLIST_EDIT_COLUMN_CONTENT, Content)
+    XX(PLAYLIST_EDIT_COLUMN_PLAYLISTS, "Playlists")                            \
+    XX(PLAYLIST_EDIT_COLUMN_CONTENT, "Content")
 #include "cbase/xenums.c"
 
 #define PLAYLIST_EDIT_FETCH_DELAY_MS 250
@@ -1298,11 +1298,11 @@ int32 media_lib_screen_locate_song(MediaLibraryScreen *, NcmSong *,
 #define ENUM_PREFIX_ PLAYLIST_EDIT_CMD_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(PLAYLIST_EDIT_CMD_NONE, none)                                       \
-    XX(PLAYLIST_EDIT_CMD_LOAD, Load)                                       \
-    XX(PLAYLIST_EDIT_CMD_SAVE, Save)                                       \
-    XX(PLAYLIST_EDIT_CMD_RENAME, Rename)                                   \
-    XX(PLAYLIST_EDIT_CMD_DELETE, Delete)
+    XX(PLAYLIST_EDIT_CMD_NONE, "none")                                     \
+    XX(PLAYLIST_EDIT_CMD_LOAD, "Load")                                     \
+    XX(PLAYLIST_EDIT_CMD_SAVE, "Save")                                     \
+    XX(PLAYLIST_EDIT_CMD_RENAME, "Rename")                                 \
+    XX(PLAYLIST_EDIT_CMD_DELETE, "Delete")
 #include "cbase/xenums.c"
 
 typedef struct PlaylistEditCommand {
@@ -1531,11 +1531,11 @@ void playlist_screen_reload_remaining(PlaylistScreen *);
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
     XX(SEARCH_ENGINE_SEARCH_MODE_LITERAL,                                      \
-       Match if tag contains searched phrase [no regexes])                     \
+       "Match if tag contains searched phrase [no regexes]")                   \
     XX(SEARCH_ENGINE_SEARCH_MODE_REGEX,                                        \
-       Match if tag contains searched phrase [regexes supported])              \
+       "Match if tag contains searched phrase [regexes supported]")            \
     XX(SEARCH_ENGINE_SEARCH_MODE_EXACT,                                        \
-       Match only if both values are the same)
+       "Match only if both values are the same")
 #include "cbase/xenums.c"
 
 #define ENUM_NAME SearchEnginePromptResult
@@ -1634,8 +1634,8 @@ typedef struct PlaylistScreen PlaylistScreen;
 #define ENUM_PREFIX_ SELECTED_ITEMS_ADD_MENU_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(SELECTED_ITEMS_ADD_MENU_PLAYLISTS, Playlists)                           \
-    XX(SELECTED_ITEMS_ADD_MENU_POSITIONS, Positions)
+    XX(SELECTED_ITEMS_ADD_MENU_PLAYLISTS, "Playlists")                         \
+    XX(SELECTED_ITEMS_ADD_MENU_POSITIONS, "Positions")
 #include "cbase/xenums.c"
 
 typedef struct SelectedItemsAdderScreen {
@@ -1721,31 +1721,31 @@ int32 sort_playlist_dialog_move_current_down(SortPlaylistDialog *);
 #define ENUM_PREFIX_ TAG_EDIT_COLUMN_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(TAG_EDIT_COLUMN_DIRECTORIES, Directories)                               \
-    XX(TAG_EDIT_COLUMN_TAG_TYPES, Tag types)                                   \
-    XX(TAG_EDIT_COLUMN_TAGS, Tags)
+    XX(TAG_EDIT_COLUMN_DIRECTORIES, "Directories")                             \
+    XX(TAG_EDIT_COLUMN_TAG_TYPES, "Tag types")                                 \
+    XX(TAG_EDIT_COLUMN_TAGS, "Tags")
 #include "cbase/xenums.c"
 
 #define ENUM_NAME TagEditParserMode
 #define ENUM_PREFIX_ TAG_EDIT_PARSER_MODE_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(TAG_EDIT_PARSER_MODE_NONE, Pattern)                                     \
-    XX(TAG_EDIT_PARSER_MODE_TAGS_FROM_FILENAME, Get tags from filename)        \
-    XX(TAG_EDIT_PARSER_MODE_RENAME_FILES, Rename files)
+    XX(TAG_EDIT_PARSER_MODE_NONE, "Pattern")                                   \
+    XX(TAG_EDIT_PARSER_MODE_TAGS_FROM_FILENAME, "Get tags from filename")      \
+    XX(TAG_EDIT_PARSER_MODE_RENAME_FILES, "Rename files")
 #include "cbase/xenums.c"
 
 #define ENUM_NAME TagEditFocus
 #define ENUM_PREFIX_ TAG_EDIT_FOCUS_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(TAG_EDIT_FOCUS_DIRECTORIES, Directories)                                \
-    XX(TAG_EDIT_FOCUS_TAG_TYPES, Tag types)                                    \
-    XX(TAG_EDIT_FOCUS_TAGS, Tags)                                              \
-    XX(TAG_EDIT_FOCUS_PARSER_CHOICE, Pattern)                                  \
-    XX(TAG_EDIT_FOCUS_PARSER_ACTIONS, Pattern actions)                         \
-    XX(TAG_EDIT_FOCUS_PARSER_LEGEND, Legend)                                   \
-    XX(TAG_EDIT_FOCUS_PARSER_PREVIEW, Preview)
+    XX(TAG_EDIT_FOCUS_DIRECTORIES, "Directories")                              \
+    XX(TAG_EDIT_FOCUS_TAG_TYPES, "Tag types")                                  \
+    XX(TAG_EDIT_FOCUS_TAGS, "Tags")                                            \
+    XX(TAG_EDIT_FOCUS_PARSER_CHOICE, "Pattern")                                \
+    XX(TAG_EDIT_FOCUS_PARSER_ACTIONS, "Pattern actions")                       \
+    XX(TAG_EDIT_FOCUS_PARSER_LEGEND, "Legend")                                 \
+    XX(TAG_EDIT_FOCUS_PARSER_PREVIEW, "Preview")
 #include "cbase/xenums.c"
 
 #define ENUM_NAME TagEditPromptResult

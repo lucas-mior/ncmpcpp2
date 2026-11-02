@@ -39,7 +39,7 @@ typedef struct SearchConstraintMetadata {
 
 #define SEARCH_CONSTRAINT_TAG_ENTRY(suffix, display, tag_char) \
     {                                                          \
-        STRPASS(name, #display),                               \
+        STRPASS(name, display),                                \
         .kind = SEARCH_CONSTRAINT_TAG,                         \
         .tag = CAT(TAG_, suffix),                              \
     },

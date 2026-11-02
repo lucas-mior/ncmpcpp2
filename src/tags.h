@@ -4,17 +4,18 @@
 #include "cbase.h"
 
 #define SONG_TAG_DEFS(XX, XX2, CTX)                                          \
-  XX(CTX,  ARTIST,       Artist,       'a')                                  \
-  XX(CTX,  ALBUM_ARTIST, Album Artist, 'A')                                  \
-  XX(CTX,  ALBUM,        Album,        'b')                                  \
-  XX(CTX,  DISC,         Disc,         'd')                                  \
-  XX2(CTX, TRACK,        Track, TRACK_NUMBER, Track Number, 'n', TAG_COUNT)  \
-  XX(CTX,  GENRE,        Genre,        'g')                                  \
-  XX(CTX,  DATE,         Date,         'y')                                  \
-  XX(CTX,  COMPOSER,     Composer,     'c')                                  \
-  XX(CTX,  PERFORMER,    Performer,    'p')                                  \
-  XX(CTX,  TITLE,        Title,        't')                                  \
-  XX(CTX,  COMMENT,      Comment,      'C')
+  XX(CTX,  ARTIST,       "Artist",       'a')                                \
+  XX(CTX,  ALBUM_ARTIST, "Album Artist", 'A')                                \
+  XX(CTX,  ALBUM,        "Album",        'b')                                \
+  XX(CTX,  DISC,         "Disc",         'd')                                \
+  XX2(CTX, TRACK,        "Track", TRACK_NUMBER, "Track Number", 'n',        \
+      TAG_COUNT)                                                              \
+  XX(CTX,  GENRE,        "Genre",        'g')                                \
+  XX(CTX,  DATE,         "Date",         'y')                                \
+  XX(CTX,  COMPOSER,     "Composer",     'c')                                \
+  XX(CTX,  PERFORMER,    "Performer",    'p')                                \
+  XX(CTX,  TITLE,        "Title",        't')                                \
+  XX(CTX,  COMMENT,      "Comment",      'C')
 
 #define SONG_TAG_AS_TAG(XX, SUFFIX, DISP, CHAR) \
     XX(SUFFIX, DISP, CHAR)
@@ -41,13 +42,13 @@ enum {
     XX(CAT(SONG_GETTER_, GETTER_SUFFIX), GETTER_DISP, CHAR)
 
 #define SONG_GETTER_DEFS(XX)                                          \
-    XX(SONG_GETTER_LENGTH,    Length, 'l')                            \
-    XX(SONG_GETTER_DIRECTORY, Directory, 'D')                         \
-    XX(SONG_GETTER_NAME,      Filename, 'f')                          \
-    XX(SONG_GETTER_URI,       URI, 'F')                               \
+    XX(SONG_GETTER_LENGTH,    "Length", 'l')                          \
+    XX(SONG_GETTER_DIRECTORY, "Directory", 'D')                       \
+    XX(SONG_GETTER_NAME,      "Filename", 'f')                        \
+    XX(SONG_GETTER_URI,       "URI", 'F')                             \
     SONG_TAG_DEFS(SONG_TAG_AS_GETTER, SONG_TAG_SPECIAL_AS_GETTER, XX) \
-    XX(SONG_GETTER_TRACK_TOTAL, Total Tracks, 'N')                    \
-    XX(SONG_GETTER_PRIORITY,    Priority, 'P')
+    XX(SONG_GETTER_TRACK_TOTAL, "Total Tracks", 'N')                  \
+    XX(SONG_GETTER_PRIORITY,    "Priority", 'P')
 
 #define SONG_GETTER_ENUM_FIELD(GETTER, DISP, CHAR) XX(GETTER, DISP)
 
