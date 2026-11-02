@@ -686,7 +686,8 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
             return buffer;
         }
         if (song->duration > 0) {
-            len = ncm_song_show_time_unchecked(song->duration, number_buffer,
+            len = ncm_song_show_time_unchecked(song->duration,
+                                               number_buffer,
                                                LENGTH(number_buffer));
             STR_APPEND(&buffer, number_buffer, len);
         } else {

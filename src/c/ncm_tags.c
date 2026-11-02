@@ -70,7 +70,8 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
         enum TagType tag = (enum TagType)i;
         int32 property_len;
 
-        property_len = ncm_tag_type_taglib_property_len(tag, property,
+        property_len = ncm_tag_type_taglib_property_len(tag,
+                                                        property,
                                                         LENGTH(property));
         ASSERT_GT(property_len, 0);
 

@@ -845,8 +845,9 @@ action_runtime_confirm(char *message, int32 message_len) {
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window, message, message_len);
         nc_window_print_data(window, STRLIT(" [y/n] "));
-        status = ncm_statusbar_prompt_return_one_of(window, values,
-                                                    LENGTH(values), &answer);
+        status = ncm_statusbar_prompt_return_one_of(window,
+                                                    values, LENGTH(values),
+                                                    &answer);
     }
     ncm_statusbar_scoped_lock_destroy(&scoped_lock);
 
@@ -969,8 +970,8 @@ action_runtime_add_random_items(void) {
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window, STRLIT("Add random? [s]ongs/[a]rtists/"
                                             "album [A]rtists/al[b]ums "));
-        status = ncm_statusbar_prompt_return_one_of(window, values,
-                                                    LENGTH(values),
+        status = ncm_statusbar_prompt_return_one_of(window,
+                                                    values, LENGTH(values),
                                                     &random_type);
     }
     ncm_statusbar_scoped_lock_destroy(&scoped_lock);
