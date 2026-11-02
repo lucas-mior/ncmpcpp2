@@ -1075,10 +1075,10 @@ int16 visualizer_clamp_sample(int32);
 #define ENUM_NAME MediaLibraryMode
 #define ENUM_PREFIX_ MEDIA_LIBRARY_MODE_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                                            \
-    XX(MEDIA_LIBRARY_MODE_THREE_COLUMNS, three_columns)                        \
-    XX(MEDIA_LIBRARY_MODE_TWO_COLUMNS, two_columns)                            \
-    XX(MEDIA_LIBRARY_MODE_ALBUM_ONLY, album_only)
+#define ENUM_FIELDS                                                           \
+    XX(MEDIA_LIBRARY_MODE_THREE_COLUMNS, "three_columns")                     \
+    XX(MEDIA_LIBRARY_MODE_TWO_COLUMNS,   "two_columns")                       \
+    XX(MEDIA_LIBRARY_MODE_ALBUM_ONLY,    "album_only")
 #include "cbase/xenums.c"
 
 #define ENUM_NAME MediaLibraryColumn
