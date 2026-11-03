@@ -259,7 +259,7 @@ ncmpcpp_resize_screen(bool reload_main_window) {
 
 void
 ncmpcpp_playlist_switch_to(void) {
-    ASSERT_ZERO(app_screens_switch_to_type(SCREEN_TYPE_PLAYLIST));
+    ASSERT_EQ(app_screens_switch_to_type(SCREEN_TYPE_PLAYLIST), 0);
     return;
 }
 

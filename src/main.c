@@ -186,7 +186,7 @@ main(int32 argc, char **argv) {
 
     ncmpcpp_playlist_switch_to();
     if (Config.startup_screen != ncmpcpp_current_screen_type()) {
-        ASSERT_ZERO(ncmpcpp_switch_to_screen_type(Config.startup_screen));
+        ASSERT_EQ(ncmpcpp_switch_to_screen_type(Config.startup_screen), 0);
     }
 
     if (Config.has_startup_slave_screen_type) {
@@ -195,7 +195,7 @@ main(int32 argc, char **argv) {
 
         if ((status == 0)
             && (slave_screen_type != ncmpcpp_current_screen_type())) {
-            ASSERT_ZERO(ncmpcpp_switch_to_screen_type(slave_screen_type));
+            ASSERT_EQ(ncmpcpp_switch_to_screen_type(slave_screen_type), 0);
             if (!Config.startup_slave_screen_focus) {
                 (void)ncmpcpp_execute_action(ACTION_MASTER_SCREEN);
             }
