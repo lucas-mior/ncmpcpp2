@@ -4042,8 +4042,7 @@ action_runtime_media_lib_current_tag(char **tag, int32 *tag_len) {
         return false;
     }
 
-    if (media_lib_screen_active_column(library)
-        != MEDIA_LIBRARY_COLUMN_TAGS) {
+    if (media_lib_screen_active_column(library) != MEDIA_LIBRARY_COLUMN_TAGS) {
         return false;
     }
     return media_lib_screen_has_current_grouping_tag_value(library,
