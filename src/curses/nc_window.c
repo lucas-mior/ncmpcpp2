@@ -1666,8 +1666,8 @@ nc_window_push_color(NcWindow *window, NcColor color) {
             ARRAY_HEADER(window->color_stack)->count -= 1;
         }
         if (ARRAY_LEN(window->color_stack) > 0) {
-            nc_window_set_color(window, window->color_stack[
-                                ARRAY_LEN(window->color_stack) - 1]);
+            int32 idx = ARRAY_LEN(window->color_stack) - 1;
+            nc_window_set_color(window, window->color_stack[idx]);
         } else {
             nc_window_set_color(window, window->base_color);
         }
