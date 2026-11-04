@@ -135,8 +135,7 @@ media_lib_tag_at_capability(NcScreen *base, int32 pos,
                             enum SongGetter getter, String *tag) {
     MediaLibraryScreen *screen = (MediaLibraryScreen *)base;
 
-    if (media_lib_screen_active_column(screen)
-        != MEDIA_LIBRARY_COLUMN_SONGS) {
+    if (media_lib_screen_active_column(screen) != MEDIA_LIBRARY_COLUMN_SONGS) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     return nc_screen_menu_song_tag_at(media_lib_screen_active_menu(screen),
@@ -2181,8 +2180,7 @@ media_lib_screen_current_song(MediaLibraryScreen *screen, NcmSong *song) {
     if ((screen == NULL) || (song == NULL)) {
         return -EINVAL;
     }
-    if ((current = nc_media_lib_song_menu_current(&screen->songs))
-        == NULL) {
+    if ((current = nc_media_lib_song_menu_current(&screen->songs)) == NULL) {
         return 0;
     }
     ncm_song_copy(song, current);

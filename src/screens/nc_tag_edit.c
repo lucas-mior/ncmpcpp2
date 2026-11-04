@@ -4104,8 +4104,7 @@ tag_edit_parse_filename(MutableSong *song, char *mask, int32 mask_len,
 
         tag_type = ncm_char_to_tag_type(tag_char);
         recognized = tag_type != TAG_COUNT;
-        if (tag_char
-            == ncm_song_getter_format_char(SONG_GETTER_TRACK_NUMBER)) {
+        if (tag_char == ncm_song_getter_format_char(SONG_GETTER_TRACK_NUMBER)) {
             str_set(&track_number, file.data + file_pos, value_end - file_pos);
             has_track_number = true;
             recognized = true;
