@@ -1329,8 +1329,8 @@ media_lib_screen_column_state(MediaLibraryScreen *screen,
 static MediaLibraryColumnState *
 library_active_column_state(MediaLibraryScreen *screen) {
     ASSERT(screen != NULL);
-    ASSERT(screen->active_column >= MEDIA_LIBRARY_COLUMN_TAGS);
-    ASSERT(screen->active_column < MEDIA_LIBRARY_COLUMN_COUNT);
+    ASSERT_GE(screen->active_column, MEDIA_LIBRARY_COLUMN_TAGS);
+    ASSERT_LT(screen->active_column, MEDIA_LIBRARY_COLUMN_COUNT);
     return &screen->column_state[screen->active_column];
 }
 
