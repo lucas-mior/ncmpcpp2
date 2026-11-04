@@ -934,8 +934,7 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
 
         *fft = (VisualizerFftState){0};
         fft->dft_nonzero_size = VISUALIZER_DFT_BASE_SIZE
-                                 *(2*spectrum_dft_size
-                                   + VISUALIZER_DFT_PADDING);
+                                *(2*spectrum_dft_size + VISUALIZER_DFT_PADDING);
         fft->dft_total_size = VISUALIZER_DFT_TOTAL_SIZE;
         fft->results_len = fft->dft_total_size / 2 + 1;
         fft->dynamic_range = 100.0 - spectrum_gain;
