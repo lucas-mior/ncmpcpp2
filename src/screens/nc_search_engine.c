@@ -65,7 +65,7 @@ _Static_assert(LENGTH(search_constraints) == SEARCH_ENGINE_CONSTRAINT_COUNT,
 
 static SearchConstraintMetadata *
 search_constraint_metadata(uint32 idx) {
-    ASSERT(idx < SEARCH_ENGINE_CONSTRAINT_COUNT);
+    ASSERT_LT(idx, SEARCH_ENGINE_CONSTRAINT_COUNT);
     return &search_constraints[idx];
 }
 
