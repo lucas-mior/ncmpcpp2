@@ -124,8 +124,7 @@ static NcMenu *
 media_lib_tag_menu_capability(NcScreen *base) {
     MediaLibraryScreen *screen = (MediaLibraryScreen *)base;
 
-    if (media_lib_screen_active_column(screen)
-        != MEDIA_LIBRARY_COLUMN_SONGS) {
+    if (media_lib_screen_active_column(screen) != MEDIA_LIBRARY_COLUMN_SONGS) {
         return NULL;
     }
     return media_lib_screen_active_menu(screen);
