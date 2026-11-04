@@ -1667,7 +1667,7 @@ visualizer_draw_frequency(VisualizerScreen *screen,
                     int32 index;
 
                     index = (int32)(VISUALIZER_SMOOTH_CHAR_COUNT*h)
-                                    %VISUALIZER_SMOOTH_CHAR_COUNT;
+                                   % VISUALIZER_SMOOTH_CHAR_COUNT;
                     if (((double)j < h - 1.0)
                         || (index == VISUALIZER_SMOOTH_CHAR_COUNT - 1)) {
                         index = VISUALIZER_SMOOTH_CHAR_COUNT - 1;
