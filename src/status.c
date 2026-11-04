@@ -326,7 +326,7 @@ ncm_status_trace(MpdClient *client, bool update_timer,
                     void (*idle_callback)(void);
                     int32 fd;
 
-                    if ((callback_footer != NULL)
+                    if (callback_footer
                         && ((fd = ncm_mpd_client_fd(&global_mpd)) >= 0)) {
                         idle_callback = ncm_statusbar_mpd_idle_callback;
                         nc_window_add_fd_callback(callback_footer, fd,
@@ -1100,7 +1100,7 @@ ncm_status_changes_player_state(void) {
         break;
     case NCM_DESIGN_CLASSIC:
         state_window = ui_state_footer_window();
-        if ((state_window != NULL) && ncm_statusbar_is_unlocked()
+        if (state_window && ncm_statusbar_is_unlocked()
             && Config.statusbar_visibility) {
             nc_window_go_to_xy(state_window, 0, 1);
             if (player_state_len == 0) {
@@ -1273,7 +1273,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
     switch (Config.user_interface) {
     case NCM_DESIGN_CLASSIC:
         footer = ui_state_footer_window();
-        if ((footer != NULL) && Config.statusbar_visibility
+        if (footer && Config.statusbar_visibility
             && ncm_statusbar_is_unlocked()) {
             NcBuffer rendered_song = {0};
             NcTextStyle *time_color;
@@ -1321,7 +1321,7 @@ ncm_status_changes_elapsed_time(bool update_elapsed) {
         break;
     case NCM_DESIGN_ALTERNATIVE:
         header = ui_state_header_window();
-        if (header != NULL) {
+        if (header) {
             NcBuffer first = {0};
             NcBuffer second = {0};
             NcTextStyle *time_color;

@@ -953,7 +953,7 @@ binding_parse_action_line(BindingAction *action, char *line, int32 line_len,
     }
 
     directive = binding_directive_find(line, name_len);
-    if (directive != NULL) {
+    if (directive) {
         if (directive->argument_required) {
             if ((name_len == line_len)
                 || (ncm_extract_enclosed(line + name_len,

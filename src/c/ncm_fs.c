@@ -312,7 +312,7 @@ ncm_fs_join(String *buffer,
         return -EINVAL;
     }
 
-    if ((left != NULL) && (left_len > 0)) {
+    if (left && (left_len > 0)) {
         STR_APPEND(&result, left, left_len);
         str_append_byte_if_not(&result, '/');
     }

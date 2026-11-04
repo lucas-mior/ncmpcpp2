@@ -475,7 +475,7 @@ ncm_song_has_filename_view_unchecked(NcmSong *song, int32 idx, StrView *view) {
     StrView uri;
     int32 basename;
 
-    if (view != NULL) {
+    if (view) {
         *view = (StrView){0};
     }
     if (idx != 0) {
@@ -627,7 +627,7 @@ int32
 ncm_song_format_numeric_tag(char *buffer, int32 buffer_cap,
                             char *tag, int32 tag_len) {
     if ((tag == NULL) || (tag_len < 0)) {
-        if ((buffer != NULL) && (buffer_cap > 0)) {
+        if (buffer && (buffer_cap > 0)) {
             buffer[0] = '\0';
         }
         return 0;

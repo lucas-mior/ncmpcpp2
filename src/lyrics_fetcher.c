@@ -2506,7 +2506,7 @@ lyrics_url_query_has_key(char *url, int32 url_len,
                                        &key, &key_len, &value, &value_len);
         (void)value;
         (void)value_len;
-        if ((key != NULL) && (key_len == wanted_key_len)
+        if (key && (key_len == wanted_key_len)
             && lyrics_starts_with_ignore_case(key, key_len,
                                               wanted_key, wanted_key_len)) {
             return true;

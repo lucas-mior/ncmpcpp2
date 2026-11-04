@@ -25,7 +25,7 @@ ncm_system_command(char *command, int32 cmd_len,
 
         result = cmd_run_sync(&process, &rc);
         if (result == 0) {
-            if (status != NULL) {
+            if (status) {
                 *status = rc;
             }
             result = ncm_error_ok(ncm_error);
@@ -45,7 +45,7 @@ ncm_system_command(char *command, int32 cmd_len,
     result = cmd_run_sync(&process, &rc);
     str_free(&buffer);
     if (result == 0) {
-        if (status != NULL) {
+        if (status) {
             *status = rc;
         }
         result = ncm_error_ok(ncm_error);

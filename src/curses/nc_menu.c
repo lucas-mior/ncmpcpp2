@@ -619,7 +619,7 @@ nc_menu_search_selectable(NcMenu *menu, int32 height, bool forward,
             continue;
         }
         nc_menu_highlight_position(menu, pos, height);
-        if (found_pos != NULL) {
+        if (found_pos) {
             *found_pos = pos;
         }
         return 0;

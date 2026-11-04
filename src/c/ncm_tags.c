@@ -109,7 +109,7 @@ ncm_tags_write(char *music_dir, char *uri, bool is_from_database,
         return status;
     }
 
-    if ((new_name != NULL) && (new_name[0] != '\0')) {
+    if (new_name && (new_name[0] != '\0')) {
         int32 music_dir_len = 0;
         int32 directory_len = opt_strlen32(directory);
         int32 new_name_len = opt_strlen32(new_name);

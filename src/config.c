@@ -518,12 +518,12 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
 
     env_host = getenv("MPD_HOST");
     env_port = getenv("MPD_PORT");
-    if (env_host != NULL) {
+    if (env_host) {
         ncm_mpd_client_set_hostname(&global_mpd,
                                     env_host, strlen32(env_host),
                                     ncm_error);
     }
-    if (env_port != NULL) {
+    if (env_port) {
         int64 parsed_port;
 
         if ((status = parse_integer(env_port, strlen32(env_port), &parsed_port))

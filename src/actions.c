@@ -589,7 +589,7 @@ action_runtime_print_message(char *prefix, int32 prefix_len,
     String message = {0};
 
     STR_APPEND(&message, prefix, prefix_len);
-    if ((text != NULL) && (text_len > 0)) {
+    if (text && (text_len > 0)) {
         STR_APPEND(&message, text, text_len);
     }
     STR_APPEND(&message, suffix, suffix_len);

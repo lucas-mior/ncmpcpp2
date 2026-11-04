@@ -469,7 +469,7 @@ nc_screen_append_menu_song_at(NcMenu *menu, int32 pos,
     NcmSong *song;
 
     song = song_callback(nc_menu_active_item_at(menu, pos));
-    if (song != NULL) {
+    if (song) {
         ncm_song_array_append_copy(songs, song);
     }
     return;

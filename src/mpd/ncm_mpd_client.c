@@ -1324,7 +1324,7 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
         goto cleanup;
     }
 
-    if ((exclude_pattern != NULL) && (exclude_pattern_len > 0)) {
+    if (exclude_pattern && (exclude_pattern_len > 0)) {
         if ((status =
                  ncm_regex_compile(&regex, exclude_pattern, exclude_pattern_len,
                                    NCM_REGEX_EXTENDED | NCM_REGEX_NOSUB,

@@ -1,0 +1,22 @@
+csanecheck false positives (2026-11-04)
+
+1. src/c/ncm_regex.c:186:13 [STYLE-POINTER-NOT]
+   Function: ncm_regex_for_each_match
+   Expression: if (!callback(match_start, match_len, user))
+   Reason: NcmRegexMatchCallback returns bool; negation applies to a
+   boolean result, not to a pointer.
+
+2. src/c/ncm_tags.c:86:17 [STYLE-POINTER-NOT]
+   Function: ncm_tags_write
+   Expression: if (!callback(tag, value_i, &value, user))
+   Reason: TagsGetTagCallback returns bool; negation applies to a
+   boolean result, not to a pointer.
+
+3. src/curses/nc_menu.c:615:13 [STYLE-POINTER-NOT]
+   Function: nc_menu_search_selectable
+   Expression: if (!matches(menu, pos, user))
+   Reason: NcMenuPositionMatchesFunc returns bool; negation applies
+   to a boolean result, not to a pointer.
+
+All three cases are covered by file-scoped rule exceptions in
+cbase/csanecheck.conf.
