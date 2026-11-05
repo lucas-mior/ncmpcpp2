@@ -158,13 +158,13 @@ config_copy_string(String *buffer, char *string, int32 string_len) {
 }
 
 static int32
-config_require_value(int32 argc, char **argv, int32 *i,
+config_require_value(int32 argc, char **argv, int32 *idx,
                      char *option, int32 option_len,
                      char **value, int32 *value_len,
                      NcmError *ncm_error) {
     *value = NULL;
     *value_len = 0;
-    if (*i + 1 >= argc) {
+    if (*idx + 1 >= argc) {
         char message[128];
         int32 len;
 
@@ -174,8 +174,8 @@ config_require_value(int32 argc, char **argv, int32 *i,
         return ncm_error_set_status(ncm_error, -EINVAL, message, len);
     }
 
-    *i += 1;
-    *value = argv[*i];
+    *idx += 1;
+    *value = argv[*idx];
     *value_len = strlen32(*value);
     return 0;
 }
