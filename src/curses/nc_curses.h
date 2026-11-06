@@ -338,10 +338,8 @@ void nc_buffer_append_int64(NcBuffer *, int64);
 
 void nc_buffer_add_color(NcBuffer *, int32, NcColor, int64);
 void nc_buffer_add_format(NcBuffer *, int32, enum NcFormat, int64);
-void nc_buffer_add_text_style(NcBuffer *, int32, NcTextStyle *,
-                              int64);
-void nc_buffer_add_text_style_end(NcBuffer *, int32, NcTextStyle *,
-                                  int64);
+void nc_buffer_add_text_style(NcBuffer *, int32, NcTextStyle *, int64);
+void nc_buffer_add_text_style_end(NcBuffer *, int32, NcTextStyle *, int64);
 void nc_buffer_remove_properties(NcBuffer *, int64);
 void nc_buffer_apply_property(NcWindow *, NcBufferProperty *);
 
@@ -697,11 +695,11 @@ int32 nc_search_row_copy(NcSearchRow *dest, NcSearchRow *source);
 
 void nc_media_lib_tag_row_destroy(NcMediaLibraryTagRow *);
 int32 nc_media_lib_tag_row_copy(NcMediaLibraryTagRow *dest,
-                                    NcMediaLibraryTagRow *source);
+                                NcMediaLibraryTagRow *source);
 
 void nc_media_lib_album_row_destroy(NcMediaLibraryAlbumRow *);
 int32 nc_media_lib_album_row_copy(NcMediaLibraryAlbumRow *dest,
-                                      NcMediaLibraryAlbumRow *source);
+                                  NcMediaLibraryAlbumRow *source);
 
 void nc_editor_action_row_destroy(NcEditorActionRow *);
 int32 nc_editor_action_row_copy(NcEditorActionRow *dest,
