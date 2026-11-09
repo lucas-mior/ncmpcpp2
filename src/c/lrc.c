@@ -142,7 +142,6 @@ lrc_parse_line_entries(LrcDocument *document, char *line, int32 line_len,
         char *tag;
         int32 close;
         int32 tag_len;
-        int32 time_ms;
         int32 colon;
         int32 dot;
         int32 frac_len;
@@ -151,7 +150,6 @@ lrc_parse_line_entries(LrcDocument *document, char *line, int32 line_len,
         llong milliseconds;
         llong value;
         char *shortest_timestamp = "0:00";
-        bool has_time = false;
         int32 status;
 
         close = lrc_find_tag_close(line, line_len, cursor);
@@ -241,16 +239,14 @@ lrc_parse_line_entries(LrcDocument *document, char *line, int32 line_len,
             }
 
             value += document->offset_ms;
-            if ((value < MINOF(time_ms)) || (value > MAXOF(time_ms))) {
+            if ((value < INT32_MIN) || (value > INT32_MAX)) {
                 return lrc_malformed_line(ncm_error);
             }
 
-            time_ms = (int32)value;
-            has_time = true;
-        }
-        if (has_time && (times_len < LENGTH(times))) {
-            times[times_len] = time_ms;
-            times_len += 1;
+            if (times_len < LENGTH(times)) {
+                times[times_len] = (int32)value;
+                times_len += 1;
+            }
         }
 
         cursor = close + 1;
