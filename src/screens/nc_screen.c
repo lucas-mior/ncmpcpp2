@@ -438,17 +438,6 @@ nc_screen_menu_item_as_song(void *item) {
     return item;
 }
 
-static int32
-nc_screen_song_tags_buffer(NcmSong *song, enum SongGetter getter, String *tag) {
-    if ((song == NULL) || (tag == NULL)) {
-        return -NCM_ERROR_UNAVAILABLE;
-    }
-    *tag = ncm_song_tags_buffer(song, getter, Config.tags_separator,
-                                Config.tags_separator_len,
-                                Config.show_duplicate_tags);
-    return 0;
-}
-
 int32
 nc_screen_menu_song_tag_at(NcMenu *menu, int32 pos,
                            enum SongGetter getter, String *tag,
@@ -459,7 +448,13 @@ nc_screen_menu_song_tag_at(NcMenu *menu, int32 pos,
         return -NCM_ERROR_UNAVAILABLE;
     }
     song = song_callback(nc_menu_active_item_at(menu, pos));
-    return nc_screen_song_tags_buffer(song, getter, tag);
+    if ((song == NULL) || (tag == NULL)) {
+        return -NCM_ERROR_UNAVAILABLE;
+    }
+    *tag = ncm_song_tags_buffer(song, getter, Config.tags_separator,
+                                Config.tags_separator_len,
+                                Config.show_duplicate_tags);
+    return 0;
 }
 
 static void

@@ -1133,29 +1133,28 @@ visualizer_screen_reset_auto_scale_multiplier(VisualizerScreen *screen) {
     return;
 }
 
-static enum VisualizerScreenType
-visualizer_next_type(enum VisualizerScreenType type) {
-    switch (type) {
-    case VISUALIZER_WAVE:
-        return VISUALIZER_WAVE_FILLED;
-    case VISUALIZER_WAVE_FILLED:
-#if defined(HAVE_FFTW3_H)
-        return VISUALIZER_FREQUENCY;
-    case VISUALIZER_FREQUENCY:
-#endif
-        return VISUALIZER_ELLIPSE;
-    case VISUALIZER_ELLIPSE:
-    case VISUALIZER_TYPE_COUNT:
-        return VISUALIZER_WAVE;
-    default:
-        return VISUALIZER_WAVE;
-    }
-}
-
 void
 visualizer_screen_toggle_type(VisualizerScreen *screen) {
-    screen->visualization_type =
-        visualizer_next_type(screen->visualization_type);
+    switch (screen->visualization_type) {
+    case VISUALIZER_WAVE:
+        screen->visualization_type = VISUALIZER_WAVE_FILLED;
+        break;
+    case VISUALIZER_WAVE_FILLED:
+#if defined(HAVE_FFTW3_H)
+        screen->visualization_type = VISUALIZER_FREQUENCY;
+        break;
+    case VISUALIZER_FREQUENCY:
+#endif
+        screen->visualization_type = VISUALIZER_ELLIPSE;
+        break;
+    case VISUALIZER_ELLIPSE:
+    case VISUALIZER_TYPE_COUNT:
+        screen->visualization_type = VISUALIZER_WAVE;
+        break;
+    default:
+        screen->visualization_type = VISUALIZER_WAVE;
+        break;
+    }
     visualizer_screen_init_visualization(screen);
     return;
 }

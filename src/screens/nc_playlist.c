@@ -158,11 +158,6 @@ typedef struct PlaylistSearchContext {
     NcmRegex *regex;
 } PlaylistSearchContext;
 
-typedef struct PlaylistPriorityContext {
-    MpdClient *client;
-    NcmError *ncm_error;
-    int32 priority;
-} PlaylistPriorityContext;
 static void
 playlist_display(PlaylistScreen *playlist) {
     NcMenu *menu = nc_playlist_screen_menu(&playlist->screen);
@@ -1212,31 +1207,11 @@ playlist_position_matches_search(NcMenu *menu, int32 pos, void *user) {
                                  context->regex);
 }
 
-static int32
-playlist_search_menu(PlaylistScreen *screen, NcMenu *menu, NcmRegex *regex,
-                     bool forward, bool wrap, bool skip_current) {
-    PlaylistSearchContext context;
-    int32 status;
-
-    context.screen = screen;
-    context.regex = regex;
-    status = nc_menu_search_selectable(menu, screen->screen.main_height,
-                                       forward, wrap, skip_current,
-                                       playlist_position_matches_search,
-                                       &context, NULL);
-    if (status == 0) {
-        return 1;
-    }
-    if (status == -NCM_ERROR_NOT_FOUND) {
-        return 0;
-    }
-    return status;
-}
-
 int32
 playlist_screen_search(PlaylistScreen *screen, char *pattern, int32 pattern_len,
                        bool forward, bool wrap,
                        bool skip_current, NcmError *ncm_error) {
+    PlaylistSearchContext context;
     NcmRegex regex;
     int32 status;
 
@@ -1259,28 +1234,27 @@ playlist_screen_search(PlaylistScreen *screen, char *pattern, int32 pattern_len,
     stupid_string_set(&screen->search_constraint,
                       &screen->search_constraint_len, pattern, pattern_len);
 
-    status = playlist_search_menu(screen, playlist_storage_menu(screen), &regex,
-                                  forward, wrap, skip_current);
+    context.screen = screen;
+    context.regex = &regex;
+    status = nc_menu_search_selectable(playlist_storage_menu(screen),
+                                       screen->screen.main_height,
+                                       forward, wrap, skip_current,
+                                       playlist_position_matches_search,
+                                       &context, NULL);
     ncm_regex_destroy(&regex);
+    if (status == 0) {
+        return 1;
+    }
+    if (status == -NCM_ERROR_NOT_FOUND) {
+        return 0;
+    }
     return status;
-}
-
-static int32
-playlist_set_one_priority(NcmSong *song, int32 idx, void *user) {
-    PlaylistPriorityContext *context;
-
-    (void)idx;
-    context = user;
-    return ncm_mpd_client_set_priority_song(context->client, song,
-                                            context->priority,
-                                            context->ncm_error);
 }
 
 int32
 playlist_screen_set_selected_priority(PlaylistScreen *screen,
                                       MpdClient *client, int32 priority,
                                       NcmError *ncm_error) {
-    PlaylistPriorityContext context;
     NcmSongArray songs = {0};
     int32 status;
 
@@ -1295,13 +1269,11 @@ playlist_screen_set_selected_priority(PlaylistScreen *screen,
 
     playlist_screen_selected_songs(screen, &songs);
 
-    context.client = client;
-    context.ncm_error = ncm_error;
-    context.priority = priority;
     status = 0;
     for (int32 i = 0; i < songs.len; i += 1) {
         if ((status =
-                 playlist_set_one_priority(&songs.items[i], i, &context)) < 0) {
+                 ncm_mpd_client_set_priority_song(client, &songs.items[i],
+                                                  priority, ncm_error)) < 0) {
             break;
         }
     }

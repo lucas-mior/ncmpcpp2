@@ -60,19 +60,6 @@ sort_dialog_switch_to_callback(NcScreen *screen) {
 }
 
 static void
-sort_dialog_set_geometry(SortPlaylistDialog *dialog,
-                         int32 start_x, int32 start_y,
-                         int32 width, int32 height) {
-    dialog->start_x = start_x;
-    dialog->start_y = start_y;
-    dialog->width = width;
-    dialog->height = height;
-    nc_window_resize(&dialog->window, width, height);
-    nc_window_move_to(&dialog->window, start_x, start_y);
-    return;
-}
-
-static void
 sort_dialog_apply_geometry(SortPlaylistDialog *dialog) {
     int32 main_height;
     int32 height;
@@ -91,7 +78,12 @@ sort_dialog_apply_geometry(SortPlaylistDialog *dialog) {
     width = 30;
     start_x = (ui_state_screen_width() - width)/2;
     start_y = (main_height - height)/2 + ui_state_main_start_y();
-    sort_dialog_set_geometry(dialog, start_x, start_y, width, height);
+    dialog->start_x = start_x;
+    dialog->start_y = start_y;
+    dialog->width = width;
+    dialog->height = height;
+    nc_window_resize(&dialog->window, width, height);
+    nc_window_move_to(&dialog->window, start_x, start_y);
     return;
 }
 
@@ -164,15 +156,6 @@ sort_dialog_mouse_callback(NcScreen *screen, MEVENT event) {
 #include "screens/nc_screen_impl_template.h"
 
 static void
-sort_dialog_label_set(NcEditorSortRow *row, char *label, int32 label_len) {
-    row->action.label = malloc2(label_len + 1);
-    memcpy64(row->action.label, label, label_len);
-    row->action.label[label_len] = '\0';
-    row->action.label_len = label_len;
-    return;
-}
-
-static void
 sort_dialog_add_row(SortPlaylistDialog *dialog, char *label, int32 label_len,
                     enum SongGetter getter,
                     void (*run)(void *user), void *user) {
@@ -182,7 +165,10 @@ sort_dialog_add_row(SortPlaylistDialog *dialog, char *label, int32 label_len,
     row.getter = getter;
     row.action.run = run;
     row.action.user = user;
-    sort_dialog_label_set(&row, label, label_len);
+    row.action.label = malloc2(label_len + 1);
+    memcpy64(row.action.label, label, label_len);
+    row.action.label[label_len] = '\0';
+    row.action.label_len = label_len;
     nc_editor_sort_menu_add(&dialog->rows, &row);
     nc_editor_sort_row_destroy(&row);
     return;
@@ -195,30 +181,6 @@ sort_dialog_show_move_hint(void *user) {
                         STRLIT("Move tag types up and down to adjust sort "
                                "order"));
     return;
-}
-
-static int32
-sort_dialog_get_order(SortPlaylistDialog *dialog, enum SongGetter *getters,
-                      int32 getters_cap) {
-    NcMenu *menu;
-    int32 len;
-
-    menu = nc_editor_sort_menu_base(&dialog->rows);
-    len = 0;
-    for (int32 i = 0; i < nc_menu_all_item_len(menu); i += 1) {
-        NcEditorSortRow *row;
-
-        row = nc_editor_sort_menu_item_at(&dialog->rows, NC_MENU_ITEMS_ALL, i);
-        if (row->getter == SONG_GETTER_COUNT) {
-            continue;
-        }
-        if (len >= getters_cap) {
-            break;
-        }
-        getters[len] = row->getter;
-        len += 1;
-    }
-    return len;
 }
 
 static void
@@ -242,12 +204,27 @@ static void
 sort_dialog_run_sort(void *user) {
     enum SongGetter getters[16];
     SortPlaylistDialog *dialog;
+    NcMenu *menu;
     NcmError ncm_error;
     int32 status;
     int32 getters_len;
 
     dialog = user;
-    getters_len = sort_dialog_get_order(dialog, getters, LENGTH(getters));
+    menu = nc_editor_sort_menu_base(&dialog->rows);
+    getters_len = 0;
+    for (int32 i = 0; i < nc_menu_all_item_len(menu); i += 1) {
+        NcEditorSortRow *row;
+
+        row = nc_editor_sort_menu_item_at(&dialog->rows, NC_MENU_ITEMS_ALL, i);
+        if (row->getter == SONG_GETTER_COUNT) {
+            continue;
+        }
+        if (getters_len >= LENGTH(getters)) {
+            break;
+        }
+        getters[getters_len] = row->getter;
+        getters_len += 1;
+    }
     ncm_statusbar_print(Config.message_delay_time, STRLIT("Sorting..."));
     ncm_error_clear(&ncm_error);
     status = ncm_playlist_sort_range(&dialog->songs, dialog->start_position,
