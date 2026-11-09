@@ -140,16 +140,6 @@ menu_position_is_selectable(NcMenu *menu, int32 pos) {
 }
 
 static bool
-menu_position_is_separator(NcMenu *menu, int32 pos) {
-    return menu_is_separator(menu, nc_menu_active_item_at(menu, pos));
-}
-
-static bool
-menu_position_is_inactive(NcMenu *menu, int32 pos) {
-    return menu_is_inactive(menu, nc_menu_active_item_at(menu, pos));
-}
-
-static bool
 menu_is_selected(NcMenu *menu, void *item) {
     if (menu_flags_for_item(menu, item) & NC_MENU_ITEM_SELECTED) {
         return true;
@@ -807,14 +797,9 @@ nc_menu_highlight_position(NcMenu *menu, int32 pos, int32 height) {
     return;
 }
 
-static uint32
-menu_default_item_flags(void) {
-    return NC_MENU_ITEM_SELECTABLE;
-}
-
 void
 nc_menu_add_item(NcMenu *menu, void *item) {
-    nc_menu_add_item_with_flags(menu, item, menu_default_item_flags());
+    nc_menu_add_item_with_flags(menu, item, NC_MENU_ITEM_SELECTABLE);
     return;
 }
 
@@ -991,7 +976,7 @@ nc_menu_position_is_separator(NcMenu *menu, int32 pos) {
     if ((pos < 0) || (pos >= nc_menu_item_len(menu))) {
         return false;
     }
-    return menu_position_is_separator(menu, pos);
+    return menu_is_separator(menu, nc_menu_active_item_at(menu, pos));
 }
 
 bool
@@ -999,7 +984,7 @@ nc_menu_position_is_inactive(NcMenu *menu, int32 pos) {
     if ((pos < 0) || (pos >= nc_menu_item_len(menu))) {
         return false;
     }
-    return menu_position_is_inactive(menu, pos);
+    return menu_is_inactive(menu, nc_menu_active_item_at(menu, pos));
 }
 
 bool

@@ -65,30 +65,6 @@ static NcNamedKey nc_named_keys[] = {
 
 #undef NC_NAMED_KEY_ENTRY
 
-static NcKey
-nc_named_key_parse(char *string, int32 string_len) {
-    for (int32 i = 0; i < LENGTH(nc_named_keys); i += 1) {
-        if (STREQUAL(string, string_len, nc_named_keys[i].config_name,
-                     nc_named_keys[i].config_name_len)) {
-            return nc_named_keys[i].key;
-        }
-    }
-    return NC_KEY_NONE;
-}
-
-static int32
-nc_named_key_name(NcKey key, char *buffer, int32 buffer_len) {
-    for (int32 i = 0; i < LENGTH(nc_named_keys); i += 1) {
-        if (key == nc_named_keys[i].key) {
-            return fmt_sprintf(buffer, buffer_len,
-                               "%.*s",
-                               nc_named_keys[i].display_name_len,
-                               nc_named_keys[i].display_name);
-        }
-    }
-    return -1;
-}
-
 NcColor
 nc_color_make(int16 foreground, int16 background,
               bool is_default, bool is_end) {
@@ -249,19 +225,29 @@ nc_key_parse(char *string, int32 string_len) {
         if (result != NC_KEY_NONE) {
             result |= NC_KEY_SHIFT;
         }
-    } else if ((result = nc_named_key_parse(string, string_len))
-               != NC_KEY_NONE) {
-        return result;
-    } else if ((string_len >= 2) && (string_len <= 3)
-               && (string[0] == 'f')) {
-        int32 n;
-        char buffer[4];
+    } else {
+        for (int32 i = 0; i < LENGTH(nc_named_keys); i += 1) {
+            if (STREQUAL(string, string_len, nc_named_keys[i].config_name,
+                         nc_named_keys[i].config_name_len)) {
+                result = nc_named_keys[i].key;
+                break;
+            }
+        }
+        if (result != NC_KEY_NONE) {
+            return result;
+        }
 
-        memcpy64(buffer, string + 1, string_len - 1);
-        buffer[string_len - 1] = '\0';
-        n = (int32)atoi2(buffer, string_len);
-        if ((n >= 1) && (n <= 12)) {
-            result = NC_KEY_F1 + (NcKey)n - 1;
+        if ((string_len >= 2) && (string_len <= 3)
+            && (string[0] == 'f')) {
+            int32 n;
+            char buffer[4];
+
+            memcpy64(buffer, string + 1, string_len - 1);
+            buffer[string_len - 1] = '\0';
+            n = (int32)atoi2(buffer, string_len);
+            if ((n >= 1) && (n <= 12)) {
+                result = NC_KEY_F1 + (NcKey)n - 1;
+            }
         }
     }
 
@@ -290,7 +276,16 @@ nc_key_name(NcKey key, char *buffer, int32 buffer_len) {
         return result;
     }
 
-    if ((result = nc_named_key_name(key, buffer, buffer_len)) >= 0) {
+    for (int32 i = 0; i < LENGTH(nc_named_keys); i += 1) {
+        if (key == nc_named_keys[i].key) {
+            char *name = nc_named_keys[i].display_name;
+            int32 name_len = nc_named_keys[i].display_name_len;
+
+            result = fmt_sprintf(buffer, buffer_len, "%.*s", name_len, name);
+            break;
+        }
+    }
+    if (result >= 0) {
         return result;
     }
     if ((key >= NC_KEY_CTRL_A) && (key <= NC_KEY_CTRL_Z)) {

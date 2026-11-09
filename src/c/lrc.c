@@ -120,240 +120,12 @@ lrc_find_tag_close(char *line, int32 line_len, int32 cursor) {
 }
 
 static int32
-lrc_parse_offset_tag(LrcDocument *document, char *tag, int32 tag_len,
-                     NcmError *ncm_error) {
-    char *value;
-    int32 value_len;
-    llong signed_value;
-    char *offset = "offset:";
-    int32 offset_len;
-    int32 offset_ms;
-
-    ASSERT(document != NULL);
-    ASSERT(tag != NULL);
-    ASSERT_GE(tag_len, 0);
-
-    offset_len = strlen32(offset);
-    if (tag_len < offset_len) {
-        return 0;
-    }
-
-    for (int32 i = 0; i < offset_len; i += 1) {
-        uint8 left = (uint8)tag[i];
-        uint8 right = (uint8)offset[i];
-
-        if (tolower(left) != tolower(right)) {
-            return 0;
-        }
-    }
-
-    value = tag + offset_len;
-    value_len = tag_len - offset_len;
-    if (parse_integer(value, value_len, &signed_value) < 0) {
-        return lrc_malformed_offset(ncm_error);
-    }
-
-    if ((signed_value < MINOF(offset_ms))
-        || (signed_value > MAXOF(offset_ms))) {
-        return lrc_malformed_offset(ncm_error);
-    }
-
-    offset_ms = (int32)signed_value;
-    document->offset_ms = offset_ms;
-    document->has_offset = true;
-    return 1;
-}
-
-static int32
-lrc_parse_line_offset_tags(LrcDocument *document, char *line, int32 line_len,
-                           NcmError *ncm_error) {
-    int32 cursor = 0;
-
-    while ((cursor < line_len) && (line[cursor] == '[')) {
-        char *tag;
-        int32 close;
-        int32 tag_len;
-        int32 status;
-
-        close = lrc_find_tag_close(line, line_len, cursor);
-        if (close < 0) {
-            break;
-        }
-
-        tag = line + cursor + 1;
-        tag_len = close - cursor - 1;
-        if ((status =
-                 lrc_parse_offset_tag(document, tag, tag_len, ncm_error)) < 0) {
-            return status;
-        }
-
-        cursor = close + 1;
-    }
-    return 0;
-}
-
-static int32
-lrc_parse_offsets(LrcDocument *document, char *data, int32 data_len,
-                  NcmError *ncm_error) {
-    int32 pos = 0;
-
-    while (pos < data_len) {
-        int32 raw_line_len = lrc_raw_line_len(data, data_len, pos);
-        int32 line_len = lrc_trim_line_end(data + pos, raw_line_len);
-        char *line = data + pos;
-        int32 status;
-
-        if ((status = lrc_parse_line_offset_tags(document, line, line_len,
-                                                 ncm_error)) < 0) {
-            return status;
-        }
-
-        pos = lrc_next_line_pos(data, data_len, pos, raw_line_len);
-    }
-    return 0;
-}
-
-static int32
 lrc_parse_time_integer(char *data, int32 data_len, llong *value,
                        NcmError *ncm_error) {
     if ((parse_integer(data, data_len, value) < 0) || (*value < 0)) {
         return lrc_malformed_line(ncm_error);
     }
     return 0;
-}
-
-static int32
-lrc_parse_time_tag(char *tag, int32 tag_len, int32 offset_ms, int32 *time_ms,
-                   NcmError *ncm_error) {
-    int32 colon;
-    int32 dot;
-    int32 frac_len;
-    llong minutes;
-    llong seconds;
-    llong milliseconds;
-    llong value;
-    char *shortest_timestamp = "0:00";
-    int32 status;
-
-    if ((tag_len <= 0) || !is_digit(tag[0])) {
-        return 0;
-    }
-    if (tag_len < strlen32(shortest_timestamp)) {
-        return lrc_malformed_line(ncm_error);
-    }
-
-    colon = -1;
-    dot = -1;
-    for (int32 i = 0; i < tag_len; i += 1) {
-        if (tag[i] == ':') {
-            if (colon >= 0) {
-                return lrc_malformed_line(ncm_error);
-            }
-            colon = i;
-        } else if (tag[i] == '.') {
-            if (dot >= 0) {
-                return lrc_malformed_line(ncm_error);
-            }
-            dot = i;
-        }
-    }
-
-    if ((colon <= 0) || (colon + 2 >= tag_len)) {
-        return lrc_malformed_line(ncm_error);
-    }
-    if ((dot >= 0) && (dot != colon + 3)) {
-        return lrc_malformed_line(ncm_error);
-    }
-    if ((dot < 0) && ((colon + 3) != tag_len)) {
-        return lrc_malformed_line(ncm_error);
-    }
-
-    if ((status =
-             lrc_parse_time_integer(tag, colon, &minutes, ncm_error)) < 0) {
-        return status;
-    }
-    if ((status =
-             lrc_parse_time_integer(tag + colon + 1, 2, &seconds, ncm_error))
-        < 0) {
-        return status;
-    }
-    if (seconds >= 60) {
-        return lrc_malformed_line(ncm_error);
-    }
-
-    milliseconds = 0;
-    if (dot >= 0) {
-        frac_len = tag_len - dot - 1;
-        if ((frac_len <= 0) || (frac_len > 3)) {
-            return lrc_malformed_line(ncm_error);
-        }
-
-        if ((status = lrc_parse_time_integer(tag + dot + 1, frac_len,
-                                             &milliseconds, ncm_error)) < 0) {
-            return status;
-        }
-        if (frac_len == 1) {
-            milliseconds *= 100;
-        } else if (frac_len == 2) {
-            milliseconds *= 10;
-        }
-    }
-
-    if (minutes > (MAXOF(value) - seconds)/60) {
-        return lrc_malformed_line(ncm_error);
-    }
-    value = minutes*60 + seconds;
-    if (value > (MAXOF(value) - milliseconds)/1000) {
-        return lrc_malformed_line(ncm_error);
-    }
-    value = value*1000 + milliseconds;
-    if ((offset_ms > 0) && (value > (MAXOF(value) - offset_ms))) {
-        return lrc_malformed_line(ncm_error);
-    }
-    if ((offset_ms < 0) && (value < (MINOF(value) - offset_ms))) {
-        return lrc_malformed_line(ncm_error);
-    }
-
-    value += offset_ms;
-    if ((value < MINOF(*time_ms)) || (value > MAXOF(*time_ms))) {
-        return lrc_malformed_line(ncm_error);
-    }
-
-    *time_ms = (int32)value;
-    return 1;
-}
-
-static void
-lrc_append_line_entries(LrcDocument *document, int32 *source_order,
-                        int32 blank_lines_before, int32 *times,
-                        int32 times_len, char *text, int32 text_len) {
-    ASSERT(document != NULL);
-    ASSERT(source_order != NULL);
-    ASSERT(times != NULL);
-    ASSERT_GE(times_len, 0);
-
-    for (int32 i = 0; i < times_len; i += 1) {
-        LrcEntry entry;
-
-        entry.time_ms = times[i];
-        entry.text_start = document->text.len;
-        entry.text_len = text_len;
-        entry.buffer_start = NCM_LRC_NO_BUFFER_POSITION;
-        entry.buffer_end = NCM_LRC_NO_BUFFER_POSITION;
-        entry.source_order = *source_order;
-
-        if (i == 0) {
-            entry.blank_lines_before = blank_lines_before;
-        } else {
-            entry.blank_lines_before = 0;
-        }
-
-        ARRAY_PUSH(document->entries, entry);
-        *source_order += 1;
-        STR_APPEND(&document->text, text, text_len);
-    }
-
-    return;
 }
 
 static int32
@@ -371,6 +143,15 @@ lrc_parse_line_entries(LrcDocument *document, char *line, int32 line_len,
         int32 close;
         int32 tag_len;
         int32 time_ms;
+        int32 colon;
+        int32 dot;
+        int32 frac_len;
+        llong minutes;
+        llong seconds;
+        llong milliseconds;
+        llong value;
+        char *shortest_timestamp = "0:00";
+        bool has_time = false;
         int32 status;
 
         close = lrc_find_tag_close(line, line_len, cursor);
@@ -380,11 +161,94 @@ lrc_parse_line_entries(LrcDocument *document, char *line, int32 line_len,
 
         tag = line + cursor + 1;
         tag_len = close - cursor - 1;
-        if ((status = lrc_parse_time_tag(tag, tag_len, document->offset_ms,
-                                         &time_ms, ncm_error)) < 0) {
-            return status;
+        if ((tag_len > 0) && is_digit(tag[0])) {
+            if (tag_len < strlen32(shortest_timestamp)) {
+                return lrc_malformed_line(ncm_error);
+            }
+
+            colon = -1;
+            dot = -1;
+            for (int32 i = 0; i < tag_len; i += 1) {
+                if (tag[i] == ':') {
+                    if (colon >= 0) {
+                        return lrc_malformed_line(ncm_error);
+                    }
+                    colon = i;
+                } else if (tag[i] == '.') {
+                    if (dot >= 0) {
+                        return lrc_malformed_line(ncm_error);
+                    }
+                    dot = i;
+                }
+            }
+
+            if ((colon <= 0) || (colon + 2 >= tag_len)) {
+                return lrc_malformed_line(ncm_error);
+            }
+            if ((dot >= 0) && (dot != colon + 3)) {
+                return lrc_malformed_line(ncm_error);
+            }
+            if ((dot < 0) && ((colon + 3) != tag_len)) {
+                return lrc_malformed_line(ncm_error);
+            }
+
+            if ((status = lrc_parse_time_integer(tag, colon, &minutes,
+                                                 ncm_error)) < 0) {
+                return status;
+            }
+            if ((status = lrc_parse_time_integer(tag + colon + 1, 2,
+                                                 &seconds, ncm_error)) < 0) {
+                return status;
+            }
+            if (seconds >= 60) {
+                return lrc_malformed_line(ncm_error);
+            }
+
+            milliseconds = 0;
+            if (dot >= 0) {
+                frac_len = tag_len - dot - 1;
+                if ((frac_len <= 0) || (frac_len > 3)) {
+                    return lrc_malformed_line(ncm_error);
+                }
+
+                if ((status = lrc_parse_time_integer(tag + dot + 1, frac_len,
+                                                     &milliseconds,
+                                                     ncm_error)) < 0) {
+                    return status;
+                }
+                if (frac_len == 1) {
+                    milliseconds *= 100;
+                } else if (frac_len == 2) {
+                    milliseconds *= 10;
+                }
+            }
+
+            if (minutes > (MAXOF(value) - seconds)/60) {
+                return lrc_malformed_line(ncm_error);
+            }
+            value = minutes*60 + seconds;
+            if (value > (MAXOF(value) - milliseconds)/1000) {
+                return lrc_malformed_line(ncm_error);
+            }
+            value = value*1000 + milliseconds;
+            if ((document->offset_ms > 0)
+                && (value > (MAXOF(value) - document->offset_ms))) {
+                return lrc_malformed_line(ncm_error);
+            }
+            if ((document->offset_ms < 0)
+                && (value < (MINOF(value) - document->offset_ms))) {
+                return lrc_malformed_line(ncm_error);
+            }
+
+            value += document->offset_ms;
+            if ((value < MINOF(time_ms)) || (value > MAXOF(time_ms))) {
+                return lrc_malformed_line(ncm_error);
+            }
+
+            time_ms = (int32)value;
+            has_time = true;
         }
-        if ((status > 0) && (times_len < LENGTH(times))) {
+        if (has_time && (times_len < LENGTH(times))) {
             times[times_len] = time_ms;
             times_len += 1;
         }
@@ -393,41 +257,26 @@ lrc_parse_line_entries(LrcDocument *document, char *line, int32 line_len,
     }
 
     if (times_len > 0) {
-        lrc_append_line_entries(document, source_order, blank_lines_before,
-                                times, times_len, line + cursor,
-                                line_len - cursor);
-    }
-    return 0;
-}
+        for (int32 i = 0; i < times_len; i += 1) {
+            LrcEntry entry;
 
-static int32
-lrc_parse_entries(LrcDocument *document, char *data, int32 data_len,
-                  NcmError *ncm_error) {
-    int32 source_order = 0;
-    int32 blank_lines_before = 0;
-    int32 pos = 0;
+            entry.time_ms = times[i];
+            entry.text_start = document->text.len;
+            entry.text_len = line_len - cursor;
+            entry.buffer_start = NCM_LRC_NO_BUFFER_POSITION;
+            entry.buffer_end = NCM_LRC_NO_BUFFER_POSITION;
+            entry.source_order = *source_order;
 
-    while (pos < data_len) {
-        int32 raw_line_len = lrc_raw_line_len(data, data_len, pos);
-        int32 line_len = lrc_trim_line_end(data + pos, raw_line_len);
-        char *line = data + pos;
-        int32 status;
-
-        if (line_len <= 0) {
-            if (source_order > 0) {
-                blank_lines_before += 1;
+            if (i == 0) {
+                entry.blank_lines_before = blank_lines_before;
+            } else {
+                entry.blank_lines_before = 0;
             }
-        } else {
-            if ((status =
-                     lrc_parse_line_entries(document, line, line_len,
-                                            &source_order, blank_lines_before,
-                                            ncm_error)) < 0) {
-                return status;
-            }
-            blank_lines_before = 0;
+
+            ARRAY_PUSH(document->entries, entry);
+            *source_order += 1;
+            STR_APPEND(&document->text, line + cursor, line_len - cursor);
         }
-
-        pos = lrc_next_line_pos(data, data_len, pos, raw_line_len);
     }
     return 0;
 }
@@ -447,14 +296,99 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
                                     STRLIT("missing LRC data"));
     }
 
-    if ((status = lrc_parse_offsets(&parsed, data, data_len, ncm_error)) < 0) {
-        lrc_document_destroy_unchecked(&parsed);
-        return status;
+    {
+        int32 pos = 0;
+
+        while (pos < data_len) {
+            int32 raw_line_len = lrc_raw_line_len(data, data_len, pos);
+            int32 line_len = lrc_trim_line_end(data + pos, raw_line_len);
+            char *line = data + pos;
+            int32 cursor = 0;
+
+            while ((cursor < line_len) && (line[cursor] == '[')) {
+                char *tag;
+                char *value;
+                char *offset = "offset:";
+                llong signed_value;
+                int32 close;
+                int32 tag_len;
+                int32 value_len;
+                int32 offset_len;
+                int32 offset_ms;
+                bool is_offset;
+
+                close = lrc_find_tag_close(line, line_len, cursor);
+                if (close < 0) {
+                    break;
+                }
+
+                tag = line + cursor + 1;
+                tag_len = close - cursor - 1;
+                offset_len = strlen32(offset);
+                is_offset = tag_len >= offset_len;
+                for (int32 i = 0; is_offset && (i < offset_len); i += 1) {
+                    uint8 left = (uint8)tag[i];
+                    uint8 right = (uint8)offset[i];
+
+                    if (tolower(left) != tolower(right)) {
+                        is_offset = false;
+                    }
+                }
+
+                if (is_offset) {
+                    value = tag + offset_len;
+                    value_len = tag_len - offset_len;
+                    if (parse_integer(value, value_len, &signed_value) < 0) {
+                        status = lrc_malformed_offset(ncm_error);
+                        lrc_document_destroy_unchecked(&parsed);
+                        return status;
+                    }
+                    if ((signed_value < MINOF(offset_ms))
+                        || (signed_value > MAXOF(offset_ms))) {
+                        status = lrc_malformed_offset(ncm_error);
+                        lrc_document_destroy_unchecked(&parsed);
+                        return status;
+                    }
+
+                    offset_ms = (int32)signed_value;
+                    parsed.offset_ms = offset_ms;
+                    parsed.has_offset = true;
+                }
+
+                cursor = close + 1;
+            }
+
+            pos = lrc_next_line_pos(data, data_len, pos, raw_line_len);
+        }
     }
 
-    if ((status = lrc_parse_entries(&parsed, data, data_len, ncm_error)) < 0) {
-        lrc_document_destroy_unchecked(&parsed);
-        return status;
+    {
+        int32 source_order = 0;
+        int32 blank_lines_before = 0;
+        int32 pos = 0;
+
+        while (pos < data_len) {
+            int32 raw_line_len = lrc_raw_line_len(data, data_len, pos);
+            int32 line_len = lrc_trim_line_end(data + pos, raw_line_len);
+            char *line = data + pos;
+
+            if (line_len <= 0) {
+                if (source_order > 0) {
+                    blank_lines_before += 1;
+                }
+            } else {
+                if ((status = lrc_parse_line_entries(&parsed, line, line_len,
+                                                     &source_order,
+                                                     blank_lines_before,
+                                                     ncm_error)) < 0) {
+                    lrc_document_destroy_unchecked(&parsed);
+                    return status;
+                }
+                blank_lines_before = 0;
+            }
+
+            pos = lrc_next_line_pos(data, data_len, pos, raw_line_len);
+        }
     }
 
     if (ARRAY_LEN(parsed.entries) <= 0) {
@@ -473,31 +407,6 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
     return 0;
 }
 
-static StrView
-lrc_entry_text_unchecked(LrcDocument *document, LrcEntry *entry) {
-    StrView view;
-
-    if (entry->text_len <= 0) {
-        return (StrView){.data = ""};
-    }
-
-    view.data = document->text.data + entry->text_start;
-    view.len = entry->text_len;
-    return view;
-}
-
-static void
-lrc_document_clear_buffer_positions(LrcDocument *document) {
-    ASSERT(document != NULL);
-
-    for (int32 i = 0; i < ARRAY_LEN(document->entries); i += 1) {
-        document->entries[i].buffer_start = NCM_LRC_NO_BUFFER_POSITION;
-        document->entries[i].buffer_end = NCM_LRC_NO_BUFFER_POSITION;
-    }
-
-    return;
-}
-
 int32
 lrc_document_render_plain(LrcDocument *document, LrcRenderTarget *target) {
     char line_break[] = "\n";
@@ -510,7 +419,11 @@ lrc_document_render_plain(LrcDocument *document, LrcRenderTarget *target) {
         return -EINVAL;
     }
 
-    lrc_document_clear_buffer_positions(document);
+    for (int32 i = 0; i < ARRAY_LEN(document->entries); i += 1) {
+        document->entries[i].buffer_start = NCM_LRC_NO_BUFFER_POSITION;
+        document->entries[i].buffer_end = NCM_LRC_NO_BUFFER_POSITION;
+    }
+
     for (int32 i = 0; i < ARRAY_LEN(document->entries); i += 1) {
         LrcEntry *entry = &document->entries[i];
         StrView text;
@@ -522,7 +435,12 @@ lrc_document_render_plain(LrcDocument *document, LrcRenderTarget *target) {
             }
         }
 
-        text = lrc_entry_text_unchecked(document, entry);
+        if (entry->text_len <= 0) {
+            text = (StrView){.data = ""};
+        } else {
+            text.data = document->text.data + entry->text_start;
+            text.len = entry->text_len;
+        }
 
         entry->buffer_start = target->position(target->user);
         target->append(target->user, text.data, text.len);

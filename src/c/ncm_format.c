@@ -625,34 +625,6 @@ ncm_format_parse(NcmFormatAst *ast, char *data, int32 data_len,
     return 0;
 }
 
-static String
-ncm_format_render_tag_unchecked(NcmSong *song, NcmFormatSongTag *tag) {
-    String result;
-
-    result = ncm_song_tags_buffer(song, tag->getter, STRLIT(" | "), true);
-    if ((tag->delimiter > 0) && (result.len > 0)) {
-        int32 limit;
-
-        if (tag->delimiter > (uint32)MAXOF(limit)) {
-            limit = MAXOF(limit);
-        } else {
-            limit = (int32)tag->delimiter;
-        }
-
-        if ((tag->getter == SONG_GETTER_DATE)
-            || (tag->getter == SONG_GETTER_LENGTH)) {
-            if (limit < result.len) {
-                result.len = limit;
-            }
-        } else {
-            result.len = utf8_cut_width(result.data, result.len, limit);
-        }
-        result.data[result.len] = '\0';
-    }
-
-    return result;
-}
-
 static void
 ncm_format_emit_text(NcmFormatCallbacks *cb, void *user,
                      char *data, int32 data_len, NcmFormatSongTag *tag) {
@@ -705,7 +677,27 @@ ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
         if (!(flags & NCM_FORMAT_FLAG_TAG) || (song == NULL)) {
             return NCM_FORMAT_RESULT_MISSING;
         }
-        tag = ncm_format_render_tag_unchecked(song, &expr->song_tag);
+        tag = ncm_song_tags_buffer(song, expr->song_tag.getter,
+                                   STRLIT(" | "), true);
+        if ((expr->song_tag.delimiter > 0) && (tag.len > 0)) {
+            int32 limit;
+
+            if (expr->song_tag.delimiter > (uint32)MAXOF(limit)) {
+                limit = MAXOF(limit);
+            } else {
+                limit = (int32)expr->song_tag.delimiter;
+            }
+
+            if ((expr->song_tag.getter == SONG_GETTER_DATE)
+                || (expr->song_tag.getter == SONG_GETTER_LENGTH)) {
+                if (limit < tag.len) {
+                    tag.len = limit;
+                }
+            } else {
+                tag.len = utf8_cut_width(tag.data, tag.len, limit);
+            }
+            tag.data[tag.len] = '\0';
+        }
         if (tag.len <= 0) {
             str_free(&tag);
             return NCM_FORMAT_RESULT_MISSING;
@@ -783,35 +775,6 @@ ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
     return NCM_FORMAT_RESULT_EMPTY;
 }
 
-static enum NcmFormatResult
-ncm_format_render_list(NcmFormatExprList *list, NcmSong *song,
-                       NcmFormatCallbacks *cb, void *left,
-                       void *right, uint32 flags, int32 *no_output,
-                       bool *switched) {
-    enum NcmFormatResult result = NCM_FORMAT_RESULT_EMPTY;
-
-    for (int32 i = 0; i < list->len; i += 1) {
-        enum NcmFormatResult part = ncm_format_render_expr(&list->items[i],
-                                                           song, cb,
-                                                           left, right, flags,
-                                                           no_output, switched);
-
-        if ((result == NCM_FORMAT_RESULT_MISSING)
-            || (part == NCM_FORMAT_RESULT_MISSING)) {
-            result = NCM_FORMAT_RESULT_MISSING;
-        } else if ((result == NCM_FORMAT_RESULT_OK)
-                   || (part == NCM_FORMAT_RESULT_OK)) {
-            result = NCM_FORMAT_RESULT_OK;
-        } else {
-            result = NCM_FORMAT_RESULT_EMPTY;
-        }
-        if (result == NCM_FORMAT_RESULT_MISSING) {
-            break;
-        }
-    }
-    return result;
-}
-
 void
 ncm_format_render(NcmFormatAst *ast, NcmSong *song,
                   NcmFormatCallbacks *callbacks, void *output,
@@ -823,8 +786,14 @@ ncm_format_render(NcmFormatAst *ast, NcmSong *song,
         return;
     }
 
-    ncm_format_render_list(&ast->root, song, callbacks, output,
-                           second_output, flags, &no_output, &switched);
+    for (int32 i = 0; i < ast->root.len; i += 1) {
+        if (ncm_format_render_expr(&ast->root.items[i], song, callbacks,
+                                   output, second_output, flags,
+                                   &no_output, &switched)
+            == NCM_FORMAT_RESULT_MISSING) {
+            break;
+        }
+    }
     return;
 }
 

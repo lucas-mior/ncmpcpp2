@@ -96,55 +96,6 @@ ncm_song_property_destroy(NcmSongProperty *property) {
 }
 
 static void
-ncm_song_grow_tags(NcmSong *song) {
-    int32 old_cap;
-    int32 new_cap;
-
-    if (song->tags_len < song->tags_cap) {
-        return;
-    }
-
-    old_cap = song->tags_cap;
-    if (old_cap <= 0) {
-        new_cap = 8;
-    } else {
-        new_cap = old_cap*2;
-    }
-
-    song->tags = realloc2(song->tags, old_cap, new_cap, SIZEOF(*song->tags));
-    for (int32 i = old_cap; i < new_cap; i += 1) {
-        ncm_song_tag_init(&song->tags[i]);
-    }
-    song->tags_cap = new_cap;
-    return;
-}
-
-static void
-ncm_song_grow_properties(NcmSong *song) {
-    int32 old_cap;
-    int32 new_cap;
-
-    if (song->properties_len < song->properties_cap) {
-        return;
-    }
-
-    old_cap = song->properties_cap;
-    if (old_cap <= 0) {
-        new_cap = 8;
-    } else {
-        new_cap = old_cap*2;
-    }
-
-    song->properties = realloc2(song->properties, old_cap, new_cap,
-                                SIZEOF(*song->properties));
-    for (int32 i = old_cap; i < new_cap; i += 1) {
-        ncm_song_property_init(&song->properties[i]);
-    }
-    song->properties_cap = new_cap;
-    return;
-}
-
-static void
 ncm_song_destroy_unchecked(NcmSong *song) {
     free2(song->uri, song->uri_len + 1);
     for (int32 i = 0; i < song->tags_len; i += 1) {
@@ -178,8 +129,24 @@ static void
 ncm_song_add_tag_unchecked(NcmSong *song, enum TagType type,
                            char *value, int32 value_len) {
     NcmSongTag *tag;
+    int32 old_cap;
+    int32 new_cap;
 
-    ncm_song_grow_tags(song);
+    if (song->tags_len >= song->tags_cap) {
+        old_cap = song->tags_cap;
+        if (old_cap <= 0) {
+            new_cap = 8;
+        } else {
+            new_cap = old_cap*2;
+        }
+
+        song->tags = realloc2(song->tags, old_cap, new_cap,
+                              SIZEOF(*song->tags));
+        for (int32 i = old_cap; i < new_cap; i += 1) {
+            ncm_song_tag_init(&song->tags[i]);
+        }
+        song->tags_cap = new_cap;
+    }
 
     tag = &song->tags[song->tags_len];
     ncm_song_tag_destroy(tag);
@@ -197,8 +164,24 @@ ncm_song_add_property_unchecked(NcmSong *song,
                                 char *name, int32 name_len,
                                 char *value, int32 value_len) {
     NcmSongProperty *property;
+    int32 old_cap;
+    int32 new_cap;
 
-    ncm_song_grow_properties(song);
+    if (song->properties_len >= song->properties_cap) {
+        old_cap = song->properties_cap;
+        if (old_cap <= 0) {
+            new_cap = 8;
+        } else {
+            new_cap = old_cap*2;
+        }
+
+        song->properties = realloc2(song->properties, old_cap, new_cap,
+                                    SIZEOF(*song->properties));
+        for (int32 i = old_cap; i < new_cap; i += 1) {
+            ncm_song_property_init(&song->properties[i]);
+        }
+        song->properties_cap = new_cap;
+    }
 
     property = &song->properties[song->properties_len];
     ncm_song_property_destroy(property);
@@ -522,23 +505,6 @@ ncm_song_has_directory_view_unchecked(NcmSong *song, int32 idx, StrView *view) {
     return true;
 }
 
-static bool
-ncm_song_is_from_database_unchecked(NcmSong *song) {
-    StrView uri;
-
-    if (!ncm_song_has_uri_view_unchecked(song, 0, &uri)) {
-        return false;
-    }
-    if (uri.len <= 0) {
-        return true;
-    }
-    if (uri.data[0] != '/') {
-        return true;
-    }
-
-    return ncm_string_find_char(uri.data, uri.len, '/') < 0;
-}
-
 bool
 ncm_song_has_tag_view(NcmSong *song, enum TagType tag, int32 idx,
                       StrView *view) {
@@ -582,11 +548,23 @@ ncm_song_has_directory_view(NcmSong *song, int32 idx, StrView *view) {
 
 bool
 ncm_song_is_from_database(NcmSong *song) {
+    StrView uri;
+
     if (song == NULL) {
         return false;
     }
 
-    return ncm_song_is_from_database_unchecked(song);
+    if (!ncm_song_has_uri_view_unchecked(song, 0, &uri)) {
+        return false;
+    }
+    if (uri.len <= 0) {
+        return true;
+    }
+    if (uri.data[0] != '/') {
+        return true;
+    }
+
+    return ncm_string_find_char(uri.data, uri.len, '/') < 0;
 }
 
 bool

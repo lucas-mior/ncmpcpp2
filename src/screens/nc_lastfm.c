@@ -418,17 +418,14 @@ lastfm_screen_dispatch_jobs(LastfmScreen *screen) {
     return ncm_job_queue_dispatch_completed(&screen->jobs);
 }
 
-static bool
-lastfm_take_refresh_request(LastfmScreen *screen) {
-    bool result = screen->refresh_window;
-    screen->refresh_window = false;
-    return result;
-}
-
 void
 lastfm_screen_update(LastfmScreen *screen) {
+    bool refresh_window;
+
     lastfm_screen_dispatch_jobs(screen);
-    if (lastfm_take_refresh_request(screen)) {
+    refresh_window = screen->refresh_window;
+    screen->refresh_window = false;
+    if (refresh_window) {
         nc_scrollpad_flush(&screen->scrollpad, &screen->window,
                            &screen->buffer);
         nc_scrollpad_refresh(&screen->scrollpad, &screen->window);
@@ -456,38 +453,6 @@ lastfm_find_match_callback(int32 start, int32 len, void *user) {
     return true;
 }
 
-static int32
-lastfm_buffer_find_unchecked(NcBuffer *buffer, char *pattern, int32 pattern_len,
-                             NcmError *ncm_error) {
-    LastfmFindState state;
-    NcmRegex regex = {0};
-    char *data;
-    int32 match_count;
-    int32 status;
-
-    nc_buffer_remove_properties(buffer, LASTFM_PROPERTY_ID);
-    if ((pattern == NULL) || (pattern_len <= 0)) {
-        return ncm_error_ok(ncm_error);
-    }
-
-    if ((status = ncm_regex_compile(&regex, pattern, pattern_len,
-                                    Config.regular_expressions,
-                                    ncm_error)) < 0) {
-        ncm_regex_destroy(&regex);
-        return status;
-    }
-
-    state.buffer = buffer;
-    data = nc_buffer_data(buffer);
-    match_count = ncm_regex_for_each_match(&regex, data, buffer->len,
-                                           lastfm_find_match_callback, &state);
-    ncm_regex_destroy(&regex);
-    if (match_count > 0) {
-        return 1;
-    }
-    return 0;
-}
-
 static void
 lastfm_flush(LastfmScreen *screen) {
     nc_scrollpad_flush(&screen->scrollpad, &screen->window, &screen->buffer);
@@ -498,6 +463,10 @@ lastfm_flush(LastfmScreen *screen) {
 int32
 lastfm_screen_find(LastfmScreen *screen, char *pattern, int32 pattern_len,
                    NcmError *ncm_error) {
+    LastfmFindState state;
+    NcmRegex regex = {0};
+    char *data;
+    int32 match_count;
     int32 result;
 
     if (screen == NULL) {
@@ -505,11 +474,30 @@ lastfm_screen_find(LastfmScreen *screen, char *pattern, int32 pattern_len,
                                     STRLIT("missing Last.fm screen"));
     }
 
-    result = lastfm_buffer_find_unchecked(&screen->buffer,
-                                          pattern, pattern_len, ncm_error);
-    if (result < 0) {
-        lastfm_flush(screen);
-        return result;
+    nc_buffer_remove_properties(&screen->buffer, LASTFM_PROPERTY_ID);
+    if ((pattern == NULL) || (pattern_len <= 0)) {
+        result = ncm_error_ok(ncm_error);
+    } else {
+        if ((result = ncm_regex_compile(&regex, pattern, pattern_len,
+                                        Config.regular_expressions,
+                                        ncm_error)) < 0) {
+            ncm_regex_destroy(&regex);
+            lastfm_flush(screen);
+            return result;
+        }
+
+        state.buffer = &screen->buffer;
+        data = nc_buffer_data(&screen->buffer);
+        match_count = ncm_regex_for_each_match(&regex, data,
+                                               screen->buffer.len,
+                                               lastfm_find_match_callback,
+                                               &state);
+        ncm_regex_destroy(&regex);
+        if (match_count > 0) {
+            result = 1;
+        } else {
+            result = 0;
+        }
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
         stupid_string_free(&screen->search_constraint,

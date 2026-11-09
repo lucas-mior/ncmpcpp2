@@ -7,45 +7,6 @@
 #include "c/ncm_c.h"
 
 static int32
-ncm_conversion_validate_source(char *source, int32 source_len,
-                               NcmError *ncm_error) {
-    if (source == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing conversion source"));
-    }
-    if (source_len < 0) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("negative source length"));
-    }
-
-    return ncm_error_ok(ncm_error);
-}
-
-static void
-ncm_conversion_copy_source(String *buffer, char *source, int32 source_len) {
-    ASSERT(buffer != NULL);
-    ASSERT(source != NULL);
-    ASSERT_GE(source_len, 0);
-
-    str_clear(buffer);
-    STR_APPEND(buffer, source, source_len);
-    return;
-}
-
-static bool
-ncm_conversion_has_only_trailing_space(char *cursor) {
-
-    while (*cursor != '\0') {
-        if (!is_space(*cursor)) {
-            return false;
-        }
-        cursor += 1;
-    }
-
-    return true;
-}
-
-static int32
 ncm_conversion_set_parse_error(NcmError *ncm_error,
                                char *source, int32 source_len) {
     char message[256];
@@ -70,11 +31,17 @@ ncm_parse_double(char *source, int32 source_len, double *out,
                                     STRLIT("missing conversion output"));
     }
 
-    if ((status = ncm_conversion_validate_source(source, source_len, ncm_error))
-        < 0) {
-        return status;
+    if (source == NULL) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("missing conversion source"));
     }
-    ncm_conversion_copy_source(&buffer, source, source_len);
+    if (source_len < 0) {
+        return ncm_error_set_status(ncm_error, -EINVAL,
+                                    STRLIT("negative source length"));
+    }
+
+    str_clear(&buffer);
+    STR_APPEND(&buffer, source, source_len);
 
     if (buffer.len <= 0) {
         status = ncm_conversion_set_parse_error(ncm_error, source, source_len);
@@ -84,9 +51,14 @@ ncm_parse_double(char *source, int32 source_len, double *out,
 
     errno = 0;
     value = strtod(buffer.data, &end);
-    ok = (end != buffer.data)
-         && ncm_conversion_has_only_trailing_space(end)
-         && (errno != ERANGE);
+    ok = end != buffer.data;
+    while (ok && (*end != '\0')) {
+        if (!is_space(*end)) {
+            ok = false;
+        }
+        end += 1;
+    }
+    ok = ok && (errno != ERANGE);
     if (ok) {
         *out = value;
         status = ncm_error_ok(ncm_error);
