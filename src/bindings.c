@@ -1237,10 +1237,10 @@ bindings_config_read(BindingsConfiguration *bindings,
             action_len = ncm_trim_end(current_line + action_start,
                                       len - action_start);
             binding_action_init(&action);
-            if ((status =
-                     binding_parse_action_line(&action,
-                                               current_line + action_start,
-                                               action_len, ncm_error)) < 0) {
+            if ((status = binding_parse_action_line(&action,
+                                                    current_line + action_start,
+                                                    action_len, ncm_error))
+                < 0) {
                 break;
             }
             binding_append_action(&actions, &action);

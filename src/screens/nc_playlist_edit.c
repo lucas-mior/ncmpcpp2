@@ -289,8 +289,8 @@ playlist_edit_has_current_playlist_path(PlaylistEditScreen *screen,
                                         char **path, int32 *path_len) {
     NcmPlaylist *playlist;
 
-    if ((playlist =
-            nc_playlist_entry_menu_current(&screen->playlists)) == NULL) {
+    if ((playlist = nc_playlist_entry_menu_current(&screen->playlists))
+        == NULL) {
         return false;
     }
     *path = playlist->path;
@@ -504,9 +504,10 @@ playlist_edit_update_callback(NcScreen *screen) {
     }
 
     ncm_error_clear(&ncm_error);
-    if ((status =
-             playlist_edit_screen_reload_content_from_mpd(editor, &global_mpd,
-                                                          &ncm_error)) < 0) {
+    if ((status = playlist_edit_screen_reload_content_from_mpd(editor,
+                                                               &global_mpd,
+                                                               &ncm_error))
+        < 0) {
         editor->content_update_requested = false;
         playlist_edit_report_error(STRLIT("Could not fetch playlist content"),
                                    &ncm_error);
@@ -578,11 +579,11 @@ playlist_edit_mouse_callback(NcScreen *screen, MEVENT event) {
                         nc_playlist_entry_menu_current(&editor->playlists);
                     loaded = false;
                     ncm_error_clear(&ncm_error);
-                    if ((status =
-                             ncm_mpd_client_load_playlist(&global_mpd,
-                                                          playlist->path,
-                                                          &loaded,
-                                                          &ncm_error)) < 0) {
+                    if ((status = ncm_mpd_client_load_playlist(&global_mpd,
+                                                               playlist->path,
+                                                               &loaded,
+                                                               &ncm_error))
+                        < 0) {
                         char *context = "Could not load playlist";
 
                         playlist_edit_report_error(context, strlen32(context),
@@ -1455,9 +1456,9 @@ playlist_edit_screen_locate_playlist(PlaylistEditScreen *screen,
     playlist_edit_update_menu_highlights(screen);
     playlist_edit_clear_content_filter(screen);
     playlist_edit_clear_stale_content(screen);
-    if ((status =
-             playlist_edit_screen_reload_content_from_mpd(screen, client,
-                                                          ncm_error)) < 0) {
+    if ((status = playlist_edit_screen_reload_content_from_mpd(screen, client,
+                                                               ncm_error))
+        < 0) {
         return status;
     }
     return playlist_edit_show_screen(screen);
@@ -1553,9 +1554,9 @@ playlist_edit_locate_song_in_playlist_range(PlaylistEditScreen *screen,
                                                               ncm_error)) < 0) {
             return status;
         }
-        if ((status =
-                 playlist_edit_highlight_content_position(screen,
-                                                          song_index)) < 0) {
+        if ((status = playlist_edit_highlight_content_position(screen,
+                                                               song_index))
+            < 0) {
             return ncm_error_set_status(ncm_error, status,
                                         STRLIT("song is not in playlist view"));
         }

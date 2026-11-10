@@ -1165,9 +1165,9 @@ playlist_screen_search(PlaylistScreen *screen, char *pattern, int32 pattern_len,
     }
 
     regex = (NcmRegex){0};
-    if ((status =
-             ncm_regex_compile(&regex, pattern, pattern_len,
-                               Config.regular_expressions, ncm_error)) < 0) {
+    if ((status = ncm_regex_compile(&regex, pattern, pattern_len,
+                                    Config.regular_expressions,
+                                    ncm_error)) < 0) {
         ncm_regex_destroy(&regex);
         return status;
     }
@@ -1211,9 +1211,9 @@ playlist_screen_set_selected_priority(PlaylistScreen *screen,
 
     status = 0;
     for (int32 i = 0; i < songs.len; i += 1) {
-        if ((status =
-                 ncm_mpd_client_set_priority_song(client, &songs.items[i],
-                                                  priority, ncm_error)) < 0) {
+        if ((status = ncm_mpd_client_set_priority_song(client, &songs.items[i],
+                                                       priority, ncm_error))
+            < 0) {
             break;
         }
     }

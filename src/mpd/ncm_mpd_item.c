@@ -256,10 +256,10 @@ ncm_mpd_item_song_from_mpd_song_copy_internal(NcmSong *dest, void *mpd_song,
                 if (value == NULL) {
                     break;
                 }
-                if ((status =
-                         ncm_song_add_property(&replacement,
-                                               name, strlen32(name),
-                                               value, strlen32(value))) < 0) {
+                if ((status = ncm_song_add_property(&replacement,
+                                                    name, strlen32(name),
+                                                    value, strlen32(value)))
+                    < 0) {
                     ncm_song_destroy(&replacement);
                     return status;
                 }

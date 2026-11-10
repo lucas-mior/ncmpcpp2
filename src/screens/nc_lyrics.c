@@ -587,14 +587,15 @@ lyrics_preferred_filename_from_song(String *filename, NcmSong *song,
     String lrc_filename = {0};
     int32 status;
 
-    if ((status =
-             lyrics_filename_from_song_with_extension(&lrc_filename, song,
-                                                      music_dir, music_dir_len,
-                                                      lyrics_dir,
-                                                      lyrics_dir_len,
-                                                      store_in_song_dir,
-                                                      win32_filename,
-                                                      STRLIT(".lrc"))) < 0) {
+    if ((status = lyrics_filename_from_song_with_extension(&lrc_filename, song,
+                                                           music_dir,
+                                                           music_dir_len,
+                                                           lyrics_dir,
+                                                           lyrics_dir_len,
+                                                           store_in_song_dir,
+                                                           win32_filename,
+                                                           STRLIT(".lrc")))
+        < 0) {
         str_free(&lrc_filename);
         return status;
     }
@@ -1443,10 +1444,10 @@ lyrics_screen_refetch_current(LyricsScreen *screen, NcmError *ncm_error) {
         return;
     }
 
-    if ((status =
-             lyrics_screen_start_foreground_fetch(screen, &screen->song,
-                                                  screen->fetcher, &filename,
-                                                  ncm_error)) < 0) {
+    if ((status = lyrics_screen_start_foreground_fetch(screen, &screen->song,
+                                                       screen->fetcher,
+                                                       &filename,
+                                                       ncm_error)) < 0) {
         str_free(&filename);
         return;
     }

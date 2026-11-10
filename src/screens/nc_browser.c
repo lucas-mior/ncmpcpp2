@@ -278,8 +278,8 @@ browser_reload_from_local(BrowserScreen *screen, NcmError *ncm_error) {
 
     if (screen->current_directory.len <= 0) {
         str_set(&screen->current_directory, STRLIT("~"));
-        if ((status =
-                 ncm_path_expand_home(&screen->current_directory, ncm_error))
+        if ((status = ncm_path_expand_home(&screen->current_directory,
+                                           ncm_error))
             < 0) {
             return status;
         }
@@ -1917,8 +1917,8 @@ browser_screen_rename_current_directory(BrowserScreen *screen,
     if ((new_path == NULL) || (new_path_len <= 0)) {
         return ncm_error_ok(ncm_error);
     }
-    if ((status =
-             browser_current_directory_item_path(screen, &old_path, ncm_error))
+    if ((status = browser_current_directory_item_path(screen, &old_path,
+                                                      ncm_error))
         < 0) {
         return status;
     }
@@ -1995,8 +1995,8 @@ browser_screen_rename_current_playlist(BrowserScreen *screen,
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing MPD client"));
     }
-    if ((status =
-             browser_current_playlist_item_path(screen, &old_path, ncm_error))
+    if ((status = browser_current_playlist_item_path(screen, &old_path,
+                                                     ncm_error))
         < 0) {
         return status;
     }
@@ -2004,9 +2004,8 @@ browser_screen_rename_current_playlist(BrowserScreen *screen,
         return ncm_error_ok(ncm_error);
     }
 
-    if ((status =
-             ncm_mpd_client_rename_playlist(client, old_path.data, new_path,
-                                            ncm_error)) < 0) {
+    if ((status = ncm_mpd_client_rename_playlist(client, old_path.data,
+                                                 new_path, ncm_error)) < 0) {
         return status;
     }
 
@@ -2145,9 +2144,10 @@ browser_screen_apply_filter(BrowserScreen *screen,
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     STRLIT("missing filter pattern"));
     }
-    if ((status =
-             ncm_regex_compile(&screen->filter_regex, pattern, pattern_len,
-                               NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error))
+    if ((status = ncm_regex_compile(&screen->filter_regex,
+                                    pattern, pattern_len,
+                                    NCM_REGEX_LITERAL_CASE_INSENSITIVE,
+                                    ncm_error))
         < 0) {
         return status;
     }
@@ -2201,9 +2201,9 @@ browser_screen_search(BrowserScreen *screen, char *pattern, int32 pattern_len,
                                     STRLIT("missing search pattern"));
     }
 
-    if ((status =
-             ncm_regex_compile(&regex, pattern, pattern_len,
-                               NCM_REGEX_LITERAL_CASE_INSENSITIVE, ncm_error))
+    if ((status = ncm_regex_compile(&regex, pattern, pattern_len,
+                                    NCM_REGEX_LITERAL_CASE_INSENSITIVE,
+                                    ncm_error))
         < 0) {
         ncm_regex_destroy(&regex);
         return status;

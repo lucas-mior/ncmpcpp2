@@ -1272,8 +1272,8 @@ ncm_mpd_client_add_random_tag(MpdClient *client, enum TagType tag,
             ncm_mpd_client_add_song_ready(client, songs.items[j].uri, -1,
                                           NULL, ncm_error);
         }
-        if ((status =
-             ncm_mpd_client_commit_cmd_list_ready(client, ncm_error)) < 0) {
+        if ((status = ncm_mpd_client_commit_cmd_list_ready(client, ncm_error))
+            < 0) {
             goto cleanup;
         }
         ncm_song_array_clear(&songs);
@@ -1325,10 +1325,10 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
     }
 
     if (exclude_pattern && (exclude_pattern_len > 0)) {
-        if ((status =
-                 ncm_regex_compile(&regex, exclude_pattern, exclude_pattern_len,
-                                   NCM_REGEX_EXTENDED | NCM_REGEX_NOSUB,
-                                   ncm_error)) < 0) {
+        if ((status = ncm_regex_compile(&regex,
+                                        exclude_pattern, exclude_pattern_len,
+                                        NCM_REGEX_EXTENDED | NCM_REGEX_NOSUB,
+                                        ncm_error)) < 0) {
             goto cleanup;
         }
         have_regex = true;

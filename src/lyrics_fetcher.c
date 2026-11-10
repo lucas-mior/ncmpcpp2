@@ -2807,10 +2807,10 @@ lyrics_fetch_search_urls(LyricsFetcherDef *fetcher, LyricsResult *result,
         goto cleanup;
     }
 
-    if ((status =
-             lyrics_collect_search_urls(fetcher, &page_urls,
-                                        data.data, data.len,
-                                        artist, artist_len, title, title_len))
+    if ((status = lyrics_collect_search_urls(fetcher, &page_urls,
+                                             data.data, data.len,
+                                             artist, artist_len,
+                                             title, title_len))
         < 0) {
         lyrics_result_set(result, false, STRLIT(LYRICS_MSG_NOT_FOUND));
         goto cleanup;

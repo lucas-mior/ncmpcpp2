@@ -2688,8 +2688,8 @@ media_lib_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
 
         grouping_tag = Config.media_lib_primary_tag;
         if (screen->sort_by_mtime) {
-            if ((status =
-                     media_lib_screen_list_all_songs(screen, &songs, ncm_error))
+            if ((status = media_lib_screen_list_all_songs(screen, &songs,
+                                                          ncm_error))
                 < 0) {
                 bool ignored;
 
@@ -2704,9 +2704,9 @@ media_lib_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
             }
             media_lib_tags_from_songs(&tags, &songs, grouping_tag);
         } else {
-            if ((status =
-                     media_lib_screen_list_tags(screen, grouping_tag,
-                                                &strings, ncm_error)) < 0) {
+            if ((status = media_lib_screen_list_tags(screen, grouping_tag,
+                                                     &strings, ncm_error))
+                < 0) {
                 screen->tags_update_request = true;
                 ncm_song_array_destroy(&songs);
                 strflex_list_destroy(&strings);
@@ -2806,8 +2806,8 @@ media_lib_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
             status = media_lib_screen_search_songs(screen, &query, &songs,
                                                    ncm_error);
         } else {
-            if ((status =
-                     media_lib_screen_list_all_songs(screen, &songs, ncm_error))
+            if ((status = media_lib_screen_list_all_songs(screen, &songs,
+                                                          ncm_error))
                 < 0) {
                 media_lib_screen_toggle_mode(screen, NULL);
                 library_request_all_updates(screen);

@@ -192,8 +192,8 @@ action_runtime_switch_to_screen(enum ScreenType type) {
     if ((type != SCREEN_TYPE_SELECTED_ITEMS_ADD)
         && action_runtime_current_screen_is(SCREEN_TYPE_SELECTED_ITEMS_ADD)) {
         adder = app_screen_selected_items_add();
-        if ((status =
-                 selected_items_add_screen_return_to_previous(adder)) < 0) {
+        if ((status = selected_items_add_screen_return_to_previous(adder))
+            < 0) {
             return status;
         }
     }
@@ -1597,9 +1597,9 @@ action_runtime_repeat_search(enum SearchDirection direction) {
 
     ncm_error_clear(&ncm_error);
     wrap = Config.default_find_mode == NCM_DEFAULT_FIND_MODE_WRAPPED;
-    if ((status =
-             current_screen_search(direction, constraint.data, constraint.len,
-                                   wrap, true, &ncm_error)) < 0) {
+    if ((status = current_screen_search(direction, constraint.data,
+                                        constraint.len, wrap, true,
+                                        &ncm_error)) < 0) {
         return action_runtime_mpd_error_status(&ncm_error);
     }
     return 0;
@@ -3324,8 +3324,8 @@ action_runtime_jump_to_browser(void) {
     }
 
     if (!action_runtime_current_screen_is(SCREEN_TYPE_BROWSER)) {
-        if ((status =
-                 action_runtime_switch_to_screen(SCREEN_TYPE_BROWSER)) < 0) {
+        if ((status = action_runtime_switch_to_screen(SCREEN_TYPE_BROWSER))
+            < 0) {
             ncm_song_destroy(&song);
             return status;
         }
@@ -4274,8 +4274,8 @@ action_runtime_edit_library_tag(void) {
         }
 
         action_runtime_print_updating_song(song);
-        if ((status =
-                 mutable_song_write(&mutable_song, Config.mpd_music_dir)) < 0) {
+        if ((status = mutable_song_write(&mutable_song, Config.mpd_music_dir))
+            < 0) {
             StrView name;
 
             if (action_runtime_song_filename_or_uri_view(song, &name)) {
@@ -4360,9 +4360,9 @@ action_runtime_edit_library_album(void) {
         goto cleanup;
     }
 
-    if ((status =
-             media_lib_screen_copy_visible_songs(app_screen_media_lib(),
-                                                 &songs, &ncm_error)) < 0) {
+    if ((status = media_lib_screen_copy_visible_songs(app_screen_media_lib(),
+                                                      &songs, &ncm_error))
+        < 0) {
         if (ncm_error_is_set(&ncm_error)) {
             ncm_statusbar_print(Config.message_delay_time,
                                 ncm_error.message, ncm_error.message_len);
@@ -4570,9 +4570,8 @@ action_runtime_edit_lyrics(void) {
             return action_runtime_mpd_error_status(&ncm_error);
         }
 
-        if ((status =
-                 lyrics_screen_load_file(lyrics, filename_data, filename_len,
-                                         &ncm_error)) < 0) {
+        if ((status = lyrics_screen_load_file(lyrics, filename_data,
+                                              filename_len, &ncm_error)) < 0) {
             lyrics->has_song = false;
             status = lyrics_screen_fetch(lyrics, song, NULL, &ncm_error);
             success = status >= 0;
