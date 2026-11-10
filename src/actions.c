@@ -67,7 +67,6 @@ action_runtime_call_hook(ActionRuntimeHook hook, enum ActionType type,
     return hook(type, user);
 }
 
-
 static bool
 action_runtime_hook_allowed(int32 result, bool *handled) {
     *handled = result != ACTION_RUNTIME_DEFER;
@@ -1664,7 +1663,6 @@ static NcMenu *
 action_runtime_current_tag_scroll_menu(void) {
     return nc_screen_tag_menu(app_controller_current_screen());
 }
-
 
 static int32
 action_runtime_song_tag_at(int32 pos, enum SongGetter getter, String *tag) {
@@ -4318,7 +4316,6 @@ cleanup:
     return status;
 }
 
-
 static int32
 action_runtime_edit_library_album(void) {
     NcmSongArray songs = {0};
@@ -5672,7 +5669,6 @@ action_runtime_custom_run(ActionRuntime *runtime, enum ActionType type) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 }
-
 
 static int32
 action_run_execute(ActionRuntime *runtime, enum ActionType type,

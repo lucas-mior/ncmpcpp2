@@ -118,7 +118,6 @@
 #define SCREEN_TYPE_ENUM_FIELDS                                                \
   SCREEN_TYPES(SCREEN_TYPE_XENUM_FIELD)
 
-
 #define APP_SCREEN_DIRECT_STORAGE_TYPES(XX)                                    \
   XX(BrowserScreen, browser_screen)                                            \
   XX(LastfmScreen, lastfm_screen)                                              \

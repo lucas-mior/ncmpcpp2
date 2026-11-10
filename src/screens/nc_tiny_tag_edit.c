@@ -754,5 +754,4 @@ tiny_tag_edit_screen_run_row(TinyTagEditScreen *screen, int32 row) {
     return tiny_editor_run_row(screen, row);
 }
 
-
 #endif /* NC_TINY_TAG_EDIT_C */

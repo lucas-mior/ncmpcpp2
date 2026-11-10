@@ -357,7 +357,6 @@ NC_SCREEN_IMPL_SONG_TAG_AT(NcScreen *screen, int32 pos,
 }
 #endif
 
-
 static void
 NC_SCREEN_IMPL_REFRESH(NcScreen *screen) {
     NC_SCREEN_IMPL_REFRESH_CALLBACK(NC_SCREEN_IMPL_FROM_SCREEN(screen));

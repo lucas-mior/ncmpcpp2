@@ -135,7 +135,6 @@
 #endif
 #endif
 
-
 #if !defined(XX_LOOK)
 #if defined(XX_OPTION)
 #define XX_LOOK XX_OPTION

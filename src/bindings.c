@@ -814,7 +814,6 @@ bindings_bind_group(BindingsConfiguration *bindings,
   XX_SEQ("ctrl-p", ACTION_SET_SELECTED_ITEMS_PRIORITY)                         \
   XX_SEQ("q", ACTION_QUIT)
 
-
 enum BindingDirectiveKind {
     BINDING_DIRECTIVE_DUMMY,
     BINDING_DIRECTIVE_PUSH_CHARACTER,
