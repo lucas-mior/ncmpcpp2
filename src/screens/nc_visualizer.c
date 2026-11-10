@@ -27,6 +27,8 @@
 #define VISUALIZER_MIN_SAMPLE (-32768)
 #define VISUALIZER_MAX_SAMPLE 32767
 #define VISUALIZER_DEFAULT_CHARS "●▮"
+#define VISUALIZER_SAMPLE_AT(SAMPLES, ROW, STRIDE, COLUMN) \
+  (SAMPLES)[(ROW)*(STRIDE) + (COLUMN)]
 
 #if defined(HAVE_FFTW3_H)
 #define VISUALIZER_SMOOTH_CHAR_COUNT 8
@@ -1312,7 +1314,7 @@ visualizer_draw_wave(VisualizerScreen *screen,
         int32 point_y;
 
         for (int32 j = 0; j < samples_per_column; j += 1) {
-            sum += samples[x*samples_per_column + j];
+            sum += VISUALIZER_SAMPLE_AT(samples, x, samples_per_column, j);
         }
         point_y = sum / samples_per_column;
         point_y = (int32)((double)point_y*(double)height/65536.0);
@@ -1375,7 +1377,7 @@ visualizer_draw_wave_filled(VisualizerScreen *screen,
         int32 point_y;
 
         for (int32 j = 0; j < samples_per_column; j += 1) {
-            sum += samples[x*samples_per_column + j];
+            sum += VISUALIZER_SAMPLE_AT(samples, x, samples_per_column, j);
         }
         magnitude = sum / samples_per_column;
         if (magnitude < 0) {
