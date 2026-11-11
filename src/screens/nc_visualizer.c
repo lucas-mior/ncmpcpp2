@@ -904,23 +904,20 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
         screen->bar_char_offset = next;
         screen->bar_char_len = screen->visualizer_chars_len - next;
     }
-    {
-        visualizer_destroy_colors(screen);
-        if ((visualizer_colors == NULL) || (visualizer_colors_len <= 0)) {
-            screen->visualizer_colors =
-                malloc2(SIZEOF(*screen->visualizer_colors));
-            nc_text_style_init(&screen->visualizer_colors[0]);
-            screen->visualizer_colors_len = 1;
-        } else {
-            screen->visualizer_colors =
-                malloc2(visualizer_colors_len
-                        *SIZEOF(*screen->visualizer_colors));
-            for (int32 i = 0; i < visualizer_colors_len; i += 1) {
-                nc_text_style_copy(&screen->visualizer_colors[i],
-                                   &visualizer_colors[i]);
-            }
-            screen->visualizer_colors_len = visualizer_colors_len;
+    visualizer_destroy_colors(screen);
+    if ((visualizer_colors == NULL) || (visualizer_colors_len <= 0)) {
+        screen->visualizer_colors = malloc2(SIZEOF(*screen->visualizer_colors));
+        nc_text_style_init(&screen->visualizer_colors[0]);
+        screen->visualizer_colors_len = 1;
+    } else {
+        screen->visualizer_colors =
+            malloc2(visualizer_colors_len
+                    *SIZEOF(*screen->visualizer_colors));
+        for (int32 i = 0; i < visualizer_colors_len; i += 1) {
+            nc_text_style_copy(&screen->visualizer_colors[i],
+                               &visualizer_colors[i]);
         }
+        screen->visualizer_colors_len = visualizer_colors_len;
     }
     screen->data_source_hooks = data_source_hooks;
 
