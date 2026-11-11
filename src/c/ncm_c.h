@@ -438,7 +438,7 @@ typedef struct NcmMpdStatus {
     int32 total_time;
     int32 kbit_rate;
     int32 update_id;
-    char error[256];
+    char mpd_error[256];
 } NcmMpdStatus;
 
 void ncm_mpd_connection_destroy(MpdConnection *);

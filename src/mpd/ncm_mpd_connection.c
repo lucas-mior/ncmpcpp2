@@ -596,8 +596,8 @@ int32
 ncm_mpd_connection_get_status(MpdConnection *connection,
                               NcmMpdStatus *out_status) {
     struct mpd_status *mpd_status;
-    char *error;
-    int32 error_len;
+    char *mpd_error;
+    int32 mpd_error_len;
     int32 status;
 
     NCM_MPD_RETURN_IF_ERROR(ncm_mpd_connection_require_connected(connection));
@@ -653,12 +653,12 @@ ncm_mpd_connection_get_status(MpdConnection *connection,
     out_status->kbit_rate = (int32)mpd_status_get_kbit_rate(mpd_status);
     out_status->update_id = (int32)mpd_status_get_update_id(mpd_status);
 
-    error = (char *)mpd_status_get_error(mpd_status);
-    error_len = opt_strlen32(error);
-    memset64(out_status->error, 0, LENGTH(out_status->error));
-    if (error) {
-        memcpy64(out_status->error, error,
-                 MIN(error_len, LENGTH(out_status->error) - 1));
+    mpd_error = (char *)mpd_status_get_error(mpd_status);
+    mpd_error_len = opt_strlen32(mpd_error);
+    memset64(out_status->mpd_error, 0, LENGTH(out_status->mpd_error));
+    if (mpd_error) {
+        memcpy64(out_status->mpd_error, mpd_error,
+                 MIN(mpd_error_len, LENGTH(out_status->mpd_error) - 1));
     }
 
     mpd_status_free(mpd_status);
