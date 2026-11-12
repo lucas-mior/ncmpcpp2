@@ -478,24 +478,24 @@ browser_mouse_button_pressed(NcScreen *screen, MEVENT event) {
         return;
     }
 
-    if ((event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) != 0) {
+    if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
         if (nc_menu_goto_selectable(menu, y) < 0) {
             return;
         }
-        if ((event.bstate & BUTTON1_PRESSED) != 0) {
+        if (event.bstate & BUTTON1_PRESSED) {
             nc_menu_activate_current(menu);
         }
         return;
     }
 
-    if ((event.bstate & BUTTON5_PRESSED) != 0) {
+    if (event.bstate & BUTTON5_PRESSED) {
         if (browser->mouse_list_scroll_whole_page) {
             nc_menu_scroll_selectable(menu, browser->main_height,
                                       NC_SCROLL_PAGE_DOWN);
         } else {
             browser_mouse_scroll(browser, NC_SCROLL_DOWN);
         }
-    } else if ((event.bstate & BUTTON4_PRESSED) != 0) {
+    } else if (event.bstate & BUTTON4_PRESSED) {
         if (browser->mouse_list_scroll_whole_page) {
             nc_menu_scroll_selectable(menu, browser->main_height,
                                       NC_SCROLL_PAGE_UP);

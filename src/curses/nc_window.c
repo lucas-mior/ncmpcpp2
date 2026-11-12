@@ -301,13 +301,13 @@ nc_key_name(NcKey key, char *buffer, int32 buffer_len) {
         result = fmt_sprintf(buffer, buffer_len, "Ctrl-^");
     } else if (key == NC_KEY_CTRL_UNDERSCORE) {
         result = fmt_sprintf(buffer, buffer_len, "Ctrl-_");
-    } else if ((key & NC_KEY_ALT) != 0) {
+    } else if (key & NC_KEY_ALT) {
         nc_key_name(key & ~NC_KEY_ALT, rest, LENGTH(rest));
         result = fmt_sprintf(buffer, buffer_len, "Alt-%s", rest);
-    } else if ((key & NC_KEY_CTRL) != 0) {
+    } else if (key & NC_KEY_CTRL) {
         nc_key_name(key & ~NC_KEY_CTRL, rest, LENGTH(rest));
         result = fmt_sprintf(buffer, buffer_len, "Ctrl-%s", rest);
-    } else if ((key & NC_KEY_SHIFT) != 0) {
+    } else if (key & NC_KEY_SHIFT) {
         nc_key_name(key & ~NC_KEY_SHIFT, rest, LENGTH(rest));
         result = fmt_sprintf(buffer, buffer_len, "Shift-%s", rest);
     } else if ((key >= NC_KEY_F1) && (key <= NC_KEY_F9)) {

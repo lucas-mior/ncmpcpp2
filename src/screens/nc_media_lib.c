@@ -563,7 +563,7 @@ static void
 library_mouse_button_pressed(NcScreen *screen, MEVENT event) {
     MediaLibraryScreen *library = library_from_screen(screen);
     NcMenu *tag_menu = nc_media_lib_tag_menu_base(&library->tags);
-    bool right_click = (event.bstate & BUTTON3_PRESSED) != 0;
+    bool right_click = event.bstate & BUTTON3_PRESSED;
     int32 x = event.x;
     int32 y = event.y;
     NcMenu *album_menu;

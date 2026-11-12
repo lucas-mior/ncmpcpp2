@@ -213,7 +213,7 @@ search_mouse_button_pressed(NcScreen *screen, MEVENT event) {
             return;
         }
 
-        play = (event.bstate & BUTTON3_PRESSED) != 0;
+        play = event.bstate & BUTTON3_PRESSED;
         ncm_error_clear(&ncm_error);
         if (search->hooks.add_song == NULL) {
             ncm_error_set_status(&ncm_error, -NCM_ERROR_UNAVAILABLE,

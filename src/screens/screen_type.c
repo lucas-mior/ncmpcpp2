@@ -52,7 +52,7 @@ screen_type_is_startup(enum ScreenType screen_type) {
         screen_type_value, alias, flag, suffix            \
     )                                                     \
         case SCREEN_TYPE_TYPE(screen_type_value):         \
-            return (SCREEN_TYPE_FLAG(flag) & SCREEN_FLAG_STARTUP) != 0;
+            return SCREEN_TYPE_FLAG(flag) & SCREEN_FLAG_STARTUP;
 
     SCREEN_TYPES(SCREEN_STARTUP_CASE)
 

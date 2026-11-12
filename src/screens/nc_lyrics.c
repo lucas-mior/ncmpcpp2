@@ -160,9 +160,9 @@ static void
 lyrics_mouse_button_pressed_callback(NcScreen *screen, MEVENT event) {
     LyricsScreen *lyrics = (LyricsScreen *)screen;
 
-    if ((event.bstate & BUTTON5_PRESSED) != 0) {
+    if (event.bstate & BUTTON5_PRESSED) {
         lyrics_mouse_scroll(lyrics, NC_SCROLL_DOWN);
-    } else if ((event.bstate & BUTTON4_PRESSED) != 0) {
+    } else if (event.bstate & BUTTON4_PRESSED) {
         lyrics_mouse_scroll(lyrics, NC_SCROLL_UP);
     }
 

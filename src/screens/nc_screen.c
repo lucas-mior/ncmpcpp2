@@ -188,7 +188,7 @@ nc_screen_has_capability(NcScreen *screen,
     if (screen == NULL) {
         return false;
     }
-    return (screen->ops->capabilities & capability) != 0;
+    return screen->ops->capabilities & capability;
 }
 
 NcWindow *

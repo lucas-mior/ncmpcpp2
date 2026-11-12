@@ -498,7 +498,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
     status_total_time = mpd_status->total_time;
     status_volume = mpd_status->volume;
 
-    if ((event & NCM_MPD_IDLE_DATABASE) != 0) {
+    if (event & NCM_MPD_IDLE_DATABASE) {
         if (active_hooks && active_hooks->database_changed) {
             active_hooks->database_changed(active_hooks->user);
         } else {
@@ -522,7 +522,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
         }
     }
 
-    if ((event & NCM_MPD_IDLE_STORED_PLAYLIST) != 0) {
+    if (event & NCM_MPD_IDLE_STORED_PLAYLIST) {
         if (active_hooks && active_hooks->stored_playlists_changed) {
             active_hooks->stored_playlists_changed(active_hooks->user);
         } else {
@@ -545,7 +545,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
         }
     }
 
-    if ((event & NCM_MPD_IDLE_PLAYLIST) != 0) {
+    if (event & NCM_MPD_IDLE_PLAYLIST) {
         previous_playlist_version = status_playlist_version;
         status_playlist_version = mpd_status->queue_version;
         if (active_hooks && active_hooks->playlist_changed) {
@@ -574,7 +574,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
         }
     }
 
-    if ((event & NCM_MPD_IDLE_PLAYER) != 0) {
+    if (event & NCM_MPD_IDLE_PLAYER) {
         if (active_hooks && active_hooks->player_state_changed) {
             active_hooks->player_state_changed(active_hooks->user);
         } else {
@@ -680,7 +680,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
         }
     }
 
-    if ((event & NCM_MPD_IDLE_MIXER) != 0) {
+    if (event & NCM_MPD_IDLE_MIXER) {
         if (active_hooks && active_hooks->mixer_changed) {
             active_hooks->mixer_changed(active_hooks->user);
         } else {
@@ -688,7 +688,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
         }
     }
 
-    if ((event & NCM_MPD_IDLE_OUTPUT) != 0) {
+    if (event & NCM_MPD_IDLE_OUTPUT) {
         if (active_hooks && active_hooks->outputs_changed) {
             active_hooks->outputs_changed(active_hooks->user);
         } else {
@@ -699,7 +699,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
         }
     }
 
-    if ((event & NCM_MPD_IDLE_UPDATE) != 0) {
+    if (event & NCM_MPD_IDLE_UPDATE) {
         bool changed;
 
         changed = status_database_update_state_changed(mpd_status->update_id);
@@ -714,7 +714,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
         }
     }
 
-    if ((event & NCM_MPD_IDLE_OPTIONS) != 0) {
+    if (event & NCM_MPD_IDLE_OPTIONS) {
         new_repeat = 0;
         if (mpd_status->repeat) {
             new_repeat = 'r';
@@ -782,7 +782,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
         }
     }
 
-    if ((event & (NCM_MPD_IDLE_UPDATE | NCM_MPD_IDLE_OPTIONS)) != 0) {
+    if (event & (NCM_MPD_IDLE_UPDATE | NCM_MPD_IDLE_OPTIONS)) {
         if (active_hooks && active_hooks->flags_changed) {
             active_hooks->flags_changed(active_hooks->user);
         } else {
@@ -792,12 +792,12 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
 
     status_initialized = true;
 
-    if ((event & NCM_MPD_IDLE_PLAYER) != 0) {
+    if (event & NCM_MPD_IDLE_PLAYER) {
         status_refresh_footer(active_hooks);
     }
 
-    if ((event & (NCM_MPD_IDLE_PLAYLIST | NCM_MPD_IDLE_DATABASE
-                       |NCM_MPD_IDLE_PLAYER)) != 0) {
+    if (event & (NCM_MPD_IDLE_PLAYLIST | NCM_MPD_IDLE_DATABASE
+                 |NCM_MPD_IDLE_PLAYER)) {
         if (active_hooks && active_hooks->refresh_visible_screens) {
             active_hooks->refresh_visible_screens(active_hooks->user);
         } else {

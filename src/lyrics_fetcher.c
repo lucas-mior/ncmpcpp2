@@ -535,7 +535,7 @@ static bool
 lyrics_provider_has_flag(enum LyricsFetcherType type, uint32 flag) {
     LyricsProviderProfile *profile = lyrics_provider_profile(type);
 
-    return (profile->flags & flag) != 0;
+    return profile->flags & flag;
 }
 
 static enum LyricsSlugProfile
