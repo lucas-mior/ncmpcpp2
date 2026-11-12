@@ -632,37 +632,39 @@ visualizer_screen_init_data_source(VisualizerScreen *screen,
 
 int32
 visualizer_screen_open_data_source(VisualizerScreen *screen) {
+    VisualizerDataSourceHooks *hooks;
+    char *location;
+    char *port;
+    int32 fd;
+
     if (screen->source_fd >= 0) {
         return screen->source_fd;
     }
 
-    {
-        VisualizerDataSourceHooks *hooks = &screen->data_source_hooks;
-        char *location = screen->source_location ? screen->source_location : "";
-        char *port = screen->source_port ? screen->source_port : "";
-        int32 fd;
+    hooks = &screen->data_source_hooks;
+    location = screen->source_location ? screen->source_location : "";
+    port = screen->source_port ? screen->source_port : "";
 
-        if (screen->source_port_len > 0) {
-            if (hooks->open_udp == NULL) {
-                return -NCM_ERROR_UNAVAILABLE;
-            }
-            fd = hooks->open_udp(hooks->user, location,
-                                 screen->source_location_len, port,
-                                 screen->source_port_len);
-        } else {
-            if (hooks->open_fifo == NULL) {
-                return -NCM_ERROR_UNAVAILABLE;
-            }
-            fd = hooks->open_fifo(hooks->user, location,
-                                  screen->source_location_len);
+    if (screen->source_port_len > 0) {
+        if (hooks->open_udp == NULL) {
+            return -NCM_ERROR_UNAVAILABLE;
         }
+        fd = hooks->open_udp(hooks->user, location,
+                             screen->source_location_len, port,
+                             screen->source_port_len);
+    } else {
+        if (hooks->open_fifo == NULL) {
+            return -NCM_ERROR_UNAVAILABLE;
+        }
+        fd = hooks->open_fifo(hooks->user, location,
+                              screen->source_location_len);
+    }
 
-        if (fd < 0) {
-            return fd;
-        }
-        screen->source_fd = fd;
+    if (fd < 0) {
         return fd;
     }
+    screen->source_fd = fd;
+    return fd;
 }
 
 void

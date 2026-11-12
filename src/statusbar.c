@@ -227,46 +227,44 @@ ncm_statusbar_try_redraw(void) {
     if ((statusbar_lock_delay_seconds > 0)
         && (global_timer_elapsed_seconds(statusbar_lock_time)
             > statusbar_lock_delay_seconds)) {
+        NcWindow *window;
+
         statusbar_lock_delay_seconds = -1;
         statusbar_set_active_footer_line_locked(!statusbar_allow_unlock);
-        {
-            NcWindow *window;
+        if (statusbar_block_update || progressbar_block_update) {
+            return;
+        }
 
-            if (statusbar_block_update || progressbar_block_update) {
-                return;
-            }
+        if ((window = statusbar_footer_window()) == NULL) {
+            return;
+        }
 
-            if ((window = statusbar_footer_window()) == NULL) {
-                return;
-            }
-
-            switch (Config.user_interface) {
-            case NCM_DESIGN_CLASSIC:
-                switch (ncm_status_state_player()) {
-                case NCM_STATUS_PLAYER_UNKNOWN:
-                case NCM_STATUS_PLAYER_STOP:
-                    ncm_statusbar_put();
-                    break;
-                case NCM_STATUS_PLAYER_PLAY:
-                case NCM_STATUS_PLAYER_PAUSE:
-                    ncm_status_changes_elapsed_time(false);
-                    break;
-                case NCM_STATUS_PLAYER_COUNT:
-                default:
-                    break;
-                }
+        switch (Config.user_interface) {
+        case NCM_DESIGN_CLASSIC:
+            switch (ncm_status_state_player()) {
+            case NCM_STATUS_PLAYER_UNKNOWN:
+            case NCM_STATUS_PLAYER_STOP:
+                ncm_statusbar_put();
                 break;
-            case NCM_DESIGN_ALTERNATIVE:
-                ncm_progressbar_draw(ncm_status_state_elapsed_time(),
-                                     ncm_status_state_total_time());
+            case NCM_STATUS_PLAYER_PLAY:
+            case NCM_STATUS_PLAYER_PAUSE:
+                ncm_status_changes_elapsed_time(false);
                 break;
-            case NCM_DESIGN_COUNT:
-                break;
+            case NCM_STATUS_PLAYER_COUNT:
             default:
                 break;
             }
-            nc_window_refresh(window);
+            break;
+        case NCM_DESIGN_ALTERNATIVE:
+            ncm_progressbar_draw(ncm_status_state_elapsed_time(),
+                                 ncm_status_state_total_time());
+            break;
+        case NCM_DESIGN_COUNT:
+            break;
+        default:
+            break;
         }
+        nc_window_refresh(window);
     }
     return;
 }

@@ -1596,7 +1596,12 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
     String data = {0};
     String lyrics = {0};
     String cleaned = {0};
+    String *out;
+    char *content_data;
     char *message;
+    bool *plain_text_out;
+    int32 content_len;
+    int32 extract_status;
     int32 message_len;
     int32 status;
     bool plain_text;
@@ -1617,452 +1622,446 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
         goto cleanup;
     }
 
-    {
-        String *out = &lyrics;
-        char *content_data = data.data;
-        bool *plain_text_out = &plain_text;
-        int32 content_len = data.len;
+    out = &lyrics;
+    content_data = data.data;
+    plain_text_out = &plain_text;
+    content_len = data.len;
+    *plain_text_out = false;
+    switch (fetcher->type) {
+    case LYRICS_FETCHER_AMALGAMA: {
+        char *heading_end = "</h2>";
+        char *match;
+        int32 heading_end_len = strlen32(heading_end);
+        int32 marker;
+        int32 start;
+        int32 end;
+        int32 first_status;
+        int32 second_status;
 
-        int32 extract_status;
+        first_status = lyrics_extract_divs(out, content_data, content_len,
+                                           STRLIT("class=\"original\""),
+                                           true);
+        if (first_status == 0) {
+            extract_status = 0;
+            break;
+        }
+        second_status = lyrics_extract_divs(out, content_data, content_len,
+                                            STRLIT("class='original'"),
+                                            true);
+        if (second_status == 0) {
+            extract_status = 0;
+            break;
+        }
 
-        *plain_text_out = false;
-        switch (fetcher->type) {
-        case LYRICS_FETCHER_AMALGAMA: {
-            char *heading_end = "</h2>";
-            char *match;
-            int32 heading_end_len = strlen32(heading_end);
-            int32 marker;
-            int32 start;
-            int32 end;
-            int32 first_status;
-            int32 second_status;
-
-            first_status = lyrics_extract_divs(out, content_data, content_len,
-                                               STRLIT("class=\"original\""),
-                                               true);
-            if (first_status == 0) {
-                extract_status = 0;
-                break;
-            }
-            second_status = lyrics_extract_divs(out, content_data, content_len,
-                                                STRLIT("class='original'"),
-                                                true);
-            if (second_status == 0) {
-                extract_status = 0;
-                break;
-            }
-
-            str_clear(out);
+        str_clear(out);
+        marker = lyrics_find_ignore_case(content_data, content_len,
+                                         STRLIT("(оригинал"), 0);
+        if (marker < 0) {
             marker = lyrics_find_ignore_case(content_data, content_len,
-                                             STRLIT("(оригинал"), 0);
-            if (marker < 0) {
-                marker = lyrics_find_ignore_case(content_data, content_len,
-                                                 STRLIT("original"), 0);
-            }
-            start = -1;
-            if (marker >= 0) {
-                start = lyrics_find_ignore_case(content_data, content_len,
-                                                heading_end, heading_end_len,
-                                                marker);
-                if (start >= 0) {
-                    start += heading_end_len;
-                } else {
-                    match = memchr64(content_data + marker, '>',
-                                     content_len - marker);
-                    if (match) {
-                        start = (int32)(match - content_data) + 1;
-                    }
-                }
-            }
-            if (start < 0) {
-                if (first_status == -NCM_ERROR_PARSE) {
-                    extract_status = first_status;
-                } else if (second_status == -NCM_ERROR_PARSE) {
-                    extract_status = second_status;
-                } else {
-                    extract_status = -NCM_ERROR_NOT_FOUND;
-                }
-                break;
-            }
-
-            end = -1;
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Понравился перевод"),
-                                      &end);
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Добавить видео"),
-                                      &end);
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Другие песни"), &end);
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Комментарии"), &end);
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("<footer"), &end);
-            if ((end < 0) || (end <= start)) {
-                extract_status = -NCM_ERROR_PARSE;
-                break;
-            }
-
-            STR_APPEND(out, content_data + start, end - start);
-            extract_status = 0;
-            break;
+                                             STRLIT("original"), 0);
         }
-        case LYRICS_FETCHER_AZLYRICS: {
-            char *usage_marker = "Usage of azlyrics.com";
-            char *comment_end = "-->";
-            char *match;
-            int32 usage_marker_len = strlen32(usage_marker);
-            int32 comment_end_len = strlen32(comment_end);
-            int32 start;
-            int32 end;
-
-            str_clear(out);
-            match = memmem64(content_data, content_len,
-                             usage_marker, usage_marker_len);
-            if (match == NULL) {
-                extract_status = -NCM_ERROR_NOT_FOUND;
-                break;
-            }
-            start = (int32)(match - content_data) + usage_marker_len;
-            match = memmem64(content_data + start, content_len - start,
-                             comment_end, comment_end_len);
-            if (match == NULL) {
-                extract_status = -NCM_ERROR_NOT_FOUND;
-                break;
-            }
-            start = (int32)(match - content_data) + comment_end_len;
-            match = memmem64(content_data + start, content_len - start,
-                             STRLIT("</div>"));
-            if (match == NULL) {
-                extract_status = -NCM_ERROR_NOT_FOUND;
-                break;
-            }
-            end = (int32)(match - content_data);
-            STR_APPEND(out, content_data + start, end - start);
-            extract_status = 0;
-            break;
-        }
-        case LYRICS_FETCHER_GENIUS: {
-            String json = {0};
-            String html = {0};
-            char *preloaded_marker =
-                "window.__PRELOADED_STATE__ = JSON.parse('";
-            char *match;
-            int32 preloaded_marker_len = strlen32(preloaded_marker);
-            int32 marker;
-            int32 json_end;
-            int32 lyrics_data;
-            int32 value_start;
-            int32 value_end;
-            int32 fallback_status;
-
-            match = memmem64(content_data, content_len,
-                             preloaded_marker, preloaded_marker_len);
-            if (match == NULL) {
-                marker = -1;
+        start = -1;
+        if (marker >= 0) {
+            start = lyrics_find_ignore_case(content_data, content_len,
+                                            heading_end, heading_end_len,
+                                            marker);
+            if (start >= 0) {
+                start += heading_end_len;
             } else {
-                marker = (int32)(match - content_data);
+                match = memchr64(content_data + marker, '>',
+                                 content_len - marker);
+                if (match) {
+                    start = (int32)(match - content_data) + 1;
+                }
             }
+        }
+        if (start < 0) {
+            if (first_status == -NCM_ERROR_PARSE) {
+                extract_status = first_status;
+            } else if (second_status == -NCM_ERROR_PARSE) {
+                extract_status = second_status;
+            } else {
+                extract_status = -NCM_ERROR_NOT_FOUND;
+            }
+            break;
+        }
+
+        end = -1;
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Понравился перевод"),
+                                  &end);
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Добавить видео"),
+                                  &end);
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Другие песни"), &end);
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Комментарии"), &end);
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("<footer"), &end);
+        if ((end < 0) || (end <= start)) {
+            extract_status = -NCM_ERROR_PARSE;
+            break;
+        }
+
+        STR_APPEND(out, content_data + start, end - start);
+        extract_status = 0;
+        break;
+    }
+    case LYRICS_FETCHER_AZLYRICS: {
+        char *usage_marker = "Usage of azlyrics.com";
+        char *comment_end = "-->";
+        char *match;
+        int32 usage_marker_len = strlen32(usage_marker);
+        int32 comment_end_len = strlen32(comment_end);
+        int32 start;
+        int32 end;
+
+        str_clear(out);
+        match = memmem64(content_data, content_len,
+                         usage_marker, usage_marker_len);
+        if (match == NULL) {
             extract_status = -NCM_ERROR_NOT_FOUND;
-            if (marker >= 0) {
-                marker += preloaded_marker_len;
-                extract_status = lyrics_decode_quoted(&json,
-                                                      content_data, content_len,
-                                                      marker, '\'', &json_end);
-                if (extract_status == 0) {
-                    if (json.len <= 0) {
+            break;
+        }
+        start = (int32)(match - content_data) + usage_marker_len;
+        match = memmem64(content_data + start, content_len - start,
+                         comment_end, comment_end_len);
+        if (match == NULL) {
+            extract_status = -NCM_ERROR_NOT_FOUND;
+            break;
+        }
+        start = (int32)(match - content_data) + comment_end_len;
+        match = memmem64(content_data + start, content_len - start,
+                         STRLIT("</div>"));
+        if (match == NULL) {
+            extract_status = -NCM_ERROR_NOT_FOUND;
+            break;
+        }
+        end = (int32)(match - content_data);
+        STR_APPEND(out, content_data + start, end - start);
+        extract_status = 0;
+        break;
+    }
+    case LYRICS_FETCHER_GENIUS: {
+        String json = {0};
+        String html = {0};
+        char *preloaded_marker =
+            "window.__PRELOADED_STATE__ = JSON.parse('";
+        char *match;
+        int32 preloaded_marker_len = strlen32(preloaded_marker);
+        int32 marker;
+        int32 json_end;
+        int32 lyrics_data;
+        int32 value_start;
+        int32 value_end;
+        int32 fallback_status;
+
+        match = memmem64(content_data, content_len,
+                         preloaded_marker, preloaded_marker_len);
+        if (match == NULL) {
+            marker = -1;
+        } else {
+            marker = (int32)(match - content_data);
+        }
+        extract_status = -NCM_ERROR_NOT_FOUND;
+        if (marker >= 0) {
+            marker += preloaded_marker_len;
+            extract_status = lyrics_decode_quoted(&json,
+                                                  content_data, content_len,
+                                                  marker, '\'', &json_end);
+            if (extract_status == 0) {
+                if (json.len <= 0) {
+                    lyrics_data = -1;
+                } else {
+                    match = memmem64(json.data, json.len,
+                                     STRLIT("\"lyricsData\""));
+                    if (match == NULL) {
                         lyrics_data = -1;
                     } else {
-                        match = memmem64(json.data, json.len,
-                                         STRLIT("\"lyricsData\""));
-                        if (match == NULL) {
-                            lyrics_data = -1;
-                        } else {
-                            lyrics_data = (int32)(match - json.data);
-                        }
+                        lyrics_data = (int32)(match - json.data);
                     }
-                    if (lyrics_data < 0) {
-                        extract_status = -NCM_ERROR_NOT_FOUND;
-                    } else {
-                        extract_status = lyrics_json_value_start(json.data,
-                                                                 json.len,
-                                                                 STRLIT("html"),
-                                                                 lyrics_data,
-                                                                 &value_start);
+                }
+                if (lyrics_data < 0) {
+                    extract_status = -NCM_ERROR_NOT_FOUND;
+                } else {
+                    extract_status = lyrics_json_value_start(json.data,
+                                                             json.len,
+                                                             STRLIT("html"),
+                                                             lyrics_data,
+                                                             &value_start);
+                    if (extract_status == 0) {
+                        extract_status = lyrics_decode_quoted(&html,
+                                                              json.data,
+                                                              json.len,
+                                                              value_start,
+                                                              '"',
+                                                              &value_end);
                         if (extract_status == 0) {
-                            extract_status = lyrics_decode_quoted(&html,
-                                                                  json.data,
-                                                                  json.len,
-                                                                  value_start,
-                                                                  '"',
-                                                                  &value_end);
-                            if (extract_status == 0) {
-                                str_clear(out);
-                                STR_APPEND(out, html.data, html.len);
-                                if (out->len <= 0) {
-                                    extract_status = -NCM_ERROR_NOT_FOUND;
-                                }
+                            str_clear(out);
+                            STR_APPEND(out, html.data, html.len);
+                            if (out->len <= 0) {
+                                extract_status = -NCM_ERROR_NOT_FOUND;
                             }
                         }
                     }
                 }
             }
+        }
 
-            str_free(&html);
-            str_free(&json);
-            if (extract_status == 0) {
-                break;
-            }
-
-            fallback_status = lyrics_extract_divs(out,
-                                                  content_data, content_len,
-                                                  STRLIT("data-lyrics-"
-                                                         "container=\"true\""),
-                                                  true);
-            if (fallback_status == 0) {
-                extract_status = 0;
-            } else if (extract_status != -NCM_ERROR_PARSE) {
-                extract_status = fallback_status;
-            }
+        str_free(&html);
+        str_free(&json);
+        if (extract_status == 0) {
             break;
         }
-        case LYRICS_FETCHER_LETRASMUS:
-            extract_status = lyrics_extract_divs(out, content_data, content_len,
-                                                 STRLIT("class="
-                                                        "\"lyric-original\""),
-                                                 false);
-            break;
-        case LYRICS_FETCHER_LACOCCINELLE: {
-            char *translation_marker = "Paroles et traduction de la chanson";
-            char *match;
-            int32 translation_marker_len = strlen32(translation_marker);
-            int32 marker;
-            int32 second_marker;
-            int32 start;
-            int32 end;
 
-            str_clear(out);
-            marker = lyrics_find_ignore_case(content_data, content_len,
-                                             translation_marker,
-                                             translation_marker_len,
-                                             0);
-            if (marker < 0) {
-                marker =
-                    lyrics_find_ignore_case(content_data, content_len,
-                                            STRLIT("Paroles de la chanson"),
-                                            0);
-            }
-            if (marker < 0) {
-                extract_status = -NCM_ERROR_NOT_FOUND;
-                break;
-            }
-
-            second_marker = lyrics_find_ignore_case(content_data, content_len,
-                                                    translation_marker,
-                                                    translation_marker_len,
-                                                    marker
-                                                    + translation_marker_len);
-            if (second_marker >= 0) {
-                marker = second_marker;
-            }
-
-            match = memchr64(content_data + marker, '>', content_len - marker);
-            if (match == NULL) {
-                extract_status = -NCM_ERROR_NOT_FOUND;
-                break;
-            }
-            start = (int32)(match - content_data) + 1;
-
-            end = -1;
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Publié par"), &end);
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Chanteurs :"), &end);
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Albums :"), &end);
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Vos commentaires"), &end);
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Commentaires"), &end);
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Téléchargement"), &end);
-            if ((end < 0) || (end <= start)) {
-                extract_status = -NCM_ERROR_PARSE;
-                break;
-            }
-
-            STR_APPEND(out, content_data + start, end - start);
+        fallback_status = lyrics_extract_divs(out,
+                                              content_data, content_len,
+                                              STRLIT("data-lyrics-"
+                                                     "container=\"true\""),
+                                              true);
+        if (fallback_status == 0) {
             extract_status = 0;
-            break;
+        } else if (extract_status != -NCM_ERROR_PARSE) {
+            extract_status = fallback_status;
         }
-        case LYRICS_FETCHER_MUSICA: {
-            char *lyrics_marker = ">LETRA<";
-            char *match;
-            int32 lyrics_marker_len = strlen32(lyrics_marker);
-            int32 marker;
-            int32 start;
-            int32 end;
-
-            str_clear(out);
-            marker = lyrics_find_ignore_case(content_data, content_len,
-                                             lyrics_marker, lyrics_marker_len,
-                                             0);
-            if (marker < 0) {
-                extract_status = -NCM_ERROR_NOT_FOUND;
-                break;
-            }
-
-            start = marker + lyrics_marker_len - 1;
-            match = memchr64(content_data + start, '>', content_len - start);
-            if (match == NULL) {
-                extract_status = -NCM_ERROR_NOT_FOUND;
-                break;
-            }
-            start = (int32)(match - content_data) + 1;
-
-            end = -1;
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Significado de la letra"), &end);
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Puntuar "), &end);
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Imprimir letra"), &end);
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Letra añadida"), &end);
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("+ Letras de"), &end);
-            if ((end < 0) || (end <= start)) {
-                extract_status = -NCM_ERROR_PARSE;
-                break;
-            }
-
-            STR_APPEND(out, content_data + start, end - start);
-            extract_status = 0;
-            break;
-        }
-        case LYRICS_FETCHER_PAROLES: {
-            char *song_marker = "Paroles de la chanson";
-            char *match;
-            int32 song_marker_len = strlen32(song_marker);
-            int32 marker;
-            int32 second_marker;
-            int32 start;
-            int32 end;
-
-            str_clear(out);
-            marker = lyrics_find_ignore_case(content_data, content_len,
-                                             song_marker, song_marker_len, 0);
-            if (marker < 0) {
-                extract_status = -NCM_ERROR_NOT_FOUND;
-                break;
-            }
-
-            second_marker = lyrics_find_ignore_case(content_data, content_len,
-                                                    song_marker,
-                                                    song_marker_len,
-                                                    marker + song_marker_len);
-            if (second_marker >= 0) {
-                marker = second_marker;
-            }
-
-            match = memchr64(content_data + marker, '>', content_len - marker);
-            if (match == NULL) {
-                extract_status = -NCM_ERROR_NOT_FOUND;
-                break;
-            }
-            start = (int32)(match - content_data) + 1;
-
-            end = -1;
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Paroles.net dispose"), &end);
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Sélection du moment"), &end);
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Les plus grands succès"), &end);
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("On aime"), &end);
-            lyrics_update_first_match(content_data, content_len, start,
-                                      STRLIT("Top traduction"), &end);
-            if ((end < 0) || (end <= start)) {
-                extract_status = -NCM_ERROR_PARSE;
-                break;
-            }
-
-            STR_APPEND(out, content_data + start, end - start);
-            extract_status = 0;
-            break;
-        }
-        case LYRICS_FETCHER_MUSIXMATCH: {
-            char *match;
-            int32 track_info;
-            int32 lyrics_pos;
-            int32 value_start;
-            int32 value_end;
-
-            *plain_text_out = true;
-            match = memmem64(content_data, content_len,
-                             STRLIT("\"trackInfo\""));
-            if (match == NULL) {
-                track_info = 0;
-            } else {
-                track_info = (int32)(match - content_data);
-            }
-
-            match = memmem64(content_data + track_info,
-                             content_len - track_info, STRLIT("\"lyrics\""));
-            if (match == NULL) {
-                extract_status = -NCM_ERROR_NOT_FOUND;
-                break;
-            }
-            lyrics_pos = (int32)(match - content_data);
-
-            extract_status = lyrics_json_value_start(content_data, content_len,
-                                                     STRLIT("body"),
-                                                     lyrics_pos,
-                                                     &value_start);
-            if (extract_status == 0) {
-                extract_status = lyrics_decode_quoted(out,
-                                                      content_data, content_len,
-                                                      value_start, '"',
-                                                      &value_end);
-            }
-            break;
-        }
-        case LYRICS_FETCHER_TEKSTOWO:
-            extract_status = lyrics_extract_divs(out, content_data, content_len,
-                                                 STRLIT("class=\"inner-text\""),
-                                                 false);
-            break;
-        case LYRICS_FETCHER_VAGALUME: {
-            int32 fallback_status;
-
-            extract_status = lyrics_extract_divs(out, content_data, content_len,
-                                                 STRLIT("id=\"lyrics\""),
-                                                 false);
-            if (extract_status == 0) {
-                break;
-            }
-            fallback_status = lyrics_extract_divs(out,
-                                                  content_data, content_len,
-                                                  STRLIT("id=lyrics"),
-                                                  false);
-            if (fallback_status == 0) {
-                extract_status = 0;
-            } else if (fallback_status == -NCM_ERROR_PARSE) {
-                extract_status = fallback_status;
-            }
-            break;
-        }
-        case LYRICS_FETCHER_UNKNOWN:
-        case LYRICS_FETCHER_INTERNET:
-        case LYRICS_FETCHER_LAST:
-        default:
-            str_clear(out);
-            extract_status = -NCM_ERROR_UNAVAILABLE;
-            break;
-        }
-        status = extract_status;
+        break;
     }
+    case LYRICS_FETCHER_LETRASMUS:
+        extract_status = lyrics_extract_divs(out, content_data, content_len,
+                                             STRLIT("class="
+                                                    "\"lyric-original\""),
+                                             false);
+        break;
+    case LYRICS_FETCHER_LACOCCINELLE: {
+        char *translation_marker = "Paroles et traduction de la chanson";
+        char *match;
+        int32 translation_marker_len = strlen32(translation_marker);
+        int32 marker;
+        int32 second_marker;
+        int32 start;
+        int32 end;
+
+        str_clear(out);
+        marker = lyrics_find_ignore_case(content_data, content_len,
+                                         translation_marker,
+                                         translation_marker_len,
+                                         0);
+        if (marker < 0) {
+            marker =
+                lyrics_find_ignore_case(content_data, content_len,
+                                        STRLIT("Paroles de la chanson"),
+                                        0);
+        }
+        if (marker < 0) {
+            extract_status = -NCM_ERROR_NOT_FOUND;
+            break;
+        }
+
+        second_marker = lyrics_find_ignore_case(content_data, content_len,
+                                                translation_marker,
+                                                translation_marker_len,
+                                                marker
+                                                + translation_marker_len);
+        if (second_marker >= 0) {
+            marker = second_marker;
+        }
+
+        match = memchr64(content_data + marker, '>', content_len - marker);
+        if (match == NULL) {
+            extract_status = -NCM_ERROR_NOT_FOUND;
+            break;
+        }
+        start = (int32)(match - content_data) + 1;
+
+        end = -1;
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Publié par"), &end);
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Chanteurs :"), &end);
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Albums :"), &end);
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Vos commentaires"), &end);
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Commentaires"), &end);
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Téléchargement"), &end);
+        if ((end < 0) || (end <= start)) {
+            extract_status = -NCM_ERROR_PARSE;
+            break;
+        }
+
+        STR_APPEND(out, content_data + start, end - start);
+        extract_status = 0;
+        break;
+    }
+    case LYRICS_FETCHER_MUSICA: {
+        char *lyrics_marker = ">LETRA<";
+        char *match;
+        int32 lyrics_marker_len = strlen32(lyrics_marker);
+        int32 marker;
+        int32 start;
+        int32 end;
+
+        str_clear(out);
+        marker = lyrics_find_ignore_case(content_data, content_len,
+                                         lyrics_marker, lyrics_marker_len,
+                                         0);
+        if (marker < 0) {
+            extract_status = -NCM_ERROR_NOT_FOUND;
+            break;
+        }
+
+        start = marker + lyrics_marker_len - 1;
+        match = memchr64(content_data + start, '>', content_len - start);
+        if (match == NULL) {
+            extract_status = -NCM_ERROR_NOT_FOUND;
+            break;
+        }
+        start = (int32)(match - content_data) + 1;
+
+        end = -1;
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Significado de la letra"), &end);
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Puntuar "), &end);
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Imprimir letra"), &end);
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Letra añadida"), &end);
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("+ Letras de"), &end);
+        if ((end < 0) || (end <= start)) {
+            extract_status = -NCM_ERROR_PARSE;
+            break;
+        }
+
+        STR_APPEND(out, content_data + start, end - start);
+        extract_status = 0;
+        break;
+    }
+    case LYRICS_FETCHER_PAROLES: {
+        char *song_marker = "Paroles de la chanson";
+        char *match;
+        int32 song_marker_len = strlen32(song_marker);
+        int32 marker;
+        int32 second_marker;
+        int32 start;
+        int32 end;
+
+        str_clear(out);
+        marker = lyrics_find_ignore_case(content_data, content_len,
+                                         song_marker, song_marker_len, 0);
+        if (marker < 0) {
+            extract_status = -NCM_ERROR_NOT_FOUND;
+            break;
+        }
+
+        second_marker = lyrics_find_ignore_case(content_data, content_len,
+                                                song_marker,
+                                                song_marker_len,
+                                                marker + song_marker_len);
+        if (second_marker >= 0) {
+            marker = second_marker;
+        }
+
+        match = memchr64(content_data + marker, '>', content_len - marker);
+        if (match == NULL) {
+            extract_status = -NCM_ERROR_NOT_FOUND;
+            break;
+        }
+        start = (int32)(match - content_data) + 1;
+
+        end = -1;
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Paroles.net dispose"), &end);
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Sélection du moment"), &end);
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Les plus grands succès"), &end);
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("On aime"), &end);
+        lyrics_update_first_match(content_data, content_len, start,
+                                  STRLIT("Top traduction"), &end);
+        if ((end < 0) || (end <= start)) {
+            extract_status = -NCM_ERROR_PARSE;
+            break;
+        }
+
+        STR_APPEND(out, content_data + start, end - start);
+        extract_status = 0;
+        break;
+    }
+    case LYRICS_FETCHER_MUSIXMATCH: {
+        char *match;
+        int32 track_info;
+        int32 lyrics_pos;
+        int32 value_start;
+        int32 value_end;
+
+        *plain_text_out = true;
+        match = memmem64(content_data, content_len, STRLIT("\"trackInfo\""));
+        if (match == NULL) {
+            track_info = 0;
+        } else {
+            track_info = (int32)(match - content_data);
+        }
+
+        match = memmem64(content_data + track_info,
+                         content_len - track_info, STRLIT("\"lyrics\""));
+        if (match == NULL) {
+            extract_status = -NCM_ERROR_NOT_FOUND;
+            break;
+        }
+        lyrics_pos = (int32)(match - content_data);
+
+        extract_status = lyrics_json_value_start(content_data, content_len,
+                                                 STRLIT("body"),
+                                                 lyrics_pos,
+                                                 &value_start);
+        if (extract_status == 0) {
+            extract_status = lyrics_decode_quoted(out,
+                                                  content_data, content_len,
+                                                  value_start, '"',
+                                                  &value_end);
+        }
+        break;
+    }
+    case LYRICS_FETCHER_TEKSTOWO:
+        extract_status = lyrics_extract_divs(out, content_data, content_len,
+                                             STRLIT("class=\"inner-text\""),
+                                             false);
+        break;
+    case LYRICS_FETCHER_VAGALUME: {
+        int32 fallback_status;
+
+        extract_status = lyrics_extract_divs(out, content_data, content_len,
+                                             STRLIT("id=\"lyrics\""),
+                                             false);
+        if (extract_status == 0) {
+            break;
+        }
+        fallback_status = lyrics_extract_divs(out,
+                                              content_data, content_len,
+                                              STRLIT("id=lyrics"),
+                                              false);
+        if (fallback_status == 0) {
+            extract_status = 0;
+        } else if (fallback_status == -NCM_ERROR_PARSE) {
+            extract_status = fallback_status;
+        }
+        break;
+    }
+    case LYRICS_FETCHER_UNKNOWN:
+    case LYRICS_FETCHER_INTERNET:
+    case LYRICS_FETCHER_LAST:
+    default:
+        str_clear(out);
+        extract_status = -NCM_ERROR_UNAVAILABLE;
+        break;
+    }
+    status = extract_status;
     if ((status < 0) || (lyrics.len <= 0)) {
         lyrics_result_set(result, false, STRLIT(LYRICS_MSG_NOT_FOUND));
         status = 0;
