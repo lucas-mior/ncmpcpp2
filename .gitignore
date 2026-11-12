@@ -48,3 +48,5 @@ cbase/CuSb9Ofs
 cbase/csanecheck
 cmeta
 *.bin
+*.bin
+.cache
