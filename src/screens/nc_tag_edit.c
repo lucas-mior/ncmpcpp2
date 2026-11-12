@@ -830,8 +830,7 @@ tag_edit_find_recent_pattern(TagEditScreen *screen,
     if (pattern_len <= 0) {
         return -1;
     }
-    for (int32 i = 0; i < strflex_list_len(&screen->recent_patterns);
-         i += 1) {
+    for (int32 i = 0; i < strflex_list_len(&screen->recent_patterns); i += 1) {
         StrFlex *item = screen->recent_patterns.items[i];
 
         if (STREQUAL(item->data, item->len, pattern, pattern_len)) {

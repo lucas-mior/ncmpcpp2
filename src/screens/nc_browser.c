@@ -1300,8 +1300,7 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
         return status;
     }
 
-    for (int32 i = 0; i < strflex_list_len(&strings);
-         i += 1) {
+    for (int32 i = 0; i < strflex_list_len(&strings); i += 1) {
         StrFlex *string = strings.items[i];
         String buffer = {0};
 
