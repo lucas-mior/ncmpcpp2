@@ -3262,7 +3262,7 @@ tag_edit_screen_previous_column(TagEditScreen *screen) {
         if (modified
             && !tag_edit_confirm(screen,
                                  SL("There are pending changes, "
-                                        "are you sure?"))) {
+                                    "are you sure?"))) {
             return;
         }
         tag_edit_set_focus(screen, TAG_EDIT_FOCUS_DIRECTORIES);
