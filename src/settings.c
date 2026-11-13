@@ -208,8 +208,7 @@ settings_parse_int_range(char *value, int32 value_len, int32 *result,
     int32 status;
 
     if ((status = parse_integer(value, value_len, &parsed)) < 0) {
-        return ncm_error_set_status(ncm_error, status,
-                                    SL("invalid integer"));
+        return ncm_error_set_status(ncm_error, status, SL("invalid integer"));
     }
     if ((status = ncm_bounds_check_i64(parsed, minimum, maximum,
                                        ncm_error)) < 0) {
@@ -895,8 +894,7 @@ config_validate(Configuration *config, NcmError *ncm_error) {
         <= config->visualizer_spectrum_hz_min) {
         return settings_error(ncm_error,
                               SL("visualizer_spectrum_hz_max must be "
-                                     "greater than "
-                                     "visualizer_spectrum_hz_min"));
+                                 "greater than visualizer_spectrum_hz_min"));
     }
     return ncm_error_ok(ncm_error);
 }
