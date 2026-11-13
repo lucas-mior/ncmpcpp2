@@ -52,7 +52,7 @@ ncm_path_expand_home(String *path, NcmError *ncm_error) {
     if (((home = getenv("HOME")) == NULL) || (home[0] == '\0')) {
         return ncm_error_set_status(ncm_error, -ENOENT,
                                     SL("HOME environment variable "
-                                           "is not set"));
+                                       "is not set"));
     }
 
     home_len = 0;

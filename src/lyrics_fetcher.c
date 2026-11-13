@@ -1327,10 +1327,8 @@ lyrics_url_best_slug_score(LyricsFetcherDef *fetcher,
         segment_len = i - segment_start;
         score = 0;
 
-        lyrics_trim_url_segment_suffix(&segment, &segment_len,
-                                       SL(".html"));
-        lyrics_trim_url_segment_suffix(&segment, &segment_len,
-                                       SL("-lyrics"));
+        lyrics_trim_url_segment_suffix(&segment, &segment_len, SL(".html"));
+        lyrics_trim_url_segment_suffix(&segment, &segment_len, SL("-lyrics"));
 
         if (segment_len > 0) {
             lyrics_percent_decode(&decoded, segment, segment_len);
@@ -1774,8 +1772,7 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
                 if (json.len <= 0) {
                     lyrics_data = -1;
                 } else {
-                    match = memmem64(json.data, json.len,
-                                     SL("\"lyricsData\""));
+                    match = memmem64(json.data, json.len, SL("\"lyricsData\""));
                     if (match == NULL) {
                         lyrics_data = -1;
                     } else {
@@ -1818,7 +1815,7 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
         fallback_status = lyrics_extract_divs(out,
                                               content_data, content_len,
                                               SL("data-lyrics-"
-                                                     "container=\"true\""),
+                                                 "container=\"true\""),
                                               true);
         if (fallback_status == 0) {
             extract_status = 0;
@@ -1830,7 +1827,7 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
     case LYRICS_FETCHER_LETRASMUS:
         extract_status = lyrics_extract_divs(out, content_data, content_len,
                                              SL("class="
-                                                    "\"lyric-original\""),
+                                                "\"lyric-original\""),
                                              false);
         break;
     case LYRICS_FETCHER_LACOCCINELLE: {

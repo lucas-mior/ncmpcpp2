@@ -288,8 +288,7 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
                                     SL("missing LRC document"));
     }
     if ((data == NULL) || (data_len <= 0)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    SL("missing LRC data"));
+        return ncm_error_set_status(ncm_error, -EINVAL, SL("missing LRC data"));
     }
 
     {

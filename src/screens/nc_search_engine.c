@@ -342,12 +342,11 @@ search_run_current(NcScreen *base_screen) {
         }
         str_free(&value);
         if (prompt_status == SEARCH_ENGINE_PROMPT_ABORTED) {
-            search_engine_screen_status_message(screen,
-                                                SL("Action aborted"));
+            search_engine_screen_status_message(screen, SL("Action aborted"));
         } else {
             search_engine_screen_status_message(screen,
                                                 SL("Unable to read"
-                                                       " search constraint"));
+                                                   " search constraint"));
         }
         return -NCM_ERROR_UNAVAILABLE;
     }
@@ -1158,7 +1157,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
             if (screen->hooks.list_database_songs == NULL) {
                 status = ncm_error_set_status(ncm_error, -NCM_ERROR_UNAVAILABLE,
                                               SL("database search"
-                                                     " unavailable"));
+                                                 " unavailable"));
             } else {
                 status = screen->hooks.list_database_songs(screen->hooks.user,
                                                            &source, ncm_error);
@@ -1167,7 +1166,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
             if (screen->hooks.snapshot_playlist == NULL) {
                 status = ncm_error_set_status(ncm_error, -NCM_ERROR_UNAVAILABLE,
                                               SL("playlist snapshot"
-                                                     " unavailable"));
+                                                 " unavailable"));
             } else {
                 status = screen->hooks.snapshot_playlist(screen->hooks.user,
                                                          &source, ncm_error);

@@ -354,7 +354,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                                 status =
                                     ncm_error_set_status(ncm_error, -EOVERFLOW,
                                                          SL("tag delimiter "
-                                                                "too large"));
+                                                            "too large"));
                             } else {
                                 delimiter = delimiter*10 + digit;
                             }

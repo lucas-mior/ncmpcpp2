@@ -442,8 +442,7 @@ library_refresh(NcScreen *screen) {
     library_refresh_menu(albums, &library->albums_window);
     if (nc_menu_item_len(albums) <= 0) {
         nc_window_go_to_xy(&library->albums_window, 0, 0);
-        nc_window_print_data(&library->albums_window,
-                             SL("No albums found."));
+        nc_window_print_data(&library->albums_window, SL("No albums found."));
         nc_window_refresh(&library->albums_window);
     }
     separator_x = nc_window_start_x(&library->songs_window) - 1;
@@ -3099,8 +3098,7 @@ media_lib_screen_list_tags(MediaLibraryScreen *screen,
                                     SL("tag hook is unavailable"));
     }
     if (tags == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    SL("missing tag list"));
+        return ncm_error_set_status(ncm_error, -EINVAL, SL("missing tag list"));
     }
     return screen->hooks.list_tags(screen->hooks.user, tag_type, tags,
                                    ncm_error);
@@ -3153,8 +3151,7 @@ media_lib_screen_add_songs(MediaLibraryScreen *screen,
                                     SL("add-songs hook is unavailable"));
     }
     if ((songs == NULL) || (songs->len <= 0)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    SL("missing songs"));
+        return ncm_error_set_status(ncm_error, -EINVAL, SL("missing songs"));
     }
     return screen->hooks.add_songs(screen->hooks.user, songs, play, ncm_error);
 }
@@ -3375,7 +3372,7 @@ media_lib_screen_locate_song(MediaLibraryScreen *screen,
                                      grouping_value.len)) {
                 return ncm_error_set_status(ncm_error, -ENOENT,
                                             SL("song tag is not in "
-                                                   "library"));
+                                               "library"));
             }
         }
         nc_screen_finish_list_change(&screen->screen);
@@ -3510,7 +3507,7 @@ media_lib_screen_locate_song(MediaLibraryScreen *screen,
         media_lib_screen_set_active_column(screen, MEDIA_LIBRARY_COLUMN_ALBUMS);
         return ncm_error_set_status(ncm_error, -ENOENT,
                                     SL("song is not visible in media"
-                                           " library"));
+                                       " library"));
     }
     {
         bool found = false;
@@ -3531,7 +3528,7 @@ media_lib_screen_locate_song(MediaLibraryScreen *screen,
                                                MEDIA_LIBRARY_COLUMN_SONGS);
             return ncm_error_set_status(ncm_error, -ENOENT,
                                         SL("song is not visible in media"
-                                               " library"));
+                                           " library"));
         }
     }
 

@@ -179,7 +179,7 @@ sort_dialog_show_move_hint(void *user) {
     (void)user;
     ncm_statusbar_print(Config.message_delay_time,
                         SL("Move tag types up and down to adjust sort "
-                               "order"));
+                           "order"));
     return;
 }
 
@@ -390,7 +390,7 @@ sort_playlist_dialog_open(SortPlaylistDialog *dialog, PlaylistScreen *playlist,
     if (current != playlist_screen_base(playlist)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     SL("sort dialog requires "
-                                           "playlist screen"));
+                                       "playlist screen"));
     }
 
     songs = (NcmSongArray){0};

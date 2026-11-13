@@ -122,7 +122,7 @@ ncm_mpd_client_prechecks_no_commands(MpdClient *client, NcmError *ncm_error) {
     if (client->cmd_list_active) {
         return ncm_error_set_status(ncm_error, -NCM_ERROR_INVALID_STATE,
                                     SL("MPD command list is already"
-                                           " active"));
+                                       " active"));
     }
 
     return ncm_mpd_client_prechecks_connected(client, ncm_error);
@@ -776,8 +776,7 @@ ncm_mpd_client_set_priority_song(MpdClient *client, NcmSong *song,
     int32 mpd_result;
 
     if (song == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    SL("missing MPD song"));
+        return ncm_error_set_status(ncm_error, -EINVAL, SL("missing MPD song"));
     }
 
     NCM_CLIENT_TRY(ncm_mpd_client_prechecks(client, ncm_error));
@@ -796,8 +795,7 @@ ncm_mpd_client_add_song_value(MpdClient *client, NcmSong *song,
     StrView uri;
 
     if (song == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    SL("missing MPD song"));
+        return ncm_error_set_status(ncm_error, -EINVAL, SL("missing MPD song"));
     }
     if (!ncm_song_has_uri_view(song, 0, &uri)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
@@ -821,8 +819,7 @@ ncm_mpd_client_add_song_array(MpdClient *client,
                                     SL("missing MPD songs"));
     }
     if (songs->len <= 0) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    SL("empty MPD songs"));
+        return ncm_error_set_status(ncm_error, -EINVAL, SL("empty MPD songs"));
     }
     if ((status = ncm_mpd_client_prechecks(client, ncm_error)) < 0) {
         return status;
@@ -968,8 +965,7 @@ ncm_mpd_client_add_song_to_playlist(MpdClient *client,
     int32 mpd_result;
 
     if (song == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    SL("missing MPD song"));
+        return ncm_error_set_status(ncm_error, -EINVAL, SL("missing MPD song"));
     }
     if (!ncm_song_has_uri_view(song, 0, &uri)) {
         return ncm_error_set_status(ncm_error, -EINVAL,

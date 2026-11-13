@@ -981,7 +981,7 @@ playlist_screen_find_sort_range(PlaylistScreen *screen,
             if (!(flags & NC_MENU_ITEM_SELECTED)) {
                 return ncm_error_set_status(ncm_error, -EINVAL,
                                             SL("selected songs are not "
-                                                   "contiguous"));
+                                               "contiguous"));
             }
         }
         last = selected_last;
@@ -999,7 +999,7 @@ playlist_screen_find_sort_range(PlaylistScreen *screen,
         if (ncm_song_position(song) != expected_position) {
             return ncm_error_set_status(ncm_error, -EINVAL,
                                         SL("playlist range positions are "
-                                               "not contiguous"));
+                                           "not contiguous"));
         }
     }
 

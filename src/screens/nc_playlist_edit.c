@@ -1351,8 +1351,7 @@ playlist_edit_screen_reload_content_from_mpd(PlaylistEditScreen *screen,
     }
     if ((playlist = nc_playlist_entry_menu_current(&screen->playlists))
         == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    SL("missing playlist"));
+        return ncm_error_set_status(ncm_error, -EINVAL, SL("missing playlist"));
     }
 
     songs = (NcmSongArray){0};
@@ -1424,8 +1423,7 @@ playlist_edit_screen_locate_playlist(PlaylistEditScreen *screen,
     int32 status;
 
     if ((screen == NULL) || (path == NULL) || (path_len <= 0)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    SL("missing playlist"));
+        return ncm_error_set_status(ncm_error, -EINVAL, SL("missing playlist"));
     }
     if ((status =
              playlist_edit_screen_reload_playlists_from_mpd(screen, client,
@@ -1617,8 +1615,7 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
         return playlist_edit_show_screen(screen);
     }
 
-    ncm_statusbar_print(Config.message_delay_time,
-                        SL("Jumping to song..."));
+    ncm_statusbar_print(Config.message_delay_time, SL("Jumping to song..."));
     status = playlist_edit_locate_song_in_playlist_range(screen, client, song,
                                                          playlist_pos + 1,
                                                          playlist_len,

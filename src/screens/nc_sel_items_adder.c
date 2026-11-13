@@ -808,8 +808,7 @@ adder_action_new_playlist(void *user) {
 
     if (prompt_status != NC_PROMPT_ACCEPTED) {
         nc_window_prompt_result_destroy(input);
-        ncm_statusbar_print(Config.message_delay_time,
-                            SL("Action aborted"));
+        ncm_statusbar_print(Config.message_delay_time, SL("Action aborted"));
         return;
     }
 
@@ -866,7 +865,7 @@ selected_items_add_screen_open(SelectedItemsAdderScreen *screen,
     if (screen->ready) {
         return ncm_error_set_status(ncm_error, -EBUSY,
                                     SL("selected items dialog is "
-                                           "already open"));
+                                       "already open"));
     }
 
     adder_screen = selected_items_add_screen_base(screen);

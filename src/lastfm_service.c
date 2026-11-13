@@ -299,8 +299,7 @@ ncm_lastfm_service_fetch(NcmLastfmService *service, NcmLastfmResult *result) {
     }
     lastfm_result_clear_unchecked(result);
     if (service->type != NCM_LASTFM_SERVICE_ARTIST_INFO) {
-        lastfm_result_set_unchecked(result, false,
-                                    SL(LASTFM_INVALID_RESPONSE));
+        lastfm_result_set_unchecked(result, false, SL(LASTFM_INVALID_RESPONSE));
         return 0;
     }
 
@@ -354,14 +353,13 @@ ncm_lastfm_service_fetch(NcmLastfmService *service, NcmLastfmResult *result) {
     }
     if (lastfm_extract_between(&content, data.data, data.len,
                                SL("<content>"), SL("</content>")) < 0) {
-        lastfm_result_set_unchecked(result, false,
-                                    SL(LASTFM_INVALID_RESPONSE));
+        lastfm_result_set_unchecked(result, false, SL(LASTFM_INVALID_RESPONSE));
         goto cleanup;
     }
     if (content.len <= 0) {
         lastfm_result_set_unchecked(result, false,
                                     SL("No description available for "
-                                           "this artist."));
+                                       "this artist."));
         goto cleanup;
     }
 

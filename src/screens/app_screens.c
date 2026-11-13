@@ -796,8 +796,7 @@ tag_edit_hook_confirm(void *user, char *message, int32 message_len) {
     ncm_statusbar_scoped_lock_destroy(&scoped_lock);
 
     if ((status == 0) || (answer != 'y')) {
-        ncm_statusbar_print(Config.message_delay_time,
-                            SL("Action cancelled"));
+        ncm_statusbar_print(Config.message_delay_time, SL("Action cancelled"));
         return false;
     }
     return true;

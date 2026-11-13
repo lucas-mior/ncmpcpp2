@@ -129,12 +129,10 @@ ncm_playlist_sort_range(NcmSongArray *songs, int32 start_position,
     int32 status;
 
     if (songs == NULL) {
-        return ncm_error_set_code(ncm_error, EINVAL,
-                                  SL("missing song array"));
+        return ncm_error_set_code(ncm_error, EINVAL, SL("missing song array"));
     }
     if (songs->len < 0) {
-        return ncm_error_set_code(ncm_error, EINVAL,
-                                  SL("invalid song count"));
+        return ncm_error_set_code(ncm_error, EINVAL, SL("invalid song count"));
     }
     if ((songs->len > 0) && (songs->items == NULL)) {
         return ncm_error_set_code(ncm_error, EINVAL, SL("missing songs"));
@@ -148,8 +146,7 @@ ncm_playlist_sort_range(NcmSongArray *songs, int32 start_position,
                                   SL("invalid sort key count"));
     }
     if ((getters_len > 0) && (getters == NULL)) {
-        return ncm_error_set_code(ncm_error, EINVAL,
-                                  SL("missing sort keys"));
+        return ncm_error_set_code(ncm_error, EINVAL, SL("missing sort keys"));
     }
     for (int32 i = 0; i < getters_len; i += 1) {
         if ((getters[i] == 0)
@@ -211,8 +208,7 @@ ncm_playlist_sort_range(NcmSongArray *songs, int32 start_position,
 
     if (client == NULL) {
         free2(plan.items, plan_items_len*SIZEOF(*plan.items));
-        return ncm_error_set_code(ncm_error, EINVAL,
-                                  SL("missing MPD client"));
+        return ncm_error_set_code(ncm_error, EINVAL, SL("missing MPD client"));
     }
     if (plan.len <= 0) {
         free2(plan.items, plan_items_len*SIZEOF(*plan.items));

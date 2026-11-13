@@ -364,8 +364,7 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
     int32 status;
 
     if ((screen == NULL) || (artist == NULL) || (artist_len <= 0)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
-                                    SL("missing artist"));
+        return ncm_error_set_status(ncm_error, -EINVAL, SL("missing artist"));
     }
 
     ncm_lastfm_artist_info_init(&candidate, artist, artist_len, lang, lang_len);

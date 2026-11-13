@@ -1378,7 +1378,7 @@ browser_screen_change_browse_mode(BrowserScreen *screen,
         || (hostname[0] != '/')) {
         return ncm_error_set_status(ncm_error, -EINVAL,
                                     SL("local browsing requires an MPD "
-                                           "UNIX socket"));
+                                       "UNIX socket"));
     }
 
     local_browser = !screen->local_browser;
@@ -1593,7 +1593,7 @@ browser_real_path(BrowserScreen *screen, StrView path,
     if (Config.mpd_music_dir_len <= 0) {
         return ncm_error_set_status(ncm_error, -ENOENT,
                                     SL("Proper mpd_music_dir variable has "
-                                           "to be set in configuration file"));
+                                       "to be set in configuration file"));
     }
     ncm_fs_join(real_path, Config.mpd_music_dir, Config.mpd_music_dir_len,
                 path.data, path.len);
@@ -1723,7 +1723,7 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
         if (browser_screen_item_is_parent(item)) {
             return ncm_error_set_status(ncm_error, -EINVAL,
                                         SL("deletion of parent directory "
-                                               "is forbidden"));
+                                           "is forbidden"));
         }
 
         switch (ncm_mpd_item_kind(item)) {
