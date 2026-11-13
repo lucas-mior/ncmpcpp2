@@ -1744,8 +1744,7 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
     case LYRICS_FETCHER_GENIUS: {
         String json = {0};
         String html = {0};
-        char *preloaded_marker =
-            "window.__PRELOADED_STATE__ = JSON.parse('";
+        char *preloaded_marker = "window.__PRELOADED_STATE__ = JSON.parse('";
         char *match;
         int32 preloaded_marker_len = strlen32(preloaded_marker);
         int32 marker;
@@ -2805,8 +2804,7 @@ lyrics_fetch_search_urls(LyricsFetcherDef *fetcher, LyricsResult *result,
     if ((status = lyrics_collect_search_urls(fetcher, &page_urls,
                                              data.data, data.len,
                                              artist, artist_len,
-                                             title, title_len))
-        < 0) {
+                                             title, title_len)) < 0) {
         lyrics_result_set(result, false, SL(LYRICS_MSG_NOT_FOUND));
         goto cleanup;
     }

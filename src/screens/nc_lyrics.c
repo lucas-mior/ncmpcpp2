@@ -594,8 +594,7 @@ lyrics_preferred_filename_from_song(String *filename, NcmSong *song,
                                                            lyrics_dir_len,
                                                            store_in_song_dir,
                                                            win32_filename,
-                                                           SL(".lrc")))
-        < 0) {
+                                                           SL(".lrc"))) < 0) {
         str_free(&lrc_filename);
         return status;
     }

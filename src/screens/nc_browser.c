@@ -279,8 +279,7 @@ browser_reload_from_local(BrowserScreen *screen, NcmError *ncm_error) {
     if (screen->current_directory.len <= 0) {
         str_set(&screen->current_directory, SL("~"));
         if ((status = ncm_path_expand_home(&screen->current_directory,
-                                           ncm_error))
-            < 0) {
+                                           ncm_error)) < 0) {
             return status;
         }
     } else {
@@ -1917,8 +1916,7 @@ browser_screen_rename_current_directory(BrowserScreen *screen,
         return ncm_error_ok(ncm_error);
     }
     if ((status = browser_current_directory_item_path(screen, &old_path,
-                                                      ncm_error))
-        < 0) {
+                                                      ncm_error)) < 0) {
         return status;
     }
     if (STREQUAL(old_path.data, old_path.len, new_path, new_path_len)) {
@@ -1995,8 +1993,7 @@ browser_screen_rename_current_playlist(BrowserScreen *screen,
                                     SL("missing MPD client"));
     }
     if ((status = browser_current_playlist_item_path(screen, &old_path,
-                                                     ncm_error))
-        < 0) {
+                                                     ncm_error)) < 0) {
         return status;
     }
     if (STREQUAL(old_path.data, old_path.len, new_path, new_path_len)) {
@@ -2146,8 +2143,7 @@ browser_screen_apply_filter(BrowserScreen *screen,
     if ((status = ncm_regex_compile(&screen->filter_regex,
                                     pattern, pattern_len,
                                     NCM_REGEX_LITERAL_CASE_INSENSITIVE,
-                                    ncm_error))
-        < 0) {
+                                    ncm_error)) < 0) {
         return status;
     }
     stupid_string_set(&screen->filter_constraint,
@@ -2202,8 +2198,7 @@ browser_screen_search(BrowserScreen *screen, char *pattern, int32 pattern_len,
 
     if ((status = ncm_regex_compile(&regex, pattern, pattern_len,
                                     NCM_REGEX_LITERAL_CASE_INSENSITIVE,
-                                    ncm_error))
-        < 0) {
+                                    ncm_error)) < 0) {
         ncm_regex_destroy(&regex);
         return status;
     }

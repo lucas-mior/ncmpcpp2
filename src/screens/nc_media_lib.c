@@ -2688,8 +2688,7 @@ media_lib_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
         grouping_tag = Config.media_lib_primary_tag;
         if (screen->sort_by_mtime) {
             if ((status = media_lib_screen_list_all_songs(screen, &songs,
-                                                          ncm_error))
-                < 0) {
+                                                          ncm_error)) < 0) {
                 bool ignored;
 
                 screen->tags_update_request = true;
@@ -2806,8 +2805,7 @@ media_lib_screen_update(MediaLibraryScreen *screen, NcmError *ncm_error) {
                                                    ncm_error);
         } else {
             if ((status = media_lib_screen_list_all_songs(screen, &songs,
-                                                          ncm_error))
-                < 0) {
+                                                          ncm_error)) < 0) {
                 media_lib_screen_toggle_mode(screen, NULL);
                 library_request_all_updates(screen);
             }
