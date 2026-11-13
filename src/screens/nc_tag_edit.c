@@ -1522,11 +1522,9 @@ tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
             parent_len = ncm_string_parent_directory_len(control_dir,
                                                          control_dir_len);
             if (parent_len <= 0) {
-                tag_edit_screen_add_directory(screen,
-                                              SL(".."), SL("/"));
+                tag_edit_screen_add_directory(screen, SL(".."), SL("/"));
             } else {
-                tag_edit_screen_add_directory(screen,
-                                              SL(".."),
+                tag_edit_screen_add_directory(screen, SL(".."),
                                               control_dir, parent_len);
             }
         }
