@@ -632,7 +632,7 @@ ncm_song_show_time_unchecked(int32 length, char *buffer, int32 buffer_cap) {
 
     if (hours > 0) {
         return fmt_sprintf(buffer, buffer_cap,
-                         "%d:%02d:%02d", hours, minutes, seconds);
+                           "%d:%02d:%02d", hours, minutes, seconds);
     }
 
     return fmt_sprintf(buffer, buffer_cap, "%d:%02d", minutes, seconds);
