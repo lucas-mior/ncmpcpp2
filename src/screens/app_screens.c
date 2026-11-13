@@ -596,7 +596,7 @@ search_prompt_constraint(void *user, char *label, int32 label_len,
     ncm_statusbar_scoped_lock_init(&scoped_lock);
     window = ncm_statusbar_put();
     nc_window_print_data(window, label, label_len);
-    nc_window_print_data(window, STRLIT(": "));
+    nc_window_print_data(window, SL(": "));
 
     prompt.initial_text = initial_text;
     prompt.width = -1;
@@ -729,7 +729,7 @@ prompt_buffer(char *label, int32 label_len,
         nc_window_apply_format(window, NC_FORMAT_BOLD);
     }
     nc_window_print_data(window, label, label_len);
-    nc_window_print_data(window, STRLIT(": "));
+    nc_window_print_data(window, SL(": "));
     if (bold_label) {
         nc_window_apply_format(window, NC_FORMAT_NO_BOLD);
     }
@@ -789,7 +789,7 @@ tag_edit_hook_confirm(void *user, char *message, int32 message_len) {
     ncm_statusbar_scoped_lock_init(&scoped_lock);
     window = ncm_statusbar_put();
     nc_window_print_data(window, message, message_len);
-    nc_window_print_data(window, STRLIT(" [y/n] "));
+    nc_window_print_data(window, SL(" [y/n] "));
     status = ncm_statusbar_prompt_return_one_of(window,
                                                 values, LENGTH(values),
                                                 &answer);
@@ -797,7 +797,7 @@ tag_edit_hook_confirm(void *user, char *message, int32 message_len) {
 
     if ((status == 0) || (answer != 'y')) {
         ncm_statusbar_print(Config.message_delay_time,
-                            STRLIT("Action cancelled"));
+                            SL("Action cancelled"));
         return false;
     }
     return true;
@@ -1112,11 +1112,11 @@ static void
 append_song_info_tag(NcBuffer *buffer, char *name, int32 name_len,
                      String *value) {
     append_format(buffer, NC_FORMAT_BOLD);
-    nc_buffer_append_data(buffer, STRLIT("\n"));
+    nc_buffer_append_data(buffer, SL("\n"));
     nc_buffer_append_data(buffer, name, name_len);
-    nc_buffer_append_data(buffer, STRLIT(":"));
+    nc_buffer_append_data(buffer, SL(":"));
     append_format(buffer, NC_FORMAT_NO_BOLD);
-    nc_buffer_append_data(buffer, STRLIT(" "));
+    nc_buffer_append_data(buffer, SL(" "));
     append_song_tag(buffer, value);
     return;
 }
@@ -1127,10 +1127,10 @@ append_song_key_value(NcBuffer *buffer, char *key, int32 key_len,
     append_format(buffer, NC_FORMAT_BOLD);
     append_text_style(buffer, &Config.color1);
     nc_buffer_append_data(buffer, key, key_len);
-    nc_buffer_append_data(buffer, STRLIT(":"));
+    nc_buffer_append_data(buffer, SL(":"));
     append_text_style_end(buffer, &Config.color1);
     append_format(buffer, NC_FORMAT_NO_BOLD);
-    nc_buffer_append_data(buffer, STRLIT(" "));
+    nc_buffer_append_data(buffer, SL(" "));
     append_text_style(buffer, &Config.color2);
     if (empty_as_missing) {
         append_song_tag(buffer, value);
@@ -1138,7 +1138,7 @@ append_song_key_value(NcBuffer *buffer, char *key, int32 key_len,
         append_data(buffer, value->data, value->len);
     }
     append_text_style_end(buffer, &Config.color2);
-    nc_buffer_append_data(buffer, STRLIT("\n"));
+    nc_buffer_append_data(buffer, SL("\n"));
     return;
 }
 
@@ -1147,7 +1147,7 @@ append_help(NcBuffer *buffer, enum ActionType type, char *description) {
     int32 column_start;
     int32 width;
 
-    nc_buffer_append_data(buffer, STRLIT("    "));
+    nc_buffer_append_data(buffer, SL("    "));
     column_start = buffer->len;
     width = 0;
     for (int32 i = 0; i < Bindings.keys_len; i += 1) {
@@ -1167,7 +1167,7 @@ append_help(NcBuffer *buffer, enum ActionType type, char *description) {
                 continue;
             }
             if (width > 0) {
-                nc_buffer_append_data(buffer, STRLIT(" "));
+                nc_buffer_append_data(buffer, SL(" "));
                 width += 1;
             }
             append_data(buffer, key_name, key_len);
@@ -1177,9 +1177,9 @@ append_help(NcBuffer *buffer, enum ActionType type, char *description) {
     while ((buffer->len - column_start) < 20) {
         nc_buffer_append_char(buffer, ' ');
     }
-    nc_buffer_append_data(buffer, STRLIT(" : "));
+    nc_buffer_append_data(buffer, SL(" : "));
     nc_buffer_append_data(buffer, description, strlen32(description));
-    nc_buffer_append_data(buffer, STRLIT("\n"));
+    nc_buffer_append_data(buffer, SL("\n"));
     return;
 }
 
@@ -1188,7 +1188,7 @@ help_render(void *user, NcBuffer *buffer) {
     (void)user;
 
     append_format(buffer, NC_FORMAT_BOLD);
-    nc_buffer_append_data(buffer, STRLIT("\n  Keys - Movement\n\n"));
+    nc_buffer_append_data(buffer, SL("\n  Keys - Movement\n\n"));
     append_format(buffer, NC_FORMAT_NO_BOLD);
     append_help(buffer, ACTION_SCROLL_UP, "Move cursor up");
     append_help(buffer, ACTION_SCROLL_DOWN, "Move cursor down");
@@ -1216,7 +1216,7 @@ help_render(void *user, NcBuffer *buffer) {
 #endif
 
     append_format(buffer, NC_FORMAT_BOLD);
-    nc_buffer_append_data(buffer, STRLIT("\n  Keys - Global\n\n"));
+    nc_buffer_append_data(buffer, SL("\n  Keys - Global\n\n"));
     append_format(buffer, NC_FORMAT_NO_BOLD);
 
     append_help(buffer, ACTION_PLAY, "Play");
@@ -1469,18 +1469,18 @@ show_long_time(NcBuffer *buffer, int32 seconds) {
 
     if (days > 0) {
         nc_buffer_append_int64(buffer, days);
-        nc_buffer_append_data(buffer, STRLIT("d "));
+        nc_buffer_append_data(buffer, SL("d "));
     }
     if ((days > 0) || (hours > 0)) {
         nc_buffer_append_int64(buffer, hours);
-        nc_buffer_append_data(buffer, STRLIT("h "));
+        nc_buffer_append_data(buffer, SL("h "));
     }
     if ((days > 0) || (hours > 0) || (minutes > 0)) {
         nc_buffer_append_int64(buffer, minutes);
-        nc_buffer_append_data(buffer, STRLIT("m "));
+        nc_buffer_append_data(buffer, SL("m "));
     }
     nc_buffer_append_int64(buffer, seconds);
-    nc_buffer_append_data(buffer, STRLIT("s"));
+    nc_buffer_append_data(buffer, SL("s"));
     return;
 }
 
@@ -1505,56 +1505,56 @@ server_info_render(void *user, NcBuffer *buffer) {
     }
 
     append_bold_label(buffer, "Version: ");
-    nc_buffer_append_data(buffer, STRLIT("0."));
+    nc_buffer_append_data(buffer, SL("0."));
     nc_buffer_append_int64(buffer, ncm_mpd_client_version(&global_mpd));
-    nc_buffer_append_data(buffer, STRLIT(".*\n"));
+    nc_buffer_append_data(buffer, SL(".*\n"));
 
     append_bold_label(buffer, "Uptime: ");
     show_long_time(buffer, stats.uptime);
-    nc_buffer_append_data(buffer, STRLIT("\n"));
+    nc_buffer_append_data(buffer, SL("\n"));
 
     append_bold_label(buffer, "Time playing: ");
     ncm_song_show_time(stats.play_time, time_buffer, SIZEOF(time_buffer));
     nc_buffer_append_data(buffer, time_buffer, strlen32(time_buffer));
-    nc_buffer_append_data(buffer, STRLIT("\n\n"));
+    nc_buffer_append_data(buffer, SL("\n\n"));
 
     append_bold_label(buffer, "Total playtime: ");
     show_long_time(buffer, stats.db_play_time);
-    nc_buffer_append_data(buffer, STRLIT("\n"));
+    nc_buffer_append_data(buffer, SL("\n"));
 
     append_bold_label(buffer, "Artist names: ");
     nc_buffer_append_int64(buffer, stats.artists);
-    nc_buffer_append_data(buffer, STRLIT("\n"));
+    nc_buffer_append_data(buffer, SL("\n"));
 
     append_bold_label(buffer, "Album names: ");
     nc_buffer_append_int64(buffer, stats.albums);
-    nc_buffer_append_data(buffer, STRLIT("\n"));
+    nc_buffer_append_data(buffer, SL("\n"));
 
     append_bold_label(buffer, "Songs in database: ");
     nc_buffer_append_int64(buffer, stats.songs);
-    nc_buffer_append_data(buffer, STRLIT("\n\n"));
+    nc_buffer_append_data(buffer, SL("\n\n"));
 
     append_bold_label(buffer, "URL Handlers:");
     for (int32 i = 0; i < strflex_list_len(&owner->url_handlers); i += 1) {
         StrFlex *handler = owner->url_handlers.items[i];
 
         if (i == 0) {
-            nc_buffer_append_data(buffer, STRLIT(" "));
+            nc_buffer_append_data(buffer, SL(" "));
         } else {
-            nc_buffer_append_data(buffer, STRLIT(", "));
+            nc_buffer_append_data(buffer, SL(", "));
         }
         append_data(buffer, handler->data, handler->len);
     }
-    nc_buffer_append_data(buffer, STRLIT("\n\n"));
+    nc_buffer_append_data(buffer, SL("\n\n"));
 
     append_bold_label(buffer, "Tag Types:");
     for (int32 i = 0; i < strflex_list_len(&owner->tag_types); i += 1) {
         StrFlex *tag = owner->tag_types.items[i];
 
         if (i == 0) {
-            nc_buffer_append_data(buffer, STRLIT(" "));
+            nc_buffer_append_data(buffer, SL(" "));
         } else {
-            nc_buffer_append_data(buffer, STRLIT(", "));
+            nc_buffer_append_data(buffer, SL(", "));
         }
 
         append_data(buffer, tag->data, tag->len);

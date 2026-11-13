@@ -30,11 +30,11 @@ ncm_path_expand_home(String *path, NcmError *ncm_error) {
 
     if (path == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing path buffer"));
+                                    SL("missing path buffer"));
     }
     if ((path->len < 0) || ((path->data == NULL) && (path->len > 0))) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("invalid path buffer"));
+                                    SL("invalid path buffer"));
     }
 
     tilde = -1;
@@ -51,7 +51,7 @@ ncm_path_expand_home(String *path, NcmError *ncm_error) {
 
     if (((home = getenv("HOME")) == NULL) || (home[0] == '\0')) {
         return ncm_error_set_status(ncm_error, -ENOENT,
-                                    STRLIT("HOME environment variable "
+                                    SL("HOME environment variable "
                                            "is not set"));
     }
 
@@ -59,7 +59,7 @@ ncm_path_expand_home(String *path, NcmError *ncm_error) {
     while (home[home_len] != '\0') {
         if (home_len == INT32_MAX) {
             return ncm_error_set_status(ncm_error, -ENAMETOOLONG,
-                                        STRLIT("HOME path is too long"));
+                                        SL("HOME path is too long"));
         }
         home_len += 1;
     }
@@ -67,7 +67,7 @@ ncm_path_expand_home(String *path, NcmError *ncm_error) {
     old_len = path->len;
     if (home_len > (INT32_MAX - (old_len - 1))) {
         return ncm_error_set_status(ncm_error, -ENAMETOOLONG,
-                                    STRLIT("expanded path is too long"));
+                                    SL("expanded path is too long"));
     }
     str_reserve(path, home_len - 1);
     memmove64(path->data + tilde + home_len,

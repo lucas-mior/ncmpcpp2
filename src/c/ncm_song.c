@@ -498,7 +498,7 @@ ncm_song_has_directory_view_unchecked(NcmSong *song, int32 idx, StrView *view) {
     *view = (StrView){0};
     basename = ncm_path_basename_start(uri.data, uri.len);
     if (basename == 0) {
-        ncm_string_view_set(view, STRLIT("/"));
+        ncm_string_view_set(view, SL("/"));
     } else {
         ncm_string_view_set(view, uri.data, basename - 1);
     }

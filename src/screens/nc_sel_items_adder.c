@@ -347,7 +347,7 @@ adder_try_add_current_song(SelectedItemsAdderScreen *screen, NcmSong *song,
                             ncm_error.message, ncm_error.message_len);
     } else {
         ncm_statusbar_print(Config.message_delay_time,
-                            STRLIT("Could not add selected item"));
+                            SL("Could not add selected item"));
     }
     return false;
 }
@@ -392,7 +392,7 @@ adder_add_to_current_playlist(SelectedItemsAdderScreen *screen,
     ASSERT(screen->ready);
     if (position == INT32_MAX) {
         ncm_statusbar_print(Config.message_delay_time,
-                            STRLIT("Playlist position is too large"));
+                            SL("Playlist position is too large"));
         return;
     }
 
@@ -589,10 +589,10 @@ selected_items_add_screen_init(SelectedItemsAdderScreen *screen,
     nc_menu_set_cyclic_scrolling(position_menu, Config.cyclic_scrolling);
     nc_menu_set_centered_cursor(position_menu, Config.centered_cursor);
     nc_window_init(&screen->playlist_window, start_x, start_y,
-                   width, height, STRLIT("Add selected item(s) to..."),
+                   width, height, SL("Add selected item(s) to..."),
                    color, border);
     nc_window_init(&screen->position_window, start_x, start_y,
-                   width, height, STRLIT("Where?"), color, border);
+                   width, height, SL("Where?"), color, border);
     screen->selected_songs = (NcmSongArray){0};
     screen->search_regex = (NcmRegex){0};
 
@@ -627,23 +627,23 @@ selected_items_add_screen_init(SelectedItemsAdderScreen *screen,
     nc_menu_clear_items(position_menu);
 
     adder_add_action_row(&screen->position_selector,
-                         STRLIT("At the end of playlist"),
+                         SL("At the end of playlist"),
                          adder_action_position_end, screen);
     adder_add_action_row(&screen->position_selector,
-                         STRLIT("At the beginning of playlist"),
+                         SL("At the beginning of playlist"),
                          adder_action_position_beginning, screen);
     adder_add_action_row(&screen->position_selector,
-                         STRLIT("After current song"),
+                         SL("After current song"),
                          adder_action_position_current_song, screen);
     adder_add_action_row(&screen->position_selector,
-                         STRLIT("After current album"),
+                         SL("After current album"),
                          adder_action_position_current_album, screen);
     adder_add_action_row(&screen->position_selector,
-                         STRLIT("After highlighted item"),
+                         SL("After highlighted item"),
                          adder_action_position_highlighted, screen);
 
     nc_editor_action_menu_add_separator(&screen->position_selector);
-    adder_add_action_row(&screen->position_selector, STRLIT("Cancel"),
+    adder_add_action_row(&screen->position_selector, SL("Cancel"),
                          adder_action_position_cancel, screen);
     return;
 }
@@ -673,7 +673,7 @@ adder_add_to_stored_playlist(SelectedItemsAdderScreen *screen, char *playlist,
                                 ncm_error.message, ncm_error.message_len);
         } else {
             ncm_statusbar_print(Config.message_delay_time,
-                                STRLIT("Could not add selected items"));
+                                SL("Could not add selected items"));
         }
         return;
     }
@@ -795,7 +795,7 @@ adder_action_new_playlist(void *user) {
     if ((window = ncm_statusbar_put())) {
         NcPrompt prompt = {0};
 
-        nc_window_print_data(window, STRLIT("Save playlist as: "));
+        nc_window_print_data(window, SL("Save playlist as: "));
         prompt.initial_text = "";
         prompt.width = -1;
         prompt.should_continue = adder_statusbar_prompt_can_continue;
@@ -809,7 +809,7 @@ adder_action_new_playlist(void *user) {
     if (prompt_status != NC_PROMPT_ACCEPTED) {
         nc_window_prompt_result_destroy(input);
         ncm_statusbar_print(Config.message_delay_time,
-                            STRLIT("Action aborted"));
+                            SL("Action aborted"));
         return;
     }
 
@@ -849,23 +849,23 @@ selected_items_add_screen_open(SelectedItemsAdderScreen *screen,
 
     if (screen == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing selected items dialog"));
+                                    SL("missing selected items dialog"));
     }
     if ((songs == NULL) || (songs->len <= 0)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("no selected songs"));
+                                    SL("no selected songs"));
     }
     if (playlist == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing playlist screen"));
+                                    SL("missing playlist screen"));
     }
     if (client == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing MPD client"));
+                                    SL("missing MPD client"));
     }
     if (screen->ready) {
         return ncm_error_set_status(ncm_error, -EBUSY,
-                                    STRLIT("selected items dialog is "
+                                    SL("selected items dialog is "
                                            "already open"));
     }
 
@@ -873,7 +873,7 @@ selected_items_add_screen_open(SelectedItemsAdderScreen *screen,
     if (((current = nc_screen_switcher_current()) == NULL)
         || (current == adder_screen)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing previous screen"));
+                                    SL("missing previous screen"));
     }
 
     ncm_song_array_copy(&selected_songs, songs);
@@ -929,10 +929,10 @@ selected_items_add_screen_open(SelectedItemsAdderScreen *screen,
         }
         nc_menu_clear_items(base);
         screen->local_browser = local_browser;
-        adder_add_action_row(menu, STRLIT("Current playlist"),
+        adder_add_action_row(menu, SL("Current playlist"),
                              adder_action_current_playlist, screen);
         if (!local_browser) {
-            adder_add_action_row(menu, STRLIT("New playlist"),
+            adder_add_action_row(menu, SL("New playlist"),
                                  adder_action_new_playlist, screen);
         }
         nc_editor_action_menu_add_separator(menu);
@@ -981,7 +981,7 @@ selected_items_add_screen_open(SelectedItemsAdderScreen *screen,
         if (stored_end > stored_begin) {
             nc_editor_action_menu_add_separator(menu);
         }
-        adder_add_action_row(menu, STRLIT("Cancel"),
+        adder_add_action_row(menu, SL("Cancel"),
                              adder_action_cancel_target, screen);
         nc_menu_reset(base);
         screen->active_menu = SELECTED_ITEMS_ADD_MENU_PLAYLISTS;
@@ -1002,7 +1002,7 @@ selected_items_add_screen_open(SelectedItemsAdderScreen *screen,
         screen->client = NULL;
         screen->ready = false;
         ncm_error_set_status(ncm_error, status,
-                             STRLIT("selected items dialog is not registered"));
+                             SL("selected items dialog is not registered"));
         return status;
     }
 
@@ -1058,11 +1058,11 @@ selected_items_add_screen_search(SelectedItemsAdderScreen *screen,
 
     if (screen == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing selected-items adder"));
+                                    SL("missing selected-items adder"));
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing search pattern"));
+                                    SL("missing search pattern"));
     }
 
     regex = (NcmRegex){0};

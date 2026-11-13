@@ -94,7 +94,7 @@ ncm_job_queue_thread_main(void *user) {
             } else {
                 job.status = -EINVAL;
                 ncm_error_set(&job.ncm_error, EINVAL,
-                              STRLIT("job has no run callback"));
+                              SL("job has no run callback"));
             }
 
             pthread_mutex_lock(&queue->mutex);
@@ -130,7 +130,7 @@ ncm_job_queue_start(NcmJobQueue *queue, NcmError *ncm_error) {
 
     if (queue == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing job queue"));
+                                    SL("missing job queue"));
     }
     if (queue->started) {
         return ncm_error_ok(ncm_error);
@@ -156,15 +156,15 @@ int32
 ncm_job_queue_push(NcmJobQueue *queue, NcmJob job, NcmError *ncm_error) {
     if (queue == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing job queue"));
+                                    SL("missing job queue"));
     }
     if (!queue->started) {
         return ncm_error_set_status(ncm_error, -NCM_ERROR_INVALID_STATE,
-                                    STRLIT("job queue is not started"));
+                                    SL("job queue is not started"));
     }
     if (job.run == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing job callback"));
+                                    SL("missing job callback"));
     }
 
     ncm_error_clear(&job.ncm_error);
@@ -174,7 +174,7 @@ ncm_job_queue_push(NcmJobQueue *queue, NcmJob job, NcmError *ncm_error) {
     if (queue->stopping) {
         pthread_mutex_unlock(&queue->mutex);
         return ncm_error_set_status(ncm_error, -NCM_ERROR_INVALID_STATE,
-                                    STRLIT("job queue is stopping"));
+                                    SL("job queue is stopping"));
     }
     ncm_job_array_push(&queue->pending, &queue->pending_len,
                        &queue->pending_cap, job);

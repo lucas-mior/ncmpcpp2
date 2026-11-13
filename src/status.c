@@ -148,13 +148,13 @@ status_print_value(char *prefix, int32 prefix_len,
 
 static void
 status_print_client_error(char *message, int32 message_len) {
-    status_print_value(STRLIT("ncmpcpp: "), message, message_len);
+    status_print_value(SL("ncmpcpp: "), message, message_len);
     return;
 }
 
 static void
 status_print_server_error(char *message, int32 message_len) {
-    status_print_value(STRLIT("MPD: "), message, message_len);
+    status_print_value(SL("MPD: "), message, message_len);
     return;
 }
 
@@ -181,7 +181,7 @@ ncm_status_handle_server_error_value(MpdClient *client, int32 code,
         return;
     }
 
-    nc_window_print_data(window, STRLIT("Password: "));
+    nc_window_print_data(window, SL("Password: "));
     prompt.initial_text = "";
     prompt.width = -1;
     prompt.encrypted = true;
@@ -217,7 +217,7 @@ ncm_status_handle_server_error_value(MpdClient *client, int32 code,
         return;
     }
 
-    ncm_statusbar_print(Config.message_delay_time, STRLIT("Password accepted"));
+    ncm_statusbar_print(Config.message_delay_time, SL("Password accepted"));
     return;
 }
 
@@ -337,7 +337,7 @@ ncm_status_trace(MpdClient *client, bool update_timer,
                 if (init_hooks && init_hooks->show_connected_message) {
                     init_hooks->show_connected_message(init_hooks->user);
                 } else if (Config.connected_message_on_startup) {
-                    status_print_value(STRLIT("Connected to "),
+                    status_print_value(SL("Connected to "),
                                        ncm_mpd_client_hostname(&global_mpd),
                                        -1);
                 }
@@ -470,7 +470,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
 
     if (mpd_status == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("MPD status is NULL"));
+                                    SL("MPD status is NULL"));
     }
 
     active_hooks = status_active_hooks(hooks);
@@ -705,10 +705,10 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
         changed = status_database_update_state_changed(mpd_status->update_id);
         if (changed && status_initialized) {
             if (status_db_updating) {
-                statusbar_print_cstring_value(STRLIT("Database update "),
+                statusbar_print_cstring_value(SL("Database update "),
                                               "started");
             } else {
-                statusbar_print_cstring_value(STRLIT("Database update "),
+                statusbar_print_cstring_value(SL("Database update "),
                                               "finished");
             }
         }
@@ -722,7 +722,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
         if (new_repeat != status_repeat) {
             status_repeat = new_repeat;
             if (status_initialized) {
-                statusbar_print_cstring_value(STRLIT("Repeat mode is "),
+                statusbar_print_cstring_value(SL("Repeat mode is "),
                                               status_on_off(status_repeat));
             }
         }
@@ -734,7 +734,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
         if (new_random != status_random) {
             status_random = new_random;
             if (status_initialized) {
-                statusbar_print_cstring_value(STRLIT("Random mode is "),
+                statusbar_print_cstring_value(SL("Random mode is "),
                                               status_on_off(status_random));
             }
         }
@@ -746,7 +746,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
         if (new_single != status_single) {
             status_single = new_single;
             if (status_initialized) {
-                statusbar_print_cstring_value(STRLIT("Single mode is "),
+                statusbar_print_cstring_value(SL("Single mode is "),
                                               status_on_off(status_single));
             }
         }
@@ -758,7 +758,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
         if (new_consume != status_consume) {
             status_consume = new_consume;
             if (status_initialized) {
-                statusbar_print_cstring_value(STRLIT("Consume mode is "),
+                statusbar_print_cstring_value(SL("Consume mode is "),
                                               status_on_off(status_consume));
             }
         }
@@ -827,7 +827,7 @@ ncm_status_update(MpdClient *client, uint32 event, NcmError *ncm_error) {
 
     if (client == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("MPD client is NULL"));
+                                    SL("MPD client is NULL"));
     }
 
     if ((status = ncm_mpd_client_get_status(client, &mpd_status,
@@ -847,7 +847,7 @@ ncm_status_update_full(MpdClient *client, NcmStatusHooks *hooks,
 
     if (client == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("MPD client is NULL"));
+                                    SL("MPD client is NULL"));
     }
 
     if ((status = ncm_mpd_client_get_status(client, &mpd_status,
@@ -868,7 +868,7 @@ ncm_status_update_from_noidle(MpdClient *client, NcmStatusHooks *hooks,
 
     if (client == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("MPD client is NULL"));
+                                    SL("MPD client is NULL"));
     }
 
     flags = 0;
@@ -1050,7 +1050,7 @@ ncm_status_changes_player_state(void) {
         break;
     }
     case NCM_STATUS_PLAYER_STOP:
-        ncm_window_title_set(STRLIT("ncmpcpp " VERSION));
+        ncm_window_title_set(SL("ncmpcpp " VERSION));
         if (ncm_progressbar_is_unlocked()) {
             ncm_progressbar_draw(0, 0);
         }

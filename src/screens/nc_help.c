@@ -123,7 +123,7 @@ nc_help_screen_init(NcHelpScreen *screen, NcHelpHooks hooks,
     window_width = nc_help_screen_width(screen);
     window_height = nc_help_screen_height(screen);
     nc_window_init(&screen->window, window_start_x, window_start_y,
-                   window_width, window_height, STRLIT(""), color, border);
+                   window_width, window_height, SL(""), color, border);
     nc_scrollpad_init(&screen->scrollpad, nc_window_height(&screen->window));
     return;
 }

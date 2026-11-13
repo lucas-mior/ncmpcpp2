@@ -182,7 +182,7 @@ lastfm_screen_init(LastfmScreen *screen, int32 start_x, int32 width,
                    nc_lastfm_screen_start_y(&screen->screen),
                    nc_lastfm_screen_width(&screen->screen),
                    nc_lastfm_screen_height(&screen->screen),
-                   STRLIT(""), color, border);
+                   SL(""), color, border);
 
     nc_scrollpad_init(&screen->scrollpad,
                       nc_lastfm_screen_height(&screen->screen));
@@ -202,7 +202,7 @@ lastfm_screen_init(LastfmScreen *screen, int32 start_x, int32 width,
     screen->initialized = true;
 
     nc_window_set_timeout(&screen->window, lines_scrolled);
-    lastfm_set_title(screen, STRLIT(LASTFM_DEFAULT_TITLE));
+    lastfm_set_title(screen, SL(LASTFM_DEFAULT_TITLE));
     return;
 }
 
@@ -254,7 +254,7 @@ lastfm_job_run(void *user, NcmError *ncm_error) {
     int32 status;
 
     if ((status = ncm_lastfm_service_fetch(&job->service, &job->result)) < 0) {
-        ncm_error_set_status(ncm_error, status, STRLIT("Last.fm fetch failed"));
+        ncm_error_set_status(ncm_error, status, SL("Last.fm fetch failed"));
         return status;
     }
     return ncm_error_ok(ncm_error);
@@ -307,10 +307,10 @@ lastfm_job_complete(int32 status, NcmError *ncm_error, void *user) {
             int32 len;
 
             lastfm_apply_literal_format(buffer,
-                                        STRLIT("\n\nSimilar artists:\n"),
+                                        SL("\n\nSimilar artists:\n"),
                                         NC_FORMAT_BOLD, NC_FORMAT_NO_BOLD);
             lastfm_apply_literal_format(buffer,
-                                        STRLIT("\n\nSimilar tags:\n"),
+                                        SL("\n\nSimilar tags:\n"),
                                         NC_FORMAT_BOLD, NC_FORMAT_NO_BOLD);
 
             data = buffer->data;
@@ -365,7 +365,7 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
 
     if ((screen == NULL) || (artist == NULL) || (artist_len <= 0)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing artist"));
+                                    SL("missing artist"));
     }
 
     ncm_lastfm_artist_info_init(&candidate, artist, artist_len, lang, lang_len);
@@ -408,7 +408,7 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
     title = ncm_lastfm_service_name(&screen->service);
     lastfm_set_title(screen, title, strlen32(title));
     nc_buffer_clear(&screen->buffer);
-    nc_buffer_append_data(&screen->buffer, STRLIT(LASTFM_FETCHING));
+    nc_buffer_append_data(&screen->buffer, SL(LASTFM_FETCHING));
     screen->refresh_window = true;
     return ncm_error_ok(ncm_error);
 }
@@ -471,7 +471,7 @@ lastfm_screen_find(LastfmScreen *screen, char *pattern, int32 pattern_len,
 
     if (screen == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing Last.fm screen"));
+                                    SL("missing Last.fm screen"));
     }
 
     nc_buffer_remove_properties(&screen->buffer, LASTFM_PROPERTY_ID);

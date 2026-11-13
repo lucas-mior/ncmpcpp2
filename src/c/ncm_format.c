@@ -353,7 +353,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                             if (delimiter > (MAXOF(delimiter) - digit)/10) {
                                 status =
                                     ncm_error_set_status(ncm_error, -EOVERFLOW,
-                                                         STRLIT("tag delimiter "
+                                                         SL("tag delimiter "
                                                                 "too large"));
                             } else {
                                 delimiter = delimiter*10 + digit;
@@ -606,11 +606,11 @@ ncm_format_parse(NcmFormatAst *ast, char *data, int32 data_len,
 
     if ((ast == NULL) || (data_len < 0)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("invalid format input"));
+                                    SL("invalid format input"));
     }
     if ((data == NULL) && (data_len > 0)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("invalid format input"));
+                                    SL("invalid format input"));
     }
 
     tmp = (NcmFormatAst){0};
@@ -678,7 +678,7 @@ ncm_format_render_expr(NcmFormatExpr *expr, NcmSong *song,
             return NCM_FORMAT_RESULT_MISSING;
         }
         tag = ncm_song_tags_buffer(song, expr->song_tag.getter,
-                                   STRLIT(" | "), true);
+                                   SL(" | "), true);
         if ((expr->song_tag.delimiter > 0) && (tag.len > 0)) {
             int32 limit;
 

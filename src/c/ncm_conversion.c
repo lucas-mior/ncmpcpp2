@@ -28,16 +28,16 @@ ncm_parse_double(char *source, int32 source_len, double *out,
 
     if (out == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing conversion output"));
+                                    SL("missing conversion output"));
     }
 
     if (source == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing conversion source"));
+                                    SL("missing conversion source"));
     }
     if (source_len < 0) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("negative source length"));
+                                    SL("negative source length"));
     }
 
     str_clear(&buffer);

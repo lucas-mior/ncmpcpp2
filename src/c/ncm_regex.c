@@ -43,15 +43,15 @@ ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
 
     if (regex == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing regex"));
+                                    SL("missing regex"));
     }
     if (pattern == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing regex pattern"));
+                                    SL("missing regex pattern"));
     }
     if (pattern_len < 0) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("negative pattern length"));
+                                    SL("negative pattern length"));
     }
 
     ncm_regex_destroy(regex);

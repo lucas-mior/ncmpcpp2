@@ -178,7 +178,7 @@ static void
 sort_dialog_show_move_hint(void *user) {
     (void)user;
     ncm_statusbar_print(Config.message_delay_time,
-                        STRLIT("Move tag types up and down to adjust sort "
+                        SL("Move tag types up and down to adjust sort "
                                "order"));
     return;
 }
@@ -225,7 +225,7 @@ sort_dialog_run_sort(void *user) {
         getters[getters_len] = row->getter;
         getters_len += 1;
     }
-    ncm_statusbar_print(Config.message_delay_time, STRLIT("Sorting..."));
+    ncm_statusbar_print(Config.message_delay_time, SL("Sorting..."));
     ncm_error_clear(&ncm_error);
     status = ncm_playlist_sort_range(&dialog->songs, dialog->start_position,
                                      getters, getters_len,
@@ -236,13 +236,13 @@ sort_dialog_run_sort(void *user) {
     }
 
     if (status == 0) {
-        ncm_statusbar_print(Config.message_delay_time, STRLIT("Range sorted"));
+        ncm_statusbar_print(Config.message_delay_time, SL("Range sorted"));
     } else if (ncm_error_is_set(&ncm_error)) {
         ncm_statusbar_print(Config.message_delay_time,
                             ncm_error.message, ncm_error.message_len);
     } else {
         ncm_statusbar_print(Config.message_delay_time,
-                            STRLIT("Could not sort playlist"));
+                            SL("Could not sort playlist"));
     }
 
     sort_dialog_finish(dialog);
@@ -281,9 +281,9 @@ sort_dialog_populate_defaults(SortPlaylistDialog *dialog) {
     TAG_DEFS(SORT_DIALOG_ADD_TAG_ROW)
     sort_dialog_add_sort_getter_row(dialog, SONG_GETTER_URI);
     nc_editor_sort_menu_add_separator(&dialog->rows);
-    sort_dialog_add_row(dialog, STRLIT("Sort"), SONG_GETTER_COUNT,
+    sort_dialog_add_row(dialog, SL("Sort"), SONG_GETTER_COUNT,
                         sort_dialog_run_sort, dialog);
-    sort_dialog_add_row(dialog, STRLIT("Cancel"), SONG_GETTER_COUNT,
+    sort_dialog_add_row(dialog, SL("Cancel"), SONG_GETTER_COUNT,
                         sort_dialog_cancel, dialog);
     return;
 }
@@ -321,7 +321,7 @@ sort_playlist_dialog_init(SortPlaylistDialog *dialog,
     nc_menu_set_cyclic_scrolling(menu, Config.cyclic_scrolling);
     nc_menu_set_centered_cursor(menu, Config.centered_cursor);
     nc_window_init(&dialog->window, start_x, start_y, width, height,
-                   STRLIT("Sort songs by..."), color, border);
+                   SL("Sort songs by..."), color, border);
     dialog->songs = (NcmSongArray){0};
     dialog->playlist = NULL;
     dialog->previous_screen = NULL;
@@ -375,21 +375,21 @@ sort_playlist_dialog_open(SortPlaylistDialog *dialog, PlaylistScreen *playlist,
 
     if (dialog == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing sort dialog"));
+                                    SL("missing sort dialog"));
     }
     if (playlist == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing playlist screen"));
+                                    SL("missing playlist screen"));
     }
     if (client == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing MPD client"));
+                                    SL("missing MPD client"));
     }
 
     current = nc_screen_switcher_current();
     if (current != playlist_screen_base(playlist)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("sort dialog requires "
+                                    SL("sort dialog requires "
                                            "playlist screen"));
     }
 
@@ -422,7 +422,7 @@ sort_playlist_dialog_open(SortPlaylistDialog *dialog, PlaylistScreen *playlist,
         dialog->client = NULL;
         dialog->ready = false;
         return ncm_error_set_status(ncm_error, status,
-                                    STRLIT("sort dialog is not registered"));
+                                    SL("sort dialog is not registered"));
     }
 
     ncm_error_clear(ncm_error);

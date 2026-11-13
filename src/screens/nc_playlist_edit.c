@@ -469,7 +469,7 @@ playlist_edit_update_callback(NcScreen *screen) {
                                                                 &ncm_error))
             < 0) {
             editor->playlists_update_requested = false;
-            playlist_edit_report_error(STRLIT("Could not fetch playlists"),
+            playlist_edit_report_error(SL("Could not fetch playlists"),
                                        &ncm_error);
             ncm_error_clear(&ncm_error);
             playlist_edit_update_titles(editor, true);
@@ -509,7 +509,7 @@ playlist_edit_update_callback(NcScreen *screen) {
                                                                &ncm_error))
         < 0) {
         editor->content_update_requested = false;
-        playlist_edit_report_error(STRLIT("Could not fetch playlist content"),
+        playlist_edit_report_error(SL("Could not fetch playlist content"),
                                    &ncm_error);
         ncm_error_clear(&ncm_error);
         playlist_edit_update_titles(editor, true);
@@ -1230,7 +1230,7 @@ playlist_edit_screen_reload_playlists_from_mpd(PlaylistEditScreen *screen,
 
     if (screen == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing playlist editor"));
+                                    SL("missing playlist editor"));
     }
 
     status = ncm_mpd_client_get_playlists(client, &playlists, ncm_error);
@@ -1347,12 +1347,12 @@ playlist_edit_screen_reload_content_from_mpd(PlaylistEditScreen *screen,
 
     if (screen == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing playlist editor"));
+                                    SL("missing playlist editor"));
     }
     if ((playlist = nc_playlist_entry_menu_current(&screen->playlists))
         == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing playlist"));
+                                    SL("missing playlist"));
     }
 
     songs = (NcmSongArray){0};
@@ -1425,7 +1425,7 @@ playlist_edit_screen_locate_playlist(PlaylistEditScreen *screen,
 
     if ((screen == NULL) || (path == NULL) || (path_len <= 0)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing playlist"));
+                                    SL("missing playlist"));
     }
     if ((status =
              playlist_edit_screen_reload_playlists_from_mpd(screen, client,
@@ -1446,7 +1446,7 @@ playlist_edit_screen_locate_playlist(PlaylistEditScreen *screen,
     }
     if (pos < 0) {
         return ncm_error_set_status(ncm_error, -ENOENT,
-                                    STRLIT("playlist not found"));
+                                    SL("playlist not found"));
     }
 
     menu = nc_playlist_entry_menu_base(&screen->playlists);
@@ -1558,7 +1558,7 @@ playlist_edit_locate_song_in_playlist_range(PlaylistEditScreen *screen,
                                                                song_index))
             < 0) {
             return ncm_error_set_status(ncm_error, status,
-                                        STRLIT("song is not in playlist view"));
+                                        SL("song is not in playlist view"));
         }
         return 1;
     }
@@ -1580,7 +1580,7 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
     int32 status;
 
     if ((screen == NULL) || (song == NULL)) {
-        return ncm_error_set_status(ncm_error, -EINVAL, STRLIT("missing song"));
+        return ncm_error_set_status(ncm_error, -EINVAL, SL("missing song"));
     }
     playlists = nc_playlist_entry_menu_base(&screen->playlists);
     if ((nc_menu_all_item_len(playlists) <= 0)
@@ -1594,7 +1594,7 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
     }
     if (nc_menu_all_item_len(playlists) <= 0) {
         return ncm_error_set_status(ncm_error, -ENOENT,
-                                    STRLIT("playlist list is empty"));
+                                    SL("playlist list is empty"));
     }
 
     playlist_edit_clear_content_filter(screen);
@@ -1618,7 +1618,7 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
     }
 
     ncm_statusbar_print(Config.message_delay_time,
-                        STRLIT("Jumping to song..."));
+                        SL("Jumping to song..."));
     status = playlist_edit_locate_song_in_playlist_range(screen, client, song,
                                                          playlist_pos + 1,
                                                          playlist_len,
@@ -1662,9 +1662,9 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
     }
 
     ncm_statusbar_print(Config.message_delay_time,
-                        STRLIT("Song was not found in playlists"));
+                        SL("Song was not found in playlists"));
     return ncm_error_set_status(ncm_error, -ENOENT,
-                                STRLIT("song was not found in playlists"));
+                                SL("song was not found in playlists"));
 }
 
 int32
@@ -1824,7 +1824,7 @@ playlist_edit_screen_apply_active_filter(PlaylistEditScreen *screen,
 
     if (screen == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing playlist editor"));
+                                    SL("missing playlist editor"));
     }
 
     menu = playlist_edit_screen_active_menu(screen);
@@ -1886,7 +1886,7 @@ playlist_edit_screen_search_active(PlaylistEditScreen *screen,
 
     if (screen == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing playlist editor"));
+                                    SL("missing playlist editor"));
     }
     if (screen->active_column == PLAYLIST_EDIT_COLUMN_CONTENT) {
         regex = &screen->content_search_regex;
@@ -1903,7 +1903,7 @@ playlist_edit_screen_search_active(PlaylistEditScreen *screen,
         *enabled = false;
         stupid_string_free(constraint, constraint_len);
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing search pattern"));
+                                    SL("missing search pattern"));
     }
     if ((status = ncm_regex_compile(regex, pattern, pattern_len,
                                     regex_flags, ncm_error)) < 0) {

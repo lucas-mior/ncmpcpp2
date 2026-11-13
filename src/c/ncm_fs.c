@@ -54,7 +54,7 @@ ncm_fs_stat(char *path, int32 path_len, NcmFsStat *stat, NcmError *ncm_error) {
 
     if (stat == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing stat output"));
+                                    SL("missing stat output"));
     }
 
     stat->size = 0;
@@ -194,7 +194,7 @@ ncm_fs_directory_open(NcmFsDirectory *directory, char *path, int32 path_len,
 
     if (directory == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing directory"));
+                                    SL("missing directory"));
     }
     directory->dir = NULL;
     directory->path = NULL;
@@ -226,13 +226,13 @@ ncm_fs_directory_read(NcmFsDirectory *directory, NcmFsEntry *entry,
 
     if (entry == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing directory entry"));
+                                    SL("missing directory entry"));
     }
     ncm_fs_entry_destroy(entry);
 
     if ((directory == NULL) || (directory->dir == NULL)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("directory is not open"));
+                                    SL("directory is not open"));
     }
 
     dir = directory->dir;

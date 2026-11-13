@@ -47,7 +47,7 @@ static void
 tiny_editor_buffer_key_value(NcBuffer *buffer, char *key, int32 key_len,
                              char *value, int32 value_len) {
     nc_buffer_append_data(buffer, key, key_len);
-    nc_buffer_append_data(buffer, STRLIT(": "));
+    nc_buffer_append_data(buffer, SL(": "));
     if (value_len > 0) {
         nc_buffer_append_data(buffer, value, value_len);
     }
@@ -148,7 +148,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
         }
         str_free(&tag_value);
         if (prompt_result == TINY_TAG_EDIT_PROMPT_ABORTED) {
-            tiny_editor_status_message(screen, STRLIT("Action aborted"));
+            tiny_editor_status_message(screen, SL("Action aborted"));
             str_free(&input);
             return -NCM_ERROR_CANCELLED;
         }
@@ -202,7 +202,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
                                                  &input);
         }
         if (prompt_result == TINY_TAG_EDIT_PROMPT_ABORTED) {
-            tiny_editor_status_message(screen, STRLIT("Action aborted"));
+            tiny_editor_status_message(screen, SL("Action aborted"));
             str_free(&input);
             return -NCM_ERROR_CANCELLED;
         }
@@ -250,7 +250,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
     if (row == TINY_TAG_EDIT_SAVE_ROW) {
         enum NcScreenType previous_type;
 
-        tiny_editor_status_message(screen, STRLIT("Updating tags..."));
+        tiny_editor_status_message(screen, SL("Updating tags..."));
         if (screen->hooks.write_song) {
             status = screen->hooks.write_song(screen->hooks.user,
                                               &screen->edited,
@@ -266,7 +266,7 @@ tiny_editor_run_row(TinyTagEditScreen *screen, int32 row) {
             return status;
         }
 
-        tiny_editor_status_message(screen, STRLIT("Tags updated"));
+        tiny_editor_status_message(screen, SL("Tags updated"));
         if (screen->edited.is_from_database) {
             if (screen->hooks.update_directory) {
                 screen->hooks.update_directory(screen->hooks.user,
@@ -319,7 +319,7 @@ static void
 tiny_editor_switch_to(NcScreen *screen) {
     TinyTagEditScreen *editor = (TinyTagEditScreen *)screen;
     editor->previous_screen = app_controller_previous_screen();
-    ncm_title_draw_header(STRLIT("Tiny tag editor"));
+    ncm_title_draw_header(SL("Tiny tag editor"));
     return;
 }
 
@@ -667,20 +667,20 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
     nc_buffer_clear(&row);
 
-    tiny_editor_buffer_key_int(&row, STRLIT("Bitrate"),
-                               properties.bitrate, STRLIT(" kbps"));
+    tiny_editor_buffer_key_int(&row, SL("Bitrate"),
+                               properties.bitrate, SL(" kbps"));
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
     nc_buffer_clear(&row);
 
-    tiny_editor_buffer_key_int(&row, STRLIT("Sample rate"),
-                               properties.sample_rate, STRLIT(" Hz"));
+    tiny_editor_buffer_key_int(&row, SL("Sample rate"),
+                               properties.sample_rate, SL(" Hz"));
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
     nc_buffer_clear(&row);
 
     channel_len = ncm_channels_to_string(properties.channels,
                                          channel_buffer,
                                          SIZEOF(channel_buffer));
-    tiny_editor_buffer_key_value(&row, STRLIT("Channels"),
+    tiny_editor_buffer_key_value(&row, SL("Channels"),
                                  channel_buffer, channel_len);
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_INACTIVE);
     nc_buffer_destroy(&row);
@@ -717,11 +717,11 @@ tiny_tag_edit_screen_open_song(TinyTagEditScreen *screen, NcmSong *song,
 
     nc_editor_buffer_menu_add_separator(&screen->rows);
     row = (NcBuffer){0};
-    nc_buffer_append_data(&row, STRLIT("Save"));
+    nc_buffer_append_data(&row, SL("Save"));
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_SELECTABLE);
     nc_buffer_clear(&row);
 
-    nc_buffer_append_data(&row, STRLIT("Cancel"));
+    nc_buffer_append_data(&row, SL("Cancel"));
     tiny_editor_add_row(screen, &row, NC_MENU_ITEM_SELECTABLE);
     nc_buffer_destroy(&row);
 

@@ -61,7 +61,7 @@ ncm_window_title_configure(bool enabled, bool quiet) {
     unsupported = term == NULL;
     if (!unsupported) {
         term_len = strlen32(term);
-        unsupported = memmem64(term, term_len, STRLIT("linux"))
+        unsupported = memmem64(term, term_len, SL("linux"))
                       || BEGINS_WITH(term, term_len, "eterm");
     }
     if (unsupported) {

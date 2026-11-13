@@ -102,11 +102,11 @@ config_append_default_file(StringArray *paths,
         STR_APPEND(&base_directory, "~/.config");
     }
     ncm_fs_join(&directory, base_directory.data, base_directory.len,
-                STRLIT("ncmpcpp2"));
+                SL("ncmpcpp2"));
     ncm_fs_join(&path, directory.data, directory.len, filename, filename_len);
     if (!config_default_file_exists(&path)) {
         ncm_fs_join(&directory, base_directory.data, base_directory.len,
-                    STRLIT("ncmpcpp"));
+                    SL("ncmpcpp"));
         ncm_fs_join(&path, directory.data, directory.len,
                     filename, filename_len);
     }
@@ -139,13 +139,13 @@ config_discover_default_paths(StringArray *config_paths,
                               NcmError *ncm_error) {
     if ((config_paths == NULL) || (bindings_paths == NULL)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing default path output"));
+                                    SL("missing default path output"));
     }
 
-    config_append_default_file(config_paths, STRLIT("config"));
-    config_append_legacy_file(config_paths, STRLIT("config"));
-    config_append_default_file(bindings_paths, STRLIT("bindings"));
-    config_append_legacy_file(bindings_paths, STRLIT("bindings"));
+    config_append_default_file(config_paths, SL("config"));
+    config_append_legacy_file(config_paths, SL("config"));
+    config_append_default_file(bindings_paths, SL("bindings"));
+    config_append_legacy_file(bindings_paths, SL("bindings"));
 
     return ncm_error_ok(ncm_error);
 }
@@ -197,7 +197,7 @@ config_parse_port(char *value, int32 value_len,
     }
     if (parsed > 65535) {
         return ncm_error_set_status(ncm_error, -ERANGE,
-                                    STRLIT("port must be between 0 and 65535"));
+                                    SL("port must be between 0 and 65535"));
     }
 
     *port = (int32)parsed;
@@ -491,7 +491,7 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
     if (status < 0) {
         if (!ncm_error_is_set(ncm_error)) {
             return ncm_error_set_status(ncm_error, status,
-                                        STRLIT("failed to read configuration"));
+                                        SL("failed to read configuration"));
         }
         return status;
     }
@@ -529,11 +529,11 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
         if ((status = parse_integer(env_port, strlen32(env_port), &parsed_port))
             < 0) {
             return ncm_error_set_status(ncm_error, status,
-                                        STRLIT("invalid MPD_PORT"));
+                                        SL("invalid MPD_PORT"));
         }
         if ((parsed_port < 0) || (parsed_port > 65535)) {
             return ncm_error_set_status(ncm_error, -ERANGE,
-                                        STRLIT("MPD_PORT is out of range"));
+                                        SL("MPD_PORT is out of range"));
         }
         port = (int32)parsed_port;
         ncm_mpd_client_set_port(&global_mpd, (uint16)port);
@@ -552,7 +552,7 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
                                                 options->screen_name.len,
                                                 &Config.startup_screen)) < 0) {
             return ncm_error_set_status(ncm_error, -EINVAL,
-                                        STRLIT("unknown screen"));
+                                        SL("unknown screen"));
         }
     }
     if (options->slave_screen) {
@@ -561,7 +561,7 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
                                            options->slave_screen_name.len,
                                            &Config.startup_slave_screen)) < 0) {
             return ncm_error_set_status(ncm_error, -EINVAL,
-                                        STRLIT("unknown slave screen"));
+                                        SL("unknown slave screen"));
         }
         Config.has_startup_slave_screen_type = true;
     }

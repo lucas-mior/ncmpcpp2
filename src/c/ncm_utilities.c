@@ -16,7 +16,7 @@ ncm_system_command(char *command, int32 cmd_len,
 
     if ((command == NULL) || (cmd_len < 0)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("invalid shell command"));
+                                    SL("invalid shell command"));
     }
 
     if (block) {
@@ -31,7 +31,7 @@ ncm_system_command(char *command, int32 cmd_len,
             result = ncm_error_ok(ncm_error);
         } else {
             result = ncm_error_set_status(ncm_error, process.error_status,
-                                          STRLIT("command failed"));
+                                          SL("command failed"));
         }
         cmd_free(&process);
         return result;
@@ -51,7 +51,7 @@ ncm_system_command(char *command, int32 cmd_len,
         result = ncm_error_ok(ncm_error);
     } else {
         result = ncm_error_set_status(ncm_error, process.error_status,
-                                      STRLIT("command failed"));
+                                      SL("command failed"));
     }
     cmd_free(&process);
     return result;

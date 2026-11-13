@@ -81,13 +81,13 @@ lrc_entry_compare(void *left_ptr, void *right_ptr) {
 static int32
 lrc_malformed_offset(NcmError *ncm_error) {
     return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
-                                STRLIT("malformed LRC offset"));
+                                SL("malformed LRC offset"));
 }
 
 static int32
 lrc_malformed_line(NcmError *ncm_error) {
     return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
-                                STRLIT("malformed LRC line"));
+                                SL("malformed LRC line"));
 }
 
 static int32
@@ -285,11 +285,11 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
 
     if (document == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing LRC document"));
+                                    SL("missing LRC document"));
     }
     if ((data == NULL) || (data_len <= 0)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing LRC data"));
+                                    SL("missing LRC data"));
     }
 
     {
@@ -390,7 +390,7 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
     if (ARRAY_LEN(parsed.entries) <= 0) {
         lrc_document_destroy_unchecked(&parsed);
         return ncm_error_set_code(ncm_error, NCM_ERROR_PARSE,
-                                  STRLIT("no synchronized LRC lines"));
+                                  SL("no synchronized LRC lines"));
     }
     if (ARRAY_LEN(parsed.entries) > 1) {
         qsort64(parsed.entries, ARRAY_LEN(parsed.entries),

@@ -203,7 +203,7 @@ visualizer_switch_to_callback(NcScreen *screen) {
     }
     visualizer_screen_clear(visualizer);
     visualizer->reset_output = true;
-    ncm_title_draw_header(STRLIT(VISUALIZER_TITLE));
+    ncm_title_draw_header(SL(VISUALIZER_TITLE));
     visualizer_prepare_drawing(visualizer);
     return;
 }
@@ -876,7 +876,7 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
     nc_screen_init_ops(&screen->screen, visualizer_ops, screen,
                        NC_SCREEN_TYPE_VISUALIZER);
     nc_window_init(&screen->window, start_x, start_y, width, height,
-                   STRLIT(""), color, border);
+                   SL(""), color, border);
 
     screen->source_location = NULL;
     screen->source_port = NULL;

@@ -209,7 +209,7 @@ settings_parse_int_range(char *value, int32 value_len, int32 *result,
 
     if ((status = parse_integer(value, value_len, &parsed)) < 0) {
         return ncm_error_set_status(ncm_error, status,
-                                    STRLIT("invalid integer"));
+                                    SL("invalid integer"));
     }
     if ((status = ncm_bounds_check_i64(parsed, minimum, maximum,
                                        ncm_error)) < 0) {
@@ -772,7 +772,7 @@ settings_append_lyrics_fetcher(void *context, char *item, int32 item_len,
     LyricsFetcherRegistry *registry = context;
 
     if (ncm_lyrics_fetcher_registry_append_name(registry, item, item_len) < 0) {
-        return settings_error(ncm_error, STRLIT("unknown lyrics fetcher"));
+        return settings_error(ncm_error, SL("unknown lyrics fetcher"));
     }
     return 0;
 }
@@ -888,13 +888,13 @@ int32
 config_validate(Configuration *config, NcmError *ncm_error) {
     if (config == NULL) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing configuration"));
+                                    SL("missing configuration"));
     }
 
     if (config->visualizer_spectrum_hz_max
         <= config->visualizer_spectrum_hz_min) {
         return settings_error(ncm_error,
-                              STRLIT("visualizer_spectrum_hz_max must be "
+                              SL("visualizer_spectrum_hz_max must be "
                                      "greater than "
                                      "visualizer_spectrum_hz_min"));
     }
@@ -908,7 +908,7 @@ config_apply_runtime(Configuration *config, MpdClient *client, bool quiet,
 
     if ((config == NULL) || (client == NULL)) {
         return ncm_error_set_status(ncm_error, -EINVAL,
-                                    STRLIT("missing runtime configuration"));
+                                    SL("missing runtime configuration"));
     }
 
     if ((status = ncm_mpd_client_set_hostname(client, config->mpd_host,

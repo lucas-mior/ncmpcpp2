@@ -205,7 +205,7 @@ nc_outputs_screen_init(NcOutputsScreen *screen, NcOutputsHooks hooks,
                    nc_outputs_screen_start_y(screen),
                    nc_outputs_screen_width(screen),
                    nc_outputs_screen_height(screen),
-                   STRLIT(""), color, border);
+                   SL(""), color, border);
     screen->menu = (NcMenu){0};
     nc_menu_set_item_callbacks(&screen->menu, (NcMenuItemCallbacks){
         .item_size = SIZEOF(NcOutputsItem),

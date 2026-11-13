@@ -186,7 +186,7 @@ ncmpcpp_window_create(int32 start_x, int32 start_y,
                       int32 width, int32 height, NcColor color) {
     NcWindow *window = malloc2(SIZEOF(*window));
     nc_window_init(window, start_x, start_y, width, height,
-                   STRLIT(""), color, nc_border_none());
+                   SL(""), color, nc_border_none());
     return window;
 }
 
@@ -311,7 +311,7 @@ ncmpcpp_connect_or_report(void) {
     if (ncm_mpd_client_version(&global_mpd) < 16) {
         ncm_mpd_client_disconnect(&global_mpd);
         ncm_error_set(&ncm_error, NCM_MPD_ERROR_STATE,
-                      STRLIT("MPD < 0.16.0 is not supported"));
+                      SL("MPD < 0.16.0 is not supported"));
         app_bridge_report_mpd_error(&ncm_error);
     }
     return;

@@ -130,39 +130,39 @@ ncm_playlist_sort_range(NcmSongArray *songs, int32 start_position,
 
     if (songs == NULL) {
         return ncm_error_set_code(ncm_error, EINVAL,
-                                  STRLIT("missing song array"));
+                                  SL("missing song array"));
     }
     if (songs->len < 0) {
         return ncm_error_set_code(ncm_error, EINVAL,
-                                  STRLIT("invalid song count"));
+                                  SL("invalid song count"));
     }
     if ((songs->len > 0) && (songs->items == NULL)) {
-        return ncm_error_set_code(ncm_error, EINVAL, STRLIT("missing songs"));
+        return ncm_error_set_code(ncm_error, EINVAL, SL("missing songs"));
     }
     if (start_position < 0) {
         return ncm_error_set_code(ncm_error, EINVAL,
-                                  STRLIT("invalid sort start position"));
+                                  SL("invalid sort start position"));
     }
     if (getters_len < 0) {
         return ncm_error_set_code(ncm_error, EINVAL,
-                                  STRLIT("invalid sort key count"));
+                                  SL("invalid sort key count"));
     }
     if ((getters_len > 0) && (getters == NULL)) {
         return ncm_error_set_code(ncm_error, EINVAL,
-                                  STRLIT("missing sort keys"));
+                                  SL("missing sort keys"));
     }
     for (int32 i = 0; i < getters_len; i += 1) {
         if ((getters[i] == 0)
             || ((uint32)getters[i] >= (uint32)SONG_GETTER_COUNT)) {
             return ncm_error_set_code(ncm_error, EINVAL,
-                                      STRLIT("invalid playlist sort key"));
+                                      SL("invalid playlist sort key"));
         }
     }
     if (songs->len > 0) {
         last_position = (int64)start_position + songs->len - 1;
         if (last_position > UINT32_MAX) {
             return ncm_error_set_code(ncm_error, EOVERFLOW,
-                                      STRLIT("playlist sort range overflow"));
+                                      SL("playlist sort range overflow"));
         }
     }
 
@@ -212,7 +212,7 @@ ncm_playlist_sort_range(NcmSongArray *songs, int32 start_position,
     if (client == NULL) {
         free2(plan.items, plan_items_len*SIZEOF(*plan.items));
         return ncm_error_set_code(ncm_error, EINVAL,
-                                  STRLIT("missing MPD client"));
+                                  SL("missing MPD client"));
     }
     if (plan.len <= 0) {
         free2(plan.items, plan_items_len*SIZEOF(*plan.items));

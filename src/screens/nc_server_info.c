@@ -135,7 +135,7 @@ nc_server_info_screen_init(NcServerInfoScreen *screen, NcServerInfoHooks hooks,
                    nc_server_info_screen_start_y(screen),
                    nc_server_info_screen_width(screen),
                    nc_server_info_screen_height(screen),
-                   STRLIT("MPD server info"), color, border);
+                   SL("MPD server info"), color, border);
     nc_scrollpad_init(&screen->scrollpad, nc_window_height(&screen->window));
     return;
 }

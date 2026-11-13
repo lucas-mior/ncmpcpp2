@@ -112,7 +112,7 @@ nc_song_info_screen_init(NcSongInfoScreen *screen, NcSongInfoHooks hooks,
     nc_window_init(&screen->window, nc_song_info_screen_start_x(screen),
                    nc_song_info_screen_start_y(screen),
                    nc_song_info_screen_width(screen),
-                   nc_song_info_screen_height(screen), STRLIT(""),
+                   nc_song_info_screen_height(screen), SL(""),
                    color, border);
     nc_scrollpad_init(&screen->scrollpad, nc_window_height(&screen->window));
     return;
