@@ -2080,14 +2080,13 @@ action_runtime_delete_browser_items(void) {
     if (!Config.allow_for_physical_item_deletion) {
         ncm_statusbar_print(Config.message_delay_time,
                             SL("Flag \"allow_for_physical_item_deletion\" "
-                                   "needs to be enabled in configuration "
-                                   "file"));
+                               "needs to be enabled in configuration file"));
         return -NCM_ERROR_UNAVAILABLE;
     }
     if (!browser_screen_is_local(screen) && (Config.mpd_music_dir_len <= 0)) {
         ncm_statusbar_print(Config.message_delay_time,
                             SL("Proper mpd_music_dir variable has to be "
-                                   "set in configuration file"));
+                               "set in configuration file"));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
