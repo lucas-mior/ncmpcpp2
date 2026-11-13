@@ -1600,9 +1600,8 @@ library_sort_tags(MediaLibraryTagArray *tags) {
 
         while ((j > 0) && (library_compare_tag_rows(&tags->items[j],
                                                     &tags->items[j - 1]) < 0)) {
-            NcMediaLibraryTagRow tmp;
+            NcMediaLibraryTagRow tmp = tags->items[j];
 
-            tmp = tags->items[j];
             tags->items[j] = tags->items[j - 1];
             tags->items[j - 1] = tmp;
 

@@ -17,9 +17,8 @@ static void
 adder_add_action_row(NcEditorActionMenu *menu,
                      char *label, int32 label_len,
                      void (*run)(void *), void *user) {
-    NcEditorActionRow row;
+    NcEditorActionRow row = {0};
 
-    row = (NcEditorActionRow){0};
     row.label = malloc2(label_len + 1);
     memcpy64(row.label, label, label_len);
     row.label[label_len] = '\0';

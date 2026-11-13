@@ -14,9 +14,8 @@
 
 static void
 sort_dialog_refresh_rows(SortPlaylistDialog *dialog) {
-    NcMenu *menu;
+    NcMenu *menu = nc_editor_sort_menu_base(&dialog->rows);
 
-    menu = nc_editor_sort_menu_base(&dialog->rows);
     nc_menu_prepare_refresh(menu, dialog->window.height, NULL, NULL);
     nc_window_display(&dialog->window);
     nc_menu_refresh(menu, &dialog->window, dialog->window.width,
@@ -124,9 +123,8 @@ sort_dialog_mouse_callback(NcScreen *screen, MEVENT event) {
         return;
     }
     if (event.bstate & (BUTTON1_PRESSED | BUTTON3_PRESSED)) {
-        NcMenu *menu;
+        NcMenu *menu = nc_editor_sort_menu_base(&dialog->rows);
 
-        menu = nc_editor_sort_menu_base(&dialog->rows);
         if ((nc_menu_goto_selectable(menu, y) == 0)
             && (event.bstate & BUTTON3_PRESSED)) {
             sort_dialog_run_current(dialog);

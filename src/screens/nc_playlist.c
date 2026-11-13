@@ -658,9 +658,8 @@ playlist_full_reload_is_required(PlaylistScreen *screen, int32 version,
 
     next_append_position = count;
     for (int32 i = 0; i < changes->len; i += 1) {
-        int32 position;
+        int32 position = ncm_song_position(&changes->items[i]);
 
-        position = ncm_song_position(&changes->items[i]);
         if (position > next_append_position) {
             return true;
         }
@@ -967,17 +966,15 @@ playlist_screen_find_sort_range(PlaylistScreen *screen,
 
         selected_last = first + 1;
         for (int32 i = first + 1; i < last; i += 1) {
-            uint32 flags;
+            uint32 flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
 
-            flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
             if (flags & NC_MENU_ITEM_SELECTED) {
                 selected_last = i + 1;
             }
         }
         for (int32 i = first; i < selected_last; i += 1) {
-            uint32 flags;
+            uint32 flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
 
-            flags = nc_menu_item_flags_at(menu, NC_MENU_ITEMS_ALL, i);
             if (!(flags & NC_MENU_ITEM_SELECTED)) {
                 return ncm_error_set_status(ncm_error, -EINVAL,
                                             SL("selected songs are not "

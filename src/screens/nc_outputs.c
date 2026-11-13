@@ -8,9 +8,8 @@
 
 static void
 nc_outputs_switch_to(NcScreen *screen) {
-    NcOutputsScreen *outputs;
+    NcOutputsScreen *outputs = (NcOutputsScreen *)screen;
 
-    outputs = (NcOutputsScreen *)screen;
     if (outputs->hooks.switch_to) {
         outputs->hooks.switch_to(outputs->hooks.user);
     }

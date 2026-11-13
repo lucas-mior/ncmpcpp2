@@ -191,9 +191,8 @@ nc_key_parse(char *string, int32 string_len) {
 
     if ((string_len == 6) && STREQUAL(string, 4, "ctrl")
         && (string[4] == '-')) {
-        char c;
+        char c = string[5];
 
-        c = string[5];
         if ((c >= 'a') && (c <= 'z')) {
             result = NC_KEY_CTRL_A + (NcKey)(c - 'a');
         } else if (c == '[') {

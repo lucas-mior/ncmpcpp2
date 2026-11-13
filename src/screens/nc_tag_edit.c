@@ -964,9 +964,8 @@ tag_edit_build_parser_preview(TagEditScreen *screen,
     tags = nc_tag_row_menu_base(&screen->tags);
     count = nc_menu_item_len(tags);
     for (int32 i = 0; i < count; i += 1) {
-        MutableSong *song;
+        MutableSong *song = nc_menu_active_item_at(tags, i);
 
-        song = nc_menu_active_item_at(tags, i);
         ASSERT(song != NULL);
         if (screen->parser_mode == TAG_EDIT_PARSER_MODE_TAGS_FROM_FILENAME) {
             if (!apply && song->name) {
@@ -1871,9 +1870,8 @@ tag_edit_mouse_callback(NcScreen *screen, MEVENT event) {
         y = event.y;
         if (nc_window_has_coords(&editor->parser_window, &x, &y)) {
             enum TagEditFocus focus = TAG_EDIT_FOCUS_PARSER_ACTIONS;
-            NcMenu *menu;
+            NcMenu *menu = nc_editor_string_menu_base(&editor->parser_actions);
 
-            menu = nc_editor_string_menu_base(&editor->parser_actions);
             if (!tag_edit_mouse_move_to_parser_focus(editor, focus)) {
                 return;
             }
@@ -1897,9 +1895,8 @@ tag_edit_mouse_callback(NcScreen *screen, MEVENT event) {
         x = event.x;
         y = event.y;
         if (nc_window_has_coords(&editor->parser_helper_window, &x, &y)) {
-            enum TagEditFocus focus;
+            enum TagEditFocus focus = tag_edit_current_helper_focus(editor);
 
-            focus = tag_edit_current_helper_focus(editor);
             if (!tag_edit_mouse_move_to_parser_focus(editor, focus)) {
                 return;
             }
@@ -2898,9 +2895,8 @@ tag_edit_screen_locate_song(TagEditScreen *screen, NcmSong *song) {
         bool found = false;
 
         for (int32 i = 0; i < nc_menu_item_len(menu); i += 1) {
-            StrBuilderPair *item;
+            StrBuilderPair *item = nc_menu_active_item_at(menu, i);
 
-            item = nc_menu_active_item_at(menu, i);
             ASSERT(item != NULL);
             ASSERT(item->second.data != NULL);
             if (STREQUAL(item->second.data, item->second.len,
@@ -2928,9 +2924,8 @@ tag_edit_screen_locate_song(TagEditScreen *screen, NcmSong *song) {
         nc_menu_reset(nc_editor_string_menu_base(&screen->tag_types));
         tag_edit_set_focus(screen, TAG_EDIT_FOCUS_TAGS);
         for (int32 i = 0; i < nc_menu_item_len(menu); i += 1) {
-            MutableSong *item;
+            MutableSong *item = nc_menu_active_item_at(menu, i);
 
-            item = nc_menu_active_item_at(menu, i);
             ASSERT(item != NULL);
             ASSERT(item->uri != NULL);
             if (STREQUAL(item->uri, item->uri_len, uri.data, uri.len)) {

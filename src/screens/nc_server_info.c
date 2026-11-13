@@ -8,9 +8,8 @@
 
 static void
 nc_server_info_switch_to(NcScreen *screen) {
-    NcServerInfoScreen *server_info;
+    NcServerInfoScreen *server_info = (NcServerInfoScreen *)screen;
 
-    server_info = (NcServerInfoScreen *)screen;
     if (server_info->hooks.switch_to) {
         server_info->hooks.switch_to(server_info->hooks.user);
     }

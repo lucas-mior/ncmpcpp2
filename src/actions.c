@@ -5144,9 +5144,8 @@ action_availability_custom_can_run(enum ActionType type, int32 argument) {
         return !search_engine_screen_has_locked_constraints(screen);
     }
     case ACTION_SELECT_FOUND_ITEMS: {
-        StrView constraint;
+        StrView constraint = current_screen_current_search_constraint();
 
-        constraint = current_screen_current_search_constraint();
         return action_runtime_menu_has_items() && constraint.data
                && (constraint.len > 0);
     }
@@ -5513,9 +5512,8 @@ action_runtime_custom_run(ActionRuntime *runtime, enum ActionType type) {
     case ACTION_TOGGLE_PLAYING_SONG_CENTERING:
         Config.autocenter_mode = !Config.autocenter_mode;
         if (Config.autocenter_mode) {
-            int32 position;
+            int32 position = ncm_status_state_current_song_position();
 
-            position = ncm_status_state_current_song_position();
             if (position >= 0) {
                 (void)playlist_screen_locate_position(app_screen_playlist(),
                                                       position);

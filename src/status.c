@@ -1177,9 +1177,8 @@ status_tracklength_buffer(String *buffer) {
     if ((Config.display_remaining_time) && (status_total_time != 0)) {
         str_append_byte(buffer, '-');
         if (status_elapsed_time < status_total_time) {
-            int32 remaining_time;
+            int32 remaining_time = status_total_time - status_elapsed_time;
 
-            remaining_time = status_total_time - status_elapsed_time;
             time_len = status_song_time_string(remaining_time, time_buffer,
                                                SIZEOF(time_buffer));
         } else {

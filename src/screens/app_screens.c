@@ -1308,9 +1308,8 @@ outputs_fetch(void *user, NcOutputsScreen *screen) {
     }
 
     for (int32 i = 0; i < outputs.len; i += 1) {
-        NcmMpdOutput *output;
+        NcmMpdOutput *output = outputs.items + i;
 
-        output = outputs.items + i;
         nc_outputs_screen_add_output(screen, output->id,
                                      output->name, output->name_len,
                                      output->enabled);

@@ -141,9 +141,8 @@ binding_action_copy(BindingAction *dest, BindingAction *source) {
     case BINDING_ACTION_PUSH_CHARACTERS:
         dest->keys.len = source->keys.len;
         if (source->keys.len > 0) {
-            int32 bytes;
+            int32 bytes = source->keys.len*SIZEOF(*dest->keys.data);
 
-            bytes = source->keys.len*SIZEOF(*dest->keys.data);
             dest->keys.data = malloc2(bytes);
             memcpy64(dest->keys.data, source->keys.data, bytes);
         } else {

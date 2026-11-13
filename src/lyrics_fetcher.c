@@ -1342,16 +1342,12 @@ lyrics_url_best_slug_score(LyricsFetcherDef *fetcher,
                 if (STREQUAL(wanted_data, wanted_len, candid, candid_len)) {
                     score = 50;
                 } else if (candid_len > wanted_len) {
-                    char *match;
-                    char *suffix;
-                    char prefix_separator;
-                    char suffix_separator;
+                    char *match = memmem64(candid, candid_len,
+                                           wanted_data, wanted_len);
+                    char *suffix = candid + candid_len - wanted_len;
+                    char prefix_separator = candid[candid_len - wanted_len - 1];
+                    char suffix_separator = candid[wanted_len];
 
-                    match = memmem64(candid, candid_len,
-                                     wanted_data, wanted_len);
-                    suffix = candid + candid_len - wanted_len;
-                    prefix_separator = candid[candid_len - wanted_len - 1];
-                    suffix_separator = candid[wanted_len];
                     if (lyrics_starts_with_ignore_case(candid, candid_len,
                                                        wanted_data, wanted_len)
                         && lyrics_slug_match_separator(suffix_separator)) {
@@ -1369,9 +1365,8 @@ lyrics_url_best_slug_score(LyricsFetcherDef *fetcher,
 
                         if (lyrics_slug_match_separator(before_match)
                             && (match_pos + wanted_len < candid_len)) {
-                            char after_match;
+                            char after_match = candid[match_pos + wanted_len];
 
-                            after_match = candid[match_pos + wanted_len];
                             if (lyrics_slug_match_separator(after_match)) {
                                 score = 30;
                             }
@@ -1411,8 +1406,7 @@ lyrics_parse_hex4(char *data, int32 data_len, int32 start, uint32 *value) {
     for (int32 i = 0; i < 4; i += 1) {
         int32 digit;
 
-        digit = lyrics_hex_value(data[start + i]);
-        if (digit < 0) {
+        if ((digit = lyrics_hex_value(data[start + i])) < 0) {
             return -NCM_ERROR_PARSE;
         }
         result = (result << 4) | (uint32)digit;

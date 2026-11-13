@@ -383,9 +383,8 @@ visualizer_system_open_udp(void *user, char *location, int32 location_len,
     addresses = NULL;
     if ((error_code = getaddrinfo(location, port, &hints, &addresses)) != 0) {
         String message = {0};
-        char *error_message;
+        char *error_message = (char *)gai_strerror(error_code);
 
-        error_message = (char *)gai_strerror(error_code);
         STR_APPEND(&message, "Couldn't resolve \"");
         STR_APPEND(&message, location, location_len);
         STR_APPEND(&message, ":");

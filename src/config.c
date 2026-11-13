@@ -752,9 +752,8 @@ configure(int32 argc, char **argv) {
     if ((status >= 0) && !options.current_song) {
         bindings_config_clear(&Bindings);
         for (int32 i = 0; i < options.bindings_paths.len; i += 1) {
-            String *path;
+            String *path = &options.bindings_paths.items[i];
 
-            path = &options.bindings_paths.items[i];
             if ((status = ncm_path_expand_home(path, &ncm_error)) < 0) {
                 break;
             }
