@@ -968,7 +968,7 @@ action_runtime_add_random_items(void) {
     ncm_statusbar_scoped_lock_init(&scoped_lock);
     if ((window = ncm_statusbar_put())) {
         nc_window_print_data(window, SL("Add random? [s]ongs/[a]rtists/"
-                                            "album [A]rtists/al[b]ums "));
+                                        "album [A]rtists/al[b]ums "));
         status = ncm_statusbar_prompt_return_one_of(window,
                                                     values, LENGTH(values),
                                                     &random_type);
@@ -1012,7 +1012,7 @@ action_runtime_add_random_items(void) {
         str_free(&input);
         ncm_statusbar_print(Config.message_delay_time,
                             SL("Random item count must be a non-negative "
-                                   "number"));
+                               "number"));
         return 0;
     }
     str_free(&input);
@@ -1122,11 +1122,11 @@ action_runtime_toggle_fetch_lyrics_in_background(void) {
 
     if (Config.fetch_lyrics_for_current_song_in_background) {
         action_runtime_print_toggle(SL("Fetching lyrics for playing "
-                                           "songs in background: "),
+                                       "songs in background: "),
                                     "on");
     } else {
         action_runtime_print_toggle(SL("Fetching lyrics for playing "
-                                           "songs in background: "),
+                                       "songs in background: "),
                                     "off");
     }
     return 0;
