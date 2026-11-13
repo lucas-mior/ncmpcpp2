@@ -3015,8 +3015,7 @@ action_runtime_set_selected_items_priority(void) {
     }
     if (ncm_mpd_client_version(&global_mpd) < 17) {
         ncm_statusbar_print(Config.message_delay_time,
-                            SL("Priorities are supported in MPD >= "
-                               "0.17.0"));
+                            SL("Priorities are supported in MPD >= 0.17.0"));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
@@ -4521,14 +4520,12 @@ action_runtime_edit_lyrics(void) {
                                                store_in_song_dir, win32_names))
         < 0) {
         ncm_statusbar_print(Config.message_delay_time,
-                            SL("failed to build lyrics "
-                               "filename"));
+                            SL("failed to build lyrics filename"));
         return -NCM_ERROR_UNAVAILABLE;
     }
 
     ncm_statusbar_print(Config.message_delay_time,
-                        SL("Opening lyrics in external "
-                           "editor..."));
+                        SL("Opening lyrics in external editor..."));
     filename = lyrics_screen_filename(lyrics);
     filename_data = filename->data;
     filename_len = filename->len;

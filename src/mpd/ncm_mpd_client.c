@@ -121,8 +121,7 @@ ncm_mpd_client_prechecks_no_commands(MpdClient *client, NcmError *ncm_error) {
     }
     if (client->cmd_list_active) {
         return ncm_error_set_status(ncm_error, -NCM_ERROR_INVALID_STATE,
-                                    SL("MPD command list is already"
-                                       " active"));
+                                    SL("MPD command list is already active"));
     }
 
     return ncm_mpd_client_prechecks_connected(client, ncm_error);

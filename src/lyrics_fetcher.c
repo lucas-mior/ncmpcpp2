@@ -1826,8 +1826,7 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
     }
     case LYRICS_FETCHER_LETRASMUS:
         extract_status = lyrics_extract_divs(out, content_data, content_len,
-                                             SL("class="
-                                                "\"lyric-original\""),
+                                             SL("class=\"lyric-original\""),
                                              false);
         break;
     case LYRICS_FETCHER_LACOCCINELLE: {

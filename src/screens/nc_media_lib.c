@@ -3371,8 +3371,7 @@ media_lib_screen_locate_song(MediaLibraryScreen *screen,
             if (!library_move_to_tag(screen, grouping_value.data,
                                      grouping_value.len)) {
                 return ncm_error_set_status(ncm_error, -ENOENT,
-                                            SL("song tag is not in "
-                                               "library"));
+                                            SL("song tag is not in library"));
             }
         }
         nc_screen_finish_list_change(&screen->screen);
@@ -3506,8 +3505,7 @@ media_lib_screen_locate_song(MediaLibraryScreen *screen,
         nc_menu_clear_items(albums_menu);
         media_lib_screen_set_active_column(screen, MEDIA_LIBRARY_COLUMN_ALBUMS);
         return ncm_error_set_status(ncm_error, -ENOENT,
-                                    SL("song is not visible in media"
-                                       " library"));
+                                    SL("song is not visible in media library"));
     }
     {
         bool found = false;
