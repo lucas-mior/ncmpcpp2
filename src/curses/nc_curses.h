@@ -85,23 +85,23 @@ typedef uint64 NcKey;
 #define NC_KEY_MOUSE     (NC_KEY_SPECIAL | 278)
 #define NC_KEY_EOF       (NC_KEY_SPECIAL | 279)
 
-#define NC_NAMED_KEYS(XX)                                             \
-    XX(escape, "Escape", NC_KEY_ESCAPE)                            \
-    XX(mouse, "Mouse", NC_KEY_MOUSE)                                \
-    XX(up, "Up", NC_KEY_UP)                                         \
-    XX(down, "Down", NC_KEY_DOWN)                                   \
-    XX(page_up, "PageUp", NC_KEY_PAGE_UP)                           \
-    XX(page_down, "PageDown", NC_KEY_PAGE_DOWN)                     \
-    XX(home, "Home", NC_KEY_HOME)                                   \
-    XX(end, "End", NC_KEY_END)                                      \
-    XX(space, "Space", NC_KEY_SPACE)                                \
-    XX(enter, "Enter", NC_KEY_ENTER)                                \
-    XX(insert, "Insert", NC_KEY_INSERT)                             \
-    XX(delete, "Delete", NC_KEY_DELETE)                             \
-    XX(left, "Left", NC_KEY_LEFT)                                   \
-    XX(right, "Right", NC_KEY_RIGHT)                                \
-    XX(tab, "Tab", NC_KEY_TAB)                                      \
-    XX(backspace, "Backspace", NC_KEY_BACKSPACE)                    \
+#define NC_NAMED_KEYS(XX)                         \
+    XX(escape, "Escape", NC_KEY_ESCAPE)           \
+    XX(mouse, "Mouse", NC_KEY_MOUSE)              \
+    XX(up, "Up", NC_KEY_UP)                       \
+    XX(down, "Down", NC_KEY_DOWN)                 \
+    XX(page_up, "PageUp", NC_KEY_PAGE_UP)         \
+    XX(page_down, "PageDown", NC_KEY_PAGE_DOWN)   \
+    XX(home, "Home", NC_KEY_HOME)                 \
+    XX(end, "End", NC_KEY_END)                    \
+    XX(space, "Space", NC_KEY_SPACE)              \
+    XX(enter, "Enter", NC_KEY_ENTER)              \
+    XX(insert, "Insert", NC_KEY_INSERT)           \
+    XX(delete, "Delete", NC_KEY_DELETE)           \
+    XX(left, "Left", NC_KEY_LEFT)                 \
+    XX(right, "Right", NC_KEY_RIGHT)              \
+    XX(tab, "Tab", NC_KEY_TAB)                    \
+    XX(backspace, "Backspace", NC_KEY_BACKSPACE)  \
     XX(eof, "EoF", NC_KEY_EOF)
 
 #define NC_COLOR_TRANSPARENT ((int16)-1)

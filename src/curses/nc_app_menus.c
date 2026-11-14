@@ -452,22 +452,22 @@ static const NcMenuItemCallbacks nc_buffer_menu_callbacks = {
         return;                                                                \
     }
 
-#define NC_TYPED_MENU_DEFINE_ITEM_AT(TYPE_NAME, PREFIX, ITEM_TYPE) \
-    ITEM_TYPE * \
-    PREFIX##_item_at(TYPE_NAME *menu, enum NcMenuItemSource source, \
-                     int32 pos) { \
-        return nc_menu_item_at(&menu->menu, source, pos); \
+#define NC_TYPED_MENU_DEFINE_ITEM_AT(TYPE_NAME, PREFIX, ITEM_TYPE)   \
+    ITEM_TYPE *                                                      \
+    PREFIX##_item_at(TYPE_NAME *menu, enum NcMenuItemSource source,  \
+                     int32 pos) {                                    \
+        return nc_menu_item_at(&menu->menu, source, pos);            \
     }
 
-#define NC_TYPED_MENU_DEFINE_CURRENT(TYPE_NAME, PREFIX, ITEM_TYPE) \
-    ITEM_TYPE * \
-    PREFIX##_current(TYPE_NAME *menu) { \
-        return nc_menu_current_item(&menu->menu); \
+#define NC_TYPED_MENU_DEFINE_CURRENT(TYPE_NAME, PREFIX, ITEM_TYPE)  \
+    ITEM_TYPE *                                                     \
+    PREFIX##_current(TYPE_NAME *menu) {                             \
+        return nc_menu_current_item(&menu->menu);                   \
     }
 
-#define NC_TYPED_MENU_DEFINE_COMMON(TYPE_NAME, PREFIX, CALLBACKS) \
-    NC_TYPED_MENU_DEFINE_INIT(TYPE_NAME, PREFIX, CALLBACKS) \
-    NC_TYPED_MENU_DEFINE_DESTROY(TYPE_NAME, PREFIX) \
+#define NC_TYPED_MENU_DEFINE_COMMON(TYPE_NAME, PREFIX, CALLBACKS)  \
+    NC_TYPED_MENU_DEFINE_INIT(TYPE_NAME, PREFIX, CALLBACKS)        \
+    NC_TYPED_MENU_DEFINE_DESTROY(TYPE_NAME, PREFIX)                \
     NC_TYPED_MENU_DEFINE_BASE(TYPE_NAME, PREFIX)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcSongMenu, nc_song_menu, ncm_song_menu_callbacks)
