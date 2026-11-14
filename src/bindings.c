@@ -1276,13 +1276,13 @@ bindings_config_generate_defaults(BindingsConfiguration *bindings) {
     bindings_bind(bindings, NC_KEY_EOF, &binding);
     binding_destroy(&binding);
 
-#define BIND_DEFAULT_SEQUENCE(KEY, ...) do {                                 \
-    enum ActionType actions[] = { __VA_ARGS__ };                             \
+#define BIND_DEFAULT_SEQUENCE(KEY, ...) do {                             \
+    enum ActionType actions[] = { __VA_ARGS__ };                         \
     bindings_bind_sequence(bindings, SL(KEY), actions, LENGTH(actions)); \
 } while (0);
-#define BIND_DEFAULT_GROUP(KEY, ...) do {                                    \
-    enum ActionType actions[] = { __VA_ARGS__ };                             \
-    bindings_bind_group(bindings, SL(KEY), actions, LENGTH(actions));    \
+#define BIND_DEFAULT_GROUP(KEY, ...) do {                             \
+    enum ActionType actions[] = { __VA_ARGS__ };                      \
+    bindings_bind_group(bindings, SL(KEY), actions, LENGTH(actions)); \
 } while (0);
 
     NCM_DEFAULT_BINDINGS(BIND_DEFAULT_SEQUENCE, BIND_DEFAULT_GROUP)

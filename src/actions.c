@@ -4822,17 +4822,17 @@ typedef struct ActionAvailability {
 #define AR_NOT_TINY ACTION_REQ_NOT_TINY_TAG_EDIT
 
 #define A(reqs) {.requirements = (reqs)}
-#define AS(reqs, screen_req, target) \
-    {.requirements = (reqs), \
+#define AS(reqs, screen_req, target)     \
+    {.requirements = (reqs),             \
      .screen_requirement = (screen_req), \
      .screen_type = (target)}
 #define C(reqs) {.requirements = (reqs), .custom = true}
 #define CA(reqs, value) \
     {.requirements = (reqs), .argument = (value), .custom = true}
-#define SC(reqs, screen_req, target) \
-    {.requirements = (reqs), \
+#define SC(reqs, screen_req, target)     \
+    {.requirements = (reqs),             \
      .screen_requirement = (screen_req), \
-     .screen_type = (target), \
+     .screen_type = (target),            \
      .custom = true}
 
 #define ACTION_MPD_AVAILABILITY(XX)                                         \
@@ -5193,11 +5193,11 @@ action_availability_custom_can_run(enum ActionType type, int32 argument) {
     }
 }
 
-#define CHECK_REQUIREMENT(req, expr)                                         \
-    do {                                                                    \
-        if ((requirements & (req)) && !(expr)) {                            \
-            return false;                                                   \
-        }                                                                   \
+#define CHECK_REQUIREMENT(req, expr)             \
+    do {                                         \
+        if ((requirements & (req)) && !(expr)) { \
+            return false;                        \
+        }                                        \
     } while (0)
 
 static bool
@@ -5321,9 +5321,9 @@ typedef struct ActionRun {
     [action] = {.runner = (run_), .argument = (arg_)}
 #define RM(action, func) \
     [action] = {.runner = ACTION_RUN_MPD_SIMPLE, .mpd_simple = (func)}
-#define RT(action, func, state) \
+#define RT(action, func, state)                  \
     [action] = {.runner = ACTION_RUN_MPD_TOGGLE, \
-                .mpd_toggle = (func), \
+                .mpd_toggle = (func),            \
                 .current_toggle_state = (state)}
 
 static const ActionRun action_run_table[ACTION_COUNT] = {

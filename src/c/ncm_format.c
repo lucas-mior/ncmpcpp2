@@ -91,6 +91,62 @@ parse_color_component(char *data, int32 data_len,
     return 0;
 }
 
+static int32
+ncm_format_digit(uint32 *delimiter, char digit_char, NcmError *ncm_error) {
+    uint32 digit = (uint32)(digit_char - '0');
+
+    if (*delimiter > (MAXOF(*delimiter) - digit)/10) {
+        return ncm_error_set_status(ncm_error, -EOVERFLOW,
+                                    SL("tag delimiter too large"));
+    }
+    *delimiter = *delimiter*10 + digit;
+    return 0;
+}
+
+static int32
+ncm_format_parse_named_color(NcmFormatExpr *expr, char *data, int32 len) {
+    int32 underscore = -1;
+    int16 foreground;
+    int16 background;
+    int32 status;
+
+    if (STREQUAL(data, len, "default")) {
+        expr->color = nc_color_default();
+        return 0;
+    }
+    if (STREQUAL(data, len, "end")) {
+        expr->color = nc_color_end();
+        return 0;
+    }
+    for (int32 j = 0; j < len; j += 1) {
+        if (data[j] == '_') {
+            underscore = j;
+            break;
+        }
+    }
+
+    if (underscore < 0) {
+        if ((status = parse_color_component(data, len, false,
+                                            &foreground)) < 0) {
+            return status;
+        }
+        expr->color = nc_color_make(foreground, -2, false, false);
+        return 0;
+    }
+
+    if ((status = parse_color_component(data, underscore, false,
+                                        &foreground)) < 0) {
+        return -NCM_ERROR_PARSE;
+    }
+    if ((status = parse_color_component(data + underscore + 1,
+                                        len - underscore - 1, true,
+                                        &background)) < 0) {
+        return -NCM_ERROR_PARSE;
+    }
+    expr->color = nc_color_make(foreground, background, false, false);
+    return 0;
+}
+
 static void
 ncm_format_text_append(NcmFormatExprList *list, String *token) {
     NcmFormatExpr *expr;
@@ -348,16 +404,8 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                     } else {
                         for (int32 j = delimiter_start;
                              (status == 0) && (j < percent_i); j += 1) {
-                            uint32 digit = (uint32)(data[j] - '0');
-
-                            if (delimiter > (MAXOF(delimiter) - digit)/10) {
-                                status =
-                                    ncm_error_set_status(ncm_error, -EOVERFLOW,
-                                                         SL("tag delimiter "
-                                                            "too large"));
-                            } else {
-                                delimiter = delimiter*10 + digit;
-                            }
+                            status = ncm_format_digit(&delimiter, data[j],
+                                                      ncm_error);
                         }
                     }
                 }
@@ -453,9 +501,6 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                     char *color_data;
                     int32 color_len;
                     int32 color_start;
-                    int32 underscore;
-                    int16 foreground;
-                    int16 background;
                     int32 color_status;
 
                     dollar_i += 1;
@@ -472,48 +517,9 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
 
                     color_data = data + color_start;
                     color_len = dollar_i - color_start;
-                    color_status = 0;
-                    if (STREQUAL(color_data, color_len, "default")) {
-                        expr->color = nc_color_default();
-                    } else if (STREQUAL(color_data, color_len, "end")) {
-                        expr->color = nc_color_end();
-                    } else {
-                        underscore = -1;
-                        for (int32 j = 0; j < color_len; j += 1) {
-                            if (color_data[j] == '_') {
-                                underscore = j;
-                                break;
-                            }
-                        }
-
-                        if (underscore < 0) {
-                            color_status =
-                                parse_color_component(color_data, color_len,
-                                                      false, &foreground);
-                            if (color_status == 0) {
-                                expr->color = nc_color_make(foreground,
-                                                            -2, false, false);
-                            }
-                        } else {
-                            char *background_data = color_data + underscore + 1;
-                            int32 background_len = color_len - underscore - 1;
-
-                            if (parse_color_component(color_data, underscore,
-                                                      false,
-                                                      &foreground) < 0) {
-                                color_status = -NCM_ERROR_PARSE;
-                            } else if (parse_color_component(background_data,
-                                                             background_len,
-                                                             true,
-                                                             &background) < 0) {
-                                color_status = -NCM_ERROR_PARSE;
-                            } else {
-                                expr->color = nc_color_make(foreground,
-                                                            background,
-                                                            false, false);
-                            }
-                        }
-                    }
+                    color_status = ncm_format_parse_named_color(expr,
+                                                                color_data,
+                                                                color_len);
 
                     if (color_status < 0) {
                         status = ncm_format_set_error(ncm_error,

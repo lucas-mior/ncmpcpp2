@@ -713,7 +713,7 @@ int32 ncm_mpd_client_get_tag_types(MpdClient *, StrFlexList *, NcmError *);
 #define ENUM_NAME DisplayMode
 #define ENUM_PREFIX_ NCM_DISPLAY_MODE_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                        \
+#define ENUM_FIELDS                         \
     XX(NCM_DISPLAY_MODE_CLASSIC, "classic") \
     XX(NCM_DISPLAY_MODE_COLUMNS, "columns")
 #include "cbase/xenums.c"
