@@ -1713,8 +1713,8 @@ visualizer_screen_draw(VisualizerScreen *screen,
 
     nc_window_clear(&screen->window);
     if (screen->stereo) {
-        int32 channel_samples =
-            visualizer_screen_split_stereo(screen, samples, samples_len);
+        int32 channel_samples = visualizer_screen_split_stereo(screen, samples,
+                                                               samples_len);
 
         if (channel_samples <= 0) {
             return;
