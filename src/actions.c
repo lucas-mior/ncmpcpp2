@@ -4757,7 +4757,7 @@ action_runtime_mouse_event(void) {
     return 0;
 }
 
-#define ACTION_REQ_FIELDS(XX)                                               \
+#define ACTION_REQ_FIELDS(XX)                                              \
     XX(ACTION_REQ_MPD_CONNECTED)                                           \
     XX(ACTION_REQ_VOLUME)                                                  \
     XX(ACTION_REQ_PLAYER_NOT_STOPPED)                                      \
