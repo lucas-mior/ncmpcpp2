@@ -318,6 +318,16 @@ void
 ncm_mpd_item_local_song(NcmSong *song, char *path, int32 path_len,
                         time_t mtime) {
     int32 status;
+#if defined(HAVE_TAGLIB_H)
+    struct mpd_pair pair;
+    struct mpd_song *mpd_song;
+    TaglibFile file = {0};
+    TaglibAudioProperties properties;
+    NcmMpdItemTagsContext context;
+    TaglibPairCallback *callback;
+    char time_buffer[32];
+    int32 count;
+#endif
 
     if ((song == NULL) || (path == NULL) || (path_len < 0)) {
         return;
