@@ -339,15 +339,6 @@ ncm_mpd_item_local_song(NcmSong *song, char *path, int32 path_len,
     ncm_song_set_mtime(song, mtime);
 
 #if defined(HAVE_TAGLIB_H)
-    struct mpd_pair pair;
-    struct mpd_song *mpd_song;
-    TaglibFile file = {0};
-    TaglibAudioProperties properties;
-    NcmMpdItemTagsContext context;
-    TaglibPairCallback *callback;
-    char time_buffer[32];
-    int32 count;
-
     pair.name = "file";
     pair.value = path;
     mpd_song = mpd_song_begin(&pair);
