@@ -924,7 +924,7 @@ config_apply_runtime(Configuration *config, MpdClient *client, bool quiet,
     }
     if ((status = ncm_mpd_client_set_timeout_ms(client,
                                                 config->mpd_connection_timeout
-                                                    *1000,
+                                                *1000,
                                                 ncm_error)) < 0) {
         return status;
     }

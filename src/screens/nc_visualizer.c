@@ -947,8 +947,9 @@ visualizer_screen_init(VisualizerScreen *screen, int32 start_x, int32 start_y,
         fft->bar_heights_cap = VISUALIZER_BAR_HEIGHTS_CAP;
 
         fft->freqs_mags = malloc2(fft->freqs_mags_len*SIZEOF(*fft->freqs_mags));
-        fft->dft_frequency_space = malloc2(fft->dft_frequency_space_cap
-            *SIZEOF(*fft->dft_frequency_space));
+        fft->dft_frequency_space =
+            malloc2(fft->dft_frequency_space_cap
+                    *SIZEOF(*fft->dft_frequency_space));
         fft->bar_heights = malloc2(fft->bar_heights_cap
                                    *SIZEOF(*fft->bar_heights));
 
@@ -1712,8 +1713,8 @@ visualizer_screen_draw(VisualizerScreen *screen,
 
     nc_window_clear(&screen->window);
     if (screen->stereo) {
-        int32 channel_samples =
-            visualizer_screen_split_stereo(screen, samples, samples_len);
+        int32 channel_samples = visualizer_screen_split_stereo(screen, samples,
+                                                               samples_len);
 
         if (channel_samples <= 0) {
             return;

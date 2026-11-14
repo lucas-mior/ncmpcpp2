@@ -1110,9 +1110,9 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
             constraint = screen->constraints[0];
             constraint_len = screen->constraint_lens[0];
             if (constraint_len > 0) {
-                constraint_status =
-                    ncm_mpd_client_add_search_any(client, constraint,
-                                                  ncm_error);
+                constraint_status = ncm_mpd_client_add_search_any(client,
+                                                                  constraint,
+                                                                  ncm_error);
             }
 
             for (uint32 i = 1;

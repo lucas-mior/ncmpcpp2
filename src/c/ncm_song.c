@@ -712,10 +712,10 @@ ncm_song_getter_buffer_unchecked(NcmSong *song, enum SongGetter getter,
 
                 len = ncm_song_numeric_tag_len_unchecked(total, total_len);
                 str_reserve(&buffer, len);
-                buffer.len =
-                    ncm_song_format_numeric_tag_unchecked(buffer.data,
-                                                          buffer.cap,
-                                                          total, total_len);
+                buffer.len = ncm_song_format_numeric_tag_unchecked(buffer.data,
+                                                                   buffer.cap,
+                                                                   total,
+                                                                   total_len);
             }
         }
         return buffer;

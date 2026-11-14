@@ -1837,10 +1837,8 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
                                          translation_marker_len,
                                          0);
         if (marker < 0) {
-            marker =
-                lyrics_find_ignore_case(content_data, content_len,
-                                        SL("Paroles de la chanson"),
-                                        0);
+            marker = lyrics_find_ignore_case(content_data, content_len,
+                                             SL("Paroles de la chanson"), 0);
         }
         if (marker < 0) {
             extract_status = -NCM_ERROR_NOT_FOUND;

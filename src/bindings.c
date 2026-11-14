@@ -1054,7 +1054,7 @@ bindings_finalize_definition(BindingsConfiguration *bindings,
             if (at < bindings->commands_len) {
                 memmove64(bindings->commands + at + 1, bindings->commands + at,
                           (bindings->commands_len - at)
-                              *SIZEOF(*bindings->commands));
+                          *SIZEOF(*bindings->commands));
             }
             bindings->commands[at] = copy;
             bindings->commands_len += 1;
