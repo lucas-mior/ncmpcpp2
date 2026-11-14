@@ -1050,6 +1050,90 @@ search_view_regex(NcmRegex *regex, StrView view) {
     return ncm_regex_matches(regex, view.data, view.len);
 }
 
+static void
+search_engine_collect_local_songs(SearchEngineScreen *screen,
+                                  NcmSongArray *source,
+                                  NcmRegex *regexes,
+                                  NcmSongArray *songs) {
+    bool exact_match = screen->search_mode == SEARCH_ENGINE_SEARCH_MODE_EXACT;
+
+    for (int32 i = 0; i < source->len; i += 1) {
+        NcmSong *song = &source->items[i];
+        bool matches = true;
+
+        if (screen->constraint_lens[0] > 0) {
+            char *constraint = screen->constraints[0];
+            int32 constraint_len = screen->constraint_lens[0];
+
+            matches = false;
+            if ((screen->search_mode
+                 != SEARCH_ENGINE_SEARCH_MODE_EXACT)
+                && !regexes[0].compiled) {
+                matches = true;
+            } else {
+                for (uint32 field = 1;
+                     field < SEARCH_ENGINE_CONSTRAINT_COUNT;
+                     field += 1) {
+                    StrView value;
+
+                    if (!search_song_has_field_view(song, field, &value)) {
+                        value = (StrView){0, search_empty_string};
+                    }
+                    if (exact_match) {
+                        if (search_view_exact(value,
+                                              constraint,
+                                              constraint_len)) {
+                            matches = true;
+                            break;
+                        }
+                    } else if (search_view_regex(&regexes[0], value)) {
+                        matches = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!matches) {
+            continue;
+        }
+
+        for (uint32 field = 1;
+             field < SEARCH_ENGINE_CONSTRAINT_COUNT;
+             field += 1) {
+            char *constraint;
+            StrView value;
+            int32 constraint_len;
+
+            constraint = screen->constraints[field];
+            constraint_len = screen->constraint_lens[field];
+            if (constraint_len <= 0) {
+                continue;
+            }
+            if (!search_song_has_field_view(song, field, &value)) {
+                value = (StrView){0, search_empty_string};
+            }
+            if (exact_match) {
+                if (!search_view_exact(value, constraint, constraint_len)) {
+                    matches = false;
+                    break;
+                }
+            } else if (regexes[field].compiled
+                       && !search_view_regex(&regexes[field],
+                                             value)) {
+                matches = false;
+                break;
+            }
+        }
+
+        if (!matches) {
+            continue;
+        }
+        ncm_song_array_append_copy(songs, song);
+    }
+    return;
+}
+
 int32
 search_engine_screen_start_searching(SearchEngineScreen *screen,
                                      MpdClient *client,
@@ -1205,86 +1289,8 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
             }
 
             if (status == 0) {
-                for (int32 i = 0; i < source.len; i += 1) {
-                    NcmSong *song = &source.items[i];
-                    bool matches = true;
-
-                    if (screen->constraint_lens[0] > 0) {
-                        char *constraint = screen->constraints[0];
-                        int32 constraint_len = screen->constraint_lens[0];
-
-                        matches = false;
-                        if ((screen->search_mode
-                             != SEARCH_ENGINE_SEARCH_MODE_EXACT)
-                            && !regexes[0].compiled) {
-                            matches = true;
-                        } else {
-                            for (uint32 field = 1;
-                                 field < SEARCH_ENGINE_CONSTRAINT_COUNT;
-                                 field += 1) {
-                                StrView value;
-
-                                if (!search_song_has_field_view(song, field,
-                                                                &value)) {
-                                    value = (StrView){0, search_empty_string};
-                                }
-                                if (screen->search_mode
-                                    == SEARCH_ENGINE_SEARCH_MODE_EXACT) {
-                                    if (search_view_exact(value,
-                                                          constraint,
-                                                          constraint_len)) {
-                                        matches = true;
-                                        break;
-                                    }
-                                } else if (search_view_regex(&regexes[0],
-                                                             value)) {
-                                    matches = true;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-
-                    if (!matches) {
-                        continue;
-                    }
-
-                    for (uint32 field = 1;
-                         field < SEARCH_ENGINE_CONSTRAINT_COUNT;
-                         field += 1) {
-                        char *constraint;
-                        StrView value;
-                        int32 constraint_len;
-
-                        constraint = screen->constraints[field];
-                        constraint_len = screen->constraint_lens[field];
-                        if (constraint_len <= 0) {
-                            continue;
-                        }
-                        if (!search_song_has_field_view(song, field, &value)) {
-                            value = (StrView){0, search_empty_string};
-                        }
-                        if (screen->search_mode
-                            == SEARCH_ENGINE_SEARCH_MODE_EXACT) {
-                            if (!search_view_exact(value,
-                                                   constraint,
-                                                   constraint_len)) {
-                                matches = false;
-                                break;
-                            }
-                        } else if (regexes[field].compiled
-                                   && !search_view_regex(&regexes[field],
-                                                         value)) {
-                            matches = false;
-                            break;
-                        }
-                    }
-
-                    if (!matches) {
-                        continue;
-                    }
-                    ncm_song_array_append_copy(&songs, song);
-                }
+                search_engine_collect_local_songs(screen, &source, regexes,
+                                                  &songs);
             }
 
             for (uint32 i = 0; i < SEARCH_ENGINE_CONSTRAINT_COUNT; i += 1) {

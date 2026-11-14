@@ -248,7 +248,7 @@
   XX(help)                                                                     \
   XX(lastfm)                                                                   \
   XX(lyrics)                                                                   \
-  XX(media_lib)                                                            \
+  XX(media_lib)                                                                \
   XX(playlist)                                                                 \
   XX(playlist_edit)                                                            \
   XX(search_engine)                                                            \
@@ -264,7 +264,7 @@
   XX(browser)                                                                  \
   XX(help)                                                                     \
   XX(lastfm)                                                                   \
-  XX(media_lib)                                                            \
+  XX(media_lib)                                                                \
   XX(search_engine)                                                            \
   XX(selected_items_add)                                                       \
   XX(song_info)                                                                \
@@ -280,7 +280,7 @@
   XX(help, NC_SCREEN_TYPE_HELP)                                                \
   XX(lastfm, NC_SCREEN_TYPE_LASTFM)                                            \
   XX(lyrics, NC_SCREEN_TYPE_LYRICS)                                            \
-  XX(media_lib, NC_SCREEN_TYPE_MEDIA_LIBRARY)                              \
+  XX(media_lib, NC_SCREEN_TYPE_MEDIA_LIBRARY)                                  \
   XX(playlist, NC_SCREEN_TYPE_PLAYLIST)                                        \
   XX(playlist_edit, NC_SCREEN_TYPE_PLAYLIST_EDIT)                              \
   XX(search_engine, NC_SCREEN_TYPE_SEARCH_ENGINE)                              \
@@ -1294,10 +1294,10 @@ int32 media_lib_screen_locate_song(MediaLibraryScreen *, NcmSong *, NcmError *);
 #define ENUM_PREFIX_ PLAYLIST_EDIT_CMD_
 #define ENUM_BITFLAGS 0
 #define ENUM_FIELDS                                                            \
-    XX(PLAYLIST_EDIT_CMD_NONE, "none")                                     \
-    XX(PLAYLIST_EDIT_CMD_LOAD, "Load")                                     \
-    XX(PLAYLIST_EDIT_CMD_SAVE, "Save")                                     \
-    XX(PLAYLIST_EDIT_CMD_RENAME, "Rename")                                 \
+    XX(PLAYLIST_EDIT_CMD_NONE, "none")                                         \
+    XX(PLAYLIST_EDIT_CMD_LOAD, "Load")                                         \
+    XX(PLAYLIST_EDIT_CMD_SAVE, "Save")                                         \
+    XX(PLAYLIST_EDIT_CMD_RENAME, "Rename")                                     \
     XX(PLAYLIST_EDIT_CMD_DELETE, "Delete")
 #include "cbase/xenums.c"
 

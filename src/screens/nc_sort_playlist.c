@@ -268,7 +268,7 @@ sort_dialog_add_sort_getter_row(SortPlaylistDialog *dialog,
     return;
 }
 
-#define SORT_DIALOG_ADD_TAG_ROW(suffix, display, tag_char)                    \
+#define SORT_DIALOG_ADD_TAG_ROW(suffix, display, tag_char)                     \
     sort_dialog_add_sort_getter_row(                                           \
         dialog, ncm_tag_type_to_song_getter(CAT(TAG_, suffix)));
 
