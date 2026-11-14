@@ -416,40 +416,40 @@ static const NcMenuItemCallbacks nc_buffer_menu_callbacks = {
         return;                                         \
     }
 
-#define NC_TYPED_MENU_DEFINE_BASE(TYPE_NAME, PREFIX) \
-    NcMenu * \
-    PREFIX##_base(TYPE_NAME *menu) { \
-        return &menu->menu; \
+#define NC_TYPED_MENU_DEFINE_BASE(TYPE_NAME, PREFIX)                           \
+    NcMenu *                                                                   \
+    PREFIX##_base(TYPE_NAME *menu) {                                           \
+        return &menu->menu;                                                    \
     }
 
-#define NC_TYPED_MENU_DEFINE_ADD(TYPE_NAME, PREFIX, ITEM_TYPE) \
-    void \
-    PREFIX##_add(TYPE_NAME *menu, ITEM_TYPE *item) { \
-        nc_menu_add_item(&menu->menu, item); \
-        return; \
+#define NC_TYPED_MENU_DEFINE_ADD(TYPE_NAME, PREFIX, ITEM_TYPE)                 \
+    void                                                                       \
+    PREFIX##_add(TYPE_NAME *menu, ITEM_TYPE *item) {                           \
+        nc_menu_add_item(&menu->menu, item);                                   \
+        return;                                                                \
     }
 
-#define NC_TYPED_MENU_DEFINE_ADD_WITH_FLAGS(TYPE_NAME, PREFIX, ITEM_TYPE) \
-    void \
-    PREFIX##_add_with_flags(TYPE_NAME *menu, ITEM_TYPE *item, \
-                            uint32 flags) { \
-        nc_menu_add_item_with_flags(&menu->menu, item, flags); \
-        return; \
+#define NC_TYPED_MENU_DEFINE_ADD_WITH_FLAGS(TYPE_NAME, PREFIX, ITEM_TYPE)      \
+    void                                                                       \
+    PREFIX##_add_with_flags(TYPE_NAME *menu, ITEM_TYPE *item,                  \
+                            uint32 flags) {                                    \
+        nc_menu_add_item_with_flags(&menu->menu, item, flags);                 \
+        return;                                                                \
     }
 
-#define NC_TYPED_MENU_DEFINE_ADD_SEPARATOR(TYPE_NAME, PREFIX) \
-    void \
-    PREFIX##_add_separator(TYPE_NAME *menu) { \
-        nc_menu_add_separator(&menu->menu); \
-        return; \
+#define NC_TYPED_MENU_DEFINE_ADD_SEPARATOR(TYPE_NAME, PREFIX)                  \
+    void                                                                       \
+    PREFIX##_add_separator(TYPE_NAME *menu) {                                  \
+        nc_menu_add_separator(&menu->menu);                                    \
+        return;                                                                \
     }
 
-#define NC_TYPED_MENU_DEFINE_INSERT_WITH_FLAGS(TYPE_NAME, PREFIX, ITEM_TYPE) \
-    void \
-    PREFIX##_insert_with_flags(TYPE_NAME *menu, int32 pos, \
-                               ITEM_TYPE *item, uint32 flags) { \
-        nc_menu_insert_item_with_flags(&menu->menu, pos, item, flags); \
-        return; \
+#define NC_TYPED_MENU_DEFINE_INSERT_WITH_FLAGS(TYPE_NAME, PREFIX, ITEM_TYPE)   \
+    void                                                                       \
+    PREFIX##_insert_with_flags(TYPE_NAME *menu, int32 pos,                     \
+                               ITEM_TYPE *item, uint32 flags) {                \
+        nc_menu_insert_item_with_flags(&menu->menu, pos, item, flags);         \
+        return;                                                                \
     }
 
 #define NC_TYPED_MENU_DEFINE_ITEM_AT(TYPE_NAME, PREFIX, ITEM_TYPE) \
