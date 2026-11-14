@@ -3,18 +3,18 @@
 
 #include "cbase.h"
 
-#define SONG_TAG_DEFS(XX, XX2, CTX)                                          \
-  XX(CTX,  ARTIST,       "Artist",       'a')                                \
-  XX(CTX,  ALBUM_ARTIST, "Album Artist", 'A')                                \
-  XX(CTX,  ALBUM,        "Album",        'b')                                \
-  XX(CTX,  DISC,         "Disc",         'd')                                \
-  XX2(CTX, TRACK,        "Track", TRACK_NUMBER, "Track Number", 'n',        \
-      TAG_COUNT)                                                              \
-  XX(CTX,  GENRE,        "Genre",        'g')                                \
-  XX(CTX,  DATE,         "Date",         'y')                                \
-  XX(CTX,  COMPOSER,     "Composer",     'c')                                \
-  XX(CTX,  PERFORMER,    "Performer",    'p')                                \
-  XX(CTX,  TITLE,        "Title",        't')                                \
+#define SONG_TAG_DEFS(XX, XX2, CTX)                                            \
+  XX(CTX,  ARTIST,       "Artist",       'a')                                  \
+  XX(CTX,  ALBUM_ARTIST, "Album Artist", 'A')                                  \
+  XX(CTX,  ALBUM,        "Album",        'b')                                  \
+  XX(CTX,  DISC,         "Disc",         'd')                                  \
+  XX2(CTX, TRACK,        "Track", TRACK_NUMBER, "Track Number", 'n',           \
+      TAG_COUNT)                                                               \
+  XX(CTX,  GENRE,        "Genre",        'g')                                  \
+  XX(CTX,  DATE,         "Date",         'y')                                  \
+  XX(CTX,  COMPOSER,     "Composer",     'c')                                  \
+  XX(CTX,  PERFORMER,    "Performer",    'p')                                  \
+  XX(CTX,  TITLE,        "Title",        't')                                  \
   XX(CTX,  COMMENT,      "Comment",      'C')
 
 #define SONG_TAG_AS_TAG(XX, SUFFIX, DISP, CHAR) \
@@ -37,8 +37,8 @@ enum {
 
 #define SONG_TAG_AS_GETTER(XX, SUFFIX, DISP, CHAR) \
     XX(CAT(SONG_GETTER_, SUFFIX), DISP, CHAR)
-#define SONG_TAG_SPECIAL_AS_GETTER(XX, TAG_SUFFIX, TAG_DISP, GETTER_SUFFIX, \
-                                   GETTER_DISP, CHAR, GETTER_TAG)            \
+#define SONG_TAG_SPECIAL_AS_GETTER(XX, TAG_SUFFIX, TAG_DISP, GETTER_SUFFIX,    \
+                                   GETTER_DISP, CHAR, GETTER_TAG)              \
     XX(CAT(SONG_GETTER_, GETTER_SUFFIX), GETTER_DISP, CHAR)
 
 #define SONG_GETTER_DEFS(XX)                                          \

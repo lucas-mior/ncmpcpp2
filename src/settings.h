@@ -56,8 +56,8 @@ typedef struct Column {
 #define ENUM_NAME DefaultFindMode
 #define ENUM_PREFIX_ NCM_DEFAULT_FIND_MODE_
 #define ENUM_BITFLAGS 0
-#define ENUM_FIELDS                                  \
-    XX(NCM_DEFAULT_FIND_MODE_WRAPPED, "wrapped")    \
+#define ENUM_FIELDS                                                            \
+    XX(NCM_DEFAULT_FIND_MODE_WRAPPED, "wrapped")                               \
     XX(NCM_DEFAULT_FIND_MODE_NORMAL, "normal")
 #include "cbase/xenums.c"
 

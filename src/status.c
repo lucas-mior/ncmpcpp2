@@ -457,6 +457,92 @@ status_draw_song_title(NcmSong *song) {
     return;
 }
 
+static void
+status_handle_song_change(NcmMpdStatus *mpd_status) {
+    NcmSong song = {0};
+#if defined(ENABLE_VISUALIZER)
+    VisualizerScreen *visualizer;
+#endif
+
+    playlist_screen_reload_remaining(app_screen_playlist());
+    status_playing_song_scroll_begin = 0;
+    status_first_line_scroll_begin = 0;
+    status_second_line_scroll_begin = 0;
+#if defined(ENABLE_VISUALIZER)
+    visualizer = app_screen_visualizer();
+    visualizer_screen_reset_auto_scale_multiplier(visualizer);
+#endif
+    if (status_ui_hooks_set && status_ui_hooks.song_id_changed) {
+        void *user = status_ui_hooks.user;
+        status_ui_hooks.song_id_changed(mpd_status->song_id, user);
+    }
+
+    if (status_player_state != NCM_STATUS_PLAYER_STOP) {
+        PlaylistScreen *playlist = app_screen_playlist();
+        int32 pos = status_current_song_pos;
+        bool has_song = false;
+
+        if (playlist_screen_now_playing_song(playlist, pos, &song) == 0) {
+            has_song = true;
+        } else if (ncm_mpd_client_is_connected(&global_mpd)) {
+            if (ncm_mpd_client_get_current_song(&global_mpd, &song,
+                                                NULL) >= 0) {
+                has_song = !ncm_song_is_empty(&song);
+            }
+        }
+
+        if (has_song) {
+            if (!ncm_song_is_empty(&song)) {
+                if (Config.execute_on_song_change_len > 0) {
+                    char *command = Config.execute_on_song_change;
+                    int32 len = Config.execute_on_song_change_len;
+
+                    ncm_run_external_command(command, len, true, NULL);
+                }
+
+                if (Config.fetch_lyrics_for_current_song_in_background) {
+                    LyricsScreen *lyrics = app_screen_lyrics();
+
+                    lyrics_screen_fetch_in_background(lyrics, &song,
+                                                      false, NULL);
+                }
+
+                if (Config.autocenter_mode) {
+                    pos = ncm_song_position(&song);
+                    playlist_screen_locate_position(playlist, pos);
+                }
+
+                if (Config.follow_now_playing_lyrics) {
+                    NcScreen *base = app_screen_lyrics_base();
+                    NcScreen *playlist_base = app_screen_playlist_base();
+                    NcScreen *previous = app_controller_previous_screen();
+                    if (app_controller_is_screen_visible(base)
+                        && (previous == playlist_base)) {
+                        LyricsScreen *lyrics = app_screen_lyrics();
+
+                        lyrics_screen_fetch(lyrics, &song, NULL, NULL);
+                    }
+                }
+
+                if (status_ui_hooks_set
+                    && status_ui_hooks.current_song_changed) {
+                    void *user = status_ui_hooks.user;
+
+                    status_ui_hooks.current_song_changed(&song,
+                                                         user);
+                }
+            }
+            status_draw_song_title(&song);
+        }
+
+        ncm_song_destroy(&song);
+    }
+
+    status_current_song_id = mpd_status->song_id;
+    ncm_status_changes_elapsed_time(false);
+    return;
+}
+
 int32
 ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
                             NcmStatusHooks *hooks, NcmError *ncm_error) {
@@ -586,95 +672,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
                 active_hooks->song_id_changed(mpd_status->song_id,
                                               active_hooks->user);
             } else {
-                NcmSong song = {0};
-#if defined(ENABLE_VISUALIZER)
-                VisualizerScreen *visualizer;
-#endif
-
-                playlist_screen_reload_remaining(app_screen_playlist());
-                status_playing_song_scroll_begin = 0;
-                status_first_line_scroll_begin = 0;
-                status_second_line_scroll_begin = 0;
-#if defined(ENABLE_VISUALIZER)
-                visualizer = app_screen_visualizer();
-                visualizer_screen_reset_auto_scale_multiplier(visualizer);
-#endif
-                if (status_ui_hooks_set && status_ui_hooks.song_id_changed) {
-                    void *user = status_ui_hooks.user;
-                    status_ui_hooks.song_id_changed(mpd_status->song_id, user);
-                }
-
-                if (status_player_state != NCM_STATUS_PLAYER_STOP) {
-                    PlaylistScreen *playlist = app_screen_playlist();
-                    int32 pos = status_current_song_pos;
-                    bool has_song = false;
-
-                    if (playlist_screen_now_playing_song(playlist, pos, &song)
-                        == 0) {
-                        has_song = true;
-                    } else if (ncm_mpd_client_is_connected(&global_mpd)) {
-                        if (ncm_mpd_client_get_current_song(&global_mpd, &song,
-                                                            NULL) >= 0) {
-                            has_song = !ncm_song_is_empty(&song);
-                        }
-                    }
-
-                    if (has_song) {
-                        if (!ncm_song_is_empty(&song)) {
-                            if (Config.execute_on_song_change_len > 0) {
-                                char *command = Config.execute_on_song_change;
-                                int32 len = Config.execute_on_song_change_len;
-
-                                ncm_run_external_command(command, len, true,
-                                                         NULL);
-                            }
-
-                            if (Config
-                                .fetch_lyrics_for_current_song_in_background) {
-                                LyricsScreen *lyrics = app_screen_lyrics();
-
-                                lyrics_screen_fetch_in_background(lyrics, &song,
-                                                                  false, NULL);
-                            }
-
-                            if (Config.autocenter_mode) {
-                                pos = ncm_song_position(&song);
-                                playlist_screen_locate_position(playlist, pos);
-                            }
-
-                            if (Config.follow_now_playing_lyrics) {
-                                NcScreen *base;
-                                NcScreen *playlist_base;
-                                NcScreen *previous;
-
-                                base = app_screen_lyrics_base();
-                                playlist_base = app_screen_playlist_base();
-                                previous = app_controller_previous_screen();
-                                if (app_controller_is_screen_visible(base)
-                                    && (previous == playlist_base)) {
-                                    LyricsScreen *lyrics = app_screen_lyrics();
-
-                                    lyrics_screen_fetch(lyrics, &song, NULL,
-                                                        NULL);
-                                }
-                            }
-
-                            if (status_ui_hooks_set
-                                && status_ui_hooks.current_song_changed) {
-                                void *user = status_ui_hooks.user;
-
-                                status_ui_hooks.current_song_changed(&song,
-                                                                     user);
-                            }
-                        }
-                        status_draw_song_title(&song);
-                    }
-
-                    ncm_song_destroy(&song);
-                }
-
-                status_current_song_id = mpd_status->song_id;
-                ncm_status_changes_elapsed_time(false);
+                status_handle_song_change(mpd_status);
             }
             status_current_song_id = mpd_status->song_id;
         }
