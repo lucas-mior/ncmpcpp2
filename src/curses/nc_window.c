@@ -1048,6 +1048,44 @@ nc_xterm_modifier_key(int32 ch) {
     }
 }
 
+static bool
+nc_window_numeric_modifier_sequence(NcWindow *window, int32 key,
+                                    NcKey *modifier) {
+    int32 local_key = wgetch(window->window);
+
+    *modifier = nc_xterm_modifier_key(local_key);
+    local_key = wgetch(window->window);
+    return (local_key == '~') && ((key == 2) || (key == 3)
+                                || (key == 5) || (key == 6));
+}
+
+static NcKey
+nc_window_csi_cursor_modifier(NcWindow *window) {
+    int32 key = wgetch(window->window);
+    NcKey modifier = nc_xterm_modifier_key(key);
+
+    if (modifier == NC_KEY_NONE) {
+        return NC_KEY_NONE;
+    }
+    key = wgetch(window->window);
+    switch (key) {
+    case 'A':
+        return modifier | NC_KEY_UP;
+    case 'B':
+        return modifier | NC_KEY_DOWN;
+    case 'C':
+        return modifier | NC_KEY_RIGHT;
+    case 'D':
+        return modifier | NC_KEY_LEFT;
+    case 'F':
+        return modifier | NC_KEY_END;
+    case 'H':
+        return modifier | NC_KEY_HOME;
+    default:
+        return NC_KEY_NONE;
+    }
+}
+
 static NcKey
 nc_window_get_input_char(NcWindow *window, int32 key) {
     if (!window->escape_terminal_sequences || (key != NC_KEY_ESCAPE)) {
@@ -1176,17 +1214,11 @@ nc_window_get_input_char(NcWindow *window, int32 key) {
                     modifier = NC_KEY_CTRL | NC_KEY_SHIFT;
                     break;
                 case ';':
-                {
-                    int32 local_key = wgetch(window->window);
-
-                    modifier = nc_xterm_modifier_key(local_key);
-                    local_key = wgetch(window->window);
-                    if ((local_key != '~') || ((key != 2) && (key != 3)
-                            && (key != 5) && (key != 6))) {
+                    if (!nc_window_numeric_modifier_sequence(window, key,
+                                                             &modifier)) {
                         return NC_KEY_NONE;
                     }
                     break;
-                }
                 default:
                     return NC_KEY_NONE;
                 }
@@ -1244,32 +1276,7 @@ nc_window_get_input_char(NcWindow *window, int32 key) {
             case ';':
                 switch (key) {
                 case 1:
-                {
-                    NcKey modifier;
-
-                    key = wgetch(window->window);
-                    modifier = nc_xterm_modifier_key(key);
-                    if (modifier == NC_KEY_NONE) {
-                        return NC_KEY_NONE;
-                    }
-                    key = wgetch(window->window);
-                    switch (key) {
-                    case 'A':
-                        return modifier | NC_KEY_UP;
-                    case 'B':
-                        return modifier | NC_KEY_DOWN;
-                    case 'C':
-                        return modifier | NC_KEY_RIGHT;
-                    case 'D':
-                        return modifier | NC_KEY_LEFT;
-                    case 'F':
-                        return modifier | NC_KEY_END;
-                    case 'H':
-                        return modifier | NC_KEY_HOME;
-                    default:
-                        return NC_KEY_NONE;
-                    }
-                }
+                    return nc_window_csi_cursor_modifier(window);
                 default:
                     window->mouse_event.x = 0;
                     delim = nc_window_parse_number(window,

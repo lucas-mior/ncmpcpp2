@@ -1362,14 +1362,14 @@ lyrics_url_best_slug_score(LyricsFetcherDef *fetcher,
                     } else if (match && (match > candid)) {
                         int32 match_pos = (int32)(match - candid);
                         char before_match = candid[match_pos - 1];
+                        bool has_after = match_pos + wanted_len < candid_len;
+                        char after_match =
+                            has_after ? candid[match_pos + wanted_len] : 0;
 
                         if (lyrics_slug_match_separator(before_match)
-                            && (match_pos + wanted_len < candid_len)) {
-                            char after_match = candid[match_pos + wanted_len];
-
-                            if (lyrics_slug_match_separator(after_match)) {
-                                score = 30;
-                            }
+                            && has_after
+                            && lyrics_slug_match_separator(after_match)) {
+                            score = 30;
                         }
                     }
                 } else if (wanted_len > candid_len) {
@@ -1787,15 +1787,16 @@ lyrics_fetch_page(LyricsFetcherDef *fetcher, LyricsResult *result,
                                                               value_start,
                                                               '"',
                                                               &value_end);
-                        if (extract_status == 0) {
-                            str_clear(out);
-                            STR_APPEND(out, html.data, html.len);
-                            if (out->len <= 0) {
-                                extract_status = -NCM_ERROR_NOT_FOUND;
-                            }
-                        }
                     }
                 }
+            }
+        }
+
+        if (extract_status == 0) {
+            str_clear(out);
+            STR_APPEND(out, html.data, html.len);
+            if (out->len <= 0) {
+                extract_status = -NCM_ERROR_NOT_FOUND;
             }
         }
 

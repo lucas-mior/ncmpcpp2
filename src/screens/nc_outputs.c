@@ -107,16 +107,16 @@ nc_outputs_destroy_callback(NcScreen *screen) {
 #define NC_SCREEN_IMPL_WINDOW_FIELD window
 #define NC_SCREEN_IMPL_SCROLLPAD_BASE menu_screen
 #define NC_SCREEN_IMPL_MENU(screen) (&(screen)->menu)
-#define NC_SCREEN_IMPL_REFRESH_CALLBACK(outputs) do { \
-    nc_window_refresh_border(&(outputs)->window); \
-    nc_menu_refresh(&(outputs)->menu, \
-                    &(outputs)->window, \
-                    nc_window_width(&(outputs)->window), \
-                    nc_window_height(&(outputs)->window)); \
-    nc_menu_refresh(&(outputs)->menu, \
-                    &(outputs)->window, \
-                    nc_window_width(&(outputs)->window), \
-                    nc_window_height(&(outputs)->window)); \
+#define NC_SCREEN_IMPL_REFRESH_CALLBACK(outputs) do {     \
+    nc_window_refresh_border(&(outputs)->window);         \
+    nc_menu_refresh(&(outputs)->menu,                     \
+                    &(outputs)->window,                   \
+                    nc_window_width(&(outputs)->window),  \
+                    nc_window_height(&(outputs)->window));\
+    nc_menu_refresh(&(outputs)->menu,                     \
+                    &(outputs)->window,                   \
+                    nc_window_width(&(outputs)->window),  \
+                    nc_window_height(&(outputs)->window));\
 } while (0)
 #define NC_SCREEN_IMPL_SWITCH_TO_CALLBACK nc_outputs_switch_to
 #define NC_SCREEN_IMPL_RESIZE_CALLBACK nc_outputs_resize

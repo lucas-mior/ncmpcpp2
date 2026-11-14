@@ -118,18 +118,18 @@
 #define SCREEN_TYPE_ENUM_FIELDS                                                \
   SCREEN_TYPES(SCREEN_TYPE_XENUM_FIELD)
 
-#define APP_SCREEN_DIRECT_STORAGE_TYPES(XX)                                    \
-  XX(BrowserScreen, browser_screen)                                            \
-  XX(LastfmScreen, lastfm_screen)                                              \
-  XX(LyricsScreen, lyrics_screen)                                              \
-  XX(VisualizerScreen, visualizer_screen)                                      \
-  XX(PlaylistScreen, playlist_screen)                                          \
-  XX(PlaylistEditScreen, playlist_edit_screen)                                 \
-  XX(SelectedItemsAdderScreen, selected_items_add_screen)                      \
-  XX(SortPlaylistDialog, sort_playlist_dialog)                                 \
-  XX(SearchEngineScreen, search_engine_screen)                                 \
-  XX(MediaLibraryScreen, media_lib_screen)                                 \
-  XX(TagEditScreen, tag_edit_screen)                                           \
+#define APP_SCREEN_DIRECT_STORAGE_TYPES(XX)              \
+  XX(BrowserScreen, browser_screen)                      \
+  XX(LastfmScreen, lastfm_screen)                        \
+  XX(LyricsScreen, lyrics_screen)                        \
+  XX(VisualizerScreen, visualizer_screen)                \
+  XX(PlaylistScreen, playlist_screen)                    \
+  XX(PlaylistEditScreen, playlist_edit_screen)           \
+  XX(SelectedItemsAdderScreen, selected_items_add_screen)\
+  XX(SortPlaylistDialog, sort_playlist_dialog)           \
+  XX(SearchEngineScreen, search_engine_screen)           \
+  XX(MediaLibraryScreen, media_lib_screen)               \
+  XX(TagEditScreen, tag_edit_screen)                     \
   XX(TinyTagEditScreen, tiny_tag_edit_screen)
 
 #define APP_SCREEN_WRAPPED_STORAGE_TYPES(XX)                                   \
@@ -138,17 +138,17 @@
   XX(ServerInfoScreen, server_info_screen)                                     \
   XX(SongInfoScreen, song_info_screen)
 
-#define APP_SCREEN_DIRECT_ACCESSOR_TYPES(XX)                                   \
-  XX(browser, BrowserScreen, browser_screen)                                   \
-  XX(lastfm, LastfmScreen, lastfm_screen)                                      \
-  XX(lyrics, LyricsScreen, lyrics_screen)                                      \
-  XX(playlist, PlaylistScreen, playlist_screen)                                \
-  XX(playlist_edit, PlaylistEditScreen, playlist_edit_screen)                  \
-  XX(selected_items_add, SelectedItemsAdderScreen, selected_items_add_screen)  \
-  XX(sort_playlist_dialog, SortPlaylistDialog, sort_playlist_dialog)           \
-  XX(search_engine, SearchEngineScreen, search_engine_screen)                  \
-  XX(media_lib, MediaLibraryScreen, media_lib_screen)                  \
-  XX(tag_edit, TagEditScreen, tag_edit_screen)                                 \
+#define APP_SCREEN_DIRECT_ACCESSOR_TYPES(XX)                                 \
+  XX(browser, BrowserScreen, browser_screen)                                 \
+  XX(lastfm, LastfmScreen, lastfm_screen)                                    \
+  XX(lyrics, LyricsScreen, lyrics_screen)                                    \
+  XX(playlist, PlaylistScreen, playlist_screen)                              \
+  XX(playlist_edit, PlaylistEditScreen, playlist_edit_screen)                \
+  XX(selected_items_add, SelectedItemsAdderScreen, selected_items_add_screen)\
+  XX(sort_playlist_dialog, SortPlaylistDialog, sort_playlist_dialog)         \
+  XX(search_engine, SearchEngineScreen, search_engine_screen)                \
+  XX(media_lib, MediaLibraryScreen, media_lib_screen)                        \
+  XX(tag_edit, TagEditScreen, tag_edit_screen)                               \
   XX(tiny_tag_edit, TinyTagEditScreen, tiny_tag_edit_screen)
 
 #define APP_SCREEN_WRAPPED_ACCESSOR_TYPES(XX)                                  \
@@ -159,58 +159,58 @@
 #define APP_SCREEN_TYPED_WRAPPED_ACCESSOR_TYPES(XX)                            \
   XX(help, app_screen_help, NcHelpScreen, &help_screen.screen)
 
-#define APP_SCREEN_STANDARD_REGISTER_TYPES(XX)                                 \
-  XX(browser)                                                                  \
-  XX(help)                                                                     \
-  XX(lastfm)                                                                   \
-  XX(lyrics)                                                                   \
-  XX(visualizer)                                                               \
-  XX(playlist)                                                                 \
-  XX(playlist_edit)                                                            \
-  XX(search_engine)                                                            \
-  XX(media_lib)                                                            \
-  XX(tag_edit)                                                                 \
-  XX(tiny_tag_edit)                                                            \
-  XX(song_info)                                                                \
-  XX(server_info)                                                              \
+#define APP_SCREEN_STANDARD_REGISTER_TYPES(XX)\
+  XX(browser)                                 \
+  XX(help)                                    \
+  XX(lastfm)                                  \
+  XX(lyrics)                                  \
+  XX(visualizer)                              \
+  XX(playlist)                                \
+  XX(playlist_edit)                           \
+  XX(search_engine)                           \
+  XX(media_lib)                               \
+  XX(tag_edit)                                \
+  XX(tiny_tag_edit)                           \
+  XX(song_info)                               \
+  XX(server_info)                             \
   XX(outputs)
 
 #define APP_SCREEN_REPLACE_REGISTER_TYPES(XX)                                  \
   XX(selected_items_add, NC_SCREEN_TYPE_SELECTED_ITEMS_ADD)                    \
   XX(sort_playlist_dialog, NC_SCREEN_TYPE_SORT_PLAYLIST_DIALOG)
 
-#define APP_SCREEN_SIMPLE_SWITCH_TYPES(XX)                                     \
-  XX(browser)                                                                  \
-  XX(help)                                                                     \
-  XX(playlist)                                                                 \
-  XX(playlist_edit)                                                            \
-  XX(selected_items_add)                                                       \
-  XX(search_engine)                                                            \
-  XX(media_lib)                                                            \
-  XX(tag_edit)                                                                 \
-  XX(song_info)                                                                \
-  XX(server_info)                                                              \
+#define APP_SCREEN_SIMPLE_SWITCH_TYPES(XX)\
+  XX(browser)                             \
+  XX(help)                                \
+  XX(playlist)                            \
+  XX(playlist_edit)                       \
+  XX(selected_items_add)                  \
+  XX(search_engine)                       \
+  XX(media_lib)                           \
+  XX(tag_edit)                            \
+  XX(song_info)                           \
+  XX(server_info)                         \
   XX(outputs)
 
 #define APP_SCREEN_REGISTER_SWITCH_TYPES(XX)                                   \
   XX(tiny_tag_edit)
 
-#define APP_SCREEN_IS_CURRENT_TYPES(XX)                                        \
-  XX(browser)                                                                  \
-  XX(help)                                                                     \
-  XX(lastfm)                                                                   \
-  XX(lyrics)                                                                   \
-  XX(visualizer)                                                               \
-  XX(playlist)                                                                 \
-  XX(playlist_edit)                                                            \
-  XX(selected_items_add)                                                       \
-  XX(sort_playlist_dialog)                                                     \
-  XX(search_engine)                                                            \
-  XX(media_lib)                                                            \
-  XX(tag_edit)                                                                 \
-  XX(tiny_tag_edit)                                                            \
-  XX(song_info)                                                                \
-  XX(server_info)                                                              \
+#define APP_SCREEN_IS_CURRENT_TYPES(XX)\
+  XX(browser)                          \
+  XX(help)                             \
+  XX(lastfm)                           \
+  XX(lyrics)                           \
+  XX(visualizer)                       \
+  XX(playlist)                         \
+  XX(playlist_edit)                    \
+  XX(selected_items_add)               \
+  XX(sort_playlist_dialog)             \
+  XX(search_engine)                    \
+  XX(media_lib)                        \
+  XX(tag_edit)                         \
+  XX(tiny_tag_edit)                    \
+  XX(song_info)                        \
+  XX(server_info)                      \
   XX(outputs)
 
 #if defined(ENABLE_OUTPUTS)

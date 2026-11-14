@@ -8,8 +8,8 @@
 #include "curl_handle.h"
 #include "lastfm_service.h"
 
-#define LASTFM_API_URL \
-    "http://ws.audioscrobbler.com/2.0/?api_key=" \
+#define LASTFM_API_URL                          \
+    "http://ws.audioscrobbler.com/2.0/?api_key="\
     "d94e5b6e26469a2d1ffae8ef20131b79&method="
 #define LASTFM_INVALID_RESPONSE "Invalid response"
 
