@@ -13,11 +13,11 @@ typedef struct HtmlEntity {
     int32 to_len;
 } HtmlEntity;
 
-#define HTML_ENTITY(FROM, TO) { \
-    .from = FROM, \
-    .to = TO, \
+#define HTML_ENTITY(FROM, TO) {   \
+    .from = FROM,                 \
+    .to = TO,                     \
     .from_len = SIZEOF(FROM) - 1, \
-    .to_len = SIZEOF(TO) - 1, \
+    .to_len = SIZEOF(TO) - 1,     \
 }
 
 static HtmlEntity html_entities[] = {

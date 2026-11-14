@@ -402,18 +402,18 @@ static const NcMenuItemCallbacks nc_buffer_menu_callbacks = {
 };
 
 #define NC_TYPED_MENU_DEFINE_INIT(TYPE_NAME, PREFIX, CALLBACKS) \
-    void \
-    PREFIX##_init(TYPE_NAME *menu) { \
-        menu->menu = (NcMenu){0}; \
-        nc_menu_set_item_callbacks(&menu->menu, CALLBACKS); \
-        return; \
+    void                                                        \
+    PREFIX##_init(TYPE_NAME *menu) {                            \
+        menu->menu = (NcMenu){0};                               \
+        nc_menu_set_item_callbacks(&menu->menu, CALLBACKS);     \
+        return;                                                 \
     }
 
 #define NC_TYPED_MENU_DEFINE_DESTROY(TYPE_NAME, PREFIX) \
-    void \
-    PREFIX##_destroy(TYPE_NAME *menu) { \
-        nc_menu_destroy(&menu->menu); \
-        return; \
+    void                                                \
+    PREFIX##_destroy(TYPE_NAME *menu) {                 \
+        nc_menu_destroy(&menu->menu);                   \
+        return;                                         \
     }
 
 #define NC_TYPED_MENU_DEFINE_BASE(TYPE_NAME, PREFIX) \

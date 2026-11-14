@@ -87,7 +87,7 @@ enum TagType
 ncm_char_to_tag_type(char c) {
     switch (c) {
 #define TAG_CHAR_CASE(SUFFIX, DISP, CHAR) \
-    case CHAR:                             \
+    case CHAR:                            \
         return CAT(TAG_, SUFFIX);
 
     TAG_DEFS(TAG_CHAR_CASE)
@@ -102,7 +102,7 @@ enum SongGetter
 ncm_song_getter_from_char(char c) {
     switch (c) {
 #define SONG_GETTER_CHAR_CASE(GETTER, DISP, CHAR) \
-    case CHAR:                                     \
+    case CHAR:                                    \
         return GETTER;
 
     SONG_GETTER_DEFS(SONG_GETTER_CHAR_CASE)
@@ -117,12 +117,12 @@ enum TagType
 ncm_song_getter_to_tag_type(enum SongGetter getter) {
     switch (getter) {
 #define SONG_TAG_GETTER_TO_TAG_CASE(CTX, SUFFIX, DISP, CHAR) \
-    case CAT(SONG_GETTER_, SUFFIX):                           \
+    case CAT(SONG_GETTER_, SUFFIX):                          \
         return CAT(TAG_, SUFFIX);
-#define SONG_TAG_GETTER_TO_TAG_SPECIAL_CASE(                              \
-    CTX, TAG_SUFFIX, TAG_DISP, GETTER_SUFFIX, GETTER_DISP, CHAR,          \
-    GETTER_TAG)                                                            \
-    case CAT(SONG_GETTER_, GETTER_SUFFIX):                                \
+#define SONG_TAG_GETTER_TO_TAG_SPECIAL_CASE(                     \
+    CTX, TAG_SUFFIX, TAG_DISP, GETTER_SUFFIX, GETTER_DISP, CHAR, \
+    GETTER_TAG)                                                  \
+    case CAT(SONG_GETTER_, GETTER_SUFFIX):                       \
         return GETTER_TAG;
 
     SONG_TAG_DEFS(SONG_TAG_GETTER_TO_TAG_CASE,
@@ -148,10 +148,10 @@ ncm_tag_type_to_song_getter(enum TagType tag) {
 #define SONG_TAG_TO_GETTER_CASE(CTX, SUFFIX, DISP, CHAR) \
     case CAT(TAG_, SUFFIX):                              \
         return CAT(SONG_GETTER_, SUFFIX);
-#define SONG_TAG_TO_GETTER_SPECIAL_CASE(                                  \
-    CTX, TAG_SUFFIX, TAG_DISP, GETTER_SUFFIX, GETTER_DISP, CHAR,          \
-    GETTER_TAG)                                                            \
-    case CAT(TAG_, TAG_SUFFIX):                                            \
+#define SONG_TAG_TO_GETTER_SPECIAL_CASE(                         \
+    CTX, TAG_SUFFIX, TAG_DISP, GETTER_SUFFIX, GETTER_DISP, CHAR, \
+    GETTER_TAG)                                                  \
+    case CAT(TAG_, TAG_SUFFIX):                                  \
         return CAT(SONG_GETTER_, GETTER_SUFFIX);
 
     SONG_TAG_DEFS(SONG_TAG_TO_GETTER_CASE,
