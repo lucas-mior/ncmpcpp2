@@ -62,14 +62,14 @@ cbase/csanecheck.conf.
    name. Renaming it would change the accepted configuration key, and the
    direct access has no member chain that an alias could shorten.
 
-10. src/status.c:249:28 [STYLE-MEMBER-NAME-DEPTH]
+10. src/status.c:248:47 [STYLE-MEMBER-NAME-DEPTH]
     Function: ncm_status_trace
     Expression: Config.jump_to_now_playing_song_at_start
     Reason: The Configuration member name is generated from the public option
     name. Renaming it would change the accepted configuration key, and the
     direct access has no member chain that an alias could shorten.
 
-11. src/status.c:500:28 [STYLE-MEMBER-NAME-DEPTH]
+11. src/status.c:499:28 [STYLE-MEMBER-NAME-DEPTH]
     Function: status_handle_song_change
     Expression: Config.fetch_lyrics_for_current_song_in_background
     Reason: The Configuration member name is generated from the public option
