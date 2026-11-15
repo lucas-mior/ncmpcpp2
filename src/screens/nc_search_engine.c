@@ -1349,8 +1349,12 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
     screen->result_rows_present = true;
     screen->result_len = songs.len;
 
-    screen->constraints_locked =
-        Config.block_search_constraints_change_if_items_found;
+    {
+        bool lock_constraints =
+            Config.block_search_constraints_change_if_items_found;
+
+        screen->constraints_locked = lock_constraints;
+    }
     menu = search_engine_screen_menu(screen);
     if (nc_menu_all_item_len(menu) > SEARCH_ENGINE_SEARCH_BUTTON_ROW) {
         for (int32 i = 0; i <= SEARCH_ENGINE_SEARCH_BUTTON_ROW; i += 1) {

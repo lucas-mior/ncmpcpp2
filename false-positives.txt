@@ -20,3 +20,30 @@ csanecheck false positives (2026-11-04)
 
 All three cases are covered by file-scoped rule exceptions in
 cbase/csanecheck.conf.
+
+4. src/screens/nc_screen_impl_template.h:227:34
+   [STYLE-MEMBER-NAME-DEPTH]
+   Expression: impl->NC_SCREEN_IMPL_FILTER_CONSTRAINT_LEN_FIELD
+   Reason: The macro expands to filter_constraint_len, so the concrete member
+   chain is within the limit.
+
+5. src/screens/nc_screen_impl_template.h:259:34
+   [STYLE-MEMBER-NAME-DEPTH]
+   Expression: impl->NC_SCREEN_IMPL_SEARCH_CONSTRAINT_LEN_FIELD
+   Reason: The macro expands to search_constraint_len, so the concrete member
+   chain is within the limit.
+
+6. src/screens/nc_screen_impl_template.h:277:31
+   [STYLE-MEMBER-NAME-DEPTH]
+   Expression: impl->NC_SCREEN_IMPL_SEARCH_CONSTRAINT_LEN_FIELD
+   Reason: The macro expands to search_constraint_len, so the concrete member
+   chain is within the limit.
+
+7. src/screens/nc_screen_impl_template.h:299:34
+   [STYLE-MEMBER-NAME-DEPTH]
+   Expression: impl->NC_SCREEN_IMPL_SEARCH_CONSTRAINT_LEN_FIELD
+   Reason: The macro expands to search_constraint_len, so the concrete member
+   chain is within the limit.
+
+All four template cases are covered by a file-scoped rule exception in
+cbase/csanecheck.conf.

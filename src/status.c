@@ -245,9 +245,12 @@ ncm_status_trace(MpdClient *client, bool update_timer,
                     init_hooks = &status_init_hooks;
                 }
 
+                bool jump_to_playing =
+                    Config.jump_to_now_playing_song_at_start;
+
                 if (init_hooks && init_hooks->jump_to_now_playing) {
                     init_hooks->jump_to_now_playing(init_hooks->user);
-                } else if (Config.jump_to_now_playing_song_at_start) {
+                } else if (jump_to_playing) {
                     int32 position = status_current_song_pos;
 
                     if (position >= 0) {
@@ -493,6 +496,9 @@ status_handle_song_change(NcmMpdStatus *mpd_status) {
 
         if (has_song) {
             if (!ncm_song_is_empty(&song)) {
+                bool fetch_lyrics =
+                    Config.fetch_lyrics_for_current_song_in_background;
+
                 if (Config.execute_on_song_change_len > 0) {
                     char *command = Config.execute_on_song_change;
                     int32 len = Config.execute_on_song_change_len;
@@ -500,7 +506,7 @@ status_handle_song_change(NcmMpdStatus *mpd_status) {
                     ncm_run_external_command(command, len, true, NULL);
                 }
 
-                if (Config.fetch_lyrics_for_current_song_in_background) {
+                if (fetch_lyrics) {
                     LyricsScreen *lyrics = app_screen_lyrics();
 
                     lyrics_screen_fetch_in_background(lyrics, &song,

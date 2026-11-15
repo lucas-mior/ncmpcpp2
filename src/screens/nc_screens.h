@@ -1953,7 +1953,7 @@ typedef struct TinyTagEditHooks {
     int32 (*taglib_open)(void *, TaglibFile *, char *, int32);
     int32 (*taglib_audio_properties)(void *, TaglibFile *,
                                      TaglibAudioProperties *);
-    bool (*taglib_file_can_set_extended_tags)(void *, TaglibFile *);
+    bool (*can_set_extended_tags)(void *, TaglibFile *);
     void (*taglib_close)(void *, TaglibFile *);
     int32 (*write_song)(void *, MutableSong *, char *);
     void (*update_directory)(void *, char *, int32);

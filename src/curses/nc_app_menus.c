@@ -365,12 +365,12 @@ static const NcMenuItemCallbacks nc_search_row_menu_callbacks = {
     .copy = nc_search_row_menu_item_copy,
     .destroy = nc_search_row_menu_item_destroy,
 };
-static const NcMenuItemCallbacks nc_media_lib_tag_menu_callbacks = {
+static const NcMenuItemCallbacks nc_media_tag_menu_callbacks = {
     .item_size = SIZEOF(NcMediaLibraryTagRow),
     .copy = nc_media_lib_tag_menu_item_copy,
     .destroy = nc_media_lib_tag_menu_item_destroy,
 };
-static const NcMenuItemCallbacks nc_media_lib_album_menu_callbacks = {
+static const NcMenuItemCallbacks nc_media_album_menu_callbacks = {
     .item_size = SIZEOF(NcMediaLibraryAlbumRow),
     .copy = nc_media_lib_album_menu_item_copy,
     .destroy = nc_media_lib_album_menu_item_destroy,
@@ -506,7 +506,7 @@ NC_TYPED_MENU_DEFINE_CURRENT(NcSearchRowMenu, nc_search_row_menu, NcSearchRow)
 
 NC_TYPED_MENU_DEFINE_COMMON(NcMediaLibraryTagMenu,
                             nc_media_lib_tag_menu,
-                            nc_media_lib_tag_menu_callbacks)
+                            nc_media_tag_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD(NcMediaLibraryTagMenu,
                          nc_media_lib_tag_menu, NcMediaLibraryTagRow)
 NC_TYPED_MENU_DEFINE_ITEM_AT(NcMediaLibraryTagMenu,
@@ -516,7 +516,7 @@ NC_TYPED_MENU_DEFINE_CURRENT(NcMediaLibraryTagMenu,
 
 NC_TYPED_MENU_DEFINE_COMMON(NcMediaLibraryAlbumMenu,
                             nc_media_lib_album_menu,
-                            nc_media_lib_album_menu_callbacks)
+                            nc_media_album_menu_callbacks)
 NC_TYPED_MENU_DEFINE_ADD(NcMediaLibraryAlbumMenu,
                          nc_media_lib_album_menu, NcMediaLibraryAlbumRow)
 NC_TYPED_MENU_DEFINE_ADD_WITH_FLAGS(NcMediaLibraryAlbumMenu,

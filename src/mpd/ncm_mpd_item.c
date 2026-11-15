@@ -185,8 +185,8 @@ ncm_mpd_item_copy(NcmMpdItem *dest, NcmMpdItem *source) {
     {CAT(MPD_TAG_, suffix), CAT(TAG_, suffix)},
 
 static int32
-ncm_mpd_item_song_from_mpd_song_copy_internal(NcmSong *dest, void *mpd_song,
-                                              bool include_properties) {
+ncm_mpd_item_song_copy_internal(NcmSong *dest, void *mpd_song,
+                                bool include_properties) {
     NcmSong replacement = {0};
     struct mpd_song *source = mpd_song;
     struct {
@@ -280,13 +280,12 @@ ncm_mpd_item_song_from_mpd_song_copy_internal(NcmSong *dest, void *mpd_song,
 
 int32
 ncm_mpd_item_song_from_mpd_song_copy(NcmSong *dest, void *mpd_song) {
-    return ncm_mpd_item_song_from_mpd_song_copy_internal(dest, mpd_song, false);
+    return ncm_mpd_item_song_copy_internal(dest, mpd_song, false);
 }
 
 int32
-ncm_mpd_item_song_from_mpd_song_copy_with_properties(NcmSong *dest,
-                                                     void *mpd_song) {
-    return ncm_mpd_item_song_from_mpd_song_copy_internal(dest, mpd_song, true);
+ncm_mpd_item_song_from_mpd_with_properties(NcmSong *dest, void *mpd_song) {
+    return ncm_mpd_item_song_copy_internal(dest, mpd_song, true);
 }
 
 #undef NCM_MPD_ITEM_TAG_ENTRY
