@@ -495,8 +495,7 @@ status_handle_song_change(NcmMpdStatus *mpd_status) {
 
         if (has_song) {
             if (!ncm_song_is_empty(&song)) {
-                bool fetch_lyrics =
-                    Config.fetch_lyrics_in_background;
+                bool fetch_lyrics = Config.fetch_lyrics_in_background;
 
                 if (Config.execute_on_song_change_len > 0) {
                     char *command = Config.execute_on_song_change;

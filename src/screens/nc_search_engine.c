@@ -1350,8 +1350,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
     screen->result_len = songs.len;
 
     {
-        bool lock_constraints =
-            Config.lock_search_constraints;
+        bool lock_constraints = Config.lock_search_constraints;
 
         screen->constraints_locked = lock_constraints;
     }

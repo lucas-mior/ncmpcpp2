@@ -1114,8 +1114,7 @@ action_runtime_toggle_lyrics_update_on_song_change(void) {
 
 static int32
 action_runtime_toggle_fetch_lyrics_in_background(void) {
-    bool *fetch_in_background =
-        &Config.fetch_lyrics_in_background;
+    bool *fetch_in_background = &Config.fetch_lyrics_in_background;
 
     *fetch_in_background = !*fetch_in_background;
     if (*fetch_in_background) {
