@@ -245,8 +245,7 @@ ncm_status_trace(MpdClient *client, bool update_timer,
                     init_hooks = &status_init_hooks;
                 }
 
-                bool jump_to_playing =
-                    Config.jump_to_now_playing_song_at_start;
+                bool jump_to_playing = Config.jump_to_now_playing_song_at_start;
 
                 if (init_hooks && init_hooks->jump_to_now_playing) {
                     init_hooks->jump_to_now_playing(init_hooks->user);

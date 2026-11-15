@@ -47,3 +47,34 @@ cbase/csanecheck.conf.
 
 All four template cases are covered by a file-scoped rule exception in
 cbase/csanecheck.conf.
+
+8. src/actions.c:1118:17 [STYLE-MEMBER-NAME-DEPTH]
+   Function: action_runtime_toggle_fetch_lyrics_in_background
+   Expression: Config.fetch_lyrics_for_current_song_in_background
+   Reason: The Configuration member name is generated from the public option
+   name. Renaming it would change the accepted configuration key, and the
+   direct access has no member chain that an alias could shorten.
+
+9. src/screens/nc_search_engine.c:1354:20 [STYLE-MEMBER-NAME-DEPTH]
+   Function: search_engine_screen_start_searching
+   Expression: Config.block_search_constraints_change_if_items_found
+   Reason: The Configuration member name is generated from the public option
+   name. Renaming it would change the accepted configuration key, and the
+   direct access has no member chain that an alias could shorten.
+
+10. src/status.c:249:28 [STYLE-MEMBER-NAME-DEPTH]
+    Function: ncm_status_trace
+    Expression: Config.jump_to_now_playing_song_at_start
+    Reason: The Configuration member name is generated from the public option
+    name. Renaming it would change the accepted configuration key, and the
+    direct access has no member chain that an alias could shorten.
+
+11. src/status.c:500:28 [STYLE-MEMBER-NAME-DEPTH]
+    Function: status_handle_song_change
+    Expression: Config.fetch_lyrics_for_current_song_in_background
+    Reason: The Configuration member name is generated from the public option
+    name. Renaming it would change the accepted configuration key, and the
+    direct access has no member chain that an alias could shorten.
+
+All four public-option cases are covered by function-scoped rule exceptions
+in cbase/csanecheck.conf.
