@@ -19,6 +19,14 @@
 #endif
 #endif
 
+#if !defined(XX_BOOL_FIELD)
+#if defined(XX_OPTION)
+#define XX_BOOL_FIELD(NAME, FIELD, DEFAULT) XX_OPTION(NAME, DEFAULT)
+#else
+#define XX_BOOL_FIELD(NAME, FIELD, DEFAULT) XX_BOOL(FIELD, DEFAULT)
+#endif
+#endif
+
 #if !defined(XX_STRING)
 #if defined(XX_OPTION)
 #define XX_STRING XX_OPTION
@@ -214,5 +222,6 @@
 #undef XX_DIR
 #undef XX_PATH
 #undef XX_STRING
+#undef XX_BOOL_FIELD
 #undef XX_BOOL
 #undef XX_OPTION

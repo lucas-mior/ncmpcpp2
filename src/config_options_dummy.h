@@ -25,5 +25,6 @@
 #define XX_INTEGER               XX
 #define XX_PATH                  XX
 #define XX_STRING                XX
+#define XX_BOOL_FIELD(NAME, FIELD, DEFAULT) char *NAME = DEFAULT;
 #define XX_BOOL                  XX
 #define XX_OPTION                XX

@@ -968,6 +968,14 @@ apply_##NAME(Configuration *config, char *value, int32 value_len,              \
                                ncm_error);                                     \
 }
 
+#define XX_BOOL_FIELD(NAME, FIELD, DEFAULT)                                    \
+static int32                                                                   \
+apply_##NAME(Configuration *config, char *value, int32 value_len,              \
+             NcmError *ncm_error) {                                            \
+    return settings_parse_bool(value, value_len, &config->FIELD,               \
+                               ncm_error);                                     \
+}
+
 #define XX_INTEGER(NAME, DEFAULT, MINIMUM, MAXIMUM)                            \
 static int32                                                                   \
 apply_##NAME(Configuration *config, char *value, int32 value_len,              \

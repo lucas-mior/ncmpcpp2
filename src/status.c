@@ -245,7 +245,7 @@ ncm_status_trace(MpdClient *client, bool update_timer,
                     init_hooks = &status_init_hooks;
                 }
 
-                bool jump_to_playing = Config.jump_to_now_playing_song_at_start;
+                bool jump_to_playing = Config.jump_to_playing_at_start;
 
                 if (init_hooks && init_hooks->jump_to_now_playing) {
                     init_hooks->jump_to_now_playing(init_hooks->user);
@@ -496,7 +496,7 @@ status_handle_song_change(NcmMpdStatus *mpd_status) {
         if (has_song) {
             if (!ncm_song_is_empty(&song)) {
                 bool fetch_lyrics =
-                    Config.fetch_lyrics_for_current_song_in_background;
+                    Config.fetch_lyrics_in_background;
 
                 if (Config.execute_on_song_change_len > 0) {
                     char *command = Config.execute_on_song_change;

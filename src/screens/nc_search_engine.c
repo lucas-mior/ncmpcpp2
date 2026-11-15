@@ -1351,7 +1351,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
 
     {
         bool lock_constraints =
-            Config.block_search_constraints_change_if_items_found;
+            Config.lock_search_constraints;
 
         screen->constraints_locked = lock_constraints;
     }
