@@ -237,6 +237,7 @@ ncm_status_trace(MpdClient *client, bool update_timer,
 
             if (ncm_mpd_client_get_status(client, &mpd_status,
                                           ncm_error) >= 0) {
+                bool jump_to_playing = Config.jump_to_playing_at_start;
                 ncm_status_apply_mpd_status(&mpd_status,
                                             status_full_event_mask(), NULL,
                                             ncm_error);
@@ -244,8 +245,6 @@ ncm_status_trace(MpdClient *client, bool update_timer,
                 if (status_init_hooks_set) {
                     init_hooks = &status_init_hooks;
                 }
-
-                bool jump_to_playing = Config.jump_to_playing_at_start;
 
                 if (init_hooks && init_hooks->jump_to_now_playing) {
                     init_hooks->jump_to_now_playing(init_hooks->user);
