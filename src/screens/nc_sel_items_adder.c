@@ -850,16 +850,14 @@ selected_items_add_screen_open(SelectedItemsAdderScreen *screen,
                                     SL("missing selected items dialog"));
     }
     if ((songs == NULL) || (songs->len <= 0)) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("no selected songs"));
+        return ncm_error_set_status(err, -EINVAL, SL("no selected songs"));
     }
     if (playlist == NULL) {
         return ncm_error_set_status(err, -EINVAL,
                                     SL("missing playlist screen"));
     }
     if (client == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing MPD client"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing MPD client"));
     }
     if (screen->ready) {
         return ncm_error_set_status(err, -EBUSY,
@@ -1059,8 +1057,7 @@ selected_items_add_screen_search(SelectedItemsAdderScreen *screen,
                                     SL("missing selected-items adder"));
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing search pattern"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing search pattern"));
     }
 
     regex = (NcmRegex){0};

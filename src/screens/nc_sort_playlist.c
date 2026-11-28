@@ -371,16 +371,14 @@ sort_playlist_dialog_open(SortPlaylistDialog *dialog, PlaylistScreen *playlist,
     int32 status;
 
     if (dialog == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing sort dialog"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing sort dialog"));
     }
     if (playlist == NULL) {
         return ncm_error_set_status(err, -EINVAL,
                                     SL("missing playlist screen"));
     }
     if (client == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing MPD client"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing MPD client"));
     }
 
     current = nc_screen_switcher_current();

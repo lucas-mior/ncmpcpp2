@@ -1567,8 +1567,7 @@ tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
     int32 status;
 
     if (!tag_edit_current_directory_path(screen, &path, &path_len)) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing directory"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing directory"));
     }
 
     {
@@ -1581,8 +1580,7 @@ tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
         }
     }
 
-    if ((status = ncm_mpd_client_get_songs(client, path, &songs,
-                                           err)) < 0) {
+    if ((status = ncm_mpd_client_get_songs(client, path, &songs, err)) < 0) {
         str_free(&preserved_uri);
         ncm_song_array_destroy(&songs);
         return status;
@@ -1680,8 +1678,7 @@ tag_edit_update(NcScreen *screen) {
         if ((status = tag_edit_reload_directories_from_mpd(editor, &global_mpd,
                                                            &err)) < 0) {
             editor->directories_update_requested = false;
-            tag_edit_report_error(SL("Could not fetch directories"),
-                                  &err);
+            tag_edit_report_error(SL("Could not fetch directories"), &err);
             ncm_error_clear(&err);
             tag_edit_update_titles(editor, true);
             continue_update = false;
@@ -2888,8 +2885,7 @@ tag_edit_screen_locate_song(TagEditScreen *screen, NcmSong *song) {
 
     nc_menu_clear_items(nc_editor_pair_menu_base(&screen->directories));
     ncm_error_clear(&err);
-    status = tag_edit_reload_directories_from_mpd(screen, &global_mpd,
-                                                  &err);
+    status = tag_edit_reload_directories_from_mpd(screen, &global_mpd, &err);
     if (status == 0) {
         NcMenu *menu = nc_editor_pair_menu_base(&screen->directories);
         bool found = false;
@@ -2914,8 +2910,7 @@ tag_edit_screen_locate_song(TagEditScreen *screen, NcmSong *song) {
     if (status == 0) {
         tag_edit_screen_clear_stale_tags(screen);
         ncm_error_clear(&err);
-        status = tag_edit_reload_songs_from_mpd(screen, &global_mpd,
-                                                &err);
+        status = tag_edit_reload_songs_from_mpd(screen, &global_mpd, &err);
     }
     if (status == 0) {
         NcMenu *menu = nc_tag_row_menu_base(&screen->tags);
@@ -3620,8 +3615,7 @@ tag_edit_screen_apply_directory_filter(TagEditScreen *screen,
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing tag editor"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing tag editor"));
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
         ncm_regex_destroy(&screen->directory_filter_regex);
@@ -3662,8 +3656,7 @@ tag_edit_screen_apply_tag_filter(TagEditScreen *screen,
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing tag editor"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing tag editor"));
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
         ncm_regex_destroy(&screen->tag_filter_regex);
@@ -3718,12 +3711,10 @@ tag_edit_screen_search(TagEditScreen *screen, char *pattern, int32 pattern_len,
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing tag editor"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing tag editor"));
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing search pattern"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing search pattern"));
     }
     if ((screen->active_focus != TAG_EDIT_FOCUS_DIRECTORIES)
         && (screen->active_focus != TAG_EDIT_FOCUS_TAGS)) {

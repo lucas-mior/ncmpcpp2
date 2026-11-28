@@ -1523,8 +1523,7 @@ search_engine_screen_search(SearchEngineScreen *screen,
                                     SL("missing search screen"));
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing search pattern"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing search pattern"));
     }
 
     regex = (NcmRegex){0};
