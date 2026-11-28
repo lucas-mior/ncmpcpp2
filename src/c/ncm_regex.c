@@ -35,21 +35,21 @@ ncm_regex_destroy(NcmRegex *regex) {
 
 int32
 ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
-                  uint32 flags, NcmError *ncm_error) {
+                  uint32 flags, NcmError *err) {
     String escaped = {0};
     String compiled_pattern = {0};
     int32 reg_flags;
     int32 code;
 
     if (regex == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL, SL("missing regex"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing regex"));
     }
     if (pattern == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing regex pattern"));
     }
     if (pattern_len < 0) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("negative pattern length"));
     }
 
@@ -117,13 +117,13 @@ ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
         if (message_len > 0) {
             message_len -= 1;
         }
-        return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+        return ncm_error_set_status(err, -NCM_ERROR_PARSE,
                                     message, message_len);
     }
 
     regex->compiled = true;
     regex->flags = flags;
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 bool

@@ -189,20 +189,20 @@ tag_edit_filter_constraint_capability(NcScreen *base) {
 static int32
 tag_edit_filter_apply_capability(NcScreen *base,
                                  char *pattern, int32 pattern_len,
-                                 uint32 regex_flags, NcmError *ncm_error) {
+                                 uint32 regex_flags, NcmError *err) {
     TagEditScreen *screen = tag_edit_from_screen(base);
 
     if (screen->active_column == TAG_EDIT_COLUMN_DIRECTORIES) {
         return tag_edit_screen_apply_directory_filter(screen,
                                                       pattern, pattern_len,
                                                       regex_flags,
-                                                      ncm_error);
+                                                      err);
     }
     if (screen->active_column == TAG_EDIT_COLUMN_TAGS) {
         return tag_edit_screen_apply_tag_filter(screen, pattern, pattern_len,
-                                                regex_flags, ncm_error);
+                                                regex_flags, err);
     }
-    return ncm_error_set_code(ncm_error, NCM_ERROR_UNAVAILABLE,
+    return ncm_error_set_code(err, NCM_ERROR_UNAVAILABLE,
                               SL("tag editor cannot filter"));
 }
 
@@ -249,7 +249,7 @@ static int32
 tag_edit_search_capability(NcScreen *base, enum SearchDirection direction,
                            char *pattern, int32 pattern_len,
                            uint32 regex_flags, bool wrap, bool skip_current,
-                           NcmError *ncm_error) {
+                           NcmError *err) {
     bool forward;
 
     (void)regex_flags;
@@ -257,7 +257,7 @@ tag_edit_search_capability(NcScreen *base, enum SearchDirection direction,
     return tag_edit_screen_search(tag_edit_from_screen(base),
                                   pattern, pattern_len,
                                   forward, wrap, skip_current,
-                                  ncm_error);
+                                  err);
 }
 
 static int32
@@ -1437,7 +1437,7 @@ tag_edit_restore_current_directory(TagEditScreen *screen, String *path) {
 static int32
 tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
                                      MpdClient *client,
-                                     NcmError *ncm_error) {
+                                     NcmError *err) {
     NcmDirectoryArray directories = {0};
     String preserved = {0};
     char *dir;
@@ -1461,7 +1461,7 @@ tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
     }
 
     if ((status = ncm_mpd_client_get_directory_list(client, dir, &directories,
-                                                    ncm_error)) < 0) {
+                                                    err)) < 0) {
         str_free(&preserved);
         ncm_directory_array_destroy(&directories);
         return status;
@@ -1559,7 +1559,7 @@ tag_edit_reload_directories_from_mpd(TagEditScreen *screen,
 
 static int32
 tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
-                               MpdClient *client, NcmError *ncm_error) {
+                               MpdClient *client, NcmError *err) {
     NcmSongArray songs = {0};
     String preserved_uri = {0};
     char *path;
@@ -1567,7 +1567,7 @@ tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
     int32 status;
 
     if (!tag_edit_current_directory_path(screen, &path, &path_len)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing directory"));
     }
 
@@ -1582,7 +1582,7 @@ tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
     }
 
     if ((status = ncm_mpd_client_get_songs(client, path, &songs,
-                                           ncm_error)) < 0) {
+                                           err)) < 0) {
         str_free(&preserved_uri);
         ncm_song_array_destroy(&songs);
         return status;
@@ -1651,13 +1651,13 @@ tag_edit_reload_songs_from_mpd(TagEditScreen *screen,
 }
 
 static void
-tag_edit_report_error(char *context, int32 context_len, NcmError *ncm_error) {
+tag_edit_report_error(char *context, int32 context_len, NcmError *err) {
     String message = {0};
 
     STR_APPEND(&message, context, context_len);
-    if (ncm_error && (ncm_error->message[0] != 0)) {
+    if (err && (err->message[0] != 0)) {
         STR_APPEND(&message, ": ");
-        STR_APPEND(&message, ncm_error->message, ncm_error->message_len);
+        STR_APPEND(&message, err->message, err->message_len);
     }
     ncm_statusbar_print(Config.message_delay_time, message.data, message.len);
     str_free(&message);
@@ -1667,22 +1667,22 @@ tag_edit_report_error(char *context, int32 context_len, NcmError *ncm_error) {
 static void
 tag_edit_update(NcScreen *screen) {
     TagEditScreen *editor = tag_edit_from_screen(screen);
-    NcmError ncm_error;
+    NcmError err;
     int32 status;
     bool changed = false;
     bool continue_update = true;
 
     tag_edit_screen_finish_directory_change(editor);
-    ncm_error_clear(&ncm_error);
+    ncm_error_clear(&err);
     if (editor->directories_update_requested
         || (nc_menu_item_len(nc_editor_pair_menu_base(&editor->directories))
             <= 0)) {
         if ((status = tag_edit_reload_directories_from_mpd(editor, &global_mpd,
-                                                           &ncm_error)) < 0) {
+                                                           &err)) < 0) {
             editor->directories_update_requested = false;
             tag_edit_report_error(SL("Could not fetch directories"),
-                                  &ncm_error);
-            ncm_error_clear(&ncm_error);
+                                  &err);
+            ncm_error_clear(&err);
             tag_edit_update_titles(editor, true);
             continue_update = false;
         } else {
@@ -1700,12 +1700,12 @@ tag_edit_update(NcScreen *screen) {
     }
 
     if (continue_update) {
-        ncm_error_clear(&ncm_error);
+        ncm_error_clear(&err);
         if ((status = tag_edit_reload_songs_from_mpd(editor, &global_mpd,
-                                                     &ncm_error)) < 0) {
+                                                     &err)) < 0) {
             editor->tags_update_requested = false;
-            tag_edit_report_error(SL("Could not fetch songs"), &ncm_error);
-            ncm_error_clear(&ncm_error);
+            tag_edit_report_error(SL("Could not fetch songs"), &err);
+            ncm_error_clear(&err);
             tag_edit_update_titles(editor, true);
         } else {
             changed = true;
@@ -2777,7 +2777,7 @@ int32
 tag_edit_screen_enter_directory(TagEditScreen *screen) {
     StrView path = {0};
     NcmDirectoryArray directories = {0};
-    NcmError ncm_error;
+    NcmError err;
     int32 status;
     bool has_subdirectories;
 
@@ -2794,12 +2794,12 @@ tag_edit_screen_enter_directory(TagEditScreen *screen) {
 
     has_subdirectories = false;
     if (path.len > 0) {
-        ncm_error_clear(&ncm_error);
+        ncm_error_clear(&err);
         has_subdirectories =
             (ncm_mpd_client_get_directory_list(&global_mpd, path.data,
-                                               &directories, &ncm_error) == 0)
+                                               &directories, &err) == 0)
             && (directories.len > 0);
-        ncm_error_clear(&ncm_error);
+        ncm_error_clear(&err);
         ncm_directory_array_destroy(&directories);
     }
     if (!has_subdirectories) {
@@ -2858,7 +2858,7 @@ tag_edit_screen_locate_song(TagEditScreen *screen, NcmSong *song) {
     StrView directory;
     StrView uri;
     String parent = {0};
-    NcmError ncm_error;
+    NcmError err;
     int32 parent_len;
     int32 status;
 
@@ -2887,9 +2887,9 @@ tag_edit_screen_locate_song(TagEditScreen *screen, NcmSong *song) {
                       directory.data, directory.len);
 
     nc_menu_clear_items(nc_editor_pair_menu_base(&screen->directories));
-    ncm_error_clear(&ncm_error);
+    ncm_error_clear(&err);
     status = tag_edit_reload_directories_from_mpd(screen, &global_mpd,
-                                                  &ncm_error);
+                                                  &err);
     if (status == 0) {
         NcMenu *menu = nc_editor_pair_menu_base(&screen->directories);
         bool found = false;
@@ -2913,9 +2913,9 @@ tag_edit_screen_locate_song(TagEditScreen *screen, NcmSong *song) {
     }
     if (status == 0) {
         tag_edit_screen_clear_stale_tags(screen);
-        ncm_error_clear(&ncm_error);
+        ncm_error_clear(&err);
         status = tag_edit_reload_songs_from_mpd(screen, &global_mpd,
-                                                &ncm_error);
+                                                &err);
     }
     if (status == 0) {
         NcMenu *menu = nc_tag_row_menu_base(&screen->tags);
@@ -2994,7 +2994,7 @@ tag_edit_screen_rename_current_directory(TagEditScreen *screen,
     String old_path = {0};
     String new_path = {0};
     String new_relative = {0};
-    NcmError ncm_error;
+    NcmError err;
     enum TagEditPromptResult result;
     int32 status;
 
@@ -3032,18 +3032,18 @@ tag_edit_screen_rename_current_directory(TagEditScreen *screen,
     ncm_fs_join(&new_path, music_dir, music_dir_len,
                 new_relative.data, new_relative.len);
 
-    ncm_error_clear(&ncm_error);
+    ncm_error_clear(&err);
     if ((status = ncm_fs_rename(old_path.data, old_path.len,
-                                new_path.data, new_path.len, &ncm_error)) < 0) {
+                                new_path.data, new_path.len, &err)) < 0) {
         String message = {0};
         int32 error_len;
 
         STR_APPEND(&message, "Couldn't rename \"");
         STR_APPEND(&message, pair->first.data, pair->first.len);
         STR_APPEND(&message, "\": ");
-        if (ncm_error_is_set(&ncm_error)) {
-            error_len = ncm_error.message_len;
-            STR_APPEND(&message, ncm_error.message, error_len);
+        if (ncm_error_is_set(&err)) {
+            error_len = err.message_len;
+            STR_APPEND(&message, err.message, error_len);
         } else {
             STR_APPEND(&message, "unknown error");
         }
@@ -3596,31 +3596,31 @@ tag_edit_screen_save_action_available(TagEditScreen *screen) {
 static int32
 tag_edit_compile_constraint(NcmRegex *regex,
                             char *pattern, int32 pattern_len,
-                            uint32 regex_flags, NcmError *ncm_error) {
+                            uint32 regex_flags, NcmError *err) {
     NcmRegex compiled = {0};
     int32 status;
 
     ASSERT(regex != NULL);
 
     if ((status = ncm_regex_compile(&compiled, pattern, pattern_len,
-                                    regex_flags, ncm_error)) < 0) {
+                                    regex_flags, err)) < 0) {
         ncm_regex_destroy(&compiled);
         return status;
     }
     ncm_regex_destroy(regex);
     *regex = compiled;
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 int32
 tag_edit_screen_apply_directory_filter(TagEditScreen *screen,
                                        char *pattern, int32 pattern_len,
                                        uint32 regex_flags,
-                                       NcmError *ncm_error) {
+                                       NcmError *err) {
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing tag editor"));
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
@@ -3632,11 +3632,11 @@ tag_edit_screen_apply_directory_filter(TagEditScreen *screen,
         nc_menu_show_all_items(nc_editor_pair_menu_base(&screen->directories));
         tag_edit_update_titles(screen, true);
 
-        return ncm_error_ok(ncm_error);
+        return ncm_error_ok(err);
     }
     if ((status = tag_edit_compile_constraint(&screen->directory_filter_regex,
                                               pattern, pattern_len, regex_flags,
-                                              ncm_error)) < 0) {
+                                              err)) < 0) {
         return status;
     }
     stupid_string_set(&screen->directory_filter_constraint,
@@ -3652,17 +3652,17 @@ tag_edit_screen_apply_directory_filter(TagEditScreen *screen,
     screen->directory_filter_enabled = true;
     nc_menu_apply_filter(nc_editor_pair_menu_base(&screen->directories));
     tag_edit_update_titles(screen, true);
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 int32
 tag_edit_screen_apply_tag_filter(TagEditScreen *screen,
                                  char *pattern, int32 pattern_len,
-                                 uint32 regex_flags, NcmError *ncm_error) {
+                                 uint32 regex_flags, NcmError *err) {
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing tag editor"));
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
@@ -3673,11 +3673,11 @@ tag_edit_screen_apply_tag_filter(TagEditScreen *screen,
         screen->tag_filter_enabled = false;
         nc_menu_show_all_items(nc_tag_row_menu_base(&screen->tags));
         tag_edit_update_titles(screen, true);
-        return ncm_error_ok(ncm_error);
+        return ncm_error_ok(err);
     }
     if ((status = tag_edit_compile_constraint(&screen->tag_filter_regex,
                                               pattern, pattern_len, regex_flags,
-                                              ncm_error)) < 0) {
+                                              err)) < 0) {
         return status;
     }
     stupid_string_set(&screen->tag_filter_constraint,
@@ -3687,7 +3687,7 @@ tag_edit_screen_apply_tag_filter(TagEditScreen *screen,
     screen->tag_filter_enabled = true;
     nc_menu_apply_filter(nc_tag_row_menu_base(&screen->tags));
     tag_edit_update_titles(screen, true);
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 static bool
@@ -3709,7 +3709,7 @@ tag_edit_search_position(NcMenu *menu, int32 pos, void *user) {
 int32
 tag_edit_screen_search(TagEditScreen *screen, char *pattern, int32 pattern_len,
                        bool forward, bool wrap, bool skip_current,
-                       NcmError *ncm_error) {
+                       NcmError *err) {
     TagEditSearchContext context;
     NcmRegex *regex;
     char **constraint;
@@ -3718,16 +3718,16 @@ tag_edit_screen_search(TagEditScreen *screen, char *pattern, int32 pattern_len,
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing tag editor"));
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing search pattern"));
     }
     if ((screen->active_focus != TAG_EDIT_FOCUS_DIRECTORIES)
         && (screen->active_focus != TAG_EDIT_FOCUS_TAGS)) {
-        return ncm_error_set_code(ncm_error, NCM_ERROR_UNAVAILABLE,
+        return ncm_error_set_code(err, NCM_ERROR_UNAVAILABLE,
                                   SL("tag editor cannot search"));
     }
 
@@ -3744,7 +3744,7 @@ tag_edit_screen_search(TagEditScreen *screen, char *pattern, int32 pattern_len,
     }
     if ((status = tag_edit_compile_constraint(regex, pattern, pattern_len,
                                               Config.regular_expressions,
-                                              ncm_error)) < 0) {
+                                              err)) < 0) {
         return status;
     }
     stupid_string_set(constraint, constraint_len, pattern, pattern_len);
@@ -4167,16 +4167,16 @@ tag_edit_generate_filename(MutableSong *song,
     NcmFormatAst ast = {0};
     NcmSong format_song = {0};
     String rendered = {0};
-    NcmError ncm_error;
+    NcmError err;
     int32 status;
 
     if (pattern_len < 0) {
         return -EINVAL;
     }
-    ncm_error_clear(&ncm_error);
+    ncm_error_clear(&err);
     if ((status = ncm_format_parse(&ast, pattern, pattern_len,
-                                   NCM_FORMAT_FLAG_TAG, &ncm_error)) < 0) {
-        ncm_error_clear(&ncm_error);
+                                   NCM_FORMAT_FLAG_TAG, &err)) < 0) {
+        ncm_error_clear(&err);
         ncm_format_ast_destroy(&ast);
         ncm_song_destroy(&format_song);
         return status;

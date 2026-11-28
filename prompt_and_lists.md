@@ -15,13 +15,13 @@ For instance, this is bad:
 ```c
 status = ncm_fs_rename(
     old_real_path.data, old_real_path.len,
-    new_real_path.data, new_real_path.len, ncm_error)
+    new_real_path.data, new_real_path.len, err)
 ```
 Replace with:
 ```c
 status = ncm_fs_rename(old_real_path.data, old_real_path.len,
                        new_real_path.data, new_real_path.len,
-                       ncm_error);
+                       err);
 ```
 Only keep line break before the first argument on the very very rare occasion
 that it does not fit in a single line (80 column rule). Remember to try to keep

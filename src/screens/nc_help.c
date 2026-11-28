@@ -179,7 +179,7 @@ nc_help_find_match_callback(int32 start, int32 len, void *user) {
 
 int32
 nc_help_screen_find(NcHelpScreen *screen, char *pattern, int32 pattern_len,
-                    NcmError *ncm_error) {
+                    NcmError *err) {
     NcmRegex regex;
     char *data;
     int32 match_count;
@@ -192,13 +192,13 @@ nc_help_screen_find(NcHelpScreen *screen, char *pattern, int32 pattern_len,
                            &screen->search_constraint_len);
         nc_scrollpad_flush(&screen->scrollpad, &screen->window,
                            &screen->buffer);
-        return ncm_error_ok(ncm_error);
+        return ncm_error_ok(err);
     }
 
     regex = (NcmRegex){0};
     if ((status = ncm_regex_compile(&regex, pattern, pattern_len,
                                     Config.regular_expressions,
-                                    ncm_error)) < 0) {
+                                    err)) < 0) {
         ncm_regex_destroy(&regex);
         return status;
     }

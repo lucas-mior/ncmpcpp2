@@ -22,18 +22,18 @@ ncm_path_last_index_of(char *path, int32 path_len, char needle) {
 }
 
 int32
-ncm_path_expand_home(String *path, NcmError *ncm_error) {
+ncm_path_expand_home(String *path, NcmError *err) {
     char *home;
     int32 home_len;
     int32 tilde;
     int32 old_len;
 
     if (path == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing path buffer"));
     }
     if ((path->len < 0) || ((path->data == NULL) && (path->len > 0))) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("invalid path buffer"));
     }
 
@@ -46,18 +46,18 @@ ncm_path_expand_home(String *path, NcmError *ncm_error) {
         }
     }
     if (tilde < 0) {
-        return ncm_error_ok(ncm_error);
+        return ncm_error_ok(err);
     }
 
     if (((home = getenv("HOME")) == NULL) || (home[0] == '\0')) {
-        return ncm_error_set_status(ncm_error, -ENOENT,
+        return ncm_error_set_status(err, -ENOENT,
                                     SL("HOME environment variable is not set"));
     }
 
     home_len = 0;
     while (home[home_len] != '\0') {
         if (home_len == INT32_MAX) {
-            return ncm_error_set_status(ncm_error, -ENAMETOOLONG,
+            return ncm_error_set_status(err, -ENAMETOOLONG,
                                         SL("HOME path is too long"));
         }
         home_len += 1;
@@ -65,7 +65,7 @@ ncm_path_expand_home(String *path, NcmError *ncm_error) {
 
     old_len = path->len;
     if (home_len > (INT32_MAX - (old_len - 1))) {
-        return ncm_error_set_status(ncm_error, -ENAMETOOLONG,
+        return ncm_error_set_status(err, -ENAMETOOLONG,
                                     SL("expanded path is too long"));
     }
     str_reserve(path, home_len - 1);
@@ -73,7 +73,7 @@ ncm_path_expand_home(String *path, NcmError *ncm_error) {
               path->data + tilde + 1, old_len - tilde);
     memcpy64(path->data + tilde, home, home_len);
     path->len = old_len - 1 + home_len;
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 int32

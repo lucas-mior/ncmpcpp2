@@ -7,19 +7,19 @@
 #include "c/ncm_c.h"
 
 static int32
-ncm_conversion_set_parse_error(NcmError *ncm_error,
+ncm_conversion_set_parse_error(NcmError *err,
                                char *source, int32 source_len) {
     char message[256];
     int32 len;
 
     len = SNPRINTF(message, "conversion failed for '%.*s'", source_len, source);
-    ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE, message, len);
+    ncm_error_set_status(err, -NCM_ERROR_PARSE, message, len);
     return -NCM_ERROR_PARSE;
 }
 
 int32
 ncm_parse_double(char *source, int32 source_len, double *out,
-                 NcmError *ncm_error) {
+                 NcmError *err) {
     String buffer = {0};
     char *end;
     double value;
@@ -27,16 +27,16 @@ ncm_parse_double(char *source, int32 source_len, double *out,
     int32 status;
 
     if (out == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing conversion output"));
     }
 
     if (source == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing conversion source"));
     }
     if (source_len < 0) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("negative source length"));
     }
 
@@ -44,7 +44,7 @@ ncm_parse_double(char *source, int32 source_len, double *out,
     STR_APPEND(&buffer, source, source_len);
 
     if (buffer.len <= 0) {
-        status = ncm_conversion_set_parse_error(ncm_error, source, source_len);
+        status = ncm_conversion_set_parse_error(err, source, source_len);
         str_free(&buffer);
         return status;
     }
@@ -61,9 +61,9 @@ ncm_parse_double(char *source, int32 source_len, double *out,
     ok = ok && (errno != ERANGE);
     if (ok) {
         *out = value;
-        status = ncm_error_ok(ncm_error);
+        status = ncm_error_ok(err);
     } else {
-        status = ncm_conversion_set_parse_error(ncm_error, source, source_len);
+        status = ncm_conversion_set_parse_error(err, source, source_len);
     }
 
     str_free(&buffer);
@@ -72,7 +72,7 @@ ncm_parse_double(char *source, int32 source_len, double *out,
 
 int32
 ncm_bounds_check_i64(int64 value, int64 lbound, int64 ubound,
-                     NcmError *ncm_error) {
+                     NcmError *err) {
     if ((value < lbound) || (value > ubound)) {
         char message[256];
         int32 len;
@@ -81,15 +81,15 @@ ncm_bounds_check_i64(int64 value, int64 lbound, int64 ubound,
                        "value is out of bounds ([%lld, %lld] expected, "
                        "%lld given)",
                        lbound, ubound, value);
-        return ncm_error_set_status(ncm_error, -ERANGE, message, len);
+        return ncm_error_set_status(err, -ERANGE, message, len);
     }
 
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 int32
 ncm_bounds_check_f64(double value, double lbound, double ubound,
-                     NcmError *ncm_error) {
+                     NcmError *err) {
     if ((value < lbound) || (value > ubound)) {
         char message[256];
         int32 len;
@@ -97,14 +97,14 @@ ncm_bounds_check_f64(double value, double lbound, double ubound,
         len = SNPRINTF(message,
                        "value is out of bounds ([%g, %g] expected, %g given)",
                        lbound, ubound, value);
-        return ncm_error_set_status(ncm_error, -ERANGE, message, len);
+        return ncm_error_set_status(err, -ERANGE, message, len);
     }
 
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 int32
-ncm_lower_bound_check_f64(double value, double lbound, NcmError *ncm_error) {
+ncm_lower_bound_check_f64(double value, double lbound, NcmError *err) {
     if (value < lbound) {
         char message[256];
         int32 len;
@@ -112,10 +112,10 @@ ncm_lower_bound_check_f64(double value, double lbound, NcmError *ncm_error) {
         len = SNPRINTF(message,
                        "value is out of bounds ([%g, ->) expected, %g given)",
                        lbound, value);
-        return ncm_error_set_status(ncm_error, -ERANGE, message, len);
+        return ncm_error_set_status(err, -ERANGE, message, len);
     }
 
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 #endif /* NCM_CONVERSION_C */

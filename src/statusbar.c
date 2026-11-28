@@ -326,21 +326,21 @@ ncm_statusbar_print(int32 delay_seconds, char *message, int32 message_len) {
 
 void
 ncm_statusbar_mpd_idle_callback(void) {
-    NcmError ncm_error;
+    NcmError err;
 
-    ncm_error_clear(&ncm_error);
-    ncm_status_update_from_noidle(&global_mpd, NULL, &ncm_error);
+    ncm_error_clear(&err);
+    ncm_status_update_from_noidle(&global_mpd, NULL, &err);
     return;
 }
 
 bool
 ncm_statusbar_prompt_should_continue(char *string, int32 string_len) {
-    NcmError ncm_error;
+    NcmError err;
 
     (void)string;
     (void)string_len;
-    ncm_error_clear(&ncm_error);
-    ncm_status_trace(&global_mpd, true, false, &ncm_error);
+    ncm_error_clear(&err);
+    ncm_status_trace(&global_mpd, true, false, &err);
     return true;
 }
 

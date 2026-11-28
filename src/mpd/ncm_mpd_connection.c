@@ -85,7 +85,7 @@ ncm_mpd_connection_set_error(MpdConnection *connection,
     connection->error_clearable = clearable;
 
     message_len = opt_strlen32(message);
-    ncm_error_set(&connection->ncm_error, (int32)connection->error_code,
+    ncm_error_set(&connection->err, (int32)connection->error_code,
                   message, message_len);
     return;
 }
@@ -511,7 +511,7 @@ ncm_mpd_connection_error(MpdConnection *connection) {
         return NULL;
     }
 
-    return connection->ncm_error.message;
+    return connection->err.message;
 }
 
 void
@@ -520,7 +520,7 @@ ncm_mpd_connection_clear_error(MpdConnection *connection) {
         return;
     }
 
-    ncm_error_clear(&connection->ncm_error);
+    ncm_error_clear(&connection->err);
     connection->error_code = NCM_MPD_ERROR_SUCCESS;
     connection->server_error_code = NCM_MPD_SERVER_ERROR_NONE;
     connection->error_clearable = false;

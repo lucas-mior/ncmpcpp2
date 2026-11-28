@@ -202,7 +202,7 @@ sort_dialog_run_sort(void *user) {
     enum SongGetter getters[16];
     SortPlaylistDialog *dialog;
     NcMenu *menu;
-    NcmError ncm_error;
+    NcmError err;
     int32 status;
     int32 getters_len;
 
@@ -223,20 +223,20 @@ sort_dialog_run_sort(void *user) {
         getters_len += 1;
     }
     ncm_statusbar_print(Config.message_delay_time, SL("Sorting..."));
-    ncm_error_clear(&ncm_error);
+    ncm_error_clear(&err);
     status = ncm_playlist_sort_range(&dialog->songs, dialog->start_position,
                                      getters, getters_len,
                                      dialog->ignore_leading_the,
-                                     dialog->client, &ncm_error);
+                                     dialog->client, &err);
     if (status == 0) {
-        status = ncm_status_update_full(dialog->client, NULL, &ncm_error);
+        status = ncm_status_update_full(dialog->client, NULL, &err);
     }
 
     if (status == 0) {
         ncm_statusbar_print(Config.message_delay_time, SL("Range sorted"));
-    } else if (ncm_error_is_set(&ncm_error)) {
+    } else if (ncm_error_is_set(&err)) {
         ncm_statusbar_print(Config.message_delay_time,
-                            ncm_error.message, ncm_error.message_len);
+                            err.message, err.message_len);
     } else {
         ncm_statusbar_print(Config.message_delay_time,
                             SL("Could not sort playlist"));
@@ -364,35 +364,35 @@ sort_playlist_dialog_menu(SortPlaylistDialog *dialog) {
 int32
 sort_playlist_dialog_open(SortPlaylistDialog *dialog, PlaylistScreen *playlist,
                           MpdClient *client, bool ignore_leading_the,
-                          NcmError *ncm_error) {
+                          NcmError *err) {
     NcmSongArray songs;
     NcScreen *current;
     int32 start_position;
     int32 status;
 
     if (dialog == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing sort dialog"));
     }
     if (playlist == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing playlist screen"));
     }
     if (client == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing MPD client"));
     }
 
     current = nc_screen_switcher_current();
     if (current != playlist_screen_base(playlist)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("sort dialog requires playlist screen"));
     }
 
     songs = (NcmSongArray){0};
     if ((status = playlist_screen_copy_sort_range(playlist, &songs,
                                                   &start_position,
-                                                  ncm_error)) < 0) {
+                                                  err)) < 0) {
         ncm_song_array_destroy(&songs);
         return status;
     }
@@ -417,11 +417,11 @@ sort_playlist_dialog_open(SortPlaylistDialog *dialog, PlaylistScreen *playlist,
         dialog->previous_screen = NULL;
         dialog->client = NULL;
         dialog->ready = false;
-        return ncm_error_set_status(ncm_error, status,
+        return ncm_error_set_status(err, status,
                                     SL("sort dialog is not registered"));
     }
 
-    ncm_error_clear(ncm_error);
+    ncm_error_clear(err);
     return 0;
 }
 

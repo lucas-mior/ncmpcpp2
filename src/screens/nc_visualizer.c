@@ -244,21 +244,21 @@ visualizer_update_callback(NcScreen *screen) {
         return;
     }
     if (visualizer->reset_output && (visualizer->output_id >= 0)) {
-        NcmError ncm_error;
+        NcmError err;
         int32 status;
 
         if ((hooks->disable_output == NULL) || (hooks->enable_output == NULL)) {
             return;
         }
 
-        ncm_error_clear(&ncm_error);
+        ncm_error_clear(&err);
         status = hooks->disable_output(hooks->user, visualizer->output_id,
-                                       &ncm_error);
+                                       &err);
         if (status < 0) {
             String message = {0};
 
             STR_APPEND(&message, "Could not disable visualizer output: ");
-            STR_APPEND(&message, ncm_error.message, ncm_error.message_len);
+            STR_APPEND(&message, err.message, err.message_len);
             ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                                 message.data, message.len);
             str_free(&message);
@@ -268,14 +268,14 @@ visualizer_update_callback(NcScreen *screen) {
             hooks->sleep_microseconds(hooks->user, 50000);
         }
 
-        ncm_error_clear(&ncm_error);
+        ncm_error_clear(&err);
         status = hooks->enable_output(hooks->user, visualizer->output_id,
-                                      &ncm_error);
+                                      &err);
         if (status < 0) {
             String message = {0};
 
             STR_APPEND(&message, "Could not enable visualizer output: ");
-            STR_APPEND(&message, ncm_error.message, ncm_error.message_len);
+            STR_APPEND(&message, err.message, err.message_len);
             ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                                 message.data, message.len);
             str_free(&message);
@@ -456,24 +456,24 @@ visualizer_system_close_source(void *user, int32 fd) {
 
 static int32
 visualizer_system_get_outputs(void *user, NcmMpdOutputList *outputs,
-                              NcmError *ncm_error) {
+                              NcmError *err) {
     MpdClient *client = user;
 
-    return ncm_mpd_client_get_outputs(client, outputs, ncm_error);
+    return ncm_mpd_client_get_outputs(client, outputs, err);
 }
 
 static int32
-visualizer_system_disable_output(void *user, int32 id, NcmError *ncm_error) {
+visualizer_system_disable_output(void *user, int32 id, NcmError *err) {
     MpdClient *client = user;
 
-    return ncm_mpd_client_disable_output(client, id, ncm_error);
+    return ncm_mpd_client_disable_output(client, id, err);
 }
 
 static int32
-visualizer_system_enable_output(void *user, int32 id, NcmError *ncm_error) {
+visualizer_system_enable_output(void *user, int32 id, NcmError *err) {
     MpdClient *client = user;
 
-    return ncm_mpd_client_enable_output(client, id, ncm_error);
+    return ncm_mpd_client_enable_output(client, id, err);
 }
 
 static void
@@ -713,7 +713,7 @@ int32
 visualizer_screen_find_output_id(VisualizerScreen *screen) {
     VisualizerDataSourceHooks *hooks = &screen->data_source_hooks;
     NcmMpdOutputList outputs;
-    NcmError ncm_error;
+    NcmError err;
     int32 status;
     bool found = false;
 
@@ -725,14 +725,14 @@ visualizer_screen_find_output_id(VisualizerScreen *screen) {
         return -NCM_ERROR_UNAVAILABLE;
     }
 
-    ncm_error_clear(&ncm_error);
+    ncm_error_clear(&err);
     outputs = (NcmMpdOutputList){0};
-    status = hooks->get_outputs(hooks->user, &outputs, &ncm_error);
+    status = hooks->get_outputs(hooks->user, &outputs, &err);
     if (status < 0) {
         String message = {0};
 
         STR_APPEND(&message, "Could not fetch outputs: ");
-        STR_APPEND(&message, ncm_error.message, ncm_error.message_len);
+        STR_APPEND(&message, err.message, err.message_len);
         ncm_statusbar_print(ncm_statusbar_message_delay_time(),
                             message.data, message.len);
         str_free(&message);

@@ -228,7 +228,7 @@ browser_local_path_has_supported_extension(BrowserScreen *screen,
 
 static int32
 browser_stat_local_path(char *path, int32 path_len, NcmFsStat *out,
-                        NcmError *ncm_error) {
+                        NcmError *err) {
     struct stat statbuf;
     char message[256];
     int32 message_len;
@@ -242,11 +242,11 @@ browser_stat_local_path(char *path, int32 path_len, NcmFsStat *out,
     if (stat(path, &statbuf) != 0) {
         code = errno;
         if (code == ENOENT) {
-            return ncm_error_ok(ncm_error);
+            return ncm_error_ok(err);
         }
         message_len = SNPRINTF(message, "stat '%.*s': %s",
                                         path_len, path, strerror(code));
-        return ncm_error_set_status(ncm_error, -code, message, message_len);
+        return ncm_error_set_status(err, -code, message, message_len);
     }
 
     out->size = (int32)statbuf.st_size;
@@ -259,7 +259,7 @@ browser_stat_local_path(char *path, int32 path_len, NcmFsStat *out,
         out->type = NCM_FS_ENTRY_SYMLINK;
     }
     out->exists = true;
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 static void
@@ -270,7 +270,7 @@ browser_make_local_song(NcmSong *song, char *path, int32 path_len,
 }
 
 static int32
-browser_reload_from_local(BrowserScreen *screen, NcmError *ncm_error) {
+browser_reload_from_local(BrowserScreen *screen, NcmError *err) {
     NcmFsDirectory directory = {0};
     NcmFsEntry entry = {0};
     NcMenu *menu;
@@ -279,7 +279,7 @@ browser_reload_from_local(BrowserScreen *screen, NcmError *ncm_error) {
     if (screen->current_directory.len <= 0) {
         str_set(&screen->current_directory, SL("~"));
         if ((status = ncm_path_expand_home(&screen->current_directory,
-                                           ncm_error)) < 0) {
+                                           err)) < 0) {
             return status;
         }
     } else {
@@ -289,17 +289,17 @@ browser_reload_from_local(BrowserScreen *screen, NcmError *ncm_error) {
             if ((status = browser_set_normalized_directory(screen,
                                                            current.data,
                                                            current.len)) < 0) {
-                return ncm_error_set_status(ncm_error, status,
+                return ncm_error_set_status(err, status,
                                             SL("invalid local directory"));
             }
         }
     }
-    ncm_error_ok(ncm_error);
+    ncm_error_ok(err);
 
     if ((status = ncm_fs_directory_open(&directory,
                                         screen->current_directory.data,
                                         screen->current_directory.len,
-                                        ncm_error)) < 0) {
+                                        err)) < 0) {
         return status;
     }
 
@@ -316,7 +316,7 @@ browser_reload_from_local(BrowserScreen *screen, NcmError *ncm_error) {
         NcmFsStat stat = {0};
         int32 read_status;
 
-        read_status = ncm_fs_directory_read(&directory, &entry, ncm_error);
+        read_status = ncm_fs_directory_read(&directory, &entry, err);
         if (read_status < 0) {
             status = read_status;
             break;
@@ -332,7 +332,7 @@ browser_reload_from_local(BrowserScreen *screen, NcmError *ncm_error) {
         ncm_fs_join(&path, directory.path, directory.path_len,
                     entry.name, entry.name_len);
 
-        status = browser_stat_local_path(path.data, path.len, &stat, ncm_error);
+        status = browser_stat_local_path(path.data, path.len, &stat, err);
         if ((status < 0) || !stat.exists) {
             str_free(&path);
             if (status < 0) {
@@ -396,12 +396,12 @@ browser_reload_from_local(BrowserScreen *screen, NcmError *ncm_error) {
 static void
 browser_update(NcScreen *screen) {
     BrowserScreen *browser = (BrowserScreen *)screen;
-    NcmError ncm_error = {0};
+    NcmError err = {0};
 
     if (browser->update_requested) {
-        ncm_error_clear(&ncm_error);
+        ncm_error_clear(&err);
         if (browser_screen_is_local(browser)) {
-            browser_reload_from_local(browser, &ncm_error);
+            browser_reload_from_local(browser, &err);
         } else {
             int32 status = 0;
 
@@ -418,7 +418,7 @@ browser_update(NcScreen *screen) {
                 }
             }
             if (status < 0) {
-                ncm_error_set_status(&ncm_error, status,
+                ncm_error_set_status(&err, status,
                                      SL("invalid browser directory"));
             }
 
@@ -429,7 +429,7 @@ browser_update(NcScreen *screen) {
 
                 status = ncm_mpd_client_get_directory_entries(&global_mpd, path,
                                                               &items,
-                                                              &ncm_error);
+                                                              &err);
                 if (status == 0) {
                     browser_load_mpd_items(browser, &items);
                     browser_screen_clear_update_request(browser);
@@ -1283,18 +1283,18 @@ browser_screen_set_display_mode(BrowserScreen *screen, enum DisplayMode mode) {
 int32
 browser_screen_fetch_supported_extensions(BrowserScreen *screen,
                                           MpdClient *client,
-                                          NcmError *ncm_error) {
+                                          NcmError *err) {
     StrFlexList strings = {0};
     StrFlexList extensions = {0};
     int32 status;
 
     if ((screen == NULL) || (client == NULL)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing extension state"));
     }
 
     if ((status = ncm_mpd_client_get_supported_extensions(client, &strings,
-                                                          ncm_error)) < 0) {
+                                                          err)) < 0) {
         strflex_list_destroy(&strings);
         return status;
     }
@@ -1321,7 +1321,7 @@ browser_screen_fetch_supported_extensions(BrowserScreen *screen,
     screen->supported_extensions = extensions;
     extensions = (StrFlexList){0};
     strflex_list_destroy(&strings);
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 void
@@ -1362,20 +1362,20 @@ browser_screen_is_local(BrowserScreen *screen) {
 
 int32
 browser_screen_change_browse_mode(BrowserScreen *screen,
-                                  MpdClient *client, NcmError *ncm_error) {
+                                  MpdClient *client, NcmError *err) {
     String directory = {0};
     char *hostname;
     bool local_browser;
     int32 status;
 
     if ((screen == NULL) || (client == NULL)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing browser state"));
     }
 
     if (((hostname = ncm_mpd_client_hostname(client)) == NULL)
         || (hostname[0] != '/')) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("local browsing requires an MPD "
                                        "UNIX socket"));
     }
@@ -1383,7 +1383,7 @@ browser_screen_change_browse_mode(BrowserScreen *screen,
     local_browser = !screen->local_browser;
     if (local_browser) {
         str_set(&directory, SL("~"));
-        if ((status = ncm_path_expand_home(&directory, ncm_error)) < 0) {
+        if ((status = ncm_path_expand_home(&directory, err)) < 0) {
             str_free(&directory);
             return status;
         }
@@ -1404,7 +1404,7 @@ browser_screen_change_browse_mode(BrowserScreen *screen,
     }
 
     str_free(&directory);
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 NcmMpdItem *
@@ -1434,12 +1434,12 @@ static int32
 browser_collect_local_directory_songs(BrowserScreen *screen,
                                       NcmSongArray *songs,
                                       char *path, int32 path_len,
-                                      NcmError *ncm_error) {
+                                      NcmError *err) {
     NcmFsDirectory directory = {0};
     NcmFsEntry entry = {0};
     int32 status;
 
-    if ((status = ncm_fs_directory_open(&directory, path, path_len, ncm_error))
+    if ((status = ncm_fs_directory_open(&directory, path, path_len, err))
         < 0) {
         return status;
     }
@@ -1450,7 +1450,7 @@ browser_collect_local_directory_songs(BrowserScreen *screen,
         NcmFsStat stat = {0};
         int32 read_status;
 
-        read_status = ncm_fs_directory_read(&directory, &entry, ncm_error);
+        read_status = ncm_fs_directory_read(&directory, &entry, err);
         if (read_status < 0) {
             status = read_status;
             break;
@@ -1468,13 +1468,13 @@ browser_collect_local_directory_songs(BrowserScreen *screen,
                     entry.name, entry.name_len);
 
         status = browser_stat_local_path(entry_path.data, entry_path.len, &stat,
-                                         ncm_error);
+                                         err);
         if ((status == 0) && stat.exists
             && (stat.type == NCM_FS_ENTRY_DIRECTORY)) {
             status = browser_collect_local_directory_songs(screen, songs,
                                                            entry_path.data,
                                                            entry_path.len,
-                                                           ncm_error);
+                                                           err);
         } else if ((status == 0) && stat.exists
                    && (stat.type == NCM_FS_ENTRY_FILE)) {
             if (browser_local_path_has_supported_extension(screen,
@@ -1507,24 +1507,24 @@ browser_collect_item_songs(BrowserScreen *screen,
     switch (ncm_mpd_item_kind(item)) {
     case NCM_MPD_ITEM_DIRECTORY: {
         NcmSongArray source = {0};
-        NcmError ncm_error = {0};
+        NcmError err = {0};
         char *directory;
 
         ncm_directory_has_path_view(ncm_mpd_item_directory(item), &path);
         if (screen->local_browser) {
-            ncm_error_clear(&ncm_error);
+            ncm_error_clear(&err);
             return browser_collect_local_directory_songs(screen, songs,
                                                          path.data, path.len,
-                                                         &ncm_error);
+                                                         &err);
         }
 
-        ncm_error_clear(&ncm_error);
+        ncm_error_clear(&err);
         directory = path.data;
         if (path.len <= 0) {
             directory = "/";
         }
         status = ncm_mpd_client_get_directory_recursive(&global_mpd, directory,
-                                                        &source, &ncm_error);
+                                                        &source, &err);
         if (status >= 0) {
             for (int32 i = 0; i < source.len; i += 1) {
                 ncm_song_array_append_copy(songs, &source.items[i]);
@@ -1582,41 +1582,41 @@ browser_screen_selected_songs(BrowserScreen *screen, NcmSongArray *songs) {
 
 static int32
 browser_real_path(BrowserScreen *screen, StrView path,
-                  String *real_path, NcmError *ncm_error) {
+                  String *real_path, NcmError *err) {
     str_clear(real_path);
     if (screen->local_browser) {
         str_set(real_path, path.data, path.len);
-        return ncm_error_ok(ncm_error);
+        return ncm_error_ok(err);
     }
 
     if (Config.mpd_music_dir_len <= 0) {
-        return ncm_error_set_status(ncm_error, -ENOENT,
+        return ncm_error_set_status(err, -ENOENT,
                                     SL("Proper mpd_music_dir variable has "
                                        "to be set in configuration file"));
     }
     ncm_fs_join(real_path, Config.mpd_music_dir, Config.mpd_music_dir_len,
                 path.data, path.len);
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 static int32
-browser_delete_path_recursive(char *path, int32 path_len, NcmError *ncm_error) {
+browser_delete_path_recursive(char *path, int32 path_len, NcmError *err) {
     NcmFsDirectory directory = {0};
     NcmFsEntry entry = {0};
     NcmFsStat stat = {0};
     int32 status;
 
-    if ((status = ncm_fs_stat(path, path_len, &stat, ncm_error)) < 0) {
+    if ((status = ncm_fs_stat(path, path_len, &stat, err)) < 0) {
         return status;
     }
     if (!stat.exists) {
-        return ncm_error_ok(ncm_error);
+        return ncm_error_ok(err);
     }
     if (stat.type != NCM_FS_ENTRY_DIRECTORY) {
-        return ncm_fs_unlink(path, path_len, ncm_error);
+        return ncm_fs_unlink(path, path_len, err);
     }
 
-    if ((status = ncm_fs_directory_open(&directory, path, path_len, ncm_error))
+    if ((status = ncm_fs_directory_open(&directory, path, path_len, err))
         < 0) {
         return status;
     }
@@ -1626,7 +1626,7 @@ browser_delete_path_recursive(char *path, int32 path_len, NcmError *ncm_error) {
         String child = {0};
         int32 read_status;
 
-        read_status = ncm_fs_directory_read(&directory, &entry, ncm_error);
+        read_status = ncm_fs_directory_read(&directory, &entry, err);
         if (read_status < 0) {
             status = read_status;
             break;
@@ -1640,7 +1640,7 @@ browser_delete_path_recursive(char *path, int32 path_len, NcmError *ncm_error) {
                     directory.path, directory.path_len,
                     entry.name, entry.name_len);
         status = browser_delete_path_recursive(child.data, child.len,
-                                               ncm_error);
+                                               err);
         str_free(&child);
         if (status < 0) {
             break;
@@ -1665,44 +1665,44 @@ browser_delete_path_recursive(char *path, int32 path_len, NcmError *ncm_error) {
             code = errno;
             if (code == ENOENT) {
                 free2(copy, path_len + 1);
-                return ncm_error_ok(ncm_error);
+                return ncm_error_ok(err);
             }
             message_len = SNPRINTF(message, "rmdir '%.*s': %s",
                                             path_len, path, strerror(code));
-            status = ncm_error_set_status(ncm_error, -code,
+            status = ncm_error_set_status(err, -code,
                                           message, message_len);
             free2(copy, path_len + 1);
             return status;
         }
         free2(copy, path_len + 1);
     }
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 int32
 browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
-                            NcmError *ncm_error) {
+                            NcmError *err) {
     NcMenu *menu;
     int32 count;
     int32 status;
     bool any_selected;
 
     if (screen == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing browser state"));
     }
     if (!Config.allow_for_physical_item_deletion) {
-        return ncm_error_set_status(ncm_error, -EPERM,
+        return ncm_error_set_status(err, -EPERM,
                                     SL("physical deletion is forbidden"));
     }
 
     menu = browser_screen_menu(screen);
     if (nc_menu_item_len(menu) <= 0) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("no browser item selected"));
     }
     if (!screen->local_browser && (client == NULL)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing MPD client"));
     }
 
@@ -1720,7 +1720,7 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
 
         item = nc_menu_active_item_at(menu, i);
         if (browser_screen_item_is_parent(item)) {
-            return ncm_error_set_status(ncm_error, -EINVAL,
+            return ncm_error_set_status(err, -EINVAL,
                                         SL("deletion of parent directory "
                                            "is forbidden"));
         }
@@ -1731,11 +1731,11 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
             String real_path = {0};
 
             ncm_directory_has_path_view(ncm_mpd_item_directory(item), &path);
-            status = browser_real_path(screen, path, &real_path, ncm_error);
+            status = browser_real_path(screen, path, &real_path, err);
             if (status == 0) {
                 status = browser_delete_path_recursive(real_path.data,
                                                        real_path.len,
-                                                       ncm_error);
+                                                       err);
             }
             str_free(&real_path);
             break;
@@ -1745,10 +1745,10 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
             String real_path = {0};
 
             ncm_song_has_uri_view(ncm_mpd_item_song(item), 0, &path);
-            status = browser_real_path(screen, path, &real_path, ncm_error);
+            status = browser_real_path(screen, path, &real_path, err);
             if (status == 0) {
                 status = ncm_fs_unlink(real_path.data, real_path.len,
-                                       ncm_error);
+                                       err);
             }
             str_free(&real_path);
             break;
@@ -1758,13 +1758,13 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
             String real_path = {0};
 
             if (client == NULL) {
-                return ncm_error_set_status(ncm_error, -EINVAL,
+                return ncm_error_set_status(err, -EINVAL,
                                             SL("missing MPD client"));
             }
             ncm_playlist_has_path_view(ncm_mpd_item_playlist(item), &path);
 
             status = ncm_mpd_client_delete_playlist(client, path.data,
-                                                    ncm_error);
+                                                    err);
             if (status == 0) {
                 break;
             }
@@ -1773,17 +1773,17 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
                 return status;
             }
 
-            status = browser_real_path(screen, path, &real_path, ncm_error);
+            status = browser_real_path(screen, path, &real_path, err);
             if (status == 0) {
                 status = ncm_fs_unlink(real_path.data, real_path.len,
-                                       ncm_error);
+                                       err);
             }
             str_free(&real_path);
             break;
         }
         case NCM_MPD_ITEM_COUNT:
         default:
-            status = ncm_error_set_status(ncm_error, -EINVAL,
+            status = ncm_error_set_status(err, -EINVAL,
                                           SL("unknown browser item"));
             break;
         }
@@ -1799,128 +1799,128 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
             directory = "/";
         }
         if ((status = ncm_mpd_client_update_directory(client, directory, NULL,
-                                                      ncm_error)) < 0) {
+                                                      err)) < 0) {
             return status;
         }
     }
 
     browser_screen_request_update(screen);
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 static int32
 browser_current_directory_item_path(BrowserScreen *screen, StrView *path,
-                                    NcmError *ncm_error) {
+                                    NcmError *err) {
     NcmMpdItem *item;
 
     *path = (StrView){0};
 
     if ((item = browser_screen_current_item(screen)) == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing browser item"));
     }
     if (browser_screen_item_is_parent(item)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("cannot rename parent directory"));
     }
     if (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_DIRECTORY) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("browser item is not a directory"));
     }
     ncm_directory_has_path_view(ncm_mpd_item_directory(item), path);
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 bool
 browser_screen_has_current_directory_path(BrowserScreen *screen,
                                           StrView *path) {
-    NcmError ncm_error;
+    NcmError err;
 
     if ((screen == NULL) || (path == NULL)) {
         return false;
     }
-    ncm_error_clear(&ncm_error);
-    return browser_current_directory_item_path(screen, path, &ncm_error) == 0;
+    ncm_error_clear(&err);
+    return browser_current_directory_item_path(screen, path, &err) == 0;
 }
 
 static int32
 browser_current_playlist_item_path(BrowserScreen *screen, StrView *path,
-                                   NcmError *ncm_error) {
+                                   NcmError *err) {
     NcmMpdItem *item;
 
     *path = (StrView){0};
 
     if ((item = browser_screen_current_item(screen)) == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing browser item"));
     }
     if (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_PLAYLIST) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("browser item is not a playlist"));
     }
     ncm_playlist_has_path_view(ncm_mpd_item_playlist(item), path);
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 bool
 browser_screen_has_current_playlist_path(BrowserScreen *screen, StrView *path) {
-    NcmError ncm_error;
+    NcmError err;
 
     if ((screen == NULL) || (path == NULL)) {
         return false;
     }
-    ncm_error_clear(&ncm_error);
-    return browser_current_playlist_item_path(screen, path, &ncm_error) == 0;
+    ncm_error_clear(&err);
+    return browser_current_playlist_item_path(screen, path, &err) == 0;
 }
 
 bool
 browser_screen_can_rename_directory(BrowserScreen *screen) {
     StrView path;
-    NcmError ncm_error;
+    NcmError err;
 
     if (screen == NULL) {
         return false;
     }
 
-    ncm_error_clear(&ncm_error);
-    return (browser_current_directory_item_path(screen, &path, &ncm_error) == 0)
+    ncm_error_clear(&err);
+    return (browser_current_directory_item_path(screen, &path, &err) == 0)
             && (screen->local_browser || (Config.mpd_music_dir_len > 0));
 }
 
 bool
 browser_screen_can_rename_playlist(BrowserScreen *screen) {
     StrView path;
-    NcmError ncm_error;
+    NcmError err;
 
     if (screen == NULL) {
         return false;
     }
-    ncm_error_clear(&ncm_error);
-    return browser_current_playlist_item_path(screen, &path, &ncm_error) == 0;
+    ncm_error_clear(&err);
+    return browser_current_playlist_item_path(screen, &path, &err) == 0;
 }
 
 int32
 browser_screen_rename_current_directory(BrowserScreen *screen,
                                         char *new_path, int32 new_path_len,
                                         MpdClient *client,
-                                        NcmError *ncm_error) {
+                                        NcmError *err) {
     StrView old_path;
     StrView new_path_view;
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing browser state"));
     }
     if ((new_path == NULL) || (new_path_len <= 0)) {
-        return ncm_error_ok(ncm_error);
+        return ncm_error_ok(err);
     }
     if ((status = browser_current_directory_item_path(screen, &old_path,
-                                                      ncm_error)) < 0) {
+                                                      err)) < 0) {
         return status;
     }
     if (STREQUAL(old_path.data, old_path.len, new_path, new_path_len)) {
-        return ncm_error_ok(ncm_error);
+        return ncm_error_ok(err);
     }
 
     new_path_view = ncm_string_view(new_path, new_path_len);
@@ -1928,15 +1928,15 @@ browser_screen_rename_current_directory(BrowserScreen *screen,
         String old_real_path = {0};
         String new_real_path = {0};
 
-        status = browser_real_path(screen, old_path, &old_real_path, ncm_error);
+        status = browser_real_path(screen, old_path, &old_real_path, err);
         if (status == 0) {
             status = browser_real_path(screen, new_path_view, &new_real_path,
-                                       ncm_error);
+                                       err);
         }
         if (status == 0) {
             status = ncm_fs_rename(old_real_path.data, old_real_path.len,
                                    new_real_path.data, new_real_path.len,
-                                   ncm_error);
+                                   err);
         }
         str_free(&new_real_path);
         str_free(&old_real_path);
@@ -1950,7 +1950,7 @@ browser_screen_rename_current_directory(BrowserScreen *screen,
         char *directory;
 
         if (client == NULL) {
-            return ncm_error_set_status(ncm_error, -EINVAL,
+            return ncm_error_set_status(err, -EINVAL,
                                         SL("missing MPD client"));
         }
 
@@ -1962,7 +1962,7 @@ browser_screen_rename_current_directory(BrowserScreen *screen,
             directory = "/";
         }
         status = ncm_mpd_client_update_directory(client, directory, NULL,
-                                                 ncm_error);
+                                                 err);
         str_free(&shared);
         if (status < 0) {
             return status;
@@ -1970,60 +1970,60 @@ browser_screen_rename_current_directory(BrowserScreen *screen,
     }
 
     browser_screen_request_update(screen);
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 int32
 browser_screen_rename_current_playlist(BrowserScreen *screen,
                                        char *new_path, int32 new_path_len,
                                        MpdClient *client,
-                                       NcmError *ncm_error) {
+                                       NcmError *err) {
     StrView old_path;
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing browser state"));
     }
     if ((new_path == NULL) || (new_path_len <= 0)) {
-        return ncm_error_ok(ncm_error);
+        return ncm_error_ok(err);
     }
     if (client == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing MPD client"));
     }
     if ((status = browser_current_playlist_item_path(screen, &old_path,
-                                                     ncm_error)) < 0) {
+                                                     err)) < 0) {
         return status;
     }
     if (STREQUAL(old_path.data, old_path.len, new_path, new_path_len)) {
-        return ncm_error_ok(ncm_error);
+        return ncm_error_ok(err);
     }
 
     if ((status = ncm_mpd_client_rename_playlist(client, old_path.data,
-                                                 new_path, ncm_error)) < 0) {
+                                                 new_path, err)) < 0) {
         return status;
     }
 
     browser_screen_request_update(screen);
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 int32
 browser_screen_locate_song(BrowserScreen *screen,
                            NcmSong *song, MpdClient *client,
-                           NcmError *ncm_error) {
+                           NcmError *err) {
     StrView directory;
     bool local_browser;
     int32 status;
 
     if ((screen == NULL) || (song == NULL)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing browser song"));
     }
     if (!ncm_song_has_directory_view(song, 0, &directory)
         || (directory.len <= 0)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("song directory is empty"));
     }
 
@@ -2034,13 +2034,13 @@ browser_screen_locate_song(BrowserScreen *screen,
     if (local_browser) {
         browser_screen_set_current_directory(screen,
                                              directory.data, directory.len);
-        status = browser_reload_from_local(screen, ncm_error);
+        status = browser_reload_from_local(screen, err);
     } else {
         NcmMpdItemArray items = {0};
         String path = {0};
 
         if (client == NULL) {
-            return ncm_error_set_status(ncm_error, -EINVAL,
+            return ncm_error_set_status(err, -EINVAL,
                                         SL("missing MPD client"));
         }
 
@@ -2050,7 +2050,7 @@ browser_screen_locate_song(BrowserScreen *screen,
             str_set(&path, directory.data, directory.len);
         }
         status = ncm_mpd_client_get_directory_entries(client, path.data,
-                                                      &items, ncm_error);
+                                                      &items, err);
         if (status == 0) {
             browser_screen_set_current_directory(screen, path.data, path.len);
             browser_load_mpd_items(screen, &items);
@@ -2063,7 +2063,7 @@ browser_screen_locate_song(BrowserScreen *screen,
             && (ncm_mpd_client_server_error_code(client)
                 == NCM_MPD_SERVER_ERROR_NO_EXIST)) {
             browser_screen_request_update(screen);
-            return ncm_error_ok(ncm_error);
+            return ncm_error_ok(err);
         }
     }
 
@@ -2085,7 +2085,7 @@ browser_screen_locate_song(BrowserScreen *screen,
             break;
         }
     }
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 int32
@@ -2125,25 +2125,25 @@ browser_screen_go_to_parent(BrowserScreen *screen) {
 int32
 browser_screen_apply_filter(BrowserScreen *screen,
                             char *pattern, int32 pattern_len,
-                            NcmError *ncm_error) {
+                            NcmError *err) {
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing browser screen"));
     }
     if (pattern_len <= 0) {
         browser_screen_clear_filter(screen);
-        return ncm_error_ok(ncm_error);
+        return ncm_error_ok(err);
     }
     if (pattern == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing filter pattern"));
     }
     if ((status = ncm_regex_compile(&screen->filter_regex,
                                     pattern, pattern_len,
                                     NCM_REGEX_LITERAL_CASE_INSENSITIVE,
-                                    ncm_error)) < 0) {
+                                    err)) < 0) {
         return status;
     }
     stupid_string_set(&screen->filter_constraint,
@@ -2151,7 +2151,7 @@ browser_screen_apply_filter(BrowserScreen *screen,
     screen->filter_enabled = true;
     browser_install_menu_callbacks(screen);
     nc_menu_apply_filter(browser_screen_menu(screen));
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 void
@@ -2181,24 +2181,24 @@ browser_position_matches_search(NcMenu *menu, int32 pos, void *user) {
 int32
 browser_screen_search(BrowserScreen *screen, char *pattern, int32 pattern_len,
                       bool forward, bool wrap,
-                      bool skip_current, NcmError *ncm_error) {
+                      bool skip_current, NcmError *err) {
     BrowserSearchContext context;
     NcmRegex regex = {0};
     NcMenu *menu;
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing browser screen"));
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing search pattern"));
     }
 
     if ((status = ncm_regex_compile(&regex, pattern, pattern_len,
                                     NCM_REGEX_LITERAL_CASE_INSENSITIVE,
-                                    ncm_error)) < 0) {
+                                    err)) < 0) {
         ncm_regex_destroy(&regex);
         return status;
     }

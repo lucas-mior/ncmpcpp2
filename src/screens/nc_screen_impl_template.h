@@ -232,12 +232,12 @@ NC_SCREEN_IMPL_CURRENT_FILTER(NcScreen *screen) {
 static int32
 NC_SCREEN_IMPL_APPLY_FILTER(NcScreen *screen, char *pattern,
                             int32 pattern_len, uint32 regex_flags,
-                            NcmError *ncm_error) {
+                            NcmError *err) {
     NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
 
     (void)regex_flags;
     return NC_SCREEN_IMPL_FILTER_APPLY_CALLBACK(impl, pattern, pattern_len,
-                                                ncm_error);
+                                                err);
 }
 #endif
 
@@ -283,7 +283,7 @@ NC_SCREEN_IMPL_CLEAR_SEARCH_CONSTRAINT(NcScreen *screen) {
 static int32
 NC_SCREEN_IMPL_SEARCH(NcScreen *screen, enum SearchDirection direction,
                       char *pattern, int32 pattern_len, uint32 regex_flags,
-                      bool wrap, bool skip_current, NcmError *ncm_error) {
+                      bool wrap, bool skip_current, NcmError *err) {
     NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
     int32 status;
     bool forward;
@@ -292,7 +292,7 @@ NC_SCREEN_IMPL_SEARCH(NcScreen *screen, enum SearchDirection direction,
     forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
     status = NC_SCREEN_IMPL_SEARCH_CALLBACK(impl, pattern, pattern_len,
                                             forward, wrap, skip_current,
-                                            ncm_error);
+                                            err);
 #if defined(NC_SCREEN_IMPL_SEARCH_SAVE_ON_SUCCESS)
     if (status >= 0) {
         stupid_string_set(&impl->NC_SCREEN_IMPL_SEARCH_CONSTRAINT_FIELD,
@@ -306,14 +306,14 @@ NC_SCREEN_IMPL_SEARCH(NcScreen *screen, enum SearchDirection direction,
 static int32
 NC_SCREEN_IMPL_SEARCH(NcScreen *screen, enum SearchDirection direction,
                       char *pattern, int32 pattern_len, uint32 regex_flags,
-                      bool wrap, bool skip_current, NcmError *ncm_error) {
+                      bool wrap, bool skip_current, NcmError *err) {
     NC_SCREEN_IMPL_TYPE *impl = NC_SCREEN_IMPL_FROM_SCREEN(screen);
 
     (void)direction;
     (void)regex_flags;
     (void)wrap;
     (void)skip_current;
-    return NC_SCREEN_IMPL_FIND_CALLBACK(impl, pattern, pattern_len, ncm_error);
+    return NC_SCREEN_IMPL_FIND_CALLBACK(impl, pattern, pattern_len, err);
 }
 #endif
 

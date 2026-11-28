@@ -53,14 +53,14 @@ app_bridge_set_status_observers(void) {
 }
 
 static void
-app_bridge_report_mpd_error(NcmError *ncm_error) {
+app_bridge_report_mpd_error(NcmError *err) {
     String output = {0};
     char *message;
 
-    ASSERT(ncm_error != NULL);
+    ASSERT(err != NULL);
 
-    if (ncm_error->message[0] != '\0') {
-        message = ncm_error->message;
+    if (err->message[0] != '\0') {
+        message = err->message;
     } else {
         message = ncm_mpd_client_error_message(&global_mpd);
         if (message[0] == '\0') {
@@ -69,7 +69,7 @@ app_bridge_report_mpd_error(NcmError *ncm_error) {
     }
 
     if ((ncm_mpd_client_error_code(&global_mpd) == NCM_MPD_ERROR_SERVER)
-        || (ncm_error->code == NCM_MPD_ERROR_SERVER)) {
+        || (err->code == NCM_MPD_ERROR_SERVER)) {
         STR_APPEND(&output, "MPD: ");
     } else {
         STR_APPEND(&output, "ncmpcpp: ");
@@ -82,12 +82,12 @@ app_bridge_report_mpd_error(NcmError *ncm_error) {
 
 static void
 app_bridge_noidle_status_update(uint32 flags, void *user) {
-    NcmError ncm_error;
+    NcmError err;
 
     (void)user;
-    ncm_error_clear(&ncm_error);
-    if (ncm_status_update(&global_mpd, flags, &ncm_error) < 0) {
-        app_bridge_report_mpd_error(&ncm_error);
+    ncm_error_clear(&err);
+    if (ncm_status_update(&global_mpd, flags, &err) < 0) {
+        app_bridge_report_mpd_error(&err);
     }
     return;
 }
@@ -300,19 +300,19 @@ ncmpcpp_mpd_is_connected(void) {
 
 void
 ncmpcpp_connect_or_report(void) {
-    NcmError ncm_error;
+    NcmError err;
 
-    ncm_error_clear(&ncm_error);
-    if (ncm_mpd_client_connect(&global_mpd, &ncm_error) < 0) {
-        app_bridge_report_mpd_error(&ncm_error);
+    ncm_error_clear(&err);
+    if (ncm_mpd_client_connect(&global_mpd, &err) < 0) {
+        app_bridge_report_mpd_error(&err);
         return;
     }
 
     if (ncm_mpd_client_version(&global_mpd) < 16) {
         ncm_mpd_client_disconnect(&global_mpd);
-        ncm_error_set(&ncm_error, NCM_MPD_ERROR_STATE,
+        ncm_error_set(&err, NCM_MPD_ERROR_STATE,
                       SL("MPD < 0.16.0 is not supported"));
-        app_bridge_report_mpd_error(&ncm_error);
+        app_bridge_report_mpd_error(&err);
     }
     return;
 }
@@ -326,14 +326,14 @@ ncmpcpp_status_clear(void) {
 int32
 ncmpcpp_update_environment(bool update_timer, bool refresh_window,
                            bool mpd_sync) {
-    NcmError ncm_error;
+    NcmError err;
     String message = {0};
     bool current_screen_uses_header_timer;
     int32 status;
 
     app_bridge_set_status_observers();
-    ncm_error_clear(&ncm_error);
-    ncm_status_trace(&global_mpd, update_timer, true, &ncm_error);
+    ncm_error_clear(&err);
+    ncm_status_trace(&global_mpd, update_timer, true, &err);
 
     lyrics_screen_dispatch_jobs(app_screen_lyrics());
     if (lyrics_screen_try_take_consumer_message(app_screen_lyrics(),
@@ -357,9 +357,9 @@ ncmpcpp_update_environment(bool update_timer, bool refresh_window,
     }
 
     if (mpd_sync) {
-        ncm_error_clear(&ncm_error);
+        ncm_error_clear(&err);
         if ((status = ncm_status_update_from_noidle(&global_mpd, NULL,
-                                                    &ncm_error)) < 0) {
+                                                    &err)) < 0) {
             return status;
         }
     }

@@ -79,14 +79,14 @@ lrc_entry_compare(void *left_ptr, void *right_ptr) {
 }
 
 static int32
-lrc_malformed_offset(NcmError *ncm_error) {
-    return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+lrc_malformed_offset(NcmError *err) {
+    return ncm_error_set_status(err, -NCM_ERROR_PARSE,
                                 SL("malformed LRC offset"));
 }
 
 static int32
-lrc_malformed_line(NcmError *ncm_error) {
-    return ncm_error_set_status(ncm_error, -NCM_ERROR_PARSE,
+lrc_malformed_line(NcmError *err) {
+    return ncm_error_set_status(err, -NCM_ERROR_PARSE,
                                 SL("malformed LRC line"));
 }
 
@@ -121,9 +121,9 @@ lrc_find_tag_close(char *line, int32 line_len, int32 cursor) {
 
 static int32
 lrc_parse_time_integer(char *data, int32 data_len, llong *value,
-                       NcmError *ncm_error) {
+                       NcmError *err) {
     if ((parse_integer(data, data_len, value) < 0) || (*value < 0)) {
-        return lrc_malformed_line(ncm_error);
+        return lrc_malformed_line(err);
     }
     return 0;
 }
@@ -131,7 +131,7 @@ lrc_parse_time_integer(char *data, int32 data_len, llong *value,
 static int32
 lrc_parse_line_entries(LrcDocument *document, char *line, int32 line_len,
                        int32 *source_order, int32 blank_lines_before,
-                       NcmError *ncm_error) {
+                       NcmError *err) {
     int32 times[NCM_LRC_MAX_LINE_TIMESTAMPS];
     int32 times_len;
     int32 cursor;
@@ -161,7 +161,7 @@ lrc_parse_line_entries(LrcDocument *document, char *line, int32 line_len,
         tag_len = close - cursor - 1;
         if ((tag_len > 0) && is_digit(tag[0])) {
             if (tag_len < strlen32(shortest_timestamp)) {
-                return lrc_malformed_line(ncm_error);
+                return lrc_malformed_line(err);
             }
 
             colon = -1;
@@ -169,49 +169,49 @@ lrc_parse_line_entries(LrcDocument *document, char *line, int32 line_len,
             for (int32 i = 0; i < tag_len; i += 1) {
                 if (tag[i] == ':') {
                     if (colon >= 0) {
-                        return lrc_malformed_line(ncm_error);
+                        return lrc_malformed_line(err);
                     }
                     colon = i;
                 } else if (tag[i] == '.') {
                     if (dot >= 0) {
-                        return lrc_malformed_line(ncm_error);
+                        return lrc_malformed_line(err);
                     }
                     dot = i;
                 }
             }
 
             if ((colon <= 0) || (colon + 2 >= tag_len)) {
-                return lrc_malformed_line(ncm_error);
+                return lrc_malformed_line(err);
             }
             if ((dot >= 0) && (dot != colon + 3)) {
-                return lrc_malformed_line(ncm_error);
+                return lrc_malformed_line(err);
             }
             if ((dot < 0) && ((colon + 3) != tag_len)) {
-                return lrc_malformed_line(ncm_error);
+                return lrc_malformed_line(err);
             }
 
             if ((status = lrc_parse_time_integer(tag, colon, &minutes,
-                                                 ncm_error)) < 0) {
+                                                 err)) < 0) {
                 return status;
             }
             if ((status = lrc_parse_time_integer(tag + colon + 1, 2,
-                                                 &seconds, ncm_error)) < 0) {
+                                                 &seconds, err)) < 0) {
                 return status;
             }
             if (seconds >= 60) {
-                return lrc_malformed_line(ncm_error);
+                return lrc_malformed_line(err);
             }
 
             milliseconds = 0;
             if (dot >= 0) {
                 frac_len = tag_len - dot - 1;
                 if ((frac_len <= 0) || (frac_len > 3)) {
-                    return lrc_malformed_line(ncm_error);
+                    return lrc_malformed_line(err);
                 }
 
                 if ((status = lrc_parse_time_integer(tag + dot + 1, frac_len,
                                                      &milliseconds,
-                                                     ncm_error)) < 0) {
+                                                     err)) < 0) {
                     return status;
                 }
                 if (frac_len == 1) {
@@ -222,25 +222,25 @@ lrc_parse_line_entries(LrcDocument *document, char *line, int32 line_len,
             }
 
             if (minutes > (MAXOF(value) - seconds)/60) {
-                return lrc_malformed_line(ncm_error);
+                return lrc_malformed_line(err);
             }
             value = minutes*60 + seconds;
             if (value > (MAXOF(value) - milliseconds)/1000) {
-                return lrc_malformed_line(ncm_error);
+                return lrc_malformed_line(err);
             }
             value = value*1000 + milliseconds;
             if ((document->offset_ms > 0)
                 && (value > (MAXOF(value) - document->offset_ms))) {
-                return lrc_malformed_line(ncm_error);
+                return lrc_malformed_line(err);
             }
             if ((document->offset_ms < 0)
                 && (value < (MINOF(value) - document->offset_ms))) {
-                return lrc_malformed_line(ncm_error);
+                return lrc_malformed_line(err);
             }
 
             value += document->offset_ms;
             if ((value < INT32_MIN) || (value > INT32_MAX)) {
-                return lrc_malformed_line(ncm_error);
+                return lrc_malformed_line(err);
             }
 
             if (times_len < LENGTH(times)) {
@@ -279,16 +279,16 @@ lrc_parse_line_entries(LrcDocument *document, char *line, int32 line_len,
 
 int32
 lrc_parse(LrcDocument *document, char *data, int32 data_len,
-          NcmError *ncm_error) {
+          NcmError *err) {
     LrcDocument parsed = {0};
     int32 status;
 
     if (document == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing LRC document"));
     }
     if ((data == NULL) || (data_len <= 0)) {
-        return ncm_error_set_status(ncm_error, -EINVAL, SL("missing LRC data"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing LRC data"));
     }
 
     {
@@ -334,13 +334,13 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
                     value = tag + offset_len;
                     value_len = tag_len - offset_len;
                     if (parse_integer(value, value_len, &signed_value) < 0) {
-                        status = lrc_malformed_offset(ncm_error);
+                        status = lrc_malformed_offset(err);
                         lrc_document_destroy_unchecked(&parsed);
                         return status;
                     }
                     if ((signed_value < MINOF(offset_ms))
                         || (signed_value > MAXOF(offset_ms))) {
-                        status = lrc_malformed_offset(ncm_error);
+                        status = lrc_malformed_offset(err);
                         lrc_document_destroy_unchecked(&parsed);
                         return status;
                     }
@@ -375,7 +375,7 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
                 if ((status = lrc_parse_line_entries(&parsed, line, line_len,
                                                      &source_order,
                                                      blank_lines_before,
-                                                     ncm_error)) < 0) {
+                                                     err)) < 0) {
                     lrc_document_destroy_unchecked(&parsed);
                     return status;
                 }
@@ -388,7 +388,7 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
 
     if (ARRAY_LEN(parsed.entries) <= 0) {
         lrc_document_destroy_unchecked(&parsed);
-        return ncm_error_set_code(ncm_error, NCM_ERROR_PARSE,
+        return ncm_error_set_code(err, NCM_ERROR_PARSE,
                                   SL("no synchronized LRC lines"));
     }
     if (ARRAY_LEN(parsed.entries) > 1) {
@@ -398,7 +398,7 @@ lrc_parse(LrcDocument *document, char *data, int32 data_len,
 
     lrc_document_destroy_unchecked(document);
     *document = parsed;
-    ncm_error_clear(ncm_error);
+    ncm_error_clear(err);
     return 0;
 }
 

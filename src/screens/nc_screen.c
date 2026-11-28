@@ -364,12 +364,12 @@ nc_screen_current_filter(NcScreen *screen) {
 
 int32
 nc_screen_apply_filter(NcScreen *screen, char *pattern, int32 pattern_len,
-                       uint32 regex_flags, NcmError *ncm_error) {
+                       uint32 regex_flags, NcmError *err) {
     if (!nc_screen_can_filter(screen)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     return screen->ops->apply_filter(screen, pattern, pattern_len,
-                                     regex_flags, ncm_error);
+                                     regex_flags, err);
 }
 
 bool
@@ -414,12 +414,12 @@ nc_screen_clear_search_constraint(NcScreen *screen) {
 int32
 nc_screen_search(NcScreen *screen, enum SearchDirection direction,
                  char *pattern, int32 pattern_len, uint32 regex_flags,
-                 bool wrap, bool skip_current, NcmError *ncm_error) {
+                 bool wrap, bool skip_current, NcmError *err) {
     if (!nc_screen_can_search(screen)) {
         return -NCM_ERROR_UNAVAILABLE;
     }
     return screen->ops->search(screen, direction, pattern, pattern_len,
-                               regex_flags, wrap, skip_current, ncm_error);
+                               regex_flags, wrap, skip_current, err);
 }
 
 int32

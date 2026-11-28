@@ -249,15 +249,15 @@ lastfm_screen_set_geometry(LastfmScreen *screen, int32 start_x, int32 width,
 }
 
 static int32
-lastfm_job_run(void *user, NcmError *ncm_error) {
+lastfm_job_run(void *user, NcmError *err) {
     LastfmJob *job = user;
     int32 status;
 
     if ((status = ncm_lastfm_service_fetch(&job->service, &job->result)) < 0) {
-        ncm_error_set_status(ncm_error, status, SL("Last.fm fetch failed"));
+        ncm_error_set_status(err, status, SL("Last.fm fetch failed"));
         return status;
     }
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 static void
@@ -278,12 +278,12 @@ lastfm_apply_literal_format(NcBuffer *buffer, char *needle, int32 needle_len,
 }
 
 static void
-lastfm_job_complete(int32 status, NcmError *ncm_error, void *user) {
+lastfm_job_complete(int32 status, NcmError *err, void *user) {
     LastfmJob *job = user;
     LastfmScreen *screen = job->screen;
 
     (void)status;
-    (void)ncm_error;
+    (void)err;
 
     if (!screen->has_service
         || !ncm_lastfm_service_is_equal(&job->service, &screen->service)) {
@@ -357,24 +357,24 @@ int32
 lastfm_screen_queue_artist_info(LastfmScreen *screen,
                                 char *artist, int32 artist_len,
                                 char *lang, int32 lang_len,
-                                NcmError *ncm_error) {
+                                NcmError *err) {
     LastfmJob *job;
     NcmLastfmService candidate = {0};
     char *title;
     int32 status;
 
     if ((screen == NULL) || (artist == NULL) || (artist_len <= 0)) {
-        return ncm_error_set_status(ncm_error, -EINVAL, SL("missing artist"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing artist"));
     }
 
     ncm_lastfm_artist_info_init(&candidate, artist, artist_len, lang, lang_len);
     if (screen->has_service
         && ncm_lastfm_service_is_equal(&screen->service, &candidate)) {
         ncm_lastfm_service_destroy(&candidate);
-        return ncm_error_ok(ncm_error);
+        return ncm_error_ok(err);
     }
 
-    if ((status = ncm_job_queue_start(&screen->jobs, ncm_error)) < 0) {
+    if ((status = ncm_job_queue_start(&screen->jobs, err)) < 0) {
         ncm_lastfm_service_destroy(&candidate);
         return status;
     }
@@ -394,7 +394,7 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
                                          .complete = lastfm_job_complete,
                                          .destroy = lastfm_job_destroy,
                                          .user = job,
-                                     }, ncm_error)) < 0) {
+                                     }, err)) < 0) {
         lastfm_job_destroy(job);
         return status;
     }
@@ -409,7 +409,7 @@ lastfm_screen_queue_artist_info(LastfmScreen *screen,
     nc_buffer_clear(&screen->buffer);
     nc_buffer_append_data(&screen->buffer, SL(LASTFM_FETCHING));
     screen->refresh_window = true;
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 int32
@@ -461,7 +461,7 @@ lastfm_flush(LastfmScreen *screen) {
 
 int32
 lastfm_screen_find(LastfmScreen *screen, char *pattern, int32 pattern_len,
-                   NcmError *ncm_error) {
+                   NcmError *err) {
     LastfmFindState state;
     NcmRegex regex = {0};
     char *data;
@@ -469,17 +469,17 @@ lastfm_screen_find(LastfmScreen *screen, char *pattern, int32 pattern_len,
     int32 result;
 
     if (screen == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing Last.fm screen"));
     }
 
     nc_buffer_remove_properties(&screen->buffer, LASTFM_PROPERTY_ID);
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        result = ncm_error_ok(ncm_error);
+        result = ncm_error_ok(err);
     } else {
         if ((result = ncm_regex_compile(&regex, pattern, pattern_len,
                                         Config.regular_expressions,
-                                        ncm_error)) < 0) {
+                                        err)) < 0) {
             ncm_regex_destroy(&regex);
             lastfm_flush(screen);
             return result;

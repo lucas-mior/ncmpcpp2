@@ -9,11 +9,11 @@
 #define NCM_FORMAT_PROPERTY_ID INT64_MAX
 
 static int32
-ncm_format_set_error(NcmError *ncm_error, char *message, int32 position) {
+ncm_format_set_error(NcmError *err, char *message, int32 position) {
     char buffer[256];
     int32 len = SNPRINTF(buffer,
                          "format error: %s at position %d", message, position);
-    return ncm_error_set_code(ncm_error, NCM_ERROR_PARSE, buffer, len);
+    return ncm_error_set_code(err, NCM_ERROR_PARSE, buffer, len);
 }
 
 static int32
@@ -92,11 +92,11 @@ parse_color_component(char *data, int32 data_len,
 }
 
 static int32
-ncm_format_digit(uint32 *delimiter, char digit_char, NcmError *ncm_error) {
+ncm_format_digit(uint32 *delimiter, char digit_char, NcmError *err) {
     uint32 digit = (uint32)(digit_char - '0');
 
     if (*delimiter > (MAXOF(*delimiter) - digit)/10) {
-        return ncm_error_set_status(ncm_error, -EOVERFLOW,
+        return ncm_error_set_status(err, -EOVERFLOW,
                                     SL("tag delimiter too large"));
     }
     *delimiter = *delimiter*10 + digit;
@@ -297,7 +297,7 @@ ncm_format_ast_append_column_types(NcmFormatAst *ast,
 static int32
 ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                          int32 start, int32 end, uint32 flags,
-                         NcmError *ncm_error) {
+                         NcmError *err) {
     String token = {0};
     int32 status = 0;
 
@@ -331,13 +331,13 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                     }
                 }
                 if (close < 0) {
-                    status = ncm_format_set_error(ncm_error, "unexpected end",
+                    status = ncm_format_set_error(err, "unexpected end",
                                                   first_i);
                     break;
                 }
 
                 status = ncm_format_parse_bracket(&inner, data, first_i + 1,
-                                                  close, flags, ncm_error);
+                                                  close, flags, err);
                 if (status == 0) {
                     NcmFormatExpr *expr;
 
@@ -361,7 +361,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                 if ((first_i < end) && (data[first_i] == '|')) {
                     first_i += 1;
                     if ((first_i >= end) || (data[first_i] != '{')) {
-                        status = ncm_format_set_error(ncm_error,
+                        status = ncm_format_set_error(err,
                                                       "expected bracket",
                                                       first_i);
                     }
@@ -381,7 +381,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
             ncm_format_text_append(out, &token);
             percent_i = i + 1;
             if (percent_i >= end) {
-                status = ncm_format_set_error(ncm_error, "unexpected end",
+                status = ncm_format_set_error(err, "unexpected end",
                                               percent_i);
             } else if (data[percent_i] == '%') {
                 expr = ncm_format_expr_list_append(out);
@@ -398,14 +398,14 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                         percent_i += 1;
                     }
                     if (percent_i >= end) {
-                        status = ncm_format_set_error(ncm_error,
+                        status = ncm_format_set_error(err,
                                                       "unexpected end",
                                                       percent_i);
                     } else {
                         for (int32 j = delimiter_start;
                              (status == 0) && (j < percent_i); j += 1) {
                             status = ncm_format_digit(&delimiter, data[j],
-                                                      ncm_error);
+                                                      err);
                         }
                     }
                 }
@@ -413,7 +413,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                 if (status == 0) {
                     getter = ncm_song_getter_from_char(data[percent_i]);
                     if (getter == SONG_GETTER_COUNT) {
-                        status = ncm_format_set_error(ncm_error,
+                        status = ncm_format_set_error(err,
                                                       "invalid tag",
                                                       percent_i);
                     } else {
@@ -433,7 +433,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
 
             ncm_format_text_append(out, &token);
             if (dollar_i >= end) {
-                status = ncm_format_set_error(ncm_error, "unexpected end",
+                status = ncm_format_set_error(err, "unexpected end",
                                               dollar_i);
             } else if (data[dollar_i] == '$') {
                 expr = ncm_format_expr_list_append(out);
@@ -487,7 +487,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                         expr->color = nc_color_end();
                         break;
                     default:
-                        status = ncm_format_set_error(ncm_error,
+                        status = ncm_format_set_error(err,
                                                       "invalid color",
                                                       dollar_i);
                         break;
@@ -509,7 +509,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                         dollar_i += 1;
                     }
                     if (dollar_i >= end) {
-                        status = ncm_format_set_error(ncm_error,
+                        status = ncm_format_set_error(err,
                                                       "unexpected end",
                                                       dollar_i);
                         continue;
@@ -522,7 +522,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                                                                 color_len);
 
                     if (color_status < 0) {
-                        status = ncm_format_set_error(ncm_error,
+                        status = ncm_format_set_error(err,
                                                       "invalid color",
                                                       color_start);
                     } else {
@@ -562,7 +562,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                            && (data[dollar_i] == '/')) {
                     dollar_i += 1;
                     if (dollar_i >= end) {
-                        status = ncm_format_set_error(ncm_error,
+                        status = ncm_format_set_error(err,
                                                       "unexpected end",
                                                       dollar_i);
                     } else {
@@ -578,7 +578,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                         } else if (data[dollar_i] == 'i') {
                             expr->format = NC_FORMAT_NO_ITALIC;
                         } else {
-                            status = ncm_format_set_error(ncm_error,
+                            status = ncm_format_set_error(err,
                                                           "invalid format",
                                                           dollar_i);
                         }
@@ -587,7 +587,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                         }
                     }
                 } else {
-                    status = ncm_format_set_error(ncm_error,
+                    status = ncm_format_set_error(err,
                                                   "invalid character",
                                                   dollar_i);
                 }
@@ -606,22 +606,22 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
 
 int32
 ncm_format_parse(NcmFormatAst *ast, char *data, int32 data_len,
-                 uint32 flags, NcmError *ncm_error) {
+                 uint32 flags, NcmError *err) {
     NcmFormatAst tmp;
     int32 status;
 
     if ((ast == NULL) || (data_len < 0)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("invalid format input"));
     }
     if ((data == NULL) && (data_len > 0)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("invalid format input"));
     }
 
     tmp = (NcmFormatAst){0};
     if ((status = ncm_format_parse_bracket(&tmp.root, data, 0, data_len,
-                                           flags, ncm_error)) < 0) {
+                                           flags, err)) < 0) {
         ncm_format_expr_list_destroy_unchecked(&tmp.root);
         return status;
     }

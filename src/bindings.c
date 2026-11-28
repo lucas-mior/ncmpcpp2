@@ -13,7 +13,7 @@
 BindingsConfiguration Bindings;
 
 static void
-bindings_error(NcmError *ncm_error, char *format, ...) {
+bindings_error(NcmError *err, char *format, ...) {
     va_list args;
     char buffer[256];
     int32 len;
@@ -27,7 +27,7 @@ bindings_error(NcmError *ncm_error, char *format, ...) {
         len = SIZEOF(buffer) - 1;
     }
 
-    ncm_error_set(ncm_error, NCM_ERROR_PARSE, buffer, len);
+    ncm_error_set(err, NCM_ERROR_PARSE, buffer, len);
     return;
 }
 
@@ -861,7 +861,7 @@ binding_directive_find(char *name, int32 name_len) {
 
 static int32
 binding_parse_directive(BindingAction *action, BindingDirective *directive,
-                        StrView argument, NcmError *ncm_error) {
+                        StrView argument, NcmError *err) {
     switch (directive->kind) {
     case BINDING_DIRECTIVE_DUMMY:
         action->kind = BINDING_ACTION_NORMAL;
@@ -871,7 +871,7 @@ binding_parse_directive(BindingAction *action, BindingDirective *directive,
         NcKey action_key = nc_key_parse(argument.data, argument.len);
 
         if (action_key == NC_KEY_NONE) {
-            bindings_error(ncm_error,
+            bindings_error(err,
                            "invalid character passed to push_character: '%.*s'",
                            argument.len, argument.data);
             return -NCM_ERROR_PARSE;
@@ -884,7 +884,7 @@ binding_parse_directive(BindingAction *action, BindingDirective *directive,
     }
     case BINDING_DIRECTIVE_PUSH_CHARACTERS:
         if (argument.len <= 0) {
-            bindings_error(ncm_error,
+            bindings_error(err,
                            "empty argument passed to push_characters");
             return -NCM_ERROR_PARSE;
         }
@@ -899,7 +899,7 @@ binding_parse_directive(BindingAction *action, BindingDirective *directive,
     case BINDING_DIRECTIVE_REQUIRE_SCREEN:
         if (screen_type_parse(argument.data, argument.len,
                               &action->screen_type) < 0) {
-            bindings_error(ncm_error,
+            bindings_error(err,
                            "unknown screen passed to require_screen: '%.*s'",
                            argument.len, argument.data);
             return -NCM_ERROR_PARSE;
@@ -909,7 +909,7 @@ binding_parse_directive(BindingAction *action, BindingDirective *directive,
     case BINDING_DIRECTIVE_REQUIRE_RUNNABLE:
         if (ncm_action_type_parse(argument.data, argument.len,
                                   &action->type) < 0) {
-            bindings_error(ncm_error,
+            bindings_error(err,
                            "unknown action passed to require_runnable: '%.*s'",
                            argument.len, argument.data);
             return -NCM_ERROR_PARSE;
@@ -919,7 +919,7 @@ binding_parse_directive(BindingAction *action, BindingDirective *directive,
     case BINDING_DIRECTIVE_EXTERNAL_COMMAND:
     case BINDING_DIRECTIVE_EXTERNAL_CONSOLE_COMMAND:
         if (argument.len <= 0) {
-            bindings_error(ncm_error,
+            bindings_error(err,
                            "empty command passed to %.*s",
                            directive->name_len, directive->name);
             return -NCM_ERROR_PARSE;
@@ -940,7 +940,7 @@ binding_parse_directive(BindingAction *action, BindingDirective *directive,
 
 static int32
 binding_parse_action_line(BindingAction *action, char *line, int32 line_len,
-                          NcmError *ncm_error) {
+                          NcmError *err) {
     BindingDirective *directive;
     StrView argument = {0};
     int32 name_len;
@@ -957,18 +957,18 @@ binding_parse_action_line(BindingAction *action, char *line, int32 line_len,
                 || (ncm_extract_enclosed(line + name_len,
                                          line_len - name_len,
                                          '"', '"', &argument) < 0)) {
-                bindings_error(ncm_error,
+                bindings_error(err,
                                "missing quoted argument: '%.*s'",
                                line_len, line);
                 return -NCM_ERROR_PARSE;
             }
         }
-        return binding_parse_directive(action, directive, argument, ncm_error);
+        return binding_parse_directive(action, directive, argument, err);
     }
 
     if (name_len == line_len) {
         if (ncm_action_type_parse(line, name_len, &action->type) < 0) {
-            bindings_error(ncm_error, "unknown action: '%.*s'", name_len, line);
+            bindings_error(err, "unknown action: '%.*s'", name_len, line);
             return -NCM_ERROR_PARSE;
         }
         action->kind = BINDING_ACTION_NORMAL;
@@ -977,12 +977,12 @@ binding_parse_action_line(BindingAction *action, char *line, int32 line_len,
 
     if (ncm_extract_enclosed(line + name_len, line_len - name_len,
                              '"', '"', &argument) < 0) {
-        bindings_error(ncm_error,
+        bindings_error(err,
                        "missing quoted argument: '%.*s'", line_len, line);
         return -NCM_ERROR_PARSE;
     }
 
-    bindings_error(ncm_error, "unknown action: '%.*s'", line_len, line);
+    bindings_error(err, "unknown action: '%.*s'", line_len, line);
     return -NCM_ERROR_PARSE;
 }
 
@@ -993,17 +993,17 @@ bindings_finalize_definition(BindingsConfiguration *bindings,
                              int32 in_progress, Binding *actions, NcKey key,
                              char *key_name, int32 key_name_len,
                              char *cmd_name, int32 cmd_name_len,
-                             bool cmd_immediate, NcmError *ncm_error) {
+                             bool cmd_immediate, NcmError *err) {
     if (in_progress == 0) {
         return 0;
     }
     if (actions->actions_len == 0) {
         if (in_progress == 1) {
-            bindings_error(ncm_error,
+            bindings_error(err,
                            "definition of command '%.*s' cannot be empty",
                            cmd_name_len, cmd_name);
         } else {
-            bindings_error(ncm_error,
+            bindings_error(err,
                            "definition of key '%.*s' cannot be empty",
                            key_name_len, key_name);
         }
@@ -1022,7 +1022,7 @@ bindings_finalize_definition(BindingsConfiguration *bindings,
         binding_copy(&command.binding, actions);
 
         if (bindings_cmd_index(bindings, command.name, command.name_len) >= 0) {
-            bindings_error(ncm_error,
+            bindings_error(err,
                            "redefinition of command '%.*s'",
                            command.name_len, command.name);
             status = -NCM_ERROR_PARSE;
@@ -1071,7 +1071,7 @@ bindings_finalize_definition(BindingsConfiguration *bindings,
 
 int32
 bindings_config_read(BindingsConfiguration *bindings,
-                     char *path, int32 path_len, NcmError *ncm_error) {
+                     char *path, int32 path_len, NcmError *err) {
     enum {
         IN_PROGRESS_NONE = 0,
         IN_PROGRESS_COMMAND = 1,
@@ -1103,7 +1103,7 @@ bindings_config_read(BindingsConfiguration *bindings,
     }
     if ((content_len = read_entire_file(path_copy, &content)) < 0) {
         int32 code = -content_len;
-        bindings_error(ncm_error,
+        bindings_error(err,
                        "%.*s: read error: %s", path_len, path, strerror(code));
         free2(path_copy, path_cap);
         return content_len;
@@ -1145,7 +1145,7 @@ bindings_config_read(BindingsConfiguration *bindings,
                                                   cmd_name,
                                                   cmd_name_len,
                                                   cmd_immediate,
-                                                  ncm_error);
+                                                  err);
             binding_clear(&actions);
             in_progress = IN_PROGRESS_NONE;
             if (status < 0) {
@@ -1153,14 +1153,14 @@ bindings_config_read(BindingsConfiguration *bindings,
             }
             if (ncm_extract_enclosed(current_line + start, len - start,
                                      '"', '"', &enclosed) < 0) {
-                bindings_error(ncm_error,
+                bindings_error(err,
                                "%.*s:%d: command must have non-empty name",
                                path_len, path, line_no);
                 status = -NCM_ERROR_PARSE;
                 break;
             }
             if (enclosed.len <= 0) {
-                bindings_error(ncm_error,
+                bindings_error(err,
                                "%.*s:%d: command must have non-empty name",
                                path_len, path, line_no);
                 status = -NCM_ERROR_PARSE;
@@ -1172,7 +1172,7 @@ bindings_config_read(BindingsConfiguration *bindings,
             cmd_name_len = enclosed.len;
             if (ncm_extract_enclosed(current_line + start, len - start,
                                      '[', ']', &enclosed) < 0) {
-                bindings_error(ncm_error,
+                bindings_error(err,
                                "%.*s:%d: missing command type",
                                path_len, path, line_no);
                 status = -NCM_ERROR_PARSE;
@@ -1183,7 +1183,7 @@ bindings_config_read(BindingsConfiguration *bindings,
             } else if (STREQUAL(enclosed.data, enclosed.len, "deferred")) {
                 cmd_immediate = false;
             } else {
-                bindings_error(ncm_error,
+                bindings_error(err,
                                "%.*s:%d: invalid command type '%.*s'",
                                path_len, path, line_no,
                                enclosed.len, enclosed.data);
@@ -1199,7 +1199,7 @@ bindings_config_read(BindingsConfiguration *bindings,
                                                   cmd_name,
                                                   cmd_name_len,
                                                   cmd_immediate,
-                                                  ncm_error);
+                                                  err);
             binding_clear(&actions);
             in_progress = IN_PROGRESS_NONE;
             if (status < 0) {
@@ -1207,14 +1207,14 @@ bindings_config_read(BindingsConfiguration *bindings,
             }
             if (ncm_extract_enclosed(current_line + start, len - start,
                                      '"', '"', &enclosed) < 0) {
-                bindings_error(ncm_error,
+                bindings_error(err,
                                "%.*s:%d: invalid key", path_len, path, line_no);
                 status = -NCM_ERROR_PARSE;
                 break;
             }
             key = nc_key_parse(enclosed.data, enclosed.len);
             if (key == NC_KEY_NONE) {
-                bindings_error(ncm_error,
+                bindings_error(err,
                                "%.*s:%d: invalid key '%.*s'",
                                path_len, path, line_no,
                                enclosed.len, enclosed.data);
@@ -1237,14 +1237,14 @@ bindings_config_read(BindingsConfiguration *bindings,
             binding_action_init(&action);
             if ((status = binding_parse_action_line(&action,
                                                     current_line + action_start,
-                                                    action_len, ncm_error))
+                                                    action_len, err))
                 < 0) {
                 break;
             }
             binding_append_action(&actions, &action);
             binding_action_destroy(&action);
         } else {
-            bindings_error(ncm_error,
+            bindings_error(err,
                            "%.*s:%d: invalid line '%.*s'",
                            path_len, path, line_no, len, current_line);
             status = -NCM_ERROR_PARSE;
@@ -1257,7 +1257,7 @@ bindings_config_read(BindingsConfiguration *bindings,
                                               key_name, key_name_len,
                                               cmd_name, cmd_name_len,
                                               cmd_immediate,
-                                              ncm_error);
+                                              err);
     }
 
     binding_destroy(&actions);

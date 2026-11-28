@@ -381,7 +381,7 @@ enum NcmMpdState {
 
 typedef struct MpdConnection {
     void *mpd;
-    NcmError ncm_error;
+    NcmError err;
     enum NcmMpdError error_code;
     enum NcmMpdServerError server_error_code;
     bool error_clearable;
@@ -808,7 +808,7 @@ typedef struct NcmJob {
     NcmJobCompleteCallback *complete;
     NcmJobDestroyCallback *destroy;
     void *user;
-    NcmError ncm_error;
+    NcmError err;
     int32 status;
 } NcmJob;
 

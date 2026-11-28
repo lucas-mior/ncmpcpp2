@@ -269,15 +269,15 @@ app_screen_browser_init(void) {
 
 void
 app_screen_browser_fetch_supported_extensions(void) {
-    NcmError ncm_error;
+    NcmError err;
 
-    ncm_error_clear(&ncm_error);
+    ncm_error_clear(&err);
     if ((browser_screen_fetch_supported_extensions(app_screen_browser(),
                                                    &global_mpd,
-                                                   &ncm_error) < 0)
-        && ncm_error_is_set(&ncm_error)) {
+                                                   &err) < 0)
+        && ncm_error_is_set(&err)) {
         ncm_statusbar_print(Config.message_delay_time,
-                            ncm_error.message, ncm_error.message_len);
+                            err.message, err.message_len);
     }
     return;
 }
@@ -482,11 +482,11 @@ app_screen_selected_items_add_init(void) {
 }
 
 int32
-app_screen_selected_items_add_open(NcmSongArray *songs, NcmError *ncm_error) {
+app_screen_selected_items_add_open(NcmSongArray *songs, NcmError *err) {
     app_screen_selected_items_add_register();
     return selected_items_add_screen_open(app_screen_selected_items_add(),
                                           songs, app_screen_playlist(),
-                                          &global_mpd, ncm_error);
+                                          &global_mpd, err);
 }
 
 void
@@ -506,17 +506,17 @@ app_screen_sort_playlist_dialog_init(void) {
 
 int32
 app_screen_sort_playlist_dialog_switch_to(void) {
-    NcmError ncm_error;
+    NcmError err;
     int32 status;
 
-    ncm_error_clear(&ncm_error);
+    ncm_error_clear(&err);
     status = sort_playlist_dialog_open(app_screen_sort_playlist_dialog(),
                                        app_screen_playlist(), &global_mpd,
                                        Config.ignore_leading_the,
-                                       &ncm_error);
-    if ((status < 0) && ncm_error_is_set(&ncm_error)) {
+                                       &err);
+    if ((status < 0) && ncm_error_is_set(&err)) {
         ncm_statusbar_print(Config.message_delay_time,
-                            ncm_error.message, ncm_error.message_len);
+                            err.message, err.message_len);
     }
     return status;
 }
@@ -529,7 +529,7 @@ app_screen_sort_playlist_dialog_show(void) {
 
 static int32
 search_list_database_songs(void *user, NcmSongArray *songs,
-                           NcmError *ncm_error) {
+                           NcmError *err) {
     NcmSongArray source = {0};
     int32 status;
 
@@ -537,7 +537,7 @@ search_list_database_songs(void *user, NcmSongArray *songs,
 
     ncm_song_array_clear(songs);
     status = ncm_mpd_client_get_directory_recursive(&global_mpd,
-                                                    "/", &source, ncm_error);
+                                                    "/", &source, err);
     if (status >= 0) {
         ncm_song_array_move(songs, &source);
         status = 0;
@@ -547,7 +547,7 @@ search_list_database_songs(void *user, NcmSongArray *songs,
 }
 
 static int32
-search_snapshot_playlist(void *user, NcmSongArray *songs, NcmError *ncm_error) {
+search_snapshot_playlist(void *user, NcmSongArray *songs, NcmError *err) {
     PlaylistScreen *playlist;
     NcSongMenu *song_menu;
     NcMenu *menu;
@@ -555,7 +555,7 @@ search_snapshot_playlist(void *user, NcmSongArray *songs, NcmError *ncm_error) {
     int32 count;
 
     (void)user;
-    (void)ncm_error;
+    (void)err;
 
     ncm_song_array_clear(songs);
     playlist = app_screen_playlist();
@@ -629,9 +629,9 @@ search_status_message(void *user, char *message, int32 message_len) {
 }
 
 static int32
-search_add_song(void *user, NcmSong *song, bool play, NcmError *ncm_error) {
+search_add_song(void *user, NcmSong *song, bool play, NcmError *err) {
     (void)user;
-    (void)ncm_error;
+    (void)err;
     return ncm_action_add_song_to_playlist(song, play, -1);
 }
 
@@ -812,14 +812,14 @@ tag_edit_hook_status_message(void *user, char *message, int32 message_len) {
 static void
 tag_edit_hook_update_directory(void *user, char *directory,
                                int32 directory_len) {
-    NcmError ncm_error = {0};
+    NcmError err = {0};
 
     (void)user;
     (void)directory_len;
     if (ncm_mpd_client_update_directory(&global_mpd, directory, NULL,
-                                        &ncm_error) < 0) {
+                                        &err) < 0) {
         ncm_statusbar_print(Config.message_delay_time,
-                            ncm_error.message, ncm_error.message_len);
+                            err.message, err.message_len);
     }
     return;
 }
@@ -871,14 +871,14 @@ tiny_tag_edit_status_message(void *user, char *message, int32 message_len) {
 static void
 tiny_tag_edit_update_directory(void *user,
                                char *directory, int32 directory_len) {
-    NcmError ncm_error = {0};
+    NcmError err = {0};
 
     (void)user;
     (void)directory_len;
     if (ncm_mpd_client_update_directory(&global_mpd, directory, NULL,
-                                        &ncm_error) < 0) {
+                                        &err) < 0) {
         ncm_statusbar_print(Config.message_delay_time,
-                            ncm_error.message, ncm_error.message_len);
+                            err.message, err.message_len);
     }
     return;
 }
@@ -1291,16 +1291,16 @@ static void
 outputs_fetch(void *user, NcOutputsScreen *screen) {
 #if defined(ENABLE_OUTPUTS)
     NcmMpdOutputList outputs = {0};
-    NcmError ncm_error;
+    NcmError err;
 
     (void)user;
-    ncm_error_clear(&ncm_error);
+    ncm_error_clear(&err);
 
-    if (ncm_mpd_client_get_outputs(&global_mpd, &outputs, &ncm_error) < 0) {
+    if (ncm_mpd_client_get_outputs(&global_mpd, &outputs, &err) < 0) {
         String message = {0};
 
         STR_APPEND(&message, "Could not fetch outputs: ");
-        STR_APPEND(&message, ncm_error.message, ncm_error.message_len);
+        STR_APPEND(&message, err.message, err.message_len);
         ncm_statusbar_print(5, message.data, message.len);
         str_free(&message);
         ncm_mpd_output_list_destroy(&outputs);
@@ -1325,15 +1325,15 @@ outputs_fetch(void *user, NcOutputsScreen *screen) {
 static int32
 outputs_toggle(void *user, int32 id, bool enabled, char *name, int32 name_len) {
 #if defined(ENABLE_OUTPUTS)
-    NcmError ncm_error;
+    NcmError err;
     int32 status;
 
     (void)user;
-    ncm_error_clear(&ncm_error);
+    ncm_error_clear(&err);
     if (enabled) {
-        status = ncm_mpd_client_disable_output(&global_mpd, id, &ncm_error);
+        status = ncm_mpd_client_disable_output(&global_mpd, id, &err);
     } else {
-        status = ncm_mpd_client_enable_output(&global_mpd, id, &ncm_error);
+        status = ncm_mpd_client_enable_output(&global_mpd, id, &err);
     }
     if (status < 0) {
         String message = {0};
@@ -1341,7 +1341,7 @@ outputs_toggle(void *user, int32 id, bool enabled, char *name, int32 name_len) {
         STR_APPEND(&message, "Could not toggle output ");
         STR_APPEND(&message, name, name_len);
         STR_APPEND(&message, ": ");
-        STR_APPEND(&message, ncm_error.message, ncm_error.message_len);
+        STR_APPEND(&message, err.message, err.message_len);
         ncm_statusbar_print(5, message.data, message.len);
         str_free(&message);
         return status;
@@ -1441,14 +1441,14 @@ app_screen_outputs_init(void) {
 static void
 server_info_load_lists(void *user) {
     ServerInfoScreen *owner;
-    NcmError ncm_error;
+    NcmError err;
 
     owner = user;
-    ncm_error_clear(&ncm_error);
+    ncm_error_clear(&err);
     ncm_mpd_client_get_url_handlers(&global_mpd, &owner->url_handlers,
-                                    &ncm_error);
-    ncm_error_clear(&ncm_error);
-    ncm_mpd_client_get_tag_types(&global_mpd, &owner->tag_types, &ncm_error);
+                                    &err);
+    ncm_error_clear(&err);
+    ncm_mpd_client_get_tag_types(&global_mpd, &owner->tag_types, &err);
     return;
 }
 
@@ -1486,7 +1486,7 @@ static int32
 server_info_render(void *user, NcBuffer *buffer) {
     ServerInfoScreen *owner;
     NcmMpdStats stats;
-    NcmError ncm_error;
+    NcmError err;
     char time_buffer[64];
     int32 status;
 
@@ -1496,8 +1496,8 @@ server_info_render(void *user, NcBuffer *buffer) {
     }
     owner->timer = global_timer;
 
-    ncm_error_clear(&ncm_error);
-    if ((status = ncm_mpd_client_get_stats(&global_mpd, &stats, &ncm_error))
+    ncm_error_clear(&err);
+    if ((status = ncm_mpd_client_get_stats(&global_mpd, &stats, &err))
         < 0) {
         return status;
     }
@@ -1739,18 +1739,18 @@ song_info_current_song(void *user, NcmSong *song) {
 static void
 song_info_switch_to(void *user, NcSongInfoScreen *screen) {
     SongInfoScreen *owner = user;
-    NcmError ncm_error;
+    NcmError err;
 
-    ncm_error_clear(&ncm_error);
+    ncm_error_clear(&err);
     ncm_song_destroy(&owner->song);
     owner->song = (NcmSong){0};
     owner->has_song = ncm_mpd_client_get_current_song(&global_mpd, &owner->song,
-                                                      &ncm_error) == 0;
+                                                      &err) == 0;
     if (!owner->has_song) {
         String message = {0};
 
         STR_APPEND(&message, "Could not fetch current song: ");
-        STR_APPEND(&message, ncm_error.message, ncm_error.message_len);
+        STR_APPEND(&message, err.message, err.message_len);
         ncm_statusbar_print(5, message.data, message.len);
         str_free(&message);
         return;

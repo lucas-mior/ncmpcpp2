@@ -223,7 +223,7 @@ ncm_status_handle_server_error_value(MpdClient *client, int32 code,
 
 void
 ncm_status_trace(MpdClient *client, bool update_timer,
-                 bool update_window_timeout, NcmError *ncm_error) {
+                 bool update_window_timeout, NcmError *err) {
     NcmStatusHooks *hooks = status_active_hooks(NULL);
 
     if (update_timer) {
@@ -236,11 +236,11 @@ ncm_status_trace(MpdClient *client, bool update_timer,
             NcmStatusInitHooks *init_hooks = NULL;
 
             if (ncm_mpd_client_get_status(client, &mpd_status,
-                                          ncm_error) >= 0) {
+                                          err) >= 0) {
                 bool jump_to_playing = Config.jump_to_playing_at_start;
                 ncm_status_apply_mpd_status(&mpd_status,
                                             status_full_event_mask(), NULL,
-                                            ncm_error);
+                                            err);
 
                 if (status_init_hooks_set) {
                     init_hooks = &status_init_hooks;
@@ -359,7 +359,7 @@ ncm_status_trace(MpdClient *client, bool update_timer,
 
         app_controller_update_visible_screens();
         ncm_statusbar_try_redraw();
-        ncm_mpd_client_idle(client, ncm_error);
+        ncm_mpd_client_idle(client, err);
     }
 
     if (update_window_timeout) {
@@ -548,7 +548,7 @@ status_handle_song_change(NcmMpdStatus *mpd_status) {
 
 int32
 ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
-                            NcmStatusHooks *hooks, NcmError *ncm_error) {
+                            NcmStatusHooks *hooks, NcmError *err) {
     int32 previous_playlist_version;
     char new_consume;
     char new_crossfade;
@@ -558,7 +558,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
     NcmStatusHooks *active_hooks;
 
     if (mpd_status == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("MPD status is NULL"));
     }
 
@@ -806,7 +806,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
         }
     }
 
-    return ncm_error_ok(ncm_error);
+    return ncm_error_ok(err);
 }
 
 static void
@@ -822,68 +822,68 @@ status_reset_visualizer_for_player_event(uint32 event) {
 }
 
 int32
-ncm_status_update(MpdClient *client, uint32 event, NcmError *ncm_error) {
+ncm_status_update(MpdClient *client, uint32 event, NcmError *err) {
     NcmMpdStatus mpd_status;
     int32 status;
 
     if (client == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("MPD client is NULL"));
     }
 
     if ((status = ncm_mpd_client_get_status(client, &mpd_status,
-                                            ncm_error)) < 0) {
+                                            err)) < 0) {
         return status;
     }
     status_reset_visualizer_for_player_event(event);
 
-    return ncm_status_apply_mpd_status(&mpd_status, event, NULL, ncm_error);
+    return ncm_status_apply_mpd_status(&mpd_status, event, NULL, err);
 }
 
 int32
 ncm_status_update_full(MpdClient *client, NcmStatusHooks *hooks,
-                       NcmError *ncm_error) {
+                       NcmError *err) {
     NcmMpdStatus mpd_status;
     int32 status;
 
     if (client == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("MPD client is NULL"));
     }
 
     if ((status = ncm_mpd_client_get_status(client, &mpd_status,
-                                            ncm_error)) < 0) {
+                                            err)) < 0) {
         return status;
     }
 
     return ncm_status_apply_mpd_status(&mpd_status, status_full_event_mask(),
-                                       hooks, ncm_error);
+                                       hooks, err);
 }
 
 int32
 ncm_status_update_from_noidle(MpdClient *client, NcmStatusHooks *hooks,
-                              NcmError *ncm_error) {
+                              NcmError *err) {
     NcmMpdStatus mpd_status;
     uint32 flags;
     int32 status;
 
     if (client == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("MPD client is NULL"));
     }
 
     flags = 0;
-    if ((status = ncm_mpd_client_noidle(client, &flags, ncm_error)) < 0) {
+    if ((status = ncm_mpd_client_noidle(client, &flags, err)) < 0) {
         return status;
     }
 
     if ((status = ncm_mpd_client_get_status(client, &mpd_status,
-                                            ncm_error)) < 0) {
+                                            err)) < 0) {
         return status;
     }
     status_reset_visualizer_for_player_event(flags);
 
-    return ncm_status_apply_mpd_status(&mpd_status, flags, hooks, ncm_error);
+    return ncm_status_apply_mpd_status(&mpd_status, flags, hooks, err);
 }
 
 void

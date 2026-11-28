@@ -8,14 +8,14 @@
 
 static int32
 ncm_system_command(char *command, int32 cmd_len,
-                   bool block, int32 *status, NcmError *ncm_error) {
+                   bool block, int32 *status, NcmError *err) {
     String buffer = {0};
     Command process = {0};
     int32 rc;
     int32 result;
 
     if ((command == NULL) || (cmd_len < 0)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("invalid shell command"));
     }
 
@@ -28,9 +28,9 @@ ncm_system_command(char *command, int32 cmd_len,
             if (status) {
                 *status = rc;
             }
-            result = ncm_error_ok(ncm_error);
+            result = ncm_error_ok(err);
         } else {
-            result = ncm_error_set_status(ncm_error, process.error_status,
+            result = ncm_error_set_status(err, process.error_status,
                                           SL("command failed"));
         }
         cmd_free(&process);
@@ -48,9 +48,9 @@ ncm_system_command(char *command, int32 cmd_len,
         if (status) {
             *status = rc;
         }
-        result = ncm_error_ok(ncm_error);
+        result = ncm_error_ok(err);
     } else {
-        result = ncm_error_set_status(ncm_error, process.error_status,
+        result = ncm_error_set_status(err, process.error_status,
                                       SL("command failed"));
     }
     cmd_free(&process);
@@ -59,18 +59,18 @@ ncm_system_command(char *command, int32 cmd_len,
 
 int32
 ncm_run_external_command(char *command, int32 cmd_len,
-                         bool block, NcmError *ncm_error) {
+                         bool block, NcmError *err) {
     int32 status;
 
-    return ncm_system_command(command, cmd_len, block, &status, ncm_error);
+    return ncm_system_command(command, cmd_len, block, &status, err);
 }
 
 int32
 ncm_run_external_console_command(char *command, int32 cmd_len,
-                                 NcmError *ncm_error) {
+                                 NcmError *err) {
     int32 status;
 
-    return ncm_system_command(command, cmd_len, true, &status, ncm_error);
+    return ncm_system_command(command, cmd_len, true, &status, err);
 }
 
 #endif /* NCM_UTILITIES_C */

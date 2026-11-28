@@ -54,7 +54,7 @@ selected_items_add_search_capability(NcScreen *base,
                                      char *pattern, int32 pattern_len,
                                      uint32 regex_flags, bool wrap,
                                      bool skip_current,
-                                     NcmError *ncm_error) {
+                                     NcmError *err) {
     SelectedItemsAdderScreen *screen = (SelectedItemsAdderScreen *)base;
     bool forward;
     int32 status;
@@ -62,7 +62,7 @@ selected_items_add_search_capability(NcScreen *base,
     forward = direction == NCM_SEARCH_DIRECTION_FORWARD;
     status = selected_items_add_screen_search(screen, pattern, pattern_len,
                                               regex_flags, forward, wrap,
-                                              skip_current, ncm_error);
+                                              skip_current, err);
     if (status >= 0) {
         stupid_string_set(&screen->search_constraint,
                           &screen->search_constraint_len, pattern, pattern_len);
@@ -317,33 +317,33 @@ adder_filter_callback(NcMenu *menu, void *item, void *user) {
 static bool
 adder_try_add_current_song(SelectedItemsAdderScreen *screen, NcmSong *song,
                            int32 position, bool *added, bool *success) {
-    NcmError ncm_error;
+    NcmError err;
     enum NcmMpdServerError server_error;
     int32 message_len;
     int32 status;
 
     *added = false;
-    ncm_error_clear(&ncm_error);
+    ncm_error_clear(&err);
     status = ncm_mpd_client_add_song_value(screen->client, song, position,
-                                           NULL, &ncm_error);
+                                           NULL, &err);
     if (status == 0) {
         *added = true;
         return true;
     }
 
-    if (ncm_error.code == NCM_MPD_ERROR_SERVER) {
+    if (err.code == NCM_MPD_ERROR_SERVER) {
         server_error = ncm_mpd_client_server_error_code(screen->client);
-        message_len = ncm_error.message_len;
+        message_len = err.message_len;
         ncm_status_handle_server_error_value(screen->client,
                                              (int32)server_error,
-                                             ncm_error.message, message_len);
+                                             err.message, message_len);
         *success = false;
         return true;
     }
 
-    if (ncm_error.message[0] != '\0') {
+    if (err.message[0] != '\0') {
         ncm_statusbar_print(Config.message_delay_time,
-                            ncm_error.message, ncm_error.message_len);
+                            err.message, err.message_len);
     } else {
         ncm_statusbar_print(Config.message_delay_time,
                             SL("Could not add selected item"));
@@ -651,25 +651,25 @@ static void
 adder_add_to_stored_playlist(SelectedItemsAdderScreen *screen, char *playlist,
                              int32 playlist_len) {
     String message = {0};
-    NcmError ncm_error;
+    NcmError err;
     int32 status;
 
     ASSERT(screen->ready);
-    ncm_error_clear(&ncm_error);
-    status = ncm_mpd_client_start_cmd_list(screen->client, &ncm_error);
+    ncm_error_clear(&err);
+    status = ncm_mpd_client_start_cmd_list(screen->client, &err);
     if (status == 0) {
         for (int32 i = 0; i < screen->selected_songs.len; i += 1) {
             NcmSong *song = &screen->selected_songs.items[i];
 
             ncm_mpd_client_add_song_to_playlist(screen->client, playlist, song,
-                                                &ncm_error);
+                                                &err);
         }
-        status = ncm_mpd_client_commit_cmd_list(screen->client, &ncm_error);
+        status = ncm_mpd_client_commit_cmd_list(screen->client, &err);
     }
     if (status < 0) {
-        if (ncm_error.message[0] != '\0') {
+        if (err.message[0] != '\0') {
             ncm_statusbar_print(Config.message_delay_time,
-                                ncm_error.message, ncm_error.message_len);
+                                err.message, err.message_len);
         } else {
             ncm_statusbar_print(Config.message_delay_time,
                                 SL("Could not add selected items"));
@@ -834,7 +834,7 @@ int32
 selected_items_add_screen_open(SelectedItemsAdderScreen *screen,
                                NcmSongArray *songs,
                                PlaylistScreen *playlist, MpdClient *client,
-                               NcmError *ncm_error) {
+                               NcmError *err) {
     NcmPlaylistArray playlists = {0};
     NcmSongArray selected_songs = {0};
     NcmError playlist_error;
@@ -846,23 +846,23 @@ selected_items_add_screen_open(SelectedItemsAdderScreen *screen,
     bool local_browser;
 
     if (screen == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing selected items dialog"));
     }
     if ((songs == NULL) || (songs->len <= 0)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("no selected songs"));
     }
     if (playlist == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing playlist screen"));
     }
     if (client == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing MPD client"));
     }
     if (screen->ready) {
-        return ncm_error_set_status(ncm_error, -EBUSY,
+        return ncm_error_set_status(err, -EBUSY,
                                     SL("selected items dialog is "
                                        "already open"));
     }
@@ -870,7 +870,7 @@ selected_items_add_screen_open(SelectedItemsAdderScreen *screen,
     adder_screen = selected_items_add_screen_base(screen);
     if (((current = nc_screen_switcher_current()) == NULL)
         || (current == adder_screen)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing previous screen"));
     }
 
@@ -999,12 +999,12 @@ selected_items_add_screen_open(SelectedItemsAdderScreen *screen,
         screen->previous_screen = NULL;
         screen->client = NULL;
         screen->ready = false;
-        ncm_error_set_status(ncm_error, status,
+        ncm_error_set_status(err, status,
                              SL("selected items dialog is not registered"));
         return status;
     }
 
-    ncm_error_clear(ncm_error);
+    ncm_error_clear(err);
     return 0;
 }
 
@@ -1047,7 +1047,7 @@ selected_items_add_screen_search(SelectedItemsAdderScreen *screen,
                                  char *pattern, int32 pattern_len,
                                  uint32 regex_flags, bool forward,
                                  bool wrap, bool skip_current,
-                                 NcmError *ncm_error) {
+                                 NcmError *err) {
     NcmRegex regex;
     NcMenu *menu;
     NcWindow *window;
@@ -1055,17 +1055,17 @@ selected_items_add_screen_search(SelectedItemsAdderScreen *screen,
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing selected-items adder"));
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        return ncm_error_set_status(ncm_error, -EINVAL,
+        return ncm_error_set_status(err, -EINVAL,
                                     SL("missing search pattern"));
     }
 
     regex = (NcmRegex){0};
     if ((status = ncm_regex_compile(&regex, pattern, pattern_len,
-                                    regex_flags, ncm_error)) < 0) {
+                                    regex_flags, err)) < 0) {
         ncm_regex_destroy(&regex);
         return status;
     }

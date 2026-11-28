@@ -333,13 +333,13 @@ ncm_lastfm_service_fetch(NcmLastfmService *service, NcmLastfmResult *result) {
     }
     {
         NcmRegex regex = {0};
-        NcmError ncm_error = {0};
+        NcmError err = {0};
         bool failed;
 
-        ncm_error_clear(&ncm_error);
+        ncm_error_clear(&err);
         failed = false;
         if (ncm_regex_compile(&regex, SL("status=\"failed\""),
-                              NCM_REGEX_EXTENDED, &ncm_error) == 0) {
+                              NCM_REGEX_EXTENDED, &err) == 0) {
             failed = ncm_regex_matches(&regex, data.data, data.len);
         }
         ncm_regex_destroy(&regex);
