@@ -175,13 +175,11 @@ library_mpd_search_songs(void *user, MediaLibrarySongQuery *query,
 }
 
 static int32
-library_mpd_list_all_songs(void *user, NcmSongArray *songs,
-                           NcmError *err) {
+library_mpd_list_all_songs(void *user, NcmSongArray *songs, NcmError *err) {
     MpdClient *client = user;
 
     ASSERT(client != NULL);
-    return ncm_mpd_client_get_directory_recursive(client, "/",
-                                                  songs, err);
+    return ncm_mpd_client_get_directory_recursive(client, "/", songs, err);
 }
 
 static int32
@@ -529,8 +527,7 @@ library_mouse_select(MediaLibraryScreen *screen,
     if (right_click) {
         ncm_error_clear(&err);
         play = screen->active_column == MEDIA_LIBRARY_COLUMN_SONGS;
-        if (media_lib_screen_add_item_to_playlist(screen, play,
-                                                  &err) < 0) {
+        if (media_lib_screen_add_item_to_playlist(screen, play, &err) < 0) {
             if (ncm_error_is_set(&err)) {
                 ncm_statusbar_print(Config.message_delay_time,
                                     err.message,
@@ -2385,16 +2382,14 @@ media_lib_screen_apply_filter(MediaLibraryScreen *screen,
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing media library"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing media library"));
     }
     if (pattern_len <= 0) {
         media_lib_screen_clear_filter(screen);
         return ncm_error_ok(err);
     }
     if (pattern == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing filter pattern"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing filter pattern"));
     }
 
     state = library_active_column_state(screen);
@@ -2475,12 +2470,10 @@ media_lib_screen_search(MediaLibraryScreen *screen,
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing media library"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing media library"));
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing search pattern"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing search pattern"));
     }
 
     state = library_active_column_state(screen);
@@ -2672,8 +2665,7 @@ library_restore_highlight(NcMenu *menu, int32 highlight) {
 int32
 media_lib_screen_update(MediaLibraryScreen *screen, NcmError *err) {
     if (screen == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing media library"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing media library"));
     }
     ncm_error_clear(err);
 
@@ -2702,8 +2694,7 @@ media_lib_screen_update(MediaLibraryScreen *screen, NcmError *err) {
             media_lib_tags_from_songs(&tags, &songs, grouping_tag);
         } else {
             if ((status = media_lib_screen_list_tags(screen, grouping_tag,
-                                                     &strings, err))
-                < 0) {
+                                                     &strings, err)) < 0) {
                 screen->tags_update_request = true;
                 ncm_song_array_destroy(&songs);
                 strflex_list_destroy(&strings);
@@ -2800,8 +2791,7 @@ media_lib_screen_update(MediaLibraryScreen *screen, NcmError *err) {
             query.grouping_value_len = tag->tag_len;
             query.grouping_tag = Config.media_lib_primary_tag;
             query.match_grouping_tag = true;
-            status = media_lib_screen_search_songs(screen, &query, &songs,
-                                                   err);
+            status = media_lib_screen_search_songs(screen, &query, &songs, err);
         } else {
             if ((status = media_lib_screen_list_all_songs(screen, &songs,
                                                           err)) < 0) {
@@ -3110,8 +3100,7 @@ media_lib_screen_list_all_songs(MediaLibraryScreen *screen,
                                     SL("song-list hook is unavailable"));
     }
     if (songs == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing song list"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing song list"));
     }
     return screen->hooks.list_all_songs(screen->hooks.user, songs, err);
 }
@@ -3160,8 +3149,7 @@ media_lib_screen_add_item_to_playlist(MediaLibraryScreen *screen,
     int32 status = 0;
 
     if (screen == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing media library"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing media library"));
     }
 
     if (screen->active_column == MEDIA_LIBRARY_COLUMN_TAGS) {
@@ -3170,8 +3158,7 @@ media_lib_screen_add_item_to_playlist(MediaLibraryScreen *screen,
 
         if ((tag = media_lib_screen_current_tag(screen))) {
             library_query_from_tag(screen, tag, &query);
-            status = library_append_query_songs(screen, &query, &songs,
-                                                err);
+            status = library_append_query_songs(screen, &query, &songs, err);
         }
     } else if (screen->active_column == MEDIA_LIBRARY_COLUMN_ALBUMS) {
         MediaLibrarySongQuery query = {.grouping_tag = TAG_COUNT};
@@ -3179,8 +3166,7 @@ media_lib_screen_add_item_to_playlist(MediaLibraryScreen *screen,
 
         if ((album = media_lib_screen_current_album(screen))) {
             library_query_from_album(screen, album, &query);
-            status = library_append_query_songs(screen, &query, &songs,
-                                                err);
+            status = library_append_query_songs(screen, &query, &songs, err);
         }
     } else {
         NcMenu *menu = nc_media_lib_song_menu_base(&screen->songs);
@@ -3189,8 +3175,7 @@ media_lib_screen_add_item_to_playlist(MediaLibraryScreen *screen,
     }
 
     if ((status == 0) && (songs.len <= 0)) {
-        status = ncm_error_set_status(err, -ENOENT,
-                                      SL("no selected songs"));
+        status = ncm_error_set_status(err, -ENOENT, SL("no selected songs"));
     }
     if (status == 0) {
         status = media_lib_screen_add_songs(screen, &songs, play, err);
