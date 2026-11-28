@@ -45,8 +45,7 @@ ncm_regex_compile(NcmRegex *regex, char *pattern, int32 pattern_len,
         return ncm_error_set_status(err, -EINVAL, SL("missing regex"));
     }
     if (pattern == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing regex pattern"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing regex pattern"));
     }
     if (pattern_len < 0) {
         return ncm_error_set_status(err, -EINVAL,

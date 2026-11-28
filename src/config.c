@@ -250,7 +250,7 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
         status = config_require_value(argc, argv, &i,                      \
                                       arg, name_len + 2,                   \
                                       &(VALUE), &(VALUE_LEN),              \
-                                      err);                          \
+                                      err);                                \
         if (status < 0) {                                                  \
             return status;                                                 \
         }                                                                  \
@@ -264,7 +264,7 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
         len = SNPRINTF(message,                                            \
                        "option '--%.*s' does not take an argument",        \
                        name_len, name);                                    \
-        return ncm_error_set_status(err, -EINVAL, message, len);     \
+        return ncm_error_set_status(err, -EINVAL, message, len);           \
     }                                                                      \
 } while (0)
 
@@ -464,8 +464,7 @@ ncm_config_options_parse(NcmConfigurationOptions *options,
 }
 
 int32
-ncm_config_options_apply(NcmConfigurationOptions *options,
-                         NcmError *err) {
+ncm_config_options_apply(NcmConfigurationOptions *options, NcmError *err) {
     StrViewList config_paths = {0};
     char *env_host;
     char *env_port;
@@ -528,8 +527,7 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
 
         if ((status = parse_integer(env_port, strlen32(env_port), &parsed_port))
             < 0) {
-            return ncm_error_set_status(err, status,
-                                        SL("invalid MPD_PORT"));
+            return ncm_error_set_status(err, status, SL("invalid MPD_PORT"));
         }
         if ((parsed_port < 0) || (parsed_port > 65535)) {
             return ncm_error_set_status(err, -ERANGE,
@@ -551,8 +549,7 @@ ncm_config_options_apply(NcmConfigurationOptions *options,
         if ((status = screen_type_parse_startup(options->screen_name.data,
                                                 options->screen_name.len,
                                                 &Config.startup_screen)) < 0) {
-            return ncm_error_set_status(err, -EINVAL,
-                                        SL("unknown screen"));
+            return ncm_error_set_status(err, -EINVAL, SL("unknown screen"));
         }
     }
     if (options->slave_screen) {
@@ -608,8 +605,7 @@ configure(int32 argc, char **argv) {
         StringArray config_paths = {0};
         StringArray bindings_paths = {0};
 
-        config_discover_default_paths(&config_paths, &bindings_paths,
-                                      &err);
+        config_discover_default_paths(&config_paths, &bindings_paths, &err);
         fmt_printf("Usage: %s [options]...\n", argv[0]);
         fmt_printf("Options:\n");
         fmt_printf("  -h, --host HOST              "
@@ -774,8 +770,7 @@ configure(int32 argc, char **argv) {
 
         status = ncm_mpd_client_connect(&global_mpd, &err);
         if (status >= 0) {
-            status = ncm_mpd_client_get_current_song(&global_mpd, &song,
-                                                     &err);
+            status = ncm_mpd_client_get_current_song(&global_mpd, &song, &err);
         }
         if ((status >= 0) && !ncm_song_is_empty(&song)) {
             status = ncm_format_parse(&format,

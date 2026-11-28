@@ -15,8 +15,7 @@ ncm_system_command(char *command, int32 cmd_len,
     int32 result;
 
     if ((command == NULL) || (cmd_len < 0)) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("invalid shell command"));
+        return ncm_error_set_status(err, -EINVAL, SL("invalid shell command"));
     }
 
     if (block) {
@@ -66,8 +65,7 @@ ncm_run_external_command(char *command, int32 cmd_len,
 }
 
 int32
-ncm_run_external_console_command(char *command, int32 cmd_len,
-                                 NcmError *err) {
+ncm_run_external_console_command(char *command, int32 cmd_len, NcmError *err) {
     int32 status;
 
     return ncm_system_command(command, cmd_len, true, &status, err);

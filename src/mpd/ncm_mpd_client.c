@@ -461,10 +461,10 @@ ncm_mpd_client_error_message(MpdClient *client) {
 
 #define NCM_CLIENT_CALL_NOARGS(NAME, CONN_CALL)                                \
 int32                                                                          \
-NAME(MpdClient *client, NcmError *err) {                                 \
-    NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, err));   \
-    NCM_CLIENT_TRY_MPD(client, CONN_CALL(&client->connection), err);     \
-    return ncm_error_ok(err);                                            \
+NAME(MpdClient *client, NcmError *err) {                                       \
+    NCM_CLIENT_TRY(ncm_mpd_client_prechecks_no_commands(client, err));         \
+    NCM_CLIENT_TRY_MPD(client, CONN_CALL(&client->connection), err);           \
+    return ncm_error_ok(err);                                                  \
 }
 
 NCM_CLIENT_CALL_NOARGS(ncm_mpd_client_play, ncm_mpd_connection_play)

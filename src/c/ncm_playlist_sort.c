@@ -142,8 +142,7 @@ ncm_playlist_sort_range(NcmSongArray *songs, int32 start_position,
                                   SL("invalid sort start position"));
     }
     if (getters_len < 0) {
-        return ncm_error_set_code(err, EINVAL,
-                                  SL("invalid sort key count"));
+        return ncm_error_set_code(err, EINVAL, SL("invalid sort key count"));
     }
     if ((getters_len > 0) && (getters == NULL)) {
         return ncm_error_set_code(err, EINVAL, SL("missing sort keys"));

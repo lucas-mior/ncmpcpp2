@@ -29,12 +29,10 @@ ncm_path_expand_home(String *path, NcmError *err) {
     int32 old_len;
 
     if (path == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing path buffer"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing path buffer"));
     }
     if ((path->len < 0) || ((path->data == NULL) && (path->len > 0))) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("invalid path buffer"));
+        return ncm_error_set_status(err, -EINVAL, SL("invalid path buffer"));
     }
 
     tilde = -1;

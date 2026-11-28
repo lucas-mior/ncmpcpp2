@@ -46,8 +46,7 @@ ncm_error_clear(NcmError *err) {
 }
 
 void
-ncm_error_set(NcmError *err, int32 code,
-              char *message, int32 message_len) {
+ncm_error_set(NcmError *err, int32 code, char *message, int32 message_len) {
     int32 len;
 
     if (err == NULL) {

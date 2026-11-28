@@ -381,8 +381,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
             ncm_format_text_append(out, &token);
             percent_i = i + 1;
             if (percent_i >= end) {
-                status = ncm_format_set_error(err, "unexpected end",
-                                              percent_i);
+                status = ncm_format_set_error(err, "unexpected end", percent_i);
             } else if (data[percent_i] == '%') {
                 expr = ncm_format_expr_list_append(out);
                 expr->type = NCM_FORMAT_EXPR_TEXT;
@@ -404,8 +403,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
                     } else {
                         for (int32 j = delimiter_start;
                              (status == 0) && (j < percent_i); j += 1) {
-                            status = ncm_format_digit(&delimiter, data[j],
-                                                      err);
+                            status = ncm_format_digit(&delimiter, data[j], err);
                         }
                     }
                 }
@@ -433,8 +431,7 @@ ncm_format_parse_bracket(NcmFormatExprList *out, char *data,
 
             ncm_format_text_append(out, &token);
             if (dollar_i >= end) {
-                status = ncm_format_set_error(err, "unexpected end",
-                                              dollar_i);
+                status = ncm_format_set_error(err, "unexpected end", dollar_i);
             } else if (data[dollar_i] == '$') {
                 expr = ncm_format_expr_list_append(out);
                 expr->type = NCM_FORMAT_EXPR_TEXT;
@@ -611,12 +608,10 @@ ncm_format_parse(NcmFormatAst *ast, char *data, int32 data_len,
     int32 status;
 
     if ((ast == NULL) || (data_len < 0)) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("invalid format input"));
+        return ncm_error_set_status(err, -EINVAL, SL("invalid format input"));
     }
     if ((data == NULL) && (data_len > 0)) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("invalid format input"));
+        return ncm_error_set_status(err, -EINVAL, SL("invalid format input"));
     }
 
     tmp = (NcmFormatAst){0};

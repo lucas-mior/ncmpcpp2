@@ -7,8 +7,7 @@
 #include "c/ncm_c.h"
 
 static int32
-ncm_conversion_set_parse_error(NcmError *err,
-                               char *source, int32 source_len) {
+ncm_conversion_set_parse_error(NcmError *err, char *source, int32 source_len) {
     char message[256];
     int32 len;
 
@@ -18,8 +17,7 @@ ncm_conversion_set_parse_error(NcmError *err,
 }
 
 int32
-ncm_parse_double(char *source, int32 source_len, double *out,
-                 NcmError *err) {
+ncm_parse_double(char *source, int32 source_len, double *out, NcmError *err) {
     String buffer = {0};
     char *end;
     double value;
@@ -36,8 +34,7 @@ ncm_parse_double(char *source, int32 source_len, double *out,
                                     SL("missing conversion source"));
     }
     if (source_len < 0) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("negative source length"));
+        return ncm_error_set_status(err, -EINVAL, SL("negative source length"));
     }
 
     str_clear(&buffer);
@@ -71,8 +68,7 @@ ncm_parse_double(char *source, int32 source_len, double *out,
 }
 
 int32
-ncm_bounds_check_i64(int64 value, int64 lbound, int64 ubound,
-                     NcmError *err) {
+ncm_bounds_check_i64(int64 value, int64 lbound, int64 ubound, NcmError *err) {
     if ((value < lbound) || (value > ubound)) {
         char message[256];
         int32 len;

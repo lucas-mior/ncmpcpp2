@@ -114,8 +114,7 @@ current_screen_current_filter(void) {
 }
 
 static int32
-current_screen_apply_filter(char *pattern, int32 pattern_len,
-                            NcmError *err) {
+current_screen_apply_filter(char *pattern, int32 pattern_len, NcmError *err) {
     NcScreen *screen = current_screen();
     int32 status;
 
@@ -499,8 +498,7 @@ action_runtime_update_database(void) {
 #endif
 
     ncm_error_clear(&err);
-    if (ncm_mpd_client_update_directory(&global_mpd, path, NULL,
-                                        &err) < 0) {
+    if (ncm_mpd_client_update_directory(&global_mpd, path, NULL, &err) < 0) {
         return action_runtime_mpd_error_status(&err);
     }
     return 0;
@@ -2989,8 +2987,7 @@ action_runtime_shuffle_playlist(void) {
     }
 
     ncm_error_clear(&err);
-    if (ncm_mpd_client_shuffle_range(&global_mpd, first, last,
-                                     &err) < 0) {
+    if (ncm_mpd_client_shuffle_range(&global_mpd, first, last, &err) < 0) {
         return action_runtime_mpd_error_status(&err);
     }
     (void)ncm_status_update_full(&global_mpd, NULL, &err);
@@ -3087,8 +3084,7 @@ action_runtime_jump_to_position_in_song(void) {
     str_free(&input);
 
     ncm_error_clear(&err);
-    if (ncm_mpd_client_seek_pos(&global_mpd, song_position, target,
-                                &err) < 0) {
+    if (ncm_mpd_client_seek_pos(&global_mpd, song_position, target, &err) < 0) {
         return action_runtime_mpd_error_status(&err);
     }
     (void)ncm_status_update_full(&global_mpd, NULL, &err);
@@ -3288,8 +3284,7 @@ action_runtime_seek_relative(bool forward) {
     }
 
     ncm_error_clear(&err);
-    if (ncm_mpd_client_seek_pos(&global_mpd, position, target,
-                                &err) < 0) {
+    if (ncm_mpd_client_seek_pos(&global_mpd, position, target, &err) < 0) {
         return action_runtime_mpd_error_status(&err);
     }
     (void)ncm_status_update_full(&global_mpd, NULL, &err);
@@ -3633,8 +3628,7 @@ action_runtime_change_browse_mode(void) {
     }
 
     ncm_error_clear(&err);
-    if (browser_screen_change_browse_mode(browser, &global_mpd,
-                                          &err) < 0) {
+    if (browser_screen_change_browse_mode(browser, &global_mpd, &err) < 0) {
         if (err.code == EINVAL) {
             ncm_statusbar_print(Config.message_delay_time,
                                 SL("For browsing local filesystem "
@@ -3789,13 +3783,11 @@ action_runtime_toggle_replay_gain_mode(void) {
     }
 
     ncm_error_clear(&err);
-    if (ncm_mpd_client_set_replay_gain_mode(&global_mpd, mode,
-                                            &err) < 0) {
+    if (ncm_mpd_client_set_replay_gain_mode(&global_mpd, mode, &err) < 0) {
         return action_runtime_mpd_error_status(&err);
     }
     ncm_error_clear(&err);
-    if (ncm_mpd_client_get_replay_gain_mode(&global_mpd, &mode,
-                                            &err) < 0) {
+    if (ncm_mpd_client_get_replay_gain_mode(&global_mpd, &mode, &err) < 0) {
         return action_runtime_mpd_error_status(&err);
     }
     action_runtime_print_toggle(SL("Replay gain mode: "),
@@ -4341,8 +4333,7 @@ action_runtime_edit_library_album(void) {
     }
 
     if ((status = media_lib_screen_copy_visible_songs(app_screen_media_lib(),
-                                                      &songs, &err))
-        < 0) {
+                                                      &songs, &err)) < 0) {
         if (ncm_error_is_set(&err)) {
             ncm_statusbar_print(Config.message_delay_time,
                                 err.message, err.message_len);
@@ -4726,8 +4717,7 @@ action_runtime_mouse_event(void) {
         position = ncm_status_state_current_song_position();
         seconds = (ncm_status_state_total_time()*event->x / COLS);
         ncm_error_clear(&err);
-        if (ncm_mpd_client_seek_pos(&global_mpd, position, seconds,
-                                    &err) < 0) {
+        if (ncm_mpd_client_seek_pos(&global_mpd, position, seconds, &err) < 0) {
             return action_runtime_mpd_error_status(&err);
         }
     } else if ((event->bstate & BUTTON1_PRESSED)

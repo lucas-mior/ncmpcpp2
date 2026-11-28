@@ -278,14 +278,12 @@ lrc_parse_line_entries(LrcDocument *document, char *line, int32 line_len,
 }
 
 int32
-lrc_parse(LrcDocument *document, char *data, int32 data_len,
-          NcmError *err) {
+lrc_parse(LrcDocument *document, char *data, int32 data_len, NcmError *err) {
     LrcDocument parsed = {0};
     int32 status;
 
     if (document == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing LRC document"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing LRC document"));
     }
     if ((data == NULL) || (data_len <= 0)) {
         return ncm_error_set_status(err, -EINVAL, SL("missing LRC data"));

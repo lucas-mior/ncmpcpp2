@@ -93,8 +93,7 @@ ncm_job_queue_thread_main(void *user) {
                 job.status = job.run(job.user, &job.err);
             } else {
                 job.status = -EINVAL;
-                ncm_error_set(&job.err, EINVAL,
-                              SL("job has no run callback"));
+                ncm_error_set(&job.err, EINVAL, SL("job has no run callback"));
             }
 
             pthread_mutex_lock(&queue->mutex);
@@ -129,8 +128,7 @@ ncm_job_queue_start(NcmJobQueue *queue, NcmError *err) {
     int32 code;
 
     if (queue == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing job queue"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing job queue"));
     }
     if (queue->started) {
         return ncm_error_ok(err);
@@ -155,16 +153,14 @@ ncm_job_queue_start(NcmJobQueue *queue, NcmError *err) {
 int32
 ncm_job_queue_push(NcmJobQueue *queue, NcmJob job, NcmError *err) {
     if (queue == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing job queue"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing job queue"));
     }
     if (!queue->started) {
         return ncm_error_set_status(err, -NCM_ERROR_INVALID_STATE,
                                     SL("job queue is not started"));
     }
     if (job.run == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing job callback"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing job callback"));
     }
 
     ncm_error_clear(&job.err);

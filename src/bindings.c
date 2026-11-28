@@ -884,8 +884,7 @@ binding_parse_directive(BindingAction *action, BindingDirective *directive,
     }
     case BINDING_DIRECTIVE_PUSH_CHARACTERS:
         if (argument.len <= 0) {
-            bindings_error(err,
-                           "empty argument passed to push_characters");
+            bindings_error(err, "empty argument passed to push_characters");
             return -NCM_ERROR_PARSE;
         }
         action->kind = BINDING_ACTION_PUSH_CHARACTERS;
@@ -977,8 +976,7 @@ binding_parse_action_line(BindingAction *action, char *line, int32 line_len,
 
     if (ncm_extract_enclosed(line + name_len, line_len - name_len,
                              '"', '"', &argument) < 0) {
-        bindings_error(err,
-                       "missing quoted argument: '%.*s'", line_len, line);
+        bindings_error(err, "missing quoted argument: '%.*s'", line_len, line);
         return -NCM_ERROR_PARSE;
     }
 
@@ -1237,8 +1235,7 @@ bindings_config_read(BindingsConfiguration *bindings,
             binding_action_init(&action);
             if ((status = binding_parse_action_line(&action,
                                                     current_line + action_start,
-                                                    action_len, err))
-                < 0) {
+                                                    action_len, err)) < 0) {
                 break;
             }
             binding_append_action(&actions, &action);
