@@ -1014,8 +1014,7 @@ search_pattern_regex_flags(SearchEngineScreen *screen) {
 static int32
 search_compile_regex(NcmRegex *regex, char *constraint, int32 constraint_len,
                      uint32 flags, NcmError *err) {
-    return ncm_regex_compile(regex, constraint, constraint_len,
-                             flags, err);
+    return ncm_regex_compile(regex, constraint, constraint_len, flags, err);
 }
 
 static bool
@@ -1145,8 +1144,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
     bool has_constraints;
 
     if (screen == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing search screen"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing search screen"));
     }
     if (screen->constraints_locked) {
         return ncm_error_set_status(err, -NCM_ERROR_UNAVAILABLE,
@@ -1233,8 +1231,7 @@ search_engine_screen_start_searching(SearchEngineScreen *screen,
             status = constraint_status;
         }
         if (status == 0) {
-            status = ncm_mpd_client_commit_search_songs(client, &songs,
-                                                        err);
+            status = ncm_mpd_client_commit_search_songs(client, &songs, err);
         }
     } else {
         if (screen->search_in_database) {
@@ -1455,16 +1452,14 @@ search_engine_screen_apply_filter(SearchEngineScreen *screen,
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing search screen"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing search screen"));
     }
     if (pattern_len <= 0) {
         search_engine_screen_clear_filter(screen);
         return ncm_error_ok(err);
     }
     if (pattern == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing filter pattern"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing filter pattern"));
     }
     if ((status = ncm_regex_compile(&screen->filter_regex, pattern, pattern_len,
                                     NCM_REGEX_LITERAL_CASE_INSENSITIVE,
@@ -1519,8 +1514,7 @@ search_engine_screen_search(SearchEngineScreen *screen,
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing search screen"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing search screen"));
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
         return ncm_error_set_status(err, -EINVAL, SL("missing search pattern"));
