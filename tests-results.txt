@@ -1,0 +1,12 @@
++ find . -type f -iname tags -delete
++ xargs -0 ctags --kinds-C=+l+d
++ find . -iname *.[ch] -print0
++ vtags.sed tags
++ sort
++ uniq
++ ln -f tags src
++ ln -f .tags.vim src
++ ln -f tags src
++ ln -f .tags.vim src
+
+build.sh [01;38;2;255;000;000mtest[0m
