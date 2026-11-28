@@ -528,8 +528,7 @@ app_screen_sort_playlist_dialog_show(void) {
 }
 
 static int32
-search_list_database_songs(void *user, NcmSongArray *songs,
-                           NcmError *err) {
+search_list_database_songs(void *user, NcmSongArray *songs, NcmError *err) {
     NcmSongArray source = {0};
     int32 status;
 
@@ -1445,8 +1444,7 @@ server_info_load_lists(void *user) {
 
     owner = user;
     ncm_error_clear(&err);
-    ncm_mpd_client_get_url_handlers(&global_mpd, &owner->url_handlers,
-                                    &err);
+    ncm_mpd_client_get_url_handlers(&global_mpd, &owner->url_handlers, &err);
     ncm_error_clear(&err);
     ncm_mpd_client_get_tag_types(&global_mpd, &owner->tag_types, &err);
     return;
@@ -1497,8 +1495,7 @@ server_info_render(void *user, NcBuffer *buffer) {
     owner->timer = global_timer;
 
     ncm_error_clear(&err);
-    if ((status = ncm_mpd_client_get_stats(&global_mpd, &stats, &err))
-        < 0) {
+    if ((status = ncm_mpd_client_get_stats(&global_mpd, &stats, &err)) < 0) {
         return status;
     }
 

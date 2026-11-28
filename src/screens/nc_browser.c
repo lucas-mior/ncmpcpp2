@@ -314,9 +314,7 @@ browser_reload_from_local(BrowserScreen *screen, NcmError *err) {
     while (status == 0) {
         String path = {0};
         NcmFsStat stat = {0};
-        int32 read_status;
-
-        read_status = ncm_fs_directory_read(&directory, &entry, err);
+        int32 read_status = ncm_fs_directory_read(&directory, &entry, err);
         if (read_status < 0) {
             status = read_status;
             break;
@@ -1438,8 +1436,7 @@ browser_collect_local_directory_songs(BrowserScreen *screen,
     NcmFsEntry entry = {0};
     int32 status;
 
-    if ((status = ncm_fs_directory_open(&directory, path, path_len, err))
-        < 0) {
+    if ((status = ncm_fs_directory_open(&directory, path, path_len, err)) < 0) {
         return status;
     }
 
@@ -1447,9 +1444,7 @@ browser_collect_local_directory_songs(BrowserScreen *screen,
     while (true) {
         String entry_path = {0};
         NcmFsStat stat = {0};
-        int32 read_status;
-
-        read_status = ncm_fs_directory_read(&directory, &entry, err);
+        int32 read_status = ncm_fs_directory_read(&directory, &entry, err);
         if (read_status < 0) {
             status = read_status;
             break;
@@ -1622,9 +1617,7 @@ browser_delete_path_recursive(char *path, int32 path_len, NcmError *err) {
     ncm_fs_entry_init(&entry);
     while (true) {
         String child = {0};
-        int32 read_status;
-
-        read_status = ncm_fs_directory_read(&directory, &entry, err);
+        int32 read_status = ncm_fs_directory_read(&directory, &entry, err);
         if (read_status < 0) {
             status = read_status;
             break;

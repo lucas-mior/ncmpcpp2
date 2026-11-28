@@ -90,8 +90,7 @@ ncm_mpd_client_prechecks_connected(MpdClient *client, NcmError *err) {
     uint32 flags = 0;
     int32 status;
 
-    if ((status = ncm_mpd_client_noidle_connected(client, &flags,
-                                                  err)) < 0) {
+    if ((status = ncm_mpd_client_noidle_connected(client, &flags, err)) < 0) {
         return status;
     }
     if ((flags != 0) && (client->noidle_callback != NULL)) {
@@ -826,8 +825,7 @@ ncm_mpd_client_add_song_array(MpdClient *client,
 
     started = false;
     if (!client->cmd_list_active) {
-        if ((status = ncm_mpd_client_start_cmd_list_ready(client,
-                                                          err)) < 0) {
+        if ((status = ncm_mpd_client_start_cmd_list_ready(client, err)) < 0) {
             return status;
         }
         started = true;
@@ -1144,8 +1142,7 @@ ncm_mpd_client_get_directory_entries(MpdClient *client, char *path,
         return ncm_error_set_status(err, -EINVAL,
                                     SL("missing MPD item array"));
     }
-    if ((status = ncm_mpd_client_prechecks_no_commands(client,
-                                                       err)) < 0) {
+    if ((status = ncm_mpd_client_prechecks_no_commands(client, err)) < 0) {
         return status;
     }
 
@@ -1171,8 +1168,7 @@ ncm_mpd_client_get_directory_list(MpdClient *client, char *path,
         return ncm_error_set_status(err, -EINVAL,
                                     SL("missing MPD directory array"));
     }
-    if ((status = ncm_mpd_client_prechecks_no_commands(client,
-                                                       err)) < 0) {
+    if ((status = ncm_mpd_client_prechecks_no_commands(client, err)) < 0) {
         return status;
     }
 
@@ -1221,8 +1217,7 @@ ncm_mpd_client_add_random_tag(MpdClient *client, enum TagType tag,
         return ncm_error_set_status(err, -EINVAL,
                                     SL("negative random count"));
     }
-    if ((status = ncm_mpd_client_prechecks_no_commands(client,
-                                                       err)) < 0) {
+    if ((status = ncm_mpd_client_prechecks_no_commands(client, err)) < 0) {
         return status;
     }
 
@@ -1259,8 +1254,7 @@ ncm_mpd_client_add_random_tag(MpdClient *client, enum TagType tag,
             ncm_mpd_client_copy_connection_error(client, err);
             goto cleanup;
         }
-        if ((status = ncm_mpd_client_start_cmd_list_ready(client,
-                                                          err)) < 0) {
+        if ((status = ncm_mpd_client_start_cmd_list_ready(client, err)) < 0) {
             goto cleanup;
         }
         for (int32 j = 0; j < songs.len; j += 1) {
@@ -1297,14 +1291,12 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
     int32 status;
 
     if (number < 0) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("negative random count"));
+        return ncm_error_set_status(err, -EINVAL, SL("negative random count"));
     }
     if (exclude_pattern_len < 0) {
         exclude_pattern_len = opt_strlen32(exclude_pattern);
     }
-    if ((status = ncm_mpd_client_prechecks_no_commands(client,
-                                                       err)) < 0) {
+    if ((status = ncm_mpd_client_prechecks_no_commands(client, err)) < 0) {
         return status;
     }
 
@@ -1347,8 +1339,7 @@ ncm_mpd_client_add_random_songs(MpdClient *client, int32 number,
                                       err);
         added += 1;
     }
-    if ((status = ncm_mpd_client_commit_cmd_list_ready(client,
-                                                       err)) < 0) {
+    if ((status = ncm_mpd_client_commit_cmd_list_ready(client, err)) < 0) {
         goto cleanup;
     }
 
