@@ -465,8 +465,7 @@ playlist_edit_update_callback(NcScreen *screen) {
         if ((status =
                  playlist_edit_screen_reload_playlists_from_mpd(editor,
                                                                 &global_mpd,
-                                                                &err))
-            < 0) {
+                                                                &err)) < 0) {
             editor->playlists_update_requested = false;
             playlist_edit_report_error(SL("Could not fetch playlists"), &err);
             ncm_error_clear(&err);
@@ -504,8 +503,7 @@ playlist_edit_update_callback(NcScreen *screen) {
     ncm_error_clear(&err);
     if ((status = playlist_edit_screen_reload_content_from_mpd(editor,
                                                                &global_mpd,
-                                                               &err))
-        < 0) {
+                                                               &err)) < 0) {
         editor->content_update_requested = false;
         playlist_edit_report_error(SL("Could not fetch playlist content"),
                                    &err);
@@ -580,8 +578,7 @@ playlist_edit_mouse_callback(NcScreen *screen, MEVENT event) {
                     if ((status = ncm_mpd_client_load_playlist(&global_mpd,
                                                                playlist->path,
                                                                &loaded,
-                                                               &err))
-                        < 0) {
+                                                               &err)) < 0) {
                         char *context = "Could not load playlist";
 
                         playlist_edit_report_error(context, strlen32(context),
@@ -1423,9 +1420,9 @@ playlist_edit_screen_locate_playlist(PlaylistEditScreen *screen,
     if ((screen == NULL) || (path == NULL) || (path_len <= 0)) {
         return ncm_error_set_status(err, -EINVAL, SL("missing playlist"));
     }
-    if ((status =
-             playlist_edit_screen_reload_playlists_from_mpd(screen, client,
-                                                            err)) < 0) {
+    if ((status = playlist_edit_screen_reload_playlists_from_mpd(screen,
+                                                                 client,
+                                                                 err)) < 0) {
         return status;
     }
 
@@ -1452,8 +1449,7 @@ playlist_edit_screen_locate_playlist(PlaylistEditScreen *screen,
     playlist_edit_clear_content_filter(screen);
     playlist_edit_clear_stale_content(screen);
     if ((status = playlist_edit_screen_reload_content_from_mpd(screen, client,
-                                                               err))
-        < 0) {
+                                                               err)) < 0) {
         return status;
     }
     return playlist_edit_show_screen(screen);
@@ -1545,8 +1541,8 @@ playlist_edit_locate_song_in_playlist_range(PlaylistEditScreen *screen,
         playlist_edit_update_menu_highlights(screen);
         playlist_edit_clear_stale_content(screen);
         if ((status = playlist_edit_screen_reload_content_from_mpd(screen,
-                                                                    client,
-                                                                    err)) < 0) {
+                                                                   client,
+                                                                   err)) < 0) {
             return status;
         }
         if ((status = playlist_edit_highlight_content_position(screen,
@@ -1580,9 +1576,10 @@ playlist_edit_screen_locate_song(PlaylistEditScreen *screen,
     playlists = nc_playlist_entry_menu_base(&screen->playlists);
     if ((nc_menu_all_item_len(playlists) <= 0)
         || screen->playlists_update_requested) {
-        status = playlist_edit_screen_reload_playlists_from_mpd(screen, client,
-                                                                err);
-        if (status < 0) {
+        if ((status = playlist_edit_screen_reload_playlists_from_mpd(screen,
+                                                                     client,
+                                                                     err))
+            < 0) {
             return status;
         }
     }

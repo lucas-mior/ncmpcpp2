@@ -392,8 +392,7 @@ playlist_activate_song(NcMenu *menu, void *item, int32 pos, void *user) {
     (void)pos;
     (void)user;
     ASSERT(item != NULL);
-    if (ncm_mpd_client_play_id(&global_mpd, ncm_song_id(item),
-                               &err) < 0) {
+    if (ncm_mpd_client_play_id(&global_mpd, ncm_song_id(item), &err) < 0) {
         ncm_statusbar_print(1, err.message, err.message_len);
     }
     return;
@@ -682,8 +681,7 @@ playlist_screen_reload_from_mpd(PlaylistScreen *screen, MpdClient *client,
                                     SL("playlist screen is NULL"));
     }
     if (client == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("MPD client is NULL"));
+        return ncm_error_set_status(err, -EINVAL, SL("MPD client is NULL"));
     }
 
     songs = (NcmSongArray){0};
@@ -691,8 +689,7 @@ playlist_screen_reload_from_mpd(PlaylistScreen *screen, MpdClient *client,
                                          playlist_length, NULL)) {
         status = ncm_mpd_client_get_queue(client, &songs, err);
     } else {
-        status = ncm_mpd_client_get_queue_changes(client, version, &songs,
-                                                  err);
+        status = ncm_mpd_client_get_queue_changes(client, version, &songs, err);
         if ((status == 0)
             && playlist_full_reload_is_required(screen, version,
                                                 playlist_length, &songs)) {
@@ -946,8 +943,7 @@ playlist_screen_find_sort_range(PlaylistScreen *screen,
     menu = playlist_storage_menu(screen);
     last = nc_menu_all_item_len(menu);
     if (last <= 0) {
-        return ncm_error_set_status(err, -ENOENT,
-                                    SL("playlist is empty"));
+        return ncm_error_set_status(err, -ENOENT, SL("playlist is empty"));
     }
 
     first = last;
@@ -1036,8 +1032,7 @@ playlist_screen_copy_sort_range(PlaylistScreen *screen, NcmSongArray *songs,
                                     SL("missing playlist screen"));
     }
     if (songs == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing song array"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing song array"));
     }
     if (start_position == NULL) {
         return ncm_error_set_status(err, -EINVAL,
@@ -1157,8 +1152,7 @@ playlist_screen_search(PlaylistScreen *screen, char *pattern, int32 pattern_len,
                                     SL("missing playlist screen"));
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing search pattern"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing search pattern"));
     }
 
     regex = (NcmRegex){0};
@@ -1200,8 +1194,7 @@ playlist_screen_set_selected_priority(PlaylistScreen *screen,
                                     SL("missing playlist screen"));
     }
     if (client == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing MPD client"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing MPD client"));
     }
 
     playlist_screen_selected_songs(screen, &songs);
@@ -1209,8 +1202,7 @@ playlist_screen_set_selected_priority(PlaylistScreen *screen,
     status = 0;
     for (int32 i = 0; i < songs.len; i += 1) {
         if ((status = ncm_mpd_client_set_priority_song(client, &songs.items[i],
-                                                       priority, err))
-            < 0) {
+                                                       priority, err)) < 0) {
             break;
         }
     }
