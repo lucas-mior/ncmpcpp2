@@ -210,8 +210,7 @@ settings_parse_int_range(char *value, int32 value_len, int32 *result,
     if ((status = parse_integer(value, value_len, &parsed)) < 0) {
         return ncm_error_set_status(err, status, SL("invalid integer"));
     }
-    if ((status = ncm_bounds_check_i64(parsed, minimum, maximum,
-                                       err)) < 0) {
+    if ((status = ncm_bounds_check_i64(parsed, minimum, maximum, err)) < 0) {
         return status;
     }
     *result = (int32)parsed;
@@ -404,8 +403,7 @@ settings_parse_border(char *value, int32 value_len, NcBorder *border,
     NcColor color;
     int32 status;
 
-    if ((status = settings_parse_color(value, value_len, &color,
-                                       err)) < 0) {
+    if ((status = settings_parse_color(value, value_len, &color, err)) < 0) {
         return status;
     }
     *border = nc_border_make(color);
@@ -886,8 +884,7 @@ settings_apply_option(Configuration *config, SettingsOption option,
 int32
 config_validate(Configuration *config, NcmError *err) {
     if (config == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing configuration"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing configuration"));
     }
 
     if (config->visualizer_spectrum_hz_max
@@ -1208,8 +1205,7 @@ config_read(Configuration *config, StrViewList *config_paths,
                            "failed to read configuration file '%.*s': %s",
                            path.len, path.data, strerror(error_code));
             ncm_error_set_status(err, content_len, message, len);
-            if ((status = settings_report_or_ignore(err,
-                                                    ignore_errors)) < 0) {
+            if ((status = settings_report_or_ignore(err, ignore_errors)) < 0) {
                 return status;
             }
             continue;

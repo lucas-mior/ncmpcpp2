@@ -235,8 +235,7 @@ ncm_status_trace(MpdClient *client, bool update_timer,
             NcmMpdStatus mpd_status = {0};
             NcmStatusInitHooks *init_hooks = NULL;
 
-            if (ncm_mpd_client_get_status(client, &mpd_status,
-                                          err) >= 0) {
+            if (ncm_mpd_client_get_status(client, &mpd_status, err) >= 0) {
                 bool jump_to_playing = Config.jump_to_playing_at_start;
                 ncm_status_apply_mpd_status(&mpd_status,
                                             status_full_event_mask(), NULL,
@@ -558,8 +557,7 @@ ncm_status_apply_mpd_status(NcmMpdStatus *mpd_status, uint32 event,
     NcmStatusHooks *active_hooks;
 
     if (mpd_status == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("MPD status is NULL"));
+        return ncm_error_set_status(err, -EINVAL, SL("MPD status is NULL"));
     }
 
     active_hooks = status_active_hooks(hooks);
@@ -827,12 +825,10 @@ ncm_status_update(MpdClient *client, uint32 event, NcmError *err) {
     int32 status;
 
     if (client == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("MPD client is NULL"));
+        return ncm_error_set_status(err, -EINVAL, SL("MPD client is NULL"));
     }
 
-    if ((status = ncm_mpd_client_get_status(client, &mpd_status,
-                                            err)) < 0) {
+    if ((status = ncm_mpd_client_get_status(client, &mpd_status, err)) < 0) {
         return status;
     }
     status_reset_visualizer_for_player_event(event);
@@ -847,12 +843,10 @@ ncm_status_update_full(MpdClient *client, NcmStatusHooks *hooks,
     int32 status;
 
     if (client == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("MPD client is NULL"));
+        return ncm_error_set_status(err, -EINVAL, SL("MPD client is NULL"));
     }
 
-    if ((status = ncm_mpd_client_get_status(client, &mpd_status,
-                                            err)) < 0) {
+    if ((status = ncm_mpd_client_get_status(client, &mpd_status, err)) < 0) {
         return status;
     }
 
@@ -868,8 +862,7 @@ ncm_status_update_from_noidle(MpdClient *client, NcmStatusHooks *hooks,
     int32 status;
 
     if (client == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("MPD client is NULL"));
+        return ncm_error_set_status(err, -EINVAL, SL("MPD client is NULL"));
     }
 
     flags = 0;
@@ -877,8 +870,7 @@ ncm_status_update_from_noidle(MpdClient *client, NcmStatusHooks *hooks,
         return status;
     }
 
-    if ((status = ncm_mpd_client_get_status(client, &mpd_status,
-                                            err)) < 0) {
+    if ((status = ncm_mpd_client_get_status(client, &mpd_status, err)) < 0) {
         return status;
     }
     status_reset_visualizer_for_player_event(flags);
