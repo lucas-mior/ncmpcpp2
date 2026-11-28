@@ -1369,8 +1369,7 @@ browser_screen_change_browse_mode(BrowserScreen *screen,
     int32 status;
 
     if ((screen == NULL) || (client == NULL)) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing browser state"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing browser state"));
     }
 
     if (((hostname = ncm_mpd_client_hostname(client)) == NULL)
@@ -1616,8 +1615,7 @@ browser_delete_path_recursive(char *path, int32 path_len, NcmError *err) {
         return ncm_fs_unlink(path, path_len, err);
     }
 
-    if ((status = ncm_fs_directory_open(&directory, path, path_len, err))
-        < 0) {
+    if ((status = ncm_fs_directory_open(&directory, path, path_len, err)) < 0) {
         return status;
     }
 
@@ -1639,8 +1637,7 @@ browser_delete_path_recursive(char *path, int32 path_len, NcmError *err) {
         ncm_fs_join(&child,
                     directory.path, directory.path_len,
                     entry.name, entry.name_len);
-        status = browser_delete_path_recursive(child.data, child.len,
-                                               err);
+        status = browser_delete_path_recursive(child.data, child.len, err);
         str_free(&child);
         if (status < 0) {
             break;
@@ -1669,8 +1666,7 @@ browser_delete_path_recursive(char *path, int32 path_len, NcmError *err) {
             }
             message_len = SNPRINTF(message, "rmdir '%.*s': %s",
                                             path_len, path, strerror(code));
-            status = ncm_error_set_status(err, -code,
-                                          message, message_len);
+            status = ncm_error_set_status(err, -code, message, message_len);
             free2(copy, path_len + 1);
             return status;
         }
@@ -1688,8 +1684,7 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
     bool any_selected;
 
     if (screen == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing browser state"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing browser state"));
     }
     if (!Config.allow_for_physical_item_deletion) {
         return ncm_error_set_status(err, -EPERM,
@@ -1702,8 +1697,7 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
                                     SL("no browser item selected"));
     }
     if (!screen->local_browser && (client == NULL)) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing MPD client"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing MPD client"));
     }
 
     any_selected = nc_menu_has_selected(menu);
@@ -1747,8 +1741,7 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
             ncm_song_has_uri_view(ncm_mpd_item_song(item), 0, &path);
             status = browser_real_path(screen, path, &real_path, err);
             if (status == 0) {
-                status = ncm_fs_unlink(real_path.data, real_path.len,
-                                       err);
+                status = ncm_fs_unlink(real_path.data, real_path.len, err);
             }
             str_free(&real_path);
             break;
@@ -1763,8 +1756,7 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
             }
             ncm_playlist_has_path_view(ncm_mpd_item_playlist(item), &path);
 
-            status = ncm_mpd_client_delete_playlist(client, path.data,
-                                                    err);
+            status = ncm_mpd_client_delete_playlist(client, path.data, err);
             if (status == 0) {
                 break;
             }
@@ -1775,8 +1767,7 @@ browser_screen_delete_items(BrowserScreen *screen, MpdClient *client,
 
             status = browser_real_path(screen, path, &real_path, err);
             if (status == 0) {
-                status = ncm_fs_unlink(real_path.data, real_path.len,
-                                       err);
+                status = ncm_fs_unlink(real_path.data, real_path.len, err);
             }
             str_free(&real_path);
             break;
@@ -1816,8 +1807,7 @@ browser_current_directory_item_path(BrowserScreen *screen, StrView *path,
     *path = (StrView){0};
 
     if ((item = browser_screen_current_item(screen)) == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing browser item"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing browser item"));
     }
     if (browser_screen_item_is_parent(item)) {
         return ncm_error_set_status(err, -EINVAL,
@@ -1851,8 +1841,7 @@ browser_current_playlist_item_path(BrowserScreen *screen, StrView *path,
     *path = (StrView){0};
 
     if ((item = browser_screen_current_item(screen)) == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing browser item"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing browser item"));
     }
     if (ncm_mpd_item_kind(item) != NCM_MPD_ITEM_PLAYLIST) {
         return ncm_error_set_status(err, -EINVAL,
@@ -1909,8 +1898,7 @@ browser_screen_rename_current_directory(BrowserScreen *screen,
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing browser state"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing browser state"));
     }
     if ((new_path == NULL) || (new_path_len <= 0)) {
         return ncm_error_ok(err);
@@ -1950,8 +1938,7 @@ browser_screen_rename_current_directory(BrowserScreen *screen,
         char *directory;
 
         if (client == NULL) {
-            return ncm_error_set_status(err, -EINVAL,
-                                        SL("missing MPD client"));
+            return ncm_error_set_status(err, -EINVAL, SL("missing MPD client"));
         }
 
         shared = ncm_string_shared_directory(old_path.data, old_path.len,
@@ -1961,8 +1948,7 @@ browser_screen_rename_current_directory(BrowserScreen *screen,
         if (shared.len <= 0) {
             directory = "/";
         }
-        status = ncm_mpd_client_update_directory(client, directory, NULL,
-                                                 err);
+        status = ncm_mpd_client_update_directory(client, directory, NULL, err);
         str_free(&shared);
         if (status < 0) {
             return status;
@@ -1982,15 +1968,13 @@ browser_screen_rename_current_playlist(BrowserScreen *screen,
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing browser state"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing browser state"));
     }
     if ((new_path == NULL) || (new_path_len <= 0)) {
         return ncm_error_ok(err);
     }
     if (client == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing MPD client"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing MPD client"));
     }
     if ((status = browser_current_playlist_item_path(screen, &old_path,
                                                      err)) < 0) {
