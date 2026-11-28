@@ -469,8 +469,7 @@ lastfm_screen_find(LastfmScreen *screen, char *pattern, int32 pattern_len,
     int32 result;
 
     if (screen == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing Last.fm screen"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing Last.fm screen"));
     }
 
     nc_buffer_remove_properties(&screen->buffer, LASTFM_PROPERTY_ID);

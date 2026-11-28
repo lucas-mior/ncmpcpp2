@@ -662,8 +662,7 @@ lyrics_screen_load_file(LyricsScreen *screen,
     bool lrc_file;
 
     if ((screen == NULL) || (filename == NULL) || (filename_len <= 0)) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing lyrics file"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing lyrics file"));
     }
 
     lrc_suffix_len = strlen32(lrc_suffix);
@@ -681,8 +680,7 @@ lyrics_screen_load_file(LyricsScreen *screen,
     screen->active_lrc_line = LYRICS_NO_ACTIVE_LINE;
     if (lrc_file) {
         LrcRenderTarget target = {0};
-        if ((status = lrc_parse(&screen->lrc, content, content_len, err))
-            < 0) {
+        if ((status = lrc_parse(&screen->lrc, content, content_len, err)) < 0) {
             free2(content, content_len + 1);
             lyrics_screen_clear_lyrics_state(screen, LYRICS_MODE_FETCH_LOG);
             return status;
@@ -739,22 +737,18 @@ lyrics_screen_save_file(LyricsScreen *screen,
 
     (void)screen;
     if ((filename == NULL) || (filename_len <= 0)) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing lyrics file"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing lyrics file"));
     }
     if ((lyrics_len < 0) || ((lyrics == NULL) && (lyrics_len > 0))) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing lyrics buffer"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing lyrics buffer"));
     }
 
     status = (int32)write_entire_file(filename, lyrics, lyrics_len);
     if (status < 0) {
-        return ncm_error_set_status(err, status,
-                                    SL("failed to save lyrics"));
+        return ncm_error_set_status(err, status, SL("failed to save lyrics"));
     }
     if (status != lyrics_len) {
-        return ncm_error_set_status(err, -EIO,
-                                    SL("failed to save lyrics"));
+        return ncm_error_set_status(err, -EIO, SL("failed to save lyrics"));
     }
 
     ncm_error_clear(err);
@@ -1543,8 +1537,7 @@ lyrics_buffer_find(NcBuffer *buffer,
     int32 status;
 
     if (buffer == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing lyrics buffer"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing lyrics buffer"));
     }
 
     nc_buffer_remove_properties(buffer, LYRICS_SEARCH_PROPERTY_ID);
@@ -1577,13 +1570,10 @@ lyrics_screen_find(LyricsScreen *screen, char *pattern, int32 pattern_len,
     int32 result;
 
     if (screen == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing lyrics screen"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing lyrics screen"));
     }
 
-    result = lyrics_buffer_find(&screen->display,
-                                pattern, pattern_len,
-                                err);
+    result = lyrics_buffer_find(&screen->display, pattern, pattern_len, err);
     if (result < 0) {
         nc_scrollpad_flush(&screen->scrollpad, &screen->window,
                            &screen->display);

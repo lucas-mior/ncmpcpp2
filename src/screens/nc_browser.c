@@ -2018,8 +2018,7 @@ browser_screen_locate_song(BrowserScreen *screen,
     int32 status;
 
     if ((screen == NULL) || (song == NULL)) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing browser song"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing browser song"));
     }
     if (!ncm_song_has_directory_view(song, 0, &directory)
         || (directory.len <= 0)) {
@@ -2040,8 +2039,7 @@ browser_screen_locate_song(BrowserScreen *screen,
         String path = {0};
 
         if (client == NULL) {
-            return ncm_error_set_status(err, -EINVAL,
-                                        SL("missing MPD client"));
+            return ncm_error_set_status(err, -EINVAL, SL("missing MPD client"));
         }
 
         if (directory.len <= 0) {
@@ -2129,16 +2127,14 @@ browser_screen_apply_filter(BrowserScreen *screen,
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing browser screen"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing browser screen"));
     }
     if (pattern_len <= 0) {
         browser_screen_clear_filter(screen);
         return ncm_error_ok(err);
     }
     if (pattern == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing filter pattern"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing filter pattern"));
     }
     if ((status = ncm_regex_compile(&screen->filter_regex,
                                     pattern, pattern_len,
@@ -2188,12 +2184,10 @@ browser_screen_search(BrowserScreen *screen, char *pattern, int32 pattern_len,
     int32 status;
 
     if (screen == NULL) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing browser screen"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing browser screen"));
     }
     if ((pattern == NULL) || (pattern_len <= 0)) {
-        return ncm_error_set_status(err, -EINVAL,
-                                    SL("missing search pattern"));
+        return ncm_error_set_status(err, -EINVAL, SL("missing search pattern"));
     }
 
     if ((status = ncm_regex_compile(&regex, pattern, pattern_len,
